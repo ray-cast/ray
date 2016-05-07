@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,7 +38,6 @@
 #define _H_PHYSIC_FEATURES_H_
 
 #include <ray/game_features.h>
-#include <ray/physics_system.h>
 
 _NAME_BEGIN
 
@@ -49,25 +48,17 @@ public:
 	PhysicFeatures() noexcept;
 	~PhysicFeatures() noexcept;
 
-	PhysicsScenePtr getPhysicsScene(GameScene* scene) const noexcept;
-	PhysicsScenePtr getPhysicsScene(GameScenePtr scene) const noexcept;
-
 	GameFeaturePtr clone() const noexcept;
 
 private:
-
-	void onActivate() noexcept;
+	void onActivate() except;
 	void onDeactivate() noexcept;
-
-	void onOpenScene(GameScenePtr scene) except;
-	void onCloseScene(GameScenePtr scene) noexcept;
 
 	void onFrameBegin() noexcept;
 
 private:
-
-	PhysicsSystemPtr _physics;
-	PhysicsScenes _physicsScenes;
+	PhysicFeatures(const PhysicFeatures&) = delete;
+	PhysicFeatures& operator=(const PhysicFeatures&) = delete;
 };
 
 _NAME_END

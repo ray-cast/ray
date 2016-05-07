@@ -52,7 +52,7 @@ PhysicsShapeMesh::~PhysicsShapeMesh() noexcept
 }
 
 void
-PhysicsShapeMesh::setup(const Vector3Array& vertices, const std::vector<std::uint32_t>& face, const AABB& aabb) noexcept
+PhysicsShapeMesh::setup(const Vector3Array& vertices, const UintArray& face, const AABB& aabb) noexcept
 {
 	if (!_shape)
 	{
@@ -90,41 +90,38 @@ PhysicsShapeMesh::close() noexcept
 }
 
 void
-PhysicsShapeMesh::addMesh(const Vector3Array& vertices, const std::vector<std::uint32_t>& face) noexcept
+PhysicsShapeMesh::addMesh(const Vector3Array& vertices, const UintArray& face) noexcept
 {
-	_vertexBase = vertices;
-	_indexBase = face;
-
 	btIndexedMesh mesh;
 	mesh.m_vertexType = PHY_FLOAT;
-	mesh.m_numVertices = _vertexBase.size();
+	mesh.m_numVertices = vertices.size();
 	mesh.m_vertexStride = sizeof(Vector3);
-	mesh.m_vertexBase = (unsigned char*)_vertexBase.data();
+	mesh.m_vertexBase = (unsigned char*)vertices.data();
 	mesh.m_indexType = PHY_INTEGER;
-	mesh.m_numTriangles = _indexBase.size() / 3;
+	mesh.m_numTriangles = face.size() / 3;
 	mesh.m_triangleIndexStride = sizeof(std::uint32_t) * 3;
-	mesh.m_triangleIndexBase = (unsigned char*)_indexBase.data();
+	mesh.m_triangleIndexBase = (unsigned char*)face.data();
 
-	if (_indexBase.empty())
+	if (face.empty())
 	{
 		auto array = new btTriangleMesh;
 
 		for (std::size_t i = 0; i < mesh.m_numVertices; i += 3)
 		{
 			btVector3 v1;
-			v1.setX(_vertexBase[i].x);
-			v1.setY(_vertexBase[i].y);
-			v1.setZ(_vertexBase[i].z);
+			v1.setX(vertices[i].x);
+			v1.setY(vertices[i].y);
+			v1.setZ(vertices[i].z);
 
 			btVector3 v2;
-			v2.setX(_vertexBase[i + 1].x);
-			v2.setY(_vertexBase[i + 1].y);
-			v2.setZ(_vertexBase[i + 1].z);
+			v2.setX(vertices[i + 1].x);
+			v2.setY(vertices[i + 1].y);
+			v2.setZ(vertices[i + 1].z);
 
 			btVector3 v3;
-			v3.setX(_vertexBase[i + 2].x);
-			v3.setY(_vertexBase[i + 2].y);
-			v3.setZ(_vertexBase[i + 2].z);
+			v3.setX(vertices[i + 2].x);
+			v3.setY(vertices[i + 2].y);
+			v3.setZ(vertices[i + 2].z);
 
 			array->addTriangle(v1, v2, v3);
 		}

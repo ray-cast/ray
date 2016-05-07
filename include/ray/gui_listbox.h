@@ -79,17 +79,17 @@ public:
 
 	virtual void setActivateOnClick(bool activateOnClick) noexcept = 0;
 
-	virtual void addListSelectAcceptListener(std::function<void()>& func) noexcept = 0;
-	virtual void addListChangePositionListener(std::function<void()>& func) noexcept = 0;
-	virtual void addListMouseItemActivateListener(std::function<void()>& func) noexcept = 0;
-	virtual void addListMouseItemFocusListener(std::function<void()>& func) noexcept = 0;
-	virtual void addListChangeScrollListener(std::function<void()>& func) noexcept = 0;
+	virtual void addListSelectAcceptListener(std::function<void()>* func) noexcept = 0;
+	virtual void addListChangePositionListener(std::function<void()>* func) noexcept = 0;
+	virtual void addListMouseItemActivateListener(std::function<void()>* func) noexcept = 0;
+	virtual void addListMouseItemFocusListener(std::function<void()>* func) noexcept = 0;
+	virtual void addListChangeScrollListener(std::function<void()>* func) noexcept = 0;
 
-	virtual void removeListSelectAcceptListener(std::function<void()>& func) noexcept = 0;
-	virtual void removeListChangePositionListener(std::function<void()>& func) noexcept = 0;
-	virtual void removeListMouseItemActivateListener(std::function<void()>& func) noexcept = 0;
-	virtual void removeListMouseItemFocusListener(std::function<void()>& func) noexcept = 0;
-	virtual void removeListChangeScrollListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeListSelectAcceptListener(std::function<void()>* func) noexcept = 0;
+	virtual void removeListChangePositionListener(std::function<void()>* func) noexcept = 0;
+	virtual void removeListMouseItemActivateListener(std::function<void()>* func) noexcept = 0;
+	virtual void removeListMouseItemFocusListener(std::function<void()>* func) noexcept = 0;
+	virtual void removeListChangeScrollListener(std::function<void()>* func) noexcept = 0;
 
 private:
 	GuiListBox(const GuiListBox&) noexcept = delete;

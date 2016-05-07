@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -47,10 +47,10 @@ class PhysicsCapsuleComponent : public PhysicsShapeComponent
 	__DeclareSubClass(PhysicsCapsuleComponent, PhysicsShapeComponent)
 public:
 	PhysicsCapsuleComponent() noexcept;
-	PhysicsCapsuleComponent(float width, float height) noexcept;
+	PhysicsCapsuleComponent(float radius, float height) noexcept;
 	~PhysicsCapsuleComponent() noexcept;
 
-	void setWidth(float width) noexcept;
+	void setRadius(float radius) noexcept;
 	void setHeight(float height) noexcept;
 
 private:

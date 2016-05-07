@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -55,14 +55,14 @@ public:
 
 	bool isQuitRequest() const noexcept;
 
-	bool openScene(GameScenePtr scene) noexcept;
+	bool openScene(GameScenePtr& scene) noexcept;
 	bool openScene(const std::string& name) noexcept;
-	void closeScene(GameScenePtr name) noexcept;
+	void closeScene(GameScenePtr& name) noexcept;
 	void closeScene(const std::string& name) noexcept;
 	GameScenePtr findScene(const std::string& name) noexcept;
 
-	bool addFeatures(GameFeaturePtr feature) noexcept;
-	void removeFeatures(GameFeaturePtr feature) noexcept;
+	bool addFeatures(GameFeaturePtr& feature) noexcept;
+	void removeFeatures(GameFeaturePtr& feature) noexcept;
 
 	void setFileService(bool enable) noexcept;
 	void setFileServicePath(const std::string& path) noexcept;
@@ -91,7 +91,7 @@ private:
 	std::string _resourceBaseDir;
 	std::string _downloadURL;
 
-	GameServerPtr _gameServer;
+	GameServer* _gameServer;
 
 	IoServer* _ioServer;
 	IoInterface* _ioInterface;

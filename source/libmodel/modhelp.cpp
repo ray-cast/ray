@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/modhelp.h>
-#include <ray/memory.h>
 
 _NAME_BEGIN
 
@@ -73,7 +72,6 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, int 
 	}
 
 	auto prop = make_scope<MaterialParam>();
-
 	prop->key = key;
 	prop->type = type;
 	prop->index = index;
@@ -375,8 +373,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Mate
 }
 
 MeshProperty::MeshProperty() noexcept
-	: _materialID(0)
-	, _parent(nullptr)
+	: _parent(nullptr)
 {
 }
 
@@ -436,14 +433,43 @@ MeshProperty::getParent() const noexcept
 }
 
 void
-MeshProperty::addChild(MeshPropertyPtr entity) noexcept
+MeshProperty::addChild(MeshPropertyPtr& entity) noexcept
 {
 	assert(entity);
 	entity->setParent(std::dynamic_pointer_cast<MeshProperty>(this->shared_from_this()));
 }
 
 void
-MeshProperty::removeChild(MeshPropertyPtr entity) noexcept
+MeshProperty::addChild(MeshPropertyPtr&& entity) noexcept
+{
+	assert(entity);
+	entity->setParent(std::dynamic_pointer_cast<MeshProperty>(this->shared_from_this()));
+}
+
+void
+MeshProperty::removeChild(MeshPropertyPtr& entity) noexcept
+{
+	assert(entity);
+
+	auto it = _children.begin();
+	auto end = _children.end();
+	for (; it != end; ++it)
+	{
+		if ((*it) == entity)
+		{
+			(*it)->setParent(nullptr);
+			break;
+		}
+	}
+
+	if (it != end)
+	{
+		_children.erase(it);
+	}
+}
+
+void
+MeshProperty::removeChild(MeshPropertyPtr&& entity) noexcept
 {
 	assert(entity);
 
@@ -519,18 +545,6 @@ MeshProperty::getChildren() const noexcept
 	return _children;
 }
 
-void
-MeshProperty::setMaterialID(std::size_t index) noexcept
-{
-	_materialID = index;
-}
-
-std::size_t
-MeshProperty::getMaterialID() const noexcept
-{
-	return _materialID;
-}
-
 std::size_t
 MeshProperty::getNumVertices() const noexcept
 {
@@ -574,27 +588,69 @@ MeshProperty::setTexcoordArray(const Float2Array& array) noexcept
 }
 
 void
-MeshProperty::setBoneArray(const Bones& array) noexcept
-{
-	_bones = array;
-}
-
-void
-MeshProperty::setInverseKinematics(const InverseKinematics& iks) noexcept
-{
-	_iks = iks;
-}
-
-void
 MeshProperty::setFaceArray(const UintArray& array) noexcept
 {
 	_faces = array;
 }
 
 void
+MeshProperty::setBindposes(const Float4x4Array& array) noexcept
+{
+	_bindposes = array;
+}
+
+void
 MeshProperty::setWeightArray(const VertexWeights& array) noexcept
 {
 	_weights = array;
+}
+
+void
+MeshProperty::setVertexArray(Float3Array&& array) noexcept
+{
+	_vertices = std::move(array);
+}
+
+void
+MeshProperty::setNormalArray(Float3Array&& array) noexcept
+{
+	_normals = std::move(array);
+}
+
+void
+MeshProperty::setColorArray(Float4Array&& array) noexcept
+{
+	_colors = std::move(array);
+}
+
+void
+MeshProperty::setTangentArray(Float3Array&& array) noexcept
+{
+	_tangent = std::move(array);
+}
+
+void
+MeshProperty::setTexcoordArray(Float2Array&& array) noexcept
+{
+	_texcoords = std::move(array);
+}
+
+void
+MeshProperty::setFaceArray(UintArray&& array) noexcept
+{
+	_faces = std::move(array);
+}
+
+void
+MeshProperty::setWeightArray(VertexWeights&& array) noexcept
+{
+	_weights = std::move(array);
+}
+
+void
+MeshProperty::setBindposes(Float4x4Array&& array) noexcept
+{
+	_bindposes = std::move(array);
 }
 
 Float3Array&
@@ -627,22 +683,16 @@ MeshProperty::getWeightArray() noexcept
 	return _weights;
 }
 
-Bones&
-MeshProperty::getBoneArray() noexcept
-{
-	return _bones;
-}
-
-InverseKinematics&
-MeshProperty::getInverseKinematics() noexcept
-{
-	return _iks;
-}
-
 UintArray&
 MeshProperty::getFaceArray() noexcept
 {
 	return _faces;
+}
+
+Float4x4Array&
+MeshProperty::getBindposes() noexcept
+{
+	return _bindposes;
 }
 
 const Float3Array&
@@ -681,16 +731,16 @@ MeshProperty::getWeightArray() const noexcept
 	return _weights;
 }
 
+const Float4x4Array&
+MeshProperty::getBindposes() const noexcept
+{
+	return _bindposes;
+}
+
 const Bones&
 MeshProperty::getBoneArray(const Bones& array) const noexcept
 {
 	return _bones;
-}
-
-const InverseKinematics&
-MeshProperty::getInverseKinematics() const noexcept
-{
-	return _iks;
 }
 
 const UintArray&
@@ -728,15 +778,13 @@ MeshProperty::clone() noexcept
 {
 	auto mesh = std::make_shared<MeshProperty>();
 	mesh->setName(this->getName());
-	mesh->setMaterialID(this->getMaterialID());
 	mesh->setVertexArray(this->getVertexArray());
 	mesh->setNormalArray(this->getNormalArray());
 	mesh->setColorArray(this->getColorArray());
 	mesh->setTexcoordArray(this->getTexcoordArray());
 	mesh->setWeightArray(this->getWeightArray());
 	mesh->setTangentArray(this->getTangentArray());
-	mesh->setBoneArray(this->getBoneArray());
-	mesh->setInverseKinematics(this->getInverseKinematics());
+	mesh->setBindposes(this->getBindposes());
 	mesh->setFaceArray(this->getFaceArray());
 	mesh->_boundingBox = this->_boundingBox;
 	mesh->_boundingBoxChildren = this->_boundingBoxChildren;
@@ -766,7 +814,7 @@ MeshProperty::makeCircle(float radius, std::uint32_t segments, float thetaStart,
 
 		_vertices.push_back(v);
 
-		_texcoords.push_back(Vector2((v.x / radius + 1), (v.y / radius + 1) / 2));
+		_texcoords.emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
 	}
 
 	for (std::uint32_t i = 1; i <= segments; i++)
@@ -813,7 +861,7 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 			float x = ix * segmentWidth - widthHalf;
 			float z = iz * segmentHeight - heightHalf;
 
-			_vertices.push_back(Vector3(x, z, 0));
+			_vertices.emplace_back(x, z, 0);
 
 			_normals.push_back(normal);
 		}
@@ -823,10 +871,10 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 	{
 		for (std::uint32_t ix = 0; ix < gridX; ix++)
 		{
-			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - (iy + 1)) / gridY));
-			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY));
-			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - iy) / gridY));
-			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - iy) / gridY));
+			_texcoords.emplace_back((float)ix / gridX, (float)(1 - (iy + 1)) / gridY);
+			_texcoords.emplace_back((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY);
+			_texcoords.emplace_back((float)ix / gridX, (float)(1 - iy) / gridY);
+			_texcoords.emplace_back((float)(ix + 1) / gridX, (float)(1 - iy) / gridY);
 
 			std::int32_t a = static_cast<std::int32_t>(ix + gridX1 * iy);
 			std::int32_t b = static_cast<std::int32_t>(ix + gridX1 * (iy + 1));
@@ -920,10 +968,10 @@ MeshProperty::makePlane(float width, float height, float depth, std::uint32_t wi
 			_faces.push_back((std::int32_t)(d + offset));
 			_faces.push_back((std::int32_t)(a + offset));
 
-			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - (iy + 1)) / gridY));
-			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY));
-			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - iy) / gridY));
-			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - iy) / gridY));
+			_texcoords.emplace_back((float)ix / gridX, (float)(1 - (iy + 1)) / gridY);
+			_texcoords.emplace_back((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY);
+			_texcoords.emplace_back((float)ix / gridX, (float)(1 - iy) / gridY);
+			_texcoords.emplace_back((float)(ix + 1) / gridX, (float)(1 - iy) / gridY);
 		}
 	}
 }
@@ -1067,7 +1115,7 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 
 			_vertices.push_back(vertex);
 			_normals.push_back(math::normalize(vertex));
-			_texcoords.push_back(Vector2(u, 1 - v));
+			_texcoords.emplace_back(u, 1 - v);
 
 			vertices.push_back((std::uint32_t)_vertices.size() - 1);
 		}
@@ -1117,35 +1165,35 @@ MeshProperty::makeVolumes(float fovy, float znear, float zfar) noexcept
 
 	float tanFovy_2 = tan(fovy * M_PI / 360.0f);
 
-	_vertices.push_back(Vector3(tanFovy_2 * znear, tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(-tanFovy_2 * znear, tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(-tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar));
+	_vertices.emplace_back(tanFovy_2 * znear, tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(-tanFovy_2 * znear, tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(-tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar);
 
-	_vertices.push_back(Vector3(tanFovy_2 * znear, -tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(-tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(-tanFovy_2 * znear, -tanFovy_2 * znear, -znear));
+	_vertices.emplace_back(tanFovy_2 * znear, -tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(-tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(-tanFovy_2 * znear, -tanFovy_2 * znear, -znear);
 
-	_vertices.push_back(Vector3(tanFovy_2 * znear, -tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(tanFovy_2 * znear, tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar));
+	_vertices.emplace_back(tanFovy_2 * znear, -tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(tanFovy_2 * znear, tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar);
 
-	_vertices.push_back(Vector3(-tanFovy_2 * znear, -tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(-tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(-tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(-tanFovy_2 * znear, tanFovy_2 * znear, -znear));
+	_vertices.emplace_back(-tanFovy_2 * znear, -tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(-tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(-tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(-tanFovy_2 * znear, tanFovy_2 * znear, -znear);
 
-	_vertices.push_back(Vector3(-tanFovy_2 * znear, tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(tanFovy_2 * znear, tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(tanFovy_2 * znear, -tanFovy_2 * znear, -znear));
-	_vertices.push_back(Vector3(-tanFovy_2 * znear, -tanFovy_2 * znear, -znear));
+	_vertices.emplace_back(-tanFovy_2 * znear, tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(tanFovy_2 * znear, tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(tanFovy_2 * znear, -tanFovy_2 * znear, -znear);
+	_vertices.emplace_back(-tanFovy_2 * znear, -tanFovy_2 * znear, -znear);
 
-	_vertices.push_back(Vector3(tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(-tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(-tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar));
-	_vertices.push_back(Vector3(tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar));
+	_vertices.emplace_back(tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(-tanFovy_2 * zfar, tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(-tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar);
+	_vertices.emplace_back(tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar);
 
 	this->computeBoundingBox();
 }
@@ -1155,11 +1203,11 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 {
 	this->clear();
 
-	_vertices.push_back(Vector3(0, 0, 0));
-	_vertices.push_back(Vector3(0, 0, -height));
+	_vertices.emplace_back(0, 0, 0);
+	_vertices.emplace_back(0, 0, -height);
 
-	_texcoords.push_back(Vector2(0, 0));
-	_texcoords.push_back(Vector2(1, 1));
+	_texcoords.emplace_back(0, 0);
+	_texcoords.emplace_back(1, 1);
 
 	float segment = thetaLength / segments;
 
@@ -1177,7 +1225,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 
 		_vertices.push_back(v);
 
-		_texcoords.push_back(Vector2((v.x / radius + 1), (v.y / radius + 1) / 2));
+		_texcoords.emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
 	}
 
 	for (std::uint32_t i = 2; i <= segments + 1; i++)
@@ -1221,6 +1269,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 	bool hasNormal = false;
 	bool hasTexcoord = false;
 	bool hasFace = false;
+	bool hasWeight = false;
 
 	for (std::size_t i = 0; i < numInstance; i++)
 	{
@@ -1234,6 +1283,9 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			hasNormal |= !mesh->getNormalArray().empty();
 			hasTexcoord |= !mesh->getTexcoordArray().empty();
 			hasFace |= !mesh->getFaceArray().empty();
+			hasWeight |= !mesh->getWeightArray().empty();
+
+			if (!merge) break;
 		}
 	}
 
@@ -1246,78 +1298,130 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 	if (hasTexcoord)
 		this->_texcoords.resize(maxVertices);
 
+	if (hasWeight)
+		this->_weights.resize(maxVertices);
+
 	if (hasFace)
 		this->_faces.resize(maxIndices);
 
 	for (std::size_t i = 0; i < numInstance; i++)
 	{
 		auto mesh = instances[i].getMesh();
-		if (mesh)
+		if (!mesh)
+			continue;
+
+		std::size_t numVertex = mesh->getNumVertices();
+		std::size_t numIndex = mesh->getNumIndices();
+
+		std::vector<float3>* vertices_;
+		std::vector<float3>* normals_;
+		std::vector<float4>* colors_;
+		std::vector<float2>* texcoords_;
+		std::vector<VertexWeight>* weights_;
+		std::vector<float4x4>* bindposes_;
+		
+		UintArray* faces_;
+
+		if (!merge && i != 0)
 		{
-			std::size_t numVertex = mesh->getNumVertices();
-			std::size_t numIndex = mesh->getNumIndices();
+			auto child = std::make_shared<MeshProperty>();
+			child->getVertexArray().resize(mesh->getVertexArray().size());
+			child->getNormalArray().resize(mesh->getNormalArray().size());
+			child->getColorArray().resize(mesh->getColorArray().size());
+			child->getTexcoordArray().resize(mesh->getTexcoordArray().size());
+			child->getWeightArray().resize(mesh->getWeightArray().size());
+			child->getFaceArray().resize(mesh->getFaceArray().size());
+			child->getBindposes().resize(mesh->getBindposes().size());
 
-			auto transform = instances[i].getTransform();
+			this->addChild(child);
 
-			if (numVertex)
+			vertices_= &child->_vertices;
+			normals_ = &child->_normals;
+			colors_ = &child->_colors;
+			texcoords_ = &child->_texcoords;
+			weights_ = &child->_weights;
+			bindposes_ = &child->_bindposes;
+			faces_ = &child->_faces;
+		}
+		else
+		{
+			vertices_= &this->_vertices;
+			normals_ = &this->_normals;
+			colors_ = &this->_colors;
+			texcoords_ = &this->_texcoords;
+			weights_ = &this->_weights;
+			bindposes_ = &this->_bindposes;
+			faces_ = &this->_faces;
+		}
+
+		if (numVertex)
+		{
+			const auto& vertices = mesh->getVertexArray();
+			if (!vertices.empty())
+				std::memcpy((*vertices_).data() + offsetVertices, vertices.data(), numVertex * sizeof(Vector3));
+
+			const auto& normals = mesh->getNormalArray();
+			if (!normals.empty())
+				std::memcpy((*normals_).data() + offsetVertices, normals.data(), numVertex * sizeof(Vector3));
+
+			const auto& colors = mesh->getColorArray();
+			if (!colors.empty())
+				std::memcpy((*colors_).data() + offsetVertices, colors.data(), numVertex * sizeof(Vector3));
+
+			const auto& texcoords = mesh->getTexcoordArray();
+			if (!texcoords.empty())
+				std::memcpy((*texcoords_).data() + offsetVertices, texcoords.data(), numVertex * sizeof(Vector2));
+
+			const auto& weights = mesh->getWeightArray();
+			if (!weights.empty())
+				std::memcpy((*weights_).data() + offsetVertices, weights.data(), numVertex * sizeof(VertexWeight));
+			
+			const auto& bindposes = mesh->getBindposes();
+			for (auto& bindpose : bindposes)
+				bindposes_->push_back(bindpose);
+
+			const auto& transform = instances[i].getTransform();
+			if (!transform.isIdentity())
 			{
-				if (transform.isIdentity())
-				{
-					auto& vertices = mesh->getVertexArray();
-					if (!vertices.empty())
-						std::memcpy(_vertices.data() + offsetVertices, vertices.data(), numVertex * sizeof(Vector3));
-
-					auto& normals = mesh->getNormalArray();
-					if (!normals.empty())
-						std::memcpy(_normals.data() + offsetVertices, normals.data(), numVertex * sizeof(Vector3));
-				}
-				else if (transform.isOnlyTranslate())
+				if (transform.isOnlyTranslate())
 				{
 					auto translate = transform.getTranslate();
 
-					auto& vertices = mesh->getVertexArray();
-					for (std::size_t j = 0; j < vertices.size(); j++)
-						_vertices[j + offsetIndices] = (vertices[j] + translate);
-
-					auto& normals = mesh->getNormalArray();
-					if (!normals.empty())
-						std::memcpy(_normals.data() + offsetVertices, normals.data(), numVertex * sizeof(Vector3));
+					for (std::size_t j = offsetIndices; j < vertices.size(); j++)
+						(*vertices_)[j] += translate;
 				}
 				else
 				{
-					auto transformInverse = transform;
-					transformInverse = math::inverse(transformInverse);
-
+					auto transformInverse = math::transformInverse(transform);
 					auto transformInverseTranspose = math::transpose(transformInverse);
 
-					for (auto& v : mesh->getVertexArray())
-						_vertices.push_back(transform * v);
+					for (std::size_t j = offsetIndices; j < vertices.size(); j++)
+						(*vertices_)[j] *= transform;
 
-					for (auto& n : mesh->getNormalArray())
-						_normals.push_back(transformInverseTranspose * n);
+					for (std::size_t j = offsetIndices; j < vertices.size(); j++)
+						(*normals_)[j] *= transformInverseTranspose;
 				}
-
-				auto& colors = mesh->getColorArray();
-				if (!colors.empty())
-					std::memcpy(_colors[0].data() + offsetVertices, colors.data(), numVertex * sizeof(Vector3));
-
-				auto& texcoords = mesh->getTexcoordArray();
-				if (!texcoords.empty())
-					std::memcpy(_texcoords[0].data() + offsetVertices, texcoords.data(), numVertex * sizeof(Vector2));
-
-				auto& weights = mesh->getWeightArray();
-				if (!weights.empty())
-					std::memcpy(_weights.data() + offsetVertices, weights.data(), numVertex * sizeof(Vector3));
 			}
+		}
 
-			if (numIndex)
+		if (numIndex)
+		{
+			auto faces = mesh->getFaceArray();
+			std::size_t size = faces.size();
+
+			if (offsetIndices == 0)
 			{
-				auto faces = mesh->getFaceArray();
-				std::size_t size = faces.size();
-				for (std::size_t i = 0; i < size; i++)
-					_faces[i + offsetIndices] = (faces[i] + offsetIndices);
+				(*faces_) = faces;
 			}
+			else
+			{
+				for (std::size_t i = 0; i < size; i++)
+					(*faces_)[i + offsetIndices] = (faces[i] + offsetIndices);
+			}
+		}
 
+		if (merge)
+		{
 			offsetVertices += numVertex;
 			offsetIndices += numIndex;
 		}
@@ -1444,7 +1548,7 @@ MeshProperty::computeVertexNormals() noexcept
 			Vector3 edge1 = vb - va;
 			Vector3 edge2 = vc - va;
 
-			Vector3 n = math::normalize(math::cross(edge1, edge2));
+			Vector3 n(math::normalize(math::cross(edge1, edge2)));
 
 			normal[f1] += n;
 			normal[f2] += n;
@@ -1520,9 +1624,7 @@ MeshProperty::computeVertexNormals(std::size_t width, std::size_t height) noexce
 				average++;
 			}
 
-			Vector3 cur_normal = math::normalize((lu + ru + ld + rd) / (float)average);
-
-			_normals.push_back(cur_normal);
+			_normals.push_back(math::normalize((lu + ru + ld + rd) / (float)average));
 		}
 	}
 }
@@ -1609,22 +1711,6 @@ MeshProperty::computeBoundingBox() noexcept
 
 		_boundingBoxChildren.encapsulate(it->getBoundingBox());
 	}
-}
-
-void 
-MeshProperty::computeBoundingBoxSkeleton() noexcept
-{
-	AABB aabb;
-
-	if (!_bones.empty())
-	{
-		for (auto& bone : _bones)
-		{
-			aabb.encapsulate(bone.getTransform().getTranslate());
-		}
-	}
-
-	_boundingBox.set(aabb);
 }
 
 _NAME_END

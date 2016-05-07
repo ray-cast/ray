@@ -51,12 +51,21 @@ DefaultRenderDataManager::~DefaultRenderDataManager() noexcept
 }
 
 void
-DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept
+DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderObjectPtr& object) noexcept
 {
 	assert(object);
 	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
 
 	_renderQueue[queue].push_back(object);
+}
+
+void
+DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderObjectPtr&& object) noexcept
+{
+	assert(object);
+	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
+
+	_renderQueue[queue].push_back(std::move(object));
 }
 
 RenderObjects&
@@ -124,6 +133,7 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 		cameraOrder == CameraOrder::CameraOrderShadow)
 	{
 		auto scene = camera->getRenderScene();
+		assert(scene);
 		scene->computVisiable(camera->getViewProject(), _visiable);
 
 		for (auto& it : _visiable.iter())

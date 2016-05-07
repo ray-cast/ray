@@ -85,6 +85,7 @@ Rtti::isDerivedFrom(const Rtti* other) const
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -99,6 +100,7 @@ Rtti::isDerivedFrom(const Rtti& other) const
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -113,6 +115,7 @@ Rtti::isDerivedFrom(const std::string& name) const
 			return true;
 		}
 	}
+
 	return false;
 }
 

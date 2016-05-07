@@ -41,29 +41,58 @@
 
 _NAME_BEGIN
 
-class JointBall final : public Joint
+class PhysicsJointBall final : public PhysicsJoint
 {
 public:
-	JointBall() noexcept;
-	virtual ~JointBall() noexcept;
+	PhysicsJointBall() noexcept;
+	virtual ~PhysicsJointBall() noexcept;
 
-	void setLinearLowerLimit(const Vector3& limit) noexcept;
-	void setLinearHighLimit(const Vector3& limit) noexcept;
-	void setAngularLowerLimit(const Vector3& limit) noexcept;
-	void setAngularHighLimit(const Vector3& limit) noexcept;
+	void setup() noexcept;
+	void close() noexcept;
 
-	const Vector3& getLinearLowerLimit() const noexcept;
-	const Vector3& getLinearHighLimit() const noexcept;
-	const Vector3& getAngularLowerLimit() const noexcept;
-	const Vector3& getAngularHighLimit() const noexcept;
+	void setLinearLowerLimit(const float3& limit) noexcept;
+	void setLinearHighLimit(const float3& limit) noexcept;
 
-protected:
+	void setAngularLowerLimit(const float3& limit) noexcept;
+	void setAngularHighLimit(const float3& limit) noexcept;
 
-	Vector3 _lowLimit;
-	Vector3 _highLimit;
+	void setMovementConstant(const float3& constant) noexcept;
+	void setRotationConstant(const float3& constant) noexcept;
 
-	Vector3 _angularLowLimit;
-	Vector3 _angularHighLimit;
+	const float3& getLinearLowerLimit() const noexcept;
+	const float3& getLinearHighLimit() const noexcept;
+
+	const float3& getAngularLowerLimit() const noexcept;
+	const float3& getAngularHighLimit() const noexcept;
+
+	void setTransform(const float3& translate, const Quaternion& rotation) noexcept;
+	void getTransform(float3& translate, Quaternion& rotation) noexcept;
+
+	void setPhysicsScene(PhysicsScenePtr scene) noexcept;
+
+private:
+	PhysicsJointBall(const PhysicsJointBall&) = delete;
+	PhysicsJointBall& operator=(const PhysicsJointBall&) = delete;
+
+private:
+	btRigidBody* _bodyA;
+	btRigidBody* _bodyB;
+
+	float3 _translate;
+	Quaternion _quaternion;
+
+	float3 _lowLimit;
+	float3 _highLimit;
+
+	float3 _angularLowLimit;
+	float3 _angularHighLimit;
+
+	float3 _movementConstant;
+	float3 _rotationConstant;
+
+	std::unique_ptr<btGeneric6DofSpringConstraint> _joint;
+
+	PhysicsSceneWeakPtr _scene;
 };
 
 _NAME_END

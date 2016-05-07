@@ -57,7 +57,7 @@ public:
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	bool addRenderScene(RenderScenePtr scene) noexcept;
+	RenderScenePtr createRenderScene() noexcept;
 	void removeRenderScene(RenderScenePtr scene) noexcept;
 
 	void setViewport(const Viewport& view) noexcept;

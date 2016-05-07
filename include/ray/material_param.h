@@ -59,15 +59,18 @@ class EXPORT MaterialParam final
 public:
 	MaterialParam() noexcept;
 	MaterialParam(const std::string& name, GraphicsUniformType type) noexcept;
+	MaterialParam(std::string&& name, GraphicsUniformType type) noexcept;
 	virtual ~MaterialParam() noexcept;
 
 	void setName(const std::string& name) noexcept;
+	void setName(std::string&& name) noexcept;
 	const std::string& getName() const noexcept;
 
 	void setType(GraphicsUniformType type) noexcept;
 	GraphicsUniformType getType() const noexcept;
 
-	void setSemantic(MaterialParamPtr semantic) noexcept;
+	void setSemantic(MaterialParamPtr& semantic) noexcept;
+	void setSemantic(MaterialParamPtr&& semantic) noexcept;
 	MaterialParamPtr getSemantic() const noexcept;
 
 	void uniform1b(bool value) noexcept;
@@ -98,36 +101,51 @@ public:
 	void uniform3fmat(const float3x3& value) noexcept;
 	void uniform4fmat(const float* mat4) noexcept;
 	void uniform4fmat(const float4x4& value) noexcept;
-	void uniform1iv(const std::vector<int1>& value) noexcept;
 	void uniform1iv(std::size_t num, const std::int32_t* str) noexcept;
-	void uniform2iv(const std::vector<int2>& value) noexcept;
 	void uniform2iv(std::size_t num, const std::int32_t* str) noexcept;
-	void uniform3iv(const std::vector<int3>& value) noexcept;
 	void uniform3iv(std::size_t num, const std::int32_t* str) noexcept;
-	void uniform4iv(const std::vector<int4>& value) noexcept;
 	void uniform4iv(std::size_t num, const std::int32_t* str) noexcept;
-	void uniform1uiv(const std::vector<uint1>& value) noexcept;
 	void uniform1uiv(std::size_t num, const std::uint32_t* str) noexcept;
-	void uniform2uiv(const std::vector<uint2>& value) noexcept;
 	void uniform2uiv(std::size_t num, const std::uint32_t* str) noexcept;
-	void uniform3uiv(const std::vector<uint3>& value) noexcept;
 	void uniform3uiv(std::size_t num, const std::uint32_t* str) noexcept;
-	void uniform4uiv(const std::vector<uint4>& value) noexcept;
 	void uniform4uiv(std::size_t num, const std::uint32_t* str) noexcept;
-	void uniform1fv(const std::vector<float1>& value) noexcept;
 	void uniform1fv(std::size_t num, const float* str) noexcept;
-	void uniform2fv(const std::vector<float2>& value) noexcept;
 	void uniform2fv(std::size_t num, const float* str) noexcept;
-	void uniform3fv(const std::vector<float3>& value) noexcept;
 	void uniform3fv(std::size_t num, const float* str) noexcept;
-	void uniform4fv(const std::vector<float4>& value) noexcept;
 	void uniform4fv(std::size_t num, const float* str) noexcept;
-	void uniform2fmatv(const std::vector<float2x2>& value) noexcept;
 	void uniform2fmatv(std::size_t num, const float* mat2) noexcept;
-	void uniform3fmatv(const std::vector<float3x3>& value) noexcept;
 	void uniform3fmatv(std::size_t num, const float* mat3) noexcept;
-	void uniform4fmatv(const std::vector<float4x4>& value) noexcept;
 	void uniform4fmatv(std::size_t num, const float* mat4) noexcept;
+	void uniform1iv(const std::vector<int1>& value) noexcept;
+	void uniform2iv(const std::vector<int2>& value) noexcept;
+	void uniform3iv(const std::vector<int3>& value) noexcept;
+	void uniform4iv(const std::vector<int4>& value) noexcept;
+	void uniform1uiv(const std::vector<uint1>& value) noexcept;
+	void uniform2uiv(const std::vector<uint2>& value) noexcept;
+	void uniform3uiv(const std::vector<uint3>& value) noexcept;
+	void uniform4uiv(const std::vector<uint4>& value) noexcept;
+	void uniform1fv(const std::vector<float1>& value) noexcept;
+	void uniform2fv(const std::vector<float2>& value) noexcept;
+	void uniform3fv(const std::vector<float3>& value) noexcept;
+	void uniform4fv(const std::vector<float4>& value) noexcept;
+	void uniform2fmatv(const std::vector<float2x2>& value) noexcept;
+	void uniform3fmatv(const std::vector<float3x3>& value) noexcept;
+	void uniform4fmatv(const std::vector<float4x4>& value) noexcept;
+	void uniform1iv(std::vector<int1>&& value) noexcept;
+	void uniform2iv(std::vector<int2>&& value) noexcept;
+	void uniform3iv(std::vector<int3>&& value) noexcept;
+	void uniform4iv(std::vector<int4>&& value) noexcept;
+	void uniform1uiv(std::vector<uint1>&& value) noexcept;
+	void uniform2uiv(std::vector<uint2>&& value) noexcept;
+	void uniform3uiv(std::vector<uint3>&& value) noexcept;
+	void uniform4uiv(std::vector<uint4>&& value) noexcept;
+	void uniform1fv(std::vector<float1>&& value) noexcept;
+	void uniform2fv(std::vector<float2>&& value) noexcept;
+	void uniform3fv(std::vector<float3>&& value) noexcept;
+	void uniform4fv(std::vector<float4>&& value) noexcept;
+	void uniform2fmatv(std::vector<float2x2>&& value) noexcept;
+	void uniform3fmatv(std::vector<float3x3>&& value) noexcept;
+	void uniform4fmatv(std::vector<float4x4>&& value) noexcept;
 	void uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 	void uniformBuffer(GraphicsDataPtr ubo) noexcept;
 

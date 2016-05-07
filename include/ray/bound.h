@@ -45,6 +45,8 @@ template<typename T>
 class Boundt
 {
 public:
+	static const Boundt<T> Empty;
+
 	Boundt() noexcept
 	{
 		this->reset();
@@ -170,6 +172,8 @@ private:
 
 	Spheret<T> _sp;
 };
+
+template<typename T> const Boundt<T> Boundt<T>::Empty;
 
 _NAME_END
 

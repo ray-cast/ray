@@ -59,6 +59,10 @@ public:
 	typedef std::shared_ptr<ModelHandler> _Myhandler;
 
 	typedef std::vector<MeshPropertyPtr>      MeshList;
+	typedef std::vector<BonePtr>              BoneList;
+	typedef std::vector<IKAttrPtr>            IKList;
+	typedef std::vector<RigidbodyPropertyPtr> RigidbodyList;
+	typedef std::vector<JointPropertyPtr>     JointList;
 	typedef std::vector<MaterialPropertyPtr>  MaterialList;
 	typedef std::vector<TexturePropertyPtr>   TextureList;
 	typedef std::vector<AnimationPropertyPtr> AnimList;
@@ -69,32 +73,57 @@ public:
 	Model() noexcept;
 	~Model() noexcept;
 
-	void addMesh(MeshPropertyPtr mesh)          noexcept;
-	void addTexture(TexturePropertyPtr texture) noexcept;
-	void addMaterial(MaterialPropertyPtr mat)   noexcept;
-	void addAnimtion(AnimationPropertyPtr anim) noexcept;
-	void addLight(LightPropertyPtr light)       noexcept;
-	void addCamera(CameraPropertyPtr camera)    noexcept;
+	void addMesh(MeshPropertyPtr& mesh)           noexcept;
+	void addBone(BonePtr& bone)					  noexcept;
+	void addIK(IKAttrPtr& ik)                     noexcept;
+	void addRigidbody(RigidbodyPropertyPtr& body) noexcept;
+	void addJoint(JointPropertyPtr& joint)        noexcept;
+	void addTexture(TexturePropertyPtr& texture)  noexcept;
+	void addMaterial(MaterialPropertyPtr& mat)    noexcept;
+	void addAnimtion(AnimationPropertyPtr& anim)  noexcept;
+	void addLight(LightPropertyPtr& light)        noexcept;
+	void addCamera(CameraPropertyPtr& camera)     noexcept;
 
-	MeshList&     getMeshsList()     noexcept;
-	TextureList&  getTexturesList()  noexcept;
-	MaterialList& getMaterialsList() noexcept;
-	AnimList&     getAnimationList() noexcept;
-	LightList&    getLightList()     noexcept;
-	CameraList&   getCameraList()    noexcept;
+	void addMesh(MeshPropertyPtr&& mesh)           noexcept;
+	void addBone(BonePtr&& bone)				   noexcept;
+	void addIK(IKAttrPtr&& ik)                     noexcept;
+	void addRigidbody(RigidbodyPropertyPtr&& body) noexcept;
+	void addJoint(JointPropertyPtr&& joint)        noexcept;
+	void addTexture(TexturePropertyPtr&& texture)  noexcept;
+	void addMaterial(MaterialPropertyPtr&& mat)    noexcept;
+	void addAnimtion(AnimationPropertyPtr&& anim)  noexcept;
+	void addLight(LightPropertyPtr&& light)        noexcept;
+	void addCamera(CameraPropertyPtr&& camera)     noexcept;
+
+	MeshList&      getMeshsList()     noexcept;
+	BoneList&      getBonesList()     noexcept;
+	IKList&        getIKList()        noexcept;
+	RigidbodyList& getRigidbodyList() noexcept;
+	JointList&     getJointList()     noexcept;
+	TextureList&   getTexturesList()  noexcept;
+	MaterialList&  getMaterialsList() noexcept;
+	AnimList&      getAnimationList() noexcept;
+	LightList&     getLightList()     noexcept;
+	CameraList&    getCameraList()    noexcept;
 
 	void setDirectory(const std::string& name) noexcept;
 	const std::string&  getDirectory() const noexcept;
 
-	const std::string&  getName()          const noexcept;
-	const MeshList&     getMeshsList()     const noexcept;
-	const TextureList&  getTexturesList()  const noexcept;
-	const MaterialList& getMaterialsList() const noexcept;
-	const AnimList&     getAnimationList() const noexcept;
-	const LightList&    getLightList()     const noexcept;
-	const CameraList&   getCameraList()    const noexcept;
+	const std::string&   getName()          const noexcept;
+	const MeshList&      getMeshsList()     const noexcept;
+	const BoneList&      getBonesList()     const noexcept;
+	const IKList&        getIKList()        const noexcept;
+	const RigidbodyList& getRigidbodyList() const noexcept;
+	const JointList&     getJointList()     const noexcept;
+	const TextureList&   getTexturesList()  const noexcept;
+	const MaterialList&  getMaterialsList() const noexcept;
+	const AnimList&      getAnimationList() const noexcept;
+	const LightList&     getLightList()     const noexcept;
+	const CameraList&    getCameraList()    const noexcept;
 
 	bool hasMeshes()     const noexcept;
+	bool hasBones()      const noexcept;
+	bool hasIKs()        const noexcept;
 	bool hasMaterials()  const noexcept;
 	bool hasLights()     const noexcept;
 	bool hasTextures()   const noexcept;
@@ -126,6 +155,14 @@ private:
 	std::string _directory;
 
 	MeshList _meshes;
+
+	BoneList _bones;
+
+	IKList _iks;
+
+	RigidbodyList _rigidbodys;
+
+	JointList _joints;
 
 	TextureList _textures;
 

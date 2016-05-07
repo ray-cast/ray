@@ -92,8 +92,32 @@ MaterialManager::createSemantic(const std::string& name, GraphicsUniformType typ
 	return nullptr;
 }
 
+MaterialParamPtr
+MaterialManager::getSemantic(const std::string& name) noexcept
+{
+	if (!name.empty())
+	{
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr it) { return it->getName() == name;});
+		if (it != _semantics.end())
+			return *it;
+	}
+
+	return nullptr;
+}
+
 void
-MaterialManager::destroySemantic(MaterialParamPtr semantc) noexcept
+MaterialManager::destroySemantic(MaterialParamPtr& semantc) noexcept
+{
+	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
+	{
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr& it) { return it->getName() == semantc->getName();});
+		if (it == _semantics.end())
+			_semantics.push_back(semantc);
+	}
+}
+
+void
+MaterialManager::destroySemantic(MaterialParamPtr&& semantc) noexcept
 {
 	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
 	{
@@ -343,19 +367,6 @@ MaterialManager::getInputLayout(const std::string& name) noexcept
 	return _inputLayouts[name];
 }
 
-MaterialParamPtr
-MaterialManager::getSemantic(const std::string& name) noexcept
-{
-	if (!name.empty())
-	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr it) { return it->getName() == name;});
-		if (it != _semantics.end())
-			return *it;
-	}
-
-	return nullptr;
-}
-
 MaterialPtr
 MaterialManager::createMaterial(const std::string& name) noexcept
 {
@@ -384,7 +395,15 @@ MaterialManager::getMaterial(const std::string& name) noexcept
 }
 
 void
-MaterialManager::destroyMaterial(MaterialPtr material) noexcept
+MaterialManager::destroyMaterial(MaterialPtr& material) noexcept
+{
+	auto it = std::find_if(_materials.begin(), _materials.end(), [material](const std::pair<std::string, MaterialPtr>& pair) { return pair.second == material; });
+	if (it != _materials.end())
+		_materials.erase(it);
+}
+
+void
+MaterialManager::destroyMaterial(MaterialPtr&& material) noexcept
 {
 	auto it = std::find_if(_materials.begin(), _materials.end(), [material](const std::pair<std::string, MaterialPtr>& pair) { return pair.second == material; });
 	if (it != _materials.end())

@@ -22,6 +22,8 @@ SET(PHYSICS_SYSTEM_LIST
     ${HEADER_PATH}/physics_rigidbody.h
     ${SOURCE_PATH}/physics_shape.cpp
     ${HEADER_PATH}/physics_shape.h
+    ${SOURCE_PATH}/physics_shape_sphere.cpp
+    ${HEADER_PATH}/physics_shape_sphere.h
     ${SOURCE_PATH}/physics_shape_box.cpp
     ${HEADER_PATH}/physics_shape_box.h
     ${SOURCE_PATH}/physics_shape_capsule.cpp

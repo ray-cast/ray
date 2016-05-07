@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -45,20 +45,6 @@ class EXPORT GameScene final : public rtti::Interface
 {
 	__DeclareSubClass(GameScene, rtti::Interface)
 public:
-	struct Setting
-	{
-		float length;
-		float mass;
-		float speed;
-		float skinWidth;
-		Vector3 gravity;
-
-		AABB aabb;
-
-		Setting() noexcept;
-	};
-
-public:
 	GameScene() noexcept;
 	GameScene(const std::string& name) noexcept;
 	~GameScene() noexcept;
@@ -69,15 +55,9 @@ public:
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setEnvironment(const Setting& setting) noexcept;
-	const Setting& getEnvironment() const noexcept;
-
 	std::uint32_t getInstanceID() const noexcept;
 
 	GameObjectPtr getRootObject() noexcept;
-
-	void setGameServer(GameServerPtr server) noexcept;
-	GameServerPtr getGameServer() noexcept;
 
 	void sendMessage(const MessagePtr& message) except;
 
@@ -89,29 +69,22 @@ public:
 	GameObjectPtr instanceObject(iarchive& reader, GameObjectPtr parent) except;
 
 private:
-
 	class RootObject : public GameObject
 	{
 	public:
 		RootObject(GameScene* scene) noexcept;
 		virtual ~RootObject() noexcept;
 
-		virtual GameServerPtr getGameServer() noexcept;
 		virtual GameScenePtr getGameScene() noexcept;
 
 	private:
-
 		GameScene* _scene;
 	};
 
 	std::string _name;
-
-	Setting _setting;
-	GameObjectPtr  _root;
-	GameServerWeakPtr _gameServer;
-
 	std::uint32_t _instanceID;
-	static std::uint32_t _instanceCount;
+
+	GameObjectPtr  _root;
 };
 
 _NAME_END

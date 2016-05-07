@@ -59,63 +59,78 @@ ray::util::string _gameScenePath;
 
 void onWindowResize(GLFWwindow* glfwWindow, int w, int h)
 {
-	ray::InputEvent inputEvent;
-	inputEvent.event = ray::InputEvent::SizeChange;
-	inputEvent.change.w = w;
-	inputEvent.change.h = h;
-	inputEvent.change.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
-	inputEvent.change.timestamp = ::glfwGetTimerFrequency();
-	_gameApp->sendInputEvent(inputEvent);
+	if (_gameApp)
+	{
+		ray::InputEvent inputEvent;
+		inputEvent.event = ray::InputEvent::SizeChange;
+		inputEvent.change.w = w;
+		inputEvent.change.h = h;
+		inputEvent.change.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+		inputEvent.change.timestamp = ::glfwGetTimerFrequency();
+		_gameApp->sendInputEvent(inputEvent);
+	}
 }
 
 void onWindowClose(GLFWwindow* glfwWindow)
 {
-	ray::InputEvent inputEvent;
-	inputEvent.event = ray::InputEvent::AppQuit;
-	_gameApp->sendInputEvent(inputEvent);
+	if (_gameApp)
+	{
+		ray::InputEvent inputEvent;
+		inputEvent.event = ray::InputEvent::AppQuit;
+		_gameApp->sendInputEvent(inputEvent);
+	}
 }
 
 void onWindowFocus(GLFWwindow* window, int focus)
 {
-	if (focus)
+	if (_gameApp)
 	{
-		ray::InputEvent inputEvent;
-		inputEvent.event = ray::InputEvent::GetFocus;
-		_gameApp->sendInputEvent(inputEvent);
-	}
-	else
-	{
-		ray::InputEvent inputEvent;
-		inputEvent.event = ray::InputEvent::LostFocus;
-		_gameApp->sendInputEvent(inputEvent);
+		if (focus)
+		{
+			ray::InputEvent inputEvent;
+			inputEvent.event = ray::InputEvent::GetFocus;
+			_gameApp->sendInputEvent(inputEvent);
+		}
+		else
+		{
+			ray::InputEvent inputEvent;
+			inputEvent.event = ray::InputEvent::LostFocus;
+			_gameApp->sendInputEvent(inputEvent);
+		}
 	}
 }
 
 void onWindowMouseButton(GLFWwindow* window, int button, int state, int)
 {
-	double mouseX, mouseY;
-	::glfwGetCursorPos(window, &mouseX, &mouseY);
+	if (_gameApp)
+	{
+		double mouseX, mouseY;
+		::glfwGetCursorPos(window, &mouseX, &mouseY);
 
-	ray::InputEvent event;
-	event.event = state == GLFW_PRESS ? ray::InputEvent::MouseButtonDown : ray::InputEvent::MouseButtonUp;
-	event.button.button = ray::InputButton::MOUSE0 + button;
-	event.button.clicks = true;
-	event.button.x = mouseX;
-	event.button.y = mouseY;
-	event.button.timestamp = glfwGetTimerFrequency();
+		ray::InputEvent event;
+		event.event = state == GLFW_PRESS ? ray::InputEvent::MouseButtonDown : ray::InputEvent::MouseButtonUp;
+		event.button.button = ray::InputButton::MOUSE0 + button;
+		event.button.clicks = true;
+		event.button.x = mouseX;
+		event.button.y = mouseY;
+		event.button.timestamp = glfwGetTimerFrequency();
 
-	_gameApp->sendInputEvent(event);
+		_gameApp->sendInputEvent(event);
+	}
 }
 
 void onWindowMouseMotion(GLFWwindow* window, double x, double y)
 {
-	ray::InputEvent event;
-	event.event = ray::InputEvent::MouseMotion;
-	event.motion.x = event.motion.xrel = x;
-	event.motion.x = event.motion.yrel = y;
-	event.motion.timestamp = glfwGetTimerFrequency();
+	if (_gameApp)
+	{
+		ray::InputEvent event;
+		event.event = ray::InputEvent::MouseMotion;
+		event.motion.x = event.motion.xrel = x;
+		event.motion.x = event.motion.yrel = y;
+		event.motion.timestamp = glfwGetTimerFrequency();
 
-	_gameApp->sendInputEvent(event);
+		_gameApp->sendInputEvent(event);
+	}
 }
 
 void RAY_CALL rayInit(const char* gamedir, const char* scenename) noexcept
@@ -128,12 +143,6 @@ void RAY_CALL rayInit(const char* gamedir, const char* scenename) noexcept
 
 	if (scenename)
 		_gameScenePath = scenename;
-}
-
-void RAY_CALL rayTerminate() noexcept
-{
-	rayCloseWindow();
-	::glfwTerminate();
 }
 
 bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
@@ -195,8 +204,12 @@ void RAY_CALL rayCloseWindow() noexcept
 
 bool RAY_CALL rayIsQuitRequest() noexcept
 {
+	if (!_gameApp)
+		return true;
+
 	if (::glfwWindowShouldClose(_window) || _gameApp->isQuitRequest())
 		return true;
+
 	return false;
 }
 
@@ -204,6 +217,11 @@ void RAY_CALL rayUpdate() noexcept
 {
 	if (_gameApp)
 		_gameApp->update();
+}
+
+void RAY_CALL rayTerminate() noexcept
+{
+	rayCloseWindow();
 }
 
 int main(int argc, const char* argv[]) noexcept

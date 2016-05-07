@@ -64,7 +64,7 @@ public:
 	bool wasJumping() const noexcept;
 	void jump(float speed) noexcept;
 
-	void setPhysicsScene(PhysicsScene* system) noexcept;
+	void setPhysicsScene(PhysicsScenePtr scene) noexcept;
 
 private:
 
@@ -76,10 +76,10 @@ private:
 	float _height;
 	float _stepHeight;
 
-	btConvexShape* _capsule;
-	btPairCachingGhostObject* _ghostObject;
-	CharacterController* _character;
-	PhysicsScene* _scene;
+	std::unique_ptr<btConvexShape> _capsule;
+	std::unique_ptr<btPairCachingGhostObject> _ghostObject;
+	std::unique_ptr<CharacterController> _character;
+	PhysicsSceneWeakPtr _scene;
 };
 
 _NAME_END

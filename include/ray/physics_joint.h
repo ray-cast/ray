@@ -34,29 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_JOINT_H_
-#define _H_JOINT_H_
+#ifndef _H_PHYSICS_JOINT_H_
+#define _H_PHYSICS_JOINT_H_
 
 #include <ray/physics_rigidbody.h>
 
 _NAME_BEGIN
 
-class EXPORT Joint
+class EXPORT PhysicsJoint
 {
 public:
-	enum JointType
-	{
-		Ball,
-		Fixed,
-		Hinge,
-		Spring,
-		Universal,
-	};
-public:
-	Joint(JointType type) noexcept;
-	virtual ~Joint() noexcept;
-
-	JointType getType() const noexcept;
+	PhysicsJoint() noexcept;
+	virtual ~PhysicsJoint() noexcept;
 
 	void setRigidbody(PhysicsRigidbody* body) noexcept;
 	void setBreakForce(float force) noexcept;
@@ -71,13 +60,10 @@ public:
 	const Vector3& getAnchor() const noexcept;
 
 private:
-	Joint(const Joint&) = delete;
-	Joint& operator=(const Joint&) = delete;
+	PhysicsJoint(const PhysicsJoint&) = delete;
+	PhysicsJoint& operator=(const PhysicsJoint&) = delete;
 
-private:
-
-	JointType _type;
-
+protected:
 	PhysicsRigidbody* _rigidbody;
 
 	float _breakForce;

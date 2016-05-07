@@ -44,6 +44,7 @@ _NAME_BEGIN
 
 class EXPORT GameServer final : public rtti::Interface
 {
+	__DeclareSingleton(GameServer)
 	__DeclareSubClass(GameServer, rtti::Interface)
 public:
 	GameServer() noexcept;
@@ -62,14 +63,16 @@ public:
 	TimerPtr getTimer() const noexcept;
 
 	bool openScene(const std::string& sceneName) noexcept;
-	bool addScene(GameScenePtr scene) noexcept;
+	bool addScene(GameScenePtr& scene) noexcept;
+	bool addScene(GameScenePtr&& scene) noexcept;
 	void closeScene(const std::string& sceneName) noexcept;
-	void removeScene(GameScenePtr scene) noexcept;
+	void removeScene(GameScenePtr& scene) noexcept;
+	void removeScene(GameScenePtr&& scene) noexcept;
 	GameScenePtr findScene(const std::string& sceneName) noexcept;
 	const GameScenes& getScenes() const noexcept;
 
-	bool addFeature(GameFeaturePtr features) noexcept;
-	void removeFeature(GameFeaturePtr features) noexcept;
+	bool addFeature(GameFeaturePtr& features) noexcept;
+	void removeFeature(GameFeaturePtr& features) noexcept;
 	GameFeaturePtr getFeature(const rtti::Rtti& rtti) const noexcept;
 	GameFeaturePtr getFeature(const rtti::Rtti* rtti) const noexcept;
 

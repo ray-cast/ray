@@ -45,6 +45,7 @@
 
 _NAME_BEGIN
 
+__ImplementSingleton(GameServer)
 __ImplementSubClass(GameServer, rtti::Interface, "GameServer")
 
 GameServer::GameServer() noexcept
@@ -104,7 +105,7 @@ GameServer::start() noexcept
 
 		return true;
 	}
-	catch (const ray::exception& e)
+	catch (const exception& e)
 	{
 		this->print(e.what());
 
@@ -160,14 +161,15 @@ GameServer::openScene(const std::string& filename) noexcept
 		if (xml.open(*stream))
 		{
 			auto scene = std::make_shared<GameScene>();
-			scene->setGameServer(this->downcast<GameServer>());
 			scene->load(xml);
+
+			this->addScene(scene);
 			return true;
 		}
 
 		return false;
 	}
-	catch (const ray::exception& e)
+	catch (const exception& e)
 	{
 		this->print(e.what());
 	}
@@ -209,7 +211,7 @@ GameServer::getScenes() const noexcept
 }
 
 bool
-GameServer::addScene(GameScenePtr scene) noexcept
+GameServer::addScene(GameScenePtr& scene) noexcept
 {
 	assert(std::find(_scenes.begin(), _scenes.end(), scene) == _scenes.end());
 
@@ -225,17 +227,21 @@ GameServer::addScene(GameScenePtr scene) noexcept
 
 		return true;
 	}
-	catch (const ray::exception& e)
+	catch (const exception& e)
 	{
 		this->print(e.what());
 		return false;
 	}
+}
 
-	return false;
+bool
+GameServer::addScene(GameScenePtr&& scene) noexcept
+{
+	return this->addScene(scene);
 }
 
 void
-GameServer::removeScene(GameScenePtr scene) noexcept
+GameServer::removeScene(GameScenePtr& scene) noexcept
 {
 	auto it = std::find(_scenes.begin(), _scenes.end(), scene);
 	if (it != _scenes.end())
@@ -251,8 +257,14 @@ GameServer::removeScene(GameScenePtr scene) noexcept
 	}
 }
 
+void
+GameServer::removeScene(GameScenePtr&& scene) noexcept
+{
+	this->removeScene(scene);
+}
+
 bool
-GameServer::addFeature(GameFeaturePtr features) noexcept
+GameServer::addFeature(GameFeaturePtr& features) noexcept
 {
 	assert(features);
 
@@ -271,7 +283,7 @@ GameServer::addFeature(GameFeaturePtr features) noexcept
 
 		return true;
 	}
-	catch (const ray::exception& e)
+	catch (const exception& e)
 	{
 		this->print(e.what());
 		return false;
@@ -279,7 +291,7 @@ GameServer::addFeature(GameFeaturePtr features) noexcept
 }
 
 void
-GameServer::removeFeature(GameFeaturePtr features) noexcept
+GameServer::removeFeature(GameFeaturePtr& features) noexcept
 {
 	assert(features);
 	auto it = std::find(_features.begin(), _features.end(), features);
@@ -354,7 +366,7 @@ GameServer::sendMessage(const MessagePtr& message) noexcept
 
 		return true;
 	}
-	catch (const ray::exception& e)
+	catch (const exception& e)
 	{
 		this->print(e.what());
 		return false;
@@ -400,7 +412,7 @@ GameServer::update() noexcept
 				it->onFrameEnd();
 		}
 	}
-	catch (const ray::exception& e)
+	catch (const exception& e)
 	{
 		this->print(e.what());
 

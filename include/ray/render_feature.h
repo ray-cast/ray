@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -54,8 +54,7 @@ public:
 	void setRenderSetting(const RenderSetting& setting) noexcept;
 	const RenderSetting& getRenderSetting() const noexcept;
 
-	RenderScenePtr getRenderScene(GameScene* scene) noexcept;
-	RenderScenePtr getRenderScene(GameScenePtr scene) noexcept;
+	RenderScenePtr getRenderScene() noexcept;
 
 	GameFeaturePtr clone() const noexcept;
 
@@ -63,12 +62,8 @@ private:
 	void onActivate() except;
 	void onDeactivate() noexcept;
 
-	void onOpenScene(GameScenePtr scene) except;
-	void onCloseScene(GameScenePtr scene) noexcept;
-
-	void onFrameBegin() except;
-	void onFrame() except;
-	void onFrameEnd() except;
+	void onFrameBegin() noexcept;
+	void onFrameEnd() noexcept;
 
 	void onMessage(const MessagePtr& message) except;
 
@@ -77,10 +72,8 @@ private:
 	RenderFeature& operator=(const RenderFeature&) = delete;
 
 private:
-	typedef std::map<std::uint32_t, RenderScenePtr> RenderScenes;
-
 	RenderSetting _renderSetting;
-	RenderScenes _renderScenes;
+	RenderScenePtr _renderScene;
 };
 
 _NAME_END

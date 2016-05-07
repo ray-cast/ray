@@ -35,68 +35,210 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/physics_joint_ball.h>
+#include <ray/physics_system.h>
+
+#include <btBulletDynamicsCommon.h>
 
 _NAME_BEGIN
 
-JointBall::JointBall() noexcept
-	: Joint(Joint::Ball)
-	, _lowLimit(Vector3::Zero)
-	, _highLimit(Vector3::Zero)
-	, _angularLowLimit(Vector3::Zero)
-	, _angularHighLimit(Vector3::Zero)
+PhysicsJointBall::PhysicsJointBall() noexcept
+	: _lowLimit(float3::Zero)
+	, _highLimit(float3::Zero)
+	, _angularLowLimit(float3::Zero)
+	, _angularHighLimit(float3::Zero)
+	, _movementConstant(float3::Zero)
+	, _rotationConstant(float3::Zero)
 {
 }
 
-JointBall::~JointBall() noexcept
+PhysicsJointBall::~PhysicsJointBall() noexcept
 {
+}
+
+void 
+PhysicsJointBall::setup() noexcept
+{
+	btTransform	 bttrTransform;
+
+	bttrTransform.setIdentity();
+	bttrTransform.setOrigin(btVector3(_translate.x, _translate.y, _translate.z));
+	bttrTransform.setRotation(btQuaternion(_quaternion.x, _quaternion.y, _quaternion.z, _quaternion.w));
+
+	btTransform bttrRigidAInvTransform = _bodyA->getWorldTransform().inverse();
+	btTransform bttrRigidBInvTransform = _bodyB->getWorldTransform().inverse();
+
+	bttrRigidAInvTransform = bttrRigidAInvTransform * bttrTransform;
+	bttrRigidBInvTransform = bttrRigidBInvTransform * bttrTransform;
+
+	_joint = std::make_unique<btGeneric6DofSpringConstraint>(*_bodyA, *_bodyB, bttrRigidAInvTransform, bttrRigidBInvTransform, true);
+	
+	this->setLinearLowerLimit(_lowLimit);
+	this->setLinearHighLimit(_highLimit);
+
+	this->setAngularLowerLimit(_angularLowLimit);
+	this->setAngularHighLimit(_angularHighLimit);
+
+	this->setMovementConstant(_movementConstant);
+	this->setRotationConstant(_rotationConstant);
+
+	this->setPhysicsScene(PhysicsSystem::instance()->getPhysicsScene());
+}
+
+void 
+PhysicsJointBall::close() noexcept
+{
+	_joint.reset();
 }
 
 void
-JointBall::setLinearLowerLimit(const Vector3& limit) noexcept
+PhysicsJointBall::setLinearLowerLimit(const float3& limit) noexcept
 {
+	if (_joint)
+		_joint->setLinearLowerLimit(btVector3(_lowLimit.x, _lowLimit.y, _lowLimit.z));
 	_lowLimit = limit;
 }
 
 void
-JointBall::setLinearHighLimit(const Vector3& limit) noexcept
+PhysicsJointBall::setLinearHighLimit(const float3& limit) noexcept
 {
+	if (_joint)
+		_joint->setLinearUpperLimit(btVector3(_highLimit.x, _highLimit.y, _highLimit.z));
 	_highLimit = limit;
 }
 
 void
-JointBall::setAngularLowerLimit(const Vector3& limit) noexcept
+PhysicsJointBall::setAngularLowerLimit(const float3& limit) noexcept
 {
+	if (_joint)
+		_joint->setAngularLowerLimit(btVector3(_angularLowLimit.x, _angularLowLimit.y, _angularLowLimit.z));
 	_angularLowLimit = limit;
 }
 
 void
-JointBall::setAngularHighLimit(const Vector3& limit) noexcept
+PhysicsJointBall::setAngularHighLimit(const float3& limit) noexcept
 {
+	if (_joint)
+		_joint->setAngularUpperLimit(btVector3(_angularHighLimit.x, _angularHighLimit.y, _angularHighLimit.z));
 	_angularHighLimit = limit;
 }
 
-const Vector3&
-JointBall::getLinearLowerLimit() const noexcept
+void 
+PhysicsJointBall::setMovementConstant(const float3& constant) noexcept
+{
+	if (_joint)
+	{
+		if (constant.x > 0.0f)
+		{
+			_joint->enableSpring(0, true);
+			_joint->setStiffness(0, constant.x);
+		}
+
+		if (constant.y > 0.0f)
+		{
+			_joint->enableSpring(1, true);
+			_joint->setStiffness(1, constant.y);
+		}
+
+		if (constant.z > 0.0f)
+		{
+			_joint->enableSpring(2, true);
+			_joint->setStiffness(2, constant.z);
+		}
+	}
+
+	_movementConstant = constant;
+}
+
+void 
+PhysicsJointBall::setRotationConstant(const float3& constant) noexcept
+{
+	if (_joint)
+	{
+		if (constant.x > 0.0f)
+		{
+			_joint->enableSpring(3, true);
+			_joint->setStiffness(3, constant.x);
+		}
+
+		if (constant.x > 0.0f)
+		{
+			_joint->enableSpring(4, true);
+			_joint->setStiffness(4, constant.y);
+		}
+
+		if (constant.z > 0.0f)
+		{
+			_joint->enableSpring(5, true);
+			_joint->setStiffness(5, constant.z);
+		}
+	}
+
+	_rotationConstant = constant;
+}
+
+const float3&
+PhysicsJointBall::getLinearLowerLimit() const noexcept
 {
 	return _lowLimit;
 }
 
-const Vector3&
-JointBall::getLinearHighLimit() const noexcept
+const float3&
+PhysicsJointBall::getLinearHighLimit() const noexcept
 {
 	return _highLimit;
 }
 
-const Vector3&
-JointBall::getAngularLowerLimit() const noexcept
+const float3&
+PhysicsJointBall::getAngularLowerLimit() const noexcept
 {
 	return _angularLowLimit;
 }
 
-const Vector3&
-JointBall::getAngularHighLimit() const noexcept
+const float3&
+PhysicsJointBall::getAngularHighLimit() const noexcept
 {
 	return _angularHighLimit;
+}
+
+void
+PhysicsJointBall::setTransform(const float3& translate, const Quaternion& rotation) noexcept
+{
+	if (_joint)
+	{
+		btTransform	 bttrTransform;
+
+		bttrTransform.setIdentity();
+		bttrTransform.setOrigin(btVector3(translate.x, translate.y, translate.z));
+		bttrTransform.setRotation(btQuaternion(rotation.x, rotation.y, rotation.z, rotation.w));
+
+		btTransform bttrRigidAInvTransform = _bodyA->getWorldTransform().inverse();
+		btTransform bttrRigidBInvTransform = _bodyB->getWorldTransform().inverse();
+
+		bttrRigidAInvTransform = bttrRigidAInvTransform * bttrTransform;
+		bttrRigidBInvTransform = bttrRigidBInvTransform * bttrTransform;
+	}
+
+	_translate = translate;
+	_quaternion = rotation;
+}
+
+void
+PhysicsJointBall::getTransform(float3& translate, Quaternion& rotation) noexcept
+{
+	translate = _translate;
+	rotation = _quaternion;
+}
+
+void
+PhysicsJointBall::setPhysicsScene(PhysicsScenePtr scene) noexcept
+{
+	if (_scene.lock())
+		_scene.lock()->removeJoint(_joint.get());
+
+	_scene = scene;
+
+	if (scene)
+		scene->addJoint(_joint.get());
 }
 
 _NAME_END

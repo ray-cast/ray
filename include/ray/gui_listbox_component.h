@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -79,17 +79,17 @@ public:
 
 	void setActivateOnClick(bool activateOnClick) noexcept;
 
-	void addListSelectAcceptListener(std::function<void()> func) noexcept;
-	void addListChangePositionListener(std::function<void()> func) noexcept;
-	void addListMouseItemActivateListener(std::function<void()> func) noexcept;
-	void addListMouseItemFocusListener(std::function<void()> func) noexcept;
-	void addListChangeScrollListener(std::function<void()> func) noexcept;
+	void addListSelectAcceptListener(std::function<void()>* func) noexcept;
+	void addListChangePositionListener(std::function<void()>* func) noexcept;
+	void addListMouseItemActivateListener(std::function<void()>* func) noexcept;
+	void addListMouseItemFocusListener(std::function<void()>* func) noexcept;
+	void addListChangeScrollListener(std::function<void()>* func) noexcept;
 
-	void removeListSelectAcceptListener(std::function<void()> func) noexcept;
-	void removeListChangePositionListener(std::function<void()> func) noexcept;
-	void removeListMouseItemActivateListener(std::function<void()> func) noexcept;
-	void removeListMouseItemFocusListener(std::function<void()> func) noexcept;
-	void removeListChangeScrollListener(std::function<void()> func) noexcept;
+	void removeListSelectAcceptListener(std::function<void()>* func) noexcept;
+	void removeListChangePositionListener(std::function<void()>* func) noexcept;
+	void removeListMouseItemActivateListener(std::function<void()>* func) noexcept;
+	void removeListMouseItemFocusListener(std::function<void()>* func) noexcept;
+	void removeListChangeScrollListener(std::function<void()>* func) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

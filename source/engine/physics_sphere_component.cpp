@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,20 +34,64 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MAIN_H_
-#define _H_MAIN_H_
+#include <ray/physics_sphere_component.h>
+#include <ray/physics_shape_sphere.h>
 
-#include <SampleLoader.h>
+_NAME_BEGIN
 
-class DemoCubeWorld final : public SampleLoader
+__ImplementSubClass(PhysicsSphereComponent, PhysicsShapeComponent, "PhysicsSphere")
+
+PhysicsSphereComponent::PhysicsSphereComponent() noexcept
 {
-	__DeclareSubClass(DemoCubeWorld, SampleLoader)
-public:
-	DemoCubeWorld() noexcept;
-	~DemoCubeWorld() noexcept;
+	_shape = std::make_shared<PhysicsShapeSphere>();
+}
 
-	bool initialize() except;
-	void run() except;
-};
+PhysicsSphereComponent::PhysicsSphereComponent(float radius) noexcept
+{
+	_shape = std::make_shared<PhysicsShapeSphere>();
+	_shape->setRadius(radius);
+}
 
-#endif
+PhysicsSphereComponent::~PhysicsSphereComponent() noexcept
+{
+}
+
+void
+PhysicsSphereComponent::setRadius(float size) noexcept
+{
+	_shape->setRadius(size);
+}
+
+float
+PhysicsSphereComponent::getRadius() const noexcept
+{
+	return _shape->getRadius();
+}
+
+PhysicsShapePtr
+PhysicsSphereComponent::getCollisionShape() noexcept
+{
+	return _shape;
+}
+
+GameComponentPtr
+PhysicsSphereComponent::clone() const noexcept
+{
+	auto component = std::make_shared<PhysicsSphereComponent>();
+	component->setRadius(this->getRadius());
+	return component;
+}
+
+void
+PhysicsSphereComponent::onActivate() noexcept
+{
+	_shape->setup();
+}
+
+void
+PhysicsSphereComponent::onDeactivate() noexcept
+{
+	_shape->close();
+}
+
+_NAME_END

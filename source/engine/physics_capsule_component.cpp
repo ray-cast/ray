@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if _BUILD_PHYSIC
 #include <ray/physics_capsule_component.h>
 #include <ray/physics_shape_capsule.h>
 
@@ -47,10 +46,10 @@ PhysicsCapsuleComponent::PhysicsCapsuleComponent() noexcept
 	_shape = std::make_shared<PhysicsShapeCapsule>();
 }
 
-PhysicsCapsuleComponent::PhysicsCapsuleComponent(float width, float height) noexcept
+PhysicsCapsuleComponent::PhysicsCapsuleComponent(float radius, float height) noexcept
 {
 	_shape = std::make_shared<PhysicsShapeCapsule>();
-	_shape->setWidth(width);
+	_shape->setRadius(radius);
 	_shape->setHeight(height);
 }
 
@@ -59,9 +58,9 @@ PhysicsCapsuleComponent::~PhysicsCapsuleComponent() noexcept
 }
 
 void
-PhysicsCapsuleComponent::setWidth(float width) noexcept
+PhysicsCapsuleComponent::setRadius(float width) noexcept
 {
-	_shape->setWidth(width);
+	_shape->setRadius(width);
 }
 
 void
@@ -92,10 +91,9 @@ GameComponentPtr
 PhysicsCapsuleComponent::clone() const noexcept
 {
 	auto component = std::make_shared<PhysicsCapsuleComponent>();
-	component->setWidth(_shape->getWidth());
+	component->setRadius(_shape->getRadius());
 	component->setHeight(_shape->getHeight());
 	return component;
 }
 
 _NAME_END
-#endif

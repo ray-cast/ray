@@ -65,10 +65,18 @@ ThreadLambda::stop() noexcept
 }
 
 void
-ThreadLambda::exce(std::function<void(void)> func) noexcept
+ThreadLambda::exce(std::function<void(void)>& func) noexcept
 {
 	_mutex.lock();
 	_taskUpdate.push_back(func);
+	_mutex.unlock();
+}
+
+void
+ThreadLambda::exce(std::function<void(void)>&& func) noexcept
+{
+	_mutex.lock();
+	_taskUpdate.push_back(std::move(func));
 	_mutex.unlock();
 }
 

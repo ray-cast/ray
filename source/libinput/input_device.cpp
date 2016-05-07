@@ -63,7 +63,7 @@ DefaultInputDevice::enableEventPosting() const noexcept
 }
 
 void
-DefaultInputDevice::addInputListener(InputListenerPtr listener) noexcept
+DefaultInputDevice::addInputListener(InputListenerPtr& listener) noexcept
 {
 	assert(listener);
 	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);
@@ -75,7 +75,31 @@ DefaultInputDevice::addInputListener(InputListenerPtr listener) noexcept
 }
 
 void
-DefaultInputDevice::removeInputListener(InputListenerPtr listener) noexcept
+DefaultInputDevice::addInputListener(InputListenerPtr&& listener) noexcept
+{
+	assert(listener);
+	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);
+	if (it == _inputListeners.end())
+	{
+		listener->onAttach();
+		_inputListeners.push_back(std::move(listener));
+	}
+}
+
+void
+DefaultInputDevice::removeInputListener(InputListenerPtr& listener) noexcept
+{
+	assert(listener);
+	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);
+	if (it != _inputListeners.end())
+	{
+		listener->onDetach();
+		_inputListeners.erase(it);
+	}
+}
+
+void
+DefaultInputDevice::removeInputListener(InputListenerPtr&& listener) noexcept
 {
 	assert(listener);
 	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);

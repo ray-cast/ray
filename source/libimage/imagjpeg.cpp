@@ -191,38 +191,52 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 		RGB* data = (RGB*)image.data();
 		JDIMENSION stride = cinfo.image_width * cinfo.num_components;
-		JSAMPARRAY row_pointer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, stride, 1);
 
-		::jpeg_start_decompress(&cinfo);
-
-		while (cinfo.output_scanline < cinfo.image_height)
+		if (cinfo.out_color_space == JCS_RGB)
 		{
-			::jpeg_read_scanlines(&cinfo, row_pointer, 1);
-			switch (cinfo.out_color_space)
+			::jpeg_start_decompress(&cinfo);
+
+			while (cinfo.output_scanline < cinfo.image_height)
 			{
-			case JCS_RGB:
-			{
-				std::memcpy(data, row_pointer[0], stride);
+				::jpeg_read_scanlines(&cinfo, (JSAMPARRAY)data, 1);
 				data += cinfo.image_width;
 			}
-			break;
-			case JCS_CMYK:
+		}
+		else
+		{
+			JSAMPARRAY row_pointer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, stride, 1);
+
+			::jpeg_start_decompress(&cinfo);
+
+			while (cinfo.output_scanline < cinfo.image_height)
 			{
-				std::uint8_t* inptr = (std::uint8_t*)row_pointer[0];
-				for (size_t i = 0; i < cinfo.output_width; i++)
+				::jpeg_read_scanlines(&cinfo, row_pointer, 1);
+				switch (cinfo.out_color_space)
 				{
-					Image::cmyk_to_rgb(data, inptr);
-					data += 3;
-					inptr += 4;
+				case JCS_RGB:
+				{
+					std::memcpy(data, row_pointer[0], stride);
+					data += cinfo.image_width;
 				}
-			}
-			break;
-			case JCS_GRAYSCALE:
-			case JCS_UNKNOWN:
-			case JCS_YCbCr:
-			case JCS_YCCK:
-			default:
-				assert(false);
+				break;
+				case JCS_CMYK:
+				{
+					std::uint8_t* inptr = (std::uint8_t*)row_pointer[0];
+					for (size_t i = 0; i < cinfo.output_width; i++)
+					{
+						Image::cmyk_to_rgb(data, inptr);
+						data += 3;
+						inptr += 4;
+					}
+				}
+				break;
+				case JCS_GRAYSCALE:
+				case JCS_UNKNOWN:
+				case JCS_YCbCr:
+				case JCS_YCCK:
+				default:
+					assert(false);
+				}
 			}
 		}
 

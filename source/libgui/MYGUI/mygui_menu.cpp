@@ -201,7 +201,7 @@ MyGuiMenuImpl::getVerticalAlignment() const noexcept
 }
 
 void
-MyGuiMenuImpl::addMenuCtrlCloseListener(std::function<void()>& func) noexcept
+MyGuiMenuImpl::addMenuCtrlCloseListener(std::function<void()>* func) noexcept
 {
 	assert(_menuBar);
 	assert(!_onMenuCtrlClose.find(func));
@@ -211,7 +211,7 @@ MyGuiMenuImpl::addMenuCtrlCloseListener(std::function<void()>& func) noexcept
 }
 
 void
-MyGuiMenuImpl::addMenuCtrlAcceptListener(std::function<void()>& func) noexcept
+MyGuiMenuImpl::addMenuCtrlAcceptListener(std::function<void()>* func) noexcept
 {
 	assert(_menuBar);
 	assert(!_onMenuCtrlAccept.find(func));
@@ -221,14 +221,14 @@ MyGuiMenuImpl::addMenuCtrlAcceptListener(std::function<void()>& func) noexcept
 }
 
 void
-MyGuiMenuImpl::removeMenuCtrlCloseListener(std::function<void()>& func) noexcept
+MyGuiMenuImpl::removeMenuCtrlCloseListener(std::function<void()>* func) noexcept
 {
 	assert(_onMenuCtrlClose.find(func));
 	_onMenuCtrlClose.remove(func);
 }
 
 void
-MyGuiMenuImpl::removeMenuCtrlAcceptListener(std::function<void()>& func) noexcept
+MyGuiMenuImpl::removeMenuCtrlAcceptListener(std::function<void()>* func) noexcept
 {
 	assert(_onMenuCtrlAccept.find(func));
 	_onMenuCtrlAccept.remove(func);
@@ -370,25 +370,25 @@ MyGuiMenu::getVerticalAlignment() const noexcept
 }
 
 void
-MyGuiMenu::addMenuCtrlCloseListener(std::function<void()>& func) noexcept
+MyGuiMenu::addMenuCtrlCloseListener(std::function<void()>* func) noexcept
 {
 	_impl.addMenuCtrlCloseListener(func);
 }
 
 void
-MyGuiMenu::addMenuCtrlAcceptListener(std::function<void()>& func) noexcept
+MyGuiMenu::addMenuCtrlAcceptListener(std::function<void()>* func) noexcept
 {
 	_impl.addMenuCtrlAcceptListener(func);
 }
 
 void
-MyGuiMenu::removeMenuCtrlCloseListener(std::function<void()>& func) noexcept
+MyGuiMenu::removeMenuCtrlCloseListener(std::function<void()>* func) noexcept
 {
 	_impl.removeMenuCtrlCloseListener(func);
 }
 
 void
-MyGuiMenu::removeMenuCtrlAcceptListener(std::function<void()>& func) noexcept
+MyGuiMenu::removeMenuCtrlAcceptListener(std::function<void()>* func) noexcept
 {
 	_impl.removeMenuCtrlAcceptListener(func);
 }

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,12 +34,9 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if _BUILD_PHYSIC
 #include <ray/physics_body_component.h>
 #include <ray/physics_shape_component.h>
 #include <ray/physics_rigidbody.h>
-#include <ray/physics_features.h>
-#include <ray/game_server.h>
 
 _NAME_BEGIN
 
@@ -51,6 +48,7 @@ PhysicsBodyComponent::PhysicsBodyComponent() noexcept
 	, _constantTorque(Vector3::Zero)
 	, _constantVelocity(Vector3::Zero)
 	, _constantAngularVelocity(Vector3::Zero)
+	, _onShapeChange(std::bind(&PhysicsBodyComponent::onShapeChange, this))
 {
 	_body = std::make_unique<PhysicsRigidbody>();
 	_body->setRigidbodyListener(this);
@@ -58,17 +56,25 @@ PhysicsBodyComponent::PhysicsBodyComponent() noexcept
 
 PhysicsBodyComponent::~PhysicsBodyComponent() noexcept
 {
-	if (_body)
-	{
-		_body.reset();
-		_body = nullptr;
-	}
+	_body.reset();
 }
 
 void
 PhysicsBodyComponent::setMass(float value) noexcept
 {
 	_body->setMass(value);
+}
+
+void 
+PhysicsBodyComponent::setRestitution(float value) noexcept
+{
+	_body->setRestitution(value);
+}
+
+void
+PhysicsBodyComponent::setFriction(float friction) noexcept
+{
+	_body->setFriction(friction);
 }
 
 void
@@ -104,29 +110,25 @@ PhysicsBodyComponent::setGravity(const Vector3& value) noexcept
 void
 PhysicsBodyComponent::setConstantForce(const Vector3& value) noexcept
 {
-	if (math::length2(_constantForce) > 0.01f)
-		_constantForce = value;
+	_constantForce = value;
 }
 
 void
 PhysicsBodyComponent::setConstantTorque(const Vector3& value) noexcept
 {
-	if (math::length2(_constantTorque) > 0.01f)
-		_constantTorque = value;
+	_constantTorque = value;
 }
 
 void
 PhysicsBodyComponent::setConstantVelocity(const Vector3& value) noexcept
 {
-	if (math::length2(_constantVelocity) > 0.01f)
-		_constantVelocity = value;
+	_constantVelocity = value;
 }
 
 void
 PhysicsBodyComponent::setConstanAngularVelocity(const Vector3& value) noexcept
 {
-	if (math::length2(_constantAngularVelocity) > 0.01f)
-		_constantAngularVelocity = value;
+	_constantAngularVelocity = value;
 }
 
 void
@@ -145,6 +147,18 @@ float
 PhysicsBodyComponent::getMass() const noexcept
 {
 	return _body->getMass();
+}
+
+float
+PhysicsBodyComponent::getRestitution() const noexcept
+{
+	return _body->getRestitution();
+}
+
+float
+PhysicsBodyComponent::getFriction() const noexcept
+{
+	return _body->getFriction();
 }
 
 float
@@ -226,14 +240,8 @@ PhysicsBodyComponent::addImpulse(const Vector3& force, const Vector3& axis) noex
 }
 
 void
-PhysicsBodyComponent::onActivate() noexcept
+PhysicsBodyComponent::_buildRigibody() noexcept
 {
-	auto physics = this->getGameObject()->getGameServer()->getFeature<PhysicFeatures>();
-	assert(physics);
-
-	auto physicsScene = physics->getPhysicsScene(this->getGameObject()->getGameScene());
-	assert(physicsScene);
-
 	auto collisionShape = this->getGameObject()->getComponent<PhysicsShapeComponent>();
 	if (collisionShape)
 	{
@@ -243,20 +251,34 @@ PhysicsBodyComponent::onActivate() noexcept
 			_body->setup(shape);
 			_body->setMovePosition(this->getGameObject()->getTranslate());
 			_body->setMoveRotation(this->getGameObject()->getQuaternion());
-			_body->setPhysicsScene(physicsScene.get());
-		}
-		else
-		{
-			assert(false);
 		}
 	}
 }
 
 void
+PhysicsBodyComponent::onActivate() noexcept
+{
+	this->_buildRigibody();
+}
+
+void
 PhysicsBodyComponent::onDeactivate() noexcept
 {
-	if (_body)
-		_body->close();
+	_body->close();
+}
+
+void
+PhysicsBodyComponent::onAttachComponent(GameComponentPtr& component) noexcept
+{
+	if (component->isA<PhysicsShapeComponent>())
+		component->cast<PhysicsShapeComponent>()->addShapeChangeListener(&_onShapeChange);
+}
+
+void
+PhysicsBodyComponent::onDetachComponent(GameComponentPtr& component) noexcept
+{
+	if (component->isA<PhysicsShapeComponent>())
+		component->cast<PhysicsShapeComponent>()->removeShapeChangeListener(&_onShapeChange);
 }
 
 void
@@ -274,19 +296,32 @@ PhysicsBodyComponent::onFrame() noexcept
 void
 PhysicsBodyComponent::onFrameEnd() noexcept
 {
-	this->getGameObject()->setTranslate(_body->getMovePosition());
-	this->getGameObject()->setQuaternion(_body->getMoveRotation());
+	if (_body)
+	{
+		this->getGameObject()->setTranslate(_body->getMovePosition());
+		this->getGameObject()->setQuaternion(_body->getMoveRotation());
+	}
 }
 
 void
 PhysicsBodyComponent::onMoveAfter() noexcept
 {
+	if (_body)
+	{
+		_body->setMovePosition(this->getGameObject()->getTranslate());
+		_body->setMoveRotation(this->getGameObject()->getQuaternion());
+	}
+}
+
+void
+PhysicsBodyComponent::onShapeChange() noexcept
+{
+	_buildRigibody();
 }
 
 void
 PhysicsBodyComponent::onCollisionStay() noexcept
 {
-	//this->sendMessage("onCollisionStay", nullptr);
 }
 
 GameComponentPtr
@@ -296,4 +331,3 @@ PhysicsBodyComponent::clone() const noexcept
 }
 
 _NAME_END
-#endif

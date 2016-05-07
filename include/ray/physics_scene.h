@@ -76,6 +76,9 @@ public:
 	float getSkitWindow() const noexcept;
 	const Vector3& getGravity() const noexcept;
 
+	void addJoint(btTypedConstraint* joint) noexcept;
+	void removeJoint(btTypedConstraint* joint) noexcept;
+
 	void addRigidbody(btRigidBody* body) noexcept;
 	void removeRigidbody(btRigidBody* body) noexcept;
 

@@ -73,7 +73,7 @@ Material::close() noexcept
 }
 
 void
-Material::addTech(MaterialTechPtr technique) noexcept
+Material::addTech(MaterialTechPtr& technique) noexcept
 {
 	assert(technique);
 	assert(std::find(_techniques.begin(), _techniques.end(), technique) == _techniques.end());
@@ -81,7 +81,26 @@ Material::addTech(MaterialTechPtr technique) noexcept
 }
 
 void
-Material::removeTech(MaterialTechPtr technique) noexcept
+Material::addTech(MaterialTechPtr&& technique) noexcept
+{
+	assert(technique);
+	assert(std::find(_techniques.begin(), _techniques.end(), technique) == _techniques.end());
+	_techniques.push_back(std::move(technique));
+}
+
+void
+Material::removeTech(MaterialTechPtr& technique) noexcept
+{
+	assert(technique);
+	auto it = std::find(_techniques.begin(), _techniques.end(), technique);
+	if (it != _techniques.end())
+	{
+		_techniques.erase(it);
+	}
+}
+
+void
+Material::removeTech(MaterialTechPtr&& technique) noexcept
 {
 	assert(technique);
 	auto it = std::find(_techniques.begin(), _techniques.end(), technique);
@@ -103,14 +122,14 @@ Material::getTech(const std::string& name) noexcept
 	return nullptr;
 }
 
-MaterialTechniques&
-Material::getTechs() noexcept
+const MaterialTechniques&
+Material::getTechs() const noexcept
 {
 	return _techniques;
 }
 
 void
-Material::addParameter(MaterialParamPtr parameter) noexcept
+Material::addParameter(MaterialParamPtr& parameter) noexcept
 {
 	assert(parameter);
 	assert(std::find(_parameters.begin(), _parameters.end(), parameter) == _parameters.end());
@@ -118,7 +137,26 @@ Material::addParameter(MaterialParamPtr parameter) noexcept
 }
 
 void
-Material::removeParameter(MaterialParamPtr parameter) noexcept
+Material::addParameter(MaterialParamPtr&& parameter) noexcept
+{
+	assert(parameter);
+	assert(std::find(_parameters.begin(), _parameters.end(), parameter) == _parameters.end());
+	_parameters.push_back(std::move(parameter));
+}
+
+void
+Material::removeParameter(MaterialParamPtr& parameter) noexcept
+{
+	assert(parameter);
+	auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
+	if (it != _parameters.end())
+	{
+		_parameters.erase(it);
+	}
+}
+
+void
+Material::removeParameter(MaterialParamPtr&& parameter) noexcept
 {
 	assert(parameter);
 	auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
@@ -154,7 +192,7 @@ Material::getParameters() const noexcept
 }
 
 void
-Material::addMacro(MaterialParamPtr macro) noexcept
+Material::addMacro(MaterialParamPtr& macro) noexcept
 {
 	assert(macro);
 	assert(std::find(_macros.begin(), _macros.end(), macro) == _macros.end());
@@ -162,7 +200,26 @@ Material::addMacro(MaterialParamPtr macro) noexcept
 }
 
 void
-Material::removeMacro(MaterialParamPtr macro) noexcept
+Material::addMacro(MaterialParamPtr&& macro) noexcept
+{
+	assert(macro);
+	assert(std::find(_macros.begin(), _macros.end(), macro) == _macros.end());
+	_macros.push_back(std::move(macro));
+}
+
+void
+Material::removeMacro(MaterialParamPtr& macro) noexcept
+{
+	assert(macro);
+	auto it = std::find(_macros.begin(), _macros.end(), macro);
+	if (it != _macros.end())
+	{
+		_macros.erase(it);
+	}
+}
+
+void
+Material::removeMacro(MaterialParamPtr&& macro) noexcept
 {
 	assert(macro);
 	auto it = std::find(_macros.begin(), _macros.end(), macro);

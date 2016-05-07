@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -36,8 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/game_scene.h>
 #include <ray/game_scene_manager.h>
-
-#include <ray/game_server.h>
 #include <ray/game_component.h>
 
 #include <ray/rtti_factory.h>
@@ -45,19 +43,6 @@
 _NAME_BEGIN
 
 __ImplementSubClass(GameScene, rtti::Interface, "GameScene")
-
-std::uint32_t GameScene::_instanceCount = 0;
-
-GameScene::Setting::Setting() noexcept
-	: gravity(0.0f, 9.81f, 0.0f)
-	, length(1.0f)
-	, mass(1000.0f)
-	, speed(10.0f)
-	, skinWidth(0.0001f)
-{
-	aabb.min = Vector3(-1000, -1000, -1000);
-	aabb.max = Vector3(1000, 1000, 1000);
-}
 
 GameScene::RootObject::RootObject(GameScene* scene) noexcept
 	: _scene(scene)
@@ -67,12 +52,6 @@ GameScene::RootObject::RootObject(GameScene* scene) noexcept
 
 GameScene::RootObject::~RootObject() noexcept
 {
-}
-
-GameServerPtr
-GameScene::RootObject::getGameServer() noexcept
-{
-	return this->getGameScene()->getGameServer();
 }
 
 GameScenePtr
@@ -133,44 +112,10 @@ GameScene::getInstanceID() const noexcept
 	return _instanceID;
 }
 
-void
-GameScene::setEnvironment(const Setting& setting) noexcept
-{
-	_setting = setting;
-}
-
-const GameScene::Setting&
-GameScene::getEnvironment() const noexcept
-{
-	return _setting;
-}
-
 GameObjectPtr
 GameScene::getRootObject() noexcept
 {
 	return _root;
-}
-
-void
-GameScene::setGameServer(GameServerPtr server) noexcept
-{
-	auto gameServer = _gameServer.lock();
-	if (gameServer != server)
-	{
-		if (gameServer)
-			gameServer->removeScene(this->downcast<GameScene>());
-
-		_gameServer = server;
-
-		if (server)
-			server->addScene(this->downcast<GameScene>());
-	}
-}
-
-GameServerPtr
-GameScene::getGameServer() noexcept
-{
-	return _gameServer.lock();
 }
 
 void

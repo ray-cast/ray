@@ -40,7 +40,7 @@ _NAME_BEGIN
 
 Bone::Bone() noexcept
 	: _parent(-1)
-	, _child(-1)
+	, _rotation(0.0f,0.0f,0.0f,1.0f)
 	, _scaling(float3::One)
 	, _isLeg(false)
 {
@@ -82,51 +82,27 @@ Bone::getParent() const noexcept
 }
 
 void
-Bone::setChild(std::int16_t child) noexcept
-{
-	_child = child;
-}
-
-std::int16_t
-Bone::getChild() const noexcept
-{
-	return _child;
-}
-
-void
-Bone::setPosition(const Vector3& position) noexcept
+Bone::setPosition(const float3& position) noexcept
 {
 	_translate = position;
 }
 
-const Vector3&
+const float3&
 Bone::getPosition() const noexcept
 {
 	return _translate;
 }
 
 void
-Bone::setScaling(const Vector3& scale) noexcept
+Bone::setScaling(const float3& scale) noexcept
 {
 	_scaling = scale;
 }
 
-const Vector3&
+const float3&
 Bone::getScaling() const noexcept
 {
 	return _scaling;
-}
-
-void 
-Bone::setLeg(bool leg) noexcept
-{
-	_isLeg = leg;
-}
-
-bool 
-Bone::getLeg() const noexcept
-{
-	return _isLeg;
 }
 
 void
@@ -163,21 +139,6 @@ const Matrix4x4&
 Bone::getTransform() const noexcept
 {
 	return _transform;
-}
-
-void
-Bone::update() noexcept
-{
-	_localTransform.makeTransform(_translate, _rotation, _scaling);
-}
-
-void
-Bone::updateTransform(const float3& translate, const Quaternion& rotate)
-{
-	_rotation = rotate;
-
-	_localTransform.makeRotate(rotate);
-	_localTransform.setTranslate(translate);
 }
 
 _NAME_END

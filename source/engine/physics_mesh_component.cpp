@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if _BUILD_PHYSIC
 #include <ray/physics_mesh_component.h>
 #include <ray/physics_shape_mesh.h>
 #include <ray/mesh_component.h>
@@ -44,8 +43,8 @@ _NAME_BEGIN
 __ImplementSubClass(PhysicsMeshComponent, PhysicsShapeComponent, "PhysicsMesh")
 
 PhysicsMeshComponent::PhysicsMeshComponent() noexcept
+	: _onShapeChange(std::bind(&PhysicsMeshComponent::onMeshChange, this))
 {
-	_shape = std::make_shared<PhysicsShapeMesh>();
 }
 
 PhysicsMeshComponent::~PhysicsMeshComponent() noexcept
@@ -63,14 +62,14 @@ void
 PhysicsMeshComponent::onAttachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
-		component->downcast<MeshComponent>()->addMeshChangeListener(std::bind(&PhysicsMeshComponent::onMeshChange, this));
+		component->downcast<MeshComponent>()->addMeshChangeListener(&_onShapeChange);
 }
 
 void
 PhysicsMeshComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
-		component->downcast<MeshComponent>()->removeMeshChangeListener(std::bind(&PhysicsMeshComponent::onMeshChange, this));
+		component->downcast<MeshComponent>()->removeMeshChangeListener(&_onShapeChange);
 }
 
 void
@@ -82,15 +81,13 @@ PhysicsMeshComponent::onActivate() noexcept
 void
 PhysicsMeshComponent::onDeactivate() noexcept
 {
-	if (_shape)
-		_shape->close();
+	_shape.reset();
 }
 
 void
 PhysicsMeshComponent::onMeshChange() noexcept
 {
-	if (this->getActive())
-		_buildShapeMesh();
+	_buildShapeMesh();
 }
 
 PhysicsShapePtr
@@ -106,12 +103,18 @@ PhysicsMeshComponent::_buildShapeMesh() noexcept
 	if (component)
 	{
 		auto mesh = component->getMesh();
+		if (!mesh)
+			return;
+
 		if (mesh->getNumVertices() > 0)
 		{
-			_shape->setup(mesh->getVertexArray(), mesh->getFaceArray(), mesh->getBoundingBox().aabb());
+			auto meshShape = std::make_shared<PhysicsShapeMesh>();
+			meshShape->setup(mesh->getVertexArray(), mesh->getFaceArray(), mesh->getBoundingBox().aabb());
+			_shape = meshShape;
+
+			this->needUpdate();
 		}
 	}
 }
 
 _NAME_END
-#endif

@@ -34,18 +34,36 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/res_manager.h>
+#ifndef _H_PHYSIC_SHAPE_SPHERE_H_
+#define _H_PHYSIC_SHAPE_SPHERE_H_
+
+#include <ray/physics_shape.h>
+
+class btSphereShape;
 
 _NAME_BEGIN
 
-__ImplementSingleton(ResManager)
-
-ResManager::ResManager() noexcept
+class EXPORT PhysicsShapeSphere final : public PhysicsShape
 {
-}
+public:
+	PhysicsShapeSphere() noexcept;
+	virtual ~PhysicsShapeSphere() noexcept;
 
-ResManager::~ResManager() noexcept
-{
-}
+	void setup() noexcept;
+	void close() noexcept;
+
+	void setRadius(float radius) noexcept;
+	float getRadius() const noexcept;
+
+private:
+
+	virtual btCollisionShape* getCollisionShape() noexcept;
+
+private:
+	float _radius;
+	btSphereShape* _shape;
+};
 
 _NAME_END
+
+#endif

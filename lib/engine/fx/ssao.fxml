@@ -3,7 +3,7 @@
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <macro name="NUM_SAMPLE" type="int" value="10"/>
+    <macro name="NUM_SAMPLE" type="int" value="8"/>
     <macro name="NUM_SAMPLE_INV" type="float" value="0.125"/>
     <macro name="BLUR_RADIUS" type="int" value="8"/>
     <parameter name="projScale" type="float"/>

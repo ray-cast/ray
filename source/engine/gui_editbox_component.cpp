@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of _renderThread software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -333,25 +333,25 @@ GuiEditBoxComponent::setHScrollPosition(std::size_t index)
 }
 
 void
-GuiEditBoxComponent::addTextChangeListener(std::function<void()> func) noexcept
+GuiEditBoxComponent::addTextChangeListener(std::function<void()>* func) noexcept
 {
 	_editBox->addTextChangeListener(func);
 }
 
 void
-GuiEditBoxComponent::removeTextChangeListener(std::function<void()> func) noexcept
+GuiEditBoxComponent::removeTextChangeListener(std::function<void()>* func) noexcept
 {
 	_editBox->removeTextChangeListener(func);
 }
 
 void
-GuiEditBoxComponent::addSelectAccept(std::function<void()> func) noexcept
+GuiEditBoxComponent::addSelectAccept(std::function<void()>* func) noexcept
 {
 	_editBox->addSelectAccept(func);
 }
 
 void
-GuiEditBoxComponent::removeSelectAccept(std::function<void()> func) noexcept
+GuiEditBoxComponent::removeSelectAccept(std::function<void()>* func) noexcept
 {
 	_editBox->removeSelectAccept(func);
 }

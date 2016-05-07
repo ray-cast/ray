@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -46,17 +46,26 @@ class EXPORT MeshRenderComponent : public RenderComponent
 	__DeclareSubClass(MeshRenderComponent, RenderComponent)
 public:
 	MeshRenderComponent() noexcept;
-	MeshRenderComponent(MaterialPtr material) noexcept;
+	MeshRenderComponent(MaterialPtr& material, bool shared = true) noexcept;
+	MeshRenderComponent(MaterialPtr&& material, bool shared = true) noexcept;
+	MeshRenderComponent(const Materials& materials, bool shared = true) noexcept;
+	MeshRenderComponent(Materials&& materials, bool shared = true) noexcept;
 	~MeshRenderComponent() noexcept;
 
-	void setMaterial(MaterialPtr material) noexcept;
-	void setSharedMaterial(MaterialPtr material) noexcept;
+	void setMaterial(MaterialPtr& material) noexcept;
+	void setSharedMaterial(MaterialPtr& material) noexcept;
+
+	void setMaterial(MaterialPtr&& material) noexcept;
+	void setSharedMaterial(MaterialPtr&& material) noexcept;
 
 	MaterialPtr getMaterial() const noexcept;
 	MaterialPtr getSharedMaterial() const noexcept;
 
-	void setMaterials(const Materials& material) noexcept;
-	void setSharedMaterials(const Materials& material) noexcept;
+	void setMaterials(const Materials& materials) noexcept;
+	void setSharedMaterials(const Materials& materials) noexcept;
+
+	void setMaterials(Materials&& materials) noexcept;
+	void setSharedMaterials(Materials&& materials) noexcept;
 
 	const Materials& getMaterials() const noexcept;
 	const Materials& getSharedMaterials() const noexcept;
@@ -111,6 +120,8 @@ protected:
 
 	RenderMeshPtr _renderMesh;
 	Geometryes _renderObjects;
+
+	std::function<void()> _onMeshChange;
 
 	std::string _material;
 };

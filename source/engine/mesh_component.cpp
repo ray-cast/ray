@@ -47,9 +47,12 @@ MeshComponent::MeshComponent() noexcept
 {
 }
 
-MeshComponent::MeshComponent(MeshPropertyPtr mesh) noexcept
+MeshComponent::MeshComponent(MeshPropertyPtr mesh, bool shared) noexcept
 {
-	this->setMesh(mesh);
+	if (shared)
+		this->setSharedMesh(mesh);
+	else
+		this->setMesh(mesh);
 }
 
 MeshComponent::~MeshComponent() noexcept
@@ -57,7 +60,7 @@ MeshComponent::~MeshComponent() noexcept
 }
 
 void
-MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
+MeshComponent::setMesh(MeshPropertyPtr& mesh) noexcept
 {
 	if (_mesh != mesh)
 	{
@@ -70,14 +73,8 @@ MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 	}
 }
 
-MeshPropertyPtr
-MeshComponent::getMesh() const noexcept
-{
-	return _mesh;
-}
-
 void
-MeshComponent::setSharedMesh(MeshPropertyPtr mesh) noexcept
+MeshComponent::setSharedMesh(MeshPropertyPtr& mesh) noexcept
 {
 	if (_sharedMesh != mesh)
 	{
@@ -85,6 +82,28 @@ MeshComponent::setSharedMesh(MeshPropertyPtr mesh) noexcept
 			mesh->computeBoundingBox();
 		_sharedMesh = mesh;
 	}
+}
+
+void
+MeshComponent::setMesh(MeshPropertyPtr&& mesh) noexcept
+{
+	this->setMesh(mesh);
+}
+
+void
+MeshComponent::setSharedMesh(MeshPropertyPtr&& mesh) noexcept
+{
+	this->setSharedMesh(mesh);
+}
+
+MeshPropertyPtr
+MeshComponent::getMesh() const noexcept
+{
+	if (_mesh)
+		return _mesh;
+	else if (_sharedMesh)
+		return _sharedMesh;
+	return nullptr;
 }
 
 MeshPropertyPtr
@@ -105,27 +124,37 @@ MeshComponent::getNumIndices() const noexcept
 	return _mesh->getNumIndices();
 }
 
-const Bound&
+Bound
 MeshComponent::getBoundingBox() const noexcept
 {
-	return _mesh->getBoundingBox();
+	if (_mesh)
+		_mesh->getBoundingBox();
+	else if (_sharedMesh)
+		_sharedMesh->getBoundingBox();
+	return Bound::Empty;
 }
 
-const Bound&
+Bound
 MeshComponent::getBoundingBoxDownwards() const noexcept
 {
-	return _mesh->getBoundingBoxDownwards();
+	if (_mesh)
+		_mesh->getBoundingBoxDownwards();
+	else if (_sharedMesh)
+		_sharedMesh->getBoundingBoxDownwards();
+	return Bound::Empty;
 }
 
 void
-MeshComponent::addMeshChangeListener(std::function<void()> func) noexcept
+MeshComponent::addMeshChangeListener(std::function<void()>* func) noexcept
 {
+	assert(!_onMeshChange.find(func));
 	_onMeshChange.attach(func);
 }
 
 void
-MeshComponent::removeMeshChangeListener(std::function<void()> func) noexcept
+MeshComponent::removeMeshChangeListener(std::function<void()>* func) noexcept
 {
+	assert(_onMeshChange.find(func));
 	_onMeshChange.remove(func);
 }
 
@@ -158,15 +187,21 @@ MeshComponent::load(iarchive& reader) noexcept
 		{
 			instance->setDirectory(util::directory(this->getName()));
 
-			auto mesh = instance->getMeshsList().front();
+			auto& meshes = instance->getMeshsList();
 
-			if (mesh->getBoneArray().empty())
-				mesh->computeBoundingBox();
-			else
-				mesh->computeBoundingBoxSkeleton();
+			MeshPropertyPtr root = meshes.front();
 
-			this->setMesh(mesh->clone());
-			this->setSharedMesh(mesh);
+			if (root)
+			{
+				for (auto& it : meshes)
+				{
+					it->computeBoundingBox();
+					if (it !=  root)
+						root->addChild(it);
+				}
+
+				this->setSharedMesh(root);
+			}
 		}
 	}
 }
@@ -182,11 +217,11 @@ MeshComponent::clone() const noexcept
 	auto result = std::make_shared<MeshComponent>();
 	result->setName(this->getName());
 	result->setActive(this->getActive());
+	result->setSharedMesh(this->getSharedMesh());
 
 	if (this->getMesh())
 		result->setMesh(this->getMesh()->clone());
 
-	result->setSharedMesh(this->getMesh());
 	return result;
 }
 
@@ -198,11 +233,8 @@ MeshComponent::onActivate() noexcept
 void
 MeshComponent::onDeactivate() noexcept
 {
-	if (_mesh)
-	{
-		_mesh.reset();
-		_mesh = nullptr;
-	}
+	_mesh.reset();
+	_sharedMesh.reset();
 }
 
 _NAME_END

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -52,7 +52,7 @@ public:
 	GameObjectPtr findObject(const std::string& name) noexcept;
 	GameObjectPtr findActiveObject(const std::string& name) noexcept;
 
-	GameObjectPtr instantiate(const std::string& name) except;
+	GameObjectPtr instantiate(const std::string& name) noexcept;
 
 	bool activeObject(const std::string& name) noexcept;
 

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -49,6 +49,7 @@ public:
 	virtual ~GameObject() noexcept;
 
 	void setName(const std::string& name) noexcept;
+	void setName(std::string&& name) noexcept;
 	const std::string& getName() const noexcept;
 
 	void setActive(bool active) except;
@@ -61,11 +62,14 @@ public:
 
 	std::uint32_t getInstanceID() const noexcept;
 
-	void setParent(GameObjectPtr parent) noexcept;
+	void setParent(GameObjectPtr& parent) noexcept;
+	void setParent(GameObjectPtr&& parent) noexcept;
 	GameObjectPtr getParent() const noexcept;
 
-	void addChild(GameObjectPtr child) noexcept;
-	void removeChild(GameObjectPtr child) noexcept;
+	void addChild(GameObjectPtr& child) noexcept;
+	void addChild(GameObjectPtr&& child) noexcept;
+	void removeChild(GameObjectPtr& child) noexcept;
+	void removeChild(GameObjectPtr&& child) noexcept;
 	void cleanupChildren() noexcept;
 	GameObjectPtr findChild(const std::string& name, bool recurse = true) noexcept;
 
@@ -73,13 +77,13 @@ public:
 	GameObjects& getChildren() noexcept;
 	const GameObjects& getChildren() const noexcept;
 
-	void setTranslate(const Vector3& v) noexcept;
-	void setTranslateAccum(const Vector3& v) noexcept;
-	const Vector3& getTranslate() const noexcept;
+	void setTranslate(const float3& v) noexcept;
+	void setTranslateAccum(const float3& v) noexcept;
+	const float3& getTranslate() const noexcept;
 
-	void setScale(const Vector3& v) noexcept;
-	void setScaleAccum(const Vector3& v) noexcept;
-	const Vector3& getScale() const noexcept;
+	void setScale(const float3& v) noexcept;
+	void setScaleAccum(const float3& v) noexcept;
+	const float3& getScale() const noexcept;
 
 	void setQuaternion(const Quaternion& quat) noexcept;
 	void setQuaternionAccum(const Quaternion& quat) noexcept;
@@ -89,16 +93,19 @@ public:
 	void setEulerAnglesAccum(const EulerAngles& euler) noexcept;
 	const EulerAngles& getEulerAngles() const noexcept;
 
-	const Vector3& getRight() const noexcept;
-	const Vector3& getUpVector() const noexcept;
-	const Vector3& getForward() const noexcept;
+	const float3& getRight() const noexcept;
+	const float3& getUpVector() const noexcept;
+	const float3& getForward() const noexcept;
 
-	const Matrix4x4& getTransform() const noexcept;
-	const Matrix4x4& getTransformInverse() const noexcept;
-	const Matrix4x4& getTransformInverseTranspose() const noexcept;
+	void setTransform(const float4x4& transform) noexcept;
+	const float4x4& getTransform() const noexcept;
+	const float4x4& getTransformInverse() const noexcept;
+	const float4x4& getTransformInverseTranspose() const noexcept;
 
-	void addComponent(GameComponentPtr component) except;
-	void removeComponent(GameComponentPtr component) noexcept;
+	void addComponent(GameComponentPtr& component) except;
+	void addComponent(GameComponentPtr&& component) except;
+	void removeComponent(GameComponentPtr& component) noexcept;
+	void removeComponent(GameComponentPtr&& component) noexcept;
 	void cleanupComponents() noexcept;
 
 	template<typename T>
@@ -123,9 +130,6 @@ public:
 	void save(oarchive& write) noexcept;
 
 	GameObjectPtr clone() const noexcept;
-
-	virtual GameServerPtr getGameServer() noexcept;
-	virtual GameScenePtr getGameScene() noexcept;
 
 private:
 
@@ -153,20 +157,21 @@ private:
 
 	std::string _name;
 
-	Vector3 _translate;
-	Vector3 _scaling;
+	float3 _translate;
+	float3 _scaling;
 	Quaternion _quat;
 	EulerAngles _euler;
 
 	mutable bool _needUpdates;
 
-	mutable Vector3 _right;
-	mutable Vector3 _up;
-	mutable Vector3 _forward;
+	mutable float3 _right;
+	mutable float3 _up;
+	mutable float3 _forward;
 
-	mutable Matrix4x4 _transform;
-	mutable Matrix4x4 _transformInverse;
-	mutable Matrix4x4 _transformInverseTranspose;
+	mutable float4x4 _transformWorldInv;
+	mutable float4x4 _transform;
+	mutable float4x4 _transformInverse;
+	mutable float4x4 _transformInverseTranspose;
 
 	GameObjects _children;
 	GameObjectWeakPtr _parent;

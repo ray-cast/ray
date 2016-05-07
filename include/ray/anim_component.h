@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -42,14 +42,26 @@
 
 _NAME_BEGIN
 
-class AnimotionComponent final : public GameComponent
+class EXPORT AnimationComponent final : public GameComponent
 {
-	__DeclareSubClass(AnimotionComponent, GameComponent)
+	__DeclareSubClass(AnimationComponent, GameComponent)
 public:
-	AnimotionComponent() noexcept;
-	~AnimotionComponent() noexcept;
+	AnimationComponent() noexcept;
+	~AnimationComponent() noexcept;
 
 	bool play(const std::string& filename) noexcept;
+	void pause() noexcept;
+	void stop() noexcept;
+
+	void enableAnimOnVisiable(bool visiableOnly) noexcept;
+	bool enableAnimOnVisiable() const noexcept;
+
+	void enablePhysics(bool physics) noexcept;
+	bool enablePhysics() const noexcept;
+
+	void setTransforms(const GameObjects& transforms) noexcept;
+	void setTransforms(GameObjects&& transforms) noexcept;
+	const GameObjects& getTransforms() const noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
@@ -57,27 +69,33 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 private:
-	bool _buildAnimotion(const std::string& filename) noexcept;
+	bool _playAnimation(const std::string& filename) noexcept;
+	void _updateAnimation() noexcept;
+	void _destroyAnimation() noexcept;
 
 private:
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
 
-	virtual void onAttach() noexcept;
-	virtual void onDetach() noexcept;
-
 	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
+
+	virtual void onMeshChange() noexcept;
+	virtual void onMeshWillRender(class RenderPipeline&) noexcept;
 
 	virtual void onFrameEnd() noexcept;
 
 private:
+	bool _enableAnimation;
+	bool _enableAnimOnVisableOnly;
+	bool _enablePhysics;
+	bool _needUpdate;
 
-	bool _playing;
-
-	GameComponentWeakPtr _meshComponent;
+	GameObjects _transforms;
 	AnimationPropertyPtr _animtion;
-	AnimationPropertyPtr _sharedAnimtion;
+
+	std::function<void()> _onMeshChange;
+	std::function<void(RenderPipeline&)> _onMeshWillRender;
 };
 
 _NAME_END

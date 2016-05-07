@@ -50,26 +50,16 @@ public:
 	PhysicsShapeMesh() noexcept;
 	~PhysicsShapeMesh() noexcept;
 
-	void setup(const Vector3Array& vertices, const std::vector<std::uint32_t>& face, const AABB& aabb) noexcept;
+	void setup(const Vector3Array& vertices, const UintArray& face, const AABB& aabb) noexcept;
 	void close() noexcept;
 
-	void addMesh(const Vector3Array& vertices, const std::vector<std::uint32_t>& face) noexcept;
+	void addMesh(const Vector3Array& vertices, const UintArray& face) noexcept;
 
 private:
 
 	virtual btCollisionShape* getCollisionShape() noexcept;
 
 private:
-
-	int _numVertices;
-	int _numFaces;
-
-	int _indexStride;
-	int _vertexStride;
-
-	std::vector<float3> _vertexBase;
-	std::vector<std::uint32_t> _indexBase;
-
 	btBvhTriangleMeshShape* _shape;
 	btStridingMeshInterface* _array;
 };

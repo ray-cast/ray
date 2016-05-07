@@ -56,6 +56,14 @@ SET(GUI_FEATURES_LIST
 )
 SOURCE_GROUP("system\\gui" FILES ${GUI_FEATURES_LIST})
 
+SET(ANIM_FEATURES_LIST
+    ${HEADER_PATH}/anim_component.h
+    ${SOURCE_PATH}/anim_component.cpp
+    ${HEADER_PATH}/ik_solver_component.h
+    ${SOURCE_PATH}/ik_solver_component.cpp
+)
+SOURCE_GROUP("system\\animation" FILES ${ANIM_FEATURES_LIST})
+
 SET(RENDER_FEATURES_LIST
     ${HEADER_PATH}/camera_component.h
     ${SOURCE_PATH}/camera_component.cpp
@@ -67,8 +75,6 @@ SET(RENDER_FEATURES_LIST
     ${SOURCE_PATH}/mesh_render_component.cpp
     ${HEADER_PATH}/render_component.h
     ${SOURCE_PATH}/render_component.cpp
-    ${HEADER_PATH}/anim_component.h
-    ${SOURCE_PATH}/anim_component.cpp
     ${HEADER_PATH}/skinned_mesh_render_component.h
     ${SOURCE_PATH}/skinned_mesh_render_component.cpp
     ${HEADER_PATH}/skinned_joint_render_component.h
@@ -113,6 +119,8 @@ SET(PHYSIC_FEATURES_LIST
     ${HEADER_PATH}/physics_heightmap_component.h
     ${SOURCE_PATH}/physics_mesh_component.cpp
     ${HEADER_PATH}/physics_mesh_component.h
+    ${SOURCE_PATH}/physics_sphere_component.cpp
+    ${HEADER_PATH}/physics_sphere_component.h
     ${SOURCE_PATH}/physics_shape_component.cpp
     ${HEADER_PATH}/physics_shape_component.h
     ${SOURCE_PATH}/physics_features.cpp
@@ -152,15 +160,23 @@ SET(SCRIGPU_SYSTEM_LIST
 )
 SOURCE_GROUP("system\\script" FILES ${SCRIGPU_SYSTEM_LIST})
 
+SET(RESOURCE_LIST
+    ${HEADER_PATH}/res_manager.h
+    ${SOURCE_PATH}/res_manager.cpp
+)
+SOURCE_GROUP("system\\resource" FILES ${RESOURCE_LIST})
+
 ADD_LIBRARY(ray SHARED
     ${GAMEAPP_LIST}
     ${GUI_FEATURES_LIST}
+    ${ANIM_FEATURES_LIST}
     ${RENDER_FEATURES_LIST}
     ${SOUND_FEATURES_LIST}
     ${INPUT_FEATURES_LIST}
     ${PHYSIC_FEATURES_LIST}
     ${NETWORK_FEATURES_LIST}
     ${SCRIGPU_SYSTEM_LIST}
+    ${RESOURCE_LIST}
 )
 
 TARGET_LINK_LIBRARIES(ray libplatform libimage libinput libmodel)

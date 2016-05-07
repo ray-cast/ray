@@ -134,7 +134,7 @@ MyGuiWindowImpl::getMaxSize(int& w, int& h) const noexcept
 }
 
 void
-MyGuiWindowImpl::addWindowButtonPressListener(std::function<void()>& func) noexcept
+MyGuiWindowImpl::addWindowButtonPressListener(std::function<void()>* func) noexcept
 {
 	assert(_window);
 	assert(!_onWindowButtonPress.find(func));
@@ -144,7 +144,7 @@ MyGuiWindowImpl::addWindowButtonPressListener(std::function<void()>& func) noexc
 }
 
 void
-MyGuiWindowImpl::addWindowCoordChangeListener(std::function<void()>& func) noexcept
+MyGuiWindowImpl::addWindowCoordChangeListener(std::function<void()>* func) noexcept
 {
 	assert(_window);
 	assert(!_onWindowCoordChange.find(func));
@@ -154,7 +154,7 @@ MyGuiWindowImpl::addWindowCoordChangeListener(std::function<void()>& func) noexc
 }
 
 void
-MyGuiWindowImpl::removeWindowButtonPressListener(std::function<void()>& func) noexcept
+MyGuiWindowImpl::removeWindowButtonPressListener(std::function<void()>* func) noexcept
 {
 	assert(_window);
 	assert(_onWindowButtonPress.find(func));
@@ -162,7 +162,7 @@ MyGuiWindowImpl::removeWindowButtonPressListener(std::function<void()>& func) no
 }
 
 void
-MyGuiWindowImpl::removeWindowCoordChangeListener(std::function<void()>& func) noexcept
+MyGuiWindowImpl::removeWindowCoordChangeListener(std::function<void()>* func) noexcept
 {
 	assert(_window);
 	assert(_onWindowCoordChange.find(func));
@@ -245,25 +245,25 @@ MyGuiWindow::getMaxSize(int& w, int& h) const noexcept
 }
 
 void
-MyGuiWindow::addWindowButtonPressListener(std::function<void()>& func) noexcept
+MyGuiWindow::addWindowButtonPressListener(std::function<void()>* func) noexcept
 {
 	_impl.addWindowButtonPressListener(func);
 }
 
 void
-MyGuiWindow::addWindowCoordChangeListener(std::function<void()>& func) noexcept
+MyGuiWindow::addWindowCoordChangeListener(std::function<void()>* func) noexcept
 {
 	_impl.addWindowCoordChangeListener(func);
 }
 
 void
-MyGuiWindow::removeWindowButtonPressListener(std::function<void()>& func) noexcept
+MyGuiWindow::removeWindowButtonPressListener(std::function<void()>* func) noexcept
 {
 	_impl.removeWindowButtonPressListener(func);
 }
 
 void
-MyGuiWindow::removeWindowCoordChangeListener(std::function<void()>& func) noexcept
+MyGuiWindow::removeWindowCoordChangeListener(std::function<void()>* func) noexcept
 {
 	_impl.removeWindowCoordChangeListener(func);
 }

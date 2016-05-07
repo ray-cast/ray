@@ -34,20 +34,30 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MAIN_H_
-#define _H_MAIN_H_
+#ifndef _H_SKINNING_H_
+#define _H_SKINNING_H_
 
-#include <SampleLoader.h>
+#include <ray/game_component.h>
 
-class DemoSound final : public SampleLoader
+class SkinningComponent final : public ray::GameComponent
 {
-	__DeclareSubClass(DemoUI, SampleLoader)
+	__DeclareSubClass(SkinningComponent, ray::GameComponent)
 public:
-	DemoSound() noexcept;
-	~DemoSound() noexcept;
+	SkinningComponent() noexcept;
+	~SkinningComponent() noexcept;
 
-	bool initialize() except;
-	void run() except;
+	ray::GameComponentPtr clone() const noexcept;
+
+private:
+	virtual void onActivate() except;
+	virtual void onDeactivate() noexcept;
+
+private:
+	SkinningComponent(const SkinningComponent&) = delete;
+	SkinningComponent& operator=(const SkinningComponent&) = delete;
+
+private:
+	ray::GameObjects _objects;
 };
 
 #endif

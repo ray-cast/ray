@@ -274,7 +274,7 @@ OGLDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
 }
 
 void
-OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
+OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept
 {
 	assert(pipeline);
 	assert(pipeline->isInstanceOf<OGLPipeline>());
@@ -314,7 +314,7 @@ OGLDeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
+OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<OGLDescriptorSet>());
@@ -337,7 +337,7 @@ OGLDeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-OGLDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
+OGLDeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLGraphicsData>());
@@ -355,7 +355,7 @@ OGLDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 }
 
 void
-OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+OGLDeviceContext::setIndexBufferData(GraphicsDataPtr& data) noexcept
 {
 	assert(_glcontext->getActive());
 

@@ -38,63 +38,72 @@
 
 _NAME_BEGIN
 
-JointSpring::JointSpring() noexcept
-	: Joint(Joint::Spring)
-	, _spring(0)
+PhysicsJointSpring::PhysicsJointSpring() noexcept
+	: _spring(0)
 	, _damper(0)
 	, _minDistance(0)
 	, _maxDistance(10)
 {
 }
 
-JointSpring::~JointSpring() noexcept
+PhysicsJointSpring::~PhysicsJointSpring() noexcept
+{
+}
+
+void 
+PhysicsJointSpring::setup() noexcept
+{
+}
+
+void 
+PhysicsJointSpring::close() noexcept
 {
 }
 
 void
-JointSpring::setSpring(float spring) noexcept
+PhysicsJointSpring::setSpring(float spring) noexcept
 {
 	_spring = spring;
 }
 
 void
-JointSpring::setDamper(float damper) noexcept
+PhysicsJointSpring::setDamper(float damper) noexcept
 {
 	_damper = damper;
 }
 
 void
-JointSpring::setMinDistance(float distance) noexcept
+PhysicsJointSpring::setMinDistance(float distance) noexcept
 {
 	_minDistance = distance;
 }
 
 void
-JointSpring::setMaxDistance(float distance) noexcept
+PhysicsJointSpring::setMaxDistance(float distance) noexcept
 {
 	_maxDistance = distance;
 }
 
 float
-JointSpring::getSpring() const noexcept
+PhysicsJointSpring::getSpring() const noexcept
 {
 	return _spring;
 }
 
 float
-JointSpring::getDamper() const noexcept
+PhysicsJointSpring::getDamper() const noexcept
 {
 	return _damper;
 }
 
 float
-JointSpring::getMinDistance() const noexcept
+PhysicsJointSpring::getMinDistance() const noexcept
 {
 	return _minDistance;
 }
 
 float
-JointSpring::getMaxDistance() const noexcept
+PhysicsJointSpring::getMaxDistance() const noexcept
 {
 	return _maxDistance;
 }

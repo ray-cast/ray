@@ -85,11 +85,11 @@ public:
 	void setFlowDirection(GuiFlowDirection _value) noexcept;
 	GuiFlowDirection getFlowDirection() const noexcept;
 
-	void addComboAcceptListener(std::function<void()>& func) noexcept;
-	void addComboChangePositionListener(std::function<void()>& func) noexcept;
+	void addComboAcceptListener(std::function<void()>* func) noexcept;
+	void addComboChangePositionListener(std::function<void()>* func) noexcept;
 
-	void removeComboAcceptListener(std::function<void()>& func) noexcept;
-	void removeComboChangePositionListener(std::function<void()>& func) noexcept;
+	void removeComboAcceptListener(std::function<void()>* func) noexcept;
+	void removeComboChangePositionListener(std::function<void()>* func) noexcept;
 
 	GuiEditBoxPtr getGuiEditBox() const noexcept;
 
@@ -157,11 +157,11 @@ public:
 	void setFlowDirection(GuiFlowDirection _value) noexcept;
 	GuiFlowDirection getFlowDirection() const noexcept;
 
-	void addComboAcceptListener(std::function<void()>& func) noexcept;
-	void addComboChangePositionListener(std::function<void()>& func) noexcept;
+	void addComboAcceptListener(std::function<void()>* func) noexcept;
+	void addComboChangePositionListener(std::function<void()>* func) noexcept;
 
-	void removeComboAcceptListener(std::function<void()>& func) noexcept;
-	void removeComboChangePositionListener(std::function<void()>& func) noexcept;
+	void removeComboAcceptListener(std::function<void()>* func) noexcept;
+	void removeComboChangePositionListener(std::function<void()>* func) noexcept;
 
 private:
 	MyGuiComboBox(const MyGuiComboBox&) noexcept = delete;

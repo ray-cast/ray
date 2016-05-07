@@ -300,6 +300,12 @@ typedef std::vector<double> DoubleArray;
 typedef std::vector<double2> Double2Array;
 typedef std::vector<double3> Double3Array;
 typedef std::vector<double4> Double4Array;
+typedef std::vector<float2x2> Float2x2Array;
+typedef std::vector<float3x3> Float3x3Array;
+typedef std::vector<float4x4> Float4x4Array;
+typedef std::vector<double2x2> double2x2Array;
+typedef std::vector<double3x3> double3x3Array;
+typedef std::vector<double4x4> double4x4Array;
 
 _NAME_END
 

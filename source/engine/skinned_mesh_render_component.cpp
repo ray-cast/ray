@@ -35,104 +35,84 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/skinned_mesh_render_component.h>
-#include <ray/mesh_component.h>
-#include <ray/render_system.h>
-#include <ray/material.h>
-#include <ray/render_mesh.h>
-#include <ray/render_feature.h>
-#include <ray/game_server.h>
-#include <ray/res_manager.h>
 #include <ray/graphics_data.h>
 #include <ray/geometry.h>
+#include <ray/render_system.h>
+#include <ray/mesh_component.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
 __ImplementSubClass(SkinnedMeshRenderComponent, MeshRenderComponent, "SkinnedMeshRender")
 
 SkinnedMeshRenderComponent::SkinnedMeshRenderComponent() noexcept
+	: _onMeshChange(std::bind(&SkinnedMeshRenderComponent::onMeshChange, this))
 {
+}
+
+SkinnedMeshRenderComponent::SkinnedMeshRenderComponent(MaterialPtr& material, bool shared) noexcept
+{
+	if (shared)
+		this->setSharedMaterial(material);
+	else
+		this->setMaterial(material);
+}
+
+SkinnedMeshRenderComponent::SkinnedMeshRenderComponent(MaterialPtr&& material, bool shared) noexcept
+{
+	if (shared)
+		this->setSharedMaterial(material);
+	else
+		this->setMaterial(material);
+}
+
+SkinnedMeshRenderComponent::SkinnedMeshRenderComponent(const Materials& materials, bool shared) noexcept
+{
+	if (shared)
+		this->setSharedMaterials(materials);
+	else
+		this->setMaterials(materials);
+}
+
+SkinnedMeshRenderComponent::SkinnedMeshRenderComponent(Materials&& materials, bool shared) noexcept
+{
+	if (shared)
+		this->setSharedMaterials(materials);
+	else
+		this->setMaterials(materials);
 }
 
 SkinnedMeshRenderComponent::~SkinnedMeshRenderComponent() noexcept
 {
 }
 
-bool
-SkinnedMeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcept
+void 
+SkinnedMeshRenderComponent::setTransforms(const GameObjects& transforms) noexcept
 {
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (!component)
-		return false;
+	_transforms = transforms;
+}
 
-	auto model = ResManager::instance()->find<Model>(component->getName());
-	if (!model)
-		return false;
+void 
+SkinnedMeshRenderComponent::setTransforms(GameObjects&& transforms) noexcept
+{
+	_transforms = std::move(transforms);
+}
 
-	auto& materials = model->getMaterialsList();
-	if (materials.empty())
-		return false;
-
-	for (auto& material : materials)
-	{
-		float3 specular(0.5f);
-		float3 diffuseColor(1.0f);
-		float4 quality(0.0f);
-		float shininess = 0.0;
-		float opacity = 1.0;
-		std::string diffuseTexture;
-
-		material->get(MATKEY_OPACITY, opacity);
-		material->get(MATKEY_SHININESS, shininess);
-		material->get(MATKEY_COLOR_DIFFUSE, diffuseColor);
-		material->get(MATKEY_COLOR_SPECULAR, specular);
-		material->get(MATKEY_TEXTURE_DIFFUSE(0), diffuseTexture);
-
-		MaterialPtr effect;
-		effect = RenderSystem::instance()->createMaterial(filename);
-		if (!effect)
-			_materials.push_back(nullptr);
-		else
-		{
-			auto luminance = [](const float3& rgb)
-			{
-				const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
-				return math::dot(rgb, lumfact);
-			};
-
-			auto texture = RenderSystem::instance()->createTexture(model->getDirectory() + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D);
-			if (texture)
-			{
-				quality.x = 1.0f;
-				effect->getParameter("texDiffuse")->uniformTexture(texture);
-			}
-
-			effect->getParameter("quality")->uniform4f(quality);
-			effect->getParameter("diffuse")->uniform3f(diffuseColor);
-			effect->getParameter("specular")->uniform1f(luminance(specular));
-			effect->getParameter("shininess")->uniform1f(shininess);
-			effect->getParameter("joints")->uniformBuffer(_jointData);
-
-			_materials.push_back(effect);
-		}
-	}
-
-	return true;
+const GameObjects&
+SkinnedMeshRenderComponent::getTransforms() const noexcept
+{
+	return _transforms;
 }
 
 void 
 SkinnedMeshRenderComponent::onActivate() except
 {
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (!component)
-		return;
-
-	auto mesh = component->getMesh();
-	if (!mesh)
+	if (_transforms.empty())
 		return;
 
 	if (!_jointData)
 	{
-		std::size_t jointNums = mesh->getBoneArray().size();
+		std::size_t jointNums = _transforms.size();
 		if (jointNums <= 64)
 			jointNums = 64;
 		else if (jointNums <= 128)
@@ -151,65 +131,93 @@ SkinnedMeshRenderComponent::onActivate() except
 		_jointData = RenderSystem::instance()->createGraphicsData(jointDesc);
 	}
 
-	if (!this->hasMaterial())
+	if (this->hasMaterial())
 	{
-		if (!_material.empty())
-			_buildMaterials(_material);
-		else
+		auto& materials = this->getMaterials();
+		for (auto& it : materials)
 		{
-			std::size_t numBone = mesh->getBoneArray().size();
-
-			std::string defaultMaterial;
-			if (numBone <= 64)
-				defaultMaterial = "sys:fx/opacity_skinning64.fxml";
-			else if (numBone <= 128)
-				defaultMaterial = "sys:fx/opacity_skinning128.fxml";
-			else if (numBone <= 256)
-				defaultMaterial = "sys:fx/opacity_skinning256.fxml";
-			else if (numBone <= 320)
-				defaultMaterial = "sys:fx/opacity_skinning320.fxml";
-			else
-				defaultMaterial = "sys:fx/opacity_skinning0.fxml";
-
-			_buildDefaultMaterials(defaultMaterial);
+			auto param = it->getParameter("joints");
+			if (param)
+				param->uniformBuffer(_jointData);
 		}
 	}
 
-	_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
-	_attacRenderObjects();
+	auto meshComponent = this->getComponent<MeshComponent>();
+	if (meshComponent)
+		_mesh = meshComponent->getMesh();
+
+	MeshRenderComponent::onActivate();
 }
 
 void 
 SkinnedMeshRenderComponent::onDeactivate() noexcept
 {
 	MeshRenderComponent::onDeactivate();
+
+	_mesh.reset();
+	_jointData.reset();
+}
+
+void 
+SkinnedMeshRenderComponent::onAttachComponent(GameComponentPtr& component) noexcept
+{
+	if (component->isInstanceOf<MeshComponent>())
+	{
+		component->downcast<MeshComponent>()->addMeshChangeListener(&_onMeshChange);
+		_mesh = component->downcast<MeshComponent>()->getMesh();
+	}
+}
+
+void 
+SkinnedMeshRenderComponent::onDetachComponent(GameComponentPtr& component) noexcept
+{
+	if (component->isInstanceOf<MeshComponent>())
+	{
+		component->downcast<MeshComponent>()->removeMeshChangeListener(&_onMeshChange);
+		_mesh = nullptr;
+	}		
+}
+
+void
+SkinnedMeshRenderComponent::onMeshChange() noexcept
+{
+	_mesh = this->getComponent<MeshComponent>()->getMesh();
 }
 
 void
 SkinnedMeshRenderComponent::onFrameEnd() noexcept
 {
-	auto meshComponent = this->getComponent<MeshComponent>();
-	if (!meshComponent)
-		return;
-
-	auto mesh = meshComponent->getMesh();
-	if (!mesh)
+	if (!_mesh)
 		return;
 
 	float4x4* data;
 	if (_jointData->map(0, _jointData->getGraphicsDataDesc().getStreamSize(), (void**)&data))
 	{
-		const auto& bones = mesh->getBoneArray();
-		for (auto& bone : bones)
+		auto& bindposes = _mesh->getBindposes();
+		if (bindposes.size() != _transforms.size())
 		{
-			*data++ = bone.getLocalTransform();
+			*data++ = float4x4::One;
+		}
+		else
+		{
+			std::size_t index = 0;
+			for (auto& transform : _transforms)
+				*data++ = math::transformMultiply(bindposes[index++], transform->getTransform());
 		}
 	}
 
 	_jointData->unmap();
 
+	AABB aabb;
+	for (auto& transform : _transforms)
+	{
+		aabb.encapsulate(transform->getTranslate());
+	}
+
+	_boundingBox.set(aabb);
+
 	for (auto& renderObject : _renderObjects)
-		renderObject->setBoundingBox(mesh->getBoundingBox());
+		renderObject->setBoundingBox(_boundingBox);
 }
 
 _NAME_END

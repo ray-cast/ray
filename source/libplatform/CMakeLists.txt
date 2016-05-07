@@ -109,8 +109,6 @@ SET(PLATFORM_IO_LIST
     ${SOURCE_PATH}/package.cpp
     ${HEADER_PATH}/res_loader.h
     ${SOURCE_PATH}/res_loader.cpp
-    ${HEADER_PATH}/res_manager.h
-    ${SOURCE_PATH}/res_manager.cpp
     ${SOURCE_PATH}/stream.cpp
     ${HEADER_PATH}/stream.h
     ${SOURCE_PATH}/streambuf.cpp

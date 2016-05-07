@@ -45,7 +45,6 @@ DefaultInputMouse::DefaultInputMouse() noexcept
 	, _mouseY(0)
 	, _centerX(0)
 	, _centerY(0)
-	, _isMouseLock(false)
 	, _isMouseLocked(false)
 	, _isMouseHide(false)
 {
@@ -62,8 +61,6 @@ DefaultInputMouse::lockMouse() noexcept
 	if (!isLockedMouse())
 	{
 		this->onHideMouse();
-
-		_isMouseLock = true;
 		_isMouseLocked = true;
 	}
 }
@@ -74,8 +71,6 @@ DefaultInputMouse::unlockMouse() noexcept
 	if (isLockedMouse())
 	{
 		this->onShowMouse();
-
-		_isMouseLock = false;
 		_isMouseLocked = false;
 	}
 }
@@ -182,7 +177,7 @@ DefaultInputMouse::onFrameEnd() noexcept
 void
 DefaultInputMouse::onObtainCapture() noexcept
 {
-	if (_isMouseLock)
+	if (_isMouseLocked)
 	{
 		this->hideMouse();
 		_isMouseLocked = true;

@@ -88,9 +88,7 @@ private:
 
 protected:
 
-	bool _isMouseLock;
 	bool _isMouseLocked;
-
 	bool _isMouseHide;
 
 	float _axisX;

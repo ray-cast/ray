@@ -248,13 +248,11 @@ SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			material->set(MATKEY_TEXTURE_SPECULAR(0), it.SpecularTexture);
 		}
 
-		model.addMaterial(material);
+		model.addMaterial(std::move(material));
 	}
 
-	for (std::size_t meshIndex = 0; meshIndex < hdr.NumMeshes; meshIndex++)
+	for (auto& mesh : meshes)
 	{
-		auto& mesh = meshes[meshIndex];
-
 		for (std::size_t i = 0; i < mesh.NumVertexBuffers; i++)
 		{
 			stream.seekg(vbs[i].DataOffset, ios_base::beg);
@@ -299,23 +297,22 @@ SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 		stream.seekg(ibs[mesh.IndexBuffer].DataOffset, ios_base::beg);
 
-		auto sizeofdata = ibs[mesh.IndexBuffer].SizeBytes / ibs[mesh.IndexBuffer].NumIndices;
+		auto sizeOfData = ibs[mesh.IndexBuffer].SizeBytes / ibs[mesh.IndexBuffer].NumIndices;
 
 		for (std::size_t j = 0; j < ibs[mesh.IndexBuffer].NumIndices; j++)
 		{
 			std::uint32_t buffer = 0;
-			stream.read((char*)&buffer, sizeofdata);
+			stream.read((char*)&buffer, sizeOfData);
 
 			faces.push_back(buffer);
 		}
 
 		MeshPropertyPtr subset = std::make_shared<MeshProperty>();
-		subset->setMaterialID(0);
-		subset->setVertexArray(vertices);
-		subset->setNormalArray(normals);
-		subset->setTexcoordArray(texcoord);
-		subset->setTangentArray(tangets);
-		subset->setFaceArray(faces);
+		subset->setVertexArray(std::move(vertices));
+		subset->setNormalArray(std::move(normals));
+		subset->setTexcoordArray(std::move(texcoord));
+		subset->setTangentArray(std::move(tangets));
+		subset->setFaceArray(std::move(faces));
 
 		if (root)
 			root->addChild(subset);
@@ -323,7 +320,7 @@ SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			root = subset;
 	}
 
-	model.addMesh(root);
+	model.addMesh(std::move(root));
 
 	return true;
 }

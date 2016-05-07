@@ -3,7 +3,7 @@
     <attribute name="Skinning"/>
     <object>
         <attribute name="first_person_camera"/>
-        <attribute position="0,22,-22"/>
+        <attribute position="0,45,-85"/>
         <attribute rotate="25,0,0"/>
         <attribute active="true"/>
         <component class="Camera">
@@ -14,47 +14,16 @@
         <component class="FirstPersonCamera">
         </component>
     </object>
-   <object>
-        <attribute name="stage"/>
-        <attribute position="0,0,0"/>
-        <attribute rotate="0,0,0"/>
-        <attribute scale="1,1,1"/>
-        <attribute active="true"/>
-        <component class="Mesh">
-            <attribute name="dlc:skinning/models/PDF 活动小丑/stage.pmx"/>
-        </component>
-        <component class="MeshRender">
-            <attribute castshadow="true"/>
-            <attribute receiveshadow="false"/>
-        </component>
-    </object>
     <object>
-        <attribute name="miku"/>
-        <attribute position="0,0,0"/>
-        <attribute rotate="0,0,0"/>
-        <attribute scale="1,1,1"/>
-        <attribute active="true"/>
-        <component class="Mesh">
-            <attribute name="dlc:skinning/models/PDF 活动小丑/活动小丑.pmx"/>
-        </component>
-        <component class="Animotion">
-            <attribute name="dlc:skinning/animotion/愛言葉.vmd"/>
-        </component>
-        <component class="SkinnedMeshRender">
-            <attribute castshadow="true"/>
-            <attribute receiveshadow="false"/>
-        </component>
-    </object>
-    <object>
-        <attribute name="sun"/>
-        <attribute position="0,30,0"/>
+        <attribute name="spot"/>
+        <attribute position="0,60,0"/>
         <attribute rotate="90,0,0"/>
         <attribute active="true"/>
         <component class="Light">
-            <attribute type="sun"/>
+            <attribute type="spot"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="40.0"/>
-            <attribute intensity="1.0"/>
+            <attribute range="60.0"/>
+            <attribute intensity="2.0"/>
             <attribute shadow="true"/>
             <attribute soft="true"/>
             <attribute sss="false"/>
@@ -82,6 +51,12 @@
             <attribute range="100.0"/>
             <attribute color="1.0,0.6,0.6"/>
             <attribute intensity="0.1"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="skinning"/>
+        <attribute active="true"/>
+        <component class="Skinning">
         </component>
     </object>
 </scene>

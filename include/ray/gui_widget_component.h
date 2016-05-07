@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -55,37 +55,37 @@ public:
 	void setSkin(const std::string& skin) except;
 	const std::string& getSkin() const noexcept;
 
-	void addKeySetFocus(std::function<void()> func) noexcept;
-	void addKeyLostFocus(std::function<void()> func) noexcept;
-	void addKeyButtonPressed(std::function<void()> func) noexcept;
-	void addKeyButtonReleased(std::function<void()> func) noexcept;
+	void addKeySetFocus(std::function<void()>* func) noexcept;
+	void addKeyLostFocus(std::function<void()>* func) noexcept;
+	void addKeyButtonPressed(std::function<void()>* func) noexcept;
+	void addKeyButtonReleased(std::function<void()>* func) noexcept;
 
-	void addMouseMove(std::function<void()> func) noexcept;
-	void addMouseDrag(std::function<void()> func) noexcept;
-	void addMouseWheel(std::function<void()> func) noexcept;
+	void addMouseMove(std::function<void()>* func) noexcept;
+	void addMouseDrag(std::function<void()>* func) noexcept;
+	void addMouseWheel(std::function<void()>* func) noexcept;
 
-	void addMouseSetFocusListener(std::function<void()> func) noexcept;
-	void addMouseLostFocusListener(std::function<void()> func) noexcept;
-	void addMouseButtonPressedListener(std::function<void()> func) noexcept;
-	void addMouseButtonReleasedListener(std::function<void()> func) noexcept;
-	void addMouseButtonClickListener(std::function<void()> func) noexcept;
-	void addMouseButtonDoubleClickListener(std::function<void()> func) noexcept;
+	void addMouseSetFocusListener(std::function<void()>* func) noexcept;
+	void addMouseLostFocusListener(std::function<void()>* func) noexcept;
+	void addMouseButtonPressedListener(std::function<void()>* func) noexcept;
+	void addMouseButtonReleasedListener(std::function<void()>* func) noexcept;
+	void addMouseButtonClickListener(std::function<void()>* func) noexcept;
+	void addMouseButtonDoubleClickListener(std::function<void()>* func) noexcept;
 
-	void removeKeySetFocus(std::function<void()> func) noexcept;
-	void removeKeyLostFocus(std::function<void()> func) noexcept;
-	void removeKeyButtonPressed(std::function<void()> func) noexcept;
-	void removeKeyButtonReleased(std::function<void()> func) noexcept;
+	void removeKeySetFocus(std::function<void()>* func) noexcept;
+	void removeKeyLostFocus(std::function<void()>* func) noexcept;
+	void removeKeyButtonPressed(std::function<void()>* func) noexcept;
+	void removeKeyButtonReleased(std::function<void()>* func) noexcept;
 
-	void removeMouseMove(std::function<void()> func) noexcept;
-	void removeMouseDrag(std::function<void()> func) noexcept;
-	void removeMouseWheel(std::function<void()> func) noexcept;
+	void removeMouseMove(std::function<void()>* func) noexcept;
+	void removeMouseDrag(std::function<void()>* func) noexcept;
+	void removeMouseWheel(std::function<void()>* func) noexcept;
 
-	void removeMouseSetFocusListener(std::function<void()> func) noexcept;
-	void removeMouseLostFocusListener(std::function<void()> func) noexcept;
-	void removeMouseButtonPressedListener(std::function<void()> func) noexcept;
-	void removeMouseButtonReleasedListener(std::function<void()> func) noexcept;
-	void removeMouseButtonClickListener(std::function<void()> func) noexcept;
-	void removeMouseButtonDoubleClickListener(std::function<void()> func) noexcept;
+	void removeMouseSetFocusListener(std::function<void()>* func) noexcept;
+	void removeMouseLostFocusListener(std::function<void()>* func) noexcept;
+	void removeMouseButtonPressedListener(std::function<void()>* func) noexcept;
+	void removeMouseButtonReleasedListener(std::function<void()>* func) noexcept;
+	void removeMouseButtonClickListener(std::function<void()>* func) noexcept;
+	void removeMouseButtonDoubleClickListener(std::function<void()>* func) noexcept;
 
 protected:
 	virtual void load(iarchive& reader) noexcept;

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_RENDERER)
 #include <ray/render_feature.h>
 #include <ray/render_scene.h>
 #include <ray/render_system.h>
@@ -81,15 +80,9 @@ RenderFeature::getRenderSetting() const noexcept
 }
 
 RenderScenePtr
-RenderFeature::getRenderScene(GameScene* scene) noexcept
+RenderFeature::getRenderScene() noexcept
 {
-	return _renderScenes[scene->getInstanceID()];
-}
-
-RenderScenePtr
-RenderFeature::getRenderScene(GameScenePtr scene) noexcept
-{
-	return _renderScenes[scene->getInstanceID()];
+	return _renderScene;
 }
 
 GameFeaturePtr
@@ -103,35 +96,17 @@ RenderFeature::onActivate() except
 {
 	if (!RenderSystem::instance()->setup(_renderSetting))
 		throw failure("RenderSystem::instance() fail.");
+
+	_renderScene = RenderSystem::instance()->createRenderScene();
+	if (!_renderScene)
+		throw failure("RenderSystem::createRenderScene() fail.");
 }
 
 void
 RenderFeature::onDeactivate() noexcept
 {
+	RenderSystem::instance()->removeRenderScene(std::move(_renderScene));
 	RenderSystem::instance()->close();
-}
-
-void
-RenderFeature::onOpenScene(GameScenePtr scene) except
-{
-	if (!_renderScenes[scene->getInstanceID()])
-	{
-		auto renderScene = std::make_shared<RenderScene>();
-		_renderScenes[scene->getInstanceID()] = renderScene;
-
-		RenderSystem::instance()->addRenderScene(renderScene);
-	}
-}
-
-void
-RenderFeature::onCloseScene(GameScenePtr scene) noexcept
-{
-	auto renderScene = _renderScenes[scene->getInstanceID()];
-	if (renderScene)
-	{
-		RenderSystem::instance()->removeRenderScene(renderScene);
-		_renderScenes[scene->getInstanceID()] = nullptr;
-	}
 }
 
 void 
@@ -148,23 +123,16 @@ RenderFeature::onMessage(const MessagePtr& message) except
 }
 
 void
-RenderFeature::onFrameBegin() except
+RenderFeature::onFrameBegin() noexcept
 {
 	RenderSystem::instance()->renderBegin();
 }
 
 void
-RenderFeature::onFrame() except
-{
-}
-
-void
-RenderFeature::onFrameEnd() except
+RenderFeature::onFrameEnd() noexcept
 {
 	RenderSystem::instance()->render();
 	RenderSystem::instance()->renderEnd();
 }
 
 _NAME_END
-
-#endif

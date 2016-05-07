@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_system.h>
+#include <ray/render_scene.h>
 #include <ray/render_pipeline_manager.h>
 
 _NAME_BEGIN
@@ -68,20 +69,16 @@ RenderSystem::setup(const RenderSetting& setting) noexcept
 void
 RenderSystem::close() noexcept
 {
+	assert(_sceneList.empty());
 	_pipelineManager.reset();
 }
 
-bool
-RenderSystem::addRenderScene(RenderScenePtr scene) noexcept
+RenderScenePtr
+RenderSystem::createRenderScene() noexcept
 {
-	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
-	if (it == _sceneList.end())
-	{
-		_sceneList.push_back(scene);
-		return true;
-	}
-
-	return false;
+	auto scene = std::make_shared<RenderScene>();
+	_sceneList.push_back(scene);
+	return scene;
 }
 
 void
@@ -89,9 +86,7 @@ RenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
 {
 	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
 	if (it != _sceneList.end())
-	{
 		_sceneList.erase(it);
-	}
 }
 
 void

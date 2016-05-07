@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -41,13 +41,17 @@
 
 _NAME_BEGIN
 
-class PhysicsShapeMesh;
 class EXPORT PhysicsMeshComponent final : public PhysicsShapeComponent
 {
 	__DeclareSubClass(PhysicsMeshComponent, PhysicsShapeComponent)
 public:
 	PhysicsMeshComponent() noexcept;
 	~PhysicsMeshComponent() noexcept;
+
+	virtual GameComponentPtr clone() const noexcept;
+
+private:
+	void _buildShapeMesh() noexcept;
 
 private:
 	virtual void onActivate() noexcept;
@@ -59,13 +63,12 @@ private:
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 	virtual PhysicsShapePtr getCollisionShape() noexcept;
-	virtual GameComponentPtr clone() const noexcept;
-
-	void _buildShapeMesh() noexcept;
 
 private:
 
-	std::shared_ptr<PhysicsShapeMesh> _shape;
+	std::function<void()> _onShapeChange;
+
+	PhysicsShapePtr _shape;
 };
 
 _NAME_END

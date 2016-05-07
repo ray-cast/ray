@@ -70,15 +70,6 @@ public:
 	{
 	}
 
-	template<typename S>
-	explicit Matrix4x4t(const Matrix4x4t<S>& m) noexcept
-	{
-		a1 = static_cast<T>(m.a1); a2 = static_cast<T>(m.a2); a3 = static_cast<T>(m.a3); a4 = static_cast<T>(m.a4);
-		b1 = static_cast<T>(m.b1); b2 = static_cast<T>(m.b2); b3 = static_cast<T>(m.b3); b4 = static_cast<T>(m.b4);
-		c1 = static_cast<T>(m.c1); c2 = static_cast<T>(m.c2); c3 = static_cast<T>(m.c3); c4 = static_cast<T>(m.c4);
-		d1 = static_cast<T>(m.d1); d2 = static_cast<T>(m.d2); d3 = static_cast<T>(m.d3); d4 = static_cast<T>(m.d4);
-	}
-
 	Matrix4x4t(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noexcept
 	{
 		this->multiplyMatrices(m1, m2);
@@ -86,20 +77,44 @@ public:
 
 	explicit Matrix4x4t(const Matrix3x3t<T>& m) noexcept
 	{
-		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = static_cast<T>(0.0);
-		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = static_cast<T>(0.0);
-		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = static_cast<T>(0.0);
-		d1 = static_cast<T>(0.0); d2 = static_cast<T>(0.0); d3 = static_cast<T>(0.0); d4 = static_cast<T>(1.0);
+		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0f;
+		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0f;
+		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = 0.0f;
+		d1 = 0.0f; d2 = 0.0f; d3 = 0.0f; d4 = 1.0f;
+	}
+
+	explicit Matrix4x4t(Matrix3x3t<T>&& m) noexcept
+	{
+		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0f;
+		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0f;
+		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = 0.0f;
+		d1 = 0.0f; d2 = 0.0f; d3 = 0.0f; d4 = 1.0f;
 	}
 
 	template <typename S>
-	operator Matrix4x4t<S>() const noexcept
+	explicit operator Matrix4x4t<S>() const noexcept
 	{
 		return Matrix4x4t<S>(
 			static_cast<S>(a1), static_cast<S>(a2), static_cast<S>(a3), static_cast<S>(a4),
 			static_cast<S>(b1), static_cast<S>(b2), static_cast<S>(b3), static_cast<S>(b4),
 			static_cast<S>(c1), static_cast<S>(c2), static_cast<S>(c3), static_cast<S>(c4),
 			static_cast<S>(d1), static_cast<S>(d2), static_cast<S>(d3), static_cast<S>(d4));
+	}
+
+	Matrix4x4t& operator=(const Matrix3x3t<T>& m) noexcept
+	{
+		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0f;
+		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0f;
+		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = 0.0f;
+		d1 = 0.0f; d2 = 0.0f; d3 = 0.0f; d4 = 1.0f;
+	}
+
+	Matrix4x4t& operator=(Matrix3x3t<T>&& m) noexcept
+	{
+		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0f;
+		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0f;
+		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = 0.0f;
+		d1 = 0.0f; d2 = 0.0f; d3 = 0.0f; d4 = 1.0f;
 	}
 
 	T& operator[](std::size_t n) noexcept
@@ -243,6 +258,25 @@ public:
 			c3 <= 1.f + epsilon && c3 >= 1.f - epsilon);
 	}
 
+	bool isOnlyRotateAndTranslate() const noexcept
+	{
+		const static T epsilon = 10e-3f;
+
+		return (
+			a1 <= 1.f + epsilon && a1 >= 1.f - epsilon &&
+			a2 <= 1.f + epsilon && a2 >= 1.f - epsilon &&
+			a3 <= 1.f + epsilon && a3 >= 1.f - epsilon &&
+			b1 <= 1.f + epsilon && b1 >= 1.f - epsilon &&
+			b2 <= 1.f + epsilon && b2 >= 1.f - epsilon &&
+			b3 <= 1.f + epsilon && b3 >= 1.f - epsilon &&
+			c1 <= 1.f + epsilon && c1 >= 1.f - epsilon &&
+			c2 <= 1.f + epsilon && c2 >= 1.f - epsilon &&
+			c3 <= 1.f + epsilon && c3 >= 1.f - epsilon &&
+			a4 >= epsilon &&
+			b4 >= epsilon &&
+			c4 >= epsilon);
+	}
+
 	Matrix4x4t<T>& applyMatrix(const Matrix4x4t<T>& m) noexcept
 	{
 		Matrix4x4t matrix(*this);
@@ -348,6 +382,32 @@ public:
 		c2 *= z;
 		c3 *= z;
 		return *this;
+	}
+
+	Vector3t<T> getScale() const noexcept
+	{
+		Vector3t<T> vRows[3] =
+		{
+			Vector3t<T>(this->a1, this->b1, this->c1),
+			Vector3t<T>(this->a2, this->b2, this->c2),
+			Vector3t<T>(this->a3, this->b3, this->c3)
+		};
+
+		// extract the scaling factors
+		Vector3t<T> scaling;
+		scaling.x = vRows[0].length();
+		scaling.y = vRows[1].length();
+		scaling.z = vRows[2].length();
+
+		// and the sign of the scaling
+		if (determinant() < 0)
+		{
+			scaling.x = -scaling.x;
+			scaling.y = -scaling.y;
+			scaling.z = -scaling.z;
+		}
+
+		return scaling;
 	}
 
 	Matrix4x4t<T>& makeRotationX(T theta) noexcept
@@ -525,6 +585,54 @@ public:
 		return *this;
 	}
 
+	Quaterniont<T> getRotate() const noexcept
+	{
+		// extract the rows of the matrix
+		Vector3t<T> vRows[3] =
+		{
+			Vector3t<T>(this->a1, this->b1, this->c1),
+			Vector3t<T>(this->a2, this->b2, this->c2),
+			Vector3t<T>(this->a3, this->b3, this->c3)
+		};
+
+		// extract the scaling factors
+		Vector3t<T> scaling;
+		scaling.x = math::length(vRows[0]);
+		scaling.y = math::length(vRows[1]);
+		scaling.z = math::length(vRows[2]);
+
+		// and the sign of the scaling
+		if (determinant() < 0)
+		{
+			scaling.x = -scaling.x;
+			scaling.y = -scaling.y;
+			scaling.z = -scaling.z;
+		}
+
+		// and remove all scaling from the matrix
+		if (scaling.x)
+		{
+			vRows[0] /= scaling.x;
+		}
+		if (scaling.y)
+		{
+			vRows[1] /= scaling.y;
+		}
+		if (scaling.z)
+		{
+			vRows[2] /= scaling.z;
+		}
+
+		// build a 3x3 rotation matrix
+		Matrix3x3t<T> m(
+			vRows[0].x, vRows[1].x, vRows[2].x,
+			vRows[0].y, vRows[1].y, vRows[2].y,
+			vRows[0].z, vRows[1].z, vRows[2].z);
+
+		// and generate the rotation quaternion from it
+		return Quaterniont<T>(m);
+	}
+
 	Vector3t<T> getRight() const noexcept
 	{
 		return Vector3t<T>(a1, b1, c1);
@@ -563,40 +671,41 @@ public:
 		return *this;
 	}
 
-	void getTransform(Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
+	const Matrix4x4t<T>& getTransform(Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
 	{
 		const Matrix4x4t<T>& _this = *this;
 
 		// extract translation
-		position.x = _this[3][0];
-		position.y = _this[3][1];
-		position.z = _this[3][2];
+		position.x = this->a4;
+		position.y = this->b4;
+		position.z = this->c4;
 
 		// extract rotation
 		rotation = Quaterniont<T>((Matrix3x3t<T>)_this);
+		return *this;
 	}
 
-	void getTransform(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
+	const Matrix4x4t<T>& getTransform(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
 	{
 		const Matrix4x4t<T>& _this = *this;
 
 		// extract translation
-		position.x = _this[0][3];
-		position.y = _this[1][3];
-		position.z = _this[2][3];
+		position.x = this->a4;
+		position.y = this->b4;
+		position.z = this->c4;
 
 		// extract the rows of the matrix
 		Vector3t<T> vRows[3] =
 		{
-			Vector3t<T>(_this[0][0],_this[1][0],_this[2][0]),
-			Vector3t<T>(_this[0][1],_this[1][1],_this[2][1]),
-			Vector3t<T>(_this[0][2],_this[1][2],_this[2][2])
+			Vector3t<T>(this->a1, this->b1, this->c1),
+			Vector3t<T>(this->a2, this->b2, this->c2),
+			Vector3t<T>(this->a3, this->b3, this->c3)
 		};
 
 		// extract the scaling factors
-		scaling.x = vRows[0].length();
-		scaling.y = vRows[1].length();
-		scaling.z = vRows[2].length();
+		scaling.x = math::length(vRows[0]);
+		scaling.y = math::length(vRows[1]);
+		scaling.z = math::length(vRows[2]);
 
 		// and the sign of the scaling
 		if (determinant() < 0)
@@ -628,6 +737,8 @@ public:
 
 		// and generate the rotation quaternion from it
 		rotation = Quaterniont<T>(m);
+
+		return *this;
 	}
 
 	Matrix4x4t<T>& makeOrtho_lh(T width, T height, T zNear, T zFar) noexcept

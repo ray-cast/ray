@@ -39,7 +39,6 @@
 _NAME_BEGIN
 
 JointFixed::JointFixed() noexcept
-	: Joint(Joint::Fixed)
 {
 }
 

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,6 +38,8 @@
 #define _H_RES_MANAGER_H_
 
 #include <ray/res_loader.h>
+#include <ray/game_types.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
@@ -47,12 +49,27 @@ class EXPORT ResManager final
 public:
 	ResManager() noexcept;
 	~ResManager() noexcept;
+	
+	MaterialPtr createMaterial(const std::string& name) noexcept;
+	GameObjectPtr createGameObject(const std::string& name, const std::string& anim = "") noexcept;
 
 	template<typename T>
 	std::shared_ptr<T> find(const std::string& name) noexcept
 	{
 		return ResLoader<T>::find(name);
 	}
+
+private:
+	bool loadModel(const std::string& filename, ResLoader<Model>& model) noexcept;
+
+	void createMeshes(const Model& model, GameObjectPtr& object) noexcept;
+	void createBones(const Model& model, GameObjects& objects) noexcept;
+	void createMaterials(const Model& model, Materials& objects) noexcept;
+	void createRigidbodys(const Model& model, GameObjects& objects) noexcept;
+	void createJoints(const Model& model, const GameObjects& rigidbody, GameObjects& joints) noexcept;
+
+private:
+	MaterialPtr _buildDefaultMaterials(const MaterialProperty& material, const std::string& file, const std::string& directory) noexcept;
 
 private:
 	ResManager(const ResManager&) = delete;

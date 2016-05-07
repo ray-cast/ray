@@ -56,7 +56,8 @@ public:
 	void start() noexcept;
 	void stop() noexcept;
 
-	void exce(std::function<void(void)> func) noexcept;
+	void exce(std::function<void(void)>& func) noexcept;
+	void exce(std::function<void(void)>&& func) noexcept;
 
 	void join() noexcept;
 

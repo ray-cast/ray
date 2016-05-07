@@ -35,12 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "sphere_maker.h"
-#include <ray/game_object_manager.h>
 #include <ray/mesh_render_component.h>
 #include <ray/mesh_component.h>
-#include <ray/material.h>
-#include <ray/render_system.h>
 #include <ray/res_manager.h>
+#include <ray/material.h>
 
 __ImplementSubClass(SphereMakerComponent, GameComponent, "SphereMaker")
 
@@ -263,34 +261,32 @@ SphereMakerComponent::~SphereMakerComponent() noexcept
 void
 SphereMakerComponent::onActivate() except
 {
-	auto material = ray::RenderSystem::instance()->createMaterial("sys:fx/opacity_skinning0.fxml");
+	auto material = ray::ResManager::instance()->createMaterial("sys:fx/opacity_skinning0.fxml");
 	if (!material)
 		return;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
 	sphereMesh->makeSphere(1.0, 32, 24);
 
-	auto gameObject = std::make_shared<ray::GameObject>();
-	gameObject->setParent(this->getGameObject()->getParent());
-	gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
-	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material));
-
 	for (std::size_t i = 0; i < 10; i++)
 	{
 		for (std::size_t j = 0; j < 10; j++)
 		{
-			auto object = gameObject->clone();
-			object->setTranslate(ray::Vector3(-10.0f + i * 2.0f, 0, j * 2.0f));
-			object->setActive(true);
+			auto gameObject = std::make_shared<ray::GameObject>();
+			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
+			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material->clone()));
+			gameObject->setTranslate(ray::Vector3(-10.0f + i * 2.0f, 0, j * 2.0f));
 
 			ray::float3 diff = diff_spec_parametes[i * 10 + j].xyz();
 			diff = ray::math::pow(diff, ray::float3(1.0f / 2.2f));
 
-			auto material = object->getComponent<ray::MeshRenderComponent>()->getMaterial();
+			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 			material->getParameter("quality")->uniform4f(ray::float4::Zero);
 			material->getParameter("diffuse")->uniform3f(diff);
 			material->getParameter("specular")->uniform1f(diff_spec_parametes[i * 10 + j].w);
 			material->getParameter("shininess")->uniform1f(shininess_parametes[i * 10 + j]);
+
+			_objects.push_back(gameObject);
 		}
 	}
 }

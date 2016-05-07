@@ -51,6 +51,10 @@ public:
 
 	bool doLoad(Model& model, StreamReader& stream) noexcept;
 	bool doSave(Model& model, StreamWrite& stream) noexcept;
+
+private:
+	SDKMeshHandler(const SDKMeshHandler&) = delete;
+	SDKMeshHandler& operator=(const SDKMeshHandler&) = delete;
 };
 
 _NAME_END

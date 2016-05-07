@@ -70,30 +70,32 @@ public:
 	void setScissor(const Scissor& scissor) noexcept;
 	const Scissor& getScissor() const noexcept;
 
-	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;
+	void addRenderData(RenderQueue queue, RenderObjectPtr& object) noexcept;
 	const RenderObjects& getRenderData(RenderQueue queue) const noexcept;
 
 	void setTransform(const float4x4& transform) noexcept;
 	void setTransformInverse(const float4x4& transform) noexcept;
 	void setTransformInverseTranspose(const float4x4& transform) noexcept;
 
-	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void setFramebuffer(GraphicsFramebufferPtr& target) noexcept;
+	void setFramebuffer(GraphicsFramebufferPtr&& target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture() noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
-	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr& target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
+	void blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
-	void drawCone(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
-	void drawSphere(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
-	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
-	void drawMeshLayer(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept;
-	void drawScreenQuad(MaterialTechPtr tech) noexcept;
-	void drawScreenQuadLayer(MaterialTechPtr tech, std::uint32_t layer) noexcept;
-	void drawRenderQueue(RenderQueue queue, MaterialTechPtr tech = nullptr) noexcept;
+	void drawCone(MaterialTechPtr& tech, std::uint32_t layer = 0) noexcept;
+	void drawSphere(MaterialTechPtr& tech, std::uint32_t layer = 0) noexcept;
+	void drawMesh(MaterialTechPtr& tech, RenderMeshPtr& mesh, const GraphicsIndirect& renderable) noexcept;
+	void drawMeshLayer(MaterialTechPtr& tech, RenderMeshPtr& mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept;
+	void drawScreenQuad(MaterialTechPtr& tech) noexcept;
+	void drawScreenQuadLayer(MaterialTechPtr& tech, std::uint32_t layer) noexcept;
+	void drawRenderQueue(RenderQueue queue) noexcept;
+	void drawRenderQueue(RenderQueue queue, MaterialTechPtr& tech) noexcept;
 
-	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
-	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
-	void drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap) noexcept;
+	void addPostProcess(RenderPostProcessPtr& postprocess) noexcept;
+	void removePostProcess(RenderPostProcessPtr& postprocess) noexcept;
+	void drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept;
 	void destroyPostProcess() noexcept;
 
 	void present() noexcept;

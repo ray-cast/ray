@@ -58,10 +58,12 @@ public:
 	void close() noexcept;
 
 	void setMass(float value) noexcept;
+	void setRestitution(float value) noexcept;
 	void setLinearVelocity(const Vector3& value) noexcept;
 	void setAngularVelocity(const Vector3& value) noexcept;
 	void setLinearDamping(float value)  noexcept;
 	void setAngularDamping(float value) noexcept;
+	void setFriction(float value) noexcept;
 	void setGravity(const Vector3& value) noexcept;
 	void setMovePosition(const Vector3& value) noexcept;
 	void setMoveRotation(const Quaternion& value) noexcept;
@@ -70,6 +72,8 @@ public:
 	bool isSleep() const noexcept;
 
 	float getMass() const noexcept;
+	float getRestitution() const noexcept;
+	float getFriction() const noexcept;
 	float getLinearDamping() const noexcept;
 	float getAngularDamping() const noexcept;
 
@@ -86,7 +90,7 @@ public:
 	void addTorque(const Vector3& force) noexcept;
 	void addImpulse(const Vector3& force, const Vector3& axis) noexcept;
 
-	void setPhysicsScene(PhysicsScene* system) noexcept;
+	void setPhysicsScene(PhysicsScenePtr scene) noexcept;
 
 	void setRigidbodyListener(PhysicsRigidbodyListener* listener) noexcept;
 	PhysicsRigidbodyListener* getRigidbodyListener() noexcept;
@@ -97,21 +101,24 @@ private:
 
 private:
 
-	btRigidBody* _rigidbody;
-	btDefaultMotionState* _motionState;
+	std::unique_ptr<btRigidBody> _rigidbody;
+	std::unique_ptr<btDefaultMotionState> _motionState;
 
 	bool _enablejointFather;
 	bool _enableGravity;
 
-	mutable bool _sleep;
+	bool _sleep;
 
-	mutable float _mass;
+	float _mass;
 
-	mutable float _linearDamping;
-	mutable float _angularDamping;
+	float _linearDamping;
+	float _angularDamping;
 
 	mutable Vector3 _position;
 	mutable Quaternion _rotate;
+
+	float _friction;
+	float _restitution;
 
 	Vector3 _inertia;
 	Vector3 _gravity;
@@ -119,7 +126,7 @@ private:
 	Vector3 _linearVelocity;
 	Vector3 _angularVelocity;
 
-	PhysicsScene* _scene;
+	PhysicsSceneWeakPtr _scene;
 	PhysicsRigidbodyListener* _listener;
 };
 

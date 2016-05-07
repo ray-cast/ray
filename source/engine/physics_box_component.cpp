@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if _BUILD_PHYSIC
 #include <ray/physics_box_component.h>
 #include <ray/physics_shape_box.h>
 
@@ -69,6 +68,22 @@ PhysicsBoxComponent::getSize() const noexcept
 	return _shape->getSize();
 }
 
+void 
+PhysicsBoxComponent::load(iarchive& reader) noexcept
+{
+	GameComponent::load(reader);
+
+	float3 size;
+	reader >> make_archive(size, "size");
+
+	_shape->setSize(size);
+}
+
+void 
+PhysicsBoxComponent::save(oarchive& write) noexcept
+{
+}
+
 PhysicsShapePtr
 PhysicsBoxComponent::getCollisionShape() noexcept
 {
@@ -96,4 +111,3 @@ PhysicsBoxComponent::onDeactivate() noexcept
 }
 
 _NAME_END
-#endif

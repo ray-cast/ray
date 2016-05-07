@@ -83,11 +83,11 @@ public:
 	virtual void setFlowDirection(GuiFlowDirection value) noexcept = 0;
 	virtual GuiFlowDirection getFlowDirection() const noexcept = 0;
 
-	virtual void addComboAcceptListener(std::function<void()>& func) noexcept = 0;
-	virtual void addComboChangePositionListener(std::function<void()>& func) noexcept = 0;
+	virtual void addComboAcceptListener(std::function<void()>* func) noexcept = 0;
+	virtual void addComboChangePositionListener(std::function<void()>* func) noexcept = 0;
 
-	virtual void removeComboAcceptListener(std::function<void()>& func) noexcept = 0;
-	virtual void removeComboChangePositionListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeComboAcceptListener(std::function<void()>* func) noexcept = 0;
+	virtual void removeComboChangePositionListener(std::function<void()>* func) noexcept = 0;
 
 	virtual GuiEditBoxPtr getGuiEditBox() const noexcept = 0;
 

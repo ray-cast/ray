@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -94,7 +94,7 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) no
 
 	_ioInterface->open();
 
-	_gameServer = std::make_shared<GameServer>();
+	_gameServer = GameServer::instance();
 	_gameServer->_setGameApp(this);
 
 	if (!_gameServer->open())
@@ -164,7 +164,7 @@ GameApplication::close() noexcept
 {
 	if (_gameServer)
 	{
-		_gameServer.reset();
+		_gameServer->close();
 		_gameServer = nullptr;
 	}
 
@@ -197,7 +197,7 @@ GameApplication::isQuitRequest() const noexcept
 }
 
 bool
-GameApplication::openScene(GameScenePtr scene) noexcept
+GameApplication::openScene(GameScenePtr& scene) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->addScene(scene);
@@ -211,7 +211,7 @@ GameApplication::openScene(const std::string& name) noexcept
 }
 
 void
-GameApplication::closeScene(GameScenePtr name) noexcept
+GameApplication::closeScene(GameScenePtr& name) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->removeScene(name);
@@ -232,14 +232,14 @@ GameApplication::findScene(const std::string& name) noexcept
 }
 
 bool
-GameApplication::addFeatures(GameFeaturePtr feature) noexcept
+GameApplication::addFeatures(GameFeaturePtr& feature) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->addFeature(feature);
 }
 
 void
-GameApplication::removeFeatures(GameFeaturePtr feature) noexcept
+GameApplication::removeFeatures(GameFeaturePtr& feature) noexcept
 {
 	assert(_gameServer);
 	_gameServer->removeFeature(feature);

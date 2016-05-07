@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -205,14 +205,14 @@ GuiScrollBarComponent::getRepeatStepTime(float time) const noexcept
 }
 
 void
-GuiScrollBarComponent::addScrollPositionChange(std::function<void()> func) noexcept
+GuiScrollBarComponent::addScrollPositionChange(std::function<void()>* func) noexcept
 {
 	assert(_scrollBar);
 	_scrollBar->addScrollPositionChange(func);
 }
 
 void
-GuiScrollBarComponent::removeScrollPositionChange(std::function<void()> func) noexcept
+GuiScrollBarComponent::removeScrollPositionChange(std::function<void()>* func) noexcept
 {
 	assert(_scrollBar);
 	_scrollBar->removeScrollPositionChange(func);

@@ -69,16 +69,16 @@ public:
 	void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
 	std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept;
 
-	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
+	void setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept;
 	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 
-	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
+	void setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept;
 	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
 
-	void setVertexBufferData(GraphicsDataPtr data) noexcept;
+	void setVertexBufferData(GraphicsDataPtr& data) noexcept;
 	GraphicsDataPtr getVertexBufferData() const noexcept;
 
-	void setIndexBufferData(GraphicsDataPtr data) noexcept;
+	void setIndexBufferData(GraphicsDataPtr& data) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;

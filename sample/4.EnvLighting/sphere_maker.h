@@ -55,6 +55,9 @@ private:
 private:
 	SphereMakerComponent(const SphereMakerComponent&) = delete;
 	SphereMakerComponent& operator=(const SphereMakerComponent&) = delete;
+
+private:
+	ray::GameObjects _objects;
 };
 
 #endif

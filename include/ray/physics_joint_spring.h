@@ -34,18 +34,21 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_JOINT_SPRING_H_
-#define _H_JOINT_SPRING_H_
+#ifndef _H_PHYSICS_JOINT_SPRING_H_
+#define _H_PHYSICS_JOINT_SPRING_H_
 
 #include <ray/physics_joint.h>
 
 _NAME_BEGIN
 
-class JointSpring : public Joint
+class PhysicsJointSpring : public PhysicsJoint
 {
 public:
-	JointSpring() noexcept;
-	~JointSpring() noexcept;
+	PhysicsJointSpring() noexcept;
+	~PhysicsJointSpring() noexcept;
+
+	void setup() noexcept;
+	void close() noexcept;
 
 	void setSpring(float spring) noexcept;
 	void setDamper(float damper) noexcept;
@@ -58,7 +61,6 @@ public:
 	float getMaxDistance() const noexcept;
 
 private:
-
 	float _spring;
 	float _damper;
 

@@ -70,10 +70,11 @@ StreamReader::~StreamReader() noexcept
 StreamReader&
 StreamReader::read(char* str, std::streamsize cnt) noexcept
 {
-	assert(cnt != 0);
-
 	try
 	{
+		if (cnt == 0)
+			return *this;
+
 		ios_base::iostate state = ios_base::goodbit;
 
 		const isentry ok(this);

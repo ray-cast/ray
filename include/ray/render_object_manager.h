@@ -48,7 +48,8 @@ public:
 	DefaultRenderDataManager() noexcept;
 	~DefaultRenderDataManager() noexcept;
 
-	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;
+	void addRenderData(RenderQueue queue, RenderObjectPtr& object) noexcept;
+	void addRenderData(RenderQueue queue, RenderObjectPtr&& object) noexcept;
 	RenderObjects& getRenderData(RenderQueue queue) noexcept;
 
 	void assginVisiable(CameraPtr camera) noexcept;

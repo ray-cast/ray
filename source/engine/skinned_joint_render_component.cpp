@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/skinned_joint_render_component.h>
-#include <ray/mesh_component.h>
 #include <ray/render_system.h>
 #include <ray/material.h>
 #include <ray/geometry.h>
@@ -59,42 +58,23 @@ SkinnedJointRenderComponent::~SkinnedJointRenderComponent() noexcept
 bool
 SkinnedJointRenderComponent::_buildJointObject() noexcept
 {
-	auto meshComponent = this->getComponent<MeshComponent>();
-	if (!meshComponent)
-		return false;
-
-	auto mesh = meshComponent->getMesh();
-	if (!mesh)
-		return false;
-
 	MeshProperty meshes;
 	auto& vertices = meshes.getVertexArray();
 
-	const auto& bones = mesh->getBoneArray();
-	for (auto& bone : bones)
+	for (auto& transfrom : _trasnforms)
 	{
-		if (bone.getParent() > 0)
+		if (transfrom->getParent())
 		{
-			auto& parent = bones[bone.getParent()];
-			vertices.push_back(parent.getTransform().getTranslate());
-			vertices.push_back(bone.getTransform().getTranslate());
+			vertices.push_back(transfrom->getParent()->getTranslate());
+			vertices.push_back(transfrom->getTranslate());
 		}
 	}
 
 	meshes.computeBoundingBox();
 
-	auto gameServer = this->getGameObject()->getGameServer();
-	if (!gameServer) { assert(gameServer); return false; }
-
-	auto renderer = gameServer->getFeature<RenderFeature>();
-	if (!renderer) { assert(renderer); return false; }
-
-	auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
-	if (!renderScene) { assert(renderScene); return false; }
-
 	_geometry = std::make_shared<Geometry>();
 	_geometry->setMaterial(RenderSystem::instance()->createMaterial("sys:fx/debug.fxml"));
-	_geometry->setRenderScene(renderScene);
+	_geometry->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
 
 	_renderBuffer = RenderSystem::instance()->createRenderMesh(meshes, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 
@@ -117,26 +97,15 @@ SkinnedJointRenderComponent::onDeactivate() noexcept
 void 
 SkinnedJointRenderComponent::onFrameEnd() noexcept
 {
-	auto meshComponent = this->getComponent<MeshComponent>();
-	if (!meshComponent)
-		return;
-
-	auto mesh = meshComponent->getMesh();
-	if (!mesh)
-		return;
-
 	float3* data;
 	if (_renderBuffer->getVertexBuffer()->map(0, _renderBuffer->getVertexBuffer()->getGraphicsDataDesc().getStreamSize(), (void**)&data))
 	{
-		const auto& bones = mesh->getBoneArray();
-		for (auto& bone : bones)
+		for (auto& transform : _trasnforms)
 		{
-			if (bone.getParent() > 0)
+			if (transform->getParent())
 			{
-				auto& parent = bones[bone.getParent()];
-
-				(*((float3*&)data)++) = parent.getTransform().getTranslate();
-				(*((float3*&)data)++) = bone.getTransform().getTranslate();
+				(*((float3*&)data)++) = transform->getParent()->getTranslate();
+				(*((float3*&)data)++) = transform->getTranslate();
 			}
 		}
 

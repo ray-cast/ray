@@ -88,8 +88,8 @@ public:
 	void setRepeatStepTime(float time) noexcept;
 	float getRepeatStepTime(float time) const noexcept;
 
-	void addScrollPositionChange(std::function<void()>& func) noexcept;
-	void removeScrollPositionChange(std::function<void()>& func) noexcept;
+	void addScrollPositionChange(std::function<void()>* func) noexcept;
+	void removeScrollPositionChange(std::function<void()>* func) noexcept;
 
 private:
 	void onScrollPositionChange(MyGUI::ScrollBar*, std::size_t) except;
@@ -151,8 +151,8 @@ public:
 	void setRepeatStepTime(float time) noexcept;
 	float getRepeatStepTime(float time) const noexcept;
 
-	void addScrollPositionChange(std::function<void()>& func) noexcept;
-	void removeScrollPositionChange(std::function<void()>& func) noexcept;
+	void addScrollPositionChange(std::function<void()>* func) noexcept;
+	void removeScrollPositionChange(std::function<void()>* func) noexcept;
 
 private:
 	MyGuiScrollBar(const MyGuiScrollBar&) noexcept = delete;

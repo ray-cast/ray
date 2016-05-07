@@ -229,7 +229,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 	if (!shaderModule)
 		throw failure(__TEXT("Can't create shader : ") + reader.getCurrentNodePath());
 
-	programDesc.addShader(shaderModule);
+	programDesc.addShader(std::move(shaderModule));
 }
 
 void
@@ -351,12 +351,12 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 		throw failure(__TEXT("Can't create program : ") + reader.getCurrentNodePath());
 
 	auto pass = std::make_shared<MaterialPass>();
-	pass->setName(passName);
-	pass->setGraphicsState(state);
-	pass->setGraphicsProgram(program);
-	pass->setGraphicsInputLayout(inputLayout);
+	pass->setName(std::move(passName));
+	pass->setGraphicsState(std::move(state));
+	pass->setGraphicsProgram(std::move(program));
+	pass->setGraphicsInputLayout(std::move(inputLayout));
 
-	tech->addPass(pass);
+	tech->addPass(std::move(pass));
 }
 
 void
@@ -370,7 +370,7 @@ MaterialMaker::instanceTech(MaterialManager& manager, Material& material, iarchi
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
 
 	auto tech = std::make_shared<MaterialTech>();
-	tech->setName(techName);
+	tech->setName(std::move(techName));
 
 	do
 	{
@@ -381,7 +381,7 @@ MaterialMaker::instanceTech(MaterialManager& manager, Material& material, iarchi
 		}
 	} while (reader.setToNextChild());
 
-	material.addTech(tech);
+	material.addTech(std::move(tech));
 }
 
 void
@@ -410,7 +410,7 @@ MaterialMaker::instanceParameter(MaterialManager& manager, Material& material, i
 		name = name.substr(0, pos);
 
 	auto param = std::make_shared<MaterialParam>();
-	param->setName(name);
+	param->setName(std::move(name));
 	param->setType(uniformType);
 
 	if (!semantic.empty())
@@ -419,10 +419,10 @@ MaterialMaker::instanceParameter(MaterialManager& manager, Material& material, i
 		if (!materialSemantic)
 			throw failure(__TEXT("Unknown semantic : ") + semantic);
 
-		param->setSemantic(materialSemantic);
+		param->setSemantic(std::move(materialSemantic));
 	}
 
-	material.addParameter(param);
+	material.addParameter(std::move(param));
 }
 
 void
@@ -444,7 +444,8 @@ MaterialMaker::instanceMacro(MaterialManager& manager, Material& material, iarch
 	if (!type.empty())
 	{
 		auto macro = std::make_shared<MaterialParam>();
-		macro->setName(name);
+		macro->setName(std::move(name));
+
 		if (type == "bool")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeBool);
@@ -493,10 +494,10 @@ MaterialMaker::instanceMacro(MaterialManager& manager, Material& material, iarch
 		else
 		{
 			assert(false);
-			throw failure(__TEXT("Unknown macro type : ") + name);
+			throw failure(__TEXT("Unknown macro type : ") + macro->getName());
 		}
 
-		material.addMacro(macro);
+		material.addMacro(std::move(macro));
 	}
 }
 
@@ -609,14 +610,14 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, iarc
 
 	auto buffer = std::make_shared<MaterialParam>();
 	buffer->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-	buffer->setName(name);
+	buffer->setName(std::move(name));
 
 	if (!reader.setToFirstChild())
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
 
 	if (_isHlsl)
 	{
-		_hlslCodes += "cbuffer " + name + " {";
+		_hlslCodes += "cbuffer " + buffer->getName() + " {";
 	}
 
 	do
@@ -646,7 +647,7 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, iarc
 		_hlslCodes += "}";
 	}
 	
-	material.addParameter(buffer);
+	material.addParameter(std::move(buffer));
 }
 
 void
@@ -659,7 +660,7 @@ MaterialMaker::instanceInclude(MaterialManager& manager, Material& material, iar
 		{
 			this->load(manager, material, path);
 			_onceInclude[path] = true;
-		}			
+		}
 	}
 }
 

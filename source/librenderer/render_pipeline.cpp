@@ -116,7 +116,7 @@ RenderPipeline::getSwapInterval() const noexcept
 }
 
 void
-RenderPipeline::addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept
+RenderPipeline::addRenderData(RenderQueue queue, RenderObjectPtr& object) noexcept
 {
 	assert(_dataManager);
 	_dataManager->addRenderData(queue, object);
@@ -256,7 +256,14 @@ RenderPipeline::getScissor() const noexcept
 }
 
 void
-RenderPipeline::setFramebuffer(GraphicsFramebufferPtr target) noexcept
+RenderPipeline::setFramebuffer(GraphicsFramebufferPtr& target) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setFramebuffer(target);
+}
+
+void 
+RenderPipeline::setFramebuffer(GraphicsFramebufferPtr&& target) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setFramebuffer(target);
@@ -277,78 +284,110 @@ RenderPipeline::discradRenderTexture() noexcept
 }
 
 void
-RenderPipeline::readFramebuffer(GraphicsFramebufferPtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
+RenderPipeline::readFramebuffer(GraphicsFramebufferPtr& texture, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->readFramebuffer(texture, pfd, w, h, bufsize, data);
 }
 
 void
-RenderPipeline::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
+RenderPipeline::blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->blitFramebuffer(srcTarget, src, destTarget, dest);
 }
 
 void
-RenderPipeline::drawSphere(MaterialTechPtr tech, std::uint32_t layer) noexcept
+RenderPipeline::drawSphere(MaterialTechPtr& tech, std::uint32_t layer) noexcept
 {
 	this->drawMeshLayer(tech, _renderSphere, _renderSphereIndirect, layer);
 }
 
 void
-RenderPipeline::drawCone(MaterialTechPtr tech, std::uint32_t layer) noexcept
+RenderPipeline::drawCone(MaterialTechPtr& tech, std::uint32_t layer) noexcept
 {
 	this->drawMeshLayer(tech, _renderCone, _renderConeIndirect, layer);
 }
 
 void
-RenderPipeline::drawScreenQuad(MaterialTechPtr tech) noexcept
+RenderPipeline::drawScreenQuad(MaterialTechPtr& tech) noexcept
 {
 	this->drawMesh(tech, _renderScreenQuad, _renderScreenQuadIndirect);
 }
 
 void
-RenderPipeline::drawScreenQuadLayer(MaterialTechPtr tech, std::uint32_t layer) noexcept
+RenderPipeline::drawScreenQuadLayer(MaterialTechPtr& tech, std::uint32_t layer) noexcept
 {
 	this->drawMeshLayer(tech, _renderScreenQuad, _renderScreenQuadIndirect, layer);
 }
 
 void
-RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
+RenderPipeline::drawMesh(MaterialTechPtr& tech, RenderMeshPtr& mesh, const GraphicsIndirect& renderable) noexcept
 {
 	auto& passList = tech->getPassList();
 	for (auto& pass : passList)
 	{
 		pass->update();
 
-		_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
-		_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
-		_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
-		_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
+		auto pipeline = pass->getRenderPipeline();
+		if (pipeline)
+			_graphicsContext->setRenderPipeline(pipeline);
+
+		auto descriptor = pass->getDescriptorSet();
+		if (descriptor)
+			_graphicsContext->setDescriptorSet(descriptor);
+
+		auto vbo = mesh->getVertexBuffer();
+		if (vbo)
+			_graphicsContext->setVertexBufferData(vbo);
+
+		auto ibo = mesh->getIndexBuffer();
+		if (ibo)
+			_graphicsContext->setIndexBufferData(ibo);
+
 		_graphicsContext->drawRenderMesh(renderable);
 	}
 }
 
 void
-RenderPipeline::drawMeshLayer(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
+RenderPipeline::drawMeshLayer(MaterialTechPtr& tech, RenderMeshPtr& mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
 {
 	auto& passList = tech->getPassList();
 	for (auto& pass : passList)
 	{
 		pass->update();
 
-		_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
-		_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
-		_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
+		auto pipeline = pass->getRenderPipeline();
+		if (pipeline)
+			_graphicsContext->setRenderPipeline(pipeline);
+
+		auto descriptor = pass->getDescriptorSet();
+		if (descriptor)
+			_graphicsContext->setDescriptorSet(descriptor);
+
+		auto vbo = mesh->getVertexBuffer();
+		if (vbo)
+			_graphicsContext->setVertexBufferData(vbo);
+
+		auto ibo = mesh->getIndexBuffer();
+		if (ibo)
+			_graphicsContext->setIndexBufferData(ibo);
+
 		_graphicsContext->setStencilReference(GraphicsStencilFace::GraphicsStencilFaceFrontBack, 1 << layer);
-		_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
 		_graphicsContext->drawRenderMesh(renderable);
 	}
 }
 
+void 
+RenderPipeline::drawRenderQueue(RenderQueue queue) noexcept
+{
+	auto& renderable = this->getRenderData(queue);
+	for (auto& it : renderable)
+		it->render(*this, queue, nullptr);
+}
+
 void
-RenderPipeline::drawRenderQueue(RenderQueue queue, MaterialTechPtr tech) noexcept
+RenderPipeline::drawRenderQueue(RenderQueue queue, MaterialTechPtr& tech) noexcept
 {
 	auto& renderable = this->getRenderData(queue);
 	for (auto& it : renderable)
@@ -356,7 +395,7 @@ RenderPipeline::drawRenderQueue(RenderQueue queue, MaterialTechPtr tech) noexcep
 }
 
 void
-RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) noexcept
+RenderPipeline::addPostProcess(RenderPostProcessPtr& postprocess) noexcept
 {
 	auto renderQueue = postprocess->getRenderQueue();
 	auto& drawPostProcess = _postprocessors[renderQueue];
@@ -370,7 +409,7 @@ RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) noexcept
 }
 
 void
-RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
+RenderPipeline::removePostProcess(RenderPostProcessPtr& postprocess) noexcept
 {
 	auto renderQueue = postprocess->getRenderQueue();
 	auto& drawPostProcess = _postprocessors[renderQueue];
@@ -396,7 +435,7 @@ RenderPipeline::destroyPostProcess() noexcept
 }
 
 void
-RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap) noexcept
+RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
 {
 	GraphicsFramebufferPtr view = swap;
 	GraphicsFramebufferPtr cur = source;

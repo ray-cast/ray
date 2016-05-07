@@ -78,11 +78,11 @@ public:
 	void setVerticalAlignment(bool value) noexcept;
 	bool getVerticalAlignment() const noexcept;
 
-	void addMenuCtrlCloseListener(std::function<void()>& func) noexcept;
-	void addMenuCtrlAcceptListener(std::function<void()>& func) noexcept;
+	void addMenuCtrlCloseListener(std::function<void()>* func) noexcept;
+	void addMenuCtrlAcceptListener(std::function<void()>* func) noexcept;
 
-	void removeMenuCtrlCloseListener(std::function<void()>& func) noexcept;
-	void removeMenuCtrlAcceptListener(std::function<void()>& func) noexcept;
+	void removeMenuCtrlCloseListener(std::function<void()>* func) noexcept;
+	void removeMenuCtrlAcceptListener(std::function<void()>* func) noexcept;
 
 private:
 	void onMenuCtrlClose(MyGUI::MenuControl*) noexcept;
@@ -137,11 +137,11 @@ public:
 	void setVerticalAlignment(bool value) noexcept;
 	bool getVerticalAlignment() const noexcept;
 
-	void addMenuCtrlCloseListener(std::function<void()>& func) noexcept;
-	void addMenuCtrlAcceptListener(std::function<void()>& func) noexcept;
+	void addMenuCtrlCloseListener(std::function<void()>* func) noexcept;
+	void addMenuCtrlAcceptListener(std::function<void()>* func) noexcept;
 
-	void removeMenuCtrlCloseListener(std::function<void()>& func) noexcept;
-	void removeMenuCtrlAcceptListener(std::function<void()>& func) noexcept;
+	void removeMenuCtrlCloseListener(std::function<void()>* func) noexcept;
+	void removeMenuCtrlAcceptListener(std::function<void()>* func) noexcept;
 
 private:
 	MyGuiMenu(const MyGuiMenu&) noexcept = delete;

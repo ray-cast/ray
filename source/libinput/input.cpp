@@ -55,17 +55,30 @@ DefaultInput::~DefaultInput() noexcept
 	this->close();
 }
 
+bool 
+DefaultInput::open() noexcept
+{
+	_inputDevice = std::make_shared<MSWInputDevice>();
+	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
+	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
+	return true;
+}
+
 bool
-DefaultInput::open(InputDevicePtr device) noexcept
+DefaultInput::open(InputDevicePtr& device) noexcept
 {
 	_inputDevice = device ? device : std::make_shared<MSWInputDevice>();
+	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
+	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
+	return true;
+}
 
-	auto inputKeyboard = std::make_shared<MSWInputKeyboard>();
-	this->obtainKeyboardCapture(inputKeyboard);
-
-	auto inputMouse = std::make_shared<MSWInputMouse>();
-	this->obtainMouseCapture(inputMouse);
-
+bool
+DefaultInput::open(InputDevicePtr&& device) noexcept
+{
+	_inputDevice = device ? std::move(device) : std::make_shared<MSWInputDevice>();
+	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
+	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
 	return true;
 }
 
@@ -247,7 +260,7 @@ DefaultInput::obtainKeyboardCapture() noexcept
 }
 
 void
-DefaultInput::obtainMouseCapture(InputMousePtr mouse) noexcept
+DefaultInput::obtainMouseCapture(InputMousePtr& mouse) noexcept
 {
 	if (_mouseCaptureDevice != mouse)
 	{
@@ -272,7 +285,32 @@ DefaultInput::obtainMouseCapture(InputMousePtr mouse) noexcept
 }
 
 void
-DefaultInput::obtainKeyboardCapture(InputKeyboardPtr keyboard) noexcept
+DefaultInput::obtainMouseCapture(InputMousePtr&& mouse) noexcept
+{
+	if (_mouseCaptureDevice != mouse)
+	{
+		if (_mouseCaptureDevice)
+		{
+			_mouseCaptureDevice->releaseCapture();
+
+			if (_inputDevice)
+				_inputDevice->removeInputListener(_mouseCaptureDevice);
+		}
+
+		_mouseCaptureDevice = std::move(mouse);
+
+		if (_mouseCaptureDevice)
+		{
+			_mouseCaptureDevice->obtainCapture();
+
+			if (_inputDevice)
+				_inputDevice->addInputListener(_mouseCaptureDevice);
+		}
+	}
+}
+
+void
+DefaultInput::obtainKeyboardCapture(InputKeyboardPtr& keyboard) noexcept
 {
 	if (_keyboardCaptureDevice != keyboard)
 	{
@@ -293,6 +331,31 @@ DefaultInput::obtainKeyboardCapture(InputKeyboardPtr keyboard) noexcept
 			if (_inputDevice)
 				_inputDevice->addInputListener(_keyboardCaptureDevice);
 		}			
+	}
+}
+
+void
+DefaultInput::obtainKeyboardCapture(InputKeyboardPtr&& keyboard) noexcept
+{
+	if (_keyboardCaptureDevice != keyboard)
+	{
+		if (_keyboardCaptureDevice)
+		{
+			_keyboardCaptureDevice->releaseCapture();
+
+			if (_inputDevice)
+				_inputDevice->removeInputListener(keyboard);
+		}
+
+		_keyboardCaptureDevice = std::move(keyboard);
+
+		if (_keyboardCaptureDevice)
+		{
+			_keyboardCaptureDevice->obtainCapture();
+
+			if (_inputDevice)
+				_inputDevice->addInputListener(_keyboardCaptureDevice);
+		}
 	}
 }
 
@@ -335,17 +398,31 @@ DefaultInput::reset() noexcept
 }
 
 void
-DefaultInput::addInputListener(InputListenerPtr listener) noexcept
+DefaultInput::addInputListener(InputListenerPtr& listener) noexcept
 {
 	if (_inputDevice)
 		_inputDevice->addInputListener(listener);
 }
 
 void
-DefaultInput::removeInputListener(InputListenerPtr listener) noexcept
+DefaultInput::addInputListener(InputListenerPtr&& listener) noexcept
+{
+	if (_inputDevice)
+		_inputDevice->addInputListener(std::move(listener));
+}
+
+void
+DefaultInput::removeInputListener(InputListenerPtr& listener) noexcept
 {
 	if (_inputDevice)
 		_inputDevice->removeInputListener(listener);
+}
+
+void
+DefaultInput::removeInputListener(InputListenerPtr&& listener) noexcept
+{
+	if (_inputDevice)
+		_inputDevice->removeInputListener(std::move(listener));
 }
 
 void

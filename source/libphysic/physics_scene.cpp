@@ -277,6 +277,18 @@ PhysicsScene::raycastAll(const Vector3& rayFromWorld, const Vector3& rayToWorld,
 }
 */
 
+void 
+PhysicsScene::addJoint(btTypedConstraint* joint) noexcept
+{
+	_dynamicsWorld->addConstraint(joint);
+}
+
+void 
+PhysicsScene::removeJoint(btTypedConstraint* joint) noexcept
+{
+	_dynamicsWorld->removeConstraint(joint);
+}
+
 void
 PhysicsScene::addRigidbody(btRigidBody* body) noexcept
 {

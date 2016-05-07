@@ -206,7 +206,7 @@ MyGuiListBoxImpl::setActivateOnClick(bool activateOnClick) noexcept
 }
 
 void
-MyGuiListBoxImpl::addListSelectAcceptListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::addListSelectAcceptListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListSelectAccept.find(func));
@@ -216,7 +216,7 @@ MyGuiListBoxImpl::addListSelectAcceptListener(std::function<void()>& func) noexc
 }
 
 void
-MyGuiListBoxImpl::addListChangePositionListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::addListChangePositionListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListChangePosition.find(func));
@@ -226,7 +226,7 @@ MyGuiListBoxImpl::addListChangePositionListener(std::function<void()>& func) noe
 }
 
 void
-MyGuiListBoxImpl::addListMouseItemActivateListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::addListMouseItemActivateListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListMouseItemActivate.find(func));
@@ -236,7 +236,7 @@ MyGuiListBoxImpl::addListMouseItemActivateListener(std::function<void()>& func) 
 }
 
 void
-MyGuiListBoxImpl::addListMouseItemFocusListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::addListMouseItemFocusListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListMouseItemFocus.find(func));
@@ -246,7 +246,7 @@ MyGuiListBoxImpl::addListMouseItemFocusListener(std::function<void()>& func) noe
 }
 
 void
-MyGuiListBoxImpl::addListChangeScrollListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::addListChangeScrollListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListChangeScroll.find(func));
@@ -254,7 +254,7 @@ MyGuiListBoxImpl::addListChangeScrollListener(std::function<void()>& func) noexc
 }
 
 void
-MyGuiListBoxImpl::removeListSelectAcceptListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::removeListSelectAcceptListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListSelectAccept.find(func));
@@ -262,7 +262,7 @@ MyGuiListBoxImpl::removeListSelectAcceptListener(std::function<void()>& func) no
 }
 
 void
-MyGuiListBoxImpl::removeListChangePositionListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::removeListChangePositionListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListChangePosition.find(func));
@@ -270,7 +270,7 @@ MyGuiListBoxImpl::removeListChangePositionListener(std::function<void()>& func) 
 }
 
 void
-MyGuiListBoxImpl::removeListMouseItemActivateListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::removeListMouseItemActivateListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListMouseItemActivate.find(func));
@@ -278,7 +278,7 @@ MyGuiListBoxImpl::removeListMouseItemActivateListener(std::function<void()>& fun
 }
 
 void
-MyGuiListBoxImpl::removeListMouseItemFocusListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::removeListMouseItemFocusListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListMouseItemFocus.find(func));
@@ -286,7 +286,7 @@ MyGuiListBoxImpl::removeListMouseItemFocusListener(std::function<void()>& func) 
 }
 
 void
-MyGuiListBoxImpl::removeListChangeScrollListener(std::function<void()>& func) noexcept
+MyGuiListBoxImpl::removeListChangeScrollListener(std::function<void()>* func) noexcept
 {
 	assert(_listBox);
 	assert(_onListChangeScroll.find(func));
@@ -471,61 +471,61 @@ MyGuiListBox::setActivateOnClick(bool activateOnClick) noexcept
 }
 
 void
-MyGuiListBox::addListSelectAcceptListener(std::function<void()>& func) noexcept
+MyGuiListBox::addListSelectAcceptListener(std::function<void()>* func) noexcept
 {
 	_impl.addListSelectAcceptListener(func);
 }
 
 void
-MyGuiListBox::addListChangePositionListener(std::function<void()>& func) noexcept
+MyGuiListBox::addListChangePositionListener(std::function<void()>* func) noexcept
 {
 	_impl.addListChangePositionListener(func);
 }
 
 void
-MyGuiListBox::addListMouseItemActivateListener(std::function<void()>& func) noexcept
+MyGuiListBox::addListMouseItemActivateListener(std::function<void()>* func) noexcept
 {
 	_impl.addListMouseItemActivateListener(func);
 }
 
 void
-MyGuiListBox::addListMouseItemFocusListener(std::function<void()>& func) noexcept
+MyGuiListBox::addListMouseItemFocusListener(std::function<void()>* func) noexcept
 {
 	_impl.addListMouseItemFocusListener(func);
 }
 
 void
-MyGuiListBox::addListChangeScrollListener(std::function<void()>& func) noexcept
+MyGuiListBox::addListChangeScrollListener(std::function<void()>* func) noexcept
 {
 	_impl.addListChangeScrollListener(func);
 }
 
 void
-MyGuiListBox::removeListSelectAcceptListener(std::function<void()>& func) noexcept
+MyGuiListBox::removeListSelectAcceptListener(std::function<void()>* func) noexcept
 {
 	_impl.removeListSelectAcceptListener(func);
 }
 
 void
-MyGuiListBox::removeListChangePositionListener(std::function<void()>& func) noexcept
+MyGuiListBox::removeListChangePositionListener(std::function<void()>* func) noexcept
 {
 	_impl.removeListChangePositionListener(func);
 }
 
 void
-MyGuiListBox::removeListMouseItemActivateListener(std::function<void()>& func) noexcept
+MyGuiListBox::removeListMouseItemActivateListener(std::function<void()>* func) noexcept
 {
 	_impl.removeListMouseItemActivateListener(func);
 }
 
 void
-MyGuiListBox::removeListMouseItemFocusListener(std::function<void()>& func) noexcept
+MyGuiListBox::removeListMouseItemFocusListener(std::function<void()>* func) noexcept
 {
 	_impl.removeListMouseItemFocusListener(func);
 }
 
 void
-MyGuiListBox::removeListChangeScrollListener(std::function<void()>& func) noexcept
+MyGuiListBox::removeListChangeScrollListener(std::function<void()>* func) noexcept
 {
 	_impl.removeListChangeScrollListener(func);
 }

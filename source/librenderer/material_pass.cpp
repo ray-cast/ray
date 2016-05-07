@@ -252,6 +252,12 @@ MaterialPass::setName(const std::string& name) noexcept
 	_name = name;
 }
 
+void 
+MaterialPass::setName(std::string&& name) noexcept
+{
+	_name = std::move(name);
+}
+
 const std::string&
 MaterialPass::getName() const noexcept
 {
@@ -259,33 +265,63 @@ MaterialPass::getName() const noexcept
 }
 
 void
-MaterialPass::setGraphicsState(GraphicsStatePtr state) noexcept
+MaterialPass::setGraphicsState(GraphicsStatePtr& state) noexcept
 {
 	_state = state;
 }
 
 void
-MaterialPass::setGraphicsProgram(GraphicsProgramPtr program) noexcept
+MaterialPass::setGraphicsProgram(GraphicsProgramPtr& program) noexcept
 {
 	_program = program;
 }
 
 void
-MaterialPass::setGraphicsInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
+MaterialPass::setGraphicsInputLayout(GraphicsInputLayoutPtr& inputLayout) noexcept
 {
 	_inputLayout = inputLayout;
 }
 
 void
-MaterialPass::setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr descriptorPool) noexcept
+MaterialPass::setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr& descriptorPool) noexcept
 {
 	_descriptorPool = descriptorPool;
 }
 
 void
-MaterialPass::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSetLayout) noexcept
+MaterialPass::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept
 {
 	_descriptorSetLayout = descriptorSetLayout;
+}
+
+void
+MaterialPass::setGraphicsState(GraphicsStatePtr&& state) noexcept
+{
+	_state = std::move(state);
+}
+
+void
+MaterialPass::setGraphicsProgram(GraphicsProgramPtr&& program) noexcept
+{
+	_program = std::move(program);
+}
+
+void
+MaterialPass::setGraphicsInputLayout(GraphicsInputLayoutPtr&& inputLayout) noexcept
+{
+	_inputLayout = std::move(inputLayout);
+}
+
+void
+MaterialPass::setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr&& descriptorPool) noexcept
+{
+	_descriptorPool = std::move(descriptorPool);
+}
+
+void
+MaterialPass::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr&& descriptorSetLayout) noexcept
+{
+	_descriptorSetLayout = std::move(descriptorSetLayout);
 }
 
 GraphicsStatePtr

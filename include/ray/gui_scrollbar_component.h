@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -86,8 +86,8 @@ public:
 	void setRepeatStepTime(float time) noexcept;
 	float getRepeatStepTime(float time) const noexcept;
 
-	void addScrollPositionChange(std::function<void()> func) noexcept;
-	void removeScrollPositionChange(std::function<void()> func) noexcept;
+	void addScrollPositionChange(std::function<void()>* func) noexcept;
+	void removeScrollPositionChange(std::function<void()>* func) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

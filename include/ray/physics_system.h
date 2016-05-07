@@ -43,21 +43,20 @@ _NAME_BEGIN
 
 class EXPORT PhysicsSystem
 {
+	__DeclareSingleton(PhysicsSystem)
 public:
 	PhysicsSystem() noexcept;
 	~PhysicsSystem() noexcept;
 
-	void open() noexcept;
+	bool open() noexcept;
 	void close() noexcept;
 
-	void addPhysicsScene(PhysicsScenePtr scene) noexcept;
-	void removePhysicsScene(PhysicsScenePtr scene) noexcept;
+	PhysicsScenePtr getPhysicsScene() noexcept;
 
 	void simulation(float delta) noexcept;
 
 private:
-
-	PhysicsScenes _sceneList;
+	PhysicsScenePtr _scene;
 };
 
 _NAME_END

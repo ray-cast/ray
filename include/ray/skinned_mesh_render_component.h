@@ -46,19 +46,33 @@ class SkinnedMeshRenderComponent : public MeshRenderComponent
 	__DeclareSubClass(SkinnedMeshRenderComponent, RenderComponent)
 public:
 	SkinnedMeshRenderComponent() noexcept;
+	SkinnedMeshRenderComponent(MaterialPtr& material, bool shared = true) noexcept;
+	SkinnedMeshRenderComponent(MaterialPtr&& material, bool shared = true) noexcept;
+	SkinnedMeshRenderComponent(const Materials& material, bool shared = true) noexcept;
+	SkinnedMeshRenderComponent(Materials&& material, bool shared = true) noexcept;
 	~SkinnedMeshRenderComponent() noexcept;
 
-private:
-	bool _buildDefaultMaterials(const std::string& filename) noexcept;
+	void setTransforms(const GameObjects& transforms) noexcept;
+	void setTransforms(GameObjects&& transforms) noexcept;
+	const GameObjects& getTransforms() const noexcept;
 
 private:
-	void onActivate() except;
-	void onDeactivate() noexcept;
+	virtual void onActivate() except;
+	virtual void onDeactivate() noexcept;
 
-	void onFrameEnd() noexcept;
+	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
+	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
+
+	virtual void onMeshChange() noexcept;
+
+	virtual void onFrameEnd() noexcept;
 
 private:
+	GameObjects _transforms;
 	GraphicsDataPtr _jointData;
+	Bound _boundingBox;
+	MeshPropertyPtr _mesh;
+	std::function<void()> _onMeshChange;
 };
 
 _NAME_END

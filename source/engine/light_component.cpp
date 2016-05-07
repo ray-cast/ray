@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -240,21 +240,12 @@ LightComponent::clone() const noexcept
 void
 LightComponent::onActivate() noexcept
 {
-	auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeature>();
-	if (renderer)
-	{
-		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
-		if (renderScene)
-		{
-			_light->setTransform(
-				this->getGameObject()->getTransform(),
-				this->getGameObject()->getTransformInverse(),
-				this->getGameObject()->getTransformInverseTranspose()
-				);
-
-			_light->setRenderScene(renderScene);
-		}
-	}
+	_light->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
+	_light->setTransform(
+		this->getGameObject()->getTransform(),
+		this->getGameObject()->getTransformInverse(),
+		this->getGameObject()->getTransformInverseTranspose()
+		);
 }
 
 void

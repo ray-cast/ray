@@ -67,7 +67,7 @@ FirstPersonCameraComponent::onActivate() noexcept
 void
 FirstPersonCameraComponent::onDectivate() noexcept
 {
-	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeature>();
+	auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
 	if (inputFeature)
 		inputFeature->getInput()->lockCursor(false);
 }
@@ -75,10 +75,10 @@ FirstPersonCameraComponent::onDectivate() noexcept
 void
 FirstPersonCameraComponent::onFrame() noexcept
 {
-	float delta = this->getGameServer()->getTimer()->delta();
+	float delta = ray::GameServer::instance()->getTimer()->delta();
 	float step = _speed * delta;
 
-	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeature>();
+	auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
 	if (inputFeature)
 	{
 		auto input = inputFeature->getInput();

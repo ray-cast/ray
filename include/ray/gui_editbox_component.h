@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -112,11 +112,11 @@ public:
 	std::size_t getHScrollPosition();
 	void setHScrollPosition(std::size_t index);
 
-	void addTextChangeListener(std::function<void()> func) noexcept;
-	void removeTextChangeListener(std::function<void()> func) noexcept;
+	void addTextChangeListener(std::function<void()>* func) noexcept;
+	void removeTextChangeListener(std::function<void()>* func) noexcept;
 
-	void addSelectAccept(std::function<void()> func) noexcept;
-	void removeSelectAccept(std::function<void()> func) noexcept;
+	void addSelectAccept(std::function<void()>* func) noexcept;
+	void removeSelectAccept(std::function<void()>* func) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

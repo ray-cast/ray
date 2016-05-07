@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSingleton(PhysicsSystem)
+
 PhysicsSystem::PhysicsSystem() noexcept
 {
 }
@@ -46,9 +48,21 @@ PhysicsSystem::~PhysicsSystem() noexcept
 {
 }
 
-void
+bool
 PhysicsSystem::open() noexcept
 {
+	PhysicsScene::Setting setting;
+	setting.aabb.min = Vector3(-1000, -1000, -1000);
+	setting.aabb.max = Vector3(1000, 1000, 1000);
+	setting.gravity = Vector3(0.0f, 9.81f, 0.0f);
+	setting.length = 1.0f;
+	setting.mass = 1000.0f;
+	setting.skinWidth = 0.0001f;
+	setting.speed = 10.0f;
+
+	_scene = std::make_shared<PhysicsScene>();
+	_scene->setup(setting);
+	return true;
 }
 
 void
@@ -56,36 +70,17 @@ PhysicsSystem::close() noexcept
 {
 }
 
-void
-PhysicsSystem::addPhysicsScene(PhysicsScenePtr scene) noexcept
+PhysicsScenePtr
+PhysicsSystem::getPhysicsScene() noexcept
 {
-	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
-	if (it == _sceneList.end())
-	{
-		_sceneList.push_back(scene);
-	}
-}
-
-void
-PhysicsSystem::removePhysicsScene(PhysicsScenePtr scene) noexcept
-{
-	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
-	if (it != _sceneList.end())
-	{
-		_sceneList.erase(it);
-	}
+	return _scene;
 }
 
 void
 PhysicsSystem::simulation(float delta) noexcept
 {
-	for (auto& scene : _sceneList)
-	{
-		if (scene)
-		{
-			scene->simulation(delta);
-		}
-	}
+	if (_scene)
+		_scene->simulation(delta);
 }
 
 _NAME_END

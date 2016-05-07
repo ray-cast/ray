@@ -214,7 +214,7 @@ MyGuiScrollBarImpl::getRepeatStepTime(float time) const noexcept
 }
 
 void
-MyGuiScrollBarImpl::addScrollPositionChange(std::function<void()>& func) noexcept
+MyGuiScrollBarImpl::addScrollPositionChange(std::function<void()>* func) noexcept
 {
 	assert(_scrollBar);
 	assert(!_onScrollPositionChange.find(func));
@@ -224,7 +224,7 @@ MyGuiScrollBarImpl::addScrollPositionChange(std::function<void()>& func) noexcep
 }
 
 void
-MyGuiScrollBarImpl::removeScrollPositionChange(std::function<void()>& func) noexcept
+MyGuiScrollBarImpl::removeScrollPositionChange(std::function<void()>* func) noexcept
 {
 	assert(_scrollBar);
 	assert(_onScrollPositionChange.find(func));
@@ -397,13 +397,13 @@ MyGuiScrollBar::getRepeatStepTime(float time) const noexcept
 }
 
 void
-MyGuiScrollBar::addScrollPositionChange(std::function<void()>& func) noexcept
+MyGuiScrollBar::addScrollPositionChange(std::function<void()>* func) noexcept
 {
 	_impl.addScrollPositionChange(func);
 }
 
 void
-MyGuiScrollBar::removeScrollPositionChange(std::function<void()>& func) noexcept
+MyGuiScrollBar::removeScrollPositionChange(std::function<void()>* func) noexcept
 {
 	_impl.removeScrollPositionChange(func);
 }

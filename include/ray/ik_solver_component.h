@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,20 +34,65 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MAIN_H_
-#define _H_MAIN_H_
+#ifndef _H_IK_SOLVER_COMPONENT_H_
+#define _H_IK_SOLVER_COMPONENT_H_
 
-#include <SampleLoader.h>
+#include <ray/game_component.h>
 
-class DemoSSRR final : public SampleLoader
+_NAME_BEGIN
+
+class EXPORT IKSolverBone
 {
-	__DeclareSubClass(DemoSSRR, SampleLoader)
 public:
-	DemoSSRR() noexcept;
-	~DemoSSRR() noexcept;
+	GameObjectPtr bone;
+	std::uint8_t rotateLimited;
 
-	bool initialize() except;
-	void run() except;
+	float angleWeight;
+
+	float3 minimumDegrees;
+	float3 maximumDegrees;
 };
+
+class EXPORT IKSolverComponent final : public GameComponent
+{
+	__DeclareSubClass(IKSolverComponent, GameComponent)
+public:
+	typedef std::shared_ptr<IKSolverBone> IKSolverBonePtr;
+	typedef std::vector<IKSolverBonePtr> IKSolverBones;
+
+public:
+	IKSolverComponent() noexcept;
+	~IKSolverComponent() noexcept;
+
+	void setTargetBone(GameObjectPtr bone) noexcept;
+	GameObjectPtr getTargetBone() const noexcept;
+
+	void setIterations(std::uint32_t iterations) noexcept;
+	std::uint32_t getIterations() const noexcept;
+
+	void setChainLength(std::uint32_t length) noexcept;
+	std::uint32_t getChainLength() const noexcept;
+
+	void addBone(IKSolverBonePtr bone) noexcept;
+	void setBones(const IKSolverBones& bone) noexcept;
+	void setBones(const IKSolverBones&& bone) noexcept;
+	const IKSolverBones& getBones() const noexcept;
+
+	GameComponentPtr clone() const noexcept;
+
+private:
+	IKSolverComponent(const IKSolverComponent&) = delete;
+	IKSolverComponent& operator=(const IKSolverComponent&) = delete;
+
+private:
+	GameObjectPtr _target;
+
+	std::uint32_t _iterations;
+	std::uint32_t _chainLength;
+
+	IKSolverBones _bones;
+};
+
+_NAME_END
 
 #endif

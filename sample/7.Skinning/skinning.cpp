@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,18 +34,44 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#include "skinning.h"
+#include <ray/mesh_render_component.h>
+#include <ray/mesh_component.h>
 #include <ray/res_manager.h>
 
-_NAME_BEGIN
+__ImplementSubClass(SkinningComponent, GameComponent, "Skinning")
 
-__ImplementSingleton(ResManager)
-
-ResManager::ResManager() noexcept
+SkinningComponent::SkinningComponent() noexcept
 {
 }
 
-ResManager::~ResManager() noexcept
+SkinningComponent::~SkinningComponent() noexcept
 {
 }
 
-_NAME_END
+void
+SkinningComponent::onActivate() except
+{
+	auto stage = ray::ResManager::instance()->createGameObject("dlc:skinning/models/PDF 活动小丑/stage.pmx");
+	if (!stage)
+		return;
+
+	stage->setTranslate(ray::float3(0, 0, -2.5));
+
+	auto gameObject = ray::ResManager::instance()->createGameObject("dlc:skinning/models/PDF 活动小丑/活动小丑.pmx", "dlc:skinning/animotion/愛言葉.vmd");
+
+	_objects.push_back(stage);
+	_objects.push_back(gameObject);
+}
+
+void
+SkinningComponent::onDeactivate() noexcept
+{
+	_objects.clear();
+}
+
+ray::GameComponentPtr
+SkinningComponent::clone() const noexcept
+{
+	return std::make_shared<SkinningComponent>();
+}

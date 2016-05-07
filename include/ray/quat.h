@@ -47,6 +47,8 @@ class Quaterniont
 public:
 	T x, y, z, w;
 
+	static const Quaterniont<T> Zero;
+
 	Quaterniont() noexcept {}
 	Quaterniont(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	Quaterniont(const Quaterniont& q) noexcept : x(q.x), y(q.y), z(q.z), w(q.w) {}
@@ -240,6 +242,8 @@ public:
 		return Vector3t<T>(x * oneOverSinThetaOver2, y * oneOverSinThetaOver2, z * oneOverSinThetaOver2);
 	}
 };
+
+template<typename T> const Quaterniont<T> Quaterniont<T>::Zero = Quaterniont<T>((T)0.0, (T)0.0, (T)0.0, (T)1.0);
 
 template<typename T>
 inline bool operator==(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept

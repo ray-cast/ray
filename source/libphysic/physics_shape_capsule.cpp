@@ -42,8 +42,8 @@ _NAME_BEGIN
 
 PhysicsShapeCapsule::PhysicsShapeCapsule() noexcept
 	: _shape(nullptr)
-	, _width(1)
-	, _height(1)
+	, _radius(1.0f)
+	, _height(1.0f)
 {
 }
 
@@ -56,7 +56,7 @@ PhysicsShapeCapsule::setup() noexcept
 {
 	assert(!_shape);
 
-	_shape = new btCapsuleShape(_width, _height);
+	_shape = new btCapsuleShape(_radius, _height);
 	_shape->setUserPointer(this);
 }
 
@@ -71,9 +71,9 @@ PhysicsShapeCapsule::close() noexcept
 }
 
 void
-PhysicsShapeCapsule::setWidth(float width) noexcept
+PhysicsShapeCapsule::setRadius(float radius) noexcept
 {
-	_width = width;
+	_radius = radius;
 }
 
 void
@@ -83,9 +83,9 @@ PhysicsShapeCapsule::setHeight(float height) noexcept
 }
 
 float
-PhysicsShapeCapsule::getWidth() const noexcept
+PhysicsShapeCapsule::getRadius() const noexcept
 {
-	return _width;
+	return _radius;
 }
 
 float

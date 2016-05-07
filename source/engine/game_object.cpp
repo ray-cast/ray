@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -43,18 +43,19 @@ _NAME_BEGIN
 __ImplementSubClass(GameObject, rtti::Interface, "Object")
 
 GameObject::GameObject() noexcept
-	: _active(false)
+	: _active(true)
 	, _layer(0)
 	, _needUpdates(true)
-	, _scaling(Vector3::One)
-	, _translate(Vector3::Zero)
-	, _quat(0, 0, 0, 1)
-	, _euler(Vector3::Zero)
-	, _right(Vector3::Right)
-	, _up(Vector3::Up)
-	, _forward(Vector3::Forward)
+	, _scaling(float3::One)
+	, _translate(float3::Zero)
+	, _quat(Quaternion::Zero)
+	, _euler(float3::Zero)
+	, _right(float3::Right)
+	, _up(float3::Up)
+	, _forward(float3::Forward)
 {
 	GameObjectManager::instance()->_instanceObject(this, _instanceID);
+	GameObjectManager::instance()->_activeObject(this, true);
 }
 
 GameObject::~GameObject() noexcept
@@ -69,6 +70,12 @@ void
 GameObject::setName(const std::string& name) noexcept
 {
 	_name = name;
+}
+
+void
+GameObject::setName(std::string&& name) noexcept
+{
+	_name = std::move(name);
 }
 
 const std::string&
@@ -195,7 +202,7 @@ GameObject::getInstanceID() const noexcept
 }
 
 void
-GameObject::setParent(GameObjectPtr parent) noexcept
+GameObject::setParent(GameObjectPtr& parent) noexcept
 {
 	assert(this != parent.get());
 
@@ -222,11 +229,17 @@ GameObject::setParent(GameObjectPtr parent) noexcept
 
 		_parent = parent;
 		if (parent)
-			parent->_children.push_back(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
+			parent->_children.push_back(this->cast<GameObject>());
 
 		for (auto& it : _components)
 			it->onParentChangeAfter();
 	}
+}
+
+void
+GameObject::setParent(GameObjectPtr&& parent) noexcept
+{
+	this->setParent(parent);
 }
 
 GameObjectPtr
@@ -236,14 +249,21 @@ GameObject::getParent() const noexcept
 }
 
 void
-GameObject::addChild(GameObjectPtr entity) noexcept
+GameObject::addChild(GameObjectPtr& entity) noexcept
 {
 	assert(entity);
 	entity->setParent(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
 }
 
 void
-GameObject::removeChild(GameObjectPtr entity) noexcept
+GameObject::addChild(GameObjectPtr&& entity) noexcept
+{
+	assert(entity);
+	entity->setParent(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
+}
+
+void
+GameObject::removeChild(GameObjectPtr& entity) noexcept
 {
 	assert(entity);
 
@@ -262,6 +282,12 @@ GameObject::removeChild(GameObjectPtr entity) noexcept
 	{
 		_children.erase(it);
 	}
+}
+
+void
+GameObject::removeChild(GameObjectPtr&& entity) noexcept
+{
+	this->removeChild(entity);
 }
 
 void
@@ -318,7 +344,7 @@ GameObject::getChildren() const noexcept
 }
 
 void
-GameObject::setTranslate(const Vector3& pos) noexcept
+GameObject::setTranslate(const float3& pos) noexcept
 {
 	if (_translate != pos)
 	{
@@ -338,19 +364,19 @@ GameObject::setTranslate(const Vector3& pos) noexcept
 }
 
 void
-GameObject::setTranslateAccum(const Vector3& v) noexcept
+GameObject::setTranslateAccum(const float3& v) noexcept
 {
 	this->setTranslate(_translate + v);
 }
 
-const Vector3&
+const float3&
 GameObject::getTranslate() const noexcept
 {
 	return _translate;
 }
 
 void
-GameObject::setScale(const Vector3& pos) noexcept
+GameObject::setScale(const float3& pos) noexcept
 {
 	if (_scaling != pos)
 	{
@@ -370,12 +396,12 @@ GameObject::setScale(const Vector3& pos) noexcept
 }
 
 void
-GameObject::setScaleAccum(const Vector3& scale) noexcept
+GameObject::setScaleAccum(const float3& scale) noexcept
 {
 	this->setScale(_scaling + scale);
 }
 
-const Vector3&
+const float3&
 GameObject::getScale() const noexcept
 {
 	return _scaling;
@@ -447,25 +473,43 @@ GameObject::getEulerAngles() const noexcept
 	return _euler;
 }
 
-const Vector3&
+const float3&
 GameObject::getRight() const noexcept
 {
 	_updateTransform();
 	return _right;
 }
 
-const Vector3&
+const float3&
 GameObject::getUpVector() const noexcept
 {
 	_updateTransform();
 	return _up;
 }
 
-const Vector3&
+const float3&
 GameObject::getForward() const noexcept
 {
 	_updateTransform();
 	return _forward;
+}
+
+void 
+GameObject::setTransform(const float4x4& transform) noexcept
+{
+	this->_onMoveBefore();
+
+	_transform = transform.getTransform(_scaling, _quat, _translate);
+	_transformInverse = math::transformInverse(_transform);
+	_transformInverseTranspose = math::transpose(_transformInverse);
+
+	_euler.makeRotate(_quat);
+
+	_right = _transform.getRight();
+	_up = _transform.getUpVector();
+	_forward = _transform.getForward();
+
+	this->_onMoveAfter();
 }
 
 const Matrix4x4&
@@ -490,7 +534,7 @@ GameObject::getTransformInverseTranspose() const noexcept
 }
 
 void
-GameObject::addComponent(GameComponentPtr component) except
+GameObject::addComponent(GameComponentPtr& component) except
 {
 	assert(component);
 	assert(component->_gameObject == nullptr);
@@ -515,7 +559,13 @@ GameObject::addComponent(GameComponentPtr component) except
 }
 
 void
-GameObject::removeComponent(GameComponentPtr component) noexcept
+GameObject::addComponent(GameComponentPtr&& component) except
+{
+	this->addComponent(component);
+}
+
+void
+GameObject::removeComponent(GameComponentPtr& component) noexcept
 {
 	assert(component);
 	assert(component->_gameObject == this);
@@ -537,6 +587,12 @@ GameObject::removeComponent(GameComponentPtr component) noexcept
 		component->onDetach();
 		component->_setGameObject(nullptr);
 	}
+}
+
+void
+GameObject::removeComponent(GameComponentPtr&& component) noexcept
+{
+	this->removeComponent(component);
 }
 
 void
@@ -672,24 +728,6 @@ GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 		it->sendMessageDownwards(message);
 }
 
-GameServerPtr
-GameObject::getGameServer() noexcept
-{
-	auto parent = _parent.lock();
-	if (parent)
-		return parent->getGameServer();
-	return nullptr;
-}
-
-GameScenePtr
-GameObject::getGameScene() noexcept
-{
-	auto parent = _parent.lock();
-	if (parent)
-		return parent->getGameScene();
-	return nullptr;
-}
-
 void
 GameObject::load(iarchive& reader) noexcept
 {
@@ -700,13 +738,13 @@ GameObject::load(iarchive& reader) noexcept
 	float3 scale;
 	float3 rotate;
 
-	reader >> make_archive(rotate, "rotate");
-
 	if (reader.getValue("name", name))
-		this->setName(name);
+		this->setName(std::move(name));
 
 	if (reader.getValue("active", active))
 		this->setActive(active);
+	else
+		this->setActive(false);
 
 	if (reader.getValue("layer", layer))
 		this->setLayer(layer);
@@ -813,13 +851,13 @@ GameObject::_updateTransform() const noexcept
 {
 	if (_needUpdates)
 	{
-		_right = math::rotate(_quat, Vector3::Right);
-		_up = math::rotate(_quat, Vector3::Up);
-		_forward = math::rotate(_quat, Vector3::Forward);
-
-		_transform.makeRotate(_forward, _up, _right);
+		_transform.makeRotate(_quat);
 		_transform.scale(_scaling);
 		_transform.setTranslate(_translate);
+
+		_right = _transform.getRight();
+		_up = _transform.getUpVector();
+		_forward = _transform.getForward();
 
 		_transformInverse = math::transformInverse(_transform);
 		_transformInverseTranspose = math::transpose(_transformInverse);

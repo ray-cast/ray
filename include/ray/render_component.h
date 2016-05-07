@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -55,11 +55,11 @@ public:
 	void setReceiveShadow(bool value) noexcept;
 	bool getReceiveShadow() const noexcept;
 
-	void addPreRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
-	void removePreRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
+	void addPreRenderListener(std::function<void(RenderPipeline&)>* listener) noexcept;
+	void removePreRenderListener(std::function<void(RenderPipeline&)>* listener) noexcept;
 
-	void addPostRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
-	void removePostRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
+	void addPostRenderListener(std::function<void(RenderPipeline&)>* listener) noexcept;
+	void removePostRenderListener(std::function<void(RenderPipeline&)>* listener) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

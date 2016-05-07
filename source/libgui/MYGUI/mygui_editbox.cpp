@@ -369,7 +369,7 @@ MyGuiEditBoxImpl::setHScrollPosition(std::size_t index)
 }
 
 void
-MyGuiEditBoxImpl::addTextChangeListener(std::function<void()>& func) noexcept
+MyGuiEditBoxImpl::addTextChangeListener(std::function<void()>* func) noexcept
 {
 	assert(!_onTextChange.find(func));
 	if (_onTextChange.empty())
@@ -378,14 +378,14 @@ MyGuiEditBoxImpl::addTextChangeListener(std::function<void()>& func) noexcept
 }
 
 void
-MyGuiEditBoxImpl::removeTextChangeListener(std::function<void()>& func) noexcept
+MyGuiEditBoxImpl::removeTextChangeListener(std::function<void()>* func) noexcept
 {
 	assert(_onTextChange.find(func));
 	_onTextChange.remove(func);
 }
 
 void
-MyGuiEditBoxImpl::addSelectAccept(std::function<void()>& func) noexcept
+MyGuiEditBoxImpl::addSelectAccept(std::function<void()>* func) noexcept
 {
 	assert(!_onSelectAccept.find(func));
 	if (_onTextChange.empty())
@@ -394,7 +394,7 @@ MyGuiEditBoxImpl::addSelectAccept(std::function<void()>& func) noexcept
 }
 
 void
-MyGuiEditBoxImpl::removeSelectAccept(std::function<void()>& func) noexcept
+MyGuiEditBoxImpl::removeSelectAccept(std::function<void()>* func) noexcept
 {
 	assert(_onSelectAccept.find(func));
 	_onSelectAccept.remove(func);
@@ -704,25 +704,25 @@ MyGuiEditBox::setHScrollPosition(std::size_t index)
 }
 
 void
-MyGuiEditBox::addTextChangeListener(std::function<void()>& func) noexcept
+MyGuiEditBox::addTextChangeListener(std::function<void()>* func) noexcept
 {
 	_impl.addTextChangeListener(func);
 }
 
 void
-MyGuiEditBox::removeTextChangeListener(std::function<void()>& func) noexcept
+MyGuiEditBox::removeTextChangeListener(std::function<void()>* func) noexcept
 {
 	_impl.removeTextChangeListener(func);
 }
 
 void
-MyGuiEditBox::addSelectAccept(std::function<void()>& func) noexcept
+MyGuiEditBox::addSelectAccept(std::function<void()>* func) noexcept
 {
 	_impl.addSelectAccept(func);
 }
 
 void
-MyGuiEditBox::removeSelectAccept(std::function<void()>& func) noexcept
+MyGuiEditBox::removeSelectAccept(std::function<void()>* func) noexcept
 {
 	_impl.removeSelectAccept(func);
 }

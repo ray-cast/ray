@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,20 +34,86 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MAIN_H_
-#define _H_MAIN_H_
+#include <ray/ik_solver_component.h>
 
-#include <SampleLoader.h>
+_NAME_BEGIN
 
-class DemoUI final : public SampleLoader
+__ImplementSubClass(IKSolverComponent, GameComponent, "IKSolver")
+
+IKSolverComponent::IKSolverComponent() noexcept
+	: _chainLength(1)
 {
-	__DeclareSubClass(DemoUI, SampleLoader)
-public:
-	DemoUI() noexcept;
-	~DemoUI() noexcept;
+}
 
-	bool initialize() except;
-	void run() except;
-};
+IKSolverComponent::~IKSolverComponent() noexcept
+{
+}
 
-#endif
+void 
+IKSolverComponent::setTargetBone(GameObjectPtr bone) noexcept
+{
+	_target = bone;
+}
+
+GameObjectPtr 
+IKSolverComponent::getTargetBone() const noexcept
+{
+	return _target;
+}
+
+void 
+IKSolverComponent::setIterations(std::uint32_t iterations) noexcept
+{
+	_iterations = iterations;
+}
+
+std::uint32_t 
+IKSolverComponent::getIterations() const noexcept
+{
+	return _iterations;
+}
+
+void 
+IKSolverComponent::setChainLength(std::uint32_t length) noexcept
+{
+	_chainLength = length;
+}
+
+std::uint32_t 
+IKSolverComponent::getChainLength() const noexcept
+{
+	return _chainLength;
+}
+
+void 
+IKSolverComponent::addBone(const IKSolverBonePtr bone) noexcept
+{
+	_bones.push_back(bone);
+}
+
+void 
+IKSolverComponent::setBones(const IKSolverBones& bones) noexcept
+{
+	_bones = bones;
+}
+
+void 
+IKSolverComponent::setBones(const IKSolverBones&& bones) noexcept
+{
+	_bones = std::move(bones);
+}
+
+const IKSolverComponent::IKSolverBones&
+IKSolverComponent::getBones() const noexcept
+{
+	return _bones;
+}
+
+GameComponentPtr
+IKSolverComponent::clone() const noexcept
+{
+	auto iksolver = std::make_shared<IKSolverComponent>();
+	return iksolver;
+}
+
+_NAME_END

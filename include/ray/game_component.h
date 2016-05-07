@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -52,10 +52,10 @@ public:
 	bool getActive() const noexcept;
 
 	void setName(const std::string& name) noexcept;
+	void setName(std::string&& name) noexcept;
 	const std::string& getName() const noexcept;
 
 	GameObjectPtr getGameObject() const noexcept;
-	GameServerPtr getGameServer() const noexcept;
 
 	GameComponentPtr getComponent(const rtti::Rtti* type) const noexcept;
 	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;

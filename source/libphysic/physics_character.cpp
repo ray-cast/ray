@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/physics_character.h>
-#include <ray/physics_scene.h>
+#include <ray/physics_system.h>
 
 #include <BulletDynamics\Character\btKinematicCharacterController.h>
 #include <BulletCollision\CollisionShapes\btCapsuleShape.h>
@@ -81,8 +81,8 @@ PhysicsCharacter::PhysicsCharacter() noexcept
 	: _ghostObject(nullptr)
 	, _character(nullptr)
 	, _capsule(nullptr)
-	, _scene(nullptr)
 	, _stepHeight(1)
+	, _translate(Vector3::Zero)
 	, _radius(1)
 	, _height(1)
 	, _walkDirection(Vector3::Zero)
@@ -98,36 +98,25 @@ PhysicsCharacter::setup() noexcept
 {
 	assert(!_character);
 
-	_ghostObject = new btPairCachingGhostObject;
+	_capsule = std::make_unique<btCapsuleShape>(_radius, _height);
 
-	_capsule = new btCapsuleShape(_radius, _height);
-	_ghostObject->setCollisionShape(_capsule);
+	_ghostObject = std::make_unique<btPairCachingGhostObject>();
+	_ghostObject->setCollisionShape(_capsule.get());
 	_ghostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 
-	_character = new CharacterController(_ghostObject, _capsule, _stepHeight);
+	_character = std::make_unique<CharacterController>(_ghostObject.get(), _capsule.get(), _stepHeight);
+
+	this->setMovePosition(_translate);
+	this->setPhysicsScene(PhysicsSystem::instance()->getPhysicsScene());
 }
 
 void
 PhysicsCharacter::close() noexcept
 {
-	if (_character)
-	{
-		this->setPhysicsScene(nullptr);
-		delete _character;
-		_character = nullptr;
-	}
-
-	if (_ghostObject)
-	{
-		delete _ghostObject;
-		_ghostObject = nullptr;
-	}
-
-	if (_capsule)
-	{
-		delete _capsule;
-		_capsule = nullptr;
-	}
+	this->setPhysicsScene(nullptr);
+	_character.reset();
+	_ghostObject.reset();
+	_capsule.reset();
 }
 
 void
@@ -147,7 +136,7 @@ PhysicsCharacter::setMovePosition(const Vector3& pos) noexcept
 {
 	if (_character)
 	{
-		btVector3 origin;
+		btVector3 origin(pos.x, pos.y, pos.z);
 		origin.setX(pos.x);
 		origin.setY(pos.y);
 		origin.setZ(pos.z);
@@ -169,9 +158,9 @@ PhysicsCharacter::setWalkDirection(const Vector3& direction) noexcept
 		walkDirection.setZ(direction.z);
 
 		_character->setWalkDirection(walkDirection);
-
-		_walkDirection = direction;
 	}
+
+	_walkDirection = direction;
 }
 
 const Vector3&
@@ -218,22 +207,22 @@ PhysicsCharacter::jump(float speed) noexcept
 }
 
 void
-PhysicsCharacter::setPhysicsScene(PhysicsScene* scene) noexcept
+PhysicsCharacter::setPhysicsScene(PhysicsScenePtr scene) noexcept
 {
 	assert(_character);
 
-	if (_scene)
+	if (_scene.lock())
 	{
-		_scene->removeAction(_character);
-		_scene->removeCharacter(_ghostObject);
+		_scene.lock()->removeAction(_character.get());
+		_scene.lock()->removeCharacter(_ghostObject.get());
 	}
 
 	_scene = scene;
 
-	if (_scene)
+	if (scene)
 	{
-		_scene->addAction(_character);
-		_scene->addCharacter(_ghostObject);
+		scene->addAction(_character.get());
+		scene->addCharacter(_ghostObject.get());
 	}
 }
 

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -134,7 +134,7 @@ void
 InputFeature::onActivate() noexcept
 {
 	_input = std::make_shared<DefaultInput>();
-	_input->open(nullptr);
+	_input->open();
 	_input->addInputListener(std::make_shared<InputEventListener>(*this));
 	_input->setCaptureObject(_window);
 	_input->obtainCapture();

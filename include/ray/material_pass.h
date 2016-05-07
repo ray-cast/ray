@@ -80,13 +80,20 @@ public:
 	void close() noexcept;
 
 	void setName(const std::string& name) noexcept;
+	void setName(std::string&& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setGraphicsState(GraphicsStatePtr state) noexcept;
-	void setGraphicsProgram(GraphicsProgramPtr program) noexcept;
-	void setGraphicsInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
-	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr pool) noexcept;
-	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSetLayout) noexcept;
+	void setGraphicsState(GraphicsStatePtr& state) noexcept;
+	void setGraphicsProgram(GraphicsProgramPtr& program) noexcept;
+	void setGraphicsInputLayout(GraphicsInputLayoutPtr& inputLayout) noexcept;
+	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr& pool) noexcept;
+	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept;
+
+	void setGraphicsState(GraphicsStatePtr&& state) noexcept;
+	void setGraphicsProgram(GraphicsProgramPtr&& program) noexcept;
+	void setGraphicsInputLayout(GraphicsInputLayoutPtr&& inputLayout) noexcept;
+	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr&& pool) noexcept;
+	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr&& descriptorSetLayout) noexcept;
 
 	GraphicsStatePtr getGraphicsState() const noexcept;
 	GraphicsProgramPtr getGraphicsProgram() const noexcept;

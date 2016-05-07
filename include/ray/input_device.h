@@ -55,8 +55,10 @@ public:
 	virtual void enableEventPosting(bool enable) noexcept;
 	virtual bool enableEventPosting() const noexcept;
 
-	virtual void addInputListener(InputListenerPtr listener) noexcept;
-	virtual void removeInputListener(InputListenerPtr listener) noexcept;
+	virtual void addInputListener(InputListenerPtr& listener) noexcept;
+	virtual void addInputListener(InputListenerPtr&& listener) noexcept;
+	virtual void removeInputListener(InputListenerPtr& listener) noexcept;
+	virtual void removeInputListener(InputListenerPtr&& listener) noexcept;
 	virtual void clearInputListener() noexcept;
 
 	virtual bool sendEvent(const InputEvent& event) noexcept;

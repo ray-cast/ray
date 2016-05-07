@@ -55,29 +55,17 @@ class btActionInterface;
 class btConvexShape;
 class btPairCachingGhostObject;
 class btCollisionShape;
+class btGeneric6DofSpringConstraint;
 
 _NAME_BEGIN
-
-struct EXPORT RaycastHit
-{
-    Vector3 point;
-    Vector3 normal;
-
-    float distance;
-    short int collisionFilterGroup;
-    short int collisionFilterMask;
-
-    RaycastHit() noexcept
-        : distance(1.0)
-    {
-    }
-};
-
-typedef std::vector<RaycastHit> RaycastHits;
 
 typedef std::shared_ptr<class PhysicsShape> PhysicsShapePtr;
 typedef std::shared_ptr<class PhysicsScene> PhysicsScenePtr;
 typedef std::shared_ptr<class PhysicsSystem> PhysicsSystemPtr;
+
+typedef std::weak_ptr<class PhysicsShape> PhysicsShapeWeakPtr;
+typedef std::weak_ptr<class PhysicsScene> PhysicsSceneWeakPtr;
+typedef std::weak_ptr<class PhysicsSystem> PhysicsSystemWeakPtr;
 
 typedef std::vector<PhysicsScenePtr> PhysicsScenes;
 

@@ -54,19 +54,25 @@ public:
 	bool setup() noexcept;
 	void close() noexcept;
 
-	void addTech(MaterialTechPtr technique) noexcept;
-	void removeTech(MaterialTechPtr technique) noexcept;
+	void addTech(MaterialTechPtr& technique) noexcept;
+	void addTech(MaterialTechPtr&& technique) noexcept;
+	void removeTech(MaterialTechPtr& technique) noexcept;
+	void removeTech(MaterialTechPtr&& technique) noexcept;
 	MaterialTechPtr getTech(const std::string& name) noexcept;
-	MaterialTechniques& getTechs() noexcept;
+	const MaterialTechniques& getTechs() const noexcept;
 
-	void addParameter(MaterialParamPtr parameter) noexcept;
-	void removeParameter(MaterialParamPtr parameter) noexcept;
+	void addParameter(MaterialParamPtr& parameter) noexcept;
+	void addParameter(MaterialParamPtr&& parameter) noexcept;
+	void removeParameter(MaterialParamPtr& parameter) noexcept;
+	void removeParameter(MaterialParamPtr&& parameter) noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
 	MaterialParams& getParameters() noexcept;
 	const MaterialParams& getParameters() const noexcept;
 
-	void addMacro(MaterialParamPtr macro) noexcept;
-	void removeMacro(MaterialParamPtr macro) noexcept;
+	void addMacro(MaterialParamPtr& macro) noexcept;
+	void addMacro(MaterialParamPtr&& macro) noexcept;
+	void removeMacro(MaterialParamPtr& macro) noexcept;
+	void removeMacro(MaterialParamPtr&& macro) noexcept;
 	MaterialParamPtr getMacro(const std::string& name) const noexcept;
 	MaterialParams& getMacros() noexcept;
 	const MaterialParams& getMacros() const noexcept;

@@ -58,11 +58,13 @@ public:
 class EXPORT IKChild
 {
 public:
-	std::uint16_t BoneIndex;
-	std::uint8_t RotateLimited;
+	std::uint16_t boneIndex;
+	std::uint8_t rotateLimited;
 
-	float3 MinimumRadian;
-	float3 MaximumRadian;
+	float angleWeight;
+	
+	float3 minimumDegrees;
+	float3 maximumDegrees;
 };
 
 class EXPORT IKAttr
@@ -72,8 +74,6 @@ public:
 	std::uint16_t targetBoneIndex;
 	std::uint32_t iterations;
 	std::uint32_t chainLength;
-
-	float weight;
 
 	std::vector<IKChild> child;
 };
@@ -91,9 +91,6 @@ public:
 	void setParent(std::int16_t parent) noexcept;
 	std::int16_t getParent() const noexcept;
 
-	void setChild(std::int16_t child) noexcept;
-	std::int16_t getChild() const noexcept;
-
 	void setPosition(const float3& position) noexcept;
 	const float3& getPosition() const noexcept;
 
@@ -103,17 +100,11 @@ public:
 	void setScaling(const float3& scale) noexcept;
 	const float3& getScaling() const noexcept;
 
-	void setLeg(bool leg) noexcept;
-	bool getLeg() const noexcept;
-
 	void setLocalTransform(const Matrix4x4& transform) noexcept;
 	const Matrix4x4& getLocalTransform() const noexcept;
 
 	void setTransform(const Matrix4x4& transform) noexcept;
 	const Matrix4x4& getTransform() const noexcept;
-
-	void update() noexcept;
-	void updateTransform(const float3& translate, const Quaternion& rotate);
 
 private:
 	std::string _name;
@@ -121,7 +112,6 @@ private:
 	bool _isLeg;
 
 	std::int16_t _parent;
-	std::int16_t _child;
 
 	float3 _translate;
 	float3 _scaling;

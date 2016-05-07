@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -36,6 +36,11 @@
 // +----------------------------------------------------------------------
 #include <ray/game_object_manager.h>
 #include <ray/game_object.h>
+
+#include <ray/res_loader.h>
+#include <ray/ioserver.h>
+#include <ray/mstream.h>
+#include <ray/mesh_component.h>
 
 _NAME_BEGIN
 
@@ -127,7 +132,7 @@ GameObjectManager::findActiveObject(const std::string& name) noexcept
 }
 
 GameObjectPtr
-GameObjectManager::instantiate(const std::string& name) except
+GameObjectManager::instantiate(const std::string& name) noexcept
 {
 	auto object = this->findObject(name);
 	if (object)

@@ -76,11 +76,11 @@ public:
 	virtual void setVerticalAlignment(bool value) noexcept = 0;
 	virtual bool getVerticalAlignment() const noexcept = 0;
 
-	virtual void addMenuCtrlCloseListener(std::function<void()>& func) noexcept = 0;
-	virtual void addMenuCtrlAcceptListener(std::function<void()>& func) noexcept = 0;
+	virtual void addMenuCtrlCloseListener(std::function<void()>* func) noexcept = 0;
+	virtual void addMenuCtrlAcceptListener(std::function<void()>* func) noexcept = 0;
 
-	virtual void removeMenuCtrlCloseListener(std::function<void()>& func) noexcept = 0;
-	virtual void removeMenuCtrlAcceptListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeMenuCtrlCloseListener(std::function<void()>* func) noexcept = 0;
+	virtual void removeMenuCtrlAcceptListener(std::function<void()>* func) noexcept = 0;
 
 private:
 	GuiMenu(const GuiMenu&) noexcept = delete;

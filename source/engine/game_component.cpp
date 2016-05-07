@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -55,20 +55,20 @@ GameComponentPtr
 GameComponent::getComponent(const rtti::Rtti* type) const noexcept
 {
 	assert(this->rtti() != type);
-	return this->getGameObject()->getComponent(type);
+	return _gameObject->getComponent(type);
 }
 
 GameComponentPtr
 GameComponent::getComponent(const rtti::Rtti& type) const noexcept
 {
 	assert(this->rtti() != &type);
-	return this->getGameObject()->getComponent(type);
+	return _gameObject->getComponent(type);
 }
 
 const GameComponents&
 GameComponent::getComponents() const noexcept
 {
-	return this->getGameObject()->getComponents();
+	return _gameObject->getComponents();
 }
 
 void
@@ -82,13 +82,6 @@ GameComponent::getGameObject() const noexcept
 {
 	assert(_gameObject);
 	return _gameObject->downcast<GameObject>();
-}
-
-GameServerPtr
-GameComponent::getGameServer() const noexcept
-{
-	assert(_gameObject);
-	return _gameObject->getGameServer();
 }
 
 void
@@ -115,6 +108,12 @@ void
 GameComponent::setName(const std::string& name) noexcept
 {
 	_name = name;
+}
+
+void
+GameComponent::setName(std::string&& name) noexcept
+{
+	_name = std::move(name);
 }
 
 const std::string&

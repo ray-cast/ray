@@ -51,8 +51,10 @@ public:
 	virtual void setCaptureObject(CaptureObject window) noexcept = 0;
 	virtual CaptureObject getCaptureObject() const noexcept = 0;
 
-	virtual void addInputListener(InputListenerPtr listener) noexcept = 0;
-	virtual void removeInputListener(InputListenerPtr listener) noexcept = 0;
+	virtual void addInputListener(InputListenerPtr& listener) noexcept = 0;
+	virtual void addInputListener(InputListenerPtr&& listener) noexcept = 0;
+	virtual void removeInputListener(InputListenerPtr& listener) noexcept = 0;
+	virtual void removeInputListener(InputListenerPtr&& listener) noexcept = 0;
 	virtual void clearInputListener() noexcept = 0;
 
 	virtual void enableEventPosting(bool enable) noexcept = 0;

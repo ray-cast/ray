@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,27 +34,39 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MODVMD_H_
-#define _H_MODVMD_H_
+#ifndef _H_PHYSICS_SPHERE_COMPONENT_H_
+#define _H_PHYSICS_SPHERE_COMPONENT_H_
 
-#include <ray/model.h>
+#include <ray/physics_shape_component.h>
 
 _NAME_BEGIN
 
-class VMDHandler final : public ModelHandler
+class PhysicsShapeSphere;
+class EXPORT PhysicsSphereComponent final : public PhysicsShapeComponent
 {
+	__DeclareSubClass(PhysicsSphereComponent, PhysicsShapeComponent)
 public:
-	VMDHandler() noexcept;
-	~VMDHandler() noexcept;
+	PhysicsSphereComponent() noexcept;
+	PhysicsSphereComponent(float radius) noexcept;
+	~PhysicsSphereComponent() noexcept;
 
-	bool doCanRead(StreamReader& stream) const noexcept;
-
-	bool doLoad(Model& image, StreamReader& stream) noexcept;
-	bool doSave(Model& image, StreamWrite& stream) noexcept;
+	void setRadius(float radius) noexcept;
+	float getRadius() const noexcept;
 
 private:
-	VMDHandler(const VMDHandler&) = delete;
-	VMDHandler& operator=(const VMDHandler&) = delete;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
+
+	virtual PhysicsShapePtr getCollisionShape() noexcept;
+	virtual GameComponentPtr clone() const noexcept;
+
+private:
+	PhysicsSphereComponent(const PhysicsSphereComponent&) noexcept = delete;
+	PhysicsSphereComponent& operator=(const PhysicsSphereComponent&)noexcept = delete;
+
+private:
+
+	std::shared_ptr<PhysicsShapeSphere> _shape;
 };
 
 _NAME_END

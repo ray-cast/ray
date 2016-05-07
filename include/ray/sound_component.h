@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -79,8 +79,8 @@ public:
 	bool isPaused() const noexcept;
 	bool isLooping() const noexcept;
 
-	void addPlayEndListener(std::function<void()> func) noexcept;
-	void removePlayEndListener(std::function<void()> func) noexcept;
+	void addPlayEndListener(std::function<void()>* func) noexcept;
+	void removePlayEndListener(std::function<void()>* func) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

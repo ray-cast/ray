@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -50,6 +50,8 @@ public:
 	~PhysicsBodyComponent() noexcept;
 
 	void setMass(float value) noexcept;
+	void setRestitution(float value) noexcept;
+	void setFriction(float friction) noexcept;
 	void setLinearVelocity(const Vector3& value) noexcept;
 	void setAngularVelocity(const Vector3& value) noexcept;
 	void setLinearDamping(float value)  noexcept;
@@ -64,6 +66,8 @@ public:
 	bool isSleep() const noexcept;
 
 	float getMass() const noexcept;
+	float getRestitution() const noexcept;
+	float getFriction() const noexcept;
 	float getLinearDamping() const noexcept;
 	float getAngularDamping() const noexcept;
 
@@ -84,16 +88,23 @@ public:
 	virtual GameComponentPtr clone() const noexcept;
 
 private:
+	void _buildRigibody() noexcept;
 
-	void onActivate() noexcept;
-	void onDeactivate() noexcept;
+private:
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
 
-	void onFrame() noexcept;
-	void onFrameEnd() noexcept;
+	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
+	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
-	void onMoveAfter() noexcept;
+	virtual void onFrame() noexcept;
+	virtual void onFrameEnd() noexcept;
 
-	void onCollisionStay() noexcept;
+	virtual void onMoveAfter() noexcept;
+
+	virtual void onShapeChange() noexcept;
+
+	virtual void onCollisionStay() noexcept;
 
 private:
 	PhysicsBodyComponent(const PhysicsBodyComponent&) noexcept = delete;
@@ -107,6 +118,8 @@ private:
 	Vector3 _constantTorque;
 	Vector3 _constantVelocity;
 	Vector3 _constantAngularVelocity;
+
+	std::function<void()> _onShapeChange;
 
 	std::unique_ptr<PhysicsRigidbody> _body;
 };

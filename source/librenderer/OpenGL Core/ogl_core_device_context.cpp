@@ -275,7 +275,7 @@ OGLCoreDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcep
 }
 
 void
-OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
+OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept
 {
 	assert(pipeline);
 	assert(pipeline->isInstanceOf<OGLCorePipeline>());
@@ -315,7 +315,7 @@ OGLCoreDeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-OGLCoreDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
+OGLCoreDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<OGLCoreDescriptorSet>());
@@ -332,7 +332,7 @@ OGLCoreDeviceContext::getDescriptorSet() const noexcept
 }
 
 void
-OGLCoreDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
+OGLCoreDeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLCoreGraphicsData>());
@@ -356,7 +356,7 @@ OGLCoreDeviceContext::getVertexBufferData() const noexcept
 }
 
 void
-OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr& data) noexcept
 {
 	assert(_glcontext->getActive());
 

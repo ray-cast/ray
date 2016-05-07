@@ -49,14 +49,31 @@ MaterialTech::~MaterialTech() noexcept
 }
 
 void
-MaterialTech::addPass(MaterialPassPtr pass)
+MaterialTech::addPass(MaterialPassPtr& pass)
 {
 	assert(std::find(_passList.begin(), _passList.end(), pass) == _passList.end());
 	_passList.push_back(pass);
 }
 
 void
-MaterialTech::removePass(MaterialPassPtr pass)
+MaterialTech::addPass(MaterialPassPtr&& pass)
+{
+	assert(std::find(_passList.begin(), _passList.end(), pass) == _passList.end());
+	_passList.push_back(std::move(pass));
+}
+
+void
+MaterialTech::removePass(MaterialPassPtr& pass)
+{
+	auto it = std::find(_passList.begin(), _passList.end(), pass);
+	if (it != _passList.end())
+	{
+		_passList.erase(it);
+	}
+}
+
+void
+MaterialTech::removePass(MaterialPassPtr&& pass)
 {
 	auto it = std::find(_passList.begin(), _passList.end(), pass);
 	if (it != _passList.end())
@@ -87,6 +104,12 @@ void
 MaterialTech::setName(const std::string& name) noexcept
 {
 	_name = name;
+}
+
+void
+MaterialTech::setName(std::string&& name) noexcept
+{
+	_name = std::move(name);
 }
 
 const std::string&

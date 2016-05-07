@@ -38,9 +38,8 @@
 
 _NAME_BEGIN
 
-Joint::Joint(JointType type) noexcept
-	: _type(type)
-	, _rigidbody(nullptr)
+PhysicsJoint::PhysicsJoint() noexcept
+	: _rigidbody(nullptr)
 	, _axis(Vector3::Zero)
 	, _anchor(Vector3::Zero)
 	, _breakForce(std::numeric_limits<float>::max())
@@ -48,72 +47,66 @@ Joint::Joint(JointType type) noexcept
 {
 }
 
-Joint::~Joint() noexcept
+PhysicsJoint::~PhysicsJoint() noexcept
 {
-}
-
-Joint::JointType
-Joint::getType() const noexcept
-{
-	return _type;
 }
 
 void
-Joint::setRigidbody(PhysicsRigidbody* body) noexcept
+PhysicsJoint::setRigidbody(PhysicsRigidbody* body) noexcept
 {
 	_rigidbody = body;
 }
 
 void
-Joint::setBreakForce(float force) noexcept
+PhysicsJoint::setBreakForce(float force) noexcept
 {
 	_breakForce = force;
 }
 
 void
-Joint::setBreakTorque(float torque) noexcept
+PhysicsJoint::setBreakTorque(float torque) noexcept
 {
 	_breakTorque = torque;
 }
 
 void
-Joint::setAxis(const Vector3& axis) noexcept
+PhysicsJoint::setAxis(const Vector3& axis) noexcept
 {
 	_axis = axis;
 }
 
 void
-Joint::setAnchor(const Vector3& axis) noexcept
+PhysicsJoint::setAnchor(const Vector3& axis) noexcept
 {
 	_anchor = axis;
 }
 
 PhysicsRigidbody*
-Joint::getRigidbody() const noexcept
+PhysicsJoint::getRigidbody() const noexcept
 {
 	return _rigidbody;
 }
 
 float
-Joint::getBreakForce() const noexcept
+PhysicsJoint::getBreakForce() const noexcept
 {
 	return _breakForce;
 }
 
 float
-Joint::getBreakTorque() const noexcept
+PhysicsJoint::getBreakTorque() const noexcept
 {
 	return _breakTorque;
 }
 
 const Vector3&
-Joint::getAxis() const noexcept
+PhysicsJoint::getAxis() const noexcept
 {
 	return _axis;
 }
 
 const Vector3&
-Joint::getAnchor() const noexcept
+PhysicsJoint::getAnchor() const noexcept
 {
 	return _anchor;
 }

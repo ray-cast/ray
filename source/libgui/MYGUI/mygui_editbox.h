@@ -117,11 +117,11 @@ public:
 
 	GuiTextBoxPtr getGuiTextBox() const noexcept;
 
-	void addTextChangeListener(std::function<void()>& func) noexcept;
-	void removeTextChangeListener(std::function<void()>& func) noexcept;
+	void addTextChangeListener(std::function<void()>* func) noexcept;
+	void removeTextChangeListener(std::function<void()>* func) noexcept;
 
-	void addSelectAccept(std::function<void()>& func) noexcept;
-	void removeSelectAccept(std::function<void()>& func) noexcept;
+	void addSelectAccept(std::function<void()>* func) noexcept;
+	void removeSelectAccept(std::function<void()>* func) noexcept;
 
 private:
 	void onTextChange(MyGUI::Widget*) noexcept;
@@ -219,11 +219,11 @@ public:
 
 	GuiTextBoxPtr getGuiTextBox() const noexcept;
 
-	void addTextChangeListener(std::function<void()>& func) noexcept;
-	void removeTextChangeListener(std::function<void()>& func) noexcept;
+	void addTextChangeListener(std::function<void()>* func) noexcept;
+	void removeTextChangeListener(std::function<void()>* func) noexcept;
 
-	void addSelectAccept(std::function<void()>& func) noexcept;
-	void removeSelectAccept(std::function<void()>& func) noexcept;
+	void addSelectAccept(std::function<void()>* func) noexcept;
+	void removeSelectAccept(std::function<void()>* func) noexcept;
 
 private:
 	MyGuiEditBox(const MyGuiEditBox&) noexcept = delete;

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of _renderThread software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -189,28 +189,28 @@ GuiMenuComponent::getVerticalAlignment() const noexcept
 }
 
 void
-GuiMenuComponent::addMenuCtrlCloseListener(std::function<void()> func) noexcept
+GuiMenuComponent::addMenuCtrlCloseListener(std::function<void()>* func) noexcept
 {
 	assert(_menu);
 	return _menu->addMenuCtrlCloseListener(func);
 }
 
 void
-GuiMenuComponent::addMenuCtrlAcceptListener(std::function<void()> func) noexcept
+GuiMenuComponent::addMenuCtrlAcceptListener(std::function<void()>* func) noexcept
 {
 	assert(_menu);
 	return _menu->addMenuCtrlAcceptListener(func);
 }
 
 void
-GuiMenuComponent::removeMenuCtrlCloseListener(std::function<void()> func) noexcept
+GuiMenuComponent::removeMenuCtrlCloseListener(std::function<void()>* func) noexcept
 {
 	assert(_menu);
 	return _menu->removeMenuCtrlCloseListener(func);
 }
 
 void
-GuiMenuComponent::removeMenuCtrlAcceptListener(std::function<void()> func) noexcept
+GuiMenuComponent::removeMenuCtrlAcceptListener(std::function<void()>* func) noexcept
 {
 	assert(_menu);
 	return _menu->removeMenuCtrlAcceptListener(func);

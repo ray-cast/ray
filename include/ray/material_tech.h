@@ -49,10 +49,13 @@ public:
 	~MaterialTech() noexcept;
 
 	void setName(const std::string& name) noexcept;
+	void setName(std::string&& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void addPass(MaterialPassPtr pass);
-	void removePass(MaterialPassPtr pass);
+	void addPass(MaterialPassPtr& pass);
+	void addPass(MaterialPassPtr&& pass);
+	void removePass(MaterialPassPtr& pass);
+	void removePass(MaterialPassPtr&& pass);
 	MaterialPassPtr getPass(const std::string& name) noexcept;
 
 	const MaterialPassList& getPassList() const noexcept;

@@ -56,6 +56,12 @@ MaterialParam::MaterialParam(const std::string& name, GraphicsUniformType type) 
 	_variant.setType(type);
 }
 
+MaterialParam::MaterialParam(std::string&& name, GraphicsUniformType type) noexcept
+	: _name(std::move(name))
+{
+	_variant.setType(type);
+}
+
 MaterialParam::~MaterialParam() noexcept
 {
 }
@@ -64,6 +70,12 @@ void
 MaterialParam::setName(const std::string& name) noexcept
 {
 	_name = name;
+}
+
+void
+MaterialParam::setName(std::string&& name) noexcept
+{
+	_name = std::move(name);
 }
 
 const std::string&
@@ -85,9 +97,15 @@ MaterialParam::getType() const noexcept
 }
 
 void
-MaterialParam::setSemantic(MaterialParamPtr semantic) noexcept
+MaterialParam::setSemantic(MaterialParamPtr& semantic) noexcept
 {
 	_semantic = semantic;
+}
+
+void
+MaterialParam::setSemantic(MaterialParamPtr&& semantic) noexcept
+{
+	_semantic = std::move(semantic);
 }
 
 MaterialParamPtr
@@ -293,23 +311,9 @@ MaterialParam::uniform4fmat(const float* mat4) noexcept
 }
 
 void
-MaterialParam::uniform1iv(const std::vector<int1>& value) noexcept
-{
-	_variant.uniform1iv(value);
-	this->_needUpdate();
-}
-
-void
 MaterialParam::uniform1iv(std::size_t num, const std::int32_t* i1v) noexcept
 {
 	_variant.uniform1iv(num, i1v);
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform2iv(const std::vector<int2>& value) noexcept
-{
-	_variant.uniform2iv(value);
 	this->_needUpdate();
 }
 
@@ -321,23 +325,9 @@ MaterialParam::uniform2iv(std::size_t num, const std::int32_t* i2v) noexcept
 }
 
 void
-MaterialParam::uniform3iv(const std::vector<int3>& value) noexcept
-{
-	_variant.uniform3iv(value);
-	this->_needUpdate();
-}
-
-void
 MaterialParam::uniform3iv(std::size_t num, const std::int32_t* i3v) noexcept
 {
 	_variant.uniform3iv(num, i3v);
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform4iv(const std::vector<int4>& value) noexcept
-{
-	_variant.uniform4iv(value);
 	this->_needUpdate();
 }
 
@@ -349,23 +339,9 @@ MaterialParam::uniform4iv(std::size_t num, const std::int32_t* i4v) noexcept
 }
 
 void
-MaterialParam::uniform1uiv(const std::vector<uint1>& value) noexcept
-{
-	_variant.uniform1uiv(value);
-	this->_needUpdate();
-}
-
-void
 MaterialParam::uniform1uiv(std::size_t num, const std::uint32_t* ui1v) noexcept
 {
 	_variant.uniform1uiv(num, ui1v);
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform2uiv(const std::vector<uint2>& value) noexcept
-{
-	_variant.uniform2uiv(value);
 	this->_needUpdate();
 }
 
@@ -377,23 +353,9 @@ MaterialParam::uniform2uiv(std::size_t num, const std::uint32_t* ui2v) noexcept
 }
 
 void
-MaterialParam::uniform3uiv(const std::vector<uint3>& value) noexcept
-{
-	_variant.uniform3uiv(value);
-	this->_needUpdate();
-}
-
-void
 MaterialParam::uniform3uiv(std::size_t num, const std::uint32_t* ui3v) noexcept
 {
 	_variant.uniform3uiv(num, ui3v);
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform4uiv(const std::vector<uint4>& value) noexcept
-{
-	_variant.uniform4uiv(value);
 	this->_needUpdate();
 }
 
@@ -405,23 +367,9 @@ MaterialParam::uniform4uiv(std::size_t num, const std::uint32_t* ui4v) noexcept
 }
 
 void
-MaterialParam::uniform1fv(const std::vector<float1>& value) noexcept
-{
-	_variant.uniform1fv(value);
-	this->_needUpdate();
-}
-
-void
 MaterialParam::uniform1fv(std::size_t num, const float* f1v) noexcept
 {
 	_variant.uniform1fv(num, f1v);
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform2fv(const std::vector<float2>& value) noexcept
-{
-	_variant.uniform2fv(value);
 	this->_needUpdate();
 }
 
@@ -433,23 +381,9 @@ MaterialParam::uniform2fv(std::size_t num, const float* f2v) noexcept
 }
 
 void
-MaterialParam::uniform3fv(const std::vector<float3>& value) noexcept
-{
-	_variant.uniform3fv(value);
-	this->_needUpdate();
-}
-
-void
 MaterialParam::uniform3fv(std::size_t num, const float* f3v) noexcept
 {
 	_variant.uniform3fv(num, f3v);
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform4fv(const std::vector<float4>& value) noexcept
-{
-	_variant.uniform4fv(value);
 	this->_needUpdate();
 }
 
@@ -461,23 +395,9 @@ MaterialParam::uniform4fv(std::size_t num, const float* f4v) noexcept
 }
 
 void
-MaterialParam::uniform2fmatv(const std::vector<float2x2>& value) noexcept
-{
-	_variant.uniform2fmatv(value);
-	this->_needUpdate();
-}
-
-void
 MaterialParam::uniform2fmatv(std::size_t num, const float* mat2) noexcept
 {
 	_variant.uniform2fmatv(num, mat2);
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform3fmatv(const std::vector<float3x3>& value) noexcept
-{
-	_variant.uniform3fmatv(value);
 	this->_needUpdate();
 }
 
@@ -489,6 +409,111 @@ MaterialParam::uniform3fmatv(std::size_t num, const float* mat3) noexcept
 }
 
 void
+MaterialParam::uniform4fmatv(std::size_t num, const float* mat4) noexcept
+{
+	_variant.uniform4fmatv(num, mat4);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform1iv(const std::vector<int1>& value) noexcept
+{
+	_variant.uniform1iv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform2iv(const std::vector<int2>& value) noexcept
+{
+	_variant.uniform2iv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform3iv(const std::vector<int3>& value) noexcept
+{
+	_variant.uniform3iv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform4iv(const std::vector<int4>& value) noexcept
+{
+	_variant.uniform4iv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform1uiv(const std::vector<uint1>& value) noexcept
+{
+	_variant.uniform1uiv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform2uiv(const std::vector<uint2>& value) noexcept
+{
+	_variant.uniform2uiv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform3uiv(const std::vector<uint3>& value) noexcept
+{
+	_variant.uniform3uiv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform4uiv(const std::vector<uint4>& value) noexcept
+{
+	_variant.uniform4uiv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform1fv(const std::vector<float1>& value) noexcept
+{
+	_variant.uniform1fv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform2fv(const std::vector<float2>& value) noexcept
+{
+	_variant.uniform2fv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform3fv(const std::vector<float3>& value) noexcept
+{
+	_variant.uniform3fv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform4fv(const std::vector<float4>& value) noexcept
+{
+	_variant.uniform4fv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform2fmatv(const std::vector<float2x2>& value) noexcept
+{
+	_variant.uniform2fmatv(value);
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform3fmatv(const std::vector<float3x3>& value) noexcept
+{
+	_variant.uniform3fmatv(value);
+	this->_needUpdate();
+}
+
+void
 MaterialParam::uniform4fmatv(const std::vector<float4x4>& value) noexcept
 {
 	_variant.uniform4fmatv(value);
@@ -496,9 +521,107 @@ MaterialParam::uniform4fmatv(const std::vector<float4x4>& value) noexcept
 }
 
 void
-MaterialParam::uniform4fmatv(std::size_t num, const float* mat4) noexcept
+MaterialParam::uniform1iv(std::vector<int1>&& value) noexcept
 {
-	_variant.uniform4fmatv(num, mat4);
+	_variant.uniform1iv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform2iv(std::vector<int2>&& value) noexcept
+{
+	_variant.uniform2iv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform3iv(std::vector<int3>&& value) noexcept
+{
+	_variant.uniform3iv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform4iv(std::vector<int4>&& value) noexcept
+{
+	_variant.uniform4iv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform1uiv(std::vector<uint1>&& value) noexcept
+{
+	_variant.uniform1uiv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform2uiv(std::vector<uint2>&& value) noexcept
+{
+	_variant.uniform2uiv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform3uiv(std::vector<uint3>&& value) noexcept
+{
+	_variant.uniform3uiv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform4uiv(std::vector<uint4>&& value) noexcept
+{
+	_variant.uniform4uiv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform1fv(std::vector<float1>&& value) noexcept
+{
+	_variant.uniform1fv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform2fv(std::vector<float2>&& value) noexcept
+{
+	_variant.uniform2fv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform3fv(std::vector<float3>&& value) noexcept
+{
+	_variant.uniform3fv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform4fv(std::vector<float4>&& value) noexcept
+{
+	_variant.uniform4fv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform2fmatv(std::vector<float2x2>&& value) noexcept
+{
+	_variant.uniform2fmatv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform3fmatv(std::vector<float3x3>&& value) noexcept
+{
+	_variant.uniform3fmatv(std::move(value));
+	this->_needUpdate();
+}
+
+void
+MaterialParam::uniform4fmatv(std::vector<float4x4>&& value) noexcept
+{
+	_variant.uniform4fmatv(std::move(value));
 	this->_needUpdate();
 }
 

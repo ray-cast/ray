@@ -107,9 +107,13 @@ public:
 	void setCurrentFrame(std::size_t frame) noexcept;
 	std::size_t getCurrentFrame() const noexcept;
 
-	void setBoneArray(const Bones& bone) noexcept;
-	void setIKArray(InverseKinematics ik) noexcept;
-	InverseKinematics getIKArray() noexcept;
+	void setBoneArray(const Bones& bones) noexcept;
+	void setBoneArray(Bones&& bones) noexcept;
+	const Bones& getBoneArray() const noexcept;
+
+	void setIKArray(const InverseKinematics& ik) noexcept;
+	void setIKArray(InverseKinematics&& ik) noexcept;
+	const InverseKinematics& getIKArray() const noexcept;
 
 	void addBoneAnimation(const BoneAnimation& anim) noexcept;
 	BoneAnimation& getBoneAnimation(std::size_t index) noexcept;
@@ -123,8 +127,7 @@ public:
 
 	AnimationPropertyPtr clone() noexcept;
 
-	void updateBone(Bones& _bones, float delta) noexcept;
-	void updateBonePose(Bones& _bones) noexcept;
+	void updateMotion(float delta) noexcept;
 
 	MotionSegment findMotionSegment(int frame, const std::vector<std::size_t>& motions) noexcept;
 	void interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame) noexcept;
@@ -136,10 +139,11 @@ private:
 private:
 	void updateIK(Bones& _bones) noexcept;
 	void updateIK(Bones& _bones, const IKAttr& ik) noexcept;
+	void updateBones(const Bones& _bones) noexcept;
 	void updateBoneMotion(Bones& _bones) noexcept;
 	void updateBoneMatrix(Bones& _bones) noexcept;
 	void updateBoneMatrix(Bones& _bones, Bone& bone) noexcept;
-	void updateBoneChild(Bones& _bones, Bone& bone) noexcept;
+	void updateTransform(Bone& bone, const float3& translate, const Quaternion& rotate) noexcept;
 
 private:
 
@@ -150,6 +154,7 @@ private:
 
 	float _delta;
 
+	Bones _bones;
 	InverseKinematics _iks;
 
 	std::vector<BoneAnimation> _boneAnimation;

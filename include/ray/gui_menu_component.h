@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -76,11 +76,11 @@ public:
 	void setVerticalAlignment(bool value) noexcept;
 	bool getVerticalAlignment() const noexcept;
 
-	void addMenuCtrlCloseListener(std::function<void()> func) noexcept;
-	void addMenuCtrlAcceptListener(std::function<void()> func) noexcept;
+	void addMenuCtrlCloseListener(std::function<void()>* func) noexcept;
+	void addMenuCtrlAcceptListener(std::function<void()>* func) noexcept;
 
-	void removeMenuCtrlCloseListener(std::function<void()> func) noexcept;
-	void removeMenuCtrlAcceptListener(std::function<void()> func) noexcept;
+	void removeMenuCtrlCloseListener(std::function<void()>* func) noexcept;
+	void removeMenuCtrlAcceptListener(std::function<void()>* func) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

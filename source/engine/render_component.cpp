@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -75,28 +75,28 @@ RenderComponent::getReceiveShadow() const noexcept
 }
 
 void
-RenderComponent::addPreRenderListener(std::function<void(RenderPipeline&)> func) noexcept
+RenderComponent::addPreRenderListener(std::function<void(RenderPipeline&)>* func) noexcept
 {
 	assert(!_onPreRender.find(func));
 	_onPreRender.attach(func);
 }
 
 void
-RenderComponent::removePreRenderListener(std::function<void(RenderPipeline&)> func) noexcept
+RenderComponent::removePreRenderListener(std::function<void(RenderPipeline&)>* func) noexcept
 {
 	assert(_onPreRender.find(func));
 	_onPreRender.remove(func);
 }
 
 void
-RenderComponent::addPostRenderListener(std::function<void(RenderPipeline&)> func) noexcept
+RenderComponent::addPostRenderListener(std::function<void(RenderPipeline&)>* func) noexcept
 {
 	assert(!_onPostRender.find(func));
 	_onPostRender.attach(func);
 }
 
 void
-RenderComponent::removePostRenderListener(std::function<void(RenderPipeline&)> func) noexcept
+RenderComponent::removePostRenderListener(std::function<void(RenderPipeline&)>* func) noexcept
 {
 	assert(_onPostRender.find(func));
 	_onPostRender.remove(func);

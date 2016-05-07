@@ -48,7 +48,9 @@ public:
 	DefaultInput() noexcept;
 	~DefaultInput() noexcept;
 
-	virtual bool open(InputDevicePtr device) noexcept;
+	virtual bool open() noexcept;
+	virtual bool open(InputDevicePtr& device) noexcept;
+	virtual bool open(InputDevicePtr&& device) noexcept;
 	virtual void close() noexcept;
 
 	virtual void setCaptureObject(CaptureObject window) noexcept;
@@ -77,8 +79,10 @@ public:
 	virtual void obtainMouseCapture() noexcept;
 	virtual void obtainKeyboardCapture() noexcept;
 
-	virtual void obtainMouseCapture(InputMousePtr mouse) noexcept;
-	virtual void obtainKeyboardCapture(InputKeyboardPtr key) noexcept;
+	virtual void obtainMouseCapture(InputMousePtr& mouse) noexcept;
+	virtual void obtainMouseCapture(InputMousePtr&& mouse) noexcept;
+	virtual void obtainKeyboardCapture(InputKeyboardPtr& key) noexcept;
+	virtual void obtainKeyboardCapture(InputKeyboardPtr&& key) noexcept;
 	virtual void obtainCapture() noexcept;
 
 	virtual void releaseMouseCapture() noexcept;
@@ -87,8 +91,10 @@ public:
 
 	virtual void reset() noexcept;
 
-	virtual void addInputListener(InputListenerPtr listener) noexcept;
-	virtual void removeInputListener(InputListenerPtr listener) noexcept;
+	virtual void addInputListener(InputListenerPtr& listener) noexcept;
+	virtual void addInputListener(InputListenerPtr&& listener) noexcept;
+	virtual void removeInputListener(InputListenerPtr& listener) noexcept;
+	virtual void removeInputListener(InputListenerPtr&& listener) noexcept;
 	virtual void clearInputListener() noexcept;
 
 	virtual bool sendInputEvent(const InputEvent& event) noexcept;

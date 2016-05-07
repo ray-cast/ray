@@ -62,14 +62,6 @@ public:
 	}
 
 	template <typename S>
-	Matrix3x3t(const Matrix3x3t<S>& m)
-	{
-		a1 = m.a1; a2 = m.a2; a3 = m.a3;
-		b1 = m.b1; b2 = m.b2; b3 = m.b3;
-		c1 = m.c1; c2 = m.c2; c3 = m.c3;
-	}
-
-	template <typename S>
 	explicit Matrix3x3t(const Matrix4x4t<S>& m)
 	{
 		a1 = m.a1; a2 = m.a2; a3 = m.a3;
@@ -78,7 +70,15 @@ public:
 	}
 
 	template <typename S>
-	operator Matrix3x3t<S>() const
+	explicit Matrix3x3t(Matrix4x4t<S>&& m)
+	{
+		a1 = m.a1; a2 = m.a2; a3 = m.a3;
+		b1 = m.b1; b2 = m.b2; b3 = m.b3;
+		c1 = m.c1; c2 = m.c2; c3 = m.c3;
+	}
+
+	template <typename S>
+	explicit operator Matrix3x3t<S>() const
 	{
 		return Matrix3x3t<S>(
 			static_cast<S>(a1), static_cast<S>(a2), static_cast<S>(a3),

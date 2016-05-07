@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -48,6 +48,19 @@ GameBaseFeatures::GameBaseFeatures() noexcept
 
 GameBaseFeatures::~GameBaseFeatures() noexcept
 {
+}
+
+void 
+GameBaseFeatures::onActivate() except
+{
+	if (!GameSceneManager::instance()->open())
+		throw failure("GameSceneManager::instance() fail.");
+}
+
+void 
+GameBaseFeatures::onDeactivate() noexcept
+{
+	GameSceneManager::instance()->close();
 }
 
 void

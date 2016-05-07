@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,7 +37,6 @@
 #include <ray/camera_component.h>
 #include <ray/render_feature.h>
 #include <ray/game_server.h>
-#include <ray/game_application.h>
 
 _NAME_BEGIN
 
@@ -338,20 +337,12 @@ CameraComponent::save(oarchive& write) noexcept
 void
 CameraComponent::onActivate() noexcept
 {
-	auto renderer = this->getGameServer()->getFeature<RenderFeature>();
-	if (renderer)
-	{
-		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
-		if (renderScene)
-		{
-			_camera->setRenderScene(renderScene);
-			_camera->setTransform(
-				this->getGameObject()->getTransform(),
-				this->getGameObject()->getTransformInverse(),
-				this->getGameObject()->getTransformInverseTranspose()
-				);
-		}
-	}
+	_camera->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
+	_camera->setTransform(
+		this->getGameObject()->getTransform(),
+		this->getGameObject()->getTransformInverse(),
+		this->getGameObject()->getTransformInverseTranspose()
+		);
 }
 
 void

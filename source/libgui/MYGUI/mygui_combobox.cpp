@@ -259,7 +259,7 @@ MyGuiComboBoxImpl::getFlowDirection() const noexcept
 }
 
 void
-MyGuiComboBoxImpl::addComboAcceptListener(std::function<void()>& func) noexcept
+MyGuiComboBoxImpl::addComboAcceptListener(std::function<void()>* func) noexcept
 {
 	assert(_comboBox);
 	assert(!_onComboAccept.find(func));
@@ -269,7 +269,7 @@ MyGuiComboBoxImpl::addComboAcceptListener(std::function<void()>& func) noexcept
 }
 
 void
-MyGuiComboBoxImpl::addComboChangePositionListener(std::function<void()>& func) noexcept
+MyGuiComboBoxImpl::addComboChangePositionListener(std::function<void()>* func) noexcept
 {
 	assert(_comboBox);
 	assert(!_onComboChangePosition.find(func));
@@ -279,14 +279,14 @@ MyGuiComboBoxImpl::addComboChangePositionListener(std::function<void()>& func) n
 }
 
 void
-MyGuiComboBoxImpl::removeComboAcceptListener(std::function<void()>& func) noexcept
+MyGuiComboBoxImpl::removeComboAcceptListener(std::function<void()>* func) noexcept
 {
 	assert(_onComboAccept.find(func));
 	_onComboAccept.remove(func);
 }
 
 void
-MyGuiComboBoxImpl::removeComboChangePositionListener(std::function<void()>& func) noexcept
+MyGuiComboBoxImpl::removeComboChangePositionListener(std::function<void()>* func) noexcept
 {
 	assert(_onComboChangePosition.find(func));
 	_onComboChangePosition.remove(func);
@@ -476,25 +476,25 @@ MyGuiComboBox::getFlowDirection() const noexcept
 }
 
 void
-MyGuiComboBox::addComboAcceptListener(std::function<void()>& func) noexcept
+MyGuiComboBox::addComboAcceptListener(std::function<void()>* func) noexcept
 {
 	_impl.addComboAcceptListener(func);
 }
 
 void
-MyGuiComboBox::addComboChangePositionListener(std::function<void()>& func) noexcept
+MyGuiComboBox::addComboChangePositionListener(std::function<void()>* func) noexcept
 {
 	_impl.addComboChangePositionListener(func);
 }
 
 void
-MyGuiComboBox::removeComboAcceptListener(std::function<void()>& func) noexcept
+MyGuiComboBox::removeComboAcceptListener(std::function<void()>* func) noexcept
 {
 	_impl.removeComboAcceptListener(func);
 }
 
 void
-MyGuiComboBox::removeComboChangePositionListener(std::function<void()>& func) noexcept
+MyGuiComboBox::removeComboChangePositionListener(std::function<void()>* func) noexcept
 {
 	_impl.removeComboChangePositionListener(func);
 }

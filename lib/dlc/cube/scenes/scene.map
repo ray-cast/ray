@@ -6,7 +6,6 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component class="Mesh">
-            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component class="MeshRender">
             <attribute material="dlc:cube/material/grass.mat"/>
@@ -15,14 +14,12 @@
         </component>
         <component class="PhysicsBody">
         </component>
-
     </object>
     <object>
         <attribute name="wood"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component class="Mesh">
-            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component class="MeshRender">
             <attribute material="dlc:cube/material/wood.mat"/>
@@ -37,7 +34,6 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component class="Mesh">
-            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component class="MeshRender">
             <attribute material="dlc:cube/material/leaf.mat"/>
@@ -52,7 +48,6 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component class="Mesh">
-            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component class="MeshRender">
             <attribute material="dlc:cube/material/clound.mat"/>
@@ -67,7 +62,6 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component class="Mesh">
-            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component class="MeshRender">
             <attribute material="dlc:cube/material/water.mat"/>

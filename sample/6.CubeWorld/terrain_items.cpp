@@ -47,11 +47,6 @@ TerrainGrass::TerrainGrass() noexcept
 
 TerrainGrass::~TerrainGrass() noexcept
 {
-	if (_object)
-	{
-		_object->destroy();
-		_object = nullptr;
-	}
 }
 
 bool

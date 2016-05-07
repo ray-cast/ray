@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if _BUILD_PHYSIC
 #include <ray/physics_shape_component.h>
 
 _NAME_BEGIN
@@ -49,5 +48,24 @@ PhysicsShapeComponent::~PhysicsShapeComponent() noexcept
 {
 }
 
+void
+PhysicsShapeComponent::addShapeChangeListener(std::function<void()>* func) noexcept
+{
+	assert(!_onShapeChange.find(func));
+	_onShapeChange.attach(func);
+}
+
+void
+PhysicsShapeComponent::removeShapeChangeListener(std::function<void()>* func) noexcept
+{
+	assert(_onShapeChange.find(func));
+	_onShapeChange.remove(func);
+}
+
+void
+PhysicsShapeComponent::needUpdate() noexcept
+{
+	_onShapeChange.run();
+}
+
 _NAME_END
-#endif

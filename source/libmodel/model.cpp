@@ -61,6 +61,12 @@ Model::load(StreamReader& stream, ModelType type) noexcept
 	return false;
 }
 
+bool
+Model::save(StreamWrite& stream, ModelType type) noexcept
+{
+	return false;
+}
+
 void
 Model::clear() noexcept
 {
@@ -74,45 +80,153 @@ Model::clear() noexcept
 }
 
 void
-Model::addMesh(MeshPropertyPtr mesh) noexcept
+Model::addMesh(MeshPropertyPtr& mesh) noexcept
 {
 	_meshes.push_back(mesh);
 }
 
 void
-Model::addTexture(TexturePropertyPtr texture) noexcept
+Model::addBone(BonePtr& bone) noexcept
+{
+	_bones.push_back(bone);
+}
+
+void
+Model::addIK(IKAttrPtr& ik) noexcept
+{
+	_iks.push_back(ik);
+}
+
+void 
+Model::addRigidbody(RigidbodyPropertyPtr& body) noexcept
+{
+	_rigidbodys.push_back(body);
+}
+
+void 
+Model::addJoint(JointPropertyPtr& joint) noexcept
+{
+	_joints.push_back(joint);
+}
+
+void
+Model::addTexture(TexturePropertyPtr& texture) noexcept
 {
 	_textures.push_back(texture);
 }
 
 void
-Model::addMaterial(MaterialPropertyPtr mat) noexcept
+Model::addMaterial(MaterialPropertyPtr& mat) noexcept
 {
 	_materials.push_back(mat);
 }
 
 void
-Model::addAnimtion(AnimationPropertyPtr anim) noexcept
+Model::addAnimtion(AnimationPropertyPtr& anim) noexcept
 {
 	_animations.push_back(anim);
 }
 
 void
-Model::addLight(LightPropertyPtr light) noexcept
+Model::addLight(LightPropertyPtr& light) noexcept
 {
 	_lights.push_back(light);
 }
 
 void
-Model::addCamera(CameraPropertyPtr camera) noexcept
+Model::addCamera(CameraPropertyPtr& camera) noexcept
 {
 	_cameras.push_back(camera);
+}
+
+void
+Model::addMesh(MeshPropertyPtr&& mesh) noexcept
+{
+	_meshes.push_back(std::move(mesh));
+}
+
+void
+Model::addBone(BonePtr&& bone) noexcept
+{
+	_bones.push_back(std::move(bone));
+}
+
+void
+Model::addIK(IKAttrPtr&& ik) noexcept
+{
+	_iks.push_back(std::move(ik));
+}
+
+void
+Model::addRigidbody(RigidbodyPropertyPtr&& body) noexcept
+{
+	_rigidbodys.push_back(std::move(body));
+}
+
+void
+Model::addJoint(JointPropertyPtr&& joint) noexcept
+{
+	_joints.push_back(std::move(joint));
+}
+
+void
+Model::addTexture(TexturePropertyPtr&& texture) noexcept
+{
+	_textures.push_back(std::move(texture));
+}
+
+void
+Model::addMaterial(MaterialPropertyPtr&& mat) noexcept
+{
+	_materials.push_back(std::move(mat));
+}
+
+void
+Model::addAnimtion(AnimationPropertyPtr&& anim) noexcept
+{
+	_animations.push_back(std::move(anim));
+}
+
+void
+Model::addLight(LightPropertyPtr&& light) noexcept
+{
+	_lights.push_back(std::move(light));
+}
+
+void
+Model::addCamera(CameraPropertyPtr&& camera) noexcept
+{
+	_cameras.push_back(std::move(camera));
 }
 
 Model::MeshList&
 Model::getMeshsList() noexcept
 {
 	return _meshes;
+}
+
+Model::BoneList&
+Model::getBonesList() noexcept
+{
+	return _bones;
+}
+
+Model::IKList&
+Model::getIKList() noexcept
+{
+	return _iks;
+}
+
+Model::RigidbodyList&
+Model::getRigidbodyList() noexcept
+{
+	return _rigidbodys;
+}
+
+Model::JointList&
+Model::getJointList() noexcept
+{
+	return _joints;
 }
 
 Model::TextureList&
@@ -169,6 +283,30 @@ Model::getMeshsList() const noexcept
 	return _meshes;
 }
 
+const Model::BoneList&
+Model::getBonesList() const noexcept
+{
+	return _bones;
+}
+
+const Model::IKList&
+Model::getIKList() const noexcept
+{
+	return _iks;
+}
+
+const Model::RigidbodyList&
+Model::getRigidbodyList() const noexcept
+{
+	return _rigidbodys;
+}
+
+const Model::JointList&
+Model::getJointList() const noexcept
+{
+	return _joints;
+}
+
 const Model::TextureList&
 Model::getTexturesList() const noexcept
 {
@@ -203,6 +341,18 @@ bool
 Model::hasMeshes() const noexcept
 {
 	return !_meshes.empty();
+}
+
+bool 
+Model::hasBones() const noexcept
+{
+	return !_bones.empty();
+}
+
+bool
+Model::hasIKs() const noexcept
+{
+	return !_iks.empty();
 }
 
 bool

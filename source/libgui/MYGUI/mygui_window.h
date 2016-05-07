@@ -64,11 +64,11 @@ public:
 	void setMaxSize(int _width, int _height) noexcept;
 	void getMaxSize(int& w, int& h) const noexcept;
 
-	void addWindowButtonPressListener(std::function<void()>& func) noexcept;
-	void addWindowCoordChangeListener(std::function<void()>& func) noexcept;
+	void addWindowButtonPressListener(std::function<void()>* func) noexcept;
+	void addWindowCoordChangeListener(std::function<void()>* func) noexcept;
 
-	void removeWindowButtonPressListener(std::function<void()>& func) noexcept;
-	void removeWindowCoordChangeListener(std::function<void()>& func) noexcept;
+	void removeWindowButtonPressListener(std::function<void()>* func) noexcept;
+	void removeWindowCoordChangeListener(std::function<void()>* func) noexcept;
 
 private:
 	void onWindowButtonPress(MyGUI::Widget*, const std::string&) except;
@@ -112,11 +112,11 @@ public:
 	virtual void setMaxSize(int width, int height) noexcept;
 	virtual void getMaxSize(int& w, int& h) const noexcept;
 
-	virtual void addWindowButtonPressListener(std::function<void()>& func) noexcept;
-	virtual void addWindowCoordChangeListener(std::function<void()>& func) noexcept;
+	virtual void addWindowButtonPressListener(std::function<void()>* func) noexcept;
+	virtual void addWindowCoordChangeListener(std::function<void()>* func) noexcept;
 
-	virtual void removeWindowButtonPressListener(std::function<void()>& func) noexcept;
-	virtual void removeWindowCoordChangeListener(std::function<void()>& func) noexcept;
+	virtual void removeWindowButtonPressListener(std::function<void()>* func) noexcept;
+	virtual void removeWindowCoordChangeListener(std::function<void()>* func) noexcept;
 
 private:
 	MyGuiWindow(const MyGuiWindow&) noexcept = delete;

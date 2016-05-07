@@ -207,6 +207,71 @@ AnimationProperty::getNumMorphAnimation() const noexcept
 void
 AnimationProperty::setBoneArray(const Bones& bones) noexcept
 {
+	_bones = bones;
+	this->updateBones(bones);
+}
+
+void 
+AnimationProperty::setBoneArray(Bones&& bones) noexcept
+{
+	_bones = std::move(bones);
+	this->updateBones(_bones);
+}
+
+const Bones& 
+AnimationProperty::getBoneArray() const noexcept
+{
+	return _bones;
+}
+
+void
+AnimationProperty::setIKArray(const InverseKinematics& ik) noexcept
+{
+	_iks = ik;
+}
+
+void
+AnimationProperty::setIKArray(InverseKinematics&& ik) noexcept
+{
+	_iks = std::move(ik);
+}
+
+const InverseKinematics&
+AnimationProperty::getIKArray() const noexcept
+{
+	return _iks;
+}
+
+AnimationPropertyPtr
+AnimationProperty::clone() noexcept
+{
+	auto anim = std::make_shared<AnimationProperty>();
+	anim->_name = this->_name;
+	anim->_boneAnimation = this->_boneAnimation;
+	anim->_morphAnimation = this->_morphAnimation;
+	anim->_frame = this->_frame;
+	return anim;
+}
+
+void
+AnimationProperty::updateMotion(float delta) noexcept
+{
+	this->updateBoneMotion(_bones);
+	this->updateBoneMatrix(_bones);
+	this->updateIK(_bones);
+
+	_delta += delta;
+
+	while (_delta > (1.0f / _fps))
+	{
+		_frame++;
+		_delta -= 1.0f / _fps;
+	}
+}
+
+void
+AnimationProperty::updateBones(const Bones& bones) noexcept
+{
 	if (bones.empty())
 	{
 		_bindAnimation.clear();
@@ -237,45 +302,6 @@ AnimationProperty::setBoneArray(const Bones& bones) noexcept
 		{
 			_bindAnimation[bone - 1].push_back(i);
 		}
-	}
-}
-
-void
-AnimationProperty::setIKArray(InverseKinematics ik) noexcept
-{
-	_iks = ik;
-}
-
-InverseKinematics
-AnimationProperty::getIKArray() noexcept
-{
-	return _iks;
-}
-
-AnimationPropertyPtr
-AnimationProperty::clone() noexcept
-{
-	auto anim = std::make_shared<AnimationProperty>();
-	anim->_name = this->_name;
-	anim->_boneAnimation = this->_boneAnimation;
-	anim->_morphAnimation = this->_morphAnimation;
-	anim->_frame = this->_frame;
-	return anim;
-}
-
-void
-AnimationProperty::updateBone(Bones& bones, float delta) noexcept
-{
-	this->updateBoneMotion(bones);
-	this->updateBoneMatrix(bones);
-	this->updateIK(bones);
-
-	_delta += delta;
-
-	while (_delta > (1.0f / _fps))
-	{
-		_frame++;
-		_delta -= 1.0f / _fps;
 	}
 }
 
@@ -313,13 +339,9 @@ AnimationProperty::updateBoneMotion(Bones& _bones) noexcept
 			this->interpolateMotion(rotate, position, motion, _frame);
 
 			if (bone.getParent() == (-1))
-			{
-				bone.updateTransform(bone.getPosition() + position, rotate);
-			}
+				updateTransform(bone, bone.getPosition() + position, rotate);
 			else
-			{
-				bone.updateTransform(bone.getPosition() + position - _bones[bone.getParent()].getPosition(), rotate);
-			}
+				updateTransform(bone, bone.getPosition() + position - _bones[bone.getParent()].getPosition(), rotate);
 		}
 	}
 }
@@ -357,26 +379,6 @@ AnimationProperty::updateBoneMatrix(Bones& _bones) noexcept
 }
 
 void
-AnimationProperty::updateBoneChild(Bones& _bones, Bone& bone) noexcept
-{
-	if (bone.getParent() != (-1))
-	{
-		auto& parent = _bones.at(bone.getParent());
-		bone.setTransform(math::transformMultiply(bone.getLocalTransform(), parent.getTransform()));
-	}
-	else
-	{
-		bone.setTransform(bone.getLocalTransform());
-	}
-
-	if (bone.getChild() != 0)
-	{
-		auto& child = _bones.at(bone.getChild());
-		updateBoneMatrix(_bones, child);
-	}
-}
-
-void
 AnimationProperty::updateBoneMatrix(Bones& _bones, Bone& bone) noexcept
 {
 	if (bone.getParent() != (-1))
@@ -388,17 +390,6 @@ AnimationProperty::updateBoneMatrix(Bones& _bones, Bone& bone) noexcept
 	else
 	{
 		bone.setTransform(bone.getLocalTransform());
-	}
-}
-
-void 
-AnimationProperty::updateBonePose(Bones& _bones) noexcept
-{
-	for (auto& bone : _bones)
-	{
-		float4x4 invbindpose;
-		invbindpose.makeTranslate(-bone.getPosition());
-		bone.setLocalTransform(math::transformMultiply(invbindpose, bone.getTransform()));
 	}
 }
 
@@ -421,39 +412,8 @@ AnimationProperty::updateIK(Bones& _bones, const IKAttr& ik) noexcept
 	{
 		for (std::uint32_t j = 0; j < ik.chainLength; j++)
 		{
-			auto& bone = _bones[ik.child[j].BoneIndex];
+			auto& bone = _bones[ik.child[j].boneIndex];
 
-			if (bone.getLeg())
-			{
-				if (i == 0)
-				{
-					auto& base = _bones[ik.child[ik.chainLength - 1].BoneIndex];
-
-					Vector3 localTargetPos = bone.getTransform().getTranslate();
-					Vector3 localEffectPos = base.getTransform().getTranslate();
-
-					Vector3 effectVec = effector.getTransform().getTranslate() - localEffectPos;
-					Vector3 boneVec = localTargetPos - localEffectPos;
-					Vector3 targetVec = targetPos - localTargetPos;
-
-					float el = math::length(effectVec);
-					float bl = math::length(boneVec);
-					float tl = math::length(targetVec);
-					float c = math::clamp((el * el - bl * bl - tl * tl) / (2.0f * bl * tl), -1.0f, 1.0f);
-
-					float rotationAngle = acos(c);
-					Vector3 rotationAxis(-1.0f, 0.0f, 0.0f);
-
-					Quaternion q0(rotationAxis, RAD_TO_DEG(rotationAngle));
-					Quaternion qq = math::cross(bone.getRotation(), q0);
-					bone.updateTransform(bone.getLocalTransform().getTranslate(), qq);
-
-					this->updateBoneMatrix(_bones, bone);
-					this->updateBoneMatrix(_bones, target);
-				}
-			}
-			else
-			{
 				Vector3 effectPos = effector.getTransform().getTranslate();
 				if (math::distance(effectPos, targetPos) < 0.001)
 					return;
@@ -465,8 +425,7 @@ AnimationProperty::updateIK(Bones& _bones, const IKAttr& ik) noexcept
 				dstLocal = math::normalize(dstLocal);
 
 				float rotationDotProduct = math::clamp(math::dot(dstLocal, srcLocal), -1.0f, 1.0f);
-				float rotationAngle = std::acos(rotationDotProduct);
-				rotationAngle *= ik.weight;
+				float rotationAngle = std::acos(rotationDotProduct) * ik.child[j].angleWeight;
 
 				if (rotationAngle > 1.0e-5f)
 				{
@@ -474,16 +433,40 @@ AnimationProperty::updateIK(Bones& _bones, const IKAttr& ik) noexcept
 					rotationAxis = math::normalize(rotationAxis);
 
 					Quaternion q0(rotationAxis, RAD_TO_DEG(rotationAngle));
+
+					if (ik.child[j].rotateLimited)
+					{
+						EulerAngles euler(q0);
+						euler.x = std::min(ik.child[j].minimumDegrees.x, euler.x);
+						euler.y = std::min(ik.child[j].minimumDegrees.y, euler.y);
+						euler.z = std::min(ik.child[j].minimumDegrees.z, euler.z);
+						euler.x = std::max(ik.child[j].maximumDegrees.x, euler.x);
+						euler.y = std::max(ik.child[j].maximumDegrees.y, euler.y);
+						euler.z = std::max(ik.child[j].maximumDegrees.z, euler.z);
+
+						q0.makeRotate(euler);
+					}
+
 					Quaternion qq = math::cross(bone.getRotation(), q0);
 
-					bone.updateTransform(bone.getLocalTransform().getTranslate(), qq);
+					updateTransform(bone, bone.getLocalTransform().getTranslate(), qq);
 				}
 
 				this->updateBoneMatrix(_bones, bone);
 				this->updateBoneMatrix(_bones, target);
-			}
 		}
 	}
+}
+
+void
+AnimationProperty::updateTransform(Bone& bone, const float3& translate, const Quaternion& rotate) noexcept
+{
+	float4x4 transform;
+	transform.makeRotate(rotate);
+	transform.setTranslate(translate);
+
+	bone.setRotation(rotate);
+	bone.setLocalTransform(transform);
 }
 
 MotionSegment

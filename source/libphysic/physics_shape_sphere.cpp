@@ -34,20 +34,59 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MAIN_H_
-#define _H_MAIN_H_
+#include <ray/physics_shape_sphere.h>
 
-#include <SampleLoader.h>
+#include <btBulletCollisionCommon.h>
 
-class DemoSSSSS final : public SampleLoader
+_NAME_BEGIN
+
+PhysicsShapeSphere::PhysicsShapeSphere() noexcept
+	: _radius(1.0f)
+	, _shape(nullptr)
 {
-	__DeclareSubClass(DemoSSSSS, SampleLoader)
-public:
-	DemoSSSSS() noexcept;
-	~DemoSSSSS() noexcept;
+}
 
-	bool initialize() except;
-	void run() except;
-};
+PhysicsShapeSphere::~PhysicsShapeSphere() noexcept
+{
+	this->close();
+}
 
-#endif
+void
+PhysicsShapeSphere::setup() noexcept
+{
+	assert(!_shape);
+	_shape = new btSphereShape(_radius);
+	_shape->setUserPointer(this);
+}
+
+void
+PhysicsShapeSphere::close() noexcept
+{
+	if (_shape)
+	{
+		delete _shape;
+		_shape = nullptr;
+	}
+}
+
+void
+PhysicsShapeSphere::setRadius(float radius) noexcept
+{
+	if (_shape)
+		_shape->setUnscaledRadius(_radius);
+	_radius = radius;
+}
+
+float
+PhysicsShapeSphere::getRadius() const noexcept
+{
+	return _radius;
+}
+
+btCollisionShape*
+PhysicsShapeSphere::getCollisionShape() noexcept
+{
+	return _shape;
+}
+
+_NAME_END

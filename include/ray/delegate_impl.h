@@ -61,7 +61,7 @@ public:
 	typedef delegate<Result(DELEGATE_TEMPLATE_ARGS)> _Myt;
 
 	typedef std::function<Result(DELEGATE_TEMPLATE_ARGS)> _MyFunction;
-	typedef std::vector<_MyFunction> DELEGATES;
+	typedef std::vector<_MyFunction*> DELEGATES;
 	typedef typename DELEGATES::iterator iterator;
 	typedef typename DELEGATES::const_iterator const_iterator;
 	typedef typename DELEGATES::size_type size_type;
@@ -84,76 +84,12 @@ public:
 		delete _functions;
 	}
 
-	template<typename _Function>
-	void attach(typename std::enable_if<std::is_function<_Function>::value, const _Function&>::type t1)
-	{
-		if (!_functions)
-			_functions = new DELEGATES;
-
-		_functions->push_back(_MyFunction(t1));
-	}
-
-	template<typename _Functor, typename _This>
-	void attach(typename std::enable_if<std::is_function<_Functor>::value, _Functor>::type t1, const _This& t2)
-	{
-		this->attach(std::make_pair(t1, t2));
-	}
-
-	template<typename _Functor, typename _This>
-	void attach(const std::pair<_Functor, _This>& pair)
-	{
-		if (!_functions)
-			_functions = new DELEGATES;
-
-		_functions->push_back(std::bind(pair.second, pair.first));
-	}
-
-	void attach(const _MyFunction& callback)
+	void attach(_MyFunction* callback)
 	{
 		if (!_functions)
 			_functions = new DELEGATES;
 
 		_functions->push_back(callback);
-	}
-
-	void attach(const _Myt& other)
-	{
-		if (other._functions)
-		{
-			if (!_functions)
-				_functions = new DELEGATES;
-
-			for (auto& it : *other._functions)
-				_functions->push_back(it->clone());
-		}
-	}
-
-	template<typename T>
-	void assign(const T& t1)
-	{
-		this->clear();
-		this->attach(t1);
-	}
-
-	template<typename _Functor, typename _This>
-	void assign(const _Functor& t1, const _This& t2)
-	{
-		this->clear();
-		this->attach(std::make_pair(t1, t2));
-	}
-
-	template<typename _Functor, typename _This>
-	void assign(const std::pair<_This, _Functor>& pair)
-	{
-		this->clear();
-		this->attach(pair);
-	}
-
-	void assign(const _Myt& copy)
-	{
-		assert(this != &copy);
-		this->clear();
-		this->attach(copy);
 	}
 
 	Result run(DELEGATE_FUNCTION_PARAMS)
@@ -169,13 +105,13 @@ public:
 		return (_functions ? _functions->size() : 0);
 	}
 
-	bool find(const _MyFunction& callback) const
+	bool find(const _MyFunction* callback) const
 	{
 		if (_functions)
 		{
 			for (auto& it : *_functions)
 			{
-				if (callback.target_type() == it.target_type())
+				if (callback == it)
 					return true;
 			}
 		}
@@ -183,53 +119,7 @@ public:
 		return false;
 	}
 
-	template<typename _Functor>
-	void remove(const _Functor& t1)
-	{
-		if (!_functions) { return; }
-
-		auto it = _functions->begin();
-		auto end = _functions->end();
-
-		_MyFunction func(t1);
-
-		for (; it != end; ++it)
-		{
-			if ((*it).target_type() == func.target_type())
-			{
-				_functions->erase(it);
-				break;
-			}
-		}
-	}
-
-	template<typename _Functor, typename _This>
-	void remove(const _Functor& t1, const _This& t2)
-	{
-		this->remove(std::make_pair(t1, t2));
-	}
-
-	template<typename _Functor, typename _This>
-	void remove(const std::pair<_Functor, _This>& pair)
-	{
-		if (!_functions) { return; }
-
-		auto it = _functions->begin();
-		auto end = _functions->end();
-
-		_MyFunction func = std::bind(pair.second, pair.first);
-
-		for (; it != end; ++it)
-		{
-			if ((*it).target_type() == func.target_type())
-			{
-				_functions->erase(it);
-				break;
-			}
-		}
-	}
-
-	void remove(const _MyFunction& callback)
+	void remove(const _MyFunction* callback)
 	{
 		if (_functions)
 		{
@@ -237,7 +127,7 @@ public:
 			auto end = _functions->end();
 			for (; it != end; ++it)
 			{
-				if (callback.target_type() == (*it).target_type())
+				if (callback == (*it))
 				{
 					_functions->erase(it);
 					break;
@@ -262,30 +152,15 @@ public:
 		return run(DELEGATE_FUNCTION_ARGS);
 	}
 
-	template<typename T>
-	_Myt& operator+=(const T& t1)
+	_Myt& operator+=(const _MyFunction* t1)
 	{
 		this->attach(t1);
 		return *this;
 	}
 
-	template<typename T>
-	_Myt& operator+=(const _Myt& other)
-	{
-		this->attach(other);
-		return *this;
-	}
-
-	template<typename T>
-	_Myt& operator-=(const T& t1)
+	_Myt& operator-=(const _MyFunction* t1)
 	{
 		this->remove(t1);
-		return *this;
-	}
-
-	_Myt& operator=(const _Myt& copy)
-	{
-		this->assign(copy);
 		return *this;
 	}
 
@@ -299,9 +174,9 @@ private:
 			const_iterator end = self._functions->end() - 1;
 
 			for (; it != end; ++it)
-				(*it)(DELEGATE_FUNCTION_ARGS);
+				*(*it)(DELEGATE_FUNCTION_ARGS);
 
-			return (*it)(DELEGATE_FUNCTION_ARGS);
+			return *(*it)(DELEGATE_FUNCTION_ARGS);
 		}
 	};
 
@@ -311,7 +186,7 @@ private:
 		static void run(const _Myt& self DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
 		{
 			for (auto& it : *self._functions)
-				it(DELEGATE_FUNCTION_ARGS);
+				(*it)(DELEGATE_FUNCTION_ARGS);
 		}
 	};
 

@@ -52,10 +52,10 @@ public:
 	void setup() noexcept;
 	void close() noexcept;
 
-	void setWidth(float radius) noexcept;
+	void setRadius(float radius) noexcept;
 	void setHeight(float height) noexcept;
 
-	float getWidth() const noexcept;
+	float getRadius() const noexcept;
 	float getHeight() const noexcept;
 
 private:
@@ -63,7 +63,7 @@ private:
 
 private:
 
-	float _width;
+	float _radius;
 	float _height;
 
 	btCapsuleShape* _shape;

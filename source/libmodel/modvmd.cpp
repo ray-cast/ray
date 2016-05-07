@@ -41,6 +41,91 @@
 
 _NAME_BEGIN
 
+typedef Vector2 VMD_Vector2;
+typedef Vector3 VMD_Vector3;
+typedef Vector4 VMD_Vector4;
+typedef Quaternion VMD_Quaternion;
+
+typedef Vector3 VMD_Color3;
+typedef Vector4 VMD_Color4;
+
+typedef char          VMD_char;
+typedef std::int8_t   VMD_int8_t;
+typedef std::uint8_t  VMD_uint8_t;
+typedef std::uint16_t VMD_uint16_t;
+typedef std::uint32_t VMD_uint32_t;
+
+typedef float VMD_Float;
+
+#pragma pack(push)
+#pragma pack(1)
+
+struct VMD_Header
+{
+	VMD_char magic[30];
+	VMD_char name[20];
+};
+
+struct VMDMotion
+{
+	VMD_char name[15];
+	VMD_uint32_t frame;
+	VMD_Vector3 location;
+	VMD_Quaternion rotate;
+	VMD_uint8_t interpolation[64];
+};
+
+struct VMDMorph
+{
+	VMD_char name[15];
+	VMD_uint32_t frame;
+	VMD_Float weight;
+};
+
+struct VMDCamera
+{
+	VMD_uint32_t frame;
+	VMD_Float length;
+	VMD_Vector3 location;
+	VMD_Vector3 rotation;
+	VMD_uint8_t interpolation[24];
+	VMD_uint32_t viewingAngle;
+	VMD_uint8_t perspective;
+};
+
+struct VMDLight
+{
+	VMD_uint32_t frame;
+	VMD_Vector3 rgb;
+	VMD_Vector3 location;
+};
+
+struct VMDSelfShadow
+{
+	VMD_uint32_t frame;
+	VMD_uint8_t mode; // 00-02
+	VMD_Float distance; // 0.1 - (dist * 0.000001)
+};
+
+#pragma pack(pop)
+
+struct VMD
+{
+	VMD_Header Header;
+
+	VMD_uint32_t NumMotion;
+	VMD_uint32_t NumMorph;
+	VMD_uint32_t NumCamera;
+	VMD_uint32_t NumLight;
+	VMD_uint32_t NumSelfShadow;
+
+	std::vector<VMDMotion> MotionLists;
+	std::vector<VMDMorph> MorphLists;
+	std::vector<VMDCamera> CameraLists;
+	std::vector<VMDLight> LightLists;
+	std::vector<VMDSelfShadow> SelfShadowLists;
+};
+
 static bool VMDMotionSorter(const VMDMotion &m1, const VMDMotion &m2)
 {
 	return m1.frame < m2.frame;

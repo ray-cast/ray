@@ -86,8 +86,8 @@ public:
 	virtual void setRepeatStepTime(float time) noexcept = 0;
 	virtual float getRepeatStepTime(float time) const noexcept = 0;
 
-	virtual void addScrollPositionChange(std::function<void()>& func) noexcept = 0;
-	virtual void removeScrollPositionChange(std::function<void()>& func) noexcept = 0;
+	virtual void addScrollPositionChange(std::function<void()>* func) noexcept = 0;
+	virtual void removeScrollPositionChange(std::function<void()>* func) noexcept = 0;
 
 private:
 	GuiScrollBar(const GuiScrollBar&) noexcept = delete;

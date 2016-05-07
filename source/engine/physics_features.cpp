@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of _renderThread software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if _BUILD_PHYSIC
 #include <ray/physics_features.h>
 #include <ray/physics_system.h>
 #include <ray/game_scene.h>
@@ -45,7 +44,6 @@ _NAME_BEGIN
 __ImplementSubClass(PhysicFeatures, GameFeature, "Physics")
 
 PhysicFeatures::PhysicFeatures() noexcept
-	: _physics(nullptr)
 {
 }
 
@@ -54,74 +52,22 @@ PhysicFeatures::~PhysicFeatures() noexcept
 }
 
 void
-PhysicFeatures::onActivate() noexcept
+PhysicFeatures::onActivate() except
 {
-	_physics = std::make_shared<PhysicsSystem>();
+	if (!PhysicsSystem::instance()->open())
+		throw failure("PhysicsSystem::instance() fail.");
 }
 
 void
 PhysicFeatures::onDeactivate() noexcept
 {
-	if (_physics)
-	{
-		_physics.reset();
-		_physics = nullptr;
-	}
+	PhysicsSystem::instance()->close();
 }
 
 void
 PhysicFeatures::onFrameBegin() noexcept
 {
-	if (_physics)
-		_physics->simulation(this->getGameServer()->getTimer()->delta());
-}
-
-void
-PhysicFeatures::onOpenScene(GameScenePtr scene) except
-{
-	auto instance = scene->getInstanceID();
-
-	if (_physicsScenes.size() < instance)
-	{
-		_physicsScenes.resize(instance * 2);
-	}
-
-	auto environment = scene->getEnvironment();
-
-	PhysicsScene::Setting setting;
-	setting.aabb = environment.aabb;
-	setting.gravity = environment.gravity;
-	setting.length = environment.length;
-	setting.mass = environment.mass;
-	setting.skinWidth = environment.skinWidth;
-	setting.speed = environment.speed;
-
-	_physicsScenes[instance] = std::make_shared<PhysicsScene>();
-	_physicsScenes[instance]->setup(setting);
-
-	if (_physics)
-		_physics->addPhysicsScene(_physicsScenes[instance]);
-}
-
-void
-PhysicFeatures::onCloseScene(GameScenePtr scene) noexcept
-{
-	if (_physics)
-		_physics->removePhysicsScene(this->getPhysicsScene(scene));
-
-	_physicsScenes[scene->getInstanceID()] = nullptr;
-}
-
-PhysicsScenePtr
-PhysicFeatures::getPhysicsScene(GameScene* scene) const noexcept
-{
-	return _physicsScenes[scene->getInstanceID()];
-}
-
-PhysicsScenePtr
-PhysicFeatures::getPhysicsScene(GameScenePtr scene) const noexcept
-{
-	return _physicsScenes[scene->getInstanceID()];
+	PhysicsSystem::instance()->simulation(this->getGameServer()->getTimer()->delta());
 }
 
 GameFeaturePtr
@@ -131,4 +77,3 @@ PhysicFeatures::clone() const noexcept
 }
 
 _NAME_END
-#endif

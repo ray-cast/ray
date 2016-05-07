@@ -75,12 +75,63 @@ _NAME_BEGIN
 #define MATKEY_TEXTURE_LIGHTMAP(N)     MATKEY_TEXTURE(TextureTypeLightmap, N)
 #define MATKEY_TEXTURE_REFLECTION(N)   MATKEY_TEXTURE(TextureTypeReflection, N)
 
+enum ShapeType
+{
+	ShapeTypeCircle,
+	ShapeTypeSquare,
+	ShapeTypeCapsule
+};
+
 class EXPORT CameraProperty final
 {
 };
 
 class EXPORT LightProperty final
 {
+};
+
+class EXPORT RigidbodyProperty
+{
+public:
+	std::string name;
+
+	std::uint32_t bone;
+
+	std::uint8_t group;
+	std::uint16_t groupFlags;
+	ShapeType shape;
+
+	float3 scale;
+	float3 position;
+	float3 rotation;
+
+	float mass;
+	float movementDecay;
+	float rotationDecay;
+	float elasticity;
+	float friction;
+
+	std::uint8_t physicsOperation; //0:Follow Bone (static), 1:Physics Calc. (dynamic), 2: Physics Calc. + Bone position matching
+};
+
+class EXPORT JointProperty
+{
+public:
+	std::string name;
+
+	float3 position;
+	float3 rotation;
+
+	std::uint32_t bodyIndexA;
+	std::uint32_t bodyIndexB;
+
+	float3 movementLowerLimit;
+	float3 movementUpperLimit;
+	float3 rotationLowerLimit;
+	float3 rotationUpperLimit;
+
+	float3 springMovementConstant;
+	float3 springRotationConstant;
 };
 
 class EXPORT TextureProperty final
@@ -153,17 +204,16 @@ public:
 	void setParent(MeshPropertyPtr parent) noexcept;
 	MeshPropertyPtr getParent() const noexcept;
 
-	void addChild(MeshPropertyPtr child) noexcept;
-	void removeChild(MeshPropertyPtr child) noexcept;
+	void addChild(MeshPropertyPtr& child) noexcept;
+	void addChild(MeshPropertyPtr&& child) noexcept;
+	void removeChild(MeshPropertyPtr& child) noexcept;
+	void removeChild(MeshPropertyPtr&& child) noexcept;
 	void cleanupChildren() noexcept;
 	MeshPropertyPtr findChild(const std::string& name, bool recurse = true) noexcept;
 
 	std::size_t getChildCount() const noexcept;
 	MeshPropertys& getChildren() noexcept;
 	const MeshPropertys& getChildren() const noexcept;
-
-	void setMaterialID(std::size_t index) noexcept;
-	std::size_t getMaterialID() const noexcept;
 
 	std::size_t getNumVertices() const noexcept;
 	std::size_t getNumIndices() const noexcept;
@@ -174,18 +224,25 @@ public:
 	void setTangentArray(const Float3Array& array) noexcept;
 	void setTexcoordArray(const Float2Array& array) noexcept;
 	void setWeightArray(const VertexWeights& array) noexcept;
-	void setBoneArray(const Bones& array) noexcept;
-	void setInverseKinematics(const InverseKinematics& iks) noexcept;
 	void setFaceArray(const UintArray& array) noexcept;
+	void setBindposes(const Float4x4Array& array) noexcept;
+
+	void setVertexArray(Float3Array&& array) noexcept;
+	void setNormalArray(Float3Array&& array) noexcept;
+	void setColorArray(Float4Array&& array) noexcept;
+	void setTangentArray(Float3Array&& array) noexcept;
+	void setTexcoordArray(Float2Array&& array) noexcept;
+	void setWeightArray(VertexWeights&& array) noexcept;
+	void setFaceArray(UintArray&& array) noexcept;
+	void setBindposes(Float4x4Array&& array) noexcept;
 
 	Float3Array& getVertexArray() noexcept;
 	Float3Array& getNormalArray() noexcept;
 	Float4Array& getColorArray() noexcept;
 	Float2Array& getTexcoordArray() noexcept;
 	VertexWeights& getWeightArray() noexcept;
-	Bones& getBoneArray() noexcept;
-	InverseKinematics& getInverseKinematics() noexcept;
 	UintArray& getFaceArray() noexcept;
+	Float4x4Array& getBindposes() noexcept;
 
 	const Float3Array& getVertexArray() const noexcept;
 	const Float3Array& getNormalArray() const noexcept;
@@ -196,6 +253,7 @@ public:
 	const Bones& getBoneArray(const Bones& array) const noexcept;
 	const InverseKinematics& getInverseKinematics() const noexcept;
 	const UintArray& getFaceArray() const noexcept;
+	const Float4x4Array& getBindposes() const noexcept;
 
 	void makeCircle(float radius, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
 	void makePlane(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
@@ -219,7 +277,6 @@ public:
 	void computeMorphNormals() noexcept;
 	void computeTangents() noexcept;
 	void computeBoundingBox() noexcept;
-	void computeBoundingBoxSkeleton() noexcept;
 
 	const Bound& getBoundingBox() const noexcept;
 	const Bound& getBoundingBoxDownwards() const noexcept;
@@ -228,9 +285,7 @@ public:
 	MeshPropertyPtr clone() noexcept;
 
 private:
-
 	std::string _name;
-	std::size_t _materialID;
 
 	Float3Array _vertices;
 	Float3Array _normals;
@@ -239,11 +294,11 @@ private:
 	Float3Array _tangent;
 	Float3Array _facesNormal;
 	VertexWeights _weights;
+	Float4x4Array _bindposes;
 
 	UintArray _faces;
 
 	Bones _bones;
-	InverseKinematics _iks;
 
 	Bound _boundingBox;
 	Bound _boundingBoxChildren;

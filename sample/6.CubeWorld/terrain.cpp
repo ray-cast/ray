@@ -423,7 +423,7 @@ TerrainComponent::createChunks() noexcept
 void
 TerrainComponent::hitChunks() noexcept
 {
-	auto inputFeatures = this->getGameServer()->getFeature<ray::InputFeature>();
+	auto inputFeatures = ray::GameServer::instance()->getFeature<ray::InputFeature>();
 	if (!inputFeatures)
 		return;
 

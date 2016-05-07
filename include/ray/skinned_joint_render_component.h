@@ -58,6 +58,7 @@ private:
 	void onFrameEnd() noexcept;
 
 private:
+	GameObjects _trasnforms;
 	GeometryPtr _geometry;
 	RenderMeshPtr _renderBuffer;
 };

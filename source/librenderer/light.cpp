@@ -343,7 +343,7 @@ Light::_updateBoundingBox() noexcept
 		}
 		else
 		{
-			_shadowCamera[0]->setAperture(this->getSpotOuterCone().x);
+			_shadowCamera[0]->setAperture(this->getSpotOuterCone().x * 2.0f);
 			_shadowCamera[0]->setFar(zfar);
 			_shadowCamera[0]->setCameraType(CameraType::CameraTypePerspective);
 		}

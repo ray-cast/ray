@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of _renderThread software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -217,25 +217,25 @@ GuiComboBoxComponent::getFlowDirection() const noexcept
 }
 
 void
-GuiComboBoxComponent::addComboAcceptListener(std::function<void()> func) noexcept
+GuiComboBoxComponent::addComboAcceptListener(std::function<void()>* func) noexcept
 {
 	_comboBox->addComboAcceptListener(func);
 }
 
 void
-GuiComboBoxComponent::addComboChangePositionListener(std::function<void()> func) noexcept
+GuiComboBoxComponent::addComboChangePositionListener(std::function<void()>* func) noexcept
 {
 	_comboBox->addComboChangePositionListener(func);
 }
 
 void
-GuiComboBoxComponent::removeComboAcceptListener(std::function<void()> func) noexcept
+GuiComboBoxComponent::removeComboAcceptListener(std::function<void()>* func) noexcept
 {
 	_comboBox->removeComboAcceptListener(func);
 }
 
 void
-GuiComboBoxComponent::removeComboChangePositionListener(std::function<void()> func) noexcept
+GuiComboBoxComponent::removeComboChangePositionListener(std::function<void()>* func) noexcept
 {
 	_comboBox->removeComboChangePositionListener(func);
 }

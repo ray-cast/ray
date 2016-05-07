@@ -61,42 +61,42 @@ public:
 	virtual void setViewport(const Rect& view) noexcept;
 	virtual void getViewport(Rect& view) const noexcept;
 
-	virtual void addKeySetFocus(std::function<void()>& func) noexcept;
-	virtual void addKeyLostFocus(std::function<void()>& func) noexcept;
-	virtual void addKeyButtonPressed(std::function<void()>& func) noexcept;
-	virtual void addKeyButtonReleased(std::function<void()>& func) noexcept;
+	virtual void addKeySetFocus(std::function<void()>* func) noexcept;
+	virtual void addKeyLostFocus(std::function<void()>* func) noexcept;
+	virtual void addKeyButtonPressed(std::function<void()>* func) noexcept;
+	virtual void addKeyButtonReleased(std::function<void()>* func) noexcept;
 
-	virtual void addMouseMove(std::function<void()>& func) noexcept;
-	virtual void addMouseDrag(std::function<void()>& func) noexcept;
-	virtual void addMouseWheel(std::function<void()>& func) noexcept;
+	virtual void addMouseMove(std::function<void()>* func) noexcept;
+	virtual void addMouseDrag(std::function<void()>* func) noexcept;
+	virtual void addMouseWheel(std::function<void()>* func) noexcept;
 
-	virtual void addMouseSetFocusListener(std::function<void()>& func) noexcept;
-	virtual void addMouseLostFocusListener(std::function<void()>& func) noexcept;
+	virtual void addMouseSetFocusListener(std::function<void()>* func) noexcept;
+	virtual void addMouseLostFocusListener(std::function<void()>* func) noexcept;
 
-	virtual void addMouseButtonPressedListener(std::function<void()>& func) noexcept;
-	virtual void addMouseButtonReleasedListener(std::function<void()>& func) noexcept;
+	virtual void addMouseButtonPressedListener(std::function<void()>* func) noexcept;
+	virtual void addMouseButtonReleasedListener(std::function<void()>* func) noexcept;
 
-	virtual void addMouseButtonClickListener(std::function<void()>& func) noexcept;
-	virtual void addMouseButtonDoubleClickListener(std::function<void()>& func) noexcept;
+	virtual void addMouseButtonClickListener(std::function<void()>* func) noexcept;
+	virtual void addMouseButtonDoubleClickListener(std::function<void()>* func) noexcept;
 
-	virtual void removeKeySetFocus(std::function<void()>& func) noexcept;
-	virtual void removeKeyLostFocus(std::function<void()>& func) noexcept;
+	virtual void removeKeySetFocus(std::function<void()>* func) noexcept;
+	virtual void removeKeyLostFocus(std::function<void()>* func) noexcept;
 
-	virtual void removeKeyButtonPressed(std::function<void()>& func) noexcept;
-	virtual void removeKeyButtonReleased(std::function<void()>& func) noexcept;
+	virtual void removeKeyButtonPressed(std::function<void()>* func) noexcept;
+	virtual void removeKeyButtonReleased(std::function<void()>* func) noexcept;
 
-	virtual void removeMouseMove(std::function<void()>& func) noexcept;
-	virtual void removeMouseDrag(std::function<void()>& func) noexcept;
-	virtual void removeMouseWheel(std::function<void()>& func) noexcept;
+	virtual void removeMouseMove(std::function<void()>* func) noexcept;
+	virtual void removeMouseDrag(std::function<void()>* func) noexcept;
+	virtual void removeMouseWheel(std::function<void()>* func) noexcept;
 
-	virtual void removeMouseSetFocusListener(std::function<void()>& func) noexcept;
-	virtual void removeMouseLostFocusListener(std::function<void()>& func) noexcept;
+	virtual void removeMouseSetFocusListener(std::function<void()>* func) noexcept;
+	virtual void removeMouseLostFocusListener(std::function<void()>* func) noexcept;
 
-	virtual void removeMouseButtonPressedListener(std::function<void()>& func) noexcept;
-	virtual void removeMouseButtonReleasedListener(std::function<void()>& func) noexcept;
+	virtual void removeMouseButtonPressedListener(std::function<void()>* func) noexcept;
+	virtual void removeMouseButtonReleasedListener(std::function<void()>* func) noexcept;
 
-	virtual void removeMouseButtonClickListener(std::function<void()>& func) noexcept;
-	virtual void removeMouseButtonDoubleClickListener(std::function<void()>& func) noexcept;
+	virtual void removeMouseButtonClickListener(std::function<void()>* func) noexcept;
+	virtual void removeMouseButtonDoubleClickListener(std::function<void()>* func) noexcept;
 
 private:
 	void onKeySetFocus(MyGUI::Widget*, MyGUI::Widget*);

@@ -80,8 +80,9 @@ GameComponent::_setGameObject(GameObject* gameobj) noexcept
 GameObjectPtr
 GameComponent::getGameObject() const noexcept
 {
-	assert(_gameObject);
-	return _gameObject->downcast<GameObject>();
+	if (_gameObject)
+		return _gameObject->downcast<GameObject>();
+	return nullptr;
 }
 
 void

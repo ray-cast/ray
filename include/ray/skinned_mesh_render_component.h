@@ -64,15 +64,20 @@ private:
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 	virtual void onMeshChange() noexcept;
+	virtual void onMeshWillRender(class RenderPipeline&) noexcept;
 
 	virtual void onFrameEnd() noexcept;
 
 private:
+	bool _needUpdate;
+
 	GameObjects _transforms;
 	GraphicsDataPtr _jointData;
 	Bound _boundingBox;
 	MeshPropertyPtr _mesh;
+
 	std::function<void()> _onMeshChange;
+	std::function<void(RenderPipeline&)> _onMeshWillRender;
 };
 
 _NAME_END

@@ -166,10 +166,10 @@ public:
 		math::sinCos(&sh, &ch, DEG_TO_RAD(euler.y) * 0.5f);
 		math::sinCos(&sb, &cb, DEG_TO_RAD(euler.z) * 0.5f);
 
-		x = ch * sp * cb + sh * cp * sb;
-		y = sh * cp * cb - ch * sp * sb;
-		z = ch * cp * sb - sh * sp * cb;
-		w = ch * cp * cb + sh * sp * sb;
+		x = sp * ch * cb - cp * sh * sb;
+		y = cp * sh * cb + sp * ch * sb;
+		z = cp * ch * sb - sp * sh * cb;
+		w = cp * ch * cb + sp * sh * sb;
 		return *this;
 	}
 

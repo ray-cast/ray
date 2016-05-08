@@ -37,9 +37,20 @@
 #ifndef _H_PHYSICS_JOINT_H_
 #define _H_PHYSICS_JOINT_H_
 
-#include <ray/physics_rigidbody.h>
+#include <ray/physics_body.h>
 
 _NAME_BEGIN
+
+class EXPORT PhysicsJointListener
+{
+public:
+	PhysicsJointListener() noexcept;
+	virtual ~PhysicsJointListener() noexcept;
+
+private:
+	PhysicsJointListener(const PhysicsJointListener&) = delete;
+	PhysicsJointListener& operator=(const PhysicsJointListener&) = delete;
+};
 
 class EXPORT PhysicsJoint
 {
@@ -47,30 +58,53 @@ public:
 	PhysicsJoint() noexcept;
 	virtual ~PhysicsJoint() noexcept;
 
-	void setRigidbody(PhysicsRigidbody* body) noexcept;
+	void setActive(bool active) except;
+	bool getActive() const noexcept;
+
+	void setRigidbody(PhysicsBody* body) noexcept;
+	PhysicsBody* getRigidbody() const noexcept;
+
+	void setConnectRigidbody(PhysicsBody* body) noexcept;
+	PhysicsBody* getConnectRigidbody() const noexcept;
+
 	void setBreakForce(float force) noexcept;
 	void setBreakTorque(float torque) noexcept;
 	void setAxis(const Vector3& axis) noexcept;
 	void setAnchor(const Vector3& axis) noexcept;
 
-	PhysicsRigidbody* getRigidbody() const noexcept;
 	float getBreakForce() const noexcept;
 	float getBreakTorque() const noexcept;
 	const Vector3& getAxis() const noexcept;
 	const Vector3& getAnchor() const noexcept;
+
+	void setOwnerListener(PhysicsJointListener* listener) noexcept;
+	PhysicsJointListener* getOwnerListener() const noexcept;
+
+private:
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+protected:
+	btRigidBody* getRawRigidbody() const noexcept;
+	btRigidBody* getRawConnectRigidbody() const noexcept;
 
 private:
 	PhysicsJoint(const PhysicsJoint&) = delete;
 	PhysicsJoint& operator=(const PhysicsJoint&) = delete;
 
 protected:
-	PhysicsRigidbody* _rigidbody;
+	bool _active;
+	
+	PhysicsBody* _rigidbodyA;
+	PhysicsBody* _rigidbodyB;
 
 	float _breakForce;
 	float _breakTorque;
 
 	Vector3 _axis;
 	Vector3 _anchor;
+
+	PhysicsJointListener* _listener;
 };
 
 _NAME_END

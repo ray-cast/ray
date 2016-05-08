@@ -44,6 +44,7 @@
 #include <ray/physics_box_component.h>
 #include <ray/physics_sphere_component.h>
 #include <ray/physics_capsule_component.h>
+#include <ray/physics_joint_configurable_component.h>
 #include <ray/ik_solver_component.h>
 #include <ray/material.h>
 #include <ray/anim_component.h>
@@ -86,14 +87,16 @@ ResManager::createGameObject(const std::string& name, const std::string& anim) n
 	GameObjects bones;
 	this->createBones(*model, bones);
 
-	Materials materials;
-	this->createMaterials(*model, materials);
+	this->createAnimation(*model, gameObject, bones, anim);
 
 	GameObjects rigidbodys;
-	this->createRigidbodys(*model, rigidbodys);
+	this->createRigidbodyToBone(*model, rigidbodys, bones);
 
 	GameObjects joints;
 	this->createJoints(*model, rigidbodys, joints);
+
+	Materials materials;
+	this->createMaterials(*model, materials);
 
 	if (materials.size() > 0)
 	{
@@ -107,15 +110,6 @@ ResManager::createGameObject(const std::string& name, const std::string& anim) n
 
 			gameObject->addComponent(smr);
 		}
-	}
-
-	if (!anim.empty())
-	{
-		auto animtor = std::make_shared<ray::AnimationComponent>();
-		animtor->setTransforms(std::move(bones));
-		animtor->play(anim);
-
-		gameObject->addComponent(animtor);
 	}
 
 	return gameObject;
@@ -213,6 +207,19 @@ ResManager::createBones(const Model& model, GameObjects& bones) noexcept
 	}
 }
 
+void 
+ResManager::createAnimation(const Model& model, GameObjectPtr& gameObject, GameObjects& bones, const std::string& file) noexcept
+{
+	if (!file.empty())
+	{
+		auto animtor = std::make_shared<ray::AnimationComponent>();
+		animtor->setTransforms(bones);
+		animtor->play(file);
+
+		gameObject->addComponent(animtor);
+	}
+}
+
 void
 ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 {
@@ -244,18 +251,15 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 }
 
 void
-ResManager::createRigidbodys(const Model& model, GameObjects& objects) noexcept
+ResManager::createRigidbodys(const Model& model, GameObjects& rigidbodys) noexcept
 {
 	for (auto& it : model.getRigidbodyList())
 	{
-		EulerAngles euler;
-		euler.x = RAD_TO_DEG(it->rotation.x);
-		euler.y = RAD_TO_DEG(it->rotation.y);
-		euler.z = RAD_TO_DEG(it->rotation.z);
-
 		auto gameObject = std::make_shared<GameObject>();
+		gameObject->setName(it->name);
+		gameObject->setLayer(it->group);
 		gameObject->setTranslate(it->position);
-		gameObject->setEulerAngles(euler);
+		gameObject->setEulerAngles(EulerAngles(RAD_TO_DEG(it->rotation)));
 
 		if (it->shape == ShapeType::ShapeTypeCircle)
 			gameObject->addComponent(std::make_shared<PhysicsSphereComponent>(it->scale.x));
@@ -272,31 +276,128 @@ ResManager::createRigidbodys(const Model& model, GameObjects& objects) noexcept
 		component->setLinearDamping(it->movementDecay);
 		component->setAngularDamping(it->rotationDecay);
 
+		if (it->physicsOperation == 0)
+			component->isKinematic(true);
+
 		gameObject->addComponent(component);
 
-		objects.push_back(std::move(gameObject));
+		rigidbodys.push_back(std::move(gameObject));
 	}
 }
 
 void
-ResManager::createJoints(const Model& model, const GameObjects& rigidbody, GameObjects& joints) noexcept
+ResManager::createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, GameObjects& bones)
 {
-	/*
+	if (bones.empty())
+		return;
+
+	for (auto& it : model.getRigidbodyList())
+	{
+		if (bones.size() < it->bone)
+			continue;
+
+		auto gameObject = std::make_shared<GameObject>();
+		gameObject->setParent(bones[it->bone]);
+		gameObject->setName(it->name);
+		gameObject->setLayer(it->group);
+		gameObject->setTranslate(it->position);
+		gameObject->setEulerAngles(EulerAngles(RAD_TO_DEG(it->rotation)));
+
+		if (it->shape == ShapeType::ShapeTypeCircle)
+			gameObject->addComponent(std::make_shared<PhysicsSphereComponent>(it->scale.x));
+		else if (it->shape == ShapeType::ShapeTypeSquare)
+			gameObject->addComponent(std::make_shared<PhysicsBoxComponent>(it->scale));
+		else if (it->shape == ShapeType::ShapeTypeCapsule)
+			gameObject->addComponent(std::make_shared<PhysicsCapsuleComponent>(it->scale.x, it->scale.y));
+
+		auto component = std::make_shared<PhysicsBodyComponent>();
+		component->setName(it->name);
+		component->setCollisionMask(it->groupMask);
+		component->setMass(it->mass);
+		component->setRestitution(it->elasticity);
+		component->setFriction(it->friction);
+		component->setLinearDamping(it->movementDecay);
+		component->setAngularDamping(it->rotationDecay);
+
+		if (it->physicsOperation == 0)
+			component->isKinematic(true);
+
+		gameObject->addComponent(component);
+
+		rigidbodys.push_back(std::move(gameObject));
+	}
+
+	/*if (!bones.empty())
+	{
+		std::size_t index = 0;
+
+		auto& bodys = model.getRigidbodyList();
+		auto& joints = model.getJointList();
+
+		for (auto& it : bodys)
+		{
+			if (it->bone > 0 && it->bone < model.getBonesList().size())
+				rigidbodys[index]->setParent(bones[it->bone]);
+			else
+			{
+				for (auto& joint : joints)
+				{
+					std::size_t jointRigidbodyA = joint->bodyIndexA;
+					std::size_t jointRigidbodyB = joint->bodyIndexB;
+
+					if (jointRigidbodyB == index)
+					{
+						std::size_t targetBone = bodys.at(jointRigidbodyA)->bone;
+						rigidbodys[index]->setParent(bones[targetBone]);
+					}
+					else if (jointRigidbodyA == index)
+					{
+						std::size_t targetBone = bodys.at(jointRigidbodyB)->bone;
+						rigidbodys[index]->setParent(bones[targetBone]);
+					}
+				}
+			}
+
+			++index;
+		}
+	}*/
+}
+
+void
+ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, GameObjects& joints) noexcept
+{
 	for (auto& it : model.getJointList())
 	{
-	EulerAngles euler;
-	euler.x = RAD_TO_DEG(it->rotation.x);
-	euler.y = RAD_TO_DEG(it->rotation.y);
-	euler.z = RAD_TO_DEG(it->rotation.z);
+		auto transformA = rigidbodys[it->bodyIndexA];
+		auto trasnformB = rigidbodys[it->bodyIndexB];
 
-	auto gameObject = std::make_shared<GameObject>();
-	gameObject->setTranslate(it->position);
-	gameObject->setEulerAngles(euler);
-	gameObject->setParent(parent);
+		auto bodyA = transformA->getComponent<PhysicsBodyComponent>();
+		auto bodyB = trasnformB->getComponent<PhysicsBodyComponent>();
 
-	rigidbodys[it->bodyIndexA];
-	rigidbodys[it->bodyIndexB];
-	}*/
+		if (!bodyA)
+			bodyA = transformA->getParent()->getComponent<PhysicsBodyComponent>();
+
+		if (!bodyB)
+			bodyB = trasnformB->getParent()->getComponent<PhysicsBodyComponent>();
+
+		if (bodyA != bodyB)
+		{
+			auto joint = std::make_shared<PhysicsJointConfigurableComponent>();
+			joint->setLinearSpring(it->position);
+			joint->setAngularSprint(Quaternion(RAD_TO_DEG(it->rotation)));
+			joint->setLinearLowerLimit(it->movementLowerLimit);
+			joint->setLinearHighLimit(it->movementUpperLimit);
+			joint->setAngularLowerLimit(it->rotationLowerLimit);
+			joint->setAngularHighLimit(it->rotationUpperLimit);
+			joint->setMovementConstant(it->springMovementConstant);
+			joint->setRotationConstant(it->springRotationConstant);
+			joint->setConnectRigidbody(bodyB);
+
+			bodyA->getGameObject()->addComponent(joint);
+
+			joints.push_back(joint->getGameObject());
+		}
+	}
 }
 
 MaterialPtr

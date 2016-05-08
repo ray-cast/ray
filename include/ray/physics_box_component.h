@@ -47,21 +47,22 @@ class EXPORT PhysicsBoxComponent final : public PhysicsShapeComponent
 	__DeclareSubClass(PhysicsBoxComponent, PhysicsShapeComponent)
 public:
 	PhysicsBoxComponent() noexcept;
-	PhysicsBoxComponent(const Vector3& size) noexcept;
+	PhysicsBoxComponent(const float3& size) noexcept;
 	~PhysicsBoxComponent() noexcept;
 
-	void setSize(const Vector3& size) noexcept;
-	const Vector3& getSize() const noexcept;
+	void setSize(const float3& size) noexcept;
+	const float3& getSize() const noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
+
+	virtual GameComponentPtr clone() const noexcept;
 
 private:
 	virtual void onActivate() noexcept;
 	virtual void onDeactivate() noexcept;
 
 	virtual PhysicsShapePtr getCollisionShape() noexcept;
-	virtual GameComponentPtr clone() const noexcept;
 
 private:
 	PhysicsBoxComponent(const PhysicsBoxComponent&) noexcept = delete;

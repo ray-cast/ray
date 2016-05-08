@@ -55,13 +55,7 @@ void
 PhysicsShapeBox::setup() noexcept
 {
 	assert(!_shape);
-
-	btVector3 margin;
-	margin.setX(_size.x * 0.5f);
-	margin.setY(_size.y * 0.5f);
-	margin.setZ(_size.z * 0.5f);
-
-	_shape = new btBoxShape(margin);
+	_shape = new btBoxShape(btVector3(_size.x, _size.y, _size.z));
 	_shape->setUserPointer(this);
 }
 

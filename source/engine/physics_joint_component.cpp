@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,84 +34,69 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_INPUT_MOUSE_H_
-#define _H_INPUT_MOUSE_H_
-
-#include <ray/input_mouse_base.h>
+#include <ray/physics_joint_component.h>
+#include <ray/physics_body_component.h>
 
 _NAME_BEGIN
 
-class EXPORT DefaultInputMouse : public InputMouse
+__ImplementSubInterface(PhysicsJointComponent, GameComponent, "PhysicsJoint")
+
+PhysicsJointComponent::PhysicsJointComponent() noexcept
 {
-	__DeclareSubClass(DefaultInputMouse, InputMouse)
-public:
-	DefaultInputMouse() noexcept;
-	virtual ~DefaultInputMouse() noexcept;
+}
 
-	void lockMouse() noexcept;
-	void unlockMouse() noexcept;
-	bool isLockedMouse() const noexcept;
+PhysicsJointComponent::~PhysicsJointComponent() noexcept
+{
+}
 
-	void showMouse() noexcept;
-	void hideMouse() noexcept;
-	bool isShowMouse() noexcept;
-
-	float getAxisX() const noexcept;
-	float getAxisY() const noexcept;
-
-	void setPosition(int x, int y) noexcept;
-	void getPosition(int& x, int& y) const noexcept;
-
-	bool getButtonDown(InputButton::Code key) const noexcept;
-	bool getButtonUp(InputButton::Code key) const noexcept;
-
-	bool getButton(InputButton::Code key) const noexcept;
-
-protected:
-	void onFrameBegin() noexcept;
-	void onFrameEnd() noexcept;
-
-	void onObtainCapture() noexcept;
-	void onReleaseCapture() noexcept;
-
-	void onInputEvent(const InputEvent& event) noexcept;
-
-private:
-	virtual void onShowMouse() noexcept = 0;
-	virtual void onHideMouse() noexcept = 0;
-
-	virtual void onChangePosition(int x, int y) noexcept = 0;
-
-private:
-	DefaultInputMouse(const DefaultInputMouse&) noexcept = delete;
-	DefaultInputMouse& operator=(const DefaultInputMouse&) noexcept = delete;
-
-protected:
-
-	bool _isMouseLock;
-	bool _isMouseLocked;
-	bool _isMouseHide;
-
-	float _axisX;
-	float _axisY;
-
-	int _centerX;
-	int _centerY;
-
-	int _mouseX;
-	int _mouseY;
-
-	struct ButtonState
+void 
+PhysicsJointComponent::setConnectRigidbody(PhysicsBodyComponentPtr body) noexcept
+{
+	if (_body != body)
 	{
-		bool down;
-		bool up;
-		bool pressed;
-		bool click;
-	};
+		_body = body;
 
-	ButtonState _buttonState[InputButton::NumButtonCodes];
-};
+		if (this->getGameObject())
+			this->onBodyChange();
+	}
+}
+
+PhysicsBodyComponentPtr
+PhysicsJointComponent::getConnectRigidbody() const noexcept
+{
+	return _body;
+}
+
+void
+PhysicsJointComponent::load(iarchive& reader) noexcept
+{
+}
+
+void
+PhysicsJointComponent::save(oarchive& write) noexcept
+{
+}
+
+PhysicsBody* 
+PhysicsJointComponent::getRawRigidbody() const noexcept
+{
+	auto body = this->getComponent<PhysicsBodyComponent>();
+	if (body)
+		return body->getPhysicsBody();
+	return nullptr;
+}
+
+PhysicsBody*
+PhysicsJointComponent::getRawConnectRigidbody() const noexcept
+{
+	if (_body)
+		return _body->getPhysicsBody();
+	return nullptr;
+}
+
+void
+PhysicsJointComponent::onBodyChange() noexcept
+{
+}
 
 _NAME_END
-
-#endif

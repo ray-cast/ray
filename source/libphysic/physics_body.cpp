@@ -34,23 +34,24 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/physics_rigidbody.h>
+#include <ray/physics_body.h>
 #include <ray/physics_system.h>
 
 #include <btBulletDynamicsCommon.h>
 
 _NAME_BEGIN
 
-PhysicsRigidbody::PhysicsRigidbody() noexcept
-	: _enablejointFather(false)
-	, _enableGravity(true)
+PhysicsBody::PhysicsBody() noexcept
+	: _isKinematic(false)
 	, _mass(0.0f)
+	, _layer(0)
+	, _layerMask(0xFFFF)
 	, _friction(0.5f)
 	, _restitution(0.0f)
 	, _linearDamping(0.05f)
 	, _angularDamping(0.05f)
 	, _position(Vector3::Zero)
-	, _rotate(0, 0, 0, 1)
+	, _rotate(Quaternion::Zero)
 	, _inertia(Vector3::Zero)
 	, _gravity(Vector3::Zero)
 	, _linearVelocity(Vector3::Zero)
@@ -62,27 +63,43 @@ PhysicsRigidbody::PhysicsRigidbody() noexcept
 {
 }
 
-PhysicsRigidbody::~PhysicsRigidbody() noexcept
+PhysicsBody::~PhysicsBody() noexcept
 {
 	this->close();
 }
 
 void
-PhysicsRigidbody::setup(PhysicsShapePtr shape) noexcept
+PhysicsBody::setup(PhysicsShapePtr shape) noexcept
 {
 	assert(shape);
+	assert(shape->getCollisionShape());
 
 	btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(btVector3(_position.x, _position.y, _position.z));
 	startTransform.setRotation(btQuaternion(_rotate.x, _rotate.y, _rotate.z, _rotate.w));
 
+	btCollisionShape* collision = shape->getCollisionShape();
+	btVector3 btv3LocalInertia(0.0f, 0.0f, 0.0f);
+
+	if (_isKinematic)
+		_mass = 0.0f;
+
+	if (_mass != 0.0f)
+	{
+		if (collision->getShapeType() != TRIANGLE_MESH_SHAPE_PROXYTYPE)
+			collision->calculateLocalInertia(_mass, btv3LocalInertia);
+	}
+
 	_motionState = std::make_unique<btDefaultMotionState>(startTransform);
-	_rigidbody = std::make_unique<btRigidBody>(_mass, _motionState.get(), shape->getCollisionShape());
+
+	_rigidbody = std::make_unique<btRigidBody>(_mass, _motionState.get(), shape->getCollisionShape(), btv3LocalInertia);
 	_rigidbody->setUserPointer(this);
 	_rigidbody->setRestitution(_restitution);
 	_rigidbody->setFriction(_friction);
+	_rigidbody->setSleepingThresholds(0.0f, 0.0f);
 
+	this->isKinematic(_isKinematic);
 	this->setGravity(_gravity);
 	this->setLinearVelocity(_linearVelocity);
 	this->setAngularVelocity(_angularVelocity);
@@ -93,7 +110,7 @@ PhysicsRigidbody::setup(PhysicsShapePtr shape) noexcept
 }
 
 void
-PhysicsRigidbody::close() noexcept
+PhysicsBody::close() noexcept
 {
 	this->setPhysicsScene(nullptr);
 
@@ -102,23 +119,27 @@ PhysicsRigidbody::close() noexcept
 }
 
 void
-PhysicsRigidbody::setMass(float value) noexcept
+PhysicsBody::setMass(float value) noexcept
 {
 	if (_rigidbody)
 	{
-		btVector3 inertia;
-		inertia.setX(_inertia.x);
-		inertia.setY(_inertia.y);
-		inertia.setZ(_inertia.z);
+		btVector3 btv3LocalInertia;
+		btv3LocalInertia.setX(_inertia.x);
+		btv3LocalInertia.setY(_inertia.y);
+		btv3LocalInertia.setZ(_inertia.z);
 
-		_rigidbody->setMassProps(value, inertia);
+		btCollisionShape* collision = _rigidbody->getCollisionShape();
+		if (_mass != 0.0f)
+			collision->calculateLocalInertia(_mass, btv3LocalInertia);
+
+		_rigidbody->setMassProps(value, btv3LocalInertia);
 	}
 
 	_mass = value;
 }
 
 void
-PhysicsRigidbody::setRestitution(float value) noexcept
+PhysicsBody::setRestitution(float value) noexcept
 {
 	if (_rigidbody)
 		_rigidbody->setRestitution(value);
@@ -126,7 +147,7 @@ PhysicsRigidbody::setRestitution(float value) noexcept
 }
 
 void
-PhysicsRigidbody::setLinearVelocity(const Vector3& value) noexcept
+PhysicsBody::setLinearVelocity(const Vector3& value) noexcept
 {
 	if (_rigidbody)
 	{
@@ -142,7 +163,7 @@ PhysicsRigidbody::setLinearVelocity(const Vector3& value) noexcept
 }
 
 void
-PhysicsRigidbody::setAngularVelocity(const Vector3& value) noexcept
+PhysicsBody::setAngularVelocity(const Vector3& value) noexcept
 {
 	if (_rigidbody)
 	{
@@ -158,7 +179,7 @@ PhysicsRigidbody::setAngularVelocity(const Vector3& value) noexcept
 }
 
 void
-PhysicsRigidbody::setLinearDamping(float damping) noexcept
+PhysicsBody::setLinearDamping(float damping) noexcept
 {
 	if (damping < 0.f)
 		damping = 0.f;
@@ -170,7 +191,7 @@ PhysicsRigidbody::setLinearDamping(float damping) noexcept
 }
 
 void
-PhysicsRigidbody::setAngularDamping(float damping) noexcept
+PhysicsBody::setAngularDamping(float damping) noexcept
 {
 	if (damping < 0.f)
 		damping = 0.f;
@@ -182,7 +203,7 @@ PhysicsRigidbody::setAngularDamping(float damping) noexcept
 }
 
 void
-PhysicsRigidbody::setFriction(float value) noexcept
+PhysicsBody::setFriction(float value) noexcept
 {
 	if (_rigidbody)
 		_rigidbody->setFriction(value);
@@ -190,7 +211,7 @@ PhysicsRigidbody::setFriction(float value) noexcept
 }
 
 void
-PhysicsRigidbody::setGravity(const Vector3& value) noexcept
+PhysicsBody::setGravity(const Vector3& value) noexcept
 {
 	if (_rigidbody)
 	{
@@ -206,7 +227,7 @@ PhysicsRigidbody::setGravity(const Vector3& value) noexcept
 }
 
 void
-PhysicsRigidbody::setMovePosition(const Vector3& value) noexcept
+PhysicsBody::setMovePosition(const Vector3& value) noexcept
 {
 	if (_rigidbody)
 	{
@@ -234,7 +255,7 @@ PhysicsRigidbody::setMovePosition(const Vector3& value) noexcept
 }
 
 void
-PhysicsRigidbody::setMoveRotation(const Quaternion& value) noexcept
+PhysicsBody::setMoveRotation(const Quaternion& value) noexcept
 {
 	if (_rigidbody)
 	{
@@ -262,8 +283,39 @@ PhysicsRigidbody::setMoveRotation(const Quaternion& value) noexcept
 	_rotate = value;
 }
 
+void 
+PhysicsBody::setTransform(const float4x4& value) noexcept
+{
+	Quaternion rotate;
+	Vector3 translate;
+	value.getTransform(rotate, translate);
+
+	this->setMovePosition(translate);
+	this->setMoveRotation(rotate);
+}
+
+void 
+PhysicsBody::isKinematic(bool isKinematic) noexcept
+{
+	if (_rigidbody)
+	{
+		if (isKinematic)
+			_rigidbody->setCollisionFlags(_rigidbody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		else
+			_rigidbody->setCollisionFlags(_rigidbody->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+	}
+
+	_isKinematic = isKinematic;
+}
+
+bool 
+PhysicsBody::isKinematic() const noexcept
+{
+	return _isKinematic;
+}
+
 void
-PhysicsRigidbody::sleep(bool sleep) noexcept
+PhysicsBody::sleep(bool sleep) noexcept
 {
 	if (_rigidbody)
 	{
@@ -277,103 +329,100 @@ PhysicsRigidbody::sleep(bool sleep) noexcept
 }
 
 float
-PhysicsRigidbody::getMass() const noexcept
+PhysicsBody::getMass() const noexcept
 {
 	assert(_rigidbody);
-	return 1 / _rigidbody->getInvMass();
+	return 1.0f / _rigidbody->getInvMass();
 }
 
 float
-PhysicsRigidbody::getRestitution() const noexcept
+PhysicsBody::getRestitution() const noexcept
 {
 	assert(_rigidbody);
 	return _rigidbody->getRestitution();
 }
 
 float
-PhysicsRigidbody::getFriction() const noexcept
+PhysicsBody::getFriction() const noexcept
 {
 	assert(_rigidbody);
 	return _rigidbody->getFriction();
 }
 
 float
-PhysicsRigidbody::getLinearDamping() const noexcept
+PhysicsBody::getLinearDamping() const noexcept
 {
 	return _linearDamping;
 }
 
 float
-PhysicsRigidbody::getAngularDamping() const noexcept
+PhysicsBody::getAngularDamping() const noexcept
 {
 	return _angularDamping;
 }
 
 const Vector3&
-PhysicsRigidbody::getGravity() const noexcept
+PhysicsBody::getGravity() const noexcept
 {
 	return _gravity;
 }
 
 const Vector3&
-PhysicsRigidbody::getLinearVelocity() const noexcept
+PhysicsBody::getLinearVelocity() const noexcept
 {
 	return _linearVelocity;
 }
 
 const Vector3&
-PhysicsRigidbody::getAngularVelocity() const noexcept
+PhysicsBody::getAngularVelocity() const noexcept
 {
 	return _angularVelocity;
 }
 
 const Vector3&
-PhysicsRigidbody::getMovePosition() const noexcept
+PhysicsBody::getMovePosition() const noexcept
 {
 	if (_rigidbody)
 	{
-		auto motion = _rigidbody->getMotionState();
-		if (motion)
-		{
-			btTransform transform;
-			motion->getWorldTransform(transform);
-
-			auto pos = transform.getOrigin();
-
-			_position.x = pos.x();
-			_position.y = pos.y();
-			_position.z = pos.z();
-		}
+		auto pos = _rigidbody->getCenterOfMassPosition();
+		_position.x = pos.x();
+		_position.y = pos.y();
+		_position.z = pos.z();
 	}
 
 	return _position;
 }
 
 const Quaternion&
-PhysicsRigidbody::getMoveRotation() const noexcept
+PhysicsBody::getMoveRotation() const noexcept
 {
 	if (_rigidbody)
 	{
-		auto motion = _rigidbody->getMotionState();
-		if (motion)
-		{
-			btTransform transform;
-			motion->getWorldTransform(transform);
-
-			auto rot = transform.getRotation();
-
-			_rotate.x = rot.x();
-			_rotate.y = rot.y();
-			_rotate.z = rot.z();
-			_rotate.w = rot.w();
-		}
+		btQuaternion quat = _rigidbody->getOrientation();
+		_rotate.x = quat.x();
+		_rotate.y = quat.y();
+		_rotate.z = quat.z();
+		_rotate.w = quat.w();
 	}
 
 	return _rotate;
 }
 
+float4x4
+PhysicsBody::getWorldTransform() const noexcept
+{
+	if (_rigidbody)
+	{
+		float4x4 result;
+		_rigidbody->getWorldTransform().getOpenGLMatrix((float*)&result);
+		return math::transpose(result);
+	}
+
+	return float4x4::One;
+}
+
 void
-PhysicsRigidbody::addForce(const Vector3& value) noexcept
+PhysicsBody::addForce(const Vector3& value) noexcept
 {
 	assert(_rigidbody);
 
@@ -386,7 +435,7 @@ PhysicsRigidbody::addForce(const Vector3& value) noexcept
 }
 
 void
-PhysicsRigidbody::addRelativeForce(const Vector3& value, const Vector3& axis) noexcept
+PhysicsBody::addRelativeForce(const Vector3& value, const Vector3& axis) noexcept
 {
 	assert(_rigidbody);
 
@@ -404,7 +453,7 @@ PhysicsRigidbody::addRelativeForce(const Vector3& value, const Vector3& axis) no
 }
 
 void
-PhysicsRigidbody::addTorque(const Vector3& value) noexcept
+PhysicsBody::addTorque(const Vector3& value) noexcept
 {
 	assert(_rigidbody);
 
@@ -417,7 +466,7 @@ PhysicsRigidbody::addTorque(const Vector3& value) noexcept
 }
 
 void
-PhysicsRigidbody::addImpulse(const Vector3& value, const Vector3& axis) noexcept
+PhysicsBody::addImpulse(const Vector3& value, const Vector3& axis) noexcept
 {
 	assert(_rigidbody);
 
@@ -435,35 +484,65 @@ PhysicsRigidbody::addImpulse(const Vector3& value, const Vector3& axis) noexcept
 }
 
 bool
-PhysicsRigidbody::isSleep() const noexcept
+PhysicsBody::isSleep() const noexcept
 {
 	if (_rigidbody)
 		return _rigidbody->wantsSleeping();
 	return _sleep;
 }
 
+void 
+PhysicsBody::setLayer(std::uint8_t layer) noexcept
+{
+	_layer = layer;
+}
+
 void
-PhysicsRigidbody::setPhysicsScene(PhysicsScenePtr scene) noexcept
+PhysicsBody::setLayerMask(std::uint16_t mask) noexcept
+{
+	_layerMask = mask;
+}
+
+std::uint8_t 
+PhysicsBody::getLayer() const noexcept
+{
+	return _layer;
+}
+
+std::uint16_t 
+PhysicsBody::getLayerMask() const noexcept
+{
+	return _layerMask;
+}
+
+void
+PhysicsBody::setPhysicsScene(PhysicsScenePtr scene) noexcept
 {
 	if (_scene.lock())
-		_scene.lock()->removeRigidbody(_rigidbody.get());
+		_scene.lock()->removeRigidbody(this);
 
 	_scene = scene;
 
 	if (scene)
-		scene->addRigidbody(_rigidbody.get());
+		scene->addRigidbody(this);
 }
 
 void
-PhysicsRigidbody::setRigidbodyListener(PhysicsRigidbodyListener* listener) noexcept
+PhysicsBody::setRigidbodyListener(PhysicsBodyListener* listener) noexcept
 {
 	_listener = listener;
 }
 
-PhysicsRigidbodyListener*
-PhysicsRigidbody::getRigidbodyListener() noexcept
+PhysicsBodyListener*
+PhysicsBody::getRigidbodyListener() noexcept
 {
 	return _listener;
+}
+
+btRigidBody*
+PhysicsBody::getRigidbody() noexcept
+{
+	return _rigidbody.get();
 }
 
 _NAME_END

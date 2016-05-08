@@ -37,7 +37,7 @@
 #ifndef _H_PHYSICS_SECENE_H_
 #define _H_PHYSICS_SECENE_H_
 
-#include <ray/physics_rigidbody.h>
+#include <ray/physics_body.h>
 
 _NAME_BEGIN
 
@@ -79,8 +79,8 @@ public:
 	void addJoint(btTypedConstraint* joint) noexcept;
 	void removeJoint(btTypedConstraint* joint) noexcept;
 
-	void addRigidbody(btRigidBody* body) noexcept;
-	void removeRigidbody(btRigidBody* body) noexcept;
+	void addRigidbody(PhysicsBody* body) noexcept;
+	void removeRigidbody(PhysicsBody* body) noexcept;
 
 	void addCharacter(btCollisionObject* object) noexcept;
 	void removeCharacter(btCollisionObject* object) noexcept;
@@ -99,6 +99,8 @@ private:
 	btDefaultCollisionConfiguration* _collisionConfiguration;
 	btSequentialImpulseConstraintSolver* _solver;
 	btDiscreteDynamicsWorld* _dynamicsWorld;
+
+	std::vector<PhysicsBody*> _rigidbodys;
 };
 
 _NAME_END

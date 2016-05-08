@@ -38,11 +38,11 @@
 #define _H_RIGIDBODY_COMPONENT_H_
 
 #include <ray/game_component.h>
-#include <ray/physics_rigidbody.h>
+#include <ray/physics_body.h>
 
 _NAME_BEGIN
 
-class EXPORT PhysicsBodyComponent final : public GameComponent, public PhysicsRigidbodyListener
+class EXPORT PhysicsBodyComponent final : public GameComponent, public PhysicsBodyListener
 {
 	__DeclareSubClass(PhysicsBodyComponent, GameComponent)
 public:
@@ -62,8 +62,14 @@ public:
 	void setConstantVelocity(const Vector3& value) noexcept;
 	void setConstanAngularVelocity(const Vector3& value) noexcept;
 
+	void setCollisionMask(std::uint16_t mask) noexcept;
+	std::uint16_t getCollisionMask() const noexcept;
+
 	void sleep(bool sleep) noexcept;
 	bool isSleep() const noexcept;
+
+	void isKinematic(bool isKinematic) noexcept;
+	bool isKinematic() const noexcept;
 
 	float getMass() const noexcept;
 	float getRestitution() const noexcept;
@@ -91,13 +97,16 @@ private:
 	void _buildRigibody() noexcept;
 
 private:
+	friend class PhysicsJointComponent;
+	PhysicsBody* getPhysicsBody() const noexcept;
+
+private:
 	virtual void onActivate() noexcept;
 	virtual void onDeactivate() noexcept;
 
 	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
-	virtual void onFrame() noexcept;
 	virtual void onFrameEnd() noexcept;
 
 	virtual void onMoveAfter() noexcept;
@@ -106,22 +115,29 @@ private:
 
 	virtual void onCollisionStay() noexcept;
 
+	virtual void onWillFetchResult() noexcept;
+	virtual void onFinishFetchResult() noexcept;
+	virtual void onFetchResult() noexcept;
+
 private:
 	PhysicsBodyComponent(const PhysicsBodyComponent&) noexcept = delete;
 	PhysicsBodyComponent& operator=(const PhysicsBodyComponent&) noexcept = delete;
 
 private:
-
-	bool _enableKinematic;
+	bool _isEnableForce;
+	bool _isFetchResult;
 
 	Vector3 _constantForce;
 	Vector3 _constantTorque;
 	Vector3 _constantVelocity;
 	Vector3 _constantAngularVelocity;
 
+	float4x4 _transform;
+	float4x4 _transformInverse;
+
 	std::function<void()> _onShapeChange;
 
-	std::unique_ptr<PhysicsRigidbody> _body;
+	std::unique_ptr<PhysicsBody> _body;
 };
 
 _NAME_END

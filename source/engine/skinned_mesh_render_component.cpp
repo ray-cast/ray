@@ -47,6 +47,7 @@ __ImplementSubClass(SkinnedMeshRenderComponent, MeshRenderComponent, "SkinnedMes
 
 SkinnedMeshRenderComponent::SkinnedMeshRenderComponent() noexcept
 	: _onMeshChange(std::bind(&SkinnedMeshRenderComponent::onMeshChange, this))
+	, _onMeshWillRender(std::bind(&SkinnedMeshRenderComponent::onMeshWillRender, this, std::placeholders::_1))
 {
 }
 
@@ -146,6 +147,8 @@ SkinnedMeshRenderComponent::onActivate() except
 	if (meshComponent)
 		_mesh = meshComponent->getMesh();
 
+	this->addPreRenderListener(&_onMeshWillRender);
+
 	MeshRenderComponent::onActivate();
 }
 
@@ -153,6 +156,8 @@ void
 SkinnedMeshRenderComponent::onDeactivate() noexcept
 {
 	MeshRenderComponent::onDeactivate();
+
+	this->removePreRenderListener(&_onMeshWillRender);
 
 	_mesh.reset();
 	_jointData.reset();
@@ -184,29 +189,40 @@ SkinnedMeshRenderComponent::onMeshChange() noexcept
 	_mesh = this->getComponent<MeshComponent>()->getMesh();
 }
 
-void
-SkinnedMeshRenderComponent::onFrameEnd() noexcept
+void 
+SkinnedMeshRenderComponent::onMeshWillRender(class RenderPipeline&) noexcept
 {
 	if (!_mesh)
 		return;
 
-	float4x4* data;
-	if (_jointData->map(0, _jointData->getGraphicsDataDesc().getStreamSize(), (void**)&data))
+	if (_needUpdate)
 	{
-		auto& bindposes = _mesh->getBindposes();
-		if (bindposes.size() != _transforms.size())
+		float4x4* data;
+		if (_jointData->map(0, _jointData->getGraphicsDataDesc().getStreamSize(), (void**)&data))
 		{
-			*data++ = float4x4::One;
+			auto& bindposes = _mesh->getBindposes();
+			if (bindposes.size() != _transforms.size())
+			{
+				*data++ = float4x4::One;
+			}
+			else
+			{
+				std::size_t index = 0;
+				for (auto& transform : _transforms)
+					*data++ = math::transformMultiply(bindposes[index++], transform->getTransform());
+			}
 		}
-		else
-		{
-			std::size_t index = 0;
-			for (auto& transform : _transforms)
-				*data++ = math::transformMultiply(bindposes[index++], transform->getTransform());
-		}
-	}
 
-	_jointData->unmap();
+		_jointData->unmap();
+
+		_needUpdate = false;
+	}
+}
+
+void
+SkinnedMeshRenderComponent::onFrameEnd() noexcept
+{
+	_needUpdate = true;
 
 	AABB aabb;
 	for (auto& transform : _transforms)

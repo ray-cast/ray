@@ -61,6 +61,8 @@ SET(ANIM_FEATURES_LIST
     ${SOURCE_PATH}/anim_component.cpp
     ${HEADER_PATH}/ik_solver_component.h
     ${SOURCE_PATH}/ik_solver_component.cpp
+    ${SOURCE_PATH}/mesh_component.cpp
+    ${HEADER_PATH}/mesh_component.h
 )
 SOURCE_GROUP("system\\animation" FILES ${ANIM_FEATURES_LIST})
 
@@ -83,8 +85,6 @@ SET(RENDER_FEATURES_LIST
     ${SOURCE_PATH}/skybox_component.cpp
     ${HEADER_PATH}/sprite_component.h
     ${SOURCE_PATH}/sprite_component.cpp
-    ${SOURCE_PATH}/mesh_component.cpp
-    ${HEADER_PATH}/mesh_component.h
     ${SOURCE_PATH}/render_feature.cpp
     ${HEADER_PATH}/render_feature.h
 )
@@ -111,6 +111,10 @@ SET(PHYSIC_FEATURES_LIST
     ${HEADER_PATH}/physics_body_component.h
     ${SOURCE_PATH}/physics_box_component.cpp
     ${HEADER_PATH}/physics_box_component.h
+    ${SOURCE_PATH}/physics_joint_component.cpp
+    ${HEADER_PATH}/physics_joint_component.h
+    ${SOURCE_PATH}/physics_joint_configurable_component.cpp
+    ${HEADER_PATH}/physics_joint_configurable_component.h
     ${SOURCE_PATH}/physics_capsule_component.cpp
     ${HEADER_PATH}/physics_capsule_component.h
     ${SOURCE_PATH}/physics_character_component.cpp

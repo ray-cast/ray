@@ -54,7 +54,7 @@ private:
 	void onActivate() except;
 	void onDeactivate() noexcept;
 
-	void onFrameBegin() noexcept;
+	void onFrameEnd() noexcept;
 
 private:
 	PhysicFeatures(const PhysicFeatures&) = delete;

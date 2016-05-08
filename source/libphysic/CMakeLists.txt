@@ -12,14 +12,14 @@ SET(PHYSICS_SYSTEM_LIST
     ${HEADER_PATH}/physics_character.h
     ${SOURCE_PATH}/physics_joint.cpp
     ${HEADER_PATH}/physics_joint.h
-    ${SOURCE_PATH}/physics_joint_ball.cpp
-    ${HEADER_PATH}/physics_joint_ball.h
+    ${SOURCE_PATH}/physics_joint_configurable.cpp
+    ${HEADER_PATH}/physics_joint_configurable.h
     ${SOURCE_PATH}/physics_joint_fixed.cpp
     ${HEADER_PATH}/physics_joint_fixed.h
     ${SOURCE_PATH}/physics_joint_spring.cpp
     ${HEADER_PATH}/physics_joint_spring.h
-    ${SOURCE_PATH}/physics_rigidbody.cpp
-    ${HEADER_PATH}/physics_rigidbody.h
+    ${SOURCE_PATH}/physics_body.cpp
+    ${HEADER_PATH}/physics_body.h
     ${SOURCE_PATH}/physics_shape.cpp
     ${HEADER_PATH}/physics_shape.h
     ${SOURCE_PATH}/physics_shape_sphere.cpp

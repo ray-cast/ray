@@ -48,7 +48,7 @@ PhysicsScene::Setting::Setting() noexcept
 	, mass(1000.0f)
 	, speed(10.0f)
 	, skinWidth(0.0001f)
-	, gravity(0.0f, 9.81f, 0.0f)
+	, gravity(0.0f, -9.81f, 0.0f)
 {
 	aabb.min = Vector3(-1000, -1000, -1000);
 	aabb.max = Vector3(1000, 1000, 1000);
@@ -76,15 +76,8 @@ PhysicsScene::setup(const Setting& setting) noexcept
 	_collisionConfiguration = new btDefaultCollisionConfiguration();
 	_dispatcher = new btCollisionDispatcher(_collisionConfiguration);
 
-	btVector3 min;
-	min.setX(setting.aabb.min.x);
-	min.setY(setting.aabb.min.y);
-	min.setZ(setting.aabb.min.z);
-
-	btVector3 max;
-	max.setX(setting.aabb.max.x);
-	max.setY(setting.aabb.max.y);
-	max.setZ(setting.aabb.max.z);
+	btVector3 min(setting.aabb.min.x, setting.aabb.min.y, setting.aabb.min.z);
+	btVector3 max(setting.aabb.max.x, setting.aabb.max.y, setting.aabb.max.z);
 
 	_broadphase = new btAxisSweep3(min, max);
 	_broadphase->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
@@ -290,15 +283,22 @@ PhysicsScene::removeJoint(btTypedConstraint* joint) noexcept
 }
 
 void
-PhysicsScene::addRigidbody(btRigidBody* body) noexcept
+PhysicsScene::addRigidbody(PhysicsBody* body) noexcept
 {
-	_dynamicsWorld->addRigidBody(body);
+	_dynamicsWorld->addRigidBody(body->getRigidbody(), 1 << body->getLayer(), body->getLayerMask());
+	_rigidbodys.push_back(body);
 }
 
 void
-PhysicsScene::removeRigidbody(btRigidBody* body) noexcept
+PhysicsScene::removeRigidbody(PhysicsBody* body) noexcept
 {
-	_dynamicsWorld->removeRigidBody(body);
+	_dynamicsWorld->removeRigidBody(body->getRigidbody());
+
+	auto it = std::find(_rigidbodys.begin(), _rigidbodys.end(), body);
+	if (it != _rigidbodys.end())
+	{
+		_rigidbodys.erase(it);
+	}
 }
 
 void
@@ -348,8 +348,7 @@ PhysicsScene::simulation(float delta) noexcept
 
 			if (objAPointer)
 			{
-				PhysicsRigidbody* bodyA = (PhysicsRigidbody*)objAPointer;
-
+				PhysicsBody* bodyA = (PhysicsBody*)objAPointer;
 				auto listenerA = bodyA->getRigidbodyListener();
 				if (listenerA)
 					listenerA->onCollisionStay();
@@ -357,13 +356,33 @@ PhysicsScene::simulation(float delta) noexcept
 
 			if (objBPointer)
 			{
-				PhysicsRigidbody* bodyB = (PhysicsRigidbody*)objBPointer;
-
+				PhysicsBody* bodyB = (PhysicsBody*)objBPointer;
 				auto listenerB = bodyB->getRigidbodyListener();
 				if (listenerB)
 					listenerB->onCollisionStay();
 			}
 		}
+	}
+
+	for (auto& it : _rigidbodys)
+	{
+		auto listener = it->getRigidbodyListener();
+		if (listener)
+			listener->onWillFetchResult();
+	}
+
+	for (auto& it : _rigidbodys)
+	{
+		auto listener = it->getRigidbodyListener();
+		if (listener)
+			listener->onFetchResult();
+	}
+
+	for (auto& it : _rigidbodys)
+	{
+		auto listener = it->getRigidbodyListener();
+		if (listener)
+			listener->onFinishFetchResult();
 	}
 }
 

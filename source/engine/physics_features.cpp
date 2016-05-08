@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/physics_features.h>
 #include <ray/physics_system.h>
-#include <ray/game_scene.h>
 #include <ray/game_server.h>
 
 _NAME_BEGIN
@@ -65,7 +64,7 @@ PhysicFeatures::onDeactivate() noexcept
 }
 
 void
-PhysicFeatures::onFrameBegin() noexcept
+PhysicFeatures::onFrameEnd() noexcept
 {
 	PhysicsSystem::instance()->simulation(this->getGameServer()->getTimer()->delta());
 }

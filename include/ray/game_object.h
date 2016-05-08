@@ -118,6 +118,11 @@ public:
 	GameComponentPtr getComponentInChildren(const rtti::Rtti* type) const noexcept;
 	GameComponentPtr getComponentInChildren(const rtti::Rtti& type) const noexcept;
 
+	template<typename T>
+	void getComponentsInChildren(GameComponents& components) const noexcept { this->getComponentsInChildren(T::RTTI, components); }
+	void getComponentsInChildren(const rtti::Rtti* type, GameComponents& components) const noexcept;
+	void getComponentsInChildren(const rtti::Rtti& type, GameComponents& components) const noexcept;
+
 	const GameComponents& getComponents() const noexcept;
 
 	void sendMessage(const MessagePtr& message) noexcept;
@@ -168,7 +173,6 @@ private:
 	mutable float3 _up;
 	mutable float3 _forward;
 
-	mutable float4x4 _transformWorldInv;
 	mutable float4x4 _transform;
 	mutable float4x4 _transformInverse;
 	mutable float4x4 _transformInverseTranspose;

@@ -52,9 +52,9 @@ bool
 PhysicsSystem::open() noexcept
 {
 	PhysicsScene::Setting setting;
-	setting.aabb.min = Vector3(-1000, -1000, -1000);
-	setting.aabb.max = Vector3(1000, 1000, 1000);
-	setting.gravity = Vector3(0.0f, 9.81f, 0.0f);
+	setting.aabb.min = Vector3(-10000.0f, -10000.0f, -10000.0f);
+	setting.aabb.max = Vector3(10000.0f, 10000.0f, 10000.0f);
+	setting.gravity = Vector3(0.0f, -9.81f * 2.0f, 0.0f);
 	setting.length = 1.0f;
 	setting.mass = 1000.0f;
 	setting.skinWidth = 0.0001f;

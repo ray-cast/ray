@@ -34,25 +34,28 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_PHYSICS_RIGIDBODY_H_
-#define _H_PHYSICS_RIGIDBODY_H_
+#ifndef _H_PHYSICS_BODY_H_
+#define _H_PHYSICS_BODY_H_
 
 #include <ray/physics_shape.h>
 
 _NAME_BEGIN
 
-class EXPORT PhysicsRigidbodyListener
+class EXPORT PhysicsBodyListener
 {
 public:
+	virtual void onWillFetchResult() noexcept = 0;
+	virtual void onFinishFetchResult() noexcept = 0;
+	virtual void onFetchResult() noexcept = 0;
 
 	virtual void onCollisionStay() noexcept = 0;
 };
 
-class EXPORT PhysicsRigidbody
+class EXPORT PhysicsBody
 {
 public:
-	PhysicsRigidbody() noexcept;
-	~PhysicsRigidbody() noexcept;
+	PhysicsBody() noexcept;
+	~PhysicsBody() noexcept;
 
 	void setup(PhysicsShapePtr shape) noexcept;
 	void close() noexcept;
@@ -67,9 +70,18 @@ public:
 	void setGravity(const Vector3& value) noexcept;
 	void setMovePosition(const Vector3& value) noexcept;
 	void setMoveRotation(const Quaternion& value) noexcept;
+	void setTransform(const float4x4& value) noexcept;
+
+	void isKinematic(bool isKinematic) noexcept;
+	bool isKinematic() const noexcept;
 
 	void sleep(bool sleep) noexcept;
 	bool isSleep() const noexcept;
+
+	void setLayer(std::uint8_t layer) noexcept;
+	void setLayerMask(std::uint16_t mask) noexcept;
+	std::uint8_t getLayer() const noexcept;
+	std::uint16_t getLayerMask() const noexcept;
 
 	float getMass() const noexcept;
 	float getRestitution() const noexcept;
@@ -84,6 +96,8 @@ public:
 
 	const Quaternion& getMoveRotation() const noexcept;
 
+	float4x4 getWorldTransform() const noexcept;
+
 	void addForce(const Vector3& force) noexcept;
 	void addRelativeForce(const Vector3& force, const Vector3& axis) noexcept;
 
@@ -92,22 +106,28 @@ public:
 
 	void setPhysicsScene(PhysicsScenePtr scene) noexcept;
 
-	void setRigidbodyListener(PhysicsRigidbodyListener* listener) noexcept;
-	PhysicsRigidbodyListener* getRigidbodyListener() noexcept;
+	void setRigidbodyListener(PhysicsBodyListener* listener) noexcept;
+	PhysicsBodyListener* getRigidbodyListener() noexcept;
 
 private:
-	PhysicsRigidbody(const PhysicsRigidbody&) = delete;
-	PhysicsRigidbody& operator=(const PhysicsRigidbody&) = delete;
+	friend class PhysicsJoint;
+	friend class PhysicsScene;
+	btRigidBody* getRigidbody() noexcept;
+
+private:
+	PhysicsBody(const PhysicsBody&) = delete;
+	PhysicsBody& operator=(const PhysicsBody&) = delete;
 
 private:
 
 	std::unique_ptr<btRigidBody> _rigidbody;
 	std::unique_ptr<btDefaultMotionState> _motionState;
 
-	bool _enablejointFather;
-	bool _enableGravity;
+	std::uint8_t _layer;
+	std::uint16_t _layerMask;
 
 	bool _sleep;
+	bool _isKinematic;
 
 	float _mass;
 
@@ -127,7 +147,7 @@ private:
 	Vector3 _angularVelocity;
 
 	PhysicsSceneWeakPtr _scene;
-	PhysicsRigidbodyListener* _listener;
+	PhysicsBodyListener* _listener;
 };
 
 _NAME_END

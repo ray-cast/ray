@@ -306,11 +306,11 @@ AnimationProperty::updateBones(const Bones& bones) noexcept
 }
 
 void
-AnimationProperty::updateBoneMotion(Bones& _bones) noexcept
+AnimationProperty::updateBoneMotion(Bones& bones) noexcept
 {
-	for (std::size_t i = 0; i < _bones.size(); i++)
+	for (std::size_t i = 0; i < bones.size(); i++)
 	{
-		auto& bone = _bones[i];
+		auto& bone = bones[i];
 		const auto& motion = _bindAnimation[i];
 
 		if (motion.empty())
@@ -319,7 +319,7 @@ AnimationProperty::updateBoneMotion(Bones& _bones) noexcept
 
 			if (bone.getParent() != (-1))
 			{
-				auto& parent = _bones[bone.getParent()];
+				auto& parent = bones[bone.getParent()];
 				auto position = (bone.getPosition() - parent.getPosition());
 				float4x4 m;
 				m.makeTranslate(position);
@@ -341,50 +341,32 @@ AnimationProperty::updateBoneMotion(Bones& _bones) noexcept
 			if (bone.getParent() == (-1))
 				updateTransform(bone, bone.getPosition() + position, rotate);
 			else
-				updateTransform(bone, bone.getPosition() + position - _bones[bone.getParent()].getPosition(), rotate);
+				updateTransform(bone, bone.getPosition() + position - bones[bone.getParent()].getPosition(), rotate);
 		}
 	}
 }
 
 void
-AnimationProperty::updateBoneMatrix(Bones& _bones) noexcept
+AnimationProperty::updateBoneMatrix(Bones& bones) noexcept
 {
-	std::vector<std::int16_t> bones;
-
-	std::size_t size = _bones.size();
+	std::size_t size = bones.size();
 	for (std::intptr_t i = 0; i < size; i++)
 	{
-		std::intptr_t  parent = _bones[i].getParent();
-		if (parent > i)
-		{
-			bones.push_back(i);
-		}
+		std::intptr_t  parent = bones[i].getParent();
+		if ((std::size_t)parent > size)
+			bones[i].setTransform(bones[i].getLocalTransform());
 		else
-		{
-			if ((std::size_t)parent > size)
-				_bones[i].setTransform(_bones[i].getLocalTransform());
-			else
-				_bones[i].setTransform(math::transformMultiply(_bones[i].getLocalTransform(), _bones[parent].getTransform()));
-		}
-	}
-
-	for (std::size_t i = 0; i < bones.size(); i++)
-	{
-		std::size_t parent = _bones[i].getParent();
-		if (parent > size)
-			_bones[i].setTransform(_bones[i].getLocalTransform());
-		else
-			_bones[i].setTransform(math::transformMultiply(_bones[i].getLocalTransform(), _bones[parent].getTransform()));
+			bones[i].setTransform(math::transformMultiply(bones[i].getLocalTransform(), bones[parent].getTransform()));
 	}
 }
 
 void
-AnimationProperty::updateBoneMatrix(Bones& _bones, Bone& bone) noexcept
+AnimationProperty::updateBoneMatrix(Bones& bones, Bone& bone) noexcept
 {
 	if (bone.getParent() != (-1))
 	{
-		auto& parent = _bones.at(bone.getParent());
-		updateBoneMatrix(_bones, parent);
+		auto& parent = bones.at(bone.getParent());
+		updateBoneMatrix(bones, parent);
 		bone.setTransform(math::transformMultiply(bone.getLocalTransform(), parent.getTransform()));
 	}
 	else
@@ -394,17 +376,17 @@ AnimationProperty::updateBoneMatrix(Bones& _bones, Bone& bone) noexcept
 }
 
 void
-AnimationProperty::updateIK(Bones& _bones) noexcept
+AnimationProperty::updateIK(Bones& bones) noexcept
 {
 	for (auto& ik : _iks)
-		this->updateIK(_bones, ik);
+		this->updateIK(bones, ik);
 }
 
 void
-AnimationProperty::updateIK(Bones& _bones, const IKAttr& ik) noexcept
+AnimationProperty::updateIK(Bones& bones, const IKAttr& ik) noexcept
 {
-	auto& effector = _bones.at(ik.boneIndex);
-	auto& target = _bones.at(ik.targetBoneIndex);
+	auto& effector = bones.at(ik.boneIndex);
+	auto& target = bones.at(ik.targetBoneIndex);
 
 	Vector3 targetPos = target.getTransform().getTranslate();
 
@@ -412,7 +394,7 @@ AnimationProperty::updateIK(Bones& _bones, const IKAttr& ik) noexcept
 	{
 		for (std::uint32_t j = 0; j < ik.chainLength; j++)
 		{
-			auto& bone = _bones[ik.child[j].boneIndex];
+			auto& bone = bones[ik.child[j].boneIndex];
 
 				Vector3 effectPos = effector.getTransform().getTranslate();
 				if (math::distance(effectPos, targetPos) < 0.001)
@@ -452,8 +434,8 @@ AnimationProperty::updateIK(Bones& _bones, const IKAttr& ik) noexcept
 					updateTransform(bone, bone.getLocalTransform().getTranslate(), qq);
 				}
 
-				this->updateBoneMatrix(_bones, bone);
-				this->updateBoneMatrix(_bones, target);
+				this->updateBoneMatrix(bones, bone);
+				this->updateBoneMatrix(bones, target);
 		}
 	}
 }

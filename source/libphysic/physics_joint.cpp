@@ -38,12 +38,23 @@
 
 _NAME_BEGIN
 
+PhysicsJointListener::PhysicsJointListener() noexcept
+{
+}
+
+PhysicsJointListener::~PhysicsJointListener() noexcept
+{
+}
+
 PhysicsJoint::PhysicsJoint() noexcept
-	: _rigidbody(nullptr)
+	: _rigidbodyA(nullptr)
+	, _rigidbodyB(nullptr)
+	, _active(false)
 	, _axis(Vector3::Zero)
 	, _anchor(Vector3::Zero)
 	, _breakForce(std::numeric_limits<float>::max())
 	, _breakTorque(std::numeric_limits<float>::max())
+	, _listener(nullptr)
 {
 }
 
@@ -52,9 +63,47 @@ PhysicsJoint::~PhysicsJoint() noexcept
 }
 
 void
-PhysicsJoint::setRigidbody(PhysicsRigidbody* body) noexcept
+PhysicsJoint::setActive(bool active) except
 {
-	_rigidbody = body;
+	if (_active != active)
+	{
+		if (active)
+			this->onActivate();
+		else
+			this->onDeactivate();
+
+		_active = active;
+	}
+}
+
+bool
+PhysicsJoint::getActive() const noexcept
+{
+	return _active;
+}
+
+void
+PhysicsJoint::setRigidbody(PhysicsBody* body) noexcept
+{
+	_rigidbodyA = body;
+}
+
+PhysicsBody*
+PhysicsJoint::getRigidbody() const noexcept
+{
+	return _rigidbodyA;
+}
+
+void
+PhysicsJoint::setConnectRigidbody(PhysicsBody* body) noexcept
+{
+	_rigidbodyB = body;
+}
+
+PhysicsBody*
+PhysicsJoint::getConnectRigidbody() const noexcept
+{
+	return _rigidbodyB;
 }
 
 void
@@ -81,12 +130,6 @@ PhysicsJoint::setAnchor(const Vector3& axis) noexcept
 	_anchor = axis;
 }
 
-PhysicsRigidbody*
-PhysicsJoint::getRigidbody() const noexcept
-{
-	return _rigidbody;
-}
-
 float
 PhysicsJoint::getBreakForce() const noexcept
 {
@@ -109,6 +152,44 @@ const Vector3&
 PhysicsJoint::getAnchor() const noexcept
 {
 	return _anchor;
+}
+
+void 
+PhysicsJoint::setOwnerListener(PhysicsJointListener* listener) noexcept
+{
+	_listener = listener;
+}
+
+PhysicsJointListener* 
+PhysicsJoint::getOwnerListener() const noexcept
+{
+	return _listener;
+}
+
+btRigidBody* 
+PhysicsJoint::getRawRigidbody() const noexcept
+{
+	if (_rigidbodyA)
+		return _rigidbodyA->getRigidbody();
+	return nullptr;
+}
+
+btRigidBody* 
+PhysicsJoint::getRawConnectRigidbody() const noexcept
+{
+	if (_rigidbodyB)
+		return _rigidbodyB->getRigidbody();
+	return nullptr;
+}
+
+void
+PhysicsJoint::onActivate() except
+{
+}
+
+void
+PhysicsJoint::onDeactivate() except
+{
 }
 
 _NAME_END

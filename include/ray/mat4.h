@@ -463,16 +463,16 @@ public:
 		math::sinCos(&sh, &ch, euler.y);
 		math::sinCos(&sb, &cb, euler.z);
 
-		a1 = ch * cb + sh * sp * sb;
-		a2 = -ch * sb + sh * sp * cb;
-		a3 = sh * cp;
+		a1 = ch * cb;
+		a2 = ch * sb;
+		a3 = -sh;
 
-		b1 = sb * cp;
-		b2 = cb * cp;
-		b3 = -sp;
+		b1 = sh * sc - cs;
+		b2 = sh * ss + cc;
+		b3 = ch * sp;
 
-		c1 = -sh * cb + ch * sp * sb;
-		c2 = sb * sh + ch * sp * cb;
+		c1 = sh * cc + ss;
+		c2 = sh * cs - sc;
 		c3 = ch * cp;
 
 		d1 = 0;
@@ -673,22 +673,18 @@ public:
 
 	const Matrix4x4t<T>& getTransform(Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
 	{
-		const Matrix4x4t<T>& _this = *this;
-
 		// extract translation
 		position.x = this->a4;
 		position.y = this->b4;
 		position.z = this->c4;
 
 		// extract rotation
-		rotation = Quaterniont<T>((Matrix3x3t<T>)_this);
+		rotation = Quaterniont<T>((Matrix3x3t<T>)*this);
 		return *this;
 	}
 
 	const Matrix4x4t<T>& getTransform(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
 	{
-		const Matrix4x4t<T>& _this = *this;
-
 		// extract translation
 		position.x = this->a4;
 		position.y = this->b4;
@@ -1283,13 +1279,13 @@ namespace math
 	}
 
 	template<typename T>
-	inline Matrix4x4t<T> transformInverse(const Matrix4x4t<T>& _m) noexcept
+	Matrix4x4t<T> transformInverse(const Matrix4x4t<T>& _m) noexcept
 	{
 		Matrix4x4t<T> m;
 
-		const T det = (_m.a1 * _m.b2 - _m.a2 * _m.b1) * _m.c3 - 
-			          (_m.a1 * _m.b3 + _m.a3 * _m.b1) * _m.c2 + 
-			          (_m.a2 * _m.b3 - _m.a3 * _m.b2) * _m.c1;
+		const T det = (_m.a1 * _m.b2 - _m.a2 * _m.b1) * _m.c3 -
+					  (_m.a1 * _m.b3 - _m.a3 * _m.b1) * _m.c2 +
+					  (_m.a2 * _m.b3 - _m.a3 * _m.b2) * _m.c1;
 
 		if (det == static_cast<T>(0.0))
 		{
@@ -1306,22 +1302,22 @@ namespace math
 		}
 
 		const T invdet = static_cast<T>(1.0) / det;
-		m.a1 = invdet * (_m.b2 * _m.c3 + _m.b3 * -_m.c2);
+		m.a1 =  invdet * (_m.b2 * _m.c3 + _m.b3 * -_m.c2);
 		m.a2 = -invdet * (_m.a2 * _m.c3 + _m.a3 * -_m.c2);
-		m.a3 = invdet * (_m.a2 * _m.b3 + _m.a3 * -_m.b2);
+		m.a3 =  invdet * (_m.a2 * _m.b3 + _m.a3 * -_m.b2);
 		m.a4 = -invdet * (_m.a2 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c2 - _m.b2 * _m.c4) + _m.a4 * (_m.b2 * _m.c3 - _m.b3 * _m.c2));
 		m.b1 = -invdet * (_m.b1 * _m.c3 + _m.b3 * -_m.c1);
-		m.b2 = invdet * (_m.a1 * _m.c3 + _m.a3 * -_m.c1);
+		m.b2 =  invdet * (_m.a1 * _m.c3 + _m.a3 * -_m.c1);
 		m.b3 = -invdet * (_m.a1 * _m.b3 + _m.a3 * -_m.b1);
-		m.b4 = invdet * (_m.a1 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c3 - _m.b3 * _m.c1));
-		m.c1 = invdet * (_m.b1 * _m.c2 + _m.b2 * -_m.c1);
+		m.b4 =  invdet * (_m.a1 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c3 - _m.b3 * _m.c1));
+		m.c1 =  invdet * (_m.b1 * _m.c2 + _m.b2 * -_m.c1);
 		m.c2 = -invdet * (_m.a1 * _m.c2 + _m.a2 * -_m.c1);
-		m.c3 = invdet * (_m.a1 * _m.b2 + _m.a2 * -_m.b1);
+		m.c3 =  invdet * (_m.a1 * _m.b2 + _m.a2 * -_m.b1);
 		m.c4 = -invdet * (_m.a1 * (_m.b2 * _m.c4 - _m.b4 * _m.c2) + _m.a2 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
-		m.d1 = 0.0f;
-		m.d2 = 0.0f;
-		m.d3 = 0.0f;
-		m.d4 = invdet * (_m.a1 * (_m.b2 * _m.c3 - _m.b3 * _m.c2) + _m.a2 * (_m.b3 * _m.c1 - _m.b1 * _m.c3) + _m.a3 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
+		m.d1 =  0.0f;
+		m.d2 =  0.0f;
+		m.d3 =  0.0f;
+		m.d4 =  invdet * (_m.a1 * (_m.b2 * _m.c3 - _m.b3 * _m.c2) + _m.a2 * (_m.b3 * _m.c1 - _m.b1 * _m.c3) + _m.a3 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
 
 		return m;
 	}

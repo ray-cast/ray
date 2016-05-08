@@ -539,7 +539,7 @@ GameObject::addComponent(GameComponentPtr& component) except
 	assert(component);
 	assert(component->_gameObject == nullptr);
 
-	auto it = std::find_if(_components.begin(), _components.end(), [component](GameComponentPtr& it) { return component->isInstanceOf(it->rtti()); });
+	auto it = std::find(_components.begin(), _components.end(), component);
 	if (it == _components.end())
 	{
 		component->_setGameObject(this);
@@ -660,6 +660,28 @@ GameComponentPtr
 GameObject::getComponentInChildren(const rtti::Rtti& type) const noexcept
 {
 	return this->getComponentInChildren(&type);
+}
+
+void 
+GameObject::getComponentsInChildren(const rtti::Rtti* type, GameComponents& components) const noexcept
+{
+	for (auto& it : _components)
+	{
+		if (it->isA(type))
+		{
+			components.push_back(it);
+			break;
+		}			
+	}
+
+	for (auto& it : _children)
+		it->getComponentsInChildren(type, components);
+}
+
+void 
+GameObject::getComponentsInChildren(const rtti::Rtti& type, GameComponents& components) const noexcept
+{
+	return this->getComponentsInChildren(&type, components);
 }
 
 const GameComponents&

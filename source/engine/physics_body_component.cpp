@@ -35,22 +35,23 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/physics_body_component.h>
+#include <ray/physics_body.h>
 #include <ray/physics_shape_component.h>
-#include <ray/physics_rigidbody.h>
 
 _NAME_BEGIN
 
 __ImplementSubClass(PhysicsBodyComponent, GameComponent, "PhysicsBody")
 
 PhysicsBodyComponent::PhysicsBodyComponent() noexcept
-	: _enableKinematic(false)
+	: _isEnableForce(false)
+	, _isFetchResult(false)
 	, _constantForce(Vector3::Zero)
 	, _constantTorque(Vector3::Zero)
 	, _constantVelocity(Vector3::Zero)
 	, _constantAngularVelocity(Vector3::Zero)
 	, _onShapeChange(std::bind(&PhysicsBodyComponent::onShapeChange, this))
 {
-	_body = std::make_unique<PhysicsRigidbody>();
+	_body = std::make_unique<PhysicsBody>();
 	_body->setRigidbodyListener(this);
 }
 
@@ -132,6 +133,18 @@ PhysicsBodyComponent::setConstanAngularVelocity(const Vector3& value) noexcept
 }
 
 void
+PhysicsBodyComponent::setCollisionMask(std::uint16_t mask) noexcept
+{
+	_body->setLayerMask(mask);
+}
+
+std::uint16_t 
+PhysicsBodyComponent::getCollisionMask() const noexcept
+{
+	return _body->getLayerMask();
+}
+
+void
 PhysicsBodyComponent::sleep(bool sleep) noexcept
 {
 	_body->sleep(sleep);
@@ -141,6 +154,18 @@ bool
 PhysicsBodyComponent::isSleep() const noexcept
 {
 	return _body->isSleep();
+}
+
+void
+PhysicsBodyComponent::isKinematic(bool isKinematic) noexcept
+{
+	_body->isKinematic(isKinematic);
+}
+
+bool 
+PhysicsBodyComponent::isKinematic() const noexcept
+{
+	return _body->isKinematic();
 }
 
 float
@@ -239,20 +264,40 @@ PhysicsBodyComponent::addImpulse(const Vector3& force, const Vector3& axis) noex
 	_body->addImpulse(force, axis);
 }
 
+PhysicsBody* 
+PhysicsBodyComponent::getPhysicsBody() const noexcept
+{
+	return _body.get();
+}
+
+GameComponentPtr
+PhysicsBodyComponent::clone() const noexcept
+{
+	return std::make_shared<PhysicsBodyComponent>();
+}
+
 void
 PhysicsBodyComponent::_buildRigibody() noexcept
 {
-	auto collisionShape = this->getGameObject()->getComponent<PhysicsShapeComponent>();
-	if (collisionShape)
-	{
-		auto shape = collisionShape->getCollisionShape();
-		if (shape)
-		{
-			_body->setup(shape);
-			_body->setMovePosition(this->getGameObject()->getTranslate());
-			_body->setMoveRotation(this->getGameObject()->getQuaternion());
-		}
-	}
+	_body->close();
+
+	auto collisionShape = this->getComponent<PhysicsShapeComponent>();
+	if (!collisionShape)
+		return;
+
+	auto shape = collisionShape->getCollisionShape();
+	if (!shape)
+		return;
+
+	auto gameObject = this->getGameObject();
+
+	_transform.makeRotate(gameObject->getQuaternion());
+	_transform.setTranslate(gameObject->getTranslate() - gameObject->getParent()->getTranslate());
+	_transformInverse = math::transformInverse(_transform);
+
+	_body->setLayer(gameObject->getLayer());
+	_body->setTransform(this->getGameObject()->getTransform());
+	_body->setup(shape);
 }
 
 void
@@ -282,9 +327,9 @@ PhysicsBodyComponent::onDetachComponent(GameComponentPtr& component) noexcept
 }
 
 void
-PhysicsBodyComponent::onFrame() noexcept
+PhysicsBodyComponent::onFrameEnd() noexcept
 {
-	if (_enableKinematic)
+	if (_isEnableForce)
 	{
 		_body->addForce(_constantForce);
 		_body->addTorque(_constantTorque);
@@ -294,23 +339,10 @@ PhysicsBodyComponent::onFrame() noexcept
 }
 
 void
-PhysicsBodyComponent::onFrameEnd() noexcept
-{
-	if (_body)
-	{
-		this->getGameObject()->setTranslate(_body->getMovePosition());
-		this->getGameObject()->setQuaternion(_body->getMoveRotation());
-	}
-}
-
-void
 PhysicsBodyComponent::onMoveAfter() noexcept
 {
-	if (_body)
-	{
-		_body->setMovePosition(this->getGameObject()->getTranslate());
-		_body->setMoveRotation(this->getGameObject()->getQuaternion());
-	}
+	if (_body && !_isFetchResult && this->isKinematic())
+		_body->setTransform(_transform * this->getGameObject()->getParent()->getTransform());
 }
 
 void
@@ -324,10 +356,23 @@ PhysicsBodyComponent::onCollisionStay() noexcept
 {
 }
 
-GameComponentPtr
-PhysicsBodyComponent::clone() const noexcept
+void 
+PhysicsBodyComponent::onWillFetchResult() noexcept
 {
-	return std::make_shared<PhysicsBodyComponent>();
+	_isFetchResult = true;
+}
+
+void 
+PhysicsBodyComponent::onFinishFetchResult() noexcept
+{
+	_isFetchResult = false;
+}
+
+void 
+PhysicsBodyComponent::onFetchResult() noexcept
+{
+	this->getGameObject()->setTransform(_body->getWorldTransform());
+	this->getGameObject()->getParent()->setTransform(_transformInverse * _body->getWorldTransform());
 }
 
 _NAME_END

@@ -46,7 +46,7 @@ PhysicsBoxComponent::PhysicsBoxComponent() noexcept
 	_shape = std::make_shared<PhysicsShapeBox>();
 }
 
-PhysicsBoxComponent::PhysicsBoxComponent(const Vector3& size) noexcept
+PhysicsBoxComponent::PhysicsBoxComponent(const float3& size) noexcept
 {
 	_shape = std::make_shared<PhysicsShapeBox>();
 	_shape->setSize(size);
@@ -57,12 +57,12 @@ PhysicsBoxComponent::~PhysicsBoxComponent() noexcept
 }
 
 void
-PhysicsBoxComponent::setSize(const Vector3& size) noexcept
+PhysicsBoxComponent::setSize(const float3& size) noexcept
 {
 	_shape->setSize(size);
 }
 
-const Vector3&
+const float3&
 PhysicsBoxComponent::getSize() const noexcept
 {
 	return _shape->getSize();

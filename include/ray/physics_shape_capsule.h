@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_COLLIDER_CAPSULE_H_
-#define _H_COLLIDER_CAPSULE_H_
+#ifndef _H_PHYSICS_SHAPE_CAPSULE_H_
+#define _H_PHYSICS_SHAPE_CAPSULE_H_
 
 #include <ray/physics_shape.h>
 

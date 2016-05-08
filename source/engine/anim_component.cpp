@@ -220,10 +220,8 @@ AnimationComponent::_playAnimation(const std::string& filename) noexcept
 
 	auto model = loader.data();
 	if (!model && !model->hasAnimations())
-	{
 		return false;
-	}
-
+	
 	std::intptr_t i = 0;
 	std::map<std::string, std::intptr_t> boneMap;
 	for (auto& it : _transforms)

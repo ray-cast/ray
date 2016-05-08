@@ -98,7 +98,7 @@ public:
 	std::uint32_t bone;
 
 	std::uint8_t group;
-	std::uint16_t groupFlags;
+	std::uint16_t groupMask;
 	ShapeType shape;
 
 	float3 scale;

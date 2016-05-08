@@ -264,7 +264,7 @@ struct PMX_Rigidbody
 	PMX_uint32_t bone;
 
 	PMX_uint8_t group;
-	PMX_uint16_t groupFlags;
+	PMX_uint16_t groupMask;
 	PMX_uint8_t shape; // 0:Circle 1:Square 2:Capsule
 
 	PMX_Vector3 scale;
@@ -732,7 +732,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 			if (!stream.read((char*)&rigidbody.bone, pmx.header.sizeOfBone)) return false;
 			if (!stream.read((char*)&rigidbody.group, sizeof(rigidbody.group))) return false;
-			if (!stream.read((char*)&rigidbody.groupFlags, sizeof(rigidbody.groupFlags))) return false;
+			if (!stream.read((char*)&rigidbody.groupMask, sizeof(rigidbody.groupMask))) return false;
 
 			if (!stream.read((char*)&rigidbody.shape, sizeof(rigidbody.shape))) return false;
 
@@ -952,7 +952,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		body->name = name;
 		body->bone = it.bone;
 		body->group = it.group;
-		body->groupFlags = it.groupFlags;
+		body->groupMask = it.groupMask;
 		body->shape = (ShapeType)it.shape;
 		body->scale = it.scale;
 		body->position = it.position;

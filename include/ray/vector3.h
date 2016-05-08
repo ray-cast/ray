@@ -332,7 +332,7 @@ inline Vector3t<_Tx> operator/(_Ty value, const Vector3t<_Tx>& v)
 template<typename _Tx, typename _Ty>
 inline Vector3t<_Tx> operator/(const Vector3t<_Tx>& v, _Ty value)
 {
-    return Vector3t<_Tx>(v.x / value, v.y / value, v.z * value);
+    return Vector3t<_Tx>(v.x / value, v.y / value, v.z / value);
 }
 
 namespace math

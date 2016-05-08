@@ -261,10 +261,10 @@ struct PMD_Body
 {
 	PMD_uint8_t  Name[20];
 
-	PMD_uint32_t bone;
+	PMD_uint16_t bone;
 
 	PMD_uint8_t group;
-	PMD_uint16_t groupFlags;
+	PMD_uint16_t groupMask;
 	PMD_uint8_t shape; // 0:Circle 1:Square 2:Capsule
 
 	PMD_Vector3 scale;
@@ -558,7 +558,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 	{
 		pmd.joints.resize(pmd.JointCount);
 
-		if (!stream.read((char*)&pmd.joints[0], (std::streamsize)(sizeof(PMD_Body)* pmd.JointCount))) return false;
+		if (!stream.read((char*)&pmd.joints[0], (std::streamsize)(sizeof(PMD_Joint) * pmd.JointCount))) return false;
 	}
 
 	for (std::size_t index = 0; index < pmd.MaterialList.size(); index++)
@@ -654,7 +654,11 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			iconv(ic, &in, &in_size, &out, &out_size);
 			iconv_close(ic);
 
-			bone.setName(outbuf);
+			if (out_size != MAX_PATH)
+				bone.setName(outbuf);
+			else
+				bone.setName(in);
+
 			bone.setPosition(it.Position);
 			bone.setParent(it.Parent);
 
@@ -705,13 +709,16 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		iconv_close(ic);
 
 		auto body = std::make_shared<RigidbodyProperty>();
-		body->name = outbuf;
+		if (out_size != MAX_PATH)
+			body->name = outbuf;
+		else
+			body->name = in;
 		body->bone = it.bone;
 		body->group = it.group;
-		body->groupFlags = it.groupFlags;
+		body->groupMask = it.groupMask;
 		body->shape = (ShapeType)it.shape;
 		body->scale = it.scale;
-		body->position = it.position;
+		body->position = it.position + pmd.BoneList[it.bone].Position;
 		body->rotation = it.rotate;
 		body->mass = it.mass;
 		body->movementDecay = it.movementDecay;
@@ -739,7 +746,10 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		iconv_close(ic);
 
 		auto joint = std::make_shared<JointProperty>();
-		joint->name = outbuf;
+		if (out_size != MAX_PATH)
+			joint->name = outbuf;
+		else
+			joint->name = in;
 		joint->bodyIndexA = it.relatedRigidBodyIndexA;
 		joint->bodyIndexB = it.relatedRigidBodyIndexB;
 		joint->position = it.position;

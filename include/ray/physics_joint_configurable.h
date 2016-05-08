@@ -34,21 +34,21 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_JOINT_BALL_H_
-#define _H_JOINT_BALL_H_
+#ifndef _H_PHYSICS_JOINT_CONFIGURABLE_H_
+#define _H_PHYSICS_JOINT_CONFIGURABLE_H_
 
 #include <ray/physics_joint.h>
 
 _NAME_BEGIN
 
-class PhysicsJointBall final : public PhysicsJoint
+class EXPORT PhysicsJointConfigurable final : public PhysicsJoint
 {
 public:
-	PhysicsJointBall() noexcept;
-	virtual ~PhysicsJointBall() noexcept;
+	PhysicsJointConfigurable() noexcept;
+	virtual ~PhysicsJointConfigurable() noexcept;
 
-	void setup() noexcept;
-	void close() noexcept;
+	void setLinearSpring(const float3& spring) noexcept;
+	void setAngularSprint(const Quaternion& spring) noexcept;
 
 	void setLinearLowerLimit(const float3& limit) noexcept;
 	void setLinearHighLimit(const float3& limit) noexcept;
@@ -59,25 +59,29 @@ public:
 	void setMovementConstant(const float3& constant) noexcept;
 	void setRotationConstant(const float3& constant) noexcept;
 
+	const float3& getLinearSpring() const noexcept;
+	const Quaternion& getAngularSprint() const noexcept;
+
 	const float3& getLinearLowerLimit() const noexcept;
 	const float3& getLinearHighLimit() const noexcept;
 
 	const float3& getAngularLowerLimit() const noexcept;
 	const float3& getAngularHighLimit() const noexcept;
 
-	void setTransform(const float3& translate, const Quaternion& rotation) noexcept;
-	void getTransform(float3& translate, Quaternion& rotation) noexcept;
+	const float3& getMovementConstant() const noexcept;
+	const float3& getRotationConstant() const noexcept;
 
 	void setPhysicsScene(PhysicsScenePtr scene) noexcept;
 
 private:
-	PhysicsJointBall(const PhysicsJointBall&) = delete;
-	PhysicsJointBall& operator=(const PhysicsJointBall&) = delete;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
 
 private:
-	btRigidBody* _bodyA;
-	btRigidBody* _bodyB;
+	PhysicsJointConfigurable(const PhysicsJointConfigurable&) = delete;
+	PhysicsJointConfigurable& operator=(const PhysicsJointConfigurable&) = delete;
 
+private:
 	float3 _translate;
 	Quaternion _quaternion;
 

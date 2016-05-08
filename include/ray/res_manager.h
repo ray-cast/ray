@@ -62,11 +62,13 @@ public:
 private:
 	bool loadModel(const std::string& filename, ResLoader<Model>& model) noexcept;
 
-	void createMeshes(const Model& model, GameObjectPtr& object) noexcept;
-	void createBones(const Model& model, GameObjects& objects) noexcept;
-	void createMaterials(const Model& model, Materials& objects) noexcept;
-	void createRigidbodys(const Model& model, GameObjects& objects) noexcept;
-	void createJoints(const Model& model, const GameObjects& rigidbody, GameObjects& joints) noexcept;
+	void createMeshes(const Model& model, GameObjectPtr& meshes) noexcept;
+	void createBones(const Model& model, GameObjects& bones) noexcept;
+	void createAnimation(const Model& model, GameObjectPtr& gameObject, GameObjects& bones, const std::string& file) noexcept;
+	void createMaterials(const Model& model, Materials& materials) noexcept;
+	void createRigidbodys(const Model& model, GameObjects& rigidbodys) noexcept;
+	void createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, GameObjects& bones);
+	void createJoints(const Model& model, const GameObjects& rigidbodys, GameObjects& joints) noexcept;
 
 private:
 	MaterialPtr _buildDefaultMaterials(const MaterialProperty& material, const std::string& file, const std::string& directory) noexcept;

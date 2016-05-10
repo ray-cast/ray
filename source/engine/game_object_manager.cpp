@@ -44,7 +44,6 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameObjectManager, GameFeature, "GameObjectManager")
 __ImplementSingleton(GameObjectManager)
 
 GameObjectManager::GameObjectManager() noexcept
@@ -88,12 +87,11 @@ GameObjectManager::_activeObject(GameObject* entity, bool active) noexcept
 	}
 	else
 	{
-		std::size_t size = _activeActors.size();
-		for (std::size_t i = 0; i < size; i++)
+		for (auto& actor : _activeActors)
 		{
-			if (_activeActors[i] == entity)
+			if (actor == entity)
 			{
-				_activeActors[i] = nullptr;
+				actor = nullptr;
 				_hasEmptyActors = true;
 				break;
 			}

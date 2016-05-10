@@ -500,6 +500,8 @@ TerrainComponent::onActivate() except
 			_chunks.push_back(chunk);
 		}
 	}
+
+	this->addComponentDispatch(ray::GameDispatchType::GameDispatchTypeFrameEnd, this);
 }
 
 void
@@ -507,6 +509,8 @@ TerrainComponent::onDeactivate() noexcept
 {
 	_chunks.clear();
 	_itmes.clear();
+
+	this->removeComponentDispatch(ray::GameDispatchType::GameDispatchTypeFrame, this);
 }
 
 void

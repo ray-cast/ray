@@ -48,25 +48,28 @@
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class GameScene> GameScenePtr;
-typedef std::shared_ptr<class GameObject> GameObjectPtr;
-typedef std::shared_ptr<class GameComponent> GameComponentPtr;
-typedef std::shared_ptr<class GameFeature> GameFeaturePtr;
-typedef std::shared_ptr<class GameServer> GameServerPtr;
-typedef std::shared_ptr<class GameApplication> GameApplicationPtr;
+class GameServer;
+class GameFeature;
+class GameApplication;
+class GameScene;
+class GameSceneManager;
+class GameObject;
+class GameObjectManager;
+class GameComponent;
 
-typedef std::weak_ptr<class MessageListener> MessageListenerWeakPtr;
-typedef std::weak_ptr<class GameScene> GameSceneWeakPtr;
-typedef std::weak_ptr<class GameObject> GameObjectWeakPtr;
-typedef std::weak_ptr<class GameComponent> GameComponentWeakPtr;
-typedef std::weak_ptr<class GameFeature> GameFeatureWeakPtr;
-typedef std::weak_ptr<class GameServer> GameServerWeakPtr;
-typedef std::weak_ptr<class GameApplication> GameApplicationWeakPtr;
+typedef std::shared_ptr<GameScene> GameScenePtr;
+typedef std::shared_ptr<GameObject> GameObjectPtr;
+typedef std::shared_ptr<GameComponent> GameComponentPtr;
+typedef std::shared_ptr<GameFeature> GameFeaturePtr;
+typedef std::shared_ptr<GameServer> GameServerPtr;
+typedef std::shared_ptr<GameApplication> GameApplicationPtr;
 
-typedef std::shared_ptr<class PhysicsShape> PhysicsShapePtr;
-typedef std::shared_ptr<class PhysicsBodyComponent> PhysicsBodyComponentPtr;
-typedef std::shared_ptr<class PhysicsCharacterComponent> PhysicsCharacterComponentPtr;
-typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
+typedef std::weak_ptr<GameScene> GameSceneWeakPtr;
+typedef std::weak_ptr<GameObject> GameObjectWeakPtr;
+typedef std::weak_ptr<GameComponent> GameComponentWeakPtr;
+typedef std::weak_ptr<GameFeature> GameFeatureWeakPtr;
+typedef std::weak_ptr<GameServer> GameServerWeakPtr;
+typedef std::weak_ptr<GameApplication> GameApplicationWeakPtr;
 
 typedef std::vector<GameScenePtr> GameScenes;
 typedef std::vector<GameObjectPtr> GameObjects;
@@ -74,6 +77,19 @@ typedef std::vector<GameComponentPtr> GameComponents;
 typedef std::vector<GameFeaturePtr> GameFeatures;
 
 typedef void* WindHandle;
+
+enum GameDispatchType
+{
+	GameDispatchTypeFrameBegin,
+	GameDispatchTypeFrame,
+	GameDispatchTypeFrameEnd,
+	GameDispatchTypeMoveBefore,
+	GameDispatchTypeMoveAfter,
+	GameDispatchTypeBeginRange = GameDispatchTypeFrameBegin,
+	GameDispatchTypeEndRange = GameDispatchTypeMoveAfter,
+	GameDispatchTypeRangeSize = (GameDispatchTypeEndRange - GameDispatchTypeBeginRange + 1),
+	GameDispatchTypeMaxEnum = 0x7FFFFFFF
+};
 
 _NAME_END
 

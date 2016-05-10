@@ -149,6 +149,8 @@ SkinnedMeshRenderComponent::onActivate() except
 
 	this->addPreRenderListener(&_onMeshWillRender);
 
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeFrameEnd, this);
+
 	MeshRenderComponent::onActivate();
 }
 
@@ -161,6 +163,8 @@ SkinnedMeshRenderComponent::onDeactivate() noexcept
 
 	_mesh.reset();
 	_jointData.reset();
+
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeFrameEnd, this);
 }
 
 void 
@@ -203,13 +207,15 @@ SkinnedMeshRenderComponent::onMeshWillRender(class RenderPipeline&) noexcept
 			auto& bindposes = _mesh->getBindposes();
 			if (bindposes.size() != _transforms.size())
 			{
-				*data++ = float4x4::One;
+				std::size_t size = _transforms.size();
+				for (std::size_t i = 0; i < size; ++i)
+					*data++ = float4x4::One;
 			}
 			else
 			{
 				std::size_t index = 0;
 				for (auto& transform : _transforms)
-					*data++ = math::transformMultiply(bindposes[index++], transform->getTransform());
+					*data++ = math::transformMultiply(transform->getTransform(), bindposes[index++]);
 			}
 		}
 
@@ -226,9 +232,7 @@ SkinnedMeshRenderComponent::onFrameEnd() noexcept
 
 	AABB aabb;
 	for (auto& transform : _transforms)
-	{
 		aabb.encapsulate(transform->getTranslate());
-	}
 
 	_boundingBox.set(aabb);
 

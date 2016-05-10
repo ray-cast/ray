@@ -337,6 +337,8 @@ CameraComponent::save(oarchive& write) noexcept
 void
 CameraComponent::onActivate() noexcept
 {
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	_camera->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
 	_camera->setTransform(
 		this->getGameObject()->getTransform(),
@@ -348,6 +350,8 @@ CameraComponent::onActivate() noexcept
 void
 CameraComponent::onDeactivate() noexcept
 {
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	_camera->setRenderScene(nullptr);
 }
 

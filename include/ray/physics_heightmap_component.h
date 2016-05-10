@@ -41,7 +41,6 @@
 
 _NAME_BEGIN
 
-class PhysicsShapeTerrain;
 class EXPORT PhysicsHeightMapComponent final : public PhysicsShapeComponent
 {
 	__DeclareSubClass(PhysicsHeightMapComponent, PhysicsShapeComponent)
@@ -72,8 +71,7 @@ private:
 	virtual void onDeactivate() noexcept;
 
 private:
-
-	std::shared_ptr<PhysicsShapeTerrain> _shape;
+	PhysicsShapeTerrainPtr _shape;
 };
 
 _NAME_END

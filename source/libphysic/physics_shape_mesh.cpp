@@ -35,8 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/physics_shape_mesh.h>
-
-#include <btBulletCollisionCommon.h>
+#include "bullet_types.h"
 
 _NAME_BEGIN
 
@@ -106,7 +105,7 @@ PhysicsShapeMesh::addMesh(const Vector3Array& vertices, const UintArray& face) n
 	{
 		auto array = new btTriangleMesh;
 
-		for (std::size_t i = 0; i < mesh.m_numVertices; i += 3)
+		for (int i = 0; i < mesh.m_numVertices; i += 3)
 		{
 			btVector3 v1;
 			v1.setX(vertices[i].x);

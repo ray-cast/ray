@@ -37,8 +37,7 @@
 #ifndef _H_PHYSIC_SHAPE_COMPONENT_H_
 #define _H_PHYSIC_SHAPE_COMPONENT_H_
 
-#include <ray/game_component.h>
-#include <ray/physics_shape.h>
+#include <ray/physics_forward.h>
 
 _NAME_BEGIN
 
@@ -60,7 +59,7 @@ private:
 	virtual PhysicsShapePtr getCollisionShape() noexcept = 0;
 
 private:
-	delegate<void()> _onShapeChange;
+	delegate<void()> _onCollisionChange;
 };
 
 _NAME_END

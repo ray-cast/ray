@@ -41,9 +41,8 @@
 
 _NAME_BEGIN
 
-class EXPORT GameObjectManager final : public GameFeature
+class EXPORT GameObjectManager final
 {
-	__DeclareSubClass(GameObjectManager, GameFeature)
 	__DeclareSingleton(GameObjectManager)
 public:
 	GameObjectManager() noexcept;

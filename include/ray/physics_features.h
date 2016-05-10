@@ -37,7 +37,7 @@
 #ifndef _H_PHYSIC_FEATURES_H_
 #define _H_PHYSIC_FEATURES_H_
 
-#include <ray/game_features.h>
+#include <ray/physics_forward.h>
 
 _NAME_BEGIN
 

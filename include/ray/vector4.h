@@ -447,26 +447,6 @@ public:
 		return *this;
 	}
 
-	template<typename ostream>
-	ostream& operator << (ostream& os)
-	{
-		os << x << ", " << y << ", " << z << ", " << w;
-		return os;
-	}
-
-	template<typename istream>
-	istream& operator >> (istream& is)
-	{
-		is >> x;
-		is.ignore(2);
-		is >> y;
-		is.ignore(2);
-		is >> z;
-		is.ignore(2);
-		is >> w;
-		return is;
-	}
-
 	T& getComponent(unsigned char index)
 	{
 		switch (index)
@@ -499,13 +479,18 @@ template<typename T> const Vector4t<T> Vector4t<T>::UnitZ = Vector4t<T>((T)0.0, 
 template<typename T>
 inline bool operator==(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
 {
-	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z && v1.w == v2.w;
+    constexpr T epsilon = EPSILON_E4;
+    return
+        v1.x + epsilon >= v2.x && v1.x - epsilon <= v2.x &&
+        v1.y + epsilon >= v2.y && v1.y - epsilon <= v2.y &&
+        v1.z + epsilon >= v2.z && v1.z - epsilon <= v2.z &&
+        v1.w + epsilon >= v2.w && v1.w - epsilon <= v2.w;
 }
 
 template<typename T>
 inline bool operator!=(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
 {
-	return v1.x != v2.x || v1.y != v2.y || v1.z != v2.z || v1.w != v2.w;
+	return !(v1 == v2);
 }
 
 template<typename T>
@@ -578,6 +563,26 @@ template<typename T>
 inline Vector4t<T> operator/(const Vector4t<T>& v1, T scale) noexcept
 {
 	return Vector4t<T>(v1.x / scale, v1.y / scale, v1.z / scale, v1.w / scale);
+}
+
+template<typename ostream, typename T>
+inline ostream& operator << (ostream& os, const Vector4t<T>& v)
+{
+    os << v.x << ", " << v.y << ", " << v.z << ", " << v.w;
+    return os;
+}
+
+template<typename istream, typename T>
+inline istream& operator >> (istream& is, Vector4t<T>& v)
+{
+    is >> v.x;
+    is.ignore(2);
+    is >> v.y;
+    is.ignore(2);
+    is >> v.z;
+    is.ignore(2);
+    is >> v.w;
+    return is;
 }
 
 namespace math

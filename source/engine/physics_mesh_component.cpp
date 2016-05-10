@@ -43,7 +43,7 @@ _NAME_BEGIN
 __ImplementSubClass(PhysicsMeshComponent, PhysicsShapeComponent, "PhysicsMesh")
 
 PhysicsMeshComponent::PhysicsMeshComponent() noexcept
-	: _onShapeChange(std::bind(&PhysicsMeshComponent::onMeshChange, this))
+	: _onCollisionChange(std::bind(&PhysicsMeshComponent::onMeshChange, this))
 {
 }
 
@@ -62,14 +62,14 @@ void
 PhysicsMeshComponent::onAttachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
-		component->downcast<MeshComponent>()->addMeshChangeListener(&_onShapeChange);
+		component->downcast<MeshComponent>()->addMeshChangeListener(&_onCollisionChange);
 }
 
 void
 PhysicsMeshComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
-		component->downcast<MeshComponent>()->removeMeshChangeListener(&_onShapeChange);
+		component->downcast<MeshComponent>()->removeMeshChangeListener(&_onCollisionChange);
 }
 
 void

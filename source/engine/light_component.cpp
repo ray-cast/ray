@@ -240,6 +240,8 @@ LightComponent::clone() const noexcept
 void
 LightComponent::onActivate() noexcept
 {
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	_light->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
 	_light->setTransform(
 		this->getGameObject()->getTransform(),
@@ -251,6 +253,8 @@ LightComponent::onActivate() noexcept
 void
 LightComponent::onDeactivate() noexcept
 {
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	_light->setRenderScene(nullptr);
 }
 

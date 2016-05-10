@@ -38,10 +38,10 @@
                 in float4 BlendIndice : BLENDINDICES,
                 out float4 oPosition : SV_Position)
             {
-                oPosition = mul(Position, bindpose[(uint)BlendIndice.x]) * BlendWeight.x;
-                oPosition += mul(Position, bindpose[(uint)BlendIndice.y]) * BlendWeight.y;
-                oPosition += mul(Position, bindpose[(uint)BlendIndice.z]) * BlendWeight.z;
-                oPosition += mul(Position, bindpose[(uint)BlendIndice.w]) * BlendWeight.w;
+                oPosition = mul(bindpose[(uint)BlendIndice.x], Position) * BlendWeight.x;
+                oPosition += mul(bindpose[(uint)BlendIndice.y], Position) * BlendWeight.y;
+                oPosition += mul(bindpose[(uint)BlendIndice.z], Position) * BlendWeight.z;
+                oPosition += mul(bindpose[(uint)BlendIndice.w], Position) * BlendWeight.w;
                 oPosition = mul(oPosition, matModelViewProject);
             }
 
@@ -59,15 +59,15 @@
                 out float2 oTexcoord : TEXCOORD1,
                 out float4 oPosition : SV_Position)
             {
-                oPosition = mul(Position, bindpose[(uint)BlendIndice.x]) * BlendWeight.x;
-                oPosition += mul(Position, bindpose[(uint)BlendIndice.y]) * BlendWeight.y;
-                oPosition += mul(Position, bindpose[(uint)BlendIndice.z]) * BlendWeight.z;
-                oPosition += mul(Position, bindpose[(uint)BlendIndice.w]) * BlendWeight.w;
+                oPosition = mul(bindpose[(uint)BlendIndice.x], Position) * BlendWeight.x;
+                oPosition += mul(bindpose[(uint)BlendIndice.y], Position) * BlendWeight.y;
+                oPosition += mul(bindpose[(uint)BlendIndice.z], Position) * BlendWeight.z;
+                oPosition += mul(bindpose[(uint)BlendIndice.w], Position) * BlendWeight.w;
 
-                oNormal = mul(Normal, (float3x3)bindpose[(uint)BlendIndice.x]) * BlendWeight.x;
-                oNormal += mul(Normal, (float3x3)bindpose[(uint)BlendIndice.y]) * BlendWeight.y;
-                oNormal += mul(Normal, (float3x3)bindpose[(uint)BlendIndice.z]) * BlendWeight.z;
-                oNormal += mul(Normal, (float3x3)bindpose[(uint)BlendIndice.w]) * BlendWeight.w;
+                oNormal = mul((float3x3)bindpose[(uint)BlendIndice.x], Normal) * BlendWeight.x;
+                oNormal += mul((float3x3)bindpose[(uint)BlendIndice.y], Normal) * BlendWeight.y;
+                oNormal += mul((float3x3)bindpose[(uint)BlendIndice.z], Normal) * BlendWeight.z;
+                oNormal += mul((float3x3)bindpose[(uint)BlendIndice.w], Normal) * BlendWeight.w;
                 oNormal = mul(oNormal, (float3x3)matView);
 
                 oTexcoord = Texcoord;

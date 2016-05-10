@@ -103,12 +103,16 @@ PhysicsCharacterComponent::onActivate() noexcept
 {
 	_character->setup();
 	_character->setMovePosition(this->getGameObject()->getTranslate());
+
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeFrameEnd, this);
 }
 
 void
 PhysicsCharacterComponent::onDeactivate() noexcept
 {
 	_character->close();
+
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeFrameEnd, this);
 }
 
 void

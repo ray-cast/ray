@@ -83,33 +83,17 @@ public:
 		d1 = 0.0f; d2 = 0.0f; d3 = 0.0f; d4 = 1.0f;
 	}
 
-	explicit Matrix4x4t(Matrix3x3t<T>&& m) noexcept
-	{
-		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0f;
-		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0f;
-		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = 0.0f;
-		d1 = 0.0f; d2 = 0.0f; d3 = 0.0f; d4 = 1.0f;
-	}
-
 	template <typename S>
 	explicit operator Matrix4x4t<S>() const noexcept
 	{
 		return Matrix4x4t<S>(
-			static_cast<S>(a1), static_cast<S>(a2), static_cast<S>(a3), static_cast<S>(a4),
-			static_cast<S>(b1), static_cast<S>(b2), static_cast<S>(b3), static_cast<S>(b4),
-			static_cast<S>(c1), static_cast<S>(c2), static_cast<S>(c3), static_cast<S>(c4),
-			static_cast<S>(d1), static_cast<S>(d2), static_cast<S>(d3), static_cast<S>(d4));
+			S(a1), S(a2), S(a3), S(a4),
+			S(b1), S(b2), S(b3), S(b4),
+			S(c1), S(c2), S(c3), S(c4),
+			S(d1), S(d2), S(d3), S(d4));
 	}
 
 	Matrix4x4t& operator=(const Matrix3x3t<T>& m) noexcept
-	{
-		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0f;
-		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0f;
-		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = 0.0f;
-		d1 = 0.0f; d2 = 0.0f; d3 = 0.0f; d4 = 1.0f;
-	}
-
-	Matrix4x4t& operator=(Matrix3x3t<T>&& m) noexcept
 	{
 		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0f;
 		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0f;
@@ -144,22 +128,22 @@ public:
 
 	Matrix4x4t<T>& set(T mt00, T mt01, T mt02, T mt03, T mt10, T mt11, T mt12, T mt13, T mt20, T mt21, T mt22, T mt23, T mt30, T mt31, T mt32, T mt33) noexcept
 	{
-		a1 = static_cast<T>(mt00);
-		a2 = static_cast<T>(mt01);
-		a3 = static_cast<T>(mt02);
-		a4 = static_cast<T>(mt03);
-		b1 = static_cast<T>(mt10);
-		b2 = static_cast<T>(mt11);
-		b3 = static_cast<T>(mt12);
-		b4 = static_cast<T>(mt13);
-		c1 = static_cast<T>(mt20);
-		c2 = static_cast<T>(mt21);
-		c3 = static_cast<T>(mt22);
-		c4 = static_cast<T>(mt23);
-		d1 = static_cast<T>(mt30);
-		d2 = static_cast<T>(mt31);
-		d3 = static_cast<T>(mt32);
-		d4 = static_cast<T>(mt33);
+		a1 = T(mt00);
+		a2 = T(mt01);
+		a3 = T(mt02);
+		a4 = T(mt03);
+		b1 = T(mt10);
+		b2 = T(mt11);
+		b3 = T(mt12);
+		b4 = T(mt13);
+		c1 = T(mt20);
+		c2 = T(mt21);
+		c3 = T(mt22);
+		c4 = T(mt23);
+		d1 = T(mt30);
+		d2 = T(mt31);
+		d3 = T(mt32);
+		d4 = T(mt33);
 		return *this;
 	}
 
@@ -220,63 +204,6 @@ public:
 			- a4*b2*c3*d1 + a4*b2*c1*d3 - a4*b3*c1*d2 + a4*b3*c2*d1;
 	}
 
-	bool isIdentity() const noexcept
-	{
-		const static T epsilon = 10e-3f;
-
-		return (
-			a2 <= epsilon && a2 >= -epsilon &&
-			a3 <= epsilon && a3 >= -epsilon &&
-			b1 <= epsilon && b1 >= -epsilon &&
-			b3 <= epsilon && b3 >= -epsilon &&
-			c1 <= epsilon && c1 >= -epsilon &&
-			c2 <= epsilon && c2 >= -epsilon &&
-			a4 <= epsilon && a4 >= -epsilon &&
-			b4 <= epsilon && b4 >= -epsilon &&
-			c4 <= epsilon && c4 >= -epsilon &&
-			a1 <= 1.f + epsilon && a1 >= 1.f - epsilon &&
-			b2 <= 1.f + epsilon && b2 >= 1.f - epsilon &&
-			c3 <= 1.f + epsilon && c3 >= 1.f - epsilon);
-	}
-
-	bool isOnlyTranslate() const noexcept
-	{
-		const static T epsilon = 10e-3f;
-
-		return (
-			a2 <= epsilon && a2 >= -epsilon &&
-			a3 <= epsilon && a3 >= -epsilon &&
-			b1 <= epsilon && b1 >= -epsilon &&
-			b3 <= epsilon && b3 >= -epsilon &&
-			c1 <= epsilon && c1 >= -epsilon &&
-			c2 <= epsilon && c2 >= -epsilon &&
-			a4 >= epsilon &&
-			b4 >= epsilon &&
-			c4 >= epsilon &&
-			a1 <= 1.f + epsilon && a1 >= 1.f - epsilon &&
-			b2 <= 1.f + epsilon && b2 >= 1.f - epsilon &&
-			c3 <= 1.f + epsilon && c3 >= 1.f - epsilon);
-	}
-
-	bool isOnlyRotateAndTranslate() const noexcept
-	{
-		const static T epsilon = 10e-3f;
-
-		return (
-			a1 <= 1.f + epsilon && a1 >= 1.f - epsilon &&
-			a2 <= 1.f + epsilon && a2 >= 1.f - epsilon &&
-			a3 <= 1.f + epsilon && a3 >= 1.f - epsilon &&
-			b1 <= 1.f + epsilon && b1 >= 1.f - epsilon &&
-			b2 <= 1.f + epsilon && b2 >= 1.f - epsilon &&
-			b3 <= 1.f + epsilon && b3 >= 1.f - epsilon &&
-			c1 <= 1.f + epsilon && c1 >= 1.f - epsilon &&
-			c2 <= 1.f + epsilon && c2 >= 1.f - epsilon &&
-			c3 <= 1.f + epsilon && c3 >= 1.f - epsilon &&
-			a4 >= epsilon &&
-			b4 >= epsilon &&
-			c4 >= epsilon);
-	}
-
 	Matrix4x4t<T>& applyMatrix(const Matrix4x4t<T>& m) noexcept
 	{
 		Matrix4x4t matrix(*this);
@@ -286,22 +213,25 @@ public:
 
 	Matrix4x4t<T>& multiplyMatrices(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noexcept
 	{
-		a1 = m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3 + m1.d1 * m2.a4;
-		a2 = m1.a2 * m2.a1 + m1.b2 * m2.a2 + m1.c2 * m2.a3 + m1.d2 * m2.a4;
-		a3 = m1.a3 * m2.a1 + m1.b3 * m2.a2 + m1.c3 * m2.a3 + m1.d3 * m2.a4;
-		a4 = m1.a4 * m2.a1 + m1.b4 * m2.a2 + m1.c4 * m2.a3 + m1.d4 * m2.a4;
-		b1 = m1.a1 * m2.b1 + m1.b1 * m2.b2 + m1.c1 * m2.b3 + m1.d1 * m2.b4;
-		b2 = m1.a2 * m2.b1 + m1.b2 * m2.b2 + m1.c2 * m2.b3 + m1.d2 * m2.b4;
-		b3 = m1.a3 * m2.b1 + m1.b3 * m2.b2 + m1.c3 * m2.b3 + m1.d3 * m2.b4;
-		b4 = m1.a4 * m2.b1 + m1.b4 * m2.b2 + m1.c4 * m2.b3 + m1.d4 * m2.b4;
-		c1 = m1.a1 * m2.c1 + m1.b1 * m2.c2 + m1.c1 * m2.c3 + m1.d1 * m2.c4;
-		c2 = m1.a2 * m2.c1 + m1.b2 * m2.c2 + m1.c2 * m2.c3 + m1.d2 * m2.c4;
-		c3 = m1.a3 * m2.c1 + m1.b3 * m2.c2 + m1.c3 * m2.c3 + m1.d3 * m2.c4;
-		c4 = m1.a4 * m2.c1 + m1.b4 * m2.c2 + m1.c4 * m2.c3 + m1.d4 * m2.c4;
-		d1 = m1.a1 * m2.d1 + m1.b1 * m2.d2 + m1.c1 * m2.d3 + m1.d1 * m2.d4;
-		d2 = m1.a2 * m2.d1 + m1.b2 * m2.d2 + m1.c2 * m2.d3 + m1.d2 * m2.d4;
-		d3 = m1.a3 * m2.d1 + m1.b3 * m2.d2 + m1.c3 * m2.d3 + m1.d3 * m2.d4;
-		d4 = m1.a4 * m2.d1 + m1.b4 * m2.d2 + m1.c4 * m2.d3 + m1.d4 * m2.d4;
+		this->a1 = m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3 + m1.d1 * m2.a4;
+		this->a2 = m1.a2 * m2.a1 + m1.b2 * m2.a2 + m1.c2 * m2.a3 + m1.d2 * m2.a4;
+		this->a3 = m1.a3 * m2.a1 + m1.b3 * m2.a2 + m1.c3 * m2.a3 + m1.d3 * m2.a4;
+		this->a4 = m1.a4 * m2.a1 + m1.b4 * m2.a2 + m1.c4 * m2.a3 + m1.d4 * m2.a4;
+
+		this->b1 = m1.a1 * m2.b1 + m1.b1 * m2.b2 + m1.c1 * m2.b3 + m1.d1 * m2.b4;
+		this->b2 = m1.a2 * m2.b1 + m1.b2 * m2.b2 + m1.c2 * m2.b3 + m1.d2 * m2.b4;
+		this->b3 = m1.a3 * m2.b1 + m1.b3 * m2.b2 + m1.c3 * m2.b3 + m1.d3 * m2.b4;
+		this->b4 = m1.a4 * m2.b1 + m1.b4 * m2.b2 + m1.c4 * m2.b3 + m1.d4 * m2.b4;
+
+		this->c1 = m1.a1 * m2.c1 + m1.b1 * m2.c2 + m1.c1 * m2.c3 + m1.d1 * m2.c4;
+		this->c2 = m1.a2 * m2.c1 + m1.b2 * m2.c2 + m1.c2 * m2.c3 + m1.d2 * m2.c4;
+		this->c3 = m1.a3 * m2.c1 + m1.b3 * m2.c2 + m1.c3 * m2.c3 + m1.d3 * m2.c4;
+		this->c4 = m1.a4 * m2.c1 + m1.b4 * m2.c2 + m1.c4 * m2.c3 + m1.d4 * m2.c4;
+
+		this->d1 = m1.a1 * m2.d1 + m1.b1 * m2.d2 + m1.c1 * m2.d3 + m1.d1 * m2.d4;
+		this->d2 = m1.a2 * m2.d1 + m1.b2 * m2.d2 + m1.c2 * m2.d3 + m1.d2 * m2.d4;
+		this->d3 = m1.a3 * m2.d1 + m1.b3 * m2.d2 + m1.c3 * m2.d3 + m1.d3 * m2.d4;
+		this->d4 = m1.a4 * m2.d1 + m1.b4 * m2.d2 + m1.c4 * m2.d3 + m1.d4 * m2.d4;
 		return *this;
 	}
 
@@ -319,38 +249,51 @@ public:
 	Matrix4x4t<T>& makeTranslate(T x, T y) noexcept { return makeTranslate(x, y, 0); }
 	Matrix4x4t<T>& makeTranslate(T x, T y, T z) noexcept
 	{
-		set(1, 0, 0, x,
-			0, 1, 0, y,
-			0, 0, 1, z,
-			0, 0, 0, 1);
+		set(1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			x, y, z, 1);
 		return *this;
 	}
 
-	Matrix4x4t<T>& setTranslate(const Vector2t<T>& pt) noexcept { return setTranslate(pt.x, pt.y, 0); }
+	Matrix4x4t<T>& setTranslate(const Vector2t<T>& pt) noexcept { return setTranslate(pt.x, pt.y); }
 	Matrix4x4t<T>& setTranslate(const Vector3t<T>& pt) noexcept { return setTranslate(pt.x, pt.y, pt.z); }
-	Matrix4x4t<T>& setTranslate(T x, T y) noexcept { return setTranslate(x, y); }
+	Matrix4x4t<T>& setTranslate(T x, T y) noexcept
+	{
+		d1 = x;
+		d2 = y;
+		return *this;
+	}
+
 	Matrix4x4t<T>& setTranslate(T x, T y, T z) noexcept
 	{
-		a4 = x;
-		b4 = y;
-		c4 = z;
+		d1 = x;
+		d2 = y;
+		d3 = z;
 		return *this;
 	}
 
 	Matrix4x4t<T>& translate(const Vector2t<T>& pt) noexcept { return translate(pt.x, pt.y, 0); }
 	Matrix4x4t<T>& translate(const Vector3t<T>& pt) noexcept { return translate(pt.x, pt.y, pt.z); }
-	Matrix4x4t<T>& translate(T x, T y) noexcept { return translate(x, y, 0); }
-	Matrix4x4t<T>& translate(T x, T y, T z) noexcept
+	Matrix4x4t<T>& translate(T x, T y) noexcept
 	{
-		a4 += x;
-		b4 += y;
-		c4 += z;
+		d1 += x;
+		d2 += y;
+		d3 += z;
 		return *this;
 	}
 
-	Vector3t<T> getTranslate() const noexcept
+	Matrix4x4t<T>& translate(T x, T y, T z) noexcept
 	{
-		return Vector3t<T>(a4, b4, c4);
+		d1 += x;
+		d2 += y;
+		d3 += z;
+		return *this;
+	}
+
+	const Vector3t<T>& getTranslate() const noexcept
+	{
+		return *(Vector3t<T>*)&d1;
 	}
 
 	Matrix4x4t<T>& makeScale(const Vector2t<T>& sz) noexcept { return makeScale(sz.x, sz.y, 1.0f); }
@@ -388,18 +331,16 @@ public:
 	{
 		Vector3t<T> vRows[3] =
 		{
-			Vector3t<T>(this->a1, this->b1, this->c1),
-			Vector3t<T>(this->a2, this->b2, this->c2),
-			Vector3t<T>(this->a3, this->b3, this->c3)
+			Vector3t<T>(this->a1, this->a2, this->a3),
+			Vector3t<T>(this->b1, this->b2, this->b3),
+			Vector3t<T>(this->c1, this->c2, this->c3)
 		};
 
-		// extract the scaling factors
 		Vector3t<T> scaling;
 		scaling.x = vRows[0].length();
 		scaling.y = vRows[1].length();
 		scaling.z = vRows[2].length();
 
-		// and the sign of the scaling
 		if (determinant() < 0)
 		{
 			scaling.x = -scaling.x;
@@ -455,25 +396,28 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotate(const EulerAnglest<T>& euler) noexcept
+	Matrix4x4t<T>& makeRotateXYZ(T eulerX, T eulerY, T eulerZ) noexcept
 	{
 		T sh, ch, sp, cp, sb, cb;
 
-		math::sinCos(&sp, &cp, euler.x);
-		math::sinCos(&sh, &ch, euler.y);
-		math::sinCos(&sb, &cb, euler.z);
+		math::sinCos(&sp, &cp, DEG_TO_RAD(eulerX));
+		math::sinCos(&sh, &ch, DEG_TO_RAD(eulerY));
+		math::sinCos(&sb, &cb, DEG_TO_RAD(eulerZ));
 
 		a1 = ch * cb;
-		a2 = ch * sb;
-		a3 = -sh;
+		b1 = ch * sb;
+		c1 = -sh;
+		d1 = 0.f;
 
-		b1 = sh * sc - cs;
+		a2 = sh * sc - cs;
 		b2 = sh * ss + cc;
-		b3 = ch * sp;
+		c2 = ch * sp;
+		d2 = 0.f;
 
-		c1 = sh * cc + ss;
-		c2 = sh * cs - sc;
+		a3 = sh * cc + ss;
+		b3 = sh * cs - sc;
 		c3 = ch * cp;
+		d3 = 0.f;
 
 		d1 = 0;
 		d2 = 0;
@@ -483,50 +427,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotateEulerAngles(T x, T y, T z) noexcept
-	{
-		EulerAnglest<T> euler(x, y, z);
-		this->makeRotate(euler);
-		return *this;
-	}
-
-	Matrix4x4t<T>& makeRotateEulerAngles(const Vector3t<T>& xyz) noexcept
-	{
-		EulerAnglest<T> euler(xyz);
-		this->makeRotate(euler);
-	}
-
-	Matrix4x4t<T>& makeRotate(T angle, T x, T y, T z) noexcept
-	{
-		return makeRotate(angle, Vector3t<T>(x, y, z));
-	}
-
-	Matrix4x4t<T>& makeRotate(const Quaterniont<T>& q) noexcept
-	{
-		a1 = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
-		a2 = 2.0f * (q.x * q.y - q.z * q.w);
-		a3 = 2.0f * (q.x * q.z + q.y * q.w);
-		a4 = 0;
-
-		b1 = 2.0f * (q.x * q.y + q.z * q.w);
-		b2 = 1.0f - 2.0f * (q.x * q.x + q.z * q.z);
-		b3 = 2.0f * (q.y * q.z - q.x * q.w);
-		b4 = 0;
-
-		c1 = 2.0f * (q.x * q.z - q.y * q.w);
-		c2 = 2.0f * (q.y * q.z + q.x * q.w);
-		c3 = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
-		c4 = 0;
-
-		d1 = 0;
-		d2 = 0;
-		d3 = 0;
-		d4 = 1;
-
-		return *this;
-	}
-
-	Matrix4x4t<T>& makeRotate(T angle, const Vector3t<T>& axis) noexcept
+	Matrix4x4t<T>& makeRotate(const Vector3t<T>& axis, T angle) noexcept
 	{
 		T c, s;
 		math::sinCos(&s, &c, DEG_TO_RAD(angle));
@@ -539,24 +440,54 @@ public:
 		T tx = t*x, ty = t*y;
 
 		a1 = (tx * x + c);
-		a2 = (tx * y + s * z);
-		a3 = (tx * z - s * y);
-		a4 = 0;
-
-		b1 = (tx * y - s * z);
-		b2 = (ty * y + c);
-		b3 = (ty * z + s * x);
-		b4 = 0;
-
-		c1 = (tx * z + s * y);
-		c2 = (ty * z - s * x);
-		c3 = (t * z * z + c);
-		c4 = 0;
-
+		b1 = (tx * y + s * z);
+		c1 = (tx * z - s * y);
 		d1 = 0;
+
+		a2 = (tx * y - s * z);
+		b2 = (ty * y + c);
+		c2 = (ty * z + s * x);
 		d2 = 0;
+
+		a3 = (tx * z + s * y);
+		b3 = (ty * z - s * x);
+		c3 = (t * z * z + c);
 		d3 = 0;
+
+		a4 = 0;
+		b4 = 0;
+		c4 = 0;
 		d4 = 1;
+
+		return *this;
+	}
+
+	Matrix4x4t<T>& makeRotate(const Quaterniont<T>& q, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
+	{
+		T xs = q.x * T(2.0), ys = q.y * T(2.0), zs = q.z * T(2.0);
+		T wx = q.w * xs, wy = q.w * ys, wz = q.w * zs;
+		T xx = q.x * xs, xy = q.x * ys, xz = q.x * zs;
+		T yy = q.y * ys, yz = q.y * zs, zz = q.z * zs;
+
+		a1 = T(1.0) - (yy + zz);
+		b1 = xy - wz;
+		c1 = xz + wy;
+		d1 = translate.x;
+
+		a2 = xy + wz;
+		b2 = T(1.0) - (xx + zz);
+		c2 = yz - wx;
+		d2 = translate.y;
+
+		a3 = xz - wy;
+		b3 = yz + wx;
+		c3 = T(1.0) - (xx + yy);
+		d3 = translate.z;
+
+		a4 = T(0.0);
+		b4 = T(0.0);
+		c4 = T(0.0);
+		d4 = T(1.0);
 
 		return *this;
 	}
@@ -564,44 +495,41 @@ public:
 	Matrix4x4t<T>& makeRotate(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept
 	{
 		a1 = right.x;
-		b1 = right.y;
-		c1 = right.z;
-		d1 = 0.0f;
-
-		a2 = up.x;
-		b2 = up.y;
-		c2 = up.z;
-		d2 = 0.0f;
-
-		a3 = forward.x;
-		b3 = forward.y;
-		c3 = forward.z;
-		d3 = 0.0f;
-
+		a2 = right.y;
+		a3 = right.z;
 		a4 = 0.0f;
+
+		b1 = up.x;
+		b2 = up.y;
+		b3 = up.z;
 		b4 = 0.0f;
+
+		c1 = forward.x;
+		c2 = forward.y;
+		c3 = forward.z;
 		c4 = 0.0f;
+
+		d1 = 0.0f;
+		d2 = 0.0f;
+		d3 = 0.0f;
 		d4 = 1.0f;
 		return *this;
 	}
 
 	Quaterniont<T> getRotate() const noexcept
 	{
-		// extract the rows of the matrix
 		Vector3t<T> vRows[3] =
 		{
-			Vector3t<T>(this->a1, this->b1, this->c1),
-			Vector3t<T>(this->a2, this->b2, this->c2),
-			Vector3t<T>(this->a3, this->b3, this->c3)
+			Vector3t<T>(this->a1, this->a2, this->a3),
+			Vector3t<T>(this->b1, this->b2, this->b3),
+			Vector3t<T>(this->c1, this->c2, this->c3)
 		};
 
-		// extract the scaling factors
 		Vector3t<T> scaling;
 		scaling.x = math::length(vRows[0]);
 		scaling.y = math::length(vRows[1]);
 		scaling.z = math::length(vRows[2]);
 
-		// and the sign of the scaling
 		if (determinant() < 0)
 		{
 			scaling.x = -scaling.x;
@@ -609,101 +537,84 @@ public:
 			scaling.z = -scaling.z;
 		}
 
-		// and remove all scaling from the matrix
-		if (scaling.x)
-		{
-			vRows[0] /= scaling.x;
-		}
-		if (scaling.y)
-		{
-			vRows[1] /= scaling.y;
-		}
-		if (scaling.z)
-		{
-			vRows[2] /= scaling.z;
-		}
+		if (scaling.x) vRows[0] /= scaling.x;
+		if (scaling.y) vRows[1] /= scaling.y;
+		if (scaling.z) vRows[2] /= scaling.z;
 
-		// build a 3x3 rotation matrix
 		Matrix3x3t<T> m(
-			vRows[0].x, vRows[1].x, vRows[2].x,
-			vRows[0].y, vRows[1].y, vRows[2].y,
-			vRows[0].z, vRows[1].z, vRows[2].z);
+			vRows[0].x, vRows[0].y, vRows[0].z,
+			vRows[1].x, vRows[1].y, vRows[1].z,
+			vRows[2].x, vRows[2].y, vRows[2].z);
 
-		// and generate the rotation quaternion from it
 		return Quaterniont<T>(m);
 	}
 
-	Vector3t<T> getRight() const noexcept
+	const Vector3t<T>& getRight() const noexcept
 	{
-		return Vector3t<T>(a1, b1, c1);
+		return *(Vector3t<T>*)&a1;
 	}
 
-	Vector3t<T> getUpVector() const noexcept
+	const Vector3t<T>& getUpVector() const noexcept
 	{
-		return Vector3t<T>(a2, b2, c2);
+		return *(Vector3t<T>*)&b1;
 	}
 
-	Vector3t<T> getForward() const noexcept
+	const Vector3t<T>& getForward() const noexcept
 	{
-		return Vector3t<T>(a3, b3, c3);
+		return *(Vector3t<T>*)&c1;
 	}
 
 	Vector4t<T> getAxisX() const noexcept
 	{
-		return Vector4t<T>(a1, a2, a3, a4);
+		return Vector4t<T>(a1, b1, c1, d1);
 	}
 
 	Vector4t<T> getAxisY() const noexcept
 	{
-		return Vector4t<T>(b1, b2, b3, b4);
+		return Vector4t<T>(a2, b2, c2, d2);
 	}
 
 	Vector4t<T> getAxisZ() const noexcept
 	{
-		return Vector4t<T>(c1, c2, c3, c4);
+		return Vector4t<T>(a3, b3, c3, d3);
+	}
+
+	Matrix4x4t<T>& makeTransform(const Vector3t<T>& translate, const Quaterniont<T>& rotate) noexcept
+	{
+		return this->makeRotate(rotate, translate);
 	}
 
 	Matrix4x4t<T>& makeTransform(const Vector3t<T>& translate, const Quaterniont<T>& rotate, const Vector3t<T>& scale) noexcept
 	{
-		this->makeRotate(rotate);
-		this->setTranslate(translate);
+		this->makeTransform(translate, rotate);
 		this->scale(scale);
 		return *this;
 	}
 
-	const Matrix4x4t<T>& getTransform(Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
+	const Matrix4x4t<T>& getTransformNoScale(Vector3t<T>& position, Quaterniont<T>& rotation) const noexcept
 	{
-		// extract translation
-		position.x = this->a4;
-		position.y = this->b4;
-		position.z = this->c4;
+		position.x = this->d1;
+		position.y = this->d2;
+		position.z = this->d3;
 
-		// extract rotation
-		rotation = Quaterniont<T>((Matrix3x3t<T>)*this);
+		rotation.makeRotate(this->getForward(), this->getUpVector(), this->getRight());
 		return *this;
 	}
 
-	const Matrix4x4t<T>& getTransform(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
+	const Matrix4x4t<T>& getTransform(Vector3t<T>& position, Quaterniont<T>& rotation, Vector3t<T>& scaling) const noexcept
 	{
-		// extract translation
-		position.x = this->a4;
-		position.y = this->b4;
-		position.z = this->c4;
+		position.x = this->d1;
+		position.y = this->d2;
+		position.z = this->d3;
 
-		// extract the rows of the matrix
-		Vector3t<T> vRows[3] =
-		{
-			Vector3t<T>(this->a1, this->b1, this->c1),
-			Vector3t<T>(this->a2, this->b2, this->c2),
-			Vector3t<T>(this->a3, this->b3, this->c3)
-		};
+		auto right = this->getRight();
+		auto up = this->getUpVector();
+		auto forward = this->getForward();
 
-		// extract the scaling factors
-		scaling.x = math::length(vRows[0]);
-		scaling.y = math::length(vRows[1]);
-		scaling.z = math::length(vRows[2]);
+		scaling.x = math::length(right);
+		scaling.y = math::length(up);
+		scaling.z = math::length(forward);
 
-		// and the sign of the scaling
 		if (determinant() < 0)
 		{
 			scaling.x = -scaling.x;
@@ -711,29 +622,11 @@ public:
 			scaling.z = -scaling.z;
 		}
 
-		// and remove all scaling from the matrix
-		if (scaling.x)
-		{
-			vRows[0] /= scaling.x;
-		}
-		if (scaling.y)
-		{
-			vRows[1] /= scaling.y;
-		}
-		if (scaling.z)
-		{
-			vRows[2] /= scaling.z;
-		}
+		if (scaling.x != T(1.0)) right /= scaling.x;
+		if (scaling.y != T(1.0)) up /= scaling.y;
+		if (scaling.z != T(1.0)) forward /= scaling.z;
 
-		// build a 3x3 rotation matrix
-		Matrix3x3t<T> m(
-			vRows[0].x, vRows[1].x, vRows[2].x,
-			vRows[0].y, vRows[1].y, vRows[2].y,
-			vRows[0].z, vRows[1].z, vRows[2].z);
-
-		// and generate the rotation quaternion from it
-		rotation = Quaterniont<T>(m);
-
+		rotation.makeRotate(forward, up, right);
 		return *this;
 	}
 
@@ -746,8 +639,8 @@ public:
 
 		set(cx, 0.0, 0.0, 0.0,
 			0.0, cy, 0.0, 0.0,
-			0.0, 0.0, cz, tz,
-			0.0, 0.0, 0.0, 1.0);
+			0.0, 0.0, cz, 0.0,
+			0.0, 0.0, tz, 1.0);
 
 		return *this;
 	}
@@ -761,10 +654,10 @@ public:
 		T cy = 2.0f / (top - bottom);
 		T cz = 1.0f / (zFar - zNear);
 
-		set(cx, 0.0, 0.0, tx,
-			0.0, cy, 0.0, ty,
-			0.0, 0.0, cz, tz,
-			0.0, 0.0, 0.0, 1.0);
+		set(cx, 0.0, 0.0, 0.0,
+			0.0, cy, 0.0, 0.0,
+			0.0, 0.0, cz, 0.0,
+			 tx,  ty, tz, 1.0);
 
 		return *this;
 	}
@@ -778,10 +671,10 @@ public:
 		T cy = 2.0f / (top - bottom);
 		T cz = -2.0f / (zFar - zNear);
 
-		set(cx, 0.0, 0.0, tx,
-			0.0, cy, 0.0, ty,
-			0.0, 0.0, cz, tz,
-			0.0, 0.0, 0.0, 1.0);
+		set(cx, 0.0, 0.0, 0.0,
+			0.0, cy, 0.0, 0.0,
+			0.0, 0.0, cz, 0.0,
+			 tx,  ty, tz, 1.0);
 
 		return *this;
 	}
@@ -811,10 +704,10 @@ public:
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 
-		set(cx, 0.0, A, 0.0,
-			0.0, cy, B, 0.0,
-			0.0, 0.0, C, D,
-			0.0, 0.0, 1.0, 0.0);
+		set(cx, 0.0, 0.0, 0.0,
+			0.0, cy, 0.0, 0.0,
+			0.0, 0.0, C, 1.0,
+			  A,   B, D, 0.0);
 
 		return *this;
 	}
@@ -828,10 +721,10 @@ public:
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 
-		set(cx, 0.0, A, 0.0,
-			0.0, cy, B, 0.0,
-			0.0, 0.0, C, D,
-			0.0, 0.0, -1.0, 0.0);
+		set(cx, 0.0, 0.0, 0.0,
+			0.0, cy, 0.0, 0.0,
+			0.0, 0.0, C, -1.0,
+			  A,   B, D, 0.0);
 
 		return *this;
 	}
@@ -865,8 +758,8 @@ public:
 
 		set(w, 0, 0, 0,
 			0, h, 0, 0,
-			0, 0, q, -nearPlane * q,
-			0, 0, 1.0f, 0);
+			0, 0, q, 1,
+			0, 0, -nearPlane * q, 0);
 
 		return *this;
 	}
@@ -880,8 +773,8 @@ public:
 
 		set(w, 0, 0, 0,
 			0, h, 0, 0,
-			0, 0, q, nearPlane * q,
-			0, 0, -1.0f, 0);
+			0, 0, q, -1,
+			0, 0, nearPlane * q, 0);
 
 		return *this;
 	}
@@ -946,34 +839,34 @@ public:
 		y = math::cross(z, x);
 		y = math::normalize(y);
 
-		set(x.x, x.y, x.z, 0.0,
-			y.x, y.y, y.z, 0.0,
-			z.x, z.y, z.z, 0.0,
+		set(x.x, y.x, z.x, 0.0,
+			x.y, y.y, z.y, 0.0,
+			x.z, y.z, z.z, 0.0,
 			0.0, 0.0, 0.0, 1.0);
 
 		Vector3t<T> tmp = -eye;
 		if (tmp.x != 0)
 		{
-			a4 += tmp.x * a1;
-			b4 += tmp.x * b1;
-			c4 += tmp.x * c1;
-			d4 += tmp.x * d1;
+			d1 += tmp.x * a1;
+			d2 += tmp.x * a2;
+			d3 += tmp.x * a3;
+			d4 += tmp.x * a4;
 		}
 
 		if (tmp.y != 0)
 		{
-			a4 += tmp.y * a2;
-			b4 += tmp.y * b2;
-			c4 += tmp.y * c2;
-			d4 += tmp.y * d2;
+			d1 += tmp.y * b1;
+			d2 += tmp.y * b2;
+			d3 += tmp.y * b3;
+			d4 += tmp.y * b4;
 		}
 
 		if (tmp.z != 0)
 		{
-			a4 += tmp.z * a3;
-			b4 += tmp.z * b3;
-			c4 += tmp.z * c3;
-			d4 += tmp.z * d3;
+			d1 += tmp.z * c1;
+			d2 += tmp.z * c2;
+			d3 += tmp.z * c3;
+			d4 += tmp.z * c4;
 		}
 
 		return *this;
@@ -992,34 +885,34 @@ public:
 		y = math::cross(z, x);
 		y = math::normalize(y);
 
-		set(x.x, x.y, x.z, 0.0,
-			y.x, y.y, y.z, 0.0,
-			z.x, z.y, z.z, 0.0,
+		set(x.x, y.x, z.x, 0.0,
+			x.y, y.y, z.y, 0.0,
+			x.z, y.z, z.z, 0.0,
 			0.0, 0.0, 0.0, 1.0);
 
 		Vector3t<T> tmp = -eye;
 		if (tmp.x != 0)
 		{
-			a4 += tmp.x * a1;
-			b4 += tmp.x * b1;
-			c4 += tmp.x * c1;
-			d4 += tmp.x * d1;
+			d1 += tmp.x * a1;
+			d2 += tmp.x * a2;
+			d3 += tmp.x * a3;
+			d4 += tmp.x * a4;
 		}
 
 		if (tmp.y != 0)
 		{
-			a4 += tmp.y * a2;
-			b4 += tmp.y * b2;
-			c4 += tmp.y * c2;
-			d4 += tmp.y * d2;
+			d1 += tmp.y * b1;
+			d2 += tmp.y * b2;
+			d3 += tmp.y * b3;
+			d4 += tmp.y * b4;
 		}
 
 		if (tmp.z != 0)
 		{
-			a4 += tmp.z * a3;
-			b4 += tmp.z * b3;
-			c4 += tmp.z * c3;
-			d4 += tmp.z * d3;
+			d1 += tmp.z * c1;
+			d2 += tmp.z * c2;
+			d3 += tmp.z * c3;
+			d4 += tmp.z * c4;
 		}
 
 		return *this;
@@ -1032,10 +925,10 @@ public:
 		T A = cx + left;
 		T B = cy + top;
 
-		set(cx, 0.0, 0.0, A,
-			0.0, cy, 0.0, B,
-			0.0, 0.0, 0.5, 0.5,
-			0.0, 0.0, 0.0, 1.0);
+		set( cx, 0.0, 0.0, 0.0,
+			0.0,  cy, 0.0, 0.0,
+			0.0, 0.0, 0.5, 0.0,
+			  A,   B, 0.5, 1.0);
 
 		return *this;
 	}
@@ -1073,19 +966,21 @@ inline Matrix4x4t<T> operator*(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
 template<typename T>
 inline Vector3t<T> operator*(const Vector3t<T>& v, const Matrix4x4t<T>& m) noexcept
 {
+	T d = 1.0f / (m.d1 * v.x + m.d2 * v.y + m.d3 * v.z + m.d4);
 	return Vector3t<T>(
-		m.a1 * v.x + m.a2 * v.y + m.a3 * v.z + m.a4,
-		m.b1 * v.x + m.b2 * v.y + m.b3 * v.z + m.b4,
-		m.c1 * v.x + m.c2 * v.y + m.c3 * v.z + m.c4);
+		(v.x * m.a1 + v.y * m.a2 + v.z * m.a3 + m.a4) * d,
+		(v.x * m.b1 + v.y * m.b2 + v.z * m.b3 + m.b4) * d,
+		(v.x * m.c1 + v.y * m.c2 + v.z * m.c3 + m.c4) * d);
 }
 
 template<typename T>
 inline Vector3t<T> operator*(const Matrix4x4t<T>& m, const Vector3t<T>& v) noexcept
 {
+	T d = 1.0f / (m.a4 * v.x + m.b4 * v.y + m.c4 * v.z + m.d4);
 	return Vector3t<T>(
-		m.a1 * v.x + m.b1 * v.y + m.c1 * v.z + m.d1,
-		m.a2 * v.x + m.b2 * v.y + m.c2 * v.z + m.d2,
-		m.a3 * v.x + m.b3 * v.y + m.c3 * v.z + m.d3);
+		(v.x * m.a1 + v.y * m.b1 + v.z * m.c1 + m.d1) * d,
+		(v.x * m.a2 + v.y * m.b2 + v.z * m.c2 + m.d2) * d,
+		(v.x * m.a3 + v.y * m.b3 + v.z * m.c3 + m.d3) * d);
 }
 
 template<typename T>
@@ -1103,16 +998,6 @@ inline Vector3t<T>& operator*=(Vector3t<T>& v, const Matrix4x4t<T>& m) noexcept
 }
 
 template<typename T>
-inline Vector4t<T> operator*(const Matrix4x4t<T>& m, const Vector4t<T>& v) noexcept
-{
-	return Vector4t<T>(
-		m.a1 * v.x + m.b1 * v.y + m.c1 * v.z + m.d1 * v.w,
-		m.a2 * v.x + m.b2 * v.y + m.c2 * v.z + m.d2 * v.w,
-		m.a3 * v.x + m.b3 * v.y + m.c3 * v.z + m.d3 * v.w,
-		m.a4 * v.x + m.b4 * v.y + m.c4 * v.z + m.d4 * v.w);
-}
-
-template<typename T>
 inline Vector4t<T> operator*(const Vector4t<T>& v, const Matrix4x4t<T>& m) noexcept
 {
 	return Vector4t<T>(
@@ -1123,6 +1008,16 @@ inline Vector4t<T> operator*(const Vector4t<T>& v, const Matrix4x4t<T>& m) noexc
 }
 
 template<typename T>
+inline Vector4t<T> operator*(const Matrix4x4t<T>& m, const Vector4t<T>& v) noexcept
+{
+	return Vector4t<T>(
+		m.a1 * v.x + m.b1 * v.y + m.c1 * v.z + m.d1 * v.w,
+		m.a2 * v.x + m.b2 * v.y + m.c2 * v.z + m.d2 * v.w,
+		m.a3 * v.x + m.b3 * v.y + m.c3 * v.z + m.d3 * v.w,
+		m.a4 * v.x + m.b4 * v.y + m.c4 * v.z + m.d4 * v.w);
+}
+
+template<typename T>
 inline Vector4t<T>& operator*=(Vector4t<T>& v, const Matrix4x4t<T>& m) noexcept
 {
 	v = v * m;
@@ -1130,36 +1025,71 @@ inline Vector4t<T>& operator*=(Vector4t<T>& v, const Matrix4x4t<T>& m) noexcept
 }
 
 template<typename T>
-inline Matrix4x4t<T>& operator*=(Matrix4x4t<T> m1, const Matrix4x4t<T>& m2) noexcept
+inline Matrix4x4t<T>& operator*=(Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noexcept
 {
-	m1 = Matrix4x4t<T>(
-		m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3 + m1.d1 * m2.a4,
-		m1.a2 * m2.a1 + m1.b2 * m2.a2 + m1.c2 * m2.a3 + m1.d2 * m2.a4,
-		m1.a3 * m2.a1 + m1.b3 * m2.a2 + m1.c3 * m2.a3 + m1.d3 * m2.a4,
-		m1.a4 * m2.a1 + m1.b4 * m2.a2 + m1.c4 * m2.a3 + m1.d4 * m2.a4,
-		m1.a1 * m2.b1 + m1.b1 * m2.b2 + m1.c1 * m2.b3 + m1.d1 * m2.b4,
-		m1.a2 * m2.b1 + m1.b2 * m2.b2 + m1.c2 * m2.b3 + m1.d2 * m2.b4,
-		m1.a3 * m2.b1 + m1.b3 * m2.b2 + m1.c3 * m2.b3 + m1.d3 * m2.b4,
-		m1.a4 * m2.b1 + m1.b4 * m2.b2 + m1.c4 * m2.b3 + m1.d4 * m2.b4,
-		m1.a1 * m2.c1 + m1.b1 * m2.c2 + m1.c1 * m2.c3 + m1.d1 * m2.c4,
-		m1.a2 * m2.c1 + m1.b2 * m2.c2 + m1.c2 * m2.c3 + m1.d2 * m2.c4,
-		m1.a3 * m2.c1 + m1.b3 * m2.c2 + m1.c3 * m2.c3 + m1.d3 * m2.c4,
-		m1.a4 * m2.c1 + m1.b4 * m2.c2 + m1.c4 * m2.c3 + m1.d4 * m2.c4,
-		m1.a1 * m2.d1 + m1.b1 * m2.d2 + m1.c1 * m2.d3 + m1.d1 * m2.d4,
-		m1.a2 * m2.d1 + m1.b2 * m2.d2 + m1.c2 * m2.d3 + m1.d2 * m2.d4,
-		m1.a3 * m2.d1 + m1.b3 * m2.d2 + m1.c3 * m2.d3 + m1.d3 * m2.d4,
-		m1.a4 * m2.d1 + m1.b4 * m2.d2 + m1.c4 * m2.d3 + m1.d4 * m2.d4);
+	m1.multiplyMatrices(m1, m2);
 	return m1;
 }
 
 namespace math
 {
 	template<typename T>
+	bool isIdentity(const Matrix4x4t<T>& m) noexcept
+	{
+		constexpr T epsilon = EPSILON_E4;
+		return (
+			m.a2 <= epsilon && m.a2 >= -epsilon &&
+			m.a3 <= epsilon && m.a3 >= -epsilon &&
+			m.b1 <= epsilon && m.b1 >= -epsilon &&
+			m.b3 <= epsilon && m.b3 >= -epsilon &&
+			m.c1 <= epsilon && m.c1 >= -epsilon &&
+			m.c2 <= epsilon && m.c2 >= -epsilon &&
+			m.a4 <= epsilon && m.a4 >= -epsilon &&
+			m.b4 <= epsilon && m.b4 >= -epsilon &&
+			m.c4 <= epsilon && m.c4 >= -epsilon &&
+			m.a1 <= 1.f + epsilon && m.a1 >= 1.f - epsilon &&
+			m.b2 <= 1.f + epsilon && m.b2 >= 1.f - epsilon &&
+			m.c3 <= 1.f + epsilon && m.c3 >= 1.f - epsilon);
+	}
+
+	template<typename T>
+	bool isOnlyTranslate(const Matrix4x4t<T>& m) noexcept
+	{
+		constexpr T epsilon = EPSILON_E4;
+		return (
+			m.a2 <= epsilon && m.a2 >= -epsilon &&
+			m.a3 <= epsilon && m.a3 >= -epsilon &&
+			m.b1 <= epsilon && m.b1 >= -epsilon &&
+			m.b3 <= epsilon && m.b3 >= -epsilon &&
+			m.c1 <= epsilon && m.c1 >= -epsilon &&
+			m.c2 <= epsilon && m.c2 >= -epsilon &&
+			m.a1 <= 1.f + epsilon && m.a1 >= 1.f - epsilon &&
+			m.b2 <= 1.f + epsilon && m.b2 >= 1.f - epsilon &&
+			m.c3 <= 1.f + epsilon && m.c3 >= 1.f - epsilon);
+	}
+
+	template<typename T>
+	bool isOnlyRotateAndTranslate(const Matrix4x4t<T>& m) noexcept
+	{
+		const T epsilon = EPSILON_E4;
+		return (
+			m.a1 <= 1.f + epsilon && m.a1 >= 1.f - epsilon &&
+			m.a2 <= 1.f + epsilon && m.a2 >= 1.f - epsilon &&
+			m.a3 <= 1.f + epsilon && m.a3 >= 1.f - epsilon &&
+			m.b1 <= 1.f + epsilon && m.b1 >= 1.f - epsilon &&
+			m.b2 <= 1.f + epsilon && m.b2 >= 1.f - epsilon &&
+			m.b3 <= 1.f + epsilon && m.b3 >= 1.f - epsilon &&
+			m.c1 <= 1.f + epsilon && m.c1 >= 1.f - epsilon &&
+			m.c2 <= 1.f + epsilon && m.c2 >= 1.f - epsilon &&
+			m.c3 <= 1.f + epsilon && m.c3 >= 1.f - epsilon);
+	}
+
+	template<typename T>
 	Matrix4x4t<T> orthonormalize(const Matrix4x4t<T>& _m) noexcept
 	{
-		Matrix4x4t<T> m = _m;
-		Vector3t<T> x(m.a1, m.b1, m.c1);
-		Vector3t<T> y(m.a2, m.b2, m.c2);
+		Matrix4x4t<T> m;
+		Vector3t<T> x(_m.a1, _m.b1, _m.c1);
+		Vector3t<T> y(_m.a2, _m.b2, _m.c2);
 		Vector3t<T> z;
 		x = math::normalize(x);
 		z = math::cross(x, y);
@@ -1230,13 +1160,13 @@ namespace math
 	inline Vector3t<T> invTranslateVector3(const Matrix4x4t<T>& m, const Vector3t<T>& v)
 	{
 		Vector3t<T> temp, result;
-		temp.x = v.x - m.a4;
-		temp.y = v.y - m.b4;
-		temp.z = v.z - m.c4;
+		temp.x = v.x - m.d1;
+		temp.y = v.y - m.d2;
+		temp.z = v.z - m.d3;
 
-		result.x = temp.x * m.a1 + temp.y * m.b1 + temp.z * m.c1;
-		result.y = temp.x * m.a2 + temp.y * m.b2 + temp.z * m.c2;
-		result.z = temp.x * m.a3 + temp.y * m.b3 + temp.z * m.c3;
+		result.x = temp.x * m.a1 + temp.y * m.a2 + temp.z * m.a3;
+		result.y = temp.x * m.b1 + temp.y * m.b2 + temp.z * m.b3;
+		result.z = temp.x * m.c1 + temp.y * m.c2 + temp.z * m.c3;
 		return result;
 	}
 
@@ -1245,9 +1175,9 @@ namespace math
 	{
 		Vector3t<T> result;
 
-		result.x = v.x * m.a1 + v.y * m.b1 + v.z * m.c1;
-		result.y = v.x * m.a2 + v.y * m.b2 + v.z * m.c2;
-		result.z = v.x * m.a3 + v.y * m.b3 + v.z * m.c3;
+		result.x = v.x * m.a1 + v.y * m.a2 + v.z * m.a3;
+		result.y = v.x * m.b1 + v.y * m.b2 + v.z * m.b3;
+		result.z = v.x * m.c1 + v.y * m.c2 + v.z * m.c3;
 
 		return result;
 	}
@@ -1259,38 +1189,38 @@ namespace math
 		out.a1 = m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3;
 		out.a2 = m1.a2 * m2.a1 + m1.b2 * m2.a2 + m1.c2 * m2.a3;
 		out.a3 = m1.a3 * m2.a1 + m1.b3 * m2.a2 + m1.c3 * m2.a3;
-		out.a4 = m1.a4 * m2.a1 + m1.b4 * m2.a2 + m1.c4 * m2.a3 + m1.d4 * m2.a4;
+		out.a4 = 0.0f;
 
 		out.b1 = m1.a1 * m2.b1 + m1.b1 * m2.b2 + m1.c1 * m2.b3;
 		out.b2 = m1.a2 * m2.b1 + m1.b2 * m2.b2 + m1.c2 * m2.b3;
 		out.b3 = m1.a3 * m2.b1 + m1.b3 * m2.b2 + m1.c3 * m2.b3;
-		out.b4 = m1.a4 * m2.b1 + m1.b4 * m2.b2 + m1.c4 * m2.b3 + m1.d4 * m2.b4;
+		out.b4 = 0.0f;
 
 		out.c1 = m1.a1 * m2.c1 + m1.b1 * m2.c2 + m1.c1 * m2.c3;
 		out.c2 = m1.a2 * m2.c1 + m1.b2 * m2.c2 + m1.c2 * m2.c3;
 		out.c3 = m1.a3 * m2.c1 + m1.b3 * m2.c2 + m1.c3 * m2.c3;
-		out.c4 = m1.a4 * m2.c1 + m1.b4 * m2.c2 + m1.c4 * m2.c3 + m1.d4 * m2.c4;
+		out.c4 = 0.0f;
 
-		out.d1 = 0.0f;
-		out.d2 = 0.0f;
-		out.d3 = 0.0f;
+		out.d1 = m1.a1 * m2.d1 + m1.b1 * m2.d2 + m1.c1 * m2.d3 + m1.d1;
+		out.d2 = m1.a2 * m2.d1 + m1.b2 * m2.d2 + m1.c2 * m2.d3 + m1.d2;
+		out.d3 = m1.a3 * m2.d1 + m1.b3 * m2.d2 + m1.c3 * m2.d3 + m1.d3;
 		out.d4 = 1.0f;
 		return out;
 	}
 
 	template<typename T>
-	Matrix4x4t<T> transformInverse(const Matrix4x4t<T>& _m) noexcept
+	Matrix4x4t<T> transformInverse(const Matrix4x4t<T>& m) noexcept
 	{
-		Matrix4x4t<T> m;
+		Matrix4x4t<T> out;
 
-		const T det = (_m.a1 * _m.b2 - _m.a2 * _m.b1) * _m.c3 -
-					  (_m.a1 * _m.b3 - _m.a3 * _m.b1) * _m.c2 +
-					  (_m.a2 * _m.b3 - _m.a3 * _m.b2) * _m.c1;
+		float d = (m.a1 * m.b2 - m.a2 * m.b1) * (m.c3) -
+				  (m.a1 * m.b3 - m.a3 * m.b1) * (m.c2) +
+				  (m.a2 * m.b3 - m.a3 * m.b2) * (m.c1);
 
-		if (det == static_cast<T>(0.0))
+		if (std::fabs(d) < 0.00001f)
 		{
 			const T nan = std::numeric_limits<T>::quiet_NaN();
-			m.set
+			out.set
 				(
 					nan, nan, nan, nan,
 					nan, nan, nan, nan,
@@ -1298,28 +1228,30 @@ namespace math
 					nan, nan, nan, nan
 					);
 
-			return m;
+			assert(false);
+			return out;
 		}
 
-		const T invdet = static_cast<T>(1.0) / det;
-		m.a1 =  invdet * (_m.b2 * _m.c3 + _m.b3 * -_m.c2);
-		m.a2 = -invdet * (_m.a2 * _m.c3 + _m.a3 * -_m.c2);
-		m.a3 =  invdet * (_m.a2 * _m.b3 + _m.a3 * -_m.b2);
-		m.a4 = -invdet * (_m.a2 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c2 - _m.b2 * _m.c4) + _m.a4 * (_m.b2 * _m.c3 - _m.b3 * _m.c2));
-		m.b1 = -invdet * (_m.b1 * _m.c3 + _m.b3 * -_m.c1);
-		m.b2 =  invdet * (_m.a1 * _m.c3 + _m.a3 * -_m.c1);
-		m.b3 = -invdet * (_m.a1 * _m.b3 + _m.a3 * -_m.b1);
-		m.b4 =  invdet * (_m.a1 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c3 - _m.b3 * _m.c1));
-		m.c1 =  invdet * (_m.b1 * _m.c2 + _m.b2 * -_m.c1);
-		m.c2 = -invdet * (_m.a1 * _m.c2 + _m.a2 * -_m.c1);
-		m.c3 =  invdet * (_m.a1 * _m.b2 + _m.a2 * -_m.b1);
-		m.c4 = -invdet * (_m.a1 * (_m.b2 * _m.c4 - _m.b4 * _m.c2) + _m.a2 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
-		m.d1 =  0.0f;
-		m.d2 =  0.0f;
-		m.d3 =  0.0f;
-		m.d4 =  invdet * (_m.a1 * (_m.b2 * _m.c3 - _m.b3 * _m.c2) + _m.a2 * (_m.b3 * _m.c1 - _m.b1 * _m.c3) + _m.a3 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
+		d = 1.0f / d;
 
-		return m;
+		out.a1 = d * (m.b2 * m.c3 + m.b3 * -m.c2);
+		out.a2 = d * (m.c2 * m.a3 + m.c3 * -m.a2);
+		out.a3 = d * (m.a2 * m.b3 - m.a3 * m.b2);
+		out.a4 = 0.0f;
+		out.b1 = d * (m.b3 * m.c1 + m.b1 * -m.c3);
+		out.b2 = d * (m.c3 * m.a1 + m.c1 * -m.a3);
+		out.b3 = d * (m.a3 * m.b1 - m.a1 * m.b3);
+		out.b4 = 0.0f;
+		out.c1 = d * (m.b1 * m.c2 + m.b2 * -m.c1);
+		out.c2 = d * (m.c1 * m.a2 + m.c2 * -m.a1);
+		out.c3 = d * (m.a1 * m.b2 - m.a2 * m.b1);
+		out.c4 = 0.0f;
+		out.d1 = d * (m.b1 * (m.c3 * m.d2 - m.c2 * m.d3) + m.b2 * (m.c1 * m.d3 - m.c3 * m.d1) + m.b3 * (m.c2 * m.d1 - m.c1 * m.d2));
+		out.d2 = d * (m.c1 * (m.a3 * m.d2 - m.a2 * m.d3) + m.c2 * (m.a1 * m.d3 - m.a3 * m.d1) + m.c3 * (m.a2 * m.d1 - m.a1 * m.d2));
+		out.d3 = d * (m.d1 * (m.a3 * m.b2 - m.a2 * m.b3) + m.d2 * (m.a1 * m.b3 - m.a3 * m.b1) + m.d3 * (m.a2 * m.b1 - m.a1 * m.b2));
+		out.d4 = d * (m.a1 * (m.b2 * m.c3 - m.b3 * m.c2) + m.a2 * (m.b3 * m.c1 - m.b1 * m.c3) + m.a3 * (m.b1 * m.c2 - m.b2 * m.c1));
+
+		return out;
 	}
 }
 

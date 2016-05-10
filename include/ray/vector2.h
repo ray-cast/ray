@@ -105,6 +105,22 @@ public:
     const_pointer ptr() const noexcept { return (const_pointer)this;}
     pointer data() noexcept { return (pointer)this; }
     const_pointer data() const noexcept { return (const_pointer)this; }
+
+    template<typename ostream>
+    ostream& operator << (ostream& os)
+    {
+        os << x << ", " << y;
+        return os;
+    }
+
+    template<typename istream>
+    istream& operator >> (istream& is)
+    {
+        is >> x;
+        is.ignore(2);
+        is >> y;
+        return is;
+    }
 };
 
 template<typename T> const Vector2t<T> Vector2t<T>::Zero = Vector2t<T>((T)0, (T)0);
@@ -117,13 +133,16 @@ template<typename T> const Vector2t<T> Vector2t<T>::Forward = Vector2t<T>((T)0, 
 template <typename T>
 inline bool operator==(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 {
-    return (v1.x == v2.x && v1.y == v2.y);
+    constexpr T epsilon = EPSILON_E4;
+    return
+        v1.x + epsilon >= v2.x && v1.x - epsilon <= v2.x &&
+        v1.y + epsilon >= v2.y && v1.y - epsilon <= v2.y;
 }
 
 template <typename T>
 inline bool operator!=(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 {
-    return (v1.x != v2.x || v1.y != v2.y);
+	return !(v1 == v2);
 }
 
 template <typename T>
@@ -208,6 +227,22 @@ template <typename T>
 inline Vector2t<T> operator/(unsigned scale, const Vector2t<T>& v) noexcept
 {
     return Vector2t<T>(v.x / scale, v.y / scale);
+}
+
+template<typename ostream, typename T>
+inline ostream& operator << (ostream& os, const Vector2t<T>& v)
+{
+    os << v.x << ", " << v.y;
+    return os;
+}
+
+template<typename istream, typename T>
+inline istream& operator >> (istream& is, Vector2t<T>& v)
+{
+    is >> v.x;
+    is.ignore(2);
+    is >> v.y;
+    return is;
 }
 
 namespace math

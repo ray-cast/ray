@@ -76,9 +76,11 @@ _NAME_BEGIN
 
 #ifndef EPSILON
 #   define EPSILON 0.001f
-#   define EPSILON_E4 (float)(1E-4)
-#   define EPSILON_E5 (float)(1E-5)
-#   define EPSILON_E6 (float)(1E-6)
+#   define EPSILON_E2 (1E-2)
+#   define EPSILON_E3 (1E-3)
+#   define EPSILON_E4 (1E-4)
+#   define EPSILON_E5 (1E-5)
+#   define EPSILON_E6 (1E-6)
 #endif
 
 #ifndef SAFE_DELETE
@@ -100,35 +102,34 @@ _NAME_BEGIN
 
 namespace math
 {
-
-inline bool equals(float a, float b)
+inline bool equals(float a, float b) noexcept
 {
-    return fabs(b - a) < EPSILON ? true : false;
+	return a + EPSILON_E4 > b && a - EPSILON_E4 < b;
 }
 
 template<typename T>
-inline T wrapPI(const T& theta)
+inline T wrapPI(const T& theta) noexcept
 {
     theta += M_PI;
-    theta -= floor(theta * M_PI_2);
+    theta -= std::floor(theta * M_PI_2);
     theta -= M_PI;
     return theta;
 }
 
 template<typename T>
-inline T max(const T& t1, const T& t2)
+inline T max(const T& t1, const T& t2) noexcept
 {
     return t1 > t2 ? t1 : t2;
 }
 
 template<typename T>
-inline T min(const T& t1, const T& t2)
+inline T min(const T& t1, const T& t2) noexcept
 {
     return t1 < t2 ? t1 : t2;
 }
 
 template<typename T>
-inline T middle(const T& t1, const T& t2, const T& t3)
+inline T middle(const T& t1, const T& t2, const T& t3) noexcept
 {
     if (t1 < t2)
     {
@@ -147,83 +148,98 @@ inline T middle(const T& t1, const T& t2, const T& t3)
 }
 
 template<typename T>
-inline T abs(const T& t)
+inline std::uint8_t bitScanReverse(T number) noexcept
 {
-    return t >= 0 ? t : -t;
-}
+	std::uint8_t Result = 0;
+	T n = 1;
 
-inline float invSqrt(float x)
-{
-    float xhalf = 0.5f*x;
-    int i = *(int*)&x;
-    i = 0x5f3759df - (i >> 1);
-    x = *(float*)&i;
-    x = x*(1.5f - xhalf*x*x);
-    x = x*(1.5f - xhalf*x*x);
-    return x;
-}
+	for (; n < 32; n++)
+	{
+		T val = static_cast<T>(1) << n;
 
-inline double invSqrt(double y)
-{
-    long long i;
-    double x2;
-    const double threehalfs = 1.5F;
-    x2 = y * 0.5F;
-    i = *(long long*)&y;
-    i = 0x5fe6ec85e7de30dall - (i >> 1);
-    y = *(double*)&i;
-    y = y * (threehalfs - (x2*y*y));
-    y = y * (threehalfs - (x2*y*y));
-    return y;
-}
+		Result++;
 
-template<double& R>
-class Sine
-{
-    enum { max_recursive = 10 };
+		if (number & val)
+		{
+			break;
+		}
+	}
 
-    inline static double sin(double fRad)
-    {
-        return R * series(fRad, 0);
-    }
-
-    inline static double series(double fRad, int i)
-    {
-        if (i > max_recursive) { return 1.0; }
-
-        return 1.0 - (fRad * fRad / (2.0 * i + 2.0) / (2.0 * i + 3.0) * series(fRad, i + 1));
-    }
-};
-
-template<typename _Tx, typename _Ty>
-inline void sinCos(_Tx* returnSin, _Tx* returnCos, _Ty theta)
-{
-    *returnSin = std::sin(theta);
-    *returnCos = std::cos(theta);
+	return Result;
 }
 
 template<typename T>
-inline T safeAcos(const T& x)
+inline T ceilToPowerOfTwo(T number) noexcept
 {
-    if (x <= -1.0) { return M_PI; }
-    if (x >= 1.0) { return 0; }
-    return std::acos(x);
+	T input = number;
+	T result = bitScanReverse(number);
+	T test = ~(static_cast<T>(1) << result);
+
+	return test & input;
+}
+
+inline int _hash_int_0(int key) noexcept
+{
+	return  ~key + (key << 15);
+}
+
+inline int _hash_int_1(int key) noexcept
+{
+	return key ^ (key >> 12);
+}
+
+inline int _hash_int_2(int key) noexcept
+{
+	return key + (key << 2);
+}
+
+inline int _hash_int_3(int key) noexcept
+{
+	return key ^ (key >> 4);
+}
+
+inline int _hash_int_4(int key) noexcept
+{
+	return key * 2057;
+}
+
+inline int _hash_int_5(int key) noexcept
+{
+	return key ^ (key >> 16);
+}
+
+inline int _hash_int(int key) noexcept
+{
+	return _hash_int_5(_hash_int_4(_hash_int_3(_hash_int_2(_hash_int_1(_hash_int_0(key))))));
+}
+
+inline int hash_int(int x, int y, int z) noexcept
+{
+	return _hash_int(x) ^ _hash_int(y) ^ _hash_int(z);
+}
+
+inline float hash_float(float x, float y, float z) noexcept
+{
+	return x + y * (1.0f / 255.0f) + z * (1.0f / 65025.0f);
+}
+
+inline double hash_double(double x, double y, double z) noexcept
+{
+	return x + y * (1.0f / 255.0f) + z * (1.0f / 65025.0f);
+}
+
+inline std::size_t _hash_string(unsigned hash, const char* str) noexcept
+{
+	return (!*str ? hash : _hash_string(((hash << 5) + hash) + *str, str + 1));
+}
+
+inline std::size_t hash_string(const char* str) noexcept
+{
+	return (!str ? 0 : _hash_string(5381, str));
 }
 
 template<typename T>
-inline T radians(const T& angle)
-{
-    return angle / M_PI * static_cast<T>(180.0);
-}
-
-template<typename T>
-inline T degrees(const T& angle)
-{
-    return angle * M_PI / static_cast<T>(180.0);
-}
-
-template<typename T>
-inline T clamp(const T& t, const T& min, const T& max)
+inline T clamp(const T& t, const T& min, const T& max) noexcept
 {
     return std::max(min, std::min(max, t));
 }
@@ -235,19 +251,19 @@ inline T saturate(const T& v) noexcept
 }
 
 template<typename T1, typename T2>
-inline T1 lerp(const T1& t1, const T1& t2, const T2& t3)
+inline T1 lerp(const T1& t1, const T1& t2, const T2& t3) noexcept
 {
     return t1 + (t2 - t1) * t3;
 }
 
 template<typename T>
-inline T smothlerp(const T& x, const T& x1, const T& x2, const T& q00, const T& q01)
+inline T smothlerp(const T& x, const T& x1, const T& x2, const T& q00, const T& q01) noexcept
 {
     return ((x2 - x) / (x2 - x1)) * q00 + ((x - x1) / (x2 - x1)) * q01;
 }
 
 template<typename T>
-inline T biLerp(const T& x, const T& y, const T& q11, const T& q12, const T& q21, const T& q22, const T& x1, const T& x2, const T& y1, const T& y2)
+inline T biLerp(const T& x, const T& y, const T& q11, const T& q12, const T& q21, const T& q22, const T& x1, const T& x2, const T& y1, const T& y2) noexcept
 {
     float r1 = smothlerp(x, x1, x2, q11, q21);
     float r2 = smothlerp(x, x1, x2, q12, q22);
@@ -256,7 +272,7 @@ inline T biLerp(const T& x, const T& y, const T& q11, const T& q12, const T& q21
 }
 
 template<typename T>
-inline T triLerp(const T& x, const T& y, const T& z, const T& q000, const T& q001, const T& q010, const T& q011, const T& q100, const T& q101, const T& q110, const T& q111, const T& x1, const T& x2, const T& y1, const T& y2, const T& z1, const T& z2)
+inline T triLerp(const T& x, const T& y, const T& z, const T& q000, const T& q001, const T& q010, const T& q011, const T& q100, const T& q101, const T& q110, const T& q111, const T& x1, const T& x2, const T& y1, const T& y2, const T& z1, const T& z2) noexcept
 {
     float x00 = smothlerp(x, x1, x2, q000, q100);
     float x10 = smothlerp(x, x1, x2, q010, q110);
@@ -269,234 +285,494 @@ inline T triLerp(const T& x, const T& y, const T& z, const T& q000, const T& q00
 }
 
 template<typename T>
-inline std::uint8_t bitScanReverse(T number)
+struct _mathutil;
+
+template<>
+struct _mathutil<float>
 {
-    std::uint8_t Result = 0;
-    T n = 1;
+	static inline void sinCos(float* returnSin, float* returnCos, float theta) noexcept
+	{
+		*returnSin = std::sinf(theta);
+		*returnCos = std::cosf(theta);
+	}
 
-    for (; n < 32; n++)
-    {
-        T val = static_cast<T>(1) << n;
+	static inline float rad2deg(float angle) noexcept
+	{
+		return angle / M_PI * 180.0f;
+	}
 
-        Result++;
+	static inline float deg2rad(float angle) noexcept
+	{
+		return angle * M_PI / 180.0f;
+	}
 
-        if (number & val)
-        {
-            break;
-        }
-    }
+	static inline float abs(float t) noexcept
+	{
+		return t >= 0.0f ? t : -t;
+	}
 
-    return Result;
+	static inline float fast_exp2(float x) noexcept
+	{
+		static const float c[3] = { 5.79526f, 12.82461f, -2.88611f };
+
+		int e = int(round(x));
+		float t = x - e;
+		float m = (t * t + c[0] * t + c[1]) / (c[2] * t * c[1]);
+
+		return std::ldexpf(m, e);
+	}
+
+	static inline float cos(float theta) noexcept
+	{
+		return std::cosf(theta);
+	}
+
+	static inline float sin(float theta) noexcept
+	{
+		return std::sinf(theta);
+	}
+
+	static inline float tan(float theta) noexcept
+	{
+		return std::tanf(theta);
+	}
+
+	static inline float atan2(float y, float x) noexcept
+	{
+		return std::atan2f(y, x);
+	}
+
+	static inline float log(float theta) noexcept
+	{
+		return std::logf(theta);
+	}
+
+	static inline float pow(float x, float y) noexcept
+	{
+		return std::powf(x, y);
+	}
+
+	static inline float sqrt(float theta) noexcept
+	{
+		return std::sqrtf(theta);
+	}
+
+	static inline float rsqrt(float x) noexcept
+	{
+		float xhalf = 0.5f*x;
+		int i = *(int*)&x;
+		i = 0x5f3759df - (i >> 1);
+		x = *(float*)&i;
+		x = x*(1.5f - xhalf*x*x);
+		x = x*(1.5f - xhalf*x*x);
+		return x;
+	}
+
+	static inline float acos(float theta) noexcept
+	{
+		return std::acosf(theta);
+	}
+
+	static inline float asin(float theta) noexcept
+	{
+		return std::asinf(theta);
+	}
+
+	static inline float atan(float theta) noexcept
+	{
+		return std::atanf(theta);
+	}
+
+	static inline float cosh(float theta) noexcept
+	{
+		return std::coshf(theta);
+	}
+
+	static inline float sinh(float theta) noexcept
+	{
+		return std::sinhf(theta);
+	}
+
+	static inline float tanh(float theta) noexcept
+	{
+		return std::tanhf(theta);
+	}
+
+	static inline float log10(float theta) noexcept
+	{
+		return std::log10f(theta);
+	}
+
+	static inline float ceil(float theta) noexcept
+	{
+		return std::ceilf(theta);
+	}
+
+	static inline float fabs(float theta) noexcept
+	{
+		return std::fabsf(theta);
+	}
+
+	static inline float floor(float theta) noexcept
+	{
+		return std::floorf(theta);
+	}
+
+	static inline float modf(float x, float *y) noexcept
+	{
+		float d;
+		float f = std::modff(x, &d);
+		*y = d;
+		return f;
+	}
+
+	static inline float fraction(float v) noexcept
+	{
+		float intPart;
+		return modff(v, &intPart);
+	}
+
+	static inline float safeAcos(float x) noexcept
+	{
+		if (x <= -1.0f) { return M_PI; }
+		if (x >= 1.0f) { return 0.0f; }
+		return std::acosf(x);
+	}
+};
+
+template<>
+struct _mathutil<double>
+{
+	static inline void sinCos(double* returnSin, double* returnCos, double theta) noexcept
+	{
+		*returnSin = std::sinf(theta);
+		*returnCos = std::cosf(theta);
+	}
+
+	static inline double rad2deg(double angle) noexcept
+	{
+		return angle / M_PI * 180.0;
+	}
+
+	static inline double deg2rad(double angle) noexcept
+	{
+		return angle * M_PI / 180.0;
+	}
+
+	static inline double abs(double t) noexcept
+	{
+		return t >= 0.0f ? t : -t;
+	}
+
+	static inline double fast_exp2(double x) noexcept
+	{
+		static const double c[3] = { 5.79526, 12.82461, -2.88611 };
+
+		int e = int(round(x));
+		double t = x - e;
+		double m = (t * t + c[0] * t + c[1]) / (c[2] * t * c[1]);
+
+		return std::ldexp(m, e);
+	}
+
+	static inline double cos(double theta) noexcept
+	{
+		return std::cos(theta);
+	}
+
+	static inline double sin(double theta) noexcept
+	{
+		return std::sin(theta);
+	}
+
+	static inline double tan(double theta) noexcept
+	{
+		return std::tan(theta);
+	}
+
+	static inline double atan2(double y, double x) noexcept
+	{
+		return std::atan2(y, x);
+	}
+
+	static inline double log(double theta) noexcept
+	{
+		return std::log(theta);
+	}
+
+	static inline double pow(double x, double y) noexcept
+	{
+		return std::pow(x, y);
+	}
+
+	static inline double sqrt(double theta) noexcept
+	{
+		return std::sqrt(theta);
+	}
+
+	static inline double rsqrt(double y) noexcept
+	{
+		long long i;
+		double x2;
+		const double threehalfs = 1.5F;
+		x2 = y * 0.5F;
+		i = *(long long*)&y;
+		i = 0x5fe6ec85e7de30dall - (i >> 1);
+		y = *(double*)&i;
+		y = y * (threehalfs - (x2*y*y));
+		y = y * (threehalfs - (x2*y*y));
+		return y;
+	}
+
+	static inline double acos(double theta) noexcept
+	{
+		return std::acos(theta);
+	}
+
+	static inline double asin(double theta) noexcept
+	{
+		return std::asin(theta);
+	}
+
+	static inline double atan(double theta) noexcept
+	{
+		return std::atan(theta);
+	}
+
+	static inline double cosh(double theta) noexcept
+	{
+		return std::cosh(theta);
+	}
+
+	static inline double sinh(double theta) noexcept
+	{
+		return std::sinh(theta);
+	}
+
+	static inline double tanh(double theta) noexcept
+	{
+		return std::tanh(theta);
+	}
+
+	static inline double log10(double theta) noexcept
+	{
+		return std::log10(theta);
+	}
+
+	static inline double ceil(double theta) noexcept
+	{
+		return std::ceil(theta);
+	}
+
+	static inline double fabs(double theta) noexcept
+	{
+		return std::fabs(theta);
+	}
+
+	static inline double floor(double theta) noexcept
+	{
+		return std::floor(theta);
+	}
+
+	static inline double modf(double x, double *y) noexcept
+	{
+		double d;
+		double f = std::modf(x, &d);
+		*y = d;
+		return f;
+	}
+
+	static inline double fraction(double v) noexcept
+	{
+		double intPart;
+		return modf(v, &intPart);
+	}
+
+	static inline double safeAcos(double x) noexcept
+	{
+		if (x <= -1.0) { return M_PI; }
+		if (x >= 1.0) { return 0.0; }
+		return std::acos(x);
+	}
+};
+
+template<typename T>
+inline void sinCos(T* returnSin, T* returnCos, T theta) noexcept
+{
+	_mathutil<T>::sinCos(returnSin, returnCos, theta);
 }
 
 template<typename T>
-inline T ceilToPowerOfTwo(T number)
+inline T rad2deg(T angle) noexcept
 {
-    T input = number;
-    T result = bitScanReverse(number);
-    T test = ~(static_cast<T>(1) << result);
-
-    return test & input;
+	return _mathutil<T>::rad2deg(angle);
 }
 
 template<typename T>
-inline T fast_exp2(T x)
+inline T deg2rad(T angle) noexcept
 {
-    static const T c[3] = { 5.79526, 12.82461, -2.88611 };
-
-    int e = int(round(x));
-    T t = x - e;
-    T m = (t * t + c[0] * t + c[1]) / (c[2] * t * c[1]);
-
-    return std::ldexp<T>(m, e);
+	return _mathutil<T>::deg2rad(angle);
 }
 
-inline constexpr int _hash_int_0(int key)
+template<typename T>
+inline T abs(T t) noexcept
 {
-    return  ~key + (key << 15);
+	return _mathutil<T>::abs(t);
 }
 
-inline constexpr int _hash_int_1(int key)
+template<typename T>
+inline T fast_exp2(T x) noexcept
 {
-    return key ^ (key >> 12);
+	return _mathutil<T>::fast_exp2(x);
 }
 
-inline constexpr int _hash_int_2(int key)
+template<typename T>
+inline T cos(T theta) noexcept
 {
-    return key + (key << 2);
+	return _mathutil<T>::cos(theta);
 }
 
-inline constexpr int _hash_int_3(int key)
+template<typename T>
+inline T sin(T theta) noexcept
 {
-    return key ^ (key >> 4);
+	return _mathutil<T>::sin(theta);
 }
 
-inline constexpr int _hash_int_4(int key)
+template<typename T>
+inline T tan(T theta) noexcept
 {
-    return key * 2057;
+	return _mathutil<T>::tan(theta);
 }
 
-inline constexpr int _hash_int_5(int key)
+template<typename T>
+inline T atan2(T y, T x) noexcept
 {
-    return key ^ (key >> 16);
+	return _mathutil<T>::atan2(y, x);
 }
 
-inline constexpr int _hash_int(int key)
+template<typename T>
+inline T log(T theta) noexcept
 {
-    return _hash_int_5(_hash_int_4(_hash_int_3(_hash_int_2(_hash_int_1(_hash_int_0(key))))));
+	return _mathutil<T>::log(theta);
 }
 
-inline constexpr int hash_int(int x, int y, int z)
+template<typename T>
+inline T pow(T x, T y) noexcept
 {
-    return _hash_int(x) ^ _hash_int(y) ^ _hash_int(z);
+	return _mathutil<T>::pow(x, y);
 }
 
-inline constexpr float hash_float(float x, float y, float z)
+template<typename T>
+inline T sqrt(T x) noexcept
 {
-    return x + y * (1.0f / 255.0f) + z * (1.0f / 65025.0f);
+	return _mathutil<T>::sqrt(x);
 }
 
-inline constexpr double hash_double(double x, double y, double z)
+template<typename T>
+inline T rsqrt(T x) noexcept
 {
-    return x + y * (1.0f / 255.0f) + z * (1.0f / 65025.0f);
+	return _mathutil<T>::rsqrt(x);
 }
 
-inline constexpr std::size_t _hash_string(unsigned hash, const char* str)
+template<typename T>
+inline T acos(T theta) noexcept
 {
-    return (!*str ? hash : _hash_string(((hash << 5) + hash) + *str, str + 1));
+	return _mathutil<T>::acos(theta);
 }
 
-inline constexpr std::size_t hash_string(const char* str)
+template<typename T>
+inline T asin(T theta) noexcept
 {
-    return (!str ? 0 : _hash_string(5381, str));
+	return _mathutil<T>::asin(theta);
 }
 
-inline float cosf(float arg)
+template<typename T>
+inline T atan(T theta) noexcept
 {
-    return std::cos(arg);
+	return _mathutil<T>::atan(theta);
 }
 
-inline float sinf(float arg)
+template<typename T>
+inline T cosh(T theta) noexcept
 {
-    return std::sin(arg);
+	return _mathutil<T>::cosh(theta);
 }
 
-inline float tanf(float arg)
+template<typename T>
+inline T sinh(T theta) noexcept
 {
-    return std::tan(arg);
+	return _mathutil<T>::sinh(theta);
 }
 
-inline float atan2f(float y, float x)
+template<typename T>
+inline T tanh(T theta) noexcept
 {
-    return std::atan2(y, x);
+	return _mathutil<T>::tanh(theta);
 }
 
-inline float logf(float arg)
+template<typename T>
+inline T log10(T theta) noexcept
 {
-    return std::log(arg);
+	return _mathutil<T>::log10(theta);
 }
 
-inline float powf(float x, float y)
+template<typename T>
+inline T ceil(T theta) noexcept
 {
-    return std::pow(x, y);
+	return _mathutil<T>::ceil(theta);
 }
 
-inline float sqrtf(float arg)
+template<typename T>
+inline T fabs(T theta) noexcept
 {
-    return std::sqrt(arg);
+	return _mathutil<T>::fabs(theta);
 }
 
-inline float acosf(float arg)
+template<typename T>
+inline T floor(T theta) noexcept
 {
-    return std::acos(arg);
+	return _mathutil<T>::floor(theta);
 }
 
-inline float asinf(float arg)
+template<typename T>
+inline T modf(T x, T* y) noexcept
 {
-    return std::asin(arg);
+	return _mathutil<T>::modf(x, y);
 }
 
-inline float atanf(float arg)
+template<typename T>
+inline T fraction(T v) noexcept
 {
-    return std::atan(arg);
+	return _mathutil<T>::fraction(v);
 }
 
-inline float coshf(float arg)
+template<typename T>
+inline T safeAcos(T theta) noexcept
 {
-    return std::cosh(arg);
+	return _mathutil<T>::safeAcos(theta);
 }
 
-inline float sinhf(float arg)
-{
-    return std::sinh(arg);
-}
-
-inline float tanhf(float arg)
-{
-    return std::tanh(arg);
-}
-
-inline float log10f(float arg)
-{
-    return std::log10(arg);
-}
-
-inline float ceilf(float arg)
-{
-    return std::ceil(arg);
-}
-
-inline float fabsf(float arg)
-{
-    return std::fabs(arg);
-}
-
-inline float floorf(float arg)
-{
-    return std::floor(arg);
-}
-
-inline float modff(float x, float *y)
-{
-    double d;
-    float f = (float)modf((double)x, &d);
-    *y = (float)d;
-    return f;
-}
-
-inline float fractionf(float v)
-{
-    float intPart;
-    return modff(v, &intPart);
-}
-
-inline double fraction(double v)
-{
-    double intPart;
-    return modf(v, &intPart);
-}
-
-inline float fpFromIEEE(std::uint32_t raw)
+inline float fpFromIEEE(std::uint32_t raw) noexcept
 {
     return *reinterpret_cast<float*>(&raw);
 }
 
-inline std::uint32_t fpToIEEE(float fp)
+inline std::uint32_t fpToIEEE(float fp) noexcept
 {
     return *reinterpret_cast<std::uint32_t*>(&fp);
 }
 
-inline double fpFromIEEE(std::uint64_t raw)
+inline double fpFromIEEE(std::uint64_t raw) noexcept
 {
     return *reinterpret_cast<double*>(&raw);
 }
 
-inline std::uint64_t fpToIEEE(double fp)
+inline std::uint64_t fpToIEEE(double fp) noexcept
 {
     return *reinterpret_cast<std::uint64_t*>(&fp);
 }
 
-inline bool closeTo(float a, float b, float epsilon)
+inline bool closeTo(float a, float b, float epsilon) noexcept
 {
     if (a == b) return true;
 
@@ -507,7 +783,7 @@ inline bool closeTo(float a, float b, float epsilon)
     return diff / (fabs(a) + fabs(b)) < epsilon;
 }
 
-inline bool closeTo(double a, double b, double epsilon)
+inline bool closeTo(double a, double b, double epsilon) noexcept
 {
     if (a == b) return true;
 
@@ -518,15 +794,8 @@ inline bool closeTo(double a, double b, double epsilon)
     return diff / (fabs(a) + fabs(b)) < epsilon;
 }
 
-inline float safeAcos(float x)
-{
-    if (x <= -1.0) { return M_PI; }
-    if (x >= 1.0) { return 0.0; }
-    return acos(x);
-}
-
 template<typename T>
-inline T GaussianDistribution(T x, T y, T r)
+inline T GaussianDistribution(T x, T y, T r) noexcept
 {
 	T g = 1.0f / sqrt(2.0f * M_PI * r * r);
 	g *= exp(-(x * x + y * y) / (2 * r * r));
@@ -534,7 +803,7 @@ inline T GaussianDistribution(T x, T y, T r)
 }
 
 template<typename T>
-inline void GaussianKernel(std::vector<T>& weights, std::vector<T>& offsets, std::size_t radius, T deviation, T size)
+inline void GaussianKernel(std::vector<T>& weights, std::vector<T>& offsets, std::size_t radius, T deviation, T size) noexcept
 {
 	weights.resize(radius);
 	offsets.resize(radius);
@@ -554,9 +823,6 @@ EXPORT void randomize(unsigned int);
 EXPORT int random(int min, int max);
 EXPORT float random(float min, float max);
 EXPORT double random(double min, double max);
-
-EXPORT float fastSin(float theta);
-EXPORT float fastCos(float theta);
 
 EXPORT std::uint32_t morton2(std::uint32_t x, std::uint32_t y);
 EXPORT std::uint32_t morton3(std::uint32_t x, std::uint32_t y, std::uint32_t z);

@@ -152,7 +152,7 @@ ParticleEmitterComponent::simulate(float delta) noexcept
 			Vector3 accel1, accel2;
 
 			accel1 = it->position - this->getGameObject()->getTranslate();
-			accel1 *= math::invSqrt(math::length2(accel1));
+			accel1 *= math::rsqrt(math::length2(accel1));
 			accel2 = accel1;
 			accel1 *= it->radialAccel;
 

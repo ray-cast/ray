@@ -70,11 +70,11 @@ public:
 	void setRotation(const Quaternion& position) noexcept;
 	const Quaternion& getRotation() const noexcept;
 
-	void setBoneIndex(const std::size_t) noexcept;
-	std::size_t getBoneIndex() const noexcept;
+	void setBoneIndex(const std::int32_t) noexcept;
+	std::int32_t getBoneIndex() const noexcept;
 
-	void setFrameNo(std::size_t frame) noexcept;
-	std::size_t getFrameNo() const noexcept;
+	void setFrameNo(std::int32_t frame) noexcept;
+	std::int32_t getFrameNo() const noexcept;
 
 	void setInterpolation(const Interpolation& interp) noexcept;
 	const Interpolation& getInterpolation() const noexcept;
@@ -82,8 +82,8 @@ public:
 private:
 	std::string _name;
 
-	std::size_t _bone;
-	std::size_t _frame;
+	std::int32_t _bone;
+	std::int32_t _frame;
 
 	Vector3 _position;
 	Quaternion _rotation;

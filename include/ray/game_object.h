@@ -98,6 +98,7 @@ public:
 	const float3& getForward() const noexcept;
 
 	void setTransform(const float4x4& transform) noexcept;
+	void setTransformOnlyRotate(const float4x4& transform) noexcept;
 	const float4x4& getTransform() const noexcept;
 	const float4x4& getTransformInverse() const noexcept;
 	const float4x4& getTransformInverseTranspose() const noexcept;
@@ -125,6 +126,10 @@ public:
 
 	const GameComponents& getComponents() const noexcept;
 
+	void addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept;
+	void removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept;
+	void removeComponentDispatchs(GameComponentPtr component) noexcept;
+
 	void sendMessage(const MessagePtr& message) noexcept;
 	void sendMessageUpwards(const MessagePtr& message) noexcept;
 	void sendMessageDownwards(const MessagePtr& message) noexcept;
@@ -137,16 +142,22 @@ public:
 	GameObjectPtr clone() const noexcept;
 
 private:
-
-	friend class GameObjectManager;
+	friend GameObjectManager;
 
 	void _onFrameBegin() except;
 	void _onFrame() except;
 	void _onFrameEnd() except;
 
+	void _onActivate() except;
+	void _onDeactivate() except;
+
 	void _onMoveBefore() except;
 	void _onMoveAfter() except;
 
+	void _onLayerChangeBefore() except;
+	void _onLayerChangeAfter() except;
+
+private:
 	void _updateTransform() const noexcept;
 
 private:
@@ -154,7 +165,6 @@ private:
 	GameObject& operator=(const GameObject& copy) noexcept = delete;
 
 private:
-
 	bool _active;
 
 	std::uint8_t _layer;
@@ -169,10 +179,6 @@ private:
 
 	mutable bool _needUpdates;
 
-	mutable float3 _right;
-	mutable float3 _up;
-	mutable float3 _forward;
-
 	mutable float4x4 _transform;
 	mutable float4x4 _transformInverse;
 	mutable float4x4 _transformInverseTranspose;
@@ -181,6 +187,7 @@ private:
 	GameObjectWeakPtr _parent;
 
 	GameComponents _components;
+	std::vector<GameComponents> _dispatchComponents;
 };
 
 _NAME_END

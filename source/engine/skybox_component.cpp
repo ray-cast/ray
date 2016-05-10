@@ -299,10 +299,10 @@ SkyboxComponent::_buildQuadRenderMesh(const MeshProperty& mesh) noexcept
 bool 
 SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialTechPtr technique) noexcept
 {
-	_quadObject = std::make_shared<Geometry>();
-	_quadObject->setMaterialTech(RenderQueue::RenderQueueOpaqueShading, technique);
 	MeshProperty sphere;
 	sphere.makeSphere(1, 16, 12);
+	_quadObject = std::make_shared<Geometry>();
+	_quadObject->setMaterialTech(RenderQueue::RenderQueueOpaqueShading, technique);
 	return _buildRenderObject(_quadObject, sphere, _renderScreenQuad);
 }
 
@@ -431,10 +431,10 @@ SkyboxComponent::_updateTransform() noexcept
 	transforam.setTranslate(this->getGameObject()->getTranslate());
 	
 	if (_sphereObject)
-		_sphereObject->setTransform(transforam, math::inverse(transforam), float4x4().loadIdentity());
+		_sphereObject->setTransform(transforam, math::transformInverse(transforam), float4x4().loadIdentity());
 	
 	if (_quadObject)
-		_quadObject->setTransform(transforam, math::inverse(transforam), float4x4().loadIdentity());
+		_quadObject->setTransform(transforam, math::transformInverse(transforam), float4x4().loadIdentity());
 }
 
 void 
@@ -500,11 +500,15 @@ SkyboxComponent::onActivate() noexcept
 
 		this->_attacRenderObjects();
 	}
+
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
 }
 
 void
 SkyboxComponent::onDeactivate() noexcept
 {
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	this->_destroyMaterial();
 	this->_destroySkybox();
 	this->_destroySkyLighting();

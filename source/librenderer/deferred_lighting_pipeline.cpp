@@ -220,7 +220,7 @@ void
 DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
-	_lightEyeDirection->uniform3f(light.getForward() * float3x3(pipeline.getCamera()->getView()));
+	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	if (shadowMap)
@@ -230,8 +230,8 @@ DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& 
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f((pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getView()).getAxisZ());
-		_shadowView2LightViewProject->uniform4fmat(pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getViewProject());
+		_shadowView2LightView->uniform4f((light.getShadowCamera()->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawScreenQuadLayer(_deferredSunLightShadow, light.getLayer());
 	}
@@ -245,7 +245,7 @@ void
 DeferredLightingPipeline::renderDirectionalLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
-	_lightEyeDirection->uniform3f(light.getForward() * float3x3(pipeline.getCamera()->getView()));
+	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	if (shadowMap)
@@ -256,8 +256,8 @@ DeferredLightingPipeline::renderDirectionalLight(RenderPipeline& pipeline, const
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f((pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getView()).getAxisZ());
-		_shadowView2LightViewProject->uniform4fmat(pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getViewProject());
+		_shadowView2LightView->uniform4f((light.getShadowCamera()->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawScreenQuadLayer(_deferredDirectionalLightShadow, light.getLayer());
 	}
@@ -271,7 +271,7 @@ void
 DeferredLightingPipeline::renderPointLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
-	_lightEyePosition->uniform3f(light.getTransform().getTranslate() * pipeline.getCamera()->getView());
+	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTransform().getTranslate()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	auto transform = light.getTransform();
@@ -285,8 +285,8 @@ void
 DeferredLightingPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
-	_lightEyePosition->uniform3f(light.getTransform().getTranslate() * pipeline.getCamera()->getView());
-	_lightEyeDirection->uniform3f(light.getForward() * float3x3(pipeline.getCamera()->getView()));
+	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTransform().getTranslate()));
+	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 	_lightOuterInner->uniform2f(float2(light.getSpotOuterCone().y, light.getSpotInnerCone().y));
 
@@ -304,8 +304,8 @@ DeferredLightingPipeline::renderSpotLight(RenderPipeline& pipeline, const Light&
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f((pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getView()).getAxisZ());
-		_shadowView2LightViewProject->uniform4fmat(pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getViewProject());
+		_shadowView2LightView->uniform4f((light.getShadowCamera()->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawCone(_deferredSpotLightShadow, light.getLayer());
 	}
@@ -320,7 +320,7 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
 	_lightEyePosition->uniform3f(light.getTransform().getTranslate());
-	_lightEyeDirection->uniform3f(light.getForward() * float3x3(pipeline.getCamera()->getView()));
+	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	pipeline.drawScreenQuadLayer(_deferredAmbientLight, light.getLayer());

@@ -65,8 +65,7 @@ private:
 	PhysicsSphereComponent& operator=(const PhysicsSphereComponent&)noexcept = delete;
 
 private:
-
-	std::shared_ptr<PhysicsShapeSphere> _shape;
+	PhysicsShapeSpherePtr _shape;
 };
 
 _NAME_END

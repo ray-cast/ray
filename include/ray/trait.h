@@ -321,6 +321,74 @@ namespace trait
 			return str.empty();
 		}
 	};
+
+	template<class T, class U>
+	struct _Has_left_shift
+	{
+		template<class _Tx, class _Ty>
+		static auto _test(int) -> decltype(std::declval<_Tx>() << std::declval<_Ty>(), std::true_type());
+
+		template<class _Tx, class _Ty>
+		static auto _test(...)->std::false_type;
+
+		typedef decltype(_test<T, U>(0)) type;
+	};
+
+	template<class T>
+	struct _Has_left_shift<T, void>
+	{
+		template<class _T>
+		static auto _test(int) -> decltype(std::declval<_T>() << std::declval<_T>(), std::true_type());
+
+		template<class _T>
+		static auto _test(...)->std::false_type;
+
+		typedef decltype(_test<T>(0)) type;
+	};
+
+	template<class T, class U = void>
+	struct has_left_shift : _Has_left_shift<T, U>::type
+	{
+	};
+
+	template<class T>
+	struct has_left_shift<T, void> : _Has_left_shift<T, void>::type
+	{
+	};
+
+	template<class T, class U>
+	struct _Has_right_shift
+	{
+		template<class _Tx, class _Ty>
+		static auto _test(int) -> decltype(std::declval<_Tx>() >> std::declval<_Ty>(), std::true_type());
+
+		template<class _Tx, class _Ty>
+		static auto _test(...)->std::false_type;
+
+		typedef decltype(_test<T, U>(0)) type;
+	};
+
+	template<class T>
+	struct _Has_right_shift<T, void>
+	{
+		template<class _T>
+		static auto _test(int) -> decltype(std::declval<_T>() >> std::declval<_T>(), std::true_type());
+
+		template<class _T>
+		static auto _test(...)->std::false_type;
+
+		typedef decltype(_test<T>(0)) type;
+	};
+
+	template<class T, class U = void>
+	struct has_right_shift : _Has_right_shift<T, U>::type
+	{
+	};
+
+	template<class T>
+	struct has_right_shift<T, void> : _Has_right_shift<T, void>::type
+	{
+	};
 }
 
 _NAME_END

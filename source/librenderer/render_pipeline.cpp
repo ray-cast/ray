@@ -134,8 +134,8 @@ RenderPipeline::setTransform(const float4x4& transform) noexcept
 {
 	assert(_materialMatModel);
 	_materialMatModel->uniform4fmat(transform);
-	_materialMatModelView->uniform4fmat(transform * _materialMatView->getFloat4x4());
-	_materialMatModelViewProject->uniform4fmat(transform * _materialMatViewProject->getFloat4x4());
+	_materialMatModelView->uniform4fmat(_materialMatView->getFloat4x4() * transform);
+	_materialMatModelViewProject->uniform4fmat(_materialMatViewProject->getFloat4x4() * transform);
 }
 
 void
@@ -212,7 +212,7 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	_materialMatViewInverseTranspose->uniform4fmat(camera->getTransformInverseTranspose());
 	_materialMatProject->uniform4fmat(camera->getProject());
 	_materialMatProjectInverse->uniform4fmat(camera->getProjectInverse());
-	_materialMatViewProject->uniform4fmat(camera->getViewProject() * adjustProject);
+	_materialMatViewProject->uniform4fmat(adjustProject * camera->getViewProject());
 	_materialMatViewProjectInverse->uniform4fmat(camera->getViewProjectInverse());
 
 	_dataManager = camera->getRenderDataManager();

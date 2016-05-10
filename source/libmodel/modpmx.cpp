@@ -850,7 +850,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 		for (std::uint32_t i = 0; i < it.FaceVertexCount; i++, indices += pmx.header.sizeOfVertex)
 		{
-			std::uint32_t index;
+			std::uint32_t index = 0;
 
 			if (pmx.header.sizeOfVertex == 1)
 				index = *(std::uint8_t*)indices;
@@ -858,6 +858,8 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 				index = *(std::uint16_t*)indices;
 			else if (pmx.header.sizeOfVertex == 4)
 				index = *(std::uint32_t*)indices;
+			else
+				return false;
 
 			PMX_Vertex& v = pmx.vertices[index];
 

@@ -213,7 +213,7 @@ Camera::worldToScreen(const float3& pos) const noexcept
 	float w = viewport.z * 0.5f;
 	float h = viewport.w * 0.5f;
 
-	float4 v = float4(pos, 1.0) * this->getViewProject();
+	float4 v = this->getViewProject() * float4(pos, 1.0);
 	if (v.w != 0)
 		v /= v.w;
 
@@ -228,7 +228,7 @@ Camera::worldToProject(const float3& pos) const noexcept
 {
 	float4 v(pos, 1.0);
 
-	v = v * this->getViewProject();
+	v = this->getViewProject() * v;
 	if (v.w != 0)
 		v /= v.w;
 
@@ -249,7 +249,7 @@ Camera::screenToWorld(const float3& pos) const noexcept
 	v.x = v.x / w - 1.0f - viewport.x;
 	v.y = v.y / h - 1.0f - viewport.y;
 
-	v = v * this->getViewProjectInverse();
+	v = this->getViewProjectInverse() * v;
 	if (v.w != 0)
 		v /= v.w;
 
@@ -269,7 +269,7 @@ Camera::screenToDirection(const float2& pos) const noexcept
 	v.x = v.x / w - 1.0f - viewport.x;
 	v.y = v.y / h - 1.0f - viewport.y;
 
-	return (v * this->getProjectInverse()).xyz();
+	return (this->getProjectInverse() * v).xyz();
 }
 
 void
@@ -415,8 +415,8 @@ Camera::_updateOrtho() const noexcept
 
 	_projConstant.x = 2.0 / _projLength.x;
 	_projConstant.y = 2.0 / _projLength.y;
-	_projConstant.z = -(1.0 + _project.c1) / _projLength.x;
-	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
+	_projConstant.z = -(1.0 + _project.a3) / _projLength.x;
+	_projConstant.w = -(1.0 + _project.b3) / _projLength.y;
 
 	_clipConstant.x = _znear;
 	_clipConstant.y = (_zfar - _znear);
@@ -435,8 +435,8 @@ Camera::_updatePerspective() const noexcept
 
 	_projConstant.x = 2.0 / _projLength.x;
 	_projConstant.y = 2.0 / _projLength.y;
-	_projConstant.z = -(1.0 + _project.c1) / _projLength.x;
-	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
+	_projConstant.z = -(1.0 + _project.a3) / _projLength.x;
+	_projConstant.w = -(1.0 + _project.b3) / _projLength.y;
 
 	_clipConstant.x = _znear * (_zfar / (_zfar - _znear));
 	_clipConstant.y = _zfar / (_zfar - _znear);
@@ -465,7 +465,7 @@ Camera::_updateViewProject() const noexcept
 
 	if (_needUpdateViewProject)
 	{
-		_viewProejct = this->getView() * _project;
+		_viewProejct = _project * this->getView();
 		_viewProjectInverse = math::inverse(_viewProejct);
 
 		_needUpdateViewProject = false;

@@ -109,6 +109,24 @@ inline EulerAnglest<T> operator/(const EulerAnglest<T>& v1, const EulerAnglest<T
 	return EulerAnglest<T>(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
 }
 
+template<typename ostream, typename T>
+inline ostream& operator << (ostream& os, const EulerAnglest<T>& v)
+{
+    os << v.x << ", " << v.y << ", " << v.z;
+    return os;
+}
+
+template<typename istream, typename T>
+inline istream& operator >> (istream& is, EulerAnglest<T>& v)
+{
+    is >> v.x;
+    is.ignore(2);
+    is >> v.y;
+    is.ignore(2);
+    is >> v.z;
+    return is;
+}
+
 _NAME_END
 
 #endif

@@ -53,11 +53,10 @@ public:
 	Quaterniont(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	Quaterniont(const Quaterniont& q) noexcept : x(q.x), y(q.y), z(q.z), w(q.w) {}
 	Quaterniont(const Vector3t<T>& axis, T angle) noexcept { this->makeRotate(axis, angle); }
+	Quaterniont(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept { this->makeRotate(forward, up, right); }
 
-	explicit Quaterniont(const Vector3t<T>& euler) noexcept { this->makeRotate(euler); }
-	explicit Quaterniont(const EulerAnglest<T>& euler) noexcept { this->makeRotate(euler); }
-	explicit Quaterniont(const Matrix3x3t<T>& rotate) noexcept { this->makeRotate(rotate); }
-	explicit Quaterniont(const Matrix4x4t<T>& rotate) noexcept { this->makeRotate(rotate); }
+	explicit Quaterniont(const Vector3t<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
+	explicit Quaterniont(const EulerAnglest<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
 
 	Quaterniont& operator+=(T f) noexcept { w += w; x += f; y += f; z += f; return *this; }
 	Quaterniont& operator-=(T f) noexcept { w -= w; x -= f; y -= f; z -= f; return *this; }
@@ -83,9 +82,9 @@ public:
 
 		this->normalize();
 
-		const T t = static_cast<T>(1.0) - (x*x) - (y*y) - (z*z);
-		if (t < static_cast<T>(0.0))
-			w = static_cast<T>(0.0);
+		const T t = T(1.0) - (x*x) - (y*y) - (z*z);
+		if (t < T(0.0))
+			w = T(0.0);
 		else
 			w = sqrt(t);
 		return *this;
@@ -178,54 +177,49 @@ public:
 		return this->makeRotate(EulerAnglest<T>(euler));
 	}
 
-	Quaterniont<T>& makeRotate(const Matrix3x3t<T>& rotate) noexcept
+	Quaterniont<T>& makeRotate(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept
 	{
-		T t = 1 + rotate.a1 + rotate.b2 + rotate.c3;
+		T t = 1 + right.x + up.y + forward.z;
 
 		if (t > 0.001f)
 		{
-			T s = sqrt(t) * 2.0f;
-			x = (rotate.c2 - rotate.b3) / s;
-			y = (rotate.a3 - rotate.c1) / s;
-			z = (rotate.b1 - rotate.a2) / s;
-			w = 0.25f * s;
+			T s = std::sqrt(t) * 2.0f;
+			this->x = (up.z - forward.y) / s;
+			this->y = (forward.x - right.z) / s;
+			this->z = (right.y - up.x) / s;
+			this->w = 0.25f * s;
 		}
-		else if (rotate.a1 > rotate.b2 && rotate.a1 > rotate.c3)
+		else if (right.x > up.y && right.x > forward.z)
 		{
-			T s = sqrt(1.0f + rotate.a1 - rotate.b2 - rotate.c3) * 2.0f;
-			x = 0.25f * s;
-			y = (rotate.b1 + rotate.a2) / s;
-			z = (rotate.a3 + rotate.c1) / s;
-			w = (rotate.c2 - rotate.b3) / s;
+			T s = std::sqrt(1.0f + right.x - up.y - forward.z) * 2.0f;
+			this->x = 0.25f * s;
+			this->y = (right.y + up.x) / s;
+			this->z = (forward.x + right.z) / s;
+			this->w = (up.z - forward.y) / s;
 		}
-		else if (rotate.b2 > rotate.c3)
+		else if (up.y > forward.z)
 		{
-			T s = sqrt(1.0f + rotate.b2 - rotate.a1 - rotate.c3) * 2.0f;
-			x = (rotate.b1 + rotate.a2) / s;
-			y = 0.25f * s;
-			z = (rotate.c2 + rotate.b3) / s;
-			w = (rotate.a3 - rotate.c1) / s;
+			T s = std::sqrt(1.0f + up.y - right.x - forward.z) * 2.0f;
+			this->x = (right.y + up.x) / s;
+			this->y = 0.25f * s;
+			this->z = (up.z + forward.y) / s;
+			this->w = (forward.x - right.z) / s;
 		}
 		else
 		{
-			T s = sqrt(1.0f + rotate.c3 - rotate.a1 - rotate.b2) * 2.0f;
-			x = (rotate.a3 + rotate.c1) / s;
-			y = (rotate.c2 + rotate.b3) / s;
-			z = 0.25f * s;
-			w = (rotate.b1 - rotate.a2) / s;
+			T s = std::sqrt(1.0f + forward.z - right.x - up.y) * 2.0f;
+			this->x = (forward.x + right.z) / s;
+			this->y = (up.z + forward.y) / s;
+			this->z = 0.25f * s;
+			this->w = (right.y - up.x) / s;
 		}
 
 		return *this;
 	}
 
-	Quaterniont<T>& makeRotate(const Matrix4x4t<T>& m) noexcept
-	{
-		return makeRotate(Matrix3x3t<T>(m));
-	}
-
 	T getRotationAngle() const noexcept
 	{
-		return safeAcos(w) * 2.0f;
+		return safeAcos(w) * T(2.0);
 	}
 
 	Vector3t<T> getRotationAxis() const noexcept
@@ -248,13 +242,18 @@ template<typename T> const Quaterniont<T> Quaterniont<T>::Zero = Quaterniont<T>(
 template<typename T>
 inline bool operator==(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
 {
-	return q1.x == q2.x && q1.y == q2.y && q1.z == q2.z && q1.w == q2.w;
+	constexpr T epsilon = EPSILON_E4;
+	return
+		q1.x + epsilon > q2.x && q1.x - epsilon < q2.x &&
+		q1.y + epsilon > q2.y && q1.y - epsilon < q2.y &&
+		q1.z + epsilon > q2.z && q1.z - epsilon < q2.z &&
+		q1.w + epsilon > q2.w && q1.w - epsilon < q2.w;
 }
 
 template<typename T>
 inline bool operator!=(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
 {
-	return q1.x != q2.x || q1.y != q2.y || q1.z != q2.z || q1.w != q2.w;
+	return !(q1 == q2);
 }
 
 template <typename T>
@@ -285,6 +284,26 @@ template<typename T>
 inline Quaterniont<T> operator/(T f, const Quaterniont<T>& q) noexcept
 {
 	return Quaterniont<T>(q.x / f, q.y / f, q.z / f, q.w / f);
+}
+
+template<typename ostream, typename T>
+inline ostream& operator << (ostream& os, const Quaterniont<T>& v)
+{
+    os << v.x << ", " << v.y << ", " << v.z << ", " << v.w;
+    return os;
+}
+
+template<typename istream, typename T>
+inline istream& operator >> (istream& is, Quaterniont<T>& v)
+{
+    is >> v.x;
+    is.ignore(2);
+    is >> v.y;
+    is.ignore(2);
+    is >> v.z;
+    is.ignore(2);
+    is >> v.w;
+    return is;
 }
 
 namespace math

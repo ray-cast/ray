@@ -185,8 +185,8 @@ public:
 		Vector3t<T> edge1 = a - o;
 		Vector3t<T> edge2 = b - o;
 
-		normal = cross(edge2, edge1);
-		normal.normalize();
+		normal = math::cross(edge2, edge1);
+		normal = math::normalize(normal);
 
 		distance = math::dot(-normal, o);
 	}

@@ -76,6 +76,14 @@ PhysicsSystem::getPhysicsScene() noexcept
 	return _scene;
 }
 
+bool 
+PhysicsSystem::isFetchResult() const noexcept
+{
+	if (_scene)
+		return _scene->isFetchResult();
+	return false;
+}
+
 void
 PhysicsSystem::simulation(float delta) noexcept
 {

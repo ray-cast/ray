@@ -36,10 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/physics_character.h>
 #include <ray/physics_system.h>
-
-#include <BulletDynamics\Character\btKinematicCharacterController.h>
-#include <BulletCollision\CollisionShapes\btCapsuleShape.h>
-#include <BulletCollision\CollisionDispatch\btGhostObject.h>
+#include "bullet_types.h"
 
 _NAME_BEGIN
 

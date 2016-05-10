@@ -37,8 +37,7 @@
 #ifndef _H_PHYSICS_JOINT_COMPONENT_H_
 #define _H_PHYSICS_JOINT_COMPONENT_H_
 
-#include <ray/game_component.h>
-#include <ray/physics_joint.h>
+#include <ray/physics_forward.h>
 
 _NAME_BEGIN
 

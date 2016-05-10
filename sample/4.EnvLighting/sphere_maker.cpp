@@ -273,6 +273,7 @@ SphereMakerComponent::onActivate() except
 		for (std::size_t j = 0; j < 10; j++)
 		{
 			auto gameObject = std::make_shared<ray::GameObject>();
+			gameObject->setActive(true);
 			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
 			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material->clone()));
 			gameObject->setTranslate(ray::Vector3(-10.0f + i * 2.0f, 0, j * 2.0f));

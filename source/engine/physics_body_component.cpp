@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+﻿// +----------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -35,8 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/physics_body_component.h>
-#include <ray/physics_body.h>
 #include <ray/physics_shape_component.h>
+#include <ray/physics_system.h>
 
 _NAME_BEGIN
 
@@ -44,12 +44,11 @@ __ImplementSubClass(PhysicsBodyComponent, GameComponent, "PhysicsBody")
 
 PhysicsBodyComponent::PhysicsBodyComponent() noexcept
 	: _isEnableForce(false)
-	, _isFetchResult(false)
 	, _constantForce(Vector3::Zero)
 	, _constantTorque(Vector3::Zero)
 	, _constantVelocity(Vector3::Zero)
 	, _constantAngularVelocity(Vector3::Zero)
-	, _onShapeChange(std::bind(&PhysicsBodyComponent::onShapeChange, this))
+	, _onCollisionChange(std::bind(&PhysicsBodyComponent::onCollisionChange, this))
 {
 	_body = std::make_unique<PhysicsBody>();
 	_body->setRigidbodyListener(this);
@@ -293,22 +292,26 @@ PhysicsBodyComponent::_buildRigibody() noexcept
 
 	_transform.makeRotate(gameObject->getQuaternion());
 	_transform.setTranslate(gameObject->getTranslate() - gameObject->getParent()->getTranslate());
-	_transformInverse = math::transformInverse(_transform);
+	_transformInverse = math::inverse(_transform);
 
 	_body->setLayer(gameObject->getLayer());
-	_body->setTransform(this->getGameObject()->getTransform());
+	_body->setTransform(gameObject->getTransform());
 	_body->setup(shape);
 }
 
 void
 PhysicsBodyComponent::onActivate() noexcept
 {
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	this->_buildRigibody();
 }
 
 void
 PhysicsBodyComponent::onDeactivate() noexcept
 {
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	_body->close();
 }
 
@@ -316,39 +319,40 @@ void
 PhysicsBodyComponent::onAttachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isA<PhysicsShapeComponent>())
-		component->cast<PhysicsShapeComponent>()->addShapeChangeListener(&_onShapeChange);
+		component->cast<PhysicsShapeComponent>()->addShapeChangeListener(&_onCollisionChange);
 }
 
 void
 PhysicsBodyComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isA<PhysicsShapeComponent>())
-		component->cast<PhysicsShapeComponent>()->removeShapeChangeListener(&_onShapeChange);
-}
-
-void
-PhysicsBodyComponent::onFrameEnd() noexcept
-{
-	if (_isEnableForce)
-	{
-		_body->addForce(_constantForce);
-		_body->addTorque(_constantTorque);
-		_body->setLinearVelocity(_body->getLinearVelocity() + _constantVelocity);
-		_body->setAngularVelocity(_body->getAngularVelocity() + _constantAngularVelocity);
-	}
+		component->cast<PhysicsShapeComponent>()->removeShapeChangeListener(&_onCollisionChange);
 }
 
 void
 PhysicsBodyComponent::onMoveAfter() noexcept
 {
-	if (_body && !_isFetchResult && this->isKinematic())
-		_body->setTransform(_transform * this->getGameObject()->getParent()->getTransform());
+	if (PhysicsSystem::instance()->isFetchResult())
+		return;
+
+	if (_body && this->isKinematic())
+		_body->setTransform(this->getGameObject()->getParent()->getTransform() * _transform);
 }
 
 void
-PhysicsBodyComponent::onShapeChange() noexcept
+PhysicsBodyComponent::onCollisionChange() noexcept
 {
 	_buildRigibody();
+}
+
+void 
+PhysicsBodyComponent::onCollisionEnter() noexcept
+{
+}
+
+void 
+PhysicsBodyComponent::onCollisionExit() noexcept
+{
 }
 
 void
@@ -357,22 +361,13 @@ PhysicsBodyComponent::onCollisionStay() noexcept
 }
 
 void 
-PhysicsBodyComponent::onWillFetchResult() noexcept
-{
-	_isFetchResult = true;
-}
-
-void 
-PhysicsBodyComponent::onFinishFetchResult() noexcept
-{
-	_isFetchResult = false;
-}
-
-void 
 PhysicsBodyComponent::onFetchResult() noexcept
 {
-	this->getGameObject()->setTransform(_body->getWorldTransform());
-	this->getGameObject()->getParent()->setTransform(_transformInverse * _body->getWorldTransform());
+	float4x4 transform;
+	_body->getWorldTransform(transform);
+
+	this->getGameObject()->setTransform(transform);
+	this->getGameObject()->getParent()->setTransform(math::transformMultiply(transform, _transformInverse));
 }
 
 _NAME_END

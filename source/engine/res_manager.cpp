@@ -297,6 +297,7 @@ ResManager::createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, G
 			continue;
 
 		auto gameObject = std::make_shared<GameObject>();
+		gameObject->setActive(true);
 		gameObject->setParent(bones[it->bone]);
 		gameObject->setName(it->name);
 		gameObject->setLayer(it->group);
@@ -383,6 +384,7 @@ ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, Game
 		if (bodyA != bodyB)
 		{
 			auto joint = std::make_shared<PhysicsJointConfigurableComponent>();
+			joint->setActive(true);
 			joint->setLinearSpring(it->position);
 			joint->setAngularSprint(Quaternion(RAD_TO_DEG(it->rotation)));
 			joint->setLinearLowerLimit(it->movementLowerLimit);

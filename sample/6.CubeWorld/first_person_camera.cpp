@@ -62,6 +62,8 @@ FirstPersonCameraComponent::onActivate() noexcept
 	auto cameraComponent = this->getComponent<ray::CameraComponent>();
 	if (cameraComponent)
 		_sensitivityX = _sensitivityY * cameraComponent->getRatio();
+
+	this->addComponentDispatch(ray::GameDispatchType::GameDispatchTypeFrame, this);
 }
 
 void
@@ -70,6 +72,8 @@ FirstPersonCameraComponent::onDectivate() noexcept
 	auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
 	if (inputFeature)
 		inputFeature->getInput()->lockCursor(false);
+
+	this->removeComponentDispatch(ray::GameDispatchType::GameDispatchTypeFrame, this);
 }
 
 void

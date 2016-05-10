@@ -51,21 +51,21 @@ PhysicsShapeComponent::~PhysicsShapeComponent() noexcept
 void
 PhysicsShapeComponent::addShapeChangeListener(std::function<void()>* func) noexcept
 {
-	assert(!_onShapeChange.find(func));
-	_onShapeChange.attach(func);
+	assert(!_onCollisionChange.find(func));
+	_onCollisionChange.attach(func);
 }
 
 void
 PhysicsShapeComponent::removeShapeChangeListener(std::function<void()>* func) noexcept
 {
-	assert(_onShapeChange.find(func));
-	_onShapeChange.remove(func);
+	assert(_onCollisionChange.find(func));
+	_onCollisionChange.remove(func);
 }
 
 void
 PhysicsShapeComponent::needUpdate() noexcept
 {
-	_onShapeChange.run();
+	_onCollisionChange.run();
 }
 
 _NAME_END

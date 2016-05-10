@@ -76,18 +76,14 @@ public:
 
 	void makeFrustum(float angle, float ratio, float znear, float zfar, const Vector3t<T>& position, const Vector3t<T>& lookat, const Vector3t<T>& up) noexcept
 	{
-		Vector3t<T> z = position - lookat;
-		z.normalize();
-
-		Vector3t<T> x = up.cross(z);
-		x.normalize();
-
-		Vector3t<T> y = z.cross(x);
+		Vector3t<T> z = math::normalize(position - lookat);
+		Vector3t<T> x = math::normalize(math::cross(up, z));
+		Vector3t<T> y = math::cross(z, x);
 
 		Vector3t<T> nc = position - z * znear;
 		Vector3t<T> fc = position - z * zfar;
 
-		float tang = std::tan(degrees(angle) * 0.5);
+		float tang = std::tan(DEG_TO_RAD(angle) * 0.5);
 		float nh = znear * tang;
 		float nw = nh * ratio;
 		float fh = zfar  * tang;
@@ -113,35 +109,35 @@ public:
 
 	void extract(const Matrix4x4t<T>& m, bool normalize = false) noexcept
 	{
-		_left.normal.x = m.d1 + m.a1;
-		_left.normal.y = m.d2 + m.a2;
-		_left.normal.z = m.d3 + m.a3;
-		_left.distance = m.d4 + m.a4;
+		_left.normal.x = m.a4 + m.a1;
+		_left.normal.y = m.b4 + m.b1;
+		_left.normal.z = m.c4 + m.c1;
+		_left.distance = m.d4 + m.d1;
 
-		_right.normal.x = m.d1 - m.a1;
-		_right.normal.y = m.d2 - m.a2;
-		_right.normal.z = m.d3 - m.a3;
-		_right.distance = m.d4 - m.a4;
+		_right.normal.x = m.a4 - m.a1;
+		_right.normal.y = m.b4 - m.b1;
+		_right.normal.z = m.c4 - m.c1;
+		_right.distance = m.d4 - m.d1;
 
-		_bottom.normal.x = m.d1 + m.b1;
-		_bottom.normal.y = m.d2 + m.b2;
-		_bottom.normal.z = m.d3 + m.b3;
-		_bottom.distance = m.d4 + m.b4;
+		_bottom.normal.x = m.a4 + m.a2;
+		_bottom.normal.y = m.b4 + m.b2;
+		_bottom.normal.z = m.c4 + m.c2;
+		_bottom.distance = m.d4 + m.d2;
 
-		_top.normal.x = m.d1 - m.b1;
-		_top.normal.y = m.d2 - m.b2;
-		_top.normal.z = m.d3 - m.b3;
-		_top.distance = m.d4 - m.b4;
+		_top.normal.x = m.a4 - m.a2;
+		_top.normal.y = m.b4 - m.b2;
+		_top.normal.z = m.c4 - m.c2;
+		_top.distance = m.d4 - m.d2;
 
-		_near.normal.x = m.d1 + m.c1;
-		_near.normal.y = m.d2 + m.c2;
-		_near.normal.z = m.d3 + m.c3;
-		_near.distance = m.d4 + m.c4;
+		_near.normal.x = m.a4 + m.a3;
+		_near.normal.y = m.b4 + m.b3;
+		_near.normal.z = m.c4 + m.c3;
+		_near.distance = m.d4 + m.d3;
 
-		_far.normal.x = m.d1 - m.c1;
-		_far.normal.y = m.d2 - m.c2;
-		_far.normal.z = m.d3 - m.c3;
-		_far.distance = m.d4 - m.c4;
+		_far.normal.x = m.a4 - m.a3;
+		_far.normal.y = m.b4 - m.b3;
+		_far.normal.z = m.c4 - m.c3;
+		_far.distance = m.d4 - m.d3;
 
 		if (normalize)
 		{

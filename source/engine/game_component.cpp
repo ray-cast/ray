@@ -71,6 +71,34 @@ GameComponent::getComponents() const noexcept
 	return _gameObject->getComponents();
 }
 
+void 
+GameComponent::addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
+{
+	assert(_gameObject && component);
+	_gameObject->addComponentDispatch(type, component);
+}
+
+void 
+GameComponent::removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
+{
+	assert(_gameObject && component);
+	_gameObject->removeComponentDispatch(type, component);
+}
+
+void 
+GameComponent::addComponentDispatch(GameDispatchType type, GameComponent* component) noexcept
+{
+	assert(_gameObject && component);
+	_gameObject->addComponentDispatch(type, component->cast<GameComponent>());
+}
+
+void 
+GameComponent::removeComponentDispatch(GameDispatchType type, GameComponent* component) noexcept
+{
+	assert(_gameObject && component);
+	_gameObject->removeComponentDispatch(type, component->cast<GameComponent>());
+}
+
 void
 GameComponent::_setGameObject(GameObject* gameobj) noexcept
 {
@@ -233,16 +261,6 @@ GameComponent::onMoveBefore() except
 
 void
 GameComponent::onMoveAfter() except
-{
-}
-
-void
-GameComponent::onParentChangeBefore() except
-{
-}
-
-void
-GameComponent::onParentChangeAfter() except
 {
 }
 

@@ -39,15 +39,14 @@
 
 #include <ray/physics_shape.h>
 
+class btMotionState;
+
 _NAME_BEGIN
 
 class EXPORT PhysicsBodyListener
 {
 public:
-	virtual void onWillFetchResult() noexcept = 0;
-	virtual void onFinishFetchResult() noexcept = 0;
 	virtual void onFetchResult() noexcept = 0;
-
 	virtual void onCollisionStay() noexcept = 0;
 };
 
@@ -92,11 +91,11 @@ public:
 	const Vector3& getGravity() const noexcept;
 	const Vector3& getLinearVelocity() const noexcept;
 	const Vector3& getAngularVelocity() const noexcept;
-	const Vector3& getMovePosition() const noexcept;
+	
+	Vector3 getMovePosition() const noexcept;
+	Quaternion getMoveRotation() const noexcept;
 
-	const Quaternion& getMoveRotation() const noexcept;
-
-	float4x4 getWorldTransform() const noexcept;
+	void getWorldTransform(float4x4& m) const noexcept;
 
 	void addForce(const Vector3& force) noexcept;
 	void addRelativeForce(const Vector3& force, const Vector3& axis) noexcept;
@@ -121,7 +120,6 @@ private:
 private:
 
 	std::unique_ptr<btRigidBody> _rigidbody;
-	std::unique_ptr<btDefaultMotionState> _motionState;
 
 	std::uint8_t _layer;
 	std::uint16_t _layerMask;
@@ -134,9 +132,6 @@ private:
 	float _linearDamping;
 	float _angularDamping;
 
-	mutable Vector3 _position;
-	mutable Quaternion _rotate;
-
 	float _friction;
 	float _restitution;
 
@@ -146,6 +141,7 @@ private:
 	Vector3 _linearVelocity;
 	Vector3 _angularVelocity;
 
+	btMotionState* _motion;
 	PhysicsSceneWeakPtr _scene;
 	PhysicsBodyListener* _listener;
 };

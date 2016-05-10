@@ -39,7 +39,6 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameSceneManager, GameFeature, "GameSceneManager")
 __ImplementSingleton(GameSceneManager)
 
 GameSceneManager::GameSceneManager() noexcept

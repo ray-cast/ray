@@ -41,7 +41,6 @@
 
 _NAME_BEGIN
 
-class PhysicsShapeBox;
 class EXPORT PhysicsBoxComponent final : public PhysicsShapeComponent
 {
 	__DeclareSubClass(PhysicsBoxComponent, PhysicsShapeComponent)
@@ -70,7 +69,7 @@ private:
 
 private:
 
-	std::shared_ptr<PhysicsShapeBox> _shape;
+	PhysicsShapeBoxPtr _shape;
 };
 
 _NAME_END

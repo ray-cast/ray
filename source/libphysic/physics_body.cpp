@@ -36,8 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/physics_body.h>
 #include <ray/physics_system.h>
-
-#include <btBulletDynamicsCommon.h>
+#include "bullet_types.h"
 
 _NAME_BEGIN
 
@@ -50,21 +49,20 @@ PhysicsBody::PhysicsBody() noexcept
 	, _restitution(0.0f)
 	, _linearDamping(0.05f)
 	, _angularDamping(0.05f)
-	, _position(Vector3::Zero)
-	, _rotate(Quaternion::Zero)
 	, _inertia(Vector3::Zero)
 	, _gravity(Vector3::Zero)
 	, _linearVelocity(Vector3::Zero)
 	, _angularVelocity(Vector3::Zero)
 	, _sleep(false)
 	, _rigidbody(nullptr)
-	, _motionState(nullptr)
 	, _listener(nullptr)
 {
+	_motion = new btDefaultMotionState;
 }
 
 PhysicsBody::~PhysicsBody() noexcept
 {
+	delete _motion;
 	this->close();
 }
 
@@ -73,11 +71,6 @@ PhysicsBody::setup(PhysicsShapePtr shape) noexcept
 {
 	assert(shape);
 	assert(shape->getCollisionShape());
-
-	btTransform startTransform;
-	startTransform.setIdentity();
-	startTransform.setOrigin(btVector3(_position.x, _position.y, _position.z));
-	startTransform.setRotation(btQuaternion(_rotate.x, _rotate.y, _rotate.z, _rotate.w));
 
 	btCollisionShape* collision = shape->getCollisionShape();
 	btVector3 btv3LocalInertia(0.0f, 0.0f, 0.0f);
@@ -91,9 +84,7 @@ PhysicsBody::setup(PhysicsShapePtr shape) noexcept
 			collision->calculateLocalInertia(_mass, btv3LocalInertia);
 	}
 
-	_motionState = std::make_unique<btDefaultMotionState>(startTransform);
-
-	_rigidbody = std::make_unique<btRigidBody>(_mass, _motionState.get(), shape->getCollisionShape(), btv3LocalInertia);
+	_rigidbody = std::make_unique<btRigidBody>(_mass, _motion, shape->getCollisionShape(), btv3LocalInertia);
 	_rigidbody->setUserPointer(this);
 	_rigidbody->setRestitution(_restitution);
 	_rigidbody->setFriction(_friction);
@@ -113,8 +104,6 @@ void
 PhysicsBody::close() noexcept
 {
 	this->setPhysicsScene(nullptr);
-
-	_motionState.reset();
 	_rigidbody.reset();
 }
 
@@ -227,74 +216,32 @@ PhysicsBody::setGravity(const Vector3& value) noexcept
 }
 
 void
-PhysicsBody::setMovePosition(const Vector3& value) noexcept
+PhysicsBody::setMovePosition(const Vector3& v) noexcept
 {
-	if (_rigidbody)
-	{
-		auto motion = _rigidbody->getMotionState();
-		if (motion)
-		{
-			btTransform transform;
-
-			motion->getWorldTransform(transform);
-
-			btVector3 pos;
-			pos.setX(value.x);
-			pos.setY(value.y);
-			pos.setZ(value.z);
-
-			transform.setOrigin(pos);
-
-			motion->setWorldTransform(transform);
-
-			_rigidbody->setMotionState(_motionState.get());
-		}
-	}
-
-	_position = value;
+	btTransform transform;
+	_motion->getWorldTransform(transform);
+	transform.setOrigin(btVector3(v.x, v.y, v.z));
+	_motion->setWorldTransform(transform);
 }
 
 void
-PhysicsBody::setMoveRotation(const Quaternion& value) noexcept
+PhysicsBody::setMoveRotation(const Quaternion& q) noexcept
 {
-	if (_rigidbody)
-	{
-		auto motion = _rigidbody->getMotionState();
-		if (motion)
-		{
-			btTransform transform;
-
-			motion->getWorldTransform(transform);
-
-			btQuaternion quat;
-			quat.setX(value.x);
-			quat.setY(value.y);
-			quat.setZ(value.z);
-			quat.setW(value.w);
-
-			transform.setRotation(quat);
-
-			motion->setWorldTransform(transform);
-
-			_rigidbody->setMotionState(_motionState.get());
-		}
-	}
-
-	_rotate = value;
+	btTransform transform;
+	_motion->getWorldTransform(transform);
+	transform.setRotation(btQuaternion(q.x, q.y, q.z, q.w));
+	_motion->setWorldTransform(transform);
 }
 
-void 
+void
 PhysicsBody::setTransform(const float4x4& value) noexcept
 {
-	Quaternion rotate;
-	Vector3 translate;
-	value.getTransform(rotate, translate);
-
-	this->setMovePosition(translate);
-	this->setMoveRotation(rotate);
+	btTransform transform;
+	transform.setFromOpenGLMatrix(&value.a1);
+	_motion->setWorldTransform(transform);
 }
 
-void 
+void
 PhysicsBody::isKinematic(bool isKinematic) noexcept
 {
 	if (_rigidbody)
@@ -308,7 +255,7 @@ PhysicsBody::isKinematic(bool isKinematic) noexcept
 	_isKinematic = isKinematic;
 }
 
-bool 
+bool
 PhysicsBody::isKinematic() const noexcept
 {
 	return _isKinematic;
@@ -332,7 +279,7 @@ float
 PhysicsBody::getMass() const noexcept
 {
 	assert(_rigidbody);
-	return 1.0f / _rigidbody->getInvMass();
+	return _mass;
 }
 
 float
@@ -379,46 +326,29 @@ PhysicsBody::getAngularVelocity() const noexcept
 	return _angularVelocity;
 }
 
-const Vector3&
+Vector3
 PhysicsBody::getMovePosition() const noexcept
 {
-	if (_rigidbody)
-	{
-		auto pos = _rigidbody->getCenterOfMassPosition();
-		_position.x = pos.x();
-		_position.y = pos.y();
-		_position.z = pos.z();
-	}
-
-	return _position;
+	btTransform transform;
+	_motion->getWorldTransform(transform);
+	return Vector3(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
 }
 
-const Quaternion&
+Quaternion
 PhysicsBody::getMoveRotation() const noexcept
 {
-	if (_rigidbody)
-	{
-		btQuaternion quat = _rigidbody->getOrientation();
-		_rotate.x = quat.x();
-		_rotate.y = quat.y();
-		_rotate.z = quat.z();
-		_rotate.w = quat.w();
-	}
-
-	return _rotate;
+	btTransform transform;
+	_motion->getWorldTransform(transform);
+	btQuaternion q = transform.getRotation();
+	return Quaternion(q.x(), q.y(), q.z(), q.w());
 }
 
-float4x4
-PhysicsBody::getWorldTransform() const noexcept
+void
+PhysicsBody::getWorldTransform(float4x4& m) const noexcept
 {
-	if (_rigidbody)
-	{
-		float4x4 result;
-		_rigidbody->getWorldTransform().getOpenGLMatrix((float*)&result);
-		return math::transpose(result);
-	}
-
-	return float4x4::One;
+	btTransform transform;
+	_motion->getWorldTransform(transform);
+	transform.getOpenGLMatrix(&m.a1);
 }
 
 void
@@ -491,7 +421,7 @@ PhysicsBody::isSleep() const noexcept
 	return _sleep;
 }
 
-void 
+void
 PhysicsBody::setLayer(std::uint8_t layer) noexcept
 {
 	_layer = layer;
@@ -503,13 +433,13 @@ PhysicsBody::setLayerMask(std::uint16_t mask) noexcept
 	_layerMask = mask;
 }
 
-std::uint8_t 
+std::uint8_t
 PhysicsBody::getLayer() const noexcept
 {
 	return _layer;
 }
 
-std::uint16_t 
+std::uint16_t
 PhysicsBody::getLayerMask() const noexcept
 {
 	return _layerMask;

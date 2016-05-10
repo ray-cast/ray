@@ -51,8 +51,8 @@ Light::Light() noexcept
 	, _lightRange(10.0f)
 	, _lightColor(1.0, 1.0, 1.0)
 	, _lightAttenuation(1.0, 0.0, 0.0)
-	, _spotInnerCone(5.0f, cos(math::degrees(5.0f)))
-	, _spotOuterCone(40.0f, cos(math::degrees(40.0f)))
+	, _spotInnerCone(5.0f, math::cos(math::deg2rad(5.0f)))
+	, _spotOuterCone(40.0f, math::cos(math::deg2rad(40.0f)))
 	, _subsurfaceScattering(false)
 	, _shadowType(LightShadowType::LightShadowTypeNone)
 	, _shadowSoftEnable(false)
@@ -101,15 +101,15 @@ Light::setLightColor(const float3& color) noexcept
 void
 Light::setSpotInnerCone(float value) noexcept
 {
-	_spotInnerCone.x = std::min(_spotOuterCone.x, value);
-	_spotInnerCone.y = std::cos(DEG_TO_RAD(_spotInnerCone.x));
+	_spotInnerCone.x = math::min(_spotOuterCone.x, value);
+	_spotInnerCone.y = math::cos(math::deg2rad(_spotInnerCone.x));
 }
 
 void
 Light::setSpotOuterCone(float value) noexcept
 {
-	_spotOuterCone.x = std::max(_spotInnerCone.x, value);
-	_spotOuterCone.y = std::cos(DEG_TO_RAD(_spotOuterCone.x));
+	_spotOuterCone.x = math::max(_spotInnerCone.x, value);
+	_spotOuterCone.y = math::cos(math::deg2rad(_spotOuterCone.x));
 	this->_updateBoundingBox();
 }
 

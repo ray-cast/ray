@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,66 +34,27 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/physics_shape_box.h>
-#include "bullet_types.h"
+#ifndef _H_PHYSIC_FORWARD_H_
+#define _H_PHYSIC_FORWARD_H_
+
+#include <ray/game_features.h>
+#include <ray/game_component.h>
+#include <ray/game_server.h>
+
+#include <ray/physics_body.h>
+#include <ray/physics_joint.h>
 
 _NAME_BEGIN
 
-PhysicsShapeBox::PhysicsShapeBox() noexcept
-	: _size(Vector3::One)
-	, _shape(nullptr)
-{
-}
+typedef std::shared_ptr<class PhysicsShape> PhysicsShapePtr;
+typedef std::shared_ptr<class PhysicsShapeBox> PhysicsShapeBoxPtr;
+typedef std::shared_ptr<class PhysicsShapeMesh> PhysicsShapeMeshPtr;
+typedef std::shared_ptr<class PhysicsShapeTerrain> PhysicsShapeTerrainPtr;
+typedef std::shared_ptr<class PhysicsShapeSphere> PhysicsShapeSpherePtr;
+typedef std::shared_ptr<class PhysicsBodyComponent> PhysicsBodyComponentPtr;
+typedef std::shared_ptr<class PhysicsCharacterComponent> PhysicsCharacterComponentPtr;
 
-PhysicsShapeBox::~PhysicsShapeBox() noexcept
-{
-	this->close();
-}
-
-void
-PhysicsShapeBox::setup() noexcept
-{
-	assert(!_shape);
-	_shape = new btBoxShape(btVector3(_size.x, _size.y, _size.z));
-	_shape->setUserPointer(this);
-}
-
-void
-PhysicsShapeBox::close() noexcept
-{
-	if (_shape)
-	{
-		delete _shape;
-		_shape = nullptr;
-	}
-}
-
-void
-PhysicsShapeBox::setSize(const Vector3& size) noexcept
-{
-	if (_shape)
-	{
-		btVector3 margin;
-		margin.setX(size.x);
-		margin.setY(size.y);
-		margin.setZ(size.z);
-
-		_shape->setSafeMargin(margin);
-	}
-
-	_size = size;
-}
-
-const Vector3&
-PhysicsShapeBox::getSize() const noexcept
-{
-	return _size;
-}
-
-btCollisionShape*
-PhysicsShapeBox::getCollisionShape() noexcept
-{
-	return _shape;
-}
 
 _NAME_END
+
+#endif

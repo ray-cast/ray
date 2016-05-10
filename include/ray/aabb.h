@@ -313,15 +313,16 @@ public:
 		assert(!empty());
 
 		AABBt<T> aabb;
+		aabb.min.x = aabb.max.x = m.d1;
+		aabb.min.y = aabb.max.y = m.d2;
+		aabb.min.z = aabb.max.z = m.d3;
 
 		for (int i = 0; i < 3; i++)
 		{
-			aabb.min[i] = aabb.max[i] = m[i * 4 + 3];
-
 			for (int j = 0; j < 3; j++)
 			{
-				float e = min[j] * m[i * 4 + j];
-				float f = max[j] * m[i * 4 + j];
+				float e = m[j * 4 + i] * min[j];
+				float f = m[j * 4 + i] * max[j];
 
 				if (e < f)
 				{

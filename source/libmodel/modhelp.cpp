@@ -1381,9 +1381,9 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 				bindposes_->push_back(bindpose);
 
 			const auto& transform = instances[i].getTransform();
-			if (!transform.isIdentity())
+			if (!math::isIdentity(transform))
 			{
-				if (transform.isOnlyTranslate())
+				if (math::isOnlyTranslate(transform))
 				{
 					auto translate = transform.getTranslate();
 

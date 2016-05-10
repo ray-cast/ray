@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/physics_features.h>
 #include <ray/physics_system.h>
-#include <ray/game_server.h>
 
 _NAME_BEGIN
 

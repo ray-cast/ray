@@ -51,6 +51,8 @@ public:
 	bool open() noexcept;
 	void close() noexcept;
 
+	bool isFetchResult() const noexcept;
+
 	PhysicsScenePtr getPhysicsScene() noexcept;
 
 	void simulation(float delta) noexcept;

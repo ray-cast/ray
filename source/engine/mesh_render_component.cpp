@@ -269,14 +269,14 @@ void
 MeshRenderComponent::onLayerChangeAfter() noexcept
 {
 	for (auto& it : _renderObjects)
-	{
 		it->setLayer(this->getGameObject()->getLayer());
-	}
 }
 
 void
 MeshRenderComponent::onActivate() except
 {
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	auto component = this->getGameObject()->getComponent<MeshComponent>();
 	if (!component)
 		return;
@@ -300,6 +300,8 @@ MeshRenderComponent::onActivate() except
 void
 MeshRenderComponent::onDeactivate() noexcept
 {
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
 	this->_destroyMaterials();
 	this->_destroyRenderhObjects();
 }

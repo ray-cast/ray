@@ -35,8 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/physics_shape_terrain.h>
-
-#include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
+#include "bullet_types.h"
 
 _NAME_BEGIN
 

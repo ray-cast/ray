@@ -76,6 +76,8 @@ public:
 	float getSkitWindow() const noexcept;
 	const Vector3& getGravity() const noexcept;
 
+	bool isFetchResult() const noexcept;
+
 	void addJoint(btTypedConstraint* joint) noexcept;
 	void removeJoint(btTypedConstraint* joint) noexcept;
 
@@ -91,6 +93,8 @@ public:
 	void simulation(float delta) noexcept;
 
 private:
+
+	bool _isFetchResult;
 
 	Setting _setting;
 

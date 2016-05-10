@@ -37,8 +37,7 @@
 #ifndef _H_RIGIDBODY_COMPONENT_H_
 #define _H_RIGIDBODY_COMPONENT_H_
 
-#include <ray/game_component.h>
-#include <ray/physics_body.h>
+#include <ray/physics_forward.h>
 
 _NAME_BEGIN
 
@@ -107,16 +106,13 @@ private:
 	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
-	virtual void onFrameEnd() noexcept;
+	virtual void onCollisionChange() noexcept;
+	virtual void onCollisionEnter() noexcept;
+	virtual void onCollisionExit() noexcept;
+	virtual void onCollisionStay() noexcept;
 
 	virtual void onMoveAfter() noexcept;
 
-	virtual void onShapeChange() noexcept;
-
-	virtual void onCollisionStay() noexcept;
-
-	virtual void onWillFetchResult() noexcept;
-	virtual void onFinishFetchResult() noexcept;
 	virtual void onFetchResult() noexcept;
 
 private:
@@ -125,7 +121,6 @@ private:
 
 private:
 	bool _isEnableForce;
-	bool _isFetchResult;
 
 	Vector3 _constantForce;
 	Vector3 _constantTorque;
@@ -135,7 +130,10 @@ private:
 	float4x4 _transform;
 	float4x4 _transformInverse;
 
-	std::function<void()> _onShapeChange;
+	delegate<void()> _onActivate;
+	delegate<void()> _onDeactivate;
+
+	std::function<void()> _onCollisionChange;
 
 	std::unique_ptr<PhysicsBody> _body;
 };

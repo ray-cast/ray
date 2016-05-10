@@ -36,10 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/physics_scene.h>
 #include <ray/physics_system.h>
-
-#include <btBulletDynamicsCommon.h>
-#include <btBulletCollisionCommon.h>
-#include <BulletCollision\CollisionDispatch\btGhostObject.h>
+#include "bullet_types.h"
 
 _NAME_BEGIN
 
@@ -60,6 +57,7 @@ PhysicsScene::PhysicsScene() noexcept
 	, _broadphase(nullptr)
 	, _solver(nullptr)
 	, _dynamicsWorld(nullptr)
+	, _isFetchResult(false)
 {
 }
 
@@ -185,6 +183,12 @@ const Vector3&
 PhysicsScene::getGravity() const noexcept
 {
 	return _setting.gravity;
+}
+
+bool 
+PhysicsScene::isFetchResult() const noexcept
+{
+	return _isFetchResult;
 }
 
 /*int
@@ -328,13 +332,23 @@ PhysicsScene::removeAction(btActionInterface* action) noexcept
 void
 PhysicsScene::simulation(float delta) noexcept
 {
+	_isFetchResult = true;
+
+	/*if (_isEnableForce)
+	{
+		_body->addForce(_constantForce);
+		_body->addTorque(_constantTorque);
+		_body->setLinearVelocity(_body->getLinearVelocity() + _constantVelocity);
+		_body->setAngularVelocity(_body->getAngularVelocity() + _constantAngularVelocity);
+	}*/
+
 	_dynamicsWorld->stepSimulation(delta);
 
 	auto dispatcher = _dynamicsWorld->getDispatcher();
 	if (dispatcher)
 	{
 		auto numManifolds = _dispatcher->getNumManifolds();
-		for (std::size_t i = 0; i < numManifolds; i++)
+		for (int i = 0; i < numManifolds; i++)
 		{
 			auto contactManifold = _dispatcher->getManifoldByIndexInternal(i);
 			if (contactManifold->getNumContacts() == 0)
@@ -366,24 +380,15 @@ PhysicsScene::simulation(float delta) noexcept
 
 	for (auto& it : _rigidbodys)
 	{
-		auto listener = it->getRigidbodyListener();
-		if (listener)
-			listener->onWillFetchResult();
-	}
+		if (math::equals(it->getMass(), 0.0f))
+			continue;
 
-	for (auto& it : _rigidbodys)
-	{
 		auto listener = it->getRigidbodyListener();
 		if (listener)
 			listener->onFetchResult();
 	}
 
-	for (auto& it : _rigidbodys)
-	{
-		auto listener = it->getRigidbodyListener();
-		if (listener)
-			listener->onFinishFetchResult();
-	}
+	_isFetchResult = false;
 }
 
 _NAME_END

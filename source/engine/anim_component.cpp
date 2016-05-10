@@ -150,13 +150,18 @@ AnimationComponent::clone() const noexcept
 void
 AnimationComponent::onActivate() except
 {
-	_playAnimation(this->getName());
+	if (!_enableAnimation)
+		_playAnimation(this->getName());
+
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeFrameEnd, this);
 }
 
 void
 AnimationComponent::onDeactivate() noexcept
 {
 	_destroyAnimation();
+
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeFrameEnd, this);
 }
 
 void
@@ -291,7 +296,7 @@ AnimationComponent::_updateAnimation() noexcept
 
 		std::size_t i = 0;
 		for (auto& it : _animtion->getBoneArray())
-			_transforms[i++]->setTransform(it.getTransform());
+			_transforms[i++]->setTransformOnlyRotate(it.getTransform());
 	}
 }
 

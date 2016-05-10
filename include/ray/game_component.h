@@ -71,10 +71,17 @@ public:
 	virtual GameComponentPtr clone() const noexcept = 0;
 
 protected:
-	virtual void sendMessage(const MessagePtr& message) except;
-	virtual void sendMessageUpwards(const MessagePtr& message) except;
-	virtual void sendMessageDownwards(const MessagePtr& message) except;
+	void sendMessage(const MessagePtr& message) except;
+	void sendMessageUpwards(const MessagePtr& message) except;
+	void sendMessageDownwards(const MessagePtr& message) except;
 
+	void addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept;
+	void removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept;
+
+	void addComponentDispatch(GameDispatchType type, GameComponent* component) noexcept;
+	void removeComponentDispatch(GameDispatchType type, GameComponent* component) noexcept;
+
+private:
 	virtual void onAttach() except;
 	virtual void onDetach() noexcept;
 
@@ -90,9 +97,6 @@ protected:
 
 	virtual void onMoveBefore() except;
 	virtual void onMoveAfter() except;
-
-	virtual void onParentChangeBefore() except;
-	virtual void onParentChangeAfter() except;
 
 	virtual void onLayerChangeBefore() except;
 	virtual void onLayerChangeAfter() except;

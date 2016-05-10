@@ -65,10 +65,9 @@ private:
 	virtual PhysicsShapePtr getCollisionShape() noexcept;
 
 private:
+	PhysicsShapeMeshPtr _shape;
 
-	std::function<void()> _onShapeChange;
-
-	PhysicsShapePtr _shape;
+	std::function<void()> _onCollisionChange;
 };
 
 _NAME_END

@@ -57,9 +57,12 @@ SkinningComponent::onActivate() except
 		return;
 
 	stage->setTranslate(ray::float3(0, 0, -2.5));
+	stage->setActive(true);
 
-	// auto gameObject = ray::ResManager::instance()->createGameObject("dlc:skinning/models/miku/miku.pmd", "dlc:skinning/animotion/愛言葉.vmd");
-	auto gameObject = ray::ResManager::instance()->createGameObject("dlc:skinning/models/PDF 活动小丑/活动小丑.pmx", "dlc:skinning/animotion/愛言葉.vmd");
+	auto gameObject = ray::ResManager::instance()->createGameObject("E:/resources/model/miku/miku.pmd", "dlc:skinning/animotion/愛言葉.vmd");
+	gameObject->setActive(true);
+
+	//auto gameObject = ray::ResManager::instance()->createGameObject("dlc:skinning/models/PDF 活动小丑/活动小丑.pmx", "dlc:skinning/animotion/愛言葉.vmd");
 	_objects.push_back(stage);
 	_objects.push_back(gameObject);
 }

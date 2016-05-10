@@ -42,30 +42,6 @@ _NAME_BEGIN
 
 namespace math
 {
-	float cos_look[361];
-	float sin_look[361];
-	float tan_look[361];
-
-	float fastSin(float theta)
-	{
-		theta = fmodf(theta, 360);
-		if (theta < 0) theta += 360.0;
-		int thet_aint = (int)theta;
-		float thet_afrac = theta - thet_aint;
-
-		return sin_look[thet_aint] + thet_afrac * (sin_look[thet_aint + 1] - sin_look[thet_aint]);
-	}
-
-	float fastCos(float theta)
-	{
-		theta = fmodf(theta, 360);
-		if (theta < 0) theta += 360.0;
-		int thet_aint = (int)theta;
-		float thet_afrac = theta - thet_aint;
-
-		return cos_look[thet_aint] + thet_afrac * (cos_look[thet_aint + 1] - cos_look[thet_aint]);
-	}
-
 	void randomize()
 	{
 		srand(time(NULL));

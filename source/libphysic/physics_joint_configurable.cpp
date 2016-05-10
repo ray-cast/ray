@@ -36,8 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/physics_joint_configurable.h>
 #include <ray/physics_system.h>
-
-#include <btBulletDynamicsCommon.h>
+#include "bullet_types.h"
 
 _NAME_BEGIN
 

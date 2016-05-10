@@ -34,66 +34,20 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/physics_shape_box.h>
-#include "bullet_types.h"
+#ifndef _H_BULLET_TYPES_H_
+#define _H_BULLET_TYPES_H_
 
-_NAME_BEGIN
+#pragma warning (push)
+#pragma warning (disable:4263)
+#pragma warning (disable:4264)
+#pragma warning (disable:4127)
+#pragma warning (disable:5027)
+#include <btBulletDynamicsCommon.h>
+#include <btBulletCollisionCommon.h>
+#include <BulletDynamics\Character\btKinematicCharacterController.h>
+#include <BulletCollision\CollisionShapes\btCapsuleShape.h>
+#include <BulletCollision\CollisionDispatch\btGhostObject.h>
+#include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
+#pragma warning (pop)
 
-PhysicsShapeBox::PhysicsShapeBox() noexcept
-	: _size(Vector3::One)
-	, _shape(nullptr)
-{
-}
-
-PhysicsShapeBox::~PhysicsShapeBox() noexcept
-{
-	this->close();
-}
-
-void
-PhysicsShapeBox::setup() noexcept
-{
-	assert(!_shape);
-	_shape = new btBoxShape(btVector3(_size.x, _size.y, _size.z));
-	_shape->setUserPointer(this);
-}
-
-void
-PhysicsShapeBox::close() noexcept
-{
-	if (_shape)
-	{
-		delete _shape;
-		_shape = nullptr;
-	}
-}
-
-void
-PhysicsShapeBox::setSize(const Vector3& size) noexcept
-{
-	if (_shape)
-	{
-		btVector3 margin;
-		margin.setX(size.x);
-		margin.setY(size.y);
-		margin.setZ(size.z);
-
-		_shape->setSafeMargin(margin);
-	}
-
-	_size = size;
-}
-
-const Vector3&
-PhysicsShapeBox::getSize() const noexcept
-{
-	return _size;
-}
-
-btCollisionShape*
-PhysicsShapeBox::getCollisionShape() noexcept
-{
-	return _shape;
-}
-
-_NAME_END
+#endif

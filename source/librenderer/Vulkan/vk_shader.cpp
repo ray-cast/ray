@@ -43,7 +43,14 @@
 #define EXCLUDE_PSTDINT
 #include <hlslcc.hpp>
 
+#pragma warning (push)
+#pragma warning (disable:4458)
+#pragma warning (disable:4464)
+#pragma warning (disable:4623)
+#pragma warning (disable:5026)
+#pragma warning (disable:5027)
 #include <SPIRV/GlslangToSpv.h>
+#pragma warning (pop)
 
 _NAME_BEGIN
 
@@ -724,23 +731,23 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 		if (strncmp(name, "Globals", 7) == 0)
 		{
 			std::size_t numUniformsInBlock = program.getNumLiveUniformVariables();
-			for (std::size_t i = 0; i < numUniformsInBlock; i++)
+			for (std::size_t uniformIndex = 0; uniformIndex < numUniformsInBlock; uniformIndex++)
 			{
-				auto name = program.getUniformName(i);
-				auto index = program.getUniformIndex(name);
-				auto type = program.getUniformType(index);
-				auto offset = program.getUniformBufferOffset(index);
-				auto uniformType = toGraphicsUniformType(name, type);
+				auto uniformName = program.getUniformName(uniformIndex);
+				auto uniformLocation = program.getUniformIndex(uniformName);
+				auto unitoymType = program.getUniformType(uniformLocation);
+				auto uniformOffset = program.getUniformBufferOffset(uniformLocation);
+				auto type = toGraphicsUniformType(uniformName, unitoymType);
 
-				if (uniformType != GraphicsUniformType::GraphicsUniformTypeSamplerImage &&
-					uniformType != GraphicsUniformType::GraphicsUniformTypeStorageImage &&
-					uniformType != GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+				if (type != GraphicsUniformType::GraphicsUniformTypeSamplerImage &&
+					type != GraphicsUniformType::GraphicsUniformTypeStorageImage &&
+					type != GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
 				{
 					auto uniform = std::make_shared<VulkanGraphicsUniform>();
-					uniform->setName(name);
-					uniform->setType(uniformType);
-					uniform->setBindingPoint(index);
-					uniform->setOffset(offset);
+					uniform->setName(uniformName);
+					uniform->setType(type);
+					uniform->setBindingPoint(uniformLocation);
+					uniform->setOffset(uniformOffset);
 
 					uniformBlock->addGraphicsUniform(uniform);
 				}

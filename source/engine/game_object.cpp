@@ -43,19 +43,16 @@ _NAME_BEGIN
 __ImplementSubClass(GameObject, rtti::Interface, "Object")
 
 GameObject::GameObject() noexcept
-	: _active(true)
+	: _active(false)
 	, _layer(0)
 	, _needUpdates(true)
 	, _scaling(float3::One)
 	, _translate(float3::Zero)
 	, _quat(Quaternion::Zero)
 	, _euler(float3::Zero)
-	, _right(float3::Right)
-	, _up(float3::Up)
-	, _forward(float3::Forward)
+	, _dispatchComponents(GameDispatchType::GameDispatchTypeRangeSize)
 {
 	GameObjectManager::instance()->_instanceObject(this, _instanceID);
-	GameObjectManager::instance()->_activeObject(this, true);
 }
 
 GameObject::~GameObject() noexcept
@@ -89,21 +86,10 @@ GameObject::setActive(bool active) except
 {
 	if (_active != active)
 	{
-		GameObjectManager::instance()->_activeObject(this, active);
-
-		for (auto& it : _components)
-		{
-			if (active)
-			{
-				if (it->getActive())
-					it->onActivate();
-			}
-			else
-			{
-				if (it->getActive())
-					it->onDeactivate();
-			}
-		}
+		if (active)
+			this->_onActivate();
+		else
+			this->_onDeactivate();
 
 		_active = active;
 	}
@@ -114,19 +100,10 @@ GameObject::setActiveUpwards(bool active) except
 {
 	if (_active != active)
 	{
-		for (auto& it : _components)
-		{
-			if (active)
-			{
-				if (it->getActive())
-					it->onActivate();
-			}
-			else
-			{
-				if (it->getActive())
-					it->onDeactivate();
-			}
-		}
+		if (active)
+			this->_onActivate();
+		else
+			this->_onDeactivate();
 
 		auto parent = this->getParent();
 		if (parent)
@@ -141,19 +118,10 @@ GameObject::setActiveDownwards(bool active) except
 {
 	if (_active != active)
 	{
-		for (auto& it : _components)
-		{
-			if (active)
-			{
-				if (it->getActive())
-					it->onActivate();
-			}
-			else
-			{
-				if (it->getActive())
-					it->onDeactivate();
-			}
-		}
+		if (active)
+			this->_onActivate();
+		else
+			this->_onDeactivate();
 
 		for (auto& it : _children)
 			it->setActiveDownwards(true);
@@ -173,19 +141,11 @@ GameObject::setLayer(std::uint8_t layer) noexcept
 {
 	if (_layer != layer)
 	{
-		for (auto& it : _components)
-		{
-			if (it->getActive())
-				it->onLayerChangeBefore();
-		}
+		this->_onLayerChangeBefore();
 
 		_layer = layer;
 
-		for (auto& it : _components)
-		{
-			if (it->getActive())
-				it->onLayerChangeAfter();
-		}
+		this->_onLayerChangeAfter();
 	}
 }
 
@@ -209,9 +169,8 @@ GameObject::setParent(GameObjectPtr& parent) noexcept
 	auto _weak = _parent.lock();
 	if (_weak != parent)
 	{
-		for (auto& it : _components)
-			it->onParentChangeBefore();
-
+		this->_onMoveBefore();
+		
 		if (_weak)
 		{
 			auto it = _weak->_children.begin();
@@ -231,8 +190,7 @@ GameObject::setParent(GameObjectPtr& parent) noexcept
 		if (parent)
 			parent->_children.push_back(this->cast<GameObject>());
 
-		for (auto& it : _components)
-			it->onParentChangeAfter();
+		this->_onMoveAfter();
 	}
 }
 
@@ -348,18 +306,12 @@ GameObject::setTranslate(const float3& pos) noexcept
 {
 	if (_translate != pos)
 	{
-		if (this->getActive())
-		{
-			this->_onMoveBefore();
-		}
+		this->_onMoveBefore();
 
 		_translate = pos;
 		_needUpdates = true;
 
-		if (this->getActive())
-		{
-			this->_onMoveAfter();
-		}
+		this->_onMoveAfter();
 	}
 }
 
@@ -380,18 +332,12 @@ GameObject::setScale(const float3& pos) noexcept
 {
 	if (_scaling != pos)
 	{
-		if (this->getActive())
-		{
-			this->_onMoveBefore();
-		}
+		this->_onMoveBefore();
 
 		_scaling = pos;
 		_needUpdates = true;
 
-		if (this->getActive())
-		{
-			this->_onMoveAfter();
-		}
+		this->_onMoveAfter();
 	}
 }
 
@@ -412,19 +358,13 @@ GameObject::setQuaternion(const Quaternion& quat) noexcept
 {
 	if (_quat != quat)
 	{
-		if (this->getActive())
-		{
-			this->_onMoveBefore();
-		}
+		this->_onMoveBefore();
 
 		_quat = quat;
 		_euler.makeRotate(_quat);
 		_needUpdates = true;
 
-		if (this->getActive())
-		{
-			this->_onMoveAfter();
-		}
+		this->_onMoveAfter();
 	}
 }
 
@@ -445,19 +385,13 @@ GameObject::setEulerAngles(const EulerAngles& euler) noexcept
 {
 	if (_euler != euler)
 	{
-		if (this->getActive())
-		{
-			this->_onMoveBefore();
-		}
+		this->_onMoveBefore();
 
 		_euler = euler;
 		_quat.makeRotate(euler);
 		_needUpdates = true;
 
-		if (this->getActive())
-		{
-			this->_onMoveAfter();
-		}
+		this->_onMoveAfter();
 	}
 }
 
@@ -477,21 +411,21 @@ const float3&
 GameObject::getRight() const noexcept
 {
 	_updateTransform();
-	return _right;
+	return _transform.getRight();
 }
 
 const float3&
 GameObject::getUpVector() const noexcept
 {
 	_updateTransform();
-	return _up;
+	return _transform.getUpVector();
 }
 
 const float3&
 GameObject::getForward() const noexcept
 {
 	_updateTransform();
-	return _forward;
+	return _transform.getForward();
 }
 
 void 
@@ -499,15 +433,30 @@ GameObject::setTransform(const float4x4& transform) noexcept
 {
 	this->_onMoveBefore();
 
-	_transform = transform.getTransform(_scaling, _quat, _translate);
+	_transform = transform.getTransform(_translate, _quat, _scaling);
 	_transformInverse = math::transformInverse(_transform);
 	_transformInverseTranspose = math::transpose(_transformInverse);
 
 	_euler.makeRotate(_quat);
 
-	_right = _transform.getRight();
-	_up = _transform.getUpVector();
-	_forward = _transform.getForward();
+	_needUpdates = false;
+
+	this->_onMoveAfter();
+}
+
+void 
+GameObject::setTransformOnlyRotate(const float4x4& transform) noexcept
+{
+	this->_onMoveBefore();
+
+	_scaling = float3::One;
+	_transform = transform.getTransformNoScale(_translate, _quat);
+	_transformInverse = math::transformInverse(_transform);
+	_transformInverseTranspose = math::transpose(_transformInverse);
+
+	_euler.makeRotate(_quat);
+
+	_needUpdates = false;
 
 	this->_onMoveAfter();
 }
@@ -534,27 +483,27 @@ GameObject::getTransformInverseTranspose() const noexcept
 }
 
 void
-GameObject::addComponent(GameComponentPtr& component) except
+GameObject::addComponent(GameComponentPtr& gameComponent) except
 {
-	assert(component);
-	assert(component->_gameObject == nullptr);
+	assert(gameComponent);
+	assert(gameComponent->_gameObject == nullptr);
 
-	auto it = std::find(_components.begin(), _components.end(), component);
+	auto it = std::find(_components.begin(), _components.end(), gameComponent);
 	if (it == _components.end())
 	{
-		component->_setGameObject(this);
-		component->onAttach();
+		gameComponent->_setGameObject(this);
+		gameComponent->onAttach();
 
-		if (this->getActive() && component->getActive())
-			component->onActivate();
+		if (this->getActive() && gameComponent->getActive())
+			gameComponent->onActivate();
 
-		for (auto& it : _components)
-			component->onAttachComponent(it);
+		for (auto& component : _components)
+			gameComponent->onAttachComponent(component);
 
-		for (auto& it : _components)
-			it->onAttachComponent(component);
+		for (auto& component : _components)
+			component->onAttachComponent(gameComponent);
 
-		_components.push_back(component);
+		_components.push_back(gameComponent);
 	}
 }
 
@@ -565,27 +514,29 @@ GameObject::addComponent(GameComponentPtr&& component) except
 }
 
 void
-GameObject::removeComponent(GameComponentPtr& component) noexcept
+GameObject::removeComponent(GameComponentPtr& gameComponent) noexcept
 {
-	assert(component);
-	assert(component->_gameObject == this);
+	assert(gameComponent);
+	assert(gameComponent->_gameObject == this);
 
-	auto it = std::find(_components.begin(), _components.end(), component);
+	auto it = std::find(_components.begin(), _components.end(), gameComponent);
 	if (it != _components.end())
 	{
 		_components.erase(it);
 
-		for (auto& it : _components)
-			component->onDetachComponent(it);
+		for (auto& compoent : _components)
+			compoent->onDetachComponent(gameComponent);
 
-		for (auto& it : _components)
-			it->onDetachComponent(component);
+		for (auto& component : _components)
+			gameComponent->onDetachComponent(component);
 
-		if (this->getActive() && component->getActive())
-			component->onDeactivate();
+		if (this->getActive() && gameComponent->getActive())
+			gameComponent->onDeactivate();
 
-		component->onDetach();
-		component->_setGameObject(nullptr);
+		gameComponent->onDetach();
+		gameComponent->_setGameObject(nullptr);
+
+		this->removeComponentDispatchs(gameComponent);
 	}
 }
 
@@ -598,21 +549,27 @@ GameObject::removeComponent(GameComponentPtr&& component) noexcept
 void
 GameObject::cleanupComponents() noexcept
 {
-	for (auto& it : _components)
+	for (auto it = _components.begin(); it != _components.end();)
 	{
+		auto gameComponent = *it;
+		auto nextComponent = _components.erase(it);
+
+		for (auto& compoent : _components)
+			compoent->onDetachComponent(gameComponent);
+
 		for (auto& component : _components)
-		{
-			if (it != component)
-				it->onDetachComponent(component);
-		}
+			gameComponent->onDetachComponent(component);
 
-		if (it->getActive())
-			it->onDeactivate();
+		if (this->getActive() && (gameComponent)->getActive())
+			gameComponent->onDeactivate();
 
-		it->onDetach();
+		gameComponent->onDetach();
+		gameComponent->_setGameObject(nullptr);
+
+		this->removeComponentDispatchs(gameComponent);
+
+		it = nextComponent;
 	}
-
-	_components.clear();
 }
 
 GameComponentPtr
@@ -690,6 +647,68 @@ GameObject::getComponents() const noexcept
 	return _components;
 }
 
+void 
+GameObject::addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
+{
+	assert(component);
+	assert(std::find(_dispatchComponents[type].begin(), _dispatchComponents[type].end(), component) == _dispatchComponents[type].end());
+	
+	if (this->getActive())
+	{
+		if (type == GameDispatchType::GameDispatchTypeFrame ||
+			type == GameDispatchType::GameDispatchTypeFrameBegin ||
+			type == GameDispatchType::GameDispatchTypeFrameEnd)
+		{
+			if (_dispatchComponents[GameDispatchTypeFrame].empty() &&
+				_dispatchComponents[GameDispatchTypeFrameBegin].empty() &&
+				_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+			{
+				GameObjectManager::instance()->_activeObject(this, true);
+			}
+		}
+	}
+
+	_dispatchComponents[type].push_back(component);
+}
+
+void 
+GameObject::removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
+{
+	assert(component);
+
+	auto it = std::find(_dispatchComponents[type].begin(), _dispatchComponents[type].end(), component);
+	if (it != _dispatchComponents[type].end())
+		_dispatchComponents[type].erase(it);
+
+	if (this->getActive())
+	{
+		if (type == GameDispatchType::GameDispatchTypeFrame ||
+			type == GameDispatchType::GameDispatchTypeFrameBegin ||
+			type == GameDispatchType::GameDispatchTypeFrameEnd)
+		{
+			if (_dispatchComponents[GameDispatchTypeFrame].empty() &&
+				_dispatchComponents[GameDispatchTypeFrameBegin].empty() &&
+				_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+			{
+				GameObjectManager::instance()->_activeObject(this, false);
+			}
+		}
+	}
+}
+
+void
+GameObject::removeComponentDispatchs(GameComponentPtr component) noexcept
+{
+	assert(component);
+
+	for (auto& dispatch : _dispatchComponents)
+	{
+		auto it = std::find(dispatch.begin(), dispatch.end(), component);
+		if (it != dispatch.end())
+			dispatch.erase(it);
+	}
+}
+
 void
 GameObject::destroy() noexcept
 {
@@ -765,8 +784,6 @@ GameObject::load(iarchive& reader) noexcept
 
 	if (reader.getValue("active", active))
 		this->setActive(active);
-	else
-		this->setActive(false);
 
 	if (reader.getValue("layer", layer))
 		this->setLayer(layer);
@@ -809,63 +826,125 @@ GameObject::clone() const noexcept
 void
 GameObject::_onFrameBegin() except
 {
-	assert(this->getActive());
-
-	for (auto& it : _components)
-	{
-		if (it->getActive())
-			it->onFrameBegin();
-	}
+	auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeFrameBegin];
+	for (auto& it : components)
+		it->onFrameBegin();
 }
 
 void
 GameObject::_onFrame() except
 {
-	assert(this->getActive());
-
-	for (auto& it : _components)
-	{
-		if (it->getActive())
-			it->onFrame();
-	}
+	auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeFrame];
+	for (auto& it : components)
+		it->onFrame();
 }
 
 void
 GameObject::_onFrameEnd() except
 {
-	assert(this->getActive());
+	auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeFrameEnd];
+	for (auto& it : components)
+		it->onFrameEnd();
+}
+
+void 
+GameObject::_onActivate() except
+{
+	for (auto& it : _components)
+	{
+		if (it->getActive())
+			it->onActivate();
+	}
+
+	if (!_dispatchComponents[GameDispatchTypeFrame].empty() ||
+		!_dispatchComponents[GameDispatchTypeFrameBegin].empty() ||
+		!_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+	{
+		GameObjectManager::instance()->_activeObject(this, true);
+	}
+}
+
+void 
+GameObject::_onDeactivate() except
+{
+	if (!_dispatchComponents[GameDispatchTypeFrame].empty() ||
+		!_dispatchComponents[GameDispatchTypeFrameBegin].empty() ||
+		!_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+	{
+		GameObjectManager::instance()->_activeObject(this, false);
+	}
 
 	for (auto& it : _components)
 	{
 		if (it->getActive())
-			it->onFrameEnd();
+			it->onDeactivate();
 	}
 }
 
 void
 GameObject::_onMoveBefore() except
 {
-	for (auto& it : _components)
+	if (this->getActive())
 	{
-		if (it->getActive())
-			it->onMoveBefore();
+		auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeMoveBefore];
+		for (auto& it : components)
+		{
+			if (it->getActive())
+				it->onMoveBefore();
+		}
 	}
 
 	for (auto& it : _children)
-		it->_onMoveBefore();
+	{
+		if (it->getActive())
+			it->_onMoveBefore();
+	}
 }
 
 void
 GameObject::_onMoveAfter() except
 {
-	for (auto& it : _components)
+	if (this->getActive())
 	{
-		if (it->getActive())
-			it->onMoveAfter();
+		auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeMoveAfter];
+		for (auto& it : components)
+		{
+			if (it->getActive())
+				it->onMoveAfter();
+		}
 	}
 
 	for (auto& it : _children)
-		it->_onMoveAfter();
+	{
+		if (it->getActive())
+			it->_onMoveAfter();
+	}
+}
+
+void 
+GameObject::_onLayerChangeBefore() except
+{
+	if (this->getActive())
+	{
+		for (auto& it : _components)
+		{
+			if (it->getActive())
+				it->onLayerChangeBefore();
+		}
+	}
+}
+
+void 
+GameObject::_onLayerChangeAfter() except
+{
+	if (this->getActive())
+	{
+		for (auto& it : _components)
+		{
+			if (it->getActive())
+				it->onLayerChangeAfter();
+		}
+	}
 }
 
 void
@@ -873,14 +952,7 @@ GameObject::_updateTransform() const noexcept
 {
 	if (_needUpdates)
 	{
-		_transform.makeRotate(_quat);
-		_transform.scale(_scaling);
-		_transform.setTranslate(_translate);
-
-		_right = _transform.getRight();
-		_up = _transform.getUpVector();
-		_forward = _transform.getForward();
-
+		_transform.makeTransform(_translate, _quat, _scaling);
 		_transformInverse = math::transformInverse(_transform);
 		_transformInverseTranspose = math::transpose(_transformInverse);
 

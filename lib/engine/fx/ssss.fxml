@@ -50,12 +50,12 @@
             float irradiance = max(0.0, 0.3 + dot(N, L));
             if (irradiance > 0.0)
             {
-                float4 proj = mul(float4(P, 1.0), shadowEye2LightViewProject);
+                float4 proj = mul(shadowEye2LightViewProject, float4(P, 1.0));
                 proj /= proj.w;
                 proj = PosToCoord(proj);
 
                 float d1 = linearDepthPerspectiveOffCenterLH(shadowFactor.xyz, shadowMap.Sample(LinearClamp, proj.xy).r);
-                float d2 = length(mul(float4(P, 1.0), shadowEye2LightView).xyz);
+                float d2 = length(mul(shadowEye2LightView, float4(P, 1.0)).xyz);
                 float d = abs(d2 - d1);
 
                 float3 diffuse = restoreDiffuse(MRT0);

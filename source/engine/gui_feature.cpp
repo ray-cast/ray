@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_GUI)
 #include <ray/gui_feature.h>
 #include <ray/gui_system.h>
 #include <ray/input_feature.h>
@@ -356,74 +355,58 @@ GuiFeature::GuiFeature(std::uint32_t w, std::uint32_t h) noexcept
 
 GuiFeature::~GuiFeature() noexcept
 {
+	GuiSystem::instance()->close();
 }
 
 void
 GuiFeature::setCoreProfile(const std::string& core) except
 {
-	assert(_platform);
-	_platform->setCoreProfile(core);
+	GuiSystem::instance()->setCoreProfile(core);
 }
 
 const std::string&
 GuiFeature::getCoreProfile() const noexcept
 {
-	assert(_platform);
-	return _platform->getCoreProfile();
+	return GuiSystem::instance()->getCoreProfile();
 }
 
 void
-GuiFeature::setImageLoader(GuiImageLoaderPtr loader) noexcept
+GuiFeature::setViewport(std::uint32_t w, std::uint32_t h) noexcept
 {
-	assert(_platform);
-	_platform->setImageLoader(loader);
-}
-
-GuiImageLoaderPtr
-GuiFeature::getImageLoader() const noexcept
-{
-	assert(_platform);
-	return _platform->getImageLoader();
+	if (_width != w || _height != h)
+	{
+		GuiSystem::instance()->setViewport(w, h);
+		_width = w;
+		_height = h;
+	}		
 }
 
 void
-GuiFeature::setViewport(int w, int h) noexcept
+GuiFeature::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 {
-	assert(_platform);
-	_platform->setViewport(w, h);
-}
-
-void
-GuiFeature::getViewport(int& w, int& h) noexcept
-{
-	assert(_platform);
-	_platform->getViewport(w, h);
+	GuiSystem::instance()->getViewport(w, h);
 }
 
 void
 GuiFeature::onActivate() except
 {
-	_platform = GuiSystem::instance();
-	if (!_platform->open())
+	if (!GuiSystem::instance()->open())
 		throw failure("GuiSystem::instance() fail");
 
-	_platform->setImageLoader(std::make_shared<ImageLoader>());
-	_platform->setCoreProfile("sys:media/ui/MyGUI_Core.xml");
-	_platform->setViewport(_width, _height);
+	GuiSystem::instance()->setImageLoader(std::make_shared<ImageLoader>());
+	GuiSystem::instance()->setCoreProfile("sys:media/ui/MyGUI_Core.xml");
+	GuiSystem::instance()->setViewport(_width, _height);
 }
 
 void
 GuiFeature::onDeactivate() noexcept
 {
-	if (_platform)
-		_platform = nullptr;
+	GuiSystem::instance()->close();
 }
 
 void
 GuiFeature::onMessage(const MessagePtr& message) except
 {
-	assert(_platform);
-
 	if (message->isInstanceOf<InputMessage>())
 	{
 		auto inputMessage = message->downcast<InputMessage>();
@@ -433,25 +416,25 @@ GuiFeature::onMessage(const MessagePtr& message) except
 			switch (event.event)
 			{
 			case InputEvent::MouseMotion:
-				_platform->injectMouseMove(event.motion.x, event.motion.y, 0);
+				GuiSystem::instance()->injectMouseMove(event.motion.x, event.motion.y, 0);
 				break;
 			case InputEvent::MouseButtonDown:
-				_platform->injectMousePress(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
+				GuiSystem::instance()->injectMousePress(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
 				break;
 			case InputEvent::MouseButtonUp:
-				_platform->injectMouseRelease(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
+				GuiSystem::instance()->injectMouseRelease(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
 				break;
 			case InputEvent::KeyDown:
-				_platform->injectKeyPress(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym), event.key.keysym.unicode);
+				GuiSystem::instance()->injectKeyPress(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym), event.key.keysym.unicode);
 				break;
 			case InputEvent::KeyUp:
-				_platform->injectKeyRelease(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym));
+				GuiSystem::instance()->injectKeyRelease(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym));
 				break;
 			case InputEvent::Character:
-				_platform->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event.key.keysym.unicode);
+				GuiSystem::instance()->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event.key.keysym.unicode);
 				break;
 			case InputEvent::SizeChange:
-				_platform->setViewport(event.change.w, event.change.h);
+				GuiSystem::instance()->setViewport(event.change.w, event.change.h);
 			default:
 				return;
 			}
@@ -460,5 +443,3 @@ GuiFeature::onMessage(const MessagePtr& message) except
 }
 
 _NAME_END
-
-#endif

@@ -53,11 +53,12 @@ GuiSystem::~GuiSystem() noexcept
 }
 
 bool
-GuiSystem::open(GuiSystemBasePtr impl) except
+GuiSystem::open(GuiSystemBasePtr custom) except
 {
 	assert(!_system);
-	if (impl)
-		_system = impl;
+
+	if (custom)
+		_system = custom;
 	else
 	{
 #if defined(_BUILD_MYGUI)
@@ -178,14 +179,14 @@ GuiSystem::isCaptureMouse() const noexcept
 }
 
 void
-GuiSystem::setViewport(int w, int h) noexcept
+GuiSystem::setViewport(std::uint32_t w, std::uint32_t h) noexcept
 {
 	assert(_system);
 	_system->setViewport(w, h);
 }
 
 void
-GuiSystem::getViewport(int& w, int& h) noexcept
+GuiSystem::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 {
 	assert(_system);
 	_system->getViewport(w, h);

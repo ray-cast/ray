@@ -42,7 +42,7 @@
                 oPosition += mul(bindpose[(uint)BlendIndice.y], Position) * BlendWeight.y;
                 oPosition += mul(bindpose[(uint)BlendIndice.z], Position) * BlendWeight.z;
                 oPosition += mul(bindpose[(uint)BlendIndice.w], Position) * BlendWeight.w;
-                oPosition = mul(oPosition, matModelViewProject);
+                oPosition = mul(matModelViewProject, oPosition);
             }
 
             void DepthPS()
@@ -68,10 +68,10 @@
                 oNormal += mul((float3x3)bindpose[(uint)BlendIndice.y], Normal) * BlendWeight.y;
                 oNormal += mul((float3x3)bindpose[(uint)BlendIndice.z], Normal) * BlendWeight.z;
                 oNormal += mul((float3x3)bindpose[(uint)BlendIndice.w], Normal) * BlendWeight.w;
-                oNormal = mul(oNormal, (float3x3)matView);
+                oNormal = mul((float3x3)matView, oNormal);
 
                 oTexcoord = Texcoord;
-                oPosition = mul(oPosition, matModelViewProject);
+                oPosition = mul(matModelViewProject, oPosition);
             }
 
             void OpaquePS(

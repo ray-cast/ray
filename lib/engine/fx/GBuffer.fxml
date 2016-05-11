@@ -47,7 +47,7 @@
             float3 restorePosition(texture2D texDepth, float4x4 matInverse, float2 coord)
             {
                 float depth = texDepth.Sample(PointClamp, coord.xy).r;
-                float4 result = mul(float4(coord * 2.0 - 1.0, depth, 1.0), matInverse);
+                float4 result = mul(matInverse, float4(coord * 2.0 - 1.0, depth, 1.0));
                 result /= result.w;
                 return result.xyz;
             }

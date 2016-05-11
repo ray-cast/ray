@@ -69,8 +69,8 @@ public:
 	virtual bool isFocusKey() const noexcept = 0;
 	virtual bool isCaptureMouse() const noexcept = 0;
 
-	virtual void setViewport(int w, int h) noexcept = 0;
-	virtual void getViewport(int& w, int& h) noexcept = 0;
+	virtual void setViewport(std::uint32_t w, std::uint32_t h) noexcept = 0;
+	virtual void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept = 0;
 
 	virtual GuiWidgetPtr createWidget(const rtti::Rtti* rtti) except = 0;
 

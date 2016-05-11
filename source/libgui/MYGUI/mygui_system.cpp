@@ -374,14 +374,14 @@ MyGuiSystem::isCaptureMouse() const noexcept
 }
 
 void
-MyGuiSystem::setViewport(int w, int h) noexcept
+MyGuiSystem::setViewport(std::uint32_t w, std::uint32_t h) noexcept
 {
 	assert(_renderer);
 	_renderer->setViewport(w, h);
 }
 
 void
-MyGuiSystem::getViewport(int& w, int& h) noexcept
+MyGuiSystem::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 {
 	assert(_renderer);
 	_renderer->getViewport(w, h);

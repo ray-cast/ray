@@ -264,7 +264,7 @@ MyGuiRenderer::drawOneFrame(float delta) noexcept
 }
 
 void
-MyGuiRenderer::setViewport(int _width, int _height) noexcept
+MyGuiRenderer::setViewport(std::uint32_t _width, std::uint32_t _height) noexcept
 {
 	if (_height == 0)
 		_height = 1;
@@ -286,7 +286,7 @@ MyGuiRenderer::setViewport(int _width, int _height) noexcept
 }
 
 void
-MyGuiRenderer::getViewport(int& w, int& h) noexcept
+MyGuiRenderer::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 {
 	w = _viewport.width;
 	h = _viewport.height;

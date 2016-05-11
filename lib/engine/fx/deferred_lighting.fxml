@@ -30,7 +30,7 @@
                 in float4 Position : POSITION,
                 out float4 oPosition : SV_Position)
             {
-                oPosition = mul(Position, matModelViewProject);
+                oPosition = mul(matModelViewProject, Position);
             }
 
             void DeferredScreenQuadVS(
@@ -49,7 +49,7 @@
                 out float4 oPosition : SV_Position)
             {
                 oPosition = Position;
-                oViewDir  = -mul(Position, matProjectInverse).xyz;
+                oViewDir  = -mul(matProjectInverse, Position).xyz;
                 oTexcoord = PosToCoord(Position.xy);
             }
 
@@ -59,8 +59,8 @@
                 out float3 oViewDir : TEXCOORD1,
                 out float4 oPosition : SV_Position)
             {
-                oViewDir = mul(Position, matModelView).xyz;
-                oPosition = mul(Position, matModelViewProject);
+                oViewDir = mul(matModelView, Position).xyz;
+                oPosition = mul(matModelViewProject, Position);
                 oTexcoord.xy = PosToCoord(oPosition.xy / oPosition.w);
                 oTexcoord.xy = oTexcoord.xy * oPosition.w;
                 oTexcoord.z = oPosition.w;

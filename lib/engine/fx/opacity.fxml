@@ -38,10 +38,10 @@
                 out float2 oTexcoord : TEXCOORD1,
                 out float4 oPosition : SV_Position)
             {
-                oNormal = mul(Normal, matModelInverseTranspose);
-                oNormal = mul(float4(oNormal.xyz, 0.0), matView);
+                oNormal = mul(matModelInverseTranspose, Normal);
+                oNormal = mul(matView, float4(oNormal.xyz, 0.0));
                 oTexcoord = Texcoord;
-                oPosition = mul(Position, matModelViewProject);
+                oPosition = mul(matModelViewProject, Position);
             }
 
             void OpaquePS(

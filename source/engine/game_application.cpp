@@ -70,6 +70,7 @@ _NAME_BEGIN
 
 GameApplication::GameApplication() noexcept
 	: _isInitialize(false)
+	, _gameServer(nullptr)
 	, _workDir("")
 	, _engineDir("..\\..\\engine\\")
 	, _resourceBaseDir("..\\..\\dlc\\")
@@ -178,15 +179,16 @@ GameApplication::close() noexcept
 bool
 GameApplication::start() noexcept
 {
-	assert(_gameServer);
-	return _gameServer->start();
+	if (_gameServer)
+		return _gameServer->start();
+	return false;
 }
 
 void
 GameApplication::stop() noexcept
 {
-	assert(_gameServer);
-	_gameServer->stop();
+	if (_gameServer)
+		_gameServer->stop();
 }
 
 bool

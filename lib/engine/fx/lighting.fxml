@@ -148,12 +148,12 @@
             // shadowFactor.x is shadow scale
             // shadowFactor.y is shadow bias
 
-            float4 proj = mul(float4(viewPosition, 1.0), shadowEye2LightViewProject);
+            float4 proj = mul(shadowEye2LightViewProject, float4(viewPosition, 1.0));
             proj /= proj.w;
             proj.xy = PosToCoord(proj.xy);
 
             float d1 = shadowMap.Sample(LinearClamp, proj.xy).r;
-            float d2 = dot(float4(viewPosition, 1.0), shadowEye2LightView);
+            float d2 = dot(shadowEye2LightView, float4(viewPosition, 1.0));
             float d = exp((shadowFactor.x * (d1 - d2) + shadowFactor.y));
             float shadow = saturate(d);
 

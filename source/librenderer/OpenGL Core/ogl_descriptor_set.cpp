@@ -823,10 +823,10 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			glProgramUniform4fv(program, location, 1, uniform->getFloat4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
-			glProgramUniformMatrix3fv(program, location, 1, GL_TRUE, uniform->getFloat3x3().ptr());
+			glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, uniform->getFloat3x3().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
-			glProgramUniformMatrix4fv(program, location, 1, GL_TRUE, uniform->getFloat4x4().ptr());
+			glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, uniform->getFloat4x4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeIntArray:
 			glProgramUniform1iv(program, location, uniform->getIntArray().size(), uniform->getIntArray().data());

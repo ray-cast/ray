@@ -614,19 +614,19 @@ OGLGraphicsUniformSet::getFloat4x4Array() const noexcept
 	return _variant.getFloat4x4Array();
 }
 
-GraphicsTexturePtr
+const GraphicsTexturePtr&
 OGLGraphicsUniformSet::getTexture() const noexcept
 {
 	return _variant.getTexture();
 }
 
-GraphicsSamplerPtr
+const GraphicsSamplerPtr&
 OGLGraphicsUniformSet::getTextureSampler() const noexcept
 {
 	return _variant.getTextureSampler();
 }
 
-GraphicsDataPtr 
+const GraphicsDataPtr& 
 OGLGraphicsUniformSet::getBuffer() const noexcept
 {
 	return _variant.getBuffer();
@@ -638,7 +638,7 @@ OGLGraphicsUniformSet::setGraphicsUniform(GraphicsUniformPtr uniform) noexcept
 	_uniform = uniform;
 }
 
-GraphicsUniformPtr
+const GraphicsUniformPtr&
 OGLGraphicsUniformSet::getGraphicsUniform() const noexcept
 {
 	return _uniform;
@@ -772,110 +772,103 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 	auto program = shaderObject->downcast<OGLProgram>()->getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
-		auto uniform = it->downcast<OGLGraphicsUniformSet>();
+		auto location = it->getGraphicsUniform()->getBindingPoint();
 		auto type = it->getGraphicsUniform()->getType();
-
-		GLint location = 0;
-		if (it->getGraphicsUniform()->isInstanceOf<OGLGraphicsUniform>())
-			location = it->getGraphicsUniform()->downcast<OGLGraphicsUniform>()->getBindingPoint();
-		else
-			location = it->getGraphicsUniform()->downcast<OGLGraphicsUniformBlock>()->getBindingPoint();
-
 		switch (type)
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:
-			glProgramUniform1i(program, location, uniform->getBool());
+			glProgramUniform1i(program, location, it->getBool());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt:
-			glProgramUniform1i(program, location, uniform->getInt());
+			glProgramUniform1i(program, location, it->getInt());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt2:
-			glProgramUniform2iv(program, location, 1, (GLint*)uniform->getInt2().ptr());
+			glProgramUniform2iv(program, location, 1, (GLint*)it->getInt2().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt3:
-			glProgramUniform3iv(program, location, 1, (GLint*)uniform->getInt3().ptr());
+			glProgramUniform3iv(program, location, 1, (GLint*)it->getInt3().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt4:
-			glProgramUniform4iv(program, location, 1, (GLint*)uniform->getInt4().ptr());
+			glProgramUniform4iv(program, location, 1, (GLint*)it->getInt4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt:
-			glProgramUniform1ui(program, location, uniform->getUInt());
+			glProgramUniform1ui(program, location, it->getUInt());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt2:
-			glProgramUniform2uiv(program, location, 1, (GLuint*)uniform->getUInt2().ptr());
+			glProgramUniform2uiv(program, location, 1, (GLuint*)it->getUInt2().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt3:
-			glProgramUniform3uiv(program, location, 1, (GLuint*)uniform->getUInt3().ptr());
+			glProgramUniform3uiv(program, location, 1, (GLuint*)it->getUInt3().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt4:
-			glProgramUniform4uiv(program, location, 1, (GLuint*)uniform->getUInt4().ptr());
+			glProgramUniform4uiv(program, location, 1, (GLuint*)it->getUInt4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat:
-			glProgramUniform1f(program, location, uniform->getFloat());
+			glProgramUniform1f(program, location, it->getFloat());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2:
-			glProgramUniform2fv(program, location, 1, uniform->getFloat2().ptr());
+			glProgramUniform2fv(program, location, 1, it->getFloat2().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3:
-			glProgramUniform3fv(program, location, 1, uniform->getFloat3().ptr());
+			glProgramUniform3fv(program, location, 1, it->getFloat3().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4:
-			glProgramUniform4fv(program, location, 1, uniform->getFloat4().ptr());
+			glProgramUniform4fv(program, location, 1, it->getFloat4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
-			glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, uniform->getFloat3x3().ptr());
+			glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, it->getFloat3x3().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
-			glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, uniform->getFloat4x4().ptr());
+			glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, it->getFloat4x4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeIntArray:
-			glProgramUniform1iv(program, location, uniform->getIntArray().size(), uniform->getIntArray().data());
+			glProgramUniform1iv(program, location, it->getIntArray().size(), it->getIntArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt2Array:
-			glProgramUniform2iv(program, location, uniform->getInt2Array().size(), (GLint*)uniform->getInt2Array().data());
+			glProgramUniform2iv(program, location, it->getInt2Array().size(), (GLint*)it->getInt2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt3Array:
-			glProgramUniform3iv(program, location, uniform->getInt3Array().size(), (GLint*)uniform->getInt3Array().data());
+			glProgramUniform3iv(program, location, it->getInt3Array().size(), (GLint*)it->getInt3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt4Array:
-			glProgramUniform4iv(program, location, uniform->getInt4Array().size(), (GLint*)uniform->getInt4Array().data());
+			glProgramUniform4iv(program, location, it->getInt4Array().size(), (GLint*)it->getInt4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUIntArray:
-			glProgramUniform1uiv(program, location, uniform->getUIntArray().size(), uniform->getUIntArray().data());
+			glProgramUniform1uiv(program, location, it->getUIntArray().size(), it->getUIntArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
-			glProgramUniform2uiv(program, location, uniform->getUInt2Array().size(), (GLuint*)uniform->getUInt2Array().data());
+			glProgramUniform2uiv(program, location, it->getUInt2Array().size(), (GLuint*)it->getUInt2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
-			glProgramUniform3uiv(program, location, uniform->getUInt3Array().size(), (GLuint*)uniform->getUInt3Array().data());
+			glProgramUniform3uiv(program, location, it->getUInt3Array().size(), (GLuint*)it->getUInt3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
-			glProgramUniform4uiv(program, location, uniform->getUInt4Array().size(), (GLuint*)uniform->getUInt4Array().data());
+			glProgramUniform4uiv(program, location, it->getUInt4Array().size(), (GLuint*)it->getUInt4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloatArray:
-			glProgramUniform1fv(program, location, uniform->getFloatArray().size(), (GLfloat*)uniform->getFloatArray().data());
+			glProgramUniform1fv(program, location, it->getFloatArray().size(), (GLfloat*)it->getFloatArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
-			glProgramUniform2fv(program, location, uniform->getFloat2Array().size(), (GLfloat*)uniform->getFloat2Array().data());
+			glProgramUniform2fv(program, location, it->getFloat2Array().size(), (GLfloat*)it->getFloat2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
-			glProgramUniform3fv(program, location, uniform->getFloat3Array().size(), (GLfloat*)uniform->getFloat3Array().data());
+			glProgramUniform3fv(program, location, it->getFloat3Array().size(), (GLfloat*)it->getFloat3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
-			glProgramUniform4fv(program, location, uniform->getFloat4Array().size(), (GLfloat*)uniform->getFloat4Array().data());
+			glProgramUniform4fv(program, location, it->getFloat4Array().size(), (GLfloat*)it->getFloat4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
-			glProgramUniformMatrix3fv(program, location, uniform->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat3x3Array().data());
+			glProgramUniformMatrix3fv(program, location, it->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)it->getFloat3x3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
-			glProgramUniformMatrix4fv(program, location, uniform->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat4x4Array().data());
+			glProgramUniformMatrix4fv(program, location, it->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)it->getFloat4x4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSampler:
-			glBindSampler(location, uniform->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());
+			glBindSampler(location, it->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
 		{
-			auto texture = uniform->getTexture();
+			auto& texture = it->getTexture();
 			if (texture)
 			{
 				auto gltexture = texture->downcast<OGLTexture>();
@@ -886,7 +879,7 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 		break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
 		{
-			auto texture = uniform->getTexture();
+			auto& texture = it->getTexture();
 			if (texture)
 			{
 				auto gltexture = texture->downcast<OGLTexture>();
@@ -897,7 +890,7 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 		break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
 		{
-			auto texture = uniform->getTexture();
+			auto& texture = it->getTexture();
 			if (texture)
 			{
 				auto gltexture = texture->downcast<OGLTexture>();
@@ -916,7 +909,7 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUniformBuffer:
 		{
-			auto buffer = uniform->getBuffer();
+			auto& buffer = it->getBuffer();
 			if (buffer)
 			{
 				auto ubo = buffer->downcast<OGLGraphicsData>();

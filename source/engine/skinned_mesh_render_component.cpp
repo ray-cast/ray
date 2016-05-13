@@ -215,7 +215,7 @@ SkinnedMeshRenderComponent::onMeshWillRender(class RenderPipeline&) noexcept
 			{
 				std::size_t index = 0;
 				for (auto& transform : _transforms)
-					*data++ = math::transformMultiply(transform->getTransform(), bindposes[index++]);
+					*data++ = math::transformMultiply(transform->getWorldTransform(), bindposes[index++]);
 			}
 		}
 
@@ -232,7 +232,7 @@ SkinnedMeshRenderComponent::onFrameEnd() noexcept
 
 	AABB aabb;
 	for (auto& transform : _transforms)
-		aabb.encapsulate(transform->getTranslate());
+		aabb.encapsulate(transform->getWorldTranslate());
 
 	_boundingBox.set(aabb);
 

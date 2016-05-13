@@ -63,7 +63,7 @@ public:
 	void setCamera(CameraPtr renderer) noexcept;
 	CameraPtr getCamera() const noexcept;
 
-	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;
+	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;	
 	const RenderObjects& getRenderData(RenderQueue queue) const noexcept;
 
 	void setViewport(const Viewport& view) noexcept;
@@ -74,12 +74,10 @@ public:
 
 	void setTransform(const float4x4& transform) noexcept;
 	void setTransformInverse(const float4x4& transform) noexcept;
-	void setTransformInverseTranspose(const float4x4& transform) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture() noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
 	void drawCone(MaterialTechPtr tech) noexcept;

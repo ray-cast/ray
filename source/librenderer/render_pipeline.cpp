@@ -134,7 +134,7 @@ RenderPipeline::setTransform(const float4x4& transform) noexcept
 {
 	assert(_materialMatModel);
 	_materialMatModel->uniform4fmat(transform);
-	_materialMatModelView->uniform4fmat(_materialMatView->getFloat4x4() * transform);
+	_materialMatModelView->uniform4fmat(math::transformMultiply(_materialMatView->getFloat4x4(), transform));
 	_materialMatModelViewProject->uniform4fmat(_materialMatViewProject->getFloat4x4() * transform);
 }
 
@@ -143,13 +143,6 @@ RenderPipeline::setTransformInverse(const float4x4& transform) noexcept
 {
 	assert(_materialMatModelInverse);
 	_materialMatModelInverse->uniform4fmat(transform);
-}
-
-void
-RenderPipeline::setTransformInverseTranspose(const float4x4& transform) noexcept
-{
-	assert(_materialMatModelInverseTranspose);
-	_materialMatModelInverseTranspose->uniform4fmat(transform);
 }
 
 void
@@ -209,14 +202,13 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	_materialCameraDirection->uniform3f(camera->getForward());
 	_materialMatView->uniform4fmat(camera->getView());
 	_materialMatViewInverse->uniform4fmat(camera->getViewInverse());
-	_materialMatViewInverseTranspose->uniform4fmat(camera->getTransformInverseTranspose());
 	_materialMatProject->uniform4fmat(camera->getProject());
 	_materialMatProjectInverse->uniform4fmat(camera->getProjectInverse());
 	_materialMatViewProject->uniform4fmat(adjustProject * camera->getViewProject());
 	_materialMatViewProjectInverse->uniform4fmat(camera->getViewProjectInverse());
 
+	camera->assignVisiable();
 	_dataManager = camera->getRenderDataManager();
-	_dataManager->assginVisiable(camera);
 
 	_camera = camera;
 }
@@ -281,13 +273,6 @@ RenderPipeline::discradRenderTexture() noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->discardFramebuffer();
-}
-
-void
-RenderPipeline::readFramebuffer(GraphicsFramebufferPtr& texture, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
-{
-	assert(_graphicsContext);
-	_graphicsContext->readFramebuffer(texture, pfd, w, h, bufsize, data);
 }
 
 void
@@ -628,10 +613,6 @@ RenderPipeline::setupMaterialSemantic() noexcept
 	if (!_materialMatModelInverse)
 		return false;
 
-	_materialMatModelInverseTranspose = _pipelineDevice->createSemantic("matModelInverseTranspose", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatModelInverseTranspose)
-		return false;
-
 	_materialMatProject = _pipelineDevice->createSemantic("matProject", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
 	if (!_materialMatProject)
 		return false;
@@ -646,10 +627,6 @@ RenderPipeline::setupMaterialSemantic() noexcept
 
 	_materialMatViewInverse = _pipelineDevice->createSemantic("matViewInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
 	if (!_materialMatViewInverse)
-		return false;
-
-	_materialMatViewInverseTranspose = _pipelineDevice->createSemantic("matViewInverseTranspose", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatViewInverseTranspose)
 		return false;
 
 	_materialMatViewProject = _pipelineDevice->createSemantic("matViewProject", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
@@ -782,12 +759,10 @@ RenderPipeline::destroyMaterialSemantic() noexcept
 {
 	_pipelineDevice->destroySemantic(_materialMatModel);
 	_pipelineDevice->destroySemantic(_materialMatModelInverse);
-	_pipelineDevice->destroySemantic(_materialMatModelInverseTranspose);
 	_pipelineDevice->destroySemantic(_materialMatProject);
 	_pipelineDevice->destroySemantic(_materialMatProjectInverse);
 	_pipelineDevice->destroySemantic(_materialMatView);
 	_pipelineDevice->destroySemantic(_materialMatViewInverse);
-	_pipelineDevice->destroySemantic(_materialMatViewInverseTranspose);
 	_pipelineDevice->destroySemantic(_materialMatViewProject);
 	_pipelineDevice->destroySemantic(_materialMatViewProjectInverse);
 	_pipelineDevice->destroySemantic(_materialCameraAperture);
@@ -807,12 +782,10 @@ RenderPipeline::destroyMaterialSemantic() noexcept
 
 	_materialMatModel.reset();
 	_materialMatModelInverse.reset();
-	_materialMatModelInverseTranspose.reset();
 	_materialMatProject.reset();
 	_materialMatProjectInverse.reset();
 	_materialMatView.reset();
 	_materialMatViewInverse.reset();
-	_materialMatViewInverseTranspose.reset();
 	_materialMatViewProject.reset();
 	_materialMatViewProjectInverse.reset();
 	_materialMatModelView.reset();

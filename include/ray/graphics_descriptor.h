@@ -186,7 +186,42 @@ public:
 	virtual void uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept = 0;
 	virtual void uniformBuffer(GraphicsDataPtr ubo) noexcept = 0;
 
-	virtual GraphicsUniformPtr getGraphicsUniform() const noexcept = 0;
+	virtual bool getBool() const noexcept = 0;
+	virtual int getInt() const noexcept = 0;
+	virtual const int2& getInt2() const noexcept = 0;
+	virtual const int3& getInt3() const noexcept = 0;
+	virtual const int4& getInt4() const noexcept = 0;
+	virtual uint getUInt() const noexcept = 0;
+	virtual const uint2& getUInt2() const noexcept = 0;
+	virtual const uint3& getUInt3() const noexcept = 0;
+	virtual const uint4& getUInt4() const noexcept = 0;
+	virtual float getFloat() const noexcept = 0;
+	virtual const float2& getFloat2() const noexcept = 0;
+	virtual const float3& getFloat3() const noexcept = 0;
+	virtual const float4& getFloat4() const noexcept = 0;
+	virtual const float2x2& getFloat2x2() const noexcept = 0;
+	virtual const float3x3& getFloat3x3() const noexcept = 0;
+	virtual const float4x4& getFloat4x4() const noexcept = 0;
+	virtual const std::vector<int1>& getIntArray() const noexcept = 0;
+	virtual const std::vector<int2>& getInt2Array() const noexcept = 0;
+	virtual const std::vector<int3>& getInt3Array() const noexcept = 0;
+	virtual const std::vector<int4>& getInt4Array() const noexcept = 0;
+	virtual const std::vector<uint1>& getUIntArray() const noexcept = 0;
+	virtual const std::vector<uint2>& getUInt2Array() const noexcept = 0;
+	virtual const std::vector<uint3>& getUInt3Array() const noexcept = 0;
+	virtual const std::vector<uint4>& getUInt4Array() const noexcept = 0;
+	virtual const std::vector<float1>& getFloatArray() const noexcept = 0;
+	virtual const std::vector<float2>& getFloat2Array() const noexcept = 0;
+	virtual const std::vector<float3>& getFloat3Array() const noexcept = 0;
+	virtual const std::vector<float4>& getFloat4Array() const noexcept = 0;
+	virtual const std::vector<float2x2>& getFloat2x2Array() const noexcept = 0;
+	virtual const std::vector<float3x3>& getFloat3x3Array() const noexcept = 0;
+	virtual const std::vector<float4x4>& getFloat4x4Array() const noexcept = 0;
+	virtual const GraphicsTexturePtr& getTexture() const noexcept = 0;
+	virtual const GraphicsSamplerPtr& getTextureSampler() const noexcept = 0;
+	virtual const GraphicsDataPtr& getBuffer() const noexcept = 0;
+
+	virtual const GraphicsUniformPtr& getGraphicsUniform() const noexcept = 0;
 
 private:
 	GraphicsUniformSet(const GraphicsUniformSet&) noexcept = delete;

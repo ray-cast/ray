@@ -45,9 +45,9 @@
 _NAME_BEGIN
 
 LightShaft::LightShaft() noexcept
-	: illuminationNumber(60)
-	, illuminationWeight(1 / 60)
-	, illuminationDecay(0.98)
+	: illuminationNumber(60.0f)
+	, illuminationWeight(1.0f / 60.0f)
+	, illuminationDecay(0.98f)
 {
 }
 

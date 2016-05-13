@@ -861,7 +861,7 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 			float x = ix * segmentWidth - widthHalf;
 			float z = iz * segmentHeight - heightHalf;
 
-			_vertices.emplace_back(x, z, 0);
+			_vertices.emplace_back(x, z, 0.0f);
 
 			_normals.push_back(normal);
 		}
@@ -1203,11 +1203,11 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 {
 	this->clear();
 
-	_vertices.emplace_back(0, 0, 0);
-	_vertices.emplace_back(0, 0, -height);
+	_vertices.emplace_back(0.0f, 0.0f, 0.0f);
+	_vertices.emplace_back(0.0f, 0.0f, -height);
 
-	_texcoords.emplace_back(0, 0);
-	_texcoords.emplace_back(1, 1);
+	_texcoords.emplace_back(0.0f, 0.0f);
+	_texcoords.emplace_back(1.0f, 1.0f);
 
 	float segment = thetaLength / segments;
 

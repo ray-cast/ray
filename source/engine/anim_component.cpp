@@ -243,7 +243,7 @@ AnimationComponent::_playAnimation(const std::string& filename) noexcept
 	{
 		Bone bone;
 		bone.setName(it->getName());
-		bone.setPosition(it->getTranslate());
+		bone.setPosition(it->getWorldTranslate());
 		if (it->getParent())
 			bone.setParent(boneMap[it->getParent()->getName()]);
 		else
@@ -281,7 +281,7 @@ AnimationComponent::_playAnimation(const std::string& filename) noexcept
 	_animtion = model->getAnimationList().back()->clone();
 	_animtion->setBoneArray(bones);
 	_animtion->setIKArray(iks);
-	_animtion->updateMotion(0.0f);
+	_animtion->updateMotion();
 
 	_enableAnimation = true;
 	return true;
@@ -292,11 +292,12 @@ AnimationComponent::_updateAnimation() noexcept
 {
 	if (_animtion)
 	{
-		_animtion->updateMotion(GameServer::instance()->getTimer()->delta());
+		_animtion->updateFrame(GameServer::instance()->getTimer()->delta());
+		_animtion->updateMotion();
 
 		std::size_t i = 0;
 		for (auto& it : _animtion->getBoneArray())
-			_transforms[i++]->setTransformOnlyRotate(it.getTransform());
+			_transforms[i++]->setWorldTransformOnlyRotate(it.getTransform());
 	}
 }
 

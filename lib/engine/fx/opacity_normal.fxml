@@ -3,7 +3,7 @@
     <include name="sys:fx/Gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
-    <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
+    <parameter name="matModelInverse" type="float4x4" semantic="matModelInverse" />
     <parameter name="matView" type="float4x4" semantic="matView"/>
     <parameter name="diffuse" type="float4" />
     <parameter name="specular" type="float4" />
@@ -36,8 +36,8 @@
                 out float4 oPosition : SV_Position)
             {
                 oCoord = Texcoord.xy;
-                oTangent = mul(matModelInverseTranspose, Tangent);
-                oNormal = mul(matModelInverseTranspose, Normal);
+                oTangent = mul(Tangent, matModelInverse);
+                oNormal = mul(Normal, matModelInverse);
                 oNormal = mul(matView, float4(oNormal.rgb, 0.0));
                 oPosition = mul(matModelViewProject, Position);
             }

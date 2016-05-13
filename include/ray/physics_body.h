@@ -67,9 +67,6 @@ public:
 	void setAngularDamping(float value) noexcept;
 	void setFriction(float value) noexcept;
 	void setGravity(const Vector3& value) noexcept;
-	void setMovePosition(const Vector3& value) noexcept;
-	void setMoveRotation(const Quaternion& value) noexcept;
-	void setTransform(const float4x4& value) noexcept;
 
 	void isKinematic(bool isKinematic) noexcept;
 	bool isKinematic() const noexcept;
@@ -91,11 +88,9 @@ public:
 	const Vector3& getGravity() const noexcept;
 	const Vector3& getLinearVelocity() const noexcept;
 	const Vector3& getAngularVelocity() const noexcept;
-	
-	Vector3 getMovePosition() const noexcept;
-	Quaternion getMoveRotation() const noexcept;
 
-	void getWorldTransform(float4x4& m) const noexcept;
+	void setWorldTransform(const float4x4& transform) noexcept;
+	void getWorldTransform(float4x4& transform) const noexcept;
 
 	void addForce(const Vector3& force) noexcept;
 	void addRelativeForce(const Vector3& force, const Vector3& axis) noexcept;
@@ -141,7 +136,7 @@ private:
 	Vector3 _linearVelocity;
 	Vector3 _angularVelocity;
 
-	btMotionState* _motion;
+	class MotionState* _motion;
 	PhysicsSceneWeakPtr _scene;
 	PhysicsBodyListener* _listener;
 };

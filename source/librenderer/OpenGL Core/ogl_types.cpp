@@ -931,16 +931,31 @@ OGLTypes::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
 }
 
 GLsizei
-OGLTypes::getFormatNum(GLenum format) noexcept
+OGLTypes::getFormatNum(GLenum format, GLenum type) noexcept
 {
-	if (format == GL_RED)
+	GLsizei typeSize = 0;
+	if (type == GL_UNSIGNED_BYTE || type == GL_BYTE)
+		typeSize = 1;
+	else if (type == GL_UNSIGNED_SHORT || type == GL_SHORT)
+		typeSize = 2;
+	else if (type == GL_UNSIGNED_INT || type == GL_INT || type == GL_FLOAT)
+		typeSize = 4;
+	else if (type == GL_DOUBLE)
+		typeSize = 8;
+	else
+	{
+		assert(false);
 		return 1;
+	}
+
+	if (format == GL_RED)
+		return 1 * typeSize;
 	else if (format == GL_RG)
-		return 2;
+		return 2 * typeSize;
 	else if (format == GL_RGB || format == GL_BGR || format == GL_SRGB)
-		return 3;
+		return 3 * typeSize;
 	else if (format == GL_RGBA || format == GL_BGRA || format == GL_ABGR_EXT || format == GL_SRGB_ALPHA)
-		return 4;
+		return 4 * typeSize;
 	else
 	{
 		assert(false);

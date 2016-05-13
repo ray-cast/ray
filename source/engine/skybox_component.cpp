@@ -428,13 +428,13 @@ SkyboxComponent::_updateTransform() noexcept
 {
 	float4x4 transforam;
 	transforam.makeScale(_skyboxSize, _skyboxSize, _skyboxSize);
-	transforam.setTranslate(this->getGameObject()->getTranslate());
+	//transforam.setTranslate(this->getGameObject()->getWorldTranslate());
 	
 	if (_sphereObject)
-		_sphereObject->setTransform(transforam, math::transformInverse(transforam), float4x4().loadIdentity());
+		_sphereObject->setTransform(transforam);
 	
 	if (_quadObject)
-		_quadObject->setTransform(transforam, math::transformInverse(transforam), float4x4().loadIdentity());
+		_quadObject->setTransform(transforam);
 }
 
 void 

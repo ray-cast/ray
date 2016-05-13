@@ -85,7 +85,7 @@ GameApplication::~GameApplication() noexcept
 }
 
 bool
-GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) noexcept
+GameApplication::open(WindHandle hwnd, std::uint32_t width, std::uint32_t height) noexcept
 {
 	if (_isInitialize)
 		return false;

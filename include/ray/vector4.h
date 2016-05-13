@@ -479,12 +479,7 @@ template<typename T> const Vector4t<T> Vector4t<T>::UnitZ = Vector4t<T>((T)0.0, 
 template<typename T>
 inline bool operator==(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
 {
-    constexpr T epsilon = EPSILON_E4;
-    return
-        v1.x + epsilon >= v2.x && v1.x - epsilon <= v2.x &&
-        v1.y + epsilon >= v2.y && v1.y - epsilon <= v2.y &&
-        v1.z + epsilon >= v2.z && v1.z - epsilon <= v2.z &&
-        v1.w + epsilon >= v2.w && v1.w - epsilon <= v2.w;
+	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z && v1.w == v2.w;
 }
 
 template<typename T>
@@ -625,6 +620,16 @@ namespace math
 	inline T sqrDistance(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
 	{
 		return length2(v1 - v2);
+	}
+
+	template<typename T>
+	inline bool equal(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
+	{
+		return
+			math::equal<T>(v1.x, v2.x) &&
+			math::equal<T>(v1.y, v2.y) &&
+			math::equal<T>(v1.z, v2.z) &&
+			math::equal<T>(v1.w, v2.w);
 	}
 
 	template<typename T>

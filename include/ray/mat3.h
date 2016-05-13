@@ -511,7 +511,7 @@ namespace math
 	template<typename T>
 	bool isIdentity(const Matrix3x3t<T>& m) noexcept
 	{
-		constexpr T epsilon = 10e-3f;
+		constexpr T epsilon = (T)EPSILON_E4;
 		return (
 			m.a2 <= epsilon && m.a2 >= -epsilon &&
 			m.a3 <= epsilon && m.a3 >= -epsilon &&

@@ -111,13 +111,19 @@ public:
 	void setRenderDataManager(RenderDataManagerPtr manager) noexcept;
 	RenderDataManagerPtr getRenderDataManager() const noexcept;
 
+	void assignVisiable() noexcept;
+
 private:
 	void _updateOrtho() const noexcept;
 	void _updatePerspective() const noexcept;
 	void _updateProject() const noexcept;
 	void _updateViewProject() const noexcept;
 
-	void onMoveAfter() noexcept;
+public:
+	virtual void onMoveAfter() noexcept;
+
+	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
 
 private:
 	Camera(const Camera&) noexcept = delete;
@@ -148,6 +154,7 @@ private:
 
 	mutable bool _needUpdateProject;
 	mutable bool _needUpdateViewProject;
+	mutable bool _needUpdateVisiable;
 
 	mutable float2 _projLength;
 	mutable float4 _projConstant;

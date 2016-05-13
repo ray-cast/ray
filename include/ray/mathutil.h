@@ -102,11 +102,6 @@ _NAME_BEGIN
 
 namespace math
 {
-inline bool equals(float a, float b) noexcept
-{
-	return a + EPSILON_E4 > b && a - EPSILON_E4 < b;
-}
-
 template<typename T>
 inline T wrapPI(const T& theta) noexcept
 {
@@ -290,6 +285,11 @@ struct _mathutil;
 template<>
 struct _mathutil<float>
 {
+    static inline bool equal(float a, float b) noexcept
+    {
+        return a + (float)EPSILON_E4 > b && a - (float)EPSILON_E4 < b;
+    }
+
 	static inline void sinCos(float* returnSin, float* returnCos, float theta) noexcept
 	{
 		*returnSin = std::sinf(theta);
@@ -443,6 +443,11 @@ struct _mathutil<float>
 template<>
 struct _mathutil<double>
 {
+    static inline bool equal(double a, double b) noexcept
+    {
+        return a + (double)EPSILON_E4 > b && a - (double)EPSILON_E4 < b;
+    }
+
 	static inline void sinCos(double* returnSin, double* returnCos, double theta) noexcept
 	{
 		*returnSin = std::sinf(theta);
@@ -595,6 +600,12 @@ struct _mathutil<double>
 		return std::acos(x);
 	}
 };
+
+template<typename T>
+inline bool equal(T a, T b) noexcept
+{
+    return _mathutil<T>::equal(a, b);
+}
 
 template<typename T>
 inline void sinCos(T* returnSin, T* returnCos, T theta) noexcept

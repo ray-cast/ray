@@ -107,12 +107,12 @@ OGLGraphicsAttribute::getSemanticIndex() const noexcept
 }
 
 void
-OGLGraphicsAttribute::setBindingPoint(GLuint bindingPoint) noexcept
+OGLGraphicsAttribute::setBindingPoint(std::uint32_t bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
 }
 
-GLuint
+std::uint32_t
 OGLGraphicsAttribute::getBindingPoint() const noexcept
 {
 	return _bindingPoint;
@@ -166,12 +166,12 @@ OGLGraphicsUniform::getOffset() const noexcept
 }
 
 void
-OGLGraphicsUniform::setBindingPoint(GLuint bindingPoint) noexcept
+OGLGraphicsUniform::setBindingPoint(std::uint32_t bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
 }
 
-GLuint
+std::uint32_t
 OGLGraphicsUniform::getBindingPoint() const noexcept
 {
 	return _bindingPoint;

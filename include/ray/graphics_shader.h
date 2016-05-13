@@ -116,6 +116,7 @@ public:
 	GraphicsUniform() noexcept;
 	virtual ~GraphicsUniform() noexcept;
 
+	virtual std::uint32_t getBindingPoint() const noexcept = 0;
 	virtual std::uint32_t getOffset() const noexcept = 0;
 	virtual GraphicsUniformType getType() const noexcept = 0;
 

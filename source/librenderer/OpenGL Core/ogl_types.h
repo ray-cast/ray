@@ -169,7 +169,7 @@ public:
 	static GLenum asSamplerMinFilter(GraphicsSamplerFilter filter) noexcept;
 	static GLenum asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept;
 
-	static GLsizei getFormatNum(GLenum format) noexcept;
+	static GLsizei getFormatNum(GLenum format, GLenum type) noexcept;
 
 	static GLboolean isStencilFormat(GraphicsFormat format) noexcept;
 	static GLboolean isDepthFormat(GraphicsFormat format) noexcept;

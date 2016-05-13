@@ -252,8 +252,8 @@ AnimationProperty::clone() noexcept
 	return anim;
 }
 
-void
-AnimationProperty::updateMotion(float delta) noexcept
+void 
+AnimationProperty::updateFrame(float delta) noexcept
 {
 	_delta += delta;
 
@@ -262,10 +262,14 @@ AnimationProperty::updateMotion(float delta) noexcept
 		_frame++;
 		_delta -= 1.0f / _fps;
 	}
+}
 
-	this->updateBoneMotion(_bones);
-	this->updateBoneMatrix(_bones);
-	this->updateIK(_bones);
+void
+AnimationProperty::updateMotion() noexcept
+{
+	this->updateBoneMotion();
+	this->updateBoneMatrix();
+	this->updateIK();
 }
 
 void
@@ -304,68 +308,75 @@ AnimationProperty::updateBones(const Bones& bones) noexcept
 	}
 }
 
-void
-AnimationProperty::updateBoneMotion(Bones& bones) noexcept
+bool
+AnimationProperty::updateBoneMotion(std::size_t index) noexcept
 {
-	for (std::size_t i = 0; i < bones.size(); i++)
+	auto& bone = _bones[index];
+	const auto& motion = _bindAnimation[index];
+	if (motion.empty())
 	{
-		auto& bone = bones[i];
-		const auto& motion = _bindAnimation[i];
+		bone.setRotation(Quaternion::Zero);
 
-		if (motion.empty())
+		if (bone.getParent() != (-1))
 		{
-			bone.setRotation(Quaternion::Zero);
-
-			if (bone.getParent() != (-1))
-			{
-				auto& parent = bones[bone.getParent()];
-				auto position = (bone.getPosition() - parent.getPosition());
-				float4x4 m;
-				m.makeTranslate(position);
-				bone.setLocalTransform(m);
-			}
-			else
-			{
-				float4x4 m;
-				m.makeTranslate(bone.getPosition());
-				bone.setLocalTransform(m);
-			}
+			auto& parent = _bones[bone.getParent()];
+			auto position = (bone.getPosition() - parent.getPosition());
+			float4x4 m;
+			m.makeTranslate(position);
+			bone.setLocalTransform(m);
 		}
 		else
 		{
-			Vector3 position;
-			Quaternion rotate;
-			this->interpolateMotion(rotate, position, motion, _frame);
-
-			if (bone.getParent() == (-1))
-				updateTransform(bone, bone.getPosition() + position, rotate);
-			else
-				updateTransform(bone, bone.getPosition() + position - bones[bone.getParent()].getPosition(), rotate);
+			float4x4 m;
+			m.makeTranslate(bone.getPosition());
+			bone.setLocalTransform(m);
 		}
+
+		return false;
+	}
+	else
+	{
+		Vector3 position;
+		Quaternion rotate;
+		this->interpolateMotion(rotate, position, motion, _frame);
+
+		if (bone.getParent() == (-1))
+			updateTransform(bone, bone.getPosition() + position, rotate);
+		else
+			updateTransform(bone, bone.getPosition() + position - _bones[bone.getParent()].getPosition(), rotate);
+
+		return true;
 	}
 }
 
 void
-AnimationProperty::updateBoneMatrix(Bones& bones) noexcept
+AnimationProperty::updateBoneMotion() noexcept
 {
-	std::size_t size = bones.size();
+	for (std::size_t i = 0; i < _bones.size(); i++)
+		this->updateBoneMotion(i);
+}
+
+void
+AnimationProperty::updateBoneMatrix() noexcept
+{
+	std::size_t size = _bones.size();
 	for (std::size_t i = 0; i < size; i++)
 	{
-		std::intptr_t  parent = bones[i].getParent();
+		std::intptr_t  parent = _bones[i].getParent();
 		if ((std::size_t)parent > size)
-			bones[i].setTransform(bones[i].getLocalTransform());
+			_bones[i].setTransform(_bones[i].getLocalTransform());
 		else
-			bones[i].setTransform(math::transformMultiply(bones[parent].getTransform(), bones[i].getLocalTransform()));
+			_bones[i].setTransform(math::transformMultiply(_bones[parent].getTransform(), _bones[i].getLocalTransform()));
 	}
 }
 
 void
-AnimationProperty::updateBoneMatrix(Bones& bones, Bone& bone) noexcept
+AnimationProperty::updateBoneMatrix(Bone& bone) noexcept
 {
 	if (bone.getParent() != (-1))
 	{
-		auto& parent = bones.at(bone.getParent());
-		updateBoneMatrix(bones, parent);
+		auto& parent = _bones.at(bone.getParent());
+		updateBoneMatrix(parent);
 		bone.setTransform(math::transformMultiply(parent.getTransform(), bone.getLocalTransform()));
 	}
 	else
@@ -375,10 +386,10 @@ AnimationProperty::updateBoneMatrix(Bones& bones, Bone& bone) noexcept
 }
 
 void
-AnimationProperty::updateIK(Bones& bones) noexcept
+AnimationProperty::updateIK() noexcept
 {
 	for (auto& ik : _iks)
-		this->updateIK(bones, ik);
+		this->updateIK(_bones, ik);
 }
 
 void
@@ -433,8 +444,8 @@ AnimationProperty::updateIK(Bones& bones, const IKAttr& ik) noexcept
 				updateTransform(bone, bone.getLocalTransform().getTranslate(), qq);
 			}
 
-			this->updateBoneMatrix(bones, bone);
-			this->updateBoneMatrix(bones, target);
+			this->updateBoneMatrix(bone);
+			this->updateBoneMatrix(target);
 		}
 	}
 }

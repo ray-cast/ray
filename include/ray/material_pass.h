@@ -47,11 +47,14 @@ public:
 	MaterialParamBinding() noexcept;
 	~MaterialParamBinding() noexcept;
 
+	void setSemantic(bool semantic) noexcept;
+	bool getSemantic() const noexcept;
+
 	void setMaterialParam(MaterialParamPtr param) noexcept;
-	MaterialParamPtr getMaterialParam() const noexcept;
+	const MaterialParamPtr& getMaterialParam() const noexcept;
 
 	void setGraphicsUniformSet(GraphicsUniformSetPtr uniformSet) noexcept;
-	GraphicsUniformSetPtr getGraphicsUniformSet() const noexcept;
+	const GraphicsUniformSetPtr& getGraphicsUniformSet() const noexcept;
 
 	void needUpdate(bool needUpdate) noexcept;
 	bool needUpdate() noexcept;
@@ -65,6 +68,7 @@ private:
 
 private:
 	bool _needUpdate;
+	bool _isSemantic;
 	MaterialParamPtr _param;
 	GraphicsUniformSetPtr _uniformSet;
 };

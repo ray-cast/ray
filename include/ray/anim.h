@@ -127,7 +127,13 @@ public:
 
 	AnimationPropertyPtr clone() noexcept;
 
-	void updateMotion(float delta) noexcept;
+	void updateFrame(float delta) noexcept;
+	void updateMotion() noexcept;
+	void updateBoneMotion() noexcept;
+	bool updateBoneMotion(std::size_t index) noexcept;
+	void updateBoneMatrix() noexcept;
+	void updateBoneMatrix(Bone& bone) noexcept;
+	void updateIK() noexcept;
 
 	MotionSegment findMotionSegment(int frame, const std::vector<std::size_t>& motions) noexcept;
 	void interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame) noexcept;
@@ -137,12 +143,8 @@ private:
 	AnimationProperty& operator=(const AnimationProperty&) = delete;
 
 private:
-	void updateIK(Bones& _bones) noexcept;
 	void updateIK(Bones& _bones, const IKAttr& ik) noexcept;
 	void updateBones(const Bones& _bones) noexcept;
-	void updateBoneMotion(Bones& _bones) noexcept;
-	void updateBoneMatrix(Bones& _bones) noexcept;
-	void updateBoneMatrix(Bones& _bones, Bone& bone) noexcept;
 	void updateTransform(Bone& bone, const float3& translate, const Quaternion& rotate) noexcept;
 
 private:

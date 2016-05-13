@@ -127,9 +127,6 @@ private:
 	Vector3 _constantVelocity;
 	Vector3 _constantAngularVelocity;
 
-	float4x4 _transform;
-	float4x4 _transformInverse;
-
 	delegate<void()> _onActivate;
 	delegate<void()> _onDeactivate;
 

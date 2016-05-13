@@ -196,8 +196,8 @@ ShadowRenderPipeline::setupShadowMaterial(RenderPipeline& pipeline) noexcept
 	_softOffset = _softBlur->getParameter("offset");
 	_softWeight = _softBlur->getParameter("weight");
 
-	const float offsets[4] = { 1.3846153846, 3.2307692308, -1.3846153846, -3.2307692308 };
-	const float weight[3] = { 0.2270270270,  0.3162162162, 0.0702702703 };
+	const float offsets[4] = { 1.3846153846f, 3.2307692308f, -1.3846153846f, -3.2307692308f };
+	const float weight[3] = { 0.2270270270f,  0.3162162162f, 0.0702702703f };
 
 	_softOffset->uniform1fv(4, offsets);
 	_softWeight->uniform1fv(3, weight);

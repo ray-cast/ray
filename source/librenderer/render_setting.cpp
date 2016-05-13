@@ -45,7 +45,7 @@ RenderSetting::RenderSetting() noexcept
 	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
 	, enableDeferredLighting(true)
-	, enableSSAO(true)
+	, enableSSAO(false)
 	, enableSSGI(false)
 	, enableAtmospheric(false)
 	, enableSSR(false)

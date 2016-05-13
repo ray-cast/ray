@@ -45,12 +45,14 @@ __ImplementSubClass(GameObject, rtti::Interface, "Object")
 GameObject::GameObject() noexcept
 	: _active(false)
 	, _layer(0)
-	, _needUpdates(true)
-	, _scaling(float3::One)
-	, _translate(float3::Zero)
-	, _quat(Quaternion::Zero)
-	, _euler(float3::Zero)
-	, _dispatchComponents(GameDispatchType::GameDispatchTypeRangeSize)
+	, _localScaling(float3::One)
+	, _localTranslate(float3::Zero)
+	, _localRotation(Quaternion::Zero)
+	, _worldScaling(float3::One)
+	, _worldTranslate(float3::Zero)
+	, _worldRotation(Quaternion::Zero)
+	, _localNeedUpdates(true)
+	, _worldNeedUpdates(true)
 {
 	GameObjectManager::instance()->_instanceObject(this, _instanceID);
 }
@@ -190,6 +192,7 @@ GameObject::setParent(GameObjectPtr& parent) noexcept
 		if (parent)
 			parent->_children.push_back(this->cast<GameObject>());
 
+		this->_updateWorldChildren();
 		this->_onMoveAfter();
 	}
 }
@@ -304,13 +307,14 @@ GameObject::getChildren() const noexcept
 void
 GameObject::setTranslate(const float3& pos) noexcept
 {
-	if (_translate != pos)
+	if (_localTranslate != pos)
 	{
 		this->_onMoveBefore();
 
-		_translate = pos;
-		_needUpdates = true;
+		_localTranslate = pos;
+		_localNeedUpdates = true;
 
+		this->_updateLocalChildren();
 		this->_onMoveAfter();
 	}
 }
@@ -318,25 +322,27 @@ GameObject::setTranslate(const float3& pos) noexcept
 void
 GameObject::setTranslateAccum(const float3& v) noexcept
 {
-	this->setTranslate(_translate + v);
+	this->setTranslate(_localTranslate + v);
 }
 
 const float3&
 GameObject::getTranslate() const noexcept
 {
-	return _translate;
+	_updateLocalTransform();
+	return _localTranslate;
 }
 
 void
-GameObject::setScale(const float3& pos) noexcept
+GameObject::setScale(const float3& scale) noexcept
 {
-	if (_scaling != pos)
+	if (_localScaling != scale)
 	{
 		this->_onMoveBefore();
 
-		_scaling = pos;
-		_needUpdates = true;
+		_localScaling = scale;
+		_localNeedUpdates = true;
 
+		this->_updateLocalChildren();
 		this->_onMoveAfter();
 	}
 }
@@ -344,26 +350,27 @@ GameObject::setScale(const float3& pos) noexcept
 void
 GameObject::setScaleAccum(const float3& scale) noexcept
 {
-	this->setScale(_scaling + scale);
+	this->setScale(_localScaling + scale);
 }
 
 const float3&
 GameObject::getScale() const noexcept
 {
-	return _scaling;
+	_updateLocalTransform();
+	return _localScaling;
 }
 
 void
 GameObject::setQuaternion(const Quaternion& quat) noexcept
 {
-	if (_quat != quat)
+	if (_localRotation != quat)
 	{
 		this->_onMoveBefore();
 
-		_quat = quat;
-		_euler.makeRotate(_quat);
-		_needUpdates = true;
+		_localRotation = quat;
+		_localNeedUpdates = true;
 
+		this->_updateLocalChildren();
 		this->_onMoveAfter();
 	}
 }
@@ -371,115 +378,198 @@ GameObject::setQuaternion(const Quaternion& quat) noexcept
 void
 GameObject::setQuaternionAccum(const Quaternion& quat) noexcept
 {
-	this->setQuaternion(math::cross(quat, _quat));
+	this->setQuaternion(math::cross(quat, _localRotation));
 }
 
 const Quaternion&
 GameObject::getQuaternion() const noexcept
 {
-	return _quat;
-}
-
-void
-GameObject::setEulerAngles(const EulerAngles& euler) noexcept
-{
-	if (_euler != euler)
-	{
-		this->_onMoveBefore();
-
-		_euler = euler;
-		_quat.makeRotate(euler);
-		_needUpdates = true;
-
-		this->_onMoveAfter();
-	}
-}
-
-void
-GameObject::setEulerAnglesAccum(const EulerAngles& euler) noexcept
-{
-	this->setEulerAngles(_euler + euler);
-}
-
-const EulerAngles&
-GameObject::getEulerAngles() const noexcept
-{
-	return _euler;
+	_updateLocalTransform();
+	return _localRotation;
 }
 
 const float3&
 GameObject::getRight() const noexcept
 {
-	_updateTransform();
-	return _transform.getRight();
+	_updateLocalTransform();
+	return _localTransform.getRight();
 }
 
 const float3&
 GameObject::getUpVector() const noexcept
 {
-	_updateTransform();
-	return _transform.getUpVector();
+	_updateLocalTransform();
+	return _localTransform.getUpVector();
 }
 
 const float3&
 GameObject::getForward() const noexcept
 {
-	_updateTransform();
-	return _transform.getForward();
+	_updateLocalTransform();
+	return _localTransform.getForward();
 }
 
-void 
+void
 GameObject::setTransform(const float4x4& transform) noexcept
 {
 	this->_onMoveBefore();
 
-	_transform = transform.getTransform(_translate, _quat, _scaling);
-	_transformInverse = math::transformInverse(_transform);
-	_transformInverseTranspose = math::transpose(_transformInverse);
+	_localTransform = transform.getTransform(_localTranslate, _localRotation, _localScaling);
+	_localNeedUpdates = false;
 
-	_euler.makeRotate(_quat);
-
-	_needUpdates = false;
-
+	this->_updateLocalChildren();
 	this->_onMoveAfter();
 }
 
-void 
+void
 GameObject::setTransformOnlyRotate(const float4x4& transform) noexcept
 {
 	this->_onMoveBefore();
 
-	_scaling = float3::One;
-	_transform = transform.getTransformNoScale(_translate, _quat);
-	_transformInverse = math::transformInverse(_transform);
-	_transformInverseTranspose = math::transpose(_transformInverse);
+	_localTransform = transform.getTransformOnlyRotation(_localTranslate, _localRotation);
+	_localTransform.scale(_localScaling);
+	_localNeedUpdates = false;
 
-	_euler.makeRotate(_quat);
-
-	_needUpdates = false;
-
+	this->_updateLocalChildren();
 	this->_onMoveAfter();
 }
 
-const Matrix4x4&
+const float4x4&
 GameObject::getTransform() const noexcept
 {
-	this->_updateTransform();
-	return _transform;
+	this->_updateLocalTransform();
+	return _localTransform;
 }
 
-const Matrix4x4&
+const float4x4& 
 GameObject::getTransformInverse() const noexcept
 {
-	this->_updateTransform();
-	return _transformInverse;
+	this->_updateLocalTransform();
+	return _localTransformInverse;
 }
 
-const Matrix4x4&
-GameObject::getTransformInverseTranspose() const noexcept
+void
+GameObject::setWorldTranslate(const float3& pos) noexcept
 {
-	this->_updateTransform();
-	return _transformInverseTranspose;
+	if (_worldTranslate != pos)
+	{
+		this->_onMoveBefore();
+
+		_worldTranslate = pos;
+		_worldNeedUpdates = true;
+
+		this->_updateWorldChildren();
+		this->_onMoveAfter();
+	}
+}
+
+void
+GameObject::setWorldTranslateAccum(const float3& v) noexcept
+{
+	this->setWorldTranslate(_worldTranslate + v);
+}
+
+const float3&
+GameObject::getWorldTranslate() const noexcept
+{
+	_updateWorldTransform();
+	return _worldTranslate;
+}
+
+void
+GameObject::setWorldScale(const float3& pos) noexcept
+{
+	if (_worldScaling != pos)
+	{
+		this->_onMoveBefore();
+
+		_worldScaling = pos;
+		_worldNeedUpdates = true;
+
+		this->_updateWorldChildren();
+		this->_onMoveAfter();
+	}
+}
+
+void
+GameObject::setWorldScaleAccum(const float3& scale) noexcept
+{
+	this->setWorldScale(_worldScaling + scale);
+}
+
+const float3&
+GameObject::getWorldScale() const noexcept
+{
+	_updateWorldTransform();
+	return _worldScaling;
+}
+
+void
+GameObject::setWorldQuaternion(const Quaternion& quat) noexcept
+{
+	if (_worldRotation != quat)
+	{
+		this->_onMoveBefore();
+
+		_worldRotation = quat;
+		_worldNeedUpdates = true;
+
+		this->_updateWorldChildren();
+		this->_onMoveAfter();
+	}
+}
+
+void
+GameObject::setWorldQuaternionAccum(const Quaternion& quat) noexcept
+{
+	this->setQuaternion(math::cross(quat, _worldRotation));
+}
+
+const Quaternion&
+GameObject::getWorldQuaternion() const noexcept
+{
+	_updateWorldTransform();
+	return _worldRotation;
+}
+
+void
+GameObject::setWorldTransform(const float4x4& transform) noexcept
+{
+	this->_onMoveBefore();
+
+	_worldTransform = transform.getTransform(_worldTranslate, _worldRotation, _worldScaling);
+	_worldNeedUpdates = false;
+
+	this->_updateWorldChildren();
+	this->_onMoveAfter();
+}
+
+void 
+GameObject::setWorldTransformOnlyRotate(const float4x4& transform) noexcept
+{
+	this->_onMoveBefore();
+
+	_worldTransform = transform.getTransformOnlyRotation(_worldTranslate, _worldRotation);
+	_worldTransform.scale(_worldScaling);
+
+	_worldNeedUpdates = false;
+
+	this->_updateWorldChildren();
+	this->_onMoveAfter();
+}
+
+const float4x4&
+GameObject::getWorldTransform() const noexcept
+{
+	this->_updateWorldTransform();
+	return _worldTransform;
+}
+
+const float4x4&
+GameObject::getWorldTransformInverse() const noexcept
+{
+	this->_updateWorldTransform();
+	return _worldTransformInverse;
 }
 
 void
@@ -651,8 +741,13 @@ void
 GameObject::addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
 {
 	assert(component);
-	assert(std::find(_dispatchComponents[type].begin(), _dispatchComponents[type].end(), component) == _dispatchComponents[type].end());
-	
+
+	if (_dispatchComponents.empty())
+		_dispatchComponents.resize(GameDispatchType::GameDispatchTypeRangeSize);
+
+	if (std::find(_dispatchComponents[type].begin(), _dispatchComponents[type].end(), component) != _dispatchComponents[type].end())
+		return;
+
 	if (this->getActive())
 	{
 		if (type == GameDispatchType::GameDispatchTypeFrame ||
@@ -676,9 +771,12 @@ GameObject::removeComponentDispatch(GameDispatchType type, GameComponentPtr comp
 {
 	assert(component);
 
+	if (_dispatchComponents.empty())
+		return;
+
 	auto it = std::find(_dispatchComponents[type].begin(), _dispatchComponents[type].end(), component);
-	if (it != _dispatchComponents[type].end())
-		_dispatchComponents[type].erase(it);
+	if (it == _dispatchComponents[type].end())
+		return;
 
 	if (this->getActive())
 	{
@@ -694,6 +792,8 @@ GameObject::removeComponentDispatch(GameDispatchType type, GameComponentPtr comp
 			}
 		}
 	}
+
+	_dispatchComponents[type].erase(it);
 }
 
 void
@@ -795,7 +895,7 @@ GameObject::load(iarchive& reader) noexcept
 		this->setScale(scale);
 
 	if (reader.getValue("rotate", rotate))
-		this->setEulerAngles(EulerAngles(rotate));
+		this->setQuaternion(Quaternion(rotate));
 }
 
 void
@@ -826,6 +926,8 @@ GameObject::clone() const noexcept
 void
 GameObject::_onFrameBegin() except
 {
+	assert(!_dispatchComponents.empty());
+
 	auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeFrameBegin];
 	for (auto& it : components)
 		it->onFrameBegin();
@@ -834,6 +936,8 @@ GameObject::_onFrameBegin() except
 void
 GameObject::_onFrame() except
 {
+	assert(!_dispatchComponents.empty());
+
 	auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeFrame];
 	for (auto& it : components)
 		it->onFrame();
@@ -842,6 +946,8 @@ GameObject::_onFrame() except
 void
 GameObject::_onFrameEnd() except
 {
+	assert(!_dispatchComponents.empty());
+
 	auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeFrameEnd];
 	for (auto& it : components)
 		it->onFrameEnd();
@@ -856,22 +962,28 @@ GameObject::_onActivate() except
 			it->onActivate();
 	}
 
-	if (!_dispatchComponents[GameDispatchTypeFrame].empty() ||
-		!_dispatchComponents[GameDispatchTypeFrameBegin].empty() ||
-		!_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+	if (!_dispatchComponents.empty())
 	{
-		GameObjectManager::instance()->_activeObject(this, true);
+		if (!_dispatchComponents[GameDispatchTypeFrame].empty() ||
+			!_dispatchComponents[GameDispatchTypeFrameBegin].empty() ||
+			!_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+		{
+			GameObjectManager::instance()->_activeObject(this, true);
+		}
 	}
 }
 
 void 
 GameObject::_onDeactivate() except
 {
-	if (!_dispatchComponents[GameDispatchTypeFrame].empty() ||
-		!_dispatchComponents[GameDispatchTypeFrameBegin].empty() ||
-		!_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+	if (!_dispatchComponents.empty())
 	{
-		GameObjectManager::instance()->_activeObject(this, false);
+		if (!_dispatchComponents[GameDispatchTypeFrame].empty() ||
+			!_dispatchComponents[GameDispatchTypeFrameBegin].empty() ||
+			!_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+		{
+			GameObjectManager::instance()->_activeObject(this, false);
+		}
 	}
 
 	for (auto& it : _components)
@@ -884,7 +996,10 @@ GameObject::_onDeactivate() except
 void
 GameObject::_onMoveBefore() except
 {
-	if (this->getActive())
+	if (!this->getActive())
+		return;
+
+	if (!_dispatchComponents.empty())
 	{
 		auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeMoveBefore];
 		for (auto& it : components)
@@ -904,7 +1019,10 @@ GameObject::_onMoveBefore() except
 void
 GameObject::_onMoveAfter() except
 {
-	if (this->getActive())
+	if (!this->getActive())
+		return;
+
+	if (!_dispatchComponents.empty())
 	{
 		auto& components = _dispatchComponents[GameDispatchType::GameDispatchTypeMoveAfter];
 		for (auto& it : components)
@@ -948,15 +1066,78 @@ GameObject::_onLayerChangeAfter() except
 }
 
 void
-GameObject::_updateTransform() const noexcept
+GameObject::_updateLocalChildren() const noexcept
 {
-	if (_needUpdates)
-	{
-		_transform.makeTransform(_translate, _quat, _scaling);
-		_transformInverse = math::transformInverse(_transform);
-		_transformInverseTranspose = math::transpose(_transformInverse);
+	_worldNeedUpdates = true;
 
-		_needUpdates = false;
+	for (auto& it : _children)
+		it->_updateLocalChildren();
+}
+
+void 
+GameObject::_updateWorldChildren() const noexcept
+{
+	this->_updateParentTransform();
+	this->_updateLocalChildren();
+}
+
+void
+GameObject::_updateLocalTransform() const noexcept
+{
+	if (_localNeedUpdates)
+	{
+		_localTransform.makeTransform(_localTranslate, _localRotation, _localScaling);
+		_localTransformInverse = math::transformInverse(_localTransform);
+
+		_localNeedUpdates = false;
+	}
+}
+
+void
+GameObject::_updateWorldTransform() const noexcept
+{
+	if (_worldNeedUpdates)
+	{
+		if (_parent.lock())
+		{
+			auto& baseTransform = _parent.lock()->getWorldTransform();
+			_worldTransform = math::transformMultiply(baseTransform, this->getTransform());
+			_worldTransform.getTransform(_worldTranslate, _worldRotation, _worldScaling);
+			_worldTransformInverse = math::transformInverse(_worldTransform);
+		}
+		else
+		{
+			_worldTranslate = _localTranslate;
+			_worldScaling = _localScaling;
+			_worldRotation = _localRotation;
+			_worldTransform.makeTransform(_worldTranslate, _worldRotation, _worldScaling);
+			_worldTransformInverse = math::transformInverse(_worldTransform);
+		}
+
+		_worldNeedUpdates = false;
+	}
+}
+
+void 
+GameObject::_updateParentTransform() const noexcept
+{
+	if (_worldNeedUpdates)
+	{
+		_worldTransform.makeTransform(_worldTranslate, _worldRotation, _worldScaling);
+		_worldNeedUpdates = false;
+	}
+
+	if (_parent.lock())
+	{
+		auto& baseTransformInverse = _parent.lock()->getWorldTransformInverse();
+		_localTransform = math::transformMultiply(baseTransformInverse, _worldTransform);
+		_localTransform.getTransform(_localTranslate, _localRotation, _localScaling);
+	}
+	else
+	{
+		_localScaling = _worldScaling;
+		_localRotation = _worldRotation;
+		_localTranslate = _worldTranslate;
 	}
 }
 

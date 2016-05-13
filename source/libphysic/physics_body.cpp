@@ -40,6 +40,48 @@
 
 _NAME_BEGIN
 
+class MotionState final : public btMotionState
+{
+public:
+	btTransform _graphicsWorldTrans;
+	PhysicsBody* _userPointer;
+
+	MotionState(PhysicsBody* body)
+		: _userPointer(body)
+	{
+		_graphicsWorldTrans.setIdentity();
+	}
+
+	void setFromOpenGLMatrix(const float4x4& centerOfMassWorldTrans)
+	{
+		_graphicsWorldTrans.setFromOpenGLMatrix(centerOfMassWorldTrans.data());
+	}
+
+	void getFromOpenGLMatrix(float4x4& centerOfMassWorldTrans)
+	{
+		_graphicsWorldTrans.getOpenGLMatrix(centerOfMassWorldTrans.data());
+	}
+
+private:
+	virtual void getWorldTransform(btTransform& centerOfMassWorldTrans) const
+	{
+		centerOfMassWorldTrans = _graphicsWorldTrans;
+	}
+
+	virtual void setWorldTransform(const btTransform& centerOfMassWorldTrans)
+	{
+		_graphicsWorldTrans = centerOfMassWorldTrans;
+
+		auto listener = _userPointer->getRigidbodyListener();
+		if (listener)
+			listener->onFetchResult();
+	}
+
+private:
+	MotionState(const MotionState&) = delete;
+	MotionState& operator=(const MotionState&) = delete;
+};
+
 PhysicsBody::PhysicsBody() noexcept
 	: _isKinematic(false)
 	, _mass(0.0f)
@@ -57,7 +99,7 @@ PhysicsBody::PhysicsBody() noexcept
 	, _rigidbody(nullptr)
 	, _listener(nullptr)
 {
-	_motion = new btDefaultMotionState;
+	_motion = new MotionState(this);
 }
 
 PhysicsBody::~PhysicsBody() noexcept
@@ -216,29 +258,9 @@ PhysicsBody::setGravity(const Vector3& value) noexcept
 }
 
 void
-PhysicsBody::setMovePosition(const Vector3& v) noexcept
+PhysicsBody::setWorldTransform(const float4x4& value) noexcept
 {
-	btTransform transform;
-	_motion->getWorldTransform(transform);
-	transform.setOrigin(btVector3(v.x, v.y, v.z));
-	_motion->setWorldTransform(transform);
-}
-
-void
-PhysicsBody::setMoveRotation(const Quaternion& q) noexcept
-{
-	btTransform transform;
-	_motion->getWorldTransform(transform);
-	transform.setRotation(btQuaternion(q.x, q.y, q.z, q.w));
-	_motion->setWorldTransform(transform);
-}
-
-void
-PhysicsBody::setTransform(const float4x4& value) noexcept
-{
-	btTransform transform;
-	transform.setFromOpenGLMatrix(&value.a1);
-	_motion->setWorldTransform(transform);
+	_motion->setFromOpenGLMatrix(value);
 }
 
 void
@@ -326,29 +348,10 @@ PhysicsBody::getAngularVelocity() const noexcept
 	return _angularVelocity;
 }
 
-Vector3
-PhysicsBody::getMovePosition() const noexcept
-{
-	btTransform transform;
-	_motion->getWorldTransform(transform);
-	return Vector3(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
-}
-
-Quaternion
-PhysicsBody::getMoveRotation() const noexcept
-{
-	btTransform transform;
-	_motion->getWorldTransform(transform);
-	btQuaternion q = transform.getRotation();
-	return Quaternion(q.x(), q.y(), q.z(), q.w());
-}
-
 void
 PhysicsBody::getWorldTransform(float4x4& m) const noexcept
 {
-	btTransform transform;
-	_motion->getWorldTransform(transform);
-	transform.getOpenGLMatrix(&m.a1);
+	_motion->getFromOpenGLMatrix(m);
 }
 
 void

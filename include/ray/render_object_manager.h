@@ -52,7 +52,7 @@ public:
 	void addRenderData(RenderQueue queue, RenderObjectPtr&& object) noexcept;
 	RenderObjects& getRenderData(RenderQueue queue) noexcept;
 
-	void assginVisiable(CameraPtr camera) noexcept;
+	void assginVisiable(const Camera& camera) noexcept;
 	void assginVisiableLight(CameraPtr camera) noexcept;
 	void assginVisiableObject(CameraPtr camera) noexcept;
 

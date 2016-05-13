@@ -290,12 +290,8 @@ PhysicsBodyComponent::_buildRigibody() noexcept
 
 	auto gameObject = this->getGameObject();
 
-	_transform.makeRotate(gameObject->getQuaternion());
-	_transform.setTranslate(gameObject->getTranslate() - gameObject->getParent()->getTranslate());
-	_transformInverse = math::inverse(_transform);
-
 	_body->setLayer(gameObject->getLayer());
-	_body->setTransform(gameObject->getTransform());
+	_body->setWorldTransform(gameObject->getWorldTransform());
 	_body->setup(shape);
 }
 
@@ -336,7 +332,7 @@ PhysicsBodyComponent::onMoveAfter() noexcept
 		return;
 
 	if (_body && this->isKinematic())
-		_body->setTransform(this->getGameObject()->getParent()->getTransform() * _transform);
+		_body->setWorldTransform(this->getGameObject()->getWorldTransform());
 }
 
 void
@@ -365,9 +361,7 @@ PhysicsBodyComponent::onFetchResult() noexcept
 {
 	float4x4 transform;
 	_body->getWorldTransform(transform);
-
-	this->getGameObject()->setTransform(transform);
-	this->getGameObject()->getParent()->setTransform(math::transformMultiply(transform, _transformInverse));
+	this->getGameObject()->getParent()->setWorldTransformOnlyRotate(math::transformMultiply(transform, this->getGameObject()->getTransformInverse()));
 }
 
 _NAME_END

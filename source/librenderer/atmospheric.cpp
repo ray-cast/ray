@@ -51,8 +51,8 @@ Atmospheric::Setting::Setting() noexcept
 	wavelength.y = 0.570f; // 570 nm for green
 	wavelength.z = 0.475f; // 475 nm for blue
 
-	kr = 0.0025;
-	km = 0.0025;
+	kr = 0.0025f;
+	km = 0.0025f;
 	sun = 16.0f;
 }
 

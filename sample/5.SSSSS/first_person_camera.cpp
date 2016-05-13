@@ -190,7 +190,9 @@ FirstPersonCameraComponent::rotateCamera(float axisX, float axisY) noexcept
 	float angleY = axisX * _sensitivityX;
 	float angleX = axisY * _sensitivityY;
 
-	float angle = angleX + this->getGameObject()->getEulerAngles().x;
+	ray::EulerAngles euler(this->getGameObject()->getQuaternion());
+
+	float angle = angleX + euler.x;
 	if (angle > -89.0f && angle < 89.0f && !std::isinf(angle))
 		rotateCamera(angleX, this->getGameObject()->getRight());
 

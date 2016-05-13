@@ -176,11 +176,7 @@ template<typename T> const Vector3t<T> Vector3t<T>::Forward = Vector3t<T>((T)0.0
 template<typename T>
 inline bool operator==(const Vector3t<T>& v1, const Vector3t<T>& v2)
 {
-    constexpr T epsilon = EPSILON_E4;
-    return
-        v1.x + epsilon >= v2.x && v1.x - epsilon <= v2.x &&
-        v1.y + epsilon >= v2.y && v1.y - epsilon <= v2.y &&
-        v1.z + epsilon >= v2.z && v1.z - epsilon <= v2.z;
+	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
 }
 
 template<typename T>
@@ -396,6 +392,15 @@ namespace math
 	inline T sqrDistance(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 	{
 		return length2(v1 - v2);
+	}
+
+	template<typename T>
+	inline bool equal(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
+	{
+		return 
+			math::equal<T>(v1.x, v2.x) &&
+			math::equal<T>(v1.y, v2.y) && 
+			math::equal<T>(v1.z, v2.z);
 	}
 
 	template<typename T>

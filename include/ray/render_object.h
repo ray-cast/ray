@@ -77,19 +77,23 @@ public:
 	void setRenderScene(RenderScenePtr scene) noexcept;
 	RenderScenePtr getRenderScene() const noexcept;
 
-	void setTransform(const Matrix4x4& transform, const Matrix4x4& inverse, const Matrix4x4& inverseTranspose) noexcept;
-	const Matrix4x4& getTransform() const noexcept;
-	const Matrix4x4& getTransformInverse() const noexcept;
-	const Matrix4x4& getTransformInverseTranspose() const noexcept;
+	void setTransform(const float4x4& transform) noexcept;
+	const float4x4& getTransform() const noexcept;
+	const float4x4& getTransformInverse() const noexcept;
+	const float4x4& getTransformInverseTranspose() const noexcept;
 
-	Vector3 getTranslate() const noexcept;
-
-	Vector3 getRight() const noexcept;
-	Vector3 getUpVector() const noexcept;
-	Vector3 getForward() const noexcept;
+	const Vector3& getRight() const noexcept;
+	const Vector3& getUpVector() const noexcept;
+	const Vector3& getForward() const noexcept;
+	const Vector3& getTranslate() const noexcept;
 
 	void addRenderData(RenderDataManager& manager) noexcept;
+
 	void render(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
+
+public:
+	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
 
 protected:
 	virtual void onMoveBefor() noexcept;
@@ -111,9 +115,9 @@ private:
 	Bound _boundingBox;
 	Bound _worldBoundingxBox;
 
-	Matrix4x4 _transform;
-	Matrix4x4 _transformInverse;
-	Matrix4x4 _transformInverseTranspose;
+	float4x4 _transform;
+	float4x4 _transformInverse;
+	float4x4 _transformInverseTranspose;
 
 	RenderListener* _renderListener;
 	RenderSceneWeakPtr  _renderScene;

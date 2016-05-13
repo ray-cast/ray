@@ -214,12 +214,12 @@ RenderScene::removeRenderObject(RenderObjectPtr object) noexcept
 }
 
 void
-RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
+RenderScene::computVisiable(const float4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
 	fru.extract(viewProject);
 
-	auto eyePosition = viewProject.getTranslate();
+	const auto& eyePosition = viewProject.getTranslate();
 
 	for (auto& it : _renderObjectList)
 	{
@@ -231,12 +231,12 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 }
 
 void
-RenderScene::computVisiableObject(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
+RenderScene::computVisiableObject(const float4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
 	fru.extract(viewProject);
 
-	auto eyePosition = viewProject.getTranslate();
+	const auto& eyePosition = viewProject.getTranslate();
 
 	for (auto& it : _renderObjectList)
 	{
@@ -251,12 +251,12 @@ RenderScene::computVisiableObject(const Matrix4x4& viewProject, OcclusionCullLis
 }
 
 void
-RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
+RenderScene::computVisiableLight(const float4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
 	fru.extract(viewProject);
 
-	auto eyePosition = viewProject.getTranslate();
+	const auto& eyePosition = viewProject.getTranslate();
 
 	for (auto& it : _renderObjectList)
 	{

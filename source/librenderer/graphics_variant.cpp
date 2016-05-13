@@ -1086,21 +1086,21 @@ GraphicsVariant::getFloat4x4Array() const noexcept
 	return *_value.m4array;
 }
 
-GraphicsTexturePtr
+const GraphicsTexturePtr&
 GraphicsVariant::getTexture() const noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeSamplerImage || _type == GraphicsUniformType::GraphicsUniformTypeStorageImage);
 	return _value.texture->image;
 }
 
-GraphicsSamplerPtr
+const GraphicsSamplerPtr&
 GraphicsVariant::getTextureSampler() const noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeSamplerImage || _type == GraphicsUniformType::GraphicsUniformTypeStorageImage);
 	return _value.texture->sampler;
 }
 
-GraphicsDataPtr
+const GraphicsDataPtr&
 GraphicsVariant::getBuffer() const noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer);

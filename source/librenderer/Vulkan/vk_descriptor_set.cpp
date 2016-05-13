@@ -674,16 +674,22 @@ VulkanGraphicsUniformSet::getFloat4x4Array() const noexcept
 	return _variant.getFloat4x4Array();
 }
 
-GraphicsTexturePtr
+const GraphicsTexturePtr&
 VulkanGraphicsUniformSet::getTexture() const noexcept
 {
 	return _variant.getTexture();
 }
 
-GraphicsSamplerPtr
+const GraphicsSamplerPtr&
 VulkanGraphicsUniformSet::getTextureSampler() const noexcept
 {
 	return _variant.getTextureSampler();
+}
+
+const GraphicsDataPtr&
+VulkanGraphicsUniformSet::getBuffer() const noexcept
+{
+	return _variant.getBuffer();
 }
 
 void
@@ -692,7 +698,7 @@ VulkanGraphicsUniformSet::setGraphicsUniform(GraphicsUniformPtr uniform) noexcep
 	_uniform = uniform;
 }
 
-GraphicsUniformPtr
+const GraphicsUniformPtr&
 VulkanGraphicsUniformSet::getGraphicsUniform() const noexcept
 {
 	return _uniform;

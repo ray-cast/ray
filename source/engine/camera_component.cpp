@@ -340,11 +340,7 @@ CameraComponent::onActivate() noexcept
 	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
 
 	_camera->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
-	_camera->setTransform(
-		this->getGameObject()->getTransform(),
-		this->getGameObject()->getTransformInverse(),
-		this->getGameObject()->getTransformInverseTranspose()
-		);
+	_camera->setTransform(this->getGameObject()->getWorldTransform());
 }
 
 void
@@ -358,19 +354,7 @@ CameraComponent::onDeactivate() noexcept
 void
 CameraComponent::onMoveAfter() noexcept
 {
-	float4x4 transform;
-	float4x4 transformInverse;
-	float4x4 transformInverseTranspose;
-
-	auto gameObject = this->getGameObject();
-
-	transform.makeRotate(gameObject->getForward(), gameObject->getUpVector(), gameObject->getRight());
-	transform.setTranslate(gameObject->getTranslate());
-
-	transformInverse = math::transformInverse(transform);
-	transformInverseTranspose = math::transpose(transformInverse);
-
-	_camera->setTransform(transform, transformInverse, transformInverseTranspose);
+	_camera->setTransform(this->getGameObject()->getWorldTransform());
 }
 
 GameComponentPtr

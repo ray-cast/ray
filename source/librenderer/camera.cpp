@@ -55,12 +55,13 @@ Camera::Camera() noexcept
 	, _zfar(100.0f)
 	, _viewport(0.0f, 0.0f, 1.0f, 1.0f)
 	, _clearFlags(GraphicsClearFlagBits::GraphicsClearFlagAllBit)
-	, _clearColor(float4(0.1, 0.1, 0.1, 1.0))
+	, _clearColor(float4(0.1f, 0.1f, 0.1f, 1.0f))
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)
 	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
 	, _needUpdateProject(true)
 	, _needUpdateViewProject(true)
+	, _needUpdateVisiable(true)
 {
 	std::uint32_t width, height;
 	RenderSystem::instance()->getWindowResolution(width, height);
@@ -404,6 +405,16 @@ Camera::getRenderDataManager() const noexcept
 	return _dataManager;
 }
 
+void 
+Camera::assignVisiable() noexcept
+{
+	if (_needUpdateVisiable)
+	{
+		_dataManager->assginVisiable(*this);
+		_needUpdateVisiable = false;
+	}
+}
+
 void
 Camera::_updateOrtho() const noexcept
 {
@@ -476,6 +487,17 @@ void
 Camera::onMoveAfter() noexcept
 {
 	_needUpdateViewProject = true;
+}
+
+void 
+Camera::onRenderPre(RenderPipeline& pipeline) noexcept
+{
+	_needUpdateVisiable = true;
+}
+
+void 
+Camera::onRenderPost(RenderPipeline& pipeline) noexcept
+{
 }
 
 _NAME_END

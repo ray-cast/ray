@@ -504,6 +504,12 @@ EGL3GraphicsUniformSet::getFloat4() const noexcept
 	return _variant.getFloat4();
 }
 
+const float2x2&
+EGL3GraphicsUniformSet::getFloat2x2() const noexcept
+{
+	return _variant.getFloat2x2();
+}
+
 const float3x3&
 EGL3GraphicsUniformSet::getFloat3x3() const noexcept
 {
@@ -606,16 +612,22 @@ EGL3GraphicsUniformSet::getFloat4x4Array() const noexcept
 	return _variant.getFloat4x4Array();
 }
 
-GraphicsTexturePtr
+const GraphicsTexturePtr&
 EGL3GraphicsUniformSet::getTexture() const noexcept
 {
 	return _variant.getTexture();
 }
 
-GraphicsSamplerPtr
+const GraphicsSamplerPtr&
 EGL3GraphicsUniformSet::getTextureSampler() const noexcept
 {
 	return _variant.getTextureSampler();
+}
+
+const GraphicsDataPtr&
+EGL3GraphicsUniformSet::getBuffer() const noexcept
+{
+	return _variant.getBuffer();
 }
 
 void
@@ -624,7 +636,7 @@ EGL3GraphicsUniformSet::setGraphicsUniform(GraphicsUniformPtr uniform) noexcept
 	_uniform = uniform;
 }
 
-GraphicsUniformPtr
+const GraphicsUniformPtr&
 EGL3GraphicsUniformSet::getGraphicsUniform() const noexcept
 {
 	return _uniform;
@@ -749,101 +761,100 @@ EGL3DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 
 	for (auto& it : _activeUniformSets)
 	{
-		auto uniform = it->downcast<EGL3GraphicsUniformSet>();
 		auto type = it->getGraphicsUniform()->getType();
-		auto location = it->getGraphicsUniform()->downcast<EGL3GraphicsUniform>()->getBindingPoint();
+		auto location = it->getGraphicsUniform()->getBindingPoint();
 		switch (type)
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:
-			GL_CHECK(glProgramUniform1i(program, location, uniform->getBool()));
+			GL_CHECK(glProgramUniform1i(program, location, it->getBool()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt:
-			GL_CHECK(glProgramUniform1i(program, location, uniform->getInt()));
+			GL_CHECK(glProgramUniform1i(program, location, it->getInt()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt2:
-			GL_CHECK(glProgramUniform2iv(program, location, 1, (GLint*)uniform->getInt2().ptr()));
+			GL_CHECK(glProgramUniform2iv(program, location, 1, (GLint*)it->getInt2().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt3:
-			GL_CHECK(glProgramUniform3iv(program, location, 1, (GLint*)uniform->getInt3().ptr()));
+			GL_CHECK(glProgramUniform3iv(program, location, 1, (GLint*)it->getInt3().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt4:
-			GL_CHECK(glProgramUniform4iv(program, location, 1, (GLint*)uniform->getInt4().ptr()));
+			GL_CHECK(glProgramUniform4iv(program, location, 1, (GLint*)it->getInt4().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt:
-			GL_CHECK(glProgramUniform1ui(program, location, uniform->getUInt()));
+			GL_CHECK(glProgramUniform1ui(program, location, it->getUInt()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt2:
-			GL_CHECK(glProgramUniform2uiv(program, location, 1, (GLuint*)uniform->getUInt2().ptr()));
+			GL_CHECK(glProgramUniform2uiv(program, location, 1, (GLuint*)it->getUInt2().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt3:
-			GL_CHECK(glProgramUniform3uiv(program, location, 1, (GLuint*)uniform->getUInt3().ptr()));
+			GL_CHECK(glProgramUniform3uiv(program, location, 1, (GLuint*)it->getUInt3().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt4:
-			GL_CHECK(glProgramUniform4uiv(program, location, 1, (GLuint*)uniform->getUInt4().ptr()));
+			GL_CHECK(glProgramUniform4uiv(program, location, 1, (GLuint*)it->getUInt4().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat:
-			GL_CHECK(glProgramUniform1f(program, location, uniform->getFloat()));
+			GL_CHECK(glProgramUniform1f(program, location, it->getFloat()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2:
-			GL_CHECK(glProgramUniform2fv(program, location, 1, uniform->getFloat2().ptr()));
+			GL_CHECK(glProgramUniform2fv(program, location, 1, it->getFloat2().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3:
-			GL_CHECK(glProgramUniform3fv(program, location, 1, uniform->getFloat3().ptr()));
+			GL_CHECK(glProgramUniform3fv(program, location, 1, it->getFloat3().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4:
-			GL_CHECK(glProgramUniform4fv(program, location, 1, uniform->getFloat4().ptr()));
+			GL_CHECK(glProgramUniform4fv(program, location, 1, it->getFloat4().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
-			GL_CHECK(glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, uniform->getFloat3x3().ptr()));
+			GL_CHECK(glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, it->getFloat3x3().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
-			GL_CHECK(glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, uniform->getFloat4x4().ptr()));
+			GL_CHECK(glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, it->getFloat4x4().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeIntArray:
-			GL_CHECK(glProgramUniform1iv(program, location, uniform->getIntArray().size(), uniform->getIntArray().data()));
+			GL_CHECK(glProgramUniform1iv(program, location, it->getIntArray().size(), it->getIntArray().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt2Array:
-			GL_CHECK(glProgramUniform2iv(program, location, uniform->getInt2Array().size(), (GLint*)uniform->getInt2Array().data()));
+			GL_CHECK(glProgramUniform2iv(program, location, it->getInt2Array().size(), (GLint*)it->getInt2Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt3Array:
-			GL_CHECK(glProgramUniform3iv(program, location, uniform->getInt3Array().size(), (GLint*)uniform->getInt3Array().data()));
+			GL_CHECK(glProgramUniform3iv(program, location, it->getInt3Array().size(), (GLint*)it->getInt3Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt4Array:
-			GL_CHECK(glProgramUniform4iv(program, location, uniform->getInt4Array().size(), (GLint*)uniform->getInt4Array().data()));
+			GL_CHECK(glProgramUniform4iv(program, location, it->getInt4Array().size(), (GLint*)it->getInt4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUIntArray:
-			GL_CHECK(glProgramUniform1uiv(program, location, uniform->getUIntArray().size(), uniform->getUIntArray().data()));
+			GL_CHECK(glProgramUniform1uiv(program, location, it->getUIntArray().size(), it->getUIntArray().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
-			GL_CHECK(glProgramUniform2uiv(program, location, uniform->getUInt2Array().size(), (GLuint*)uniform->getUInt2Array().data()));
+			GL_CHECK(glProgramUniform2uiv(program, location, it->getUInt2Array().size(), (GLuint*)it->getUInt2Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
-			GL_CHECK(glProgramUniform3uiv(program, location, uniform->getUInt3Array().size(), (GLuint*)uniform->getUInt3Array().data()));
+			GL_CHECK(glProgramUniform3uiv(program, location, it->getUInt3Array().size(), (GLuint*)it->getUInt3Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
-			GL_CHECK(glProgramUniform4uiv(program, location, uniform->getUInt4Array().size(), (GLuint*)uniform->getUInt4Array().data()));
+			GL_CHECK(glProgramUniform4uiv(program, location, it->getUInt4Array().size(), (GLuint*)it->getUInt4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloatArray:
-			GL_CHECK(glProgramUniform1fv(program, location, uniform->getFloatArray().size(), (GLfloat*)uniform->getFloatArray().data()));
+			GL_CHECK(glProgramUniform1fv(program, location, it->getFloatArray().size(), (GLfloat*)it->getFloatArray().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
-			GL_CHECK(glProgramUniform2fv(program, location, uniform->getFloat2Array().size(), (GLfloat*)uniform->getFloat2Array().data()));
+			GL_CHECK(glProgramUniform2fv(program, location, it->getFloat2Array().size(), (GLfloat*)it->getFloat2Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
-			GL_CHECK(glProgramUniform3fv(program, location, uniform->getFloat3Array().size(), (GLfloat*)uniform->getFloat3Array().data()));
+			GL_CHECK(glProgramUniform3fv(program, location, it->getFloat3Array().size(), (GLfloat*)it->getFloat3Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
-			GL_CHECK(glProgramUniform4fv(program, location, uniform->getFloat4Array().size(), (GLfloat*)uniform->getFloat4Array().data()));
+			GL_CHECK(glProgramUniform4fv(program, location, it->getFloat4Array().size(), (GLfloat*)it->getFloat4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
-			GL_CHECK(glProgramUniformMatrix3fv(program, location, uniform->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat3x3Array().data()));
+			GL_CHECK(glProgramUniformMatrix3fv(program, location, it->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)it->getFloat3x3Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
-			GL_CHECK(glProgramUniformMatrix4fv(program, location, uniform->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat4x4Array().data()));
+			GL_CHECK(glProgramUniformMatrix4fv(program, location, it->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)it->getFloat4x4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSampler:
 		{
-			auto sampler = uniform->getTextureSampler();
+			auto sampler = it->getTextureSampler();
 			if (sampler)
 			{
 				auto instance = sampler->downcast<EGL3Sampler>()->getInstanceID();
@@ -853,7 +864,7 @@ EGL3DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 		break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
 		{
-			auto texture = uniform->getTexture();
+			auto& texture = it->getTexture();
 			if (texture)
 			{
 				auto gltexture = texture->downcast<EGL3Texture>();
@@ -866,7 +877,7 @@ EGL3DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 		break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
 		{
-			auto texture = uniform->getTexture();
+			auto& texture = it->getTexture();
 			if (texture)
 			{
 				auto gltexture = texture->downcast<EGL3Texture>();
@@ -879,7 +890,7 @@ EGL3DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 		break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
 		{
-			auto texture = uniform->getTexture();
+			auto& texture = it->getTexture();
 			if (texture)
 			{
 				auto gltexture = texture->downcast<EGL3Texture>();

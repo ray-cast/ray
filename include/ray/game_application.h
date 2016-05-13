@@ -47,7 +47,7 @@ public:
 	GameApplication() noexcept;
 	virtual ~GameApplication() noexcept;
 
-	bool open(WindHandle hwnd, std::size_t width, std::size_t height) noexcept;
+	bool open(WindHandle hwnd, std::uint32_t width, std::uint32_t height) noexcept;
 	void close() noexcept;
 
 	bool start() noexcept;

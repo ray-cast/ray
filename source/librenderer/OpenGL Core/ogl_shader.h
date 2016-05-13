@@ -91,8 +91,8 @@ public:
 	void setOffset(std::uint32_t offset) noexcept;
 	std::uint32_t getOffset() const noexcept;
 
-	void setBindingPoint(GLuint bindingPoint) noexcept;
-	GLuint getBindingPoint() const noexcept;
+	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
+	std::uint32_t getBindingPoint() const noexcept;
 
 private:
 	OGLGraphicsUniform(const OGLGraphicsUniform&) noexcept = delete;
@@ -101,7 +101,7 @@ private:
 private:
 	std::string _name;
 	std::uint32_t _offset;
-	GLuint _bindingPoint;
+	std::uint32_t _bindingPoint;
 	GraphicsUniformType _type;
 };
 
@@ -127,8 +127,8 @@ public:
 	void removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
 	const GraphicsUniforms& getGraphicsUniforms() const noexcept;
 
-	void setBindingPoint(GLuint bindingPoint) noexcept;
-	GLuint getBindingPoint() const noexcept;
+	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
+	std::uint32_t getBindingPoint() const noexcept;
 
 private:
 	OGLGraphicsUniformBlock(const OGLGraphicsUniformBlock&) noexcept = delete;
@@ -137,7 +137,7 @@ private:
 private:
 	std::string _name;
 	std::uint32_t _size;
-	GLuint _bindingPoint;
+	std::uint32_t _bindingPoint;
 	GraphicsUniforms _uniforms;
 	GraphicsUniformType _type;
 };

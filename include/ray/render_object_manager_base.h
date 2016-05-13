@@ -51,7 +51,7 @@ public:
 	virtual void addRenderData(RenderQueue queue, RenderObjectPtr&& object) noexcept = 0;
 	virtual RenderObjects& getRenderData(RenderQueue queue) noexcept = 0;
 
-	virtual void assginVisiable(CameraPtr camera) noexcept = 0;
+	virtual void assginVisiable(const Camera& camera) noexcept = 0;
 };
 
 _NAME_END

@@ -37,7 +37,7 @@
 #include <ray/render_pipeline_manager.h>
 #include <ray/render_pipeline_device.h>
 #include <ray/render_pipeline.h>
-
+#include <ray/render_object_manager.h>
 #include <ray/render_scene.h>
 #include <ray/camera.h>
 
@@ -305,19 +305,18 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 	auto& cameras = scene.getCameraList();
 	for (auto& camera : cameras)
 	{
+		camera->onRenderPre(*_pipeline);
+
+		if (camera->getCameraOrder() != CameraOrder::CameraOrder3D &&
+			camera->getCameraOrder() != CameraOrder::CameraOrder2D)
+			continue;
+
 		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
 		{
 			_shadowMapGen->onRenderPre();
 			_shadowMapGen->onRenderPipeline(camera);
 			_shadowMapGen->onRenderPost();
 		}
-	}
-
-	for (auto& camera : cameras)
-	{
-		if (camera->getCameraOrder() != CameraOrder::CameraOrder3D &&
-			camera->getCameraOrder() != CameraOrder::CameraOrder2D)
-			continue;
 
 		auto renderPipeline = _forwardShading;
 		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
@@ -327,17 +326,10 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 		}
 
 		renderPipeline->onRenderPre();
-
-		RenderListener* renderListener = camera->getOwnerListener();
-		if (renderListener)
-			renderListener->onRenderObjectPre(*_pipeline);
-
 		renderPipeline->onRenderPipeline(camera);
-
-		if (renderListener)
-			renderListener->onRenderObjectPost(*_pipeline);
-
 		renderPipeline->onRenderPost();
+
+		camera->onRenderPost(*_pipeline);
 	}
 }
 
@@ -417,13 +409,6 @@ RenderPipelineManager::setTransformInverse(const float4x4& transform) noexcept
 }
 
 void
-RenderPipelineManager::setTransformInverseTranspose(const float4x4& transform) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setTransformInverseTranspose(transform);
-}
-
-void
 RenderPipelineManager::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	assert(_pipeline);
@@ -440,13 +425,6 @@ RenderPipelineManager::clearFramebuffer(GraphicsClearFlags flags, const float4& 
 void
 RenderPipelineManager::discradRenderTexture() noexcept
 {
-}
-
-void
-RenderPipelineManager::readFramebuffer(GraphicsFramebufferPtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
-{
-	assert(_pipeline);
-	_pipeline->readFramebuffer(texture, pfd, w, h, bufsize, data);
 }
 
 void

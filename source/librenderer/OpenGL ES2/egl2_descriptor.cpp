@@ -504,6 +504,12 @@ EGL2GraphicsUniformSet::getFloat4() const noexcept
 	return _variant.getFloat4();
 }
 
+const float2x2&
+EGL2GraphicsUniformSet::getFloat2x2() const noexcept
+{
+	return _variant.getFloat2x2();
+}
+
 const float3x3&
 EGL2GraphicsUniformSet::getFloat3x3() const noexcept
 {
@@ -606,16 +612,22 @@ EGL2GraphicsUniformSet::getFloat4x4Array() const noexcept
 	return _variant.getFloat4x4Array();
 }
 
-GraphicsTexturePtr
+const GraphicsTexturePtr&
 EGL2GraphicsUniformSet::getTexture() const noexcept
 {
 	return _variant.getTexture();
 }
 
-GraphicsSamplerPtr
+const GraphicsSamplerPtr&
 EGL2GraphicsUniformSet::getTextureSampler() const noexcept
 {
 	return _variant.getTextureSampler();
+}
+
+const GraphicsDataPtr&
+EGL2GraphicsUniformSet::getBuffer() const noexcept
+{
+	return _variant.getBuffer();
 }
 
 void
@@ -624,7 +636,7 @@ EGL2GraphicsUniformSet::setGraphicsUniform(GraphicsUniformPtr uniform) noexcept
 	_uniform = uniform;
 }
 
-GraphicsUniformPtr
+const GraphicsUniformPtr&
 EGL2GraphicsUniformSet::getGraphicsUniform() const noexcept
 {
 	return _uniform;
@@ -747,102 +759,110 @@ EGL2DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 	std::uint32_t textureUnit = 0;
 	for (auto& it : _activeUniformSets)
 	{
-		auto uniform = it->downcast<EGL2GraphicsUniformSet>();
 		auto type = it->getGraphicsUniform()->getType();
-		auto location = it->getGraphicsUniform()->downcast<EGL2GraphicsUniform>()->getBindingPoint();
+		auto location = it->getGraphicsUniform()->getBindingPoint();
 		switch (type)
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:
-			GL_CHECK(glUniform1i(location, uniform->getBool()));
+			GL_CHECK(glUniform1i(location, it->getBool()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt:
-			GL_CHECK(glUniform1i(location, uniform->getInt()));
+			GL_CHECK(glUniform1i(location, it->getInt()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt2:
-			GL_CHECK(glUniform2iv(location, 1, (GLint*)uniform->getInt2().ptr()));
+			GL_CHECK(glUniform2iv(location, 1, (GLint*)it->getInt2().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt3:
-			GL_CHECK(glUniform3iv(location, 1, (GLint*)uniform->getInt3().ptr()));
+			GL_CHECK(glUniform3iv(location, 1, (GLint*)it->getInt3().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt4:
-			GL_CHECK(glUniform4iv(location, 1, (GLint*)uniform->getInt4().ptr()));
+			GL_CHECK(glUniform4iv(location, 1, (GLint*)it->getInt4().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat:
-			GL_CHECK(glUniform1f(location, uniform->getFloat()));
+			GL_CHECK(glUniform1f(location, it->getFloat()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2:
-			GL_CHECK(glUniform2fv(location, 1, uniform->getFloat2().ptr()));
+			GL_CHECK(glUniform2fv(location, 1, it->getFloat2().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3:
-			GL_CHECK(glUniform3fv(location, 1, uniform->getFloat3().ptr()));
+			GL_CHECK(glUniform3fv(location, 1, it->getFloat3().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4:
-			GL_CHECK(glUniform4fv(location, 1, uniform->getFloat4().ptr()));
+			GL_CHECK(glUniform4fv(location, 1, it->getFloat4().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
-			GL_CHECK(glUniformMatrix3fv(location, 1, GL_FALSE, uniform->getFloat3x3().ptr()));
+			GL_CHECK(glUniformMatrix3fv(location, 1, GL_FALSE, it->getFloat3x3().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
-			GL_CHECK(glUniformMatrix4fv(location, 1, GL_FALSE, uniform->getFloat4x4().ptr()));
+			GL_CHECK(glUniformMatrix4fv(location, 1, GL_FALSE, it->getFloat4x4().ptr()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeIntArray:
-			GL_CHECK(glUniform1iv(location, uniform->getIntArray().size(), uniform->getIntArray().data()));
+			GL_CHECK(glUniform1iv(location, it->getIntArray().size(), it->getIntArray().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt2Array:
-			GL_CHECK(glUniform2iv(location, uniform->getInt2Array().size(), (GLint*)uniform->getInt2Array().data()));
+			GL_CHECK(glUniform2iv(location, it->getInt2Array().size(), (GLint*)it->getInt2Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt3Array:
-			GL_CHECK(glUniform3iv(location, uniform->getInt3Array().size(), (GLint*)uniform->getInt3Array().data()));
+			GL_CHECK(glUniform3iv(location, it->getInt3Array().size(), (GLint*)it->getInt3Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt4Array:
-			GL_CHECK(glUniform4iv(location, uniform->getInt4Array().size(), (GLint*)uniform->getInt4Array().data()));
+			GL_CHECK(glUniform4iv(location, it->getInt4Array().size(), (GLint*)it->getInt4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloatArray:
-			GL_CHECK(glUniform1fv(location, uniform->getFloatArray().size(), (GLfloat*)uniform->getFloatArray().data()));
+			GL_CHECK(glUniform1fv(location, it->getFloatArray().size(), (GLfloat*)it->getFloatArray().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
-			GL_CHECK(glUniform2fv(location, uniform->getFloat2Array().size(), (GLfloat*)uniform->getFloat2Array().data()));
+			GL_CHECK(glUniform2fv(location, it->getFloat2Array().size(), (GLfloat*)it->getFloat2Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
-			GL_CHECK(glUniform3fv(location, uniform->getFloat3Array().size(), (GLfloat*)uniform->getFloat3Array().data()));
+			GL_CHECK(glUniform3fv(location, it->getFloat3Array().size(), (GLfloat*)it->getFloat3Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
-			GL_CHECK(glUniform4fv(location, uniform->getFloat4Array().size(), (GLfloat*)uniform->getFloat4Array().data()));
+			GL_CHECK(glUniform4fv(location, it->getFloat4Array().size(), (GLfloat*)it->getFloat4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
-			GL_CHECK(glUniformMatrix3fv(location, uniform->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat3x3Array().data()));
+			GL_CHECK(glUniformMatrix3fv(location, it->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)it->getFloat3x3Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
-			GL_CHECK(glUniformMatrix4fv(location, uniform->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat4x4Array().data()));
+			GL_CHECK(glUniformMatrix4fv(location, it->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)it->getFloat4x4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSampler:
 			assert(false);
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
-			if (uniform->getTexture())
 			{
-				GL_CHECK(glUniform1i(location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
-				GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL2Texture>()->getTarget(), uniform->getTexture()->downcast<EGL2Texture>()->getInstanceID()));
-				textureUnit++;
+				auto texture = it->getTexture();
+				if (texture)
+				{
+					GL_CHECK(glUniform1i(location, textureUnit));
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+					GL_CHECK(glBindTexture(texture->downcast<EGL2Texture>()->getTarget(), texture->downcast<EGL2Texture>()->getInstanceID()));
+					textureUnit++;
+				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
-			if (uniform->getTexture())
 			{
-				GL_CHECK(glUniform1i(location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
-				GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL2Texture>()->getTarget(), uniform->getTexture()->downcast<EGL2Texture>()->getInstanceID()));
-				textureUnit++;
+				auto texture = it->getTexture();
+				if (texture)
+				{
+					GL_CHECK(glUniform1i(location, textureUnit));
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+					GL_CHECK(glBindTexture(texture->downcast<EGL2Texture>()->getTarget(), texture->downcast<EGL2Texture>()->getInstanceID()));
+					textureUnit++;
+				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
-			if (uniform->getTexture())
 			{
-				GL_CHECK(glUniform1i(location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
-				GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL2Texture>()->getTarget(), uniform->getTexture()->downcast<EGL2Texture>()->getInstanceID()));
-				textureUnit++;
+				auto texture = it->getTexture();
+				if (texture)
+				{
+					GL_CHECK(glUniform1i(location, textureUnit));
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+					GL_CHECK(glBindTexture(texture->downcast<EGL2Texture>()->getTarget(), texture->downcast<EGL2Texture>()->getInstanceID()));
+					textureUnit++;
+				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageTexelBuffer:

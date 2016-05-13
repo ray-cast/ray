@@ -70,7 +70,7 @@ private:
 	void sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
-	void measureLuminance(RenderPipeline& pipeline, GraphicsFramebufferPtr source) noexcept;
+	void measureLuminance(RenderPipeline& pipeline, GraphicsTexturePtr source) noexcept;
 
 	void generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
@@ -87,7 +87,10 @@ private:
 
 private:
 
+	float _lum;
 	float _lumAdapt;
+	float _lumRate;
+	float _lumFrequency;
 
 	TimerPtr _timer;
 

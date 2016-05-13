@@ -242,12 +242,7 @@ template<typename T> const Quaterniont<T> Quaterniont<T>::Zero = Quaterniont<T>(
 template<typename T>
 inline bool operator==(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
 {
-	constexpr T epsilon = EPSILON_E4;
-	return
-		q1.x + epsilon > q2.x && q1.x - epsilon < q2.x &&
-		q1.y + epsilon > q2.y && q1.y - epsilon < q2.y &&
-		q1.z + epsilon > q2.z && q1.z - epsilon < q2.z &&
-		q1.w + epsilon > q2.w && q1.w - epsilon < q2.w;
+	return q1.x == q2.x && q1.y == q2.y && q1.z == q2.z && q1.w == q2.w;
 }
 
 template<typename T>
@@ -452,6 +447,16 @@ namespace math
 	inline T length(const Quaterniont<T>& q) noexcept
 	{
 		return std::sqrt(length2(q));
+	}
+
+	template<typename T>
+	inline bool equal(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
+	{
+		return
+			math::equal<T>(q1.x, q2.x) &&
+			math::equal<T>(q1.y, q2.y) &&
+			math::equal<T>(q1.z, q2.z) &&
+			math::equal<T>(q1.w, q2.w);
 	}
 
 	template<typename T>

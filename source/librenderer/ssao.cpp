@@ -44,12 +44,12 @@
 _NAME_BEGIN
 
 SSAO::Setting::Setting() noexcept
-	: radius(1.0)
-	, bias(0.002)
+	: radius(1.0f)
+	, bias(0.002f)
 	, intensity(2)
 	, blur(true)
 	, blurRadius(6)
-	, blurScale(1.5)
+	, blurScale(1.5f)
 	, blurSharpness(4)
 {
 }
@@ -66,8 +66,8 @@ SSAO::~SSAO() noexcept
 void
 SSAO::setSetting(const Setting& setting) noexcept
 {
-	const float blurSigma = _setting.blurRadius * 0.5;
-	const float blurFalloff = 1.0 / (2.0 * blurSigma * blurSigma);
+	const float blurSigma = _setting.blurRadius * 0.5f;
+	const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
 
 	_blurFactor->uniform1f(blurFalloff);
 	_blurSharpness->uniform1f(_setting.blurSharpness);

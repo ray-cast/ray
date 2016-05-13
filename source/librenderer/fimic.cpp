@@ -45,7 +45,7 @@ _NAME_BEGIN
 
 #define SAMPLE_COUNT 6
 #define SAMPLE_LOG_SIZE 32
-#define SAMPLE_LOG_COUNT SAMPLE_LOG_SIZE * SAMPLE_LOG_SIZE
+#define SAMPLE_LOG_COUNT (SAMPLE_LOG_SIZE * SAMPLE_LOG_SIZE)
 
 float EyeAdaption(float lum)
 {
@@ -58,16 +58,19 @@ float ToneExposure(float avgLum)
 }
 
 FimicToneMapping::Setting::Setting() noexcept
-	: bloomThreshold(0.5)
-	, bloomIntensity(1.0)
-	, lumKey(0.98)
-	, lumDelta(50.0)
-	, lumExposure(1.5)
+	: bloomThreshold(0.5f)
+	, bloomIntensity(1.0f)
+	, lumKey(0.98f)
+	, lumDelta(50.0f)
+	, lumExposure(1.5f)
 {
 }
 
 FimicToneMapping::FimicToneMapping() noexcept
-	: _lumAdapt(0)
+	: _lum(0.0f)
+	, _lumAdapt(0.0f)
+	, _lumRate(0.0f)
+	, _lumFrequency(1.0f)
 {
 }
 
@@ -93,23 +96,31 @@ FimicToneMapping::getSetting() const noexcept
 }
 
 void
-FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsFramebufferPtr source) noexcept
+FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsTexturePtr source) noexcept
 {
 	_timer->update();
 
-	float lum = 0;
-	float data[SAMPLE_LOG_COUNT];
-	float delta = _timer->delta();
+	_lumRate += _timer->delta();
+	if (_lumRate > _lumFrequency)
+	{
+		this->sunLumLog(pipeline, source, _texSampleLogView);
 
-	pipeline.readFramebuffer(source, GraphicsFormat::GraphicsFormatR16SFloat, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, SAMPLE_LOG_COUNT * 4, data);
+		float* data;
+		_texSampleLogMap->map(0, 0, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, (void**)&data);
 
-	for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
-		lum += data[i];
+		float lum = 0.0f;
+		for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
+			lum += data[i];
 
-	lum /= SAMPLE_LOG_COUNT;
-	lum = std::exp(lum);
+		_lum = lum / (float)SAMPLE_LOG_COUNT;
+		_lum = std::exp(_lum);
 
-	_lumAdapt = _lumAdapt + ((lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * delta)));
+		_lumRate = 0.0f;
+
+		_texSampleLogMap->unmap();
+	}
+
+	_lumAdapt = _lumAdapt + ((_lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * _timer->delta())));
 
 	_toneLumExposure->uniform1f(_setting.lumExposure * ToneExposure(_lumAdapt));
 }
@@ -118,7 +129,7 @@ void
 FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	_texSource->uniformTexture(source);
-	_texSourceSizeInv->uniform2f(float2(1.0 / source->getGraphicsTextureDesc().getWidth(), 1.0 / source->getGraphicsTextureDesc().getHeight()));
+	_texSourceSizeInv->uniform2f(float2(1.0f / source->getGraphicsTextureDesc().getWidth(), 1.0f / source->getGraphicsTextureDesc().getHeight()));
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
@@ -260,7 +271,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 		float2(5.0f / (width / 4.0f), 5.0f / (height / 4.0f)),
 	};
 
-	float weight[] = { 0.2,0.02,0.044,0.0716,0.1046,0.1686,0.1686,0.1046,0.0716,0.044,0.02 };
+	float weight[] = { 0.2f,0.02f,0.044f,0.0716f,0.1046f,0.1686f,0.1686f,0.1046f,0.0716f,0.044f,0.02f };
 
 	_bloomOffset->uniform2fv(sizeof(offset) / sizeof(offset[0]), (float*)offset);
 	_bloomWeight->uniform1fv(sizeof(weight) / sizeof(weight[0]), weight);
@@ -289,9 +300,8 @@ FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr sour
 
 	this->sunLum(pipeline, texture, _texSample4View);
 	this->sunLum(pipeline, _texSample4Map, _texSample8View);
-	this->sunLumLog(pipeline, _texSample8Map, _texSampleLogView);
 
-	this->measureLuminance(pipeline, _texSampleLogView);
+	this->measureLuminance(pipeline, _texSample8Map);
 
 	this->generateBloom(pipeline, _texSample8Map, _texCombieView);
 

@@ -49,23 +49,23 @@ Light::Light() noexcept
 	: _lightType(LightType::LightTypePoint)
 	, _lightIntensity(1.0f)
 	, _lightRange(10.0f)
-	, _lightColor(1.0, 1.0, 1.0)
-	, _lightAttenuation(1.0, 0.0, 0.0)
+	, _lightColor(float3::One)
+	, _lightAttenuation(float3::UnitX)
 	, _spotInnerCone(5.0f, math::cos(math::deg2rad(5.0f)))
 	, _spotOuterCone(40.0f, math::cos(math::deg2rad(40.0f)))
 	, _subsurfaceScattering(false)
 	, _shadowType(LightShadowType::LightShadowTypeNone)
 	, _shadowSoftEnable(false)
-	, _shadowBias(0.001)
+	, _shadowBias(0.001f)
 	, _shadowFormat(GraphicsFormat::GraphicsFormatR32SFloat)
 {
 	_shadowCamera[0] = std::make_shared<Camera>();
 	_shadowCamera[0]->setOwnerListener(this);
 	_shadowCamera[0]->setCameraOrder(CameraOrder::CameraOrderShadow);
 	_shadowCamera[0]->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
-	_shadowCamera[0]->setAperture(90.0);
-	_shadowCamera[0]->setNear(0.1);
-	_shadowCamera[0]->setRatio(1.0);
+	_shadowCamera[0]->setAperture(90.0f);
+	_shadowCamera[0]->setNear(0.1f);
+	_shadowCamera[0]->setRatio(1.0f);
 }
 
 Light::~Light() noexcept
@@ -298,11 +298,7 @@ Light::_updateShadow() noexcept
 		if (!_shadowCamera[i])
 			continue;
 
-		_shadowCamera[i]->setTransform(
-			this->getTransform(),
-			this->getTransformInverse(),
-			this->getTransformInverseTranspose()
-			);
+		_shadowCamera[i]->setTransform(this->getTransform());
 	}
 }
 
@@ -440,7 +436,7 @@ Light::clone() const noexcept
 	light->setIntensity(this->getIntensity());
 	light->setRange(this->getRange());
 	light->setCastShadow(this->getCastShadow());
-	light->setTransform(this->getTransform(), this->getTransformInverse(), this->getTransformInverseTranspose());
+	light->setTransform(this->getTransform());
 	light->setBoundingBox(this->getBoundingBox());
 
 	light->_spotInnerCone = _spotInnerCone;

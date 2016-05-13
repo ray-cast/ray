@@ -48,11 +48,24 @@ __ImplementSubClass(MaterialPass, rtti::Interface, "MaterialPass")
 
 MaterialParamBinding::MaterialParamBinding() noexcept
 	: _needUpdate(true)
+	, _isSemantic(false)
 {
 }
 
 MaterialParamBinding::~MaterialParamBinding() noexcept
 {
+}
+
+void 
+MaterialParamBinding::setSemantic(bool semantic) noexcept
+{
+	_isSemantic = semantic;
+}
+
+bool 
+MaterialParamBinding::getSemantic() const noexcept
+{
+	return _isSemantic;
 }
 
 void
@@ -61,7 +74,7 @@ MaterialParamBinding::setMaterialParam(MaterialParamPtr param) noexcept
 	_param = param;
 }
 
-MaterialParamPtr
+const MaterialParamPtr&
 MaterialParamBinding::getMaterialParam() const noexcept
 {
 	return _param;
@@ -73,7 +86,7 @@ MaterialParamBinding::setGraphicsUniformSet(GraphicsUniformSetPtr uniformSet) no
 	_uniformSet = uniformSet;
 }
 
-GraphicsUniformSetPtr
+const GraphicsUniformSetPtr&
 MaterialParamBinding::getGraphicsUniformSet() const noexcept
 {
 	return _uniformSet;
@@ -216,7 +229,7 @@ MaterialPass::setup(Material& material) noexcept
 
 			if (param->getSemantic())
 			{
-				param->getSemantic()->addParamListener(binding.get());
+				binding->setSemantic(true);
 				binding->setMaterialParam(param->getSemantic());
 			}
 			else
@@ -384,15 +397,15 @@ MaterialPass::update() noexcept
 {
 	for (auto& it : _bindings)
 	{
-		if (!it->needUpdate())
+		if (!it->needUpdate() && !it->getSemantic())
 			continue;
 
 		it->needUpdate(false);
 
-		auto param = it->getMaterialParam();
-		auto uniform = it->getGraphicsUniformSet();
-		auto type = param->getType();
-		switch (type)
+		auto& param = it->getMaterialParam();		
+		auto& uniform = it->getGraphicsUniformSet();
+
+		switch (param->getType())
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:
 			uniform->uniform1b(param->getBool());

@@ -87,7 +87,6 @@ public:
 	void clearFramebufferIndexed(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept;
 	void discardFramebuffer() noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;

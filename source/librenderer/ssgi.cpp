@@ -163,8 +163,8 @@ SSGI::onActivate(RenderPipeline& pipeline) noexcept
 	_copyAmbient = _ambientOcclusion->getParameter("texAO");
 
 	Setting setting;
-	setting.radius = 1.0;
-	setting.bias = 0.012;
+	setting.radius = 1.0f;
+	setting.bias = 0.012f;
 	setting.intensity = 4;
 
 	setting.blur = true;

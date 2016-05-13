@@ -183,8 +183,9 @@ EGL2Texture::getInstanceID() const noexcept
 }
 
 bool
-EGL2Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, void** data) noexcept
+EGL2Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
 {
+	assert(false);
 	return false;
 }
 

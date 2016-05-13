@@ -378,16 +378,6 @@ PhysicsScene::simulation(float delta) noexcept
 		}
 	}
 
-	for (auto& it : _rigidbodys)
-	{
-		if (math::equals(it->getMass(), 0.0f))
-			continue;
-
-		auto listener = it->getRigidbodyListener();
-		if (listener)
-			listener->onFetchResult();
-	}
-
 	_isFetchResult = false;
 }
 

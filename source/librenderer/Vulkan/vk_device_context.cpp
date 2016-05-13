@@ -209,11 +209,6 @@ VulkanDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport&
 {
 }
 
-void
-VulkanDeviceContext::readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
-{
-}
-
 GraphicsFramebufferPtr
 VulkanDeviceContext::getFramebuffer() const noexcept
 {

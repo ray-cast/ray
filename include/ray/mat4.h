@@ -518,35 +518,30 @@ public:
 
 	Quaterniont<T> getRotate() const noexcept
 	{
-		Vector3t<T> vRows[3] =
-		{
-			Vector3t<T>(this->a1, this->a2, this->a3),
-			Vector3t<T>(this->b1, this->b2, this->b3),
-			Vector3t<T>(this->c1, this->c2, this->c3)
-		};
+		auto right = this->getRight();
+		auto up = this->getUpVector();
+		auto forward = this->getForward();
 
-		Vector3t<T> scaling;
-		scaling.x = math::length(vRows[0]);
-		scaling.y = math::length(vRows[1]);
-		scaling.z = math::length(vRows[2]);
+		scaling.x = math::length(right);
+		scaling.y = math::length(up);
+		scaling.z = math::length(forward);
 
-		if (determinant() < 0)
+		T det = (this->a1 * this->b2 - this->a2 * this->b1) * (this->c3) -
+				(this->a1 * this->b3 - this->a3 * this->b1) * (this->c2) +
+				(this->a2 * this->b3 - this->a3 * this->b2) * (this->c1);
+
+		if (det < 0)
 		{
 			scaling.x = -scaling.x;
 			scaling.y = -scaling.y;
 			scaling.z = -scaling.z;
 		}
 
-		if (scaling.x) vRows[0] /= scaling.x;
-		if (scaling.y) vRows[1] /= scaling.y;
-		if (scaling.z) vRows[2] /= scaling.z;
+		if (scaling.x != T(0.0)) right /= scaling.x;
+		if (scaling.y != T(0.0)) up /= scaling.y;
+		if (scaling.z != T(0.0)) forward /= scaling.z;
 
-		Matrix3x3t<T> m(
-			vRows[0].x, vRows[0].y, vRows[0].z,
-			vRows[1].x, vRows[1].y, vRows[1].z,
-			vRows[2].x, vRows[2].y, vRows[2].z);
-
-		return Quaterniont<T>(m);
+		return Quaterniont<T>(forward, up, right);
 	}
 
 	const Vector3t<T>& getRight() const noexcept
@@ -591,7 +586,7 @@ public:
 		return *this;
 	}
 
-	const Matrix4x4t<T>& getTransformNoScale(Vector3t<T>& position, Quaterniont<T>& rotation) const noexcept
+	const Matrix4x4t<T>& getTransformOnlyRotation(Vector3t<T>& position, Quaterniont<T>& rotation) const noexcept
 	{
 		position.x = this->d1;
 		position.y = this->d2;
@@ -615,16 +610,20 @@ public:
 		scaling.y = math::length(up);
 		scaling.z = math::length(forward);
 
-		if (determinant() < 0)
+		T det = (this->a1 * this->b2 - this->a2 * this->b1) * (this->c3) -
+				(this->a1 * this->b3 - this->a3 * this->b1) * (this->c2) +
+				(this->a2 * this->b3 - this->a3 * this->b2) * (this->c1);
+
+		if (det < 0)
 		{
 			scaling.x = -scaling.x;
 			scaling.y = -scaling.y;
 			scaling.z = -scaling.z;
 		}
 
-		if (scaling.x != T(1.0)) right /= scaling.x;
-		if (scaling.y != T(1.0)) up /= scaling.y;
-		if (scaling.z != T(1.0)) forward /= scaling.z;
+		if (scaling.x != T(0.0)) right /= scaling.x;
+		if (scaling.y != T(0.0)) up /= scaling.y;
+		if (scaling.z != T(0.0)) forward /= scaling.z;
 
 		rotation.makeRotate(forward, up, right);
 		return *this;
@@ -1036,7 +1035,7 @@ namespace math
 	template<typename T>
 	bool isIdentity(const Matrix4x4t<T>& m) noexcept
 	{
-		constexpr T epsilon = EPSILON_E4;
+		constexpr T epsilon = (T)EPSILON_E4;
 		return (
 			m.a2 <= epsilon && m.a2 >= -epsilon &&
 			m.a3 <= epsilon && m.a3 >= -epsilon &&
@@ -1055,7 +1054,7 @@ namespace math
 	template<typename T>
 	bool isOnlyTranslate(const Matrix4x4t<T>& m) noexcept
 	{
-		constexpr T epsilon = EPSILON_E4;
+		constexpr T epsilon = (T)EPSILON_E4;
 		return (
 			m.a2 <= epsilon && m.a2 >= -epsilon &&
 			m.a3 <= epsilon && m.a3 >= -epsilon &&
@@ -1069,37 +1068,21 @@ namespace math
 	}
 
 	template<typename T>
-	bool isOnlyRotateAndTranslate(const Matrix4x4t<T>& m) noexcept
-	{
-		const T epsilon = EPSILON_E4;
-		return (
-			m.a1 <= 1.f + epsilon && m.a1 >= 1.f - epsilon &&
-			m.a2 <= 1.f + epsilon && m.a2 >= 1.f - epsilon &&
-			m.a3 <= 1.f + epsilon && m.a3 >= 1.f - epsilon &&
-			m.b1 <= 1.f + epsilon && m.b1 >= 1.f - epsilon &&
-			m.b2 <= 1.f + epsilon && m.b2 >= 1.f - epsilon &&
-			m.b3 <= 1.f + epsilon && m.b3 >= 1.f - epsilon &&
-			m.c1 <= 1.f + epsilon && m.c1 >= 1.f - epsilon &&
-			m.c2 <= 1.f + epsilon && m.c2 >= 1.f - epsilon &&
-			m.c3 <= 1.f + epsilon && m.c3 >= 1.f - epsilon);
-	}
-
-	template<typename T>
 	Matrix4x4t<T> orthonormalize(const Matrix4x4t<T>& _m) noexcept
 	{
-		Matrix4x4t<T> m;
-		Vector3t<T> x(_m.a1, _m.b1, _m.c1);
-		Vector3t<T> y(_m.a2, _m.b2, _m.c2);
-		Vector3t<T> z;
+		Vector3t<T> x = _m.getRight();
+		Vector3t<T> y = _m.getUpVector();
+		Vector3t<T> z = _m.getForward();
+
 		x = math::normalize(x);
-		z = math::cross(x, y);
-		z = math::normalize(z);
-		y = math::cross(z, x);
 		y = math::normalize(y);
-		m.a1 = x.x; m.a2 = x.y; m.a3 = x.z;
-		m.b1 = y.x; m.b2 = y.y; m.b3 = y.z;
-		m.c1 = z.x; m.c3 = z.y; m.c3 = z.z;
-		return m;
+		z = math::normalize(z);
+
+		return Matrix4x4t<T>(
+			x.x, x.y, x.z, 0.0f,
+			y.x, y.y, y.z, 0.0f,
+			z.x, z.y, z.z, 0.0f,
+			_m.d1, _m.d2, _m.d3, 1.0f);
 	}
 
 	template<typename T>
@@ -1213,9 +1196,9 @@ namespace math
 	{
 		Matrix4x4t<T> out;
 
-		float d = (m.a1 * m.b2 - m.a2 * m.b1) * (m.c3) -
-				  (m.a1 * m.b3 - m.a3 * m.b1) * (m.c2) +
-				  (m.a2 * m.b3 - m.a3 * m.b2) * (m.c1);
+		T d = (m.a1 * m.b2 - m.a2 * m.b1) * (m.c3) -
+			  (m.a1 * m.b3 - m.a3 * m.b1) * (m.c2) +
+			  (m.a2 * m.b3 - m.a3 * m.b2) * (m.c1);
 
 		if (std::fabs(d) < 0.00001f)
 		{
@@ -1252,6 +1235,21 @@ namespace math
 		out.d4 = d * (m.a1 * (m.b2 * m.c3 - m.b3 * m.c2) + m.a2 * (m.b3 * m.c1 - m.b1 * m.c3) + m.a3 * (m.b1 * m.c2 - m.b2 * m.c1));
 
 		return out;
+	}
+
+	template<typename T>
+	Matrix4x4t<T> transformInverseOnlyRotation(const Matrix4x4t<T>& m) noexcept
+	{
+		auto& right = m.getRight();
+		auto& up = m.getUpVector();
+		auto& forward = m.getForward();
+		auto translate = -math::invRotateVector3(m, m.getTranslate());
+
+		return Matrix4x4t<T>(
+			right.x, up.x, forward.x, 0.0f,
+			right.y, up.y, forward.y, 0.0f,
+			right.z, up.z, forward.z, 0.0f,
+			translate.x, translate.y, translate.z, 1.0f);
 	}
 }
 

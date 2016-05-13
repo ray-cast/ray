@@ -114,10 +114,8 @@ DefaultRenderDataManager::assginVisiableObject(CameraPtr camera) noexcept
 }
 
 void
-DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
+DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 {
-	assert(camera);
-
 	_renderQueue[RenderQueue::RenderQueueShadow].clear();
 	_renderQueue[RenderQueue::RenderQueueOpaque].clear();
 	_renderQueue[RenderQueue::RenderQueueOpaqueShading].clear();
@@ -128,19 +126,19 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 
 	_visiable.clear();
 
-	auto cameraOrder = camera->getCameraOrder();
+	auto cameraOrder = camera.getCameraOrder();
 	if (cameraOrder == CameraOrder::CameraOrder3D ||
 		cameraOrder == CameraOrder::CameraOrderShadow)
 	{
-		auto scene = camera->getRenderScene();
+		auto scene = camera.getRenderScene();
 		assert(scene);
-		scene->computVisiable(camera->getViewProject(), _visiable);
+		scene->computVisiable(camera.getViewProject(), _visiable);
 
 		for (auto& it : _visiable.iter())
 		{
 			auto object = it.getOcclusionCullNode();
 
-			if (camera->getCameraOrder() == CameraOrder::CameraOrderShadow)
+			if (camera.getCameraOrder() == CameraOrder::CameraOrderShadow)
 			{
 				if (!object->getCastShadow())
 					return;

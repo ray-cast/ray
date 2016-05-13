@@ -535,25 +535,6 @@ OGLDeviceContext::discardFramebuffer() noexcept
 }
 
 void
-OGLDeviceContext::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
-{
-	assert(w && h && data);
-	assert(_glcontext->getActive());
-
-	if (target)
-	{
-		GLenum format = OGLTypes::asTextureFormat(pfd);
-		GLenum type = OGLTypes::asTextureType(pfd);
-
-		if (format != GL_INVALID_ENUM && type != GL_INVALID_ENUM)
-		{
-			this->setFramebuffer(target);
-			glReadPixels(0, 0, w, h, format, type, data);
-		}
-	}
-}
-
-void
 OGLDeviceContext::present() noexcept
 {
 	assert(_glcontext->getActive());

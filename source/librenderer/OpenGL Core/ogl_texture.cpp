@@ -126,7 +126,7 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
 
 		GLsizei offset = 0;
-		GLsizei pixelSize = stream ? OGLTypes::getFormatNum(format) : 1;
+		GLsizei pixelSize = stream ? OGLTypes::getFormatNum(format, type) : 1;
 
 		GLint oldPackStore = 1;
 		glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
@@ -213,19 +213,19 @@ OGLTexture::close() noexcept
 }
 
 bool 
-OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat pixelFormat, void** data) noexcept
+OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
 {
 	assert(data);
 
-	GLenum format = OGLTypes::asTextureFormat(pixelFormat);
+	GLenum format = OGLTypes::asTextureFormat(_textureDesc.getTexFormat());
 	if (format == GL_INVALID_ENUM)
 		return false;
 
-	GLenum type = OGLTypes::asTextureType(pixelFormat);
+	GLenum type = OGLTypes::asTextureType(_textureDesc.getTexFormat());
 	if (type == GL_INVALID_ENUM)
 		return false;
 
-	GLsizei num = OGLTypes::getFormatNum(format);
+	GLsizei num = OGLTypes::getFormatNum(format, type);
 	if (num == 0)
 		return false;
 
@@ -234,18 +234,17 @@ OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
 
-	if (_pboSize < w * h * num)
+	GLsizei mapSize = w * h * num;
+	if (_pboSize < mapSize)
 	{
-		glBufferData(GL_PIXEL_PACK_BUFFER, w * h * num, nullptr, GL_STREAM_READ);
-		_pboSize = w * h * num;
+		glBufferData(GL_PIXEL_PACK_BUFFER, mapSize, nullptr, GL_STREAM_READ);
+		_pboSize = mapSize;
 	}
 
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
 	glBindTexture(_target, _texture);
 	glReadPixels(x, y, w, h, format, type, 0);
 
-	*data = glMapBufferARB(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-
+	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 	return *data ? true : false;
 }
 

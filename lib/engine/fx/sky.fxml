@@ -7,7 +7,6 @@
     <parameter name="texMRT1" type="texture2D" semantic="DeferredNormalMap" />
     <parameter name="texDepthLinear" type="texture2D" semantic="DeferredDepthLinearMap" />
     <parameter name="projInfo" type="float4"/>
-    <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
     <parameter name="matViewInverse" type="float4x4" semantic="matViewInverse" />
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
@@ -23,7 +22,7 @@
                 out float4 oNormal : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
-                oNormal = mul(matModelInverseTranspose, Normal);
+                oNormal = Normal;
                 oPosition = mul(matModelViewProject, Position);
             }
 
@@ -57,8 +56,8 @@
 
                 float mipLayer = brefEnvironmentEnvMip(shininess, texEnvFactor.r);
 
-                float3 worldNormal = mul(N, (float3x3)matViewInverse);
-                float3 worldView = mul(V, (float3x3)matViewInverse);
+                float3 worldNormal = mul((float3x3)matViewInverse, N);
+                float3 worldView = mul((float3x3)matViewInverse, V);
                 float3 R = brdfEnvironmentEnvVec(worldNormal, worldView);
 
                 float3 prefilteredDiffuse = texEnvDiffuse.Sample(PointClamp, worldNormal).rgb;

@@ -43,6 +43,8 @@ __ImplementSubClass(EGL3Texture, GraphicsTexture, "EGL3Texture")
 EGL3Texture::EGL3Texture() noexcept
 	: _texture(GL_NONE)
 	, _target(GL_INVALID_ENUM)
+	, _pbo(GL_NONE)
+	, _pboSize(0)
 {
 }
 
@@ -135,7 +137,7 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			GLenum type = EGL3Types::asTextureType(textureDesc.getTexFormat());
 
 			GLsizei offset = 0;
-			GLsizei pixelSize = EGL3Types::getFormatNum(format);
+			GLsizei pixelSize = EGL3Types::getFormatNum(format, type);
 
 			GLenum cubeFace[] =
 			{
@@ -221,14 +223,46 @@ EGL3Texture::getInstanceID() const noexcept
 }
 
 bool
-EGL3Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, void** data) noexcept
+EGL3Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
 {
-	return false;
+	assert(data);
+
+	GLenum format = EGL3Types::asTextureFormat(_textureDesc.getTexFormat());
+	if (format == GL_INVALID_ENUM)
+		return false;
+
+	GLenum type = EGL3Types::asTextureType(_textureDesc.getTexFormat());
+	if (type == GL_INVALID_ENUM)
+		return false;
+
+	GLsizei num = EGL3Types::getFormatNum(format, type);
+	if (num == 0)
+		return false;
+
+	if (_pbo == GL_NONE)
+		GL_CHECK(glGenBuffers(1, &_pbo));
+
+	GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo));
+
+	GLsizei mapSize = w * h * num;
+	if (_pboSize < mapSize)
+	{
+		GL_CHECK(glBufferData(GL_PIXEL_PACK_BUFFER, mapSize, nullptr, GL_STREAM_READ));
+		_pboSize = mapSize;
+	}
+
+	GL_CHECK(glBindTexture(_target, _texture));
+	GL_CHECK(glReadPixels(x, y, w, h, format, type, 0));
+
+	*data = GL_CHECK(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT));
+	return *data ? true : false;
 }
 
 void
 EGL3Texture::unmap() noexcept
 {
+	GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo));
+	GL_CHECK(glUnmapBuffer(GL_PIXEL_PACK_BUFFER));
 }
 
 bool

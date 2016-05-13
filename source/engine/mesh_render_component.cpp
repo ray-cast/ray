@@ -256,13 +256,7 @@ void
 MeshRenderComponent::onMoveAfter() noexcept
 {
 	for (auto& it : _renderObjects)
-	{
-		it->setTransform(
-			this->getGameObject()->getTransform(),
-			this->getGameObject()->getTransformInverse(),
-			this->getGameObject()->getTransformInverseTranspose()
-			);
-	}
+		it->setTransform(this->getGameObject()->getWorldTransform());
 }
 
 void
@@ -524,11 +518,7 @@ MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, const MeshProp
 
 	renderObject->setLayer(this->getGameObject()->getLayer());
 
-	renderObject->setTransform(
-		this->getGameObject()->getTransform(),
-		this->getGameObject()->getTransformInverse(),
-		this->getGameObject()->getTransformInverseTranspose()
-		);
+	renderObject->setTransform(this->getGameObject()->getWorldTransform());
 
 	auto renderable = std::make_shared<GraphicsIndirect>();
 	renderable->startVertice = 0;

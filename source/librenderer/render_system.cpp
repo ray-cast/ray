@@ -167,13 +167,6 @@ RenderSystem::discradRenderTexture() noexcept
 }
 
 void
-RenderSystem::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat format, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
-{
-	assert(_pipelineManager);
-	_pipelineManager->readFramebuffer(target, format, w, h, bufsize, data);
-}
-
-void
 RenderSystem::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
 {
 	assert(_pipelineManager);

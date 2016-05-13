@@ -60,7 +60,7 @@ Fog::onActivate(RenderPipeline& pipeline) noexcept
 
 	_fogFalloff->uniform1f(10.0f);
 	_fogDensity->uniform1f(0.0001f);
-	_fogColor->uniform3f(Vector3(0.0, 0.3, 0.99));
+	_fogColor->uniform3f(Vector3(0.0f, 0.3f, 0.99f));
 }
 
 void

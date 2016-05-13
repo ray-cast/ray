@@ -55,9 +55,9 @@ RenderObject::RenderObject() noexcept
 	, _isReceiveShadow(true)
 	, _boundingBox(Vector3::Zero, Vector3::Zero)
 	, _worldBoundingxBox(Vector3::Zero, Vector3::Zero)
-	, _transform(Matrix4x4::One)
-	, _transformInverse(Matrix4x4::One)
-	, _transformInverseTranspose(Matrix4x4::One)
+	, _transform(float4x4::One)
+	, _transformInverse(float4x4::One)
+	, _transformInverseTranspose(float4x4::One)
 	, _renderListener(nullptr)
 {
 }
@@ -160,13 +160,13 @@ RenderObject::getRenderScene() const noexcept
 }
 
 void
-RenderObject::setTransform(const Matrix4x4& transform, const Matrix4x4& inverse, const Matrix4x4& inverseTranspose) noexcept
+RenderObject::setTransform(const float4x4& transform) noexcept
 {
 	this->onMoveBefor();
 
 	_transform = transform;
-	_transformInverse = inverse;
-	_transformInverseTranspose = inverseTranspose;
+	_transformInverse = math::transformInverse(transform);
+	_transformInverseTranspose = math::transpose(_transformInverse);
 
 	_worldBoundingxBox = _boundingBox;
 	_worldBoundingxBox.applyMatrix(_transform);
@@ -174,43 +174,43 @@ RenderObject::setTransform(const Matrix4x4& transform, const Matrix4x4& inverse,
 	this->onMoveAfter();
 }
 
-Vector3
-RenderObject::getTranslate() const noexcept
-{
-	return _transform.getTranslate();
-}
-
-Vector3
+const Vector3&
 RenderObject::getRight() const noexcept
 {
 	return _transform.getRight();
 }
 
-Vector3
+const Vector3&
 RenderObject::getUpVector() const noexcept
 {
 	return _transform.getUpVector();
 }
 
-Vector3
+const Vector3&
 RenderObject::getForward() const noexcept
 {
 	return _transform.getForward();
 }
 
-const Matrix4x4&
+const Vector3&
+RenderObject::getTranslate() const noexcept
+{
+	return _transform.getTranslate();
+}
+
+const float4x4&
 RenderObject::getTransform() const noexcept
 {
 	return _transform;
 }
 
-const Matrix4x4&
+const float4x4&
 RenderObject::getTransformInverse() const noexcept
 {
 	return _transformInverse;
 }
 
-const Matrix4x4&
+const float4x4&
 RenderObject::getTransformInverseTranspose() const noexcept
 {
 	return _transformInverseTranspose;
@@ -223,16 +223,32 @@ RenderObject::addRenderData(RenderDataManager& manager) noexcept
 }
 
 void
-RenderObject::render(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept
+RenderObject::render(RenderPipeline& pipeline, RenderQueue queue, MaterialTechPtr tech) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onRenderObjectPre(pipelineContext);
+		listener->onRenderObjectPre(pipeline);
 
-	this->onRenderObject(pipelineContext, queue, tech);
+	this->onRenderObject(pipeline, queue, tech);
 
 	if (listener)
-		listener->onRenderObjectPost(pipelineContext);
+		listener->onRenderObjectPost(pipeline);
+}
+
+void 
+RenderObject::onRenderPre(RenderPipeline& pipeline) noexcept
+{
+	auto listener = this->getOwnerListener();
+	if (listener)
+		listener->onRenderObjectPre(pipeline);
+}
+
+void 
+RenderObject::onRenderPost(RenderPipeline& pipeline) noexcept
+{
+	auto listener = this->getOwnerListener();
+	if (listener)
+		listener->onRenderObjectPre(pipeline);
 }
 
 void

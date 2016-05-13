@@ -125,6 +125,7 @@ public:
 	const float2& getFloat2() const noexcept;
 	const float3& getFloat3() const noexcept;
 	const float4& getFloat4() const noexcept;
+	const float2x2& getFloat2x2() const noexcept;
 	const float3x3& getFloat3x3() const noexcept;
 	const float4x4& getFloat4x4() const noexcept;
 	const std::vector<int1>& getIntArray() const noexcept;
@@ -142,11 +143,12 @@ public:
 	const std::vector<float2x2>& getFloat2x2Array() const noexcept;
 	const std::vector<float3x3>& getFloat3x3Array() const noexcept;
 	const std::vector<float4x4>& getFloat4x4Array() const noexcept;
-	GraphicsTexturePtr getTexture() const noexcept;
-	GraphicsSamplerPtr getTextureSampler() const noexcept;
+	const GraphicsTexturePtr& getTexture() const noexcept;
+	const GraphicsSamplerPtr& getTextureSampler() const noexcept;
+	const GraphicsDataPtr& getBuffer() const noexcept;
 
 	void setGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
-	GraphicsUniformPtr getGraphicsUniform() const noexcept;
+	const GraphicsUniformPtr& getGraphicsUniform() const noexcept;
 
 private:
 	EGL3GraphicsUniformSet(const EGL3GraphicsUniformSet&) = delete;

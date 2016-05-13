@@ -75,13 +75,11 @@ public:
 
 	void setTransform(const float4x4& transform) noexcept;
 	void setTransformInverse(const float4x4& transform) noexcept;
-	void setTransformInverseTranspose(const float4x4& transform) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr& target) noexcept;
 	void setFramebuffer(GraphicsFramebufferPtr&& target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture() noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr& target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
 	void drawCone(MaterialTechPtr& tech, std::uint32_t layer = 0) noexcept;
@@ -158,12 +156,10 @@ private:
 
 	MaterialParamPtr _materialMatModel;
 	MaterialParamPtr _materialMatModelInverse;
-	MaterialParamPtr _materialMatModelInverseTranspose;
 	MaterialParamPtr _materialMatProject;
 	MaterialParamPtr _materialMatProjectInverse;
 	MaterialParamPtr _materialMatView;
 	MaterialParamPtr _materialMatViewInverse;
-	MaterialParamPtr _materialMatViewInverseTranspose;
 	MaterialParamPtr _materialMatViewProject;
 	MaterialParamPtr _materialMatViewProjectAdj;
 	MaterialParamPtr _materialMatViewProjectInverse;

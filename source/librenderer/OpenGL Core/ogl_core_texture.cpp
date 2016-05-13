@@ -137,7 +137,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
 
 			GLsizei offset = 0;
-			GLsizei pixelSize = OGLTypes::getFormatNum(format);
+			GLsizei pixelSize = OGLTypes::getFormatNum(format, type);
 
 			GLint oldPackStore = 1;
 			glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
@@ -196,19 +196,19 @@ OGLCoreTexture::close() noexcept
 }
 
 bool
-OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat pixelFormat, void** data) noexcept
+OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
 {
-	assert(pixelFormat);
+	assert(data);
 
-	GLenum format = OGLTypes::asTextureFormat(pixelFormat);
+	GLenum format = OGLTypes::asTextureFormat(_textureDesc.getTexFormat());
 	if (format == GL_INVALID_ENUM)
 		return false;
 
-	GLenum type = OGLTypes::asTextureType(pixelFormat);
+	GLenum type = OGLTypes::asTextureType(_textureDesc.getTexFormat());
 	if (type == GL_INVALID_ENUM)
 		return false;
 
-	GLsizei num = OGLTypes::getFormatNum(format);
+	GLsizei num = OGLTypes::getFormatNum(format, type);
 	if (num == 0)
 		return false;
 
@@ -217,23 +217,24 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
 
-	if (_pboSize < w * h * num)
+	GLsizei mapSize = w * h * num;
+	if (_pboSize < mapSize)
 	{
-		glBufferData(GL_PIXEL_PACK_BUFFER, w * h * num, nullptr, GL_STATIC_DRAW);
-		_pboSize = w * h * num;
+		glBufferData(_pbo, mapSize, nullptr, GL_STREAM_READ);
+		_pboSize = mapSize;
 	}
-	
-	glGetTextureSubImage(_texture, 0, x, y, 0, w, h, 0, format, type, w * h * num, 0);
-	*data = glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB);
 
+	glBindTexture(_target, _texture);
+	glReadPixels(x, y, w, h, format, type, 0);
+
+	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 	return *data ? true : false;
 }
 
 void
 OGLCoreTexture::unmap() noexcept
 {
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
-	glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
+	glUnmapNamedBuffer(_pbo);
 }
 
 GLenum

@@ -89,19 +89,31 @@ public:
 	void setQuaternionAccum(const Quaternion& quat) noexcept;
 	const Quaternion& getQuaternion() const noexcept;
 
-	void setEulerAngles(const EulerAngles& euler) noexcept;
-	void setEulerAnglesAccum(const EulerAngles& euler) noexcept;
-	const EulerAngles& getEulerAngles() const noexcept;
+	void setTransform(const float4x4& transform) noexcept;
+	void setTransformOnlyRotate(const float4x4& transform) noexcept;
+	const float4x4& getTransform() const noexcept;
+	const float4x4& getTransformInverse() const noexcept;
+
+	void setWorldTranslate(const float3& v) noexcept;
+	void setWorldTranslateAccum(const float3& v) noexcept;
+	const float3& getWorldTranslate() const noexcept;
+
+	void setWorldScale(const float3& v) noexcept;
+	void setWorldScaleAccum(const float3& v) noexcept;
+	const float3& getWorldScale() const noexcept;
+
+	void setWorldQuaternion(const Quaternion& quat) noexcept;
+	void setWorldQuaternionAccum(const Quaternion& quat) noexcept;
+	const Quaternion& getWorldQuaternion() const noexcept;
 
 	const float3& getRight() const noexcept;
 	const float3& getUpVector() const noexcept;
 	const float3& getForward() const noexcept;
 
-	void setTransform(const float4x4& transform) noexcept;
-	void setTransformOnlyRotate(const float4x4& transform) noexcept;
-	const float4x4& getTransform() const noexcept;
-	const float4x4& getTransformInverse() const noexcept;
-	const float4x4& getTransformInverseTranspose() const noexcept;
+	void setWorldTransform(const float4x4& transform) noexcept;
+	void setWorldTransformOnlyRotate(const float4x4& transform) noexcept;
+	const float4x4& getWorldTransform() const noexcept;
+	const float4x4& getWorldTransformInverse() const noexcept;
 
 	void addComponent(GameComponentPtr& component) except;
 	void addComponent(GameComponentPtr&& component) except;
@@ -158,7 +170,11 @@ private:
 	void _onLayerChangeAfter() except;
 
 private:
-	void _updateTransform() const noexcept;
+	void _updateLocalChildren() const noexcept;
+	void _updateWorldChildren() const noexcept;
+	void _updateLocalTransform() const noexcept;
+	void _updateWorldTransform() const noexcept;
+	void _updateParentTransform() const noexcept;
 
 private:
 	GameObject(const GameObject& copy) noexcept = delete;
@@ -172,16 +188,22 @@ private:
 
 	std::string _name;
 
-	float3 _translate;
-	float3 _scaling;
-	Quaternion _quat;
-	EulerAngles _euler;
+	mutable float3 _localTranslate;
+	mutable float3 _localScaling;
+	mutable Quaternion _localRotation;
 
-	mutable bool _needUpdates;
+	mutable float3 _worldTranslate;
+	mutable float3 _worldScaling;
+	mutable Quaternion _worldRotation;
 
-	mutable float4x4 _transform;
-	mutable float4x4 _transformInverse;
-	mutable float4x4 _transformInverseTranspose;
+	mutable float4x4 _localTransform;
+	mutable float4x4 _localTransformInverse;
+
+	mutable float4x4 _worldTransform;
+	mutable float4x4 _worldTransformInverse;
+
+	mutable bool _localNeedUpdates;
+	mutable bool _worldNeedUpdates;
 
 	GameObjects _children;
 	GameObjectWeakPtr _parent;

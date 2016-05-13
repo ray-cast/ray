@@ -99,9 +99,9 @@ public:
 	void addRenderObject(RenderObjectPtr object) noexcept;
 	void removeRenderObject(RenderObjectPtr object) noexcept;
 
-	void computVisiable(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
-	void computVisiableObject(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
-	void computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
+	void computVisiable(const float4x4& viewProject, OcclusionCullList& list) noexcept;
+	void computVisiableObject(const float4x4& viewProject, OcclusionCullList& list) noexcept;
+	void computVisiableLight(const float4x4& viewProject, OcclusionCullList& list) noexcept;
 
 private:
 	void sortCamera() noexcept;

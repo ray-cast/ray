@@ -89,11 +89,11 @@ ResManager::createGameObject(const std::string& name, const std::string& anim) n
 
 	this->createAnimation(*model, gameObject, bones, anim);
 
-	GameObjects rigidbodys;
+	/*GameObjects rigidbodys;
 	this->createRigidbodyToBone(*model, rigidbodys, bones);
 
 	GameObjects joints;
-	this->createJoints(*model, rigidbodys, joints);
+	this->createJoints(*model, rigidbodys, joints);*/
 
 	Materials materials;
 	this->createMaterials(*model, materials);
@@ -171,7 +171,9 @@ ResManager::createBones(const Model& model, GameObjects& bones) noexcept
 	{
 		auto bone = std::make_shared<GameObject>();
 		bone->setName(it->getName());
-		bone->setTranslate(it->getPosition());
+		bone->setWorldTranslate(it->getPosition());
+		bone->setActive(true);
+
 		bones.push_back(std::move(bone));
 	}
 
@@ -258,9 +260,9 @@ ResManager::createRigidbodys(const Model& model, GameObjects& rigidbodys) noexce
 		auto gameObject = std::make_shared<GameObject>();
 		gameObject->setName(it->name);
 		gameObject->setLayer(it->group);
-		gameObject->setTranslate(it->position);
-		gameObject->setEulerAngles(EulerAngles(RAD_TO_DEG(it->rotation)));
-
+		gameObject->setQuaternion(Quaternion(RAD_TO_DEG(it->rotation)));
+		gameObject->setWorldTranslate(it->position);
+		
 		if (it->shape == ShapeType::ShapeTypeCircle)
 			gameObject->addComponent(std::make_shared<PhysicsSphereComponent>(it->scale.x));
 		else if (it->shape == ShapeType::ShapeTypeSquare)
@@ -301,8 +303,8 @@ ResManager::createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, G
 		gameObject->setParent(bones[it->bone]);
 		gameObject->setName(it->name);
 		gameObject->setLayer(it->group);
-		gameObject->setTranslate(it->position);
-		gameObject->setEulerAngles(EulerAngles(RAD_TO_DEG(it->rotation)));
+		gameObject->setQuaternion(Quaternion(RAD_TO_DEG(it->rotation)));
+		gameObject->setWorldTranslate(it->position);
 
 		if (it->shape == ShapeType::ShapeTypeCircle)
 			gameObject->addComponent(std::make_shared<PhysicsSphereComponent>(it->scale.x));

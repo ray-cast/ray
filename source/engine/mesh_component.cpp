@@ -38,6 +38,7 @@
 #include <ray/res_loader.h>
 #include <ray/ioserver.h>
 #include <ray/mstream.h>
+#include <stack>
 
 _NAME_BEGIN
 
@@ -64,19 +65,8 @@ MeshComponent::setMesh(MeshPropertyPtr& mesh) noexcept
 {
 	if (_mesh != mesh)
 	{
-		if (mesh)
-		{
-			if (mesh->getTangentArray().empty())
-				mesh->computeTangents();
-
-			if (mesh->getTangentQuatArray().empty())
-				mesh->computeTangentQuats();
-
-			mesh->computeBoundingBox();
-		}
-
+		this->_onSetMesh(mesh);
 		_mesh = mesh;
-
 		this->needUpdate();
 	}
 }
@@ -86,18 +76,9 @@ MeshComponent::setSharedMesh(MeshPropertyPtr& mesh) noexcept
 {
 	if (_sharedMesh != mesh)
 	{
-		if (mesh)
-		{
-			if (mesh->getTangentArray().empty())
-				mesh->computeTangents();
-
-			if (mesh->getTangentQuatArray().empty())
-				mesh->computeTangentQuats();
-
-			mesh->computeBoundingBox();
-		}
-
+		this->_onSetMesh(mesh);
 		_sharedMesh = mesh;
+		this->needUpdate();
 	}
 }
 
@@ -212,6 +193,12 @@ MeshComponent::load(iarchive& reader) noexcept
 			{
 				for (auto& it : meshes)
 				{
+					if (it->getTangentArray().empty())
+						it->computeTangents();
+
+					if (it->getTangentQuatArray().empty())
+						it->computeTangentQuats();
+
 					it->computeBoundingBox();
 					if (it !=  root)
 						root->addChild(it);
@@ -240,6 +227,31 @@ MeshComponent::clone() const noexcept
 		result->setMesh(this->getMesh()->clone());
 
 	return result;
+}
+
+void
+MeshComponent::_onSetMesh(MeshPropertyPtr& mesh) noexcept
+{
+	std::stack<MeshPropertyPtr> meshes;
+	meshes.push(mesh);
+
+	while (!meshes.empty())
+	{
+		auto it = meshes.top();
+		meshes.pop();
+
+		if (it->getTangentArray().empty())
+			it->computeTangents();
+
+		if (it->getTangentQuatArray().empty())
+			it->computeTangentQuats();
+
+		if (it->getBoundingBox().empty())
+			it->computeBoundingBox();
+
+		for (auto& it : it->getChildren())
+			meshes.push(it);
+	}
 }
 
 void

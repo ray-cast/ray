@@ -26,11 +26,11 @@
         <layout name="TANGENT" format="R32G32B32A32SFloat" />
         <layout name="TEXCOORD" format="R32G32SFloat" />
         <layout name="BLENDWEIGHT" format="R32G32B32A32SFloat"/>
-        <layout name="BLENDINDICES" format="R16G16B16A16UInt"/>
+        <layout name="BLENDINDICES" format="R8G8B8A8UInt"/>
     </inputlayout>
     <inputlayout name="POS3F_W4F_B4UI">
         <layout name="POSITION" format="R32G32B32SFloat" offset="0"/>
         <layout name="BLENDWEIGHT" format="R32G32B32A32SFloat" offset="36"/>
-        <layout name="BLENDINDICES" format="R16G16B16A16UInt" offset="52"/>
+        <layout name="BLENDINDICES" format="R8G8B8A8UInt" offset="52"/>
     </inputlayout>
 </effect>

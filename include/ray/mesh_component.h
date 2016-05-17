@@ -76,6 +76,9 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 private:
+	void _onSetMesh(MeshPropertyPtr& mesh) noexcept;
+
+private:
 	void onActivate() noexcept;
 	void onDeactivate() noexcept;
 

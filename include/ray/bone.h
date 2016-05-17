@@ -49,10 +49,10 @@ public:
 	float weight3;
 	float weight4;
 
-	std::int16_t bone1;
-	std::int16_t bone2;
-	std::int16_t bone3;
-	std::int16_t bone4;
+	std::int8_t bone1;
+	std::int8_t bone2;
+	std::int8_t bone3;
+	std::int8_t bone4;
 };
 
 class EXPORT IKChild

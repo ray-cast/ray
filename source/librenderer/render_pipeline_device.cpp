@@ -244,7 +244,7 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 	if (!mesh.getWeightArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitWeight)
 	{
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
-		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR16G16B16A16UInt);
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UInt);
 	}		
 
 	auto _buildVertexBuffer = [&](const MeshProperty& mesh, std::size_t& offsetVertices, const std::vector<char>& _vbo)
@@ -315,7 +315,7 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 				data += inputSize;
 			}
 
-			offset1 += sizeof(float4);
+			offset1 += sizeof(VertexWeight);
 		}
 
 		offsetVertices += mesh.getNumVertices() * inputSize;

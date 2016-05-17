@@ -115,6 +115,10 @@ TerrainGrass::createObject(TerrainChunk& chunk) noexcept
 
 	if (mesh->getNumVertices())
 	{
+		mesh->computeTangents();
+		mesh->computeTangentQuats();
+		mesh->computeBoundingBox();
+
 		int mx, my, mz;
 		chunk.getPosition(mx, my, mz);
 
@@ -308,6 +312,10 @@ TerrainTree::createObject(TerrainChunk& chunk) noexcept
 
 	if (woods->getNumVertices())
 	{
+		woods->computeTangents();
+		woods->computeTangentQuats();
+		woods->computeBoundingBox();
+
 		auto gameObject = _woodObject->clone();
 		gameObject->setName(ray::format("chunk_wood_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
@@ -318,6 +326,10 @@ TerrainTree::createObject(TerrainChunk& chunk) noexcept
 
 	if (leafs->getNumVertices())
 	{
+		leafs->computeTangents();
+		leafs->computeTangentQuats();
+		leafs->computeBoundingBox();
+
 		auto gameObject = _leafObject->clone();
 		gameObject->setName(ray::format("chunk_leaf_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
@@ -445,6 +457,10 @@ TerrainClound::createObject(TerrainChunk& chunk) noexcept
 
 	if (mesh->getNumVertices())
 	{
+		mesh->computeTangents();
+		mesh->computeTangentQuats();
+		mesh->computeBoundingBox();
+
 		int mx, my, mz;
 		chunk.getPosition(mx, my, mz);
 
@@ -585,6 +601,10 @@ TerrainWater::createObject(TerrainChunk& chunk) noexcept
 
 	if (mesh->getNumVertices())
 	{
+		mesh->computeTangents();
+		mesh->computeTangentQuats();
+		mesh->computeBoundingBox();
+
 		int mx, my, mz;
 		chunk.getPosition(mx, my, mz);
 

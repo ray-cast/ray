@@ -131,9 +131,11 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 	_texSource->uniformTexture(source);
 	_texSourceSizeInv->uniform2f(float2(1.0f / source->getGraphicsTextureDesc().getWidth(), 1.0f / source->getGraphicsTextureDesc().getHeight()));
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_sunLum);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_sunLum);
 }
 
 void
@@ -142,9 +144,11 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 	_texSource->uniformTexture(source);
 	_texSourceSizeInv->uniform2f(float2(1.0 / source->getGraphicsTextureDesc().getWidth(), 1.0 / source->getGraphicsTextureDesc().getHeight()));
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_sunLumLog);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_sunLumLog);
 }
 
 void
@@ -152,9 +156,11 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr sou
 {
 	_texSource->uniformTexture(source);
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_bloom);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_bloom);
 }
 
 void
@@ -162,9 +168,11 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 {
 	_texSource->uniformTexture(source);
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_blurh);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_blurh);
 }
 
 void
@@ -172,9 +180,11 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 {
 	_texSource->uniformTexture(source);
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_blurv);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_blurv);
 }
 
 void
@@ -183,9 +193,11 @@ FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsTextureP
 	_texSource->uniformTexture(source);
 	_toneBloom->uniformTexture(bloom);
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_tone);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_tone);
 }
 
 void

@@ -221,7 +221,8 @@ public:
 	void setVertexArray(const Float3Array& array) noexcept;
 	void setNormalArray(const Float3Array& array) noexcept;
 	void setColorArray(const Float4Array& array) noexcept;
-	void setTangentArray(const Float3Array& array) noexcept;
+	void setTangentArray(const Float4Array& array) noexcept;
+	void setTangentQuatArray(const Float4Array& array) noexcept;
 	void setTexcoordArray(const Float2Array& array) noexcept;
 	void setWeightArray(const VertexWeights& array) noexcept;
 	void setFaceArray(const UintArray& array) noexcept;
@@ -230,7 +231,8 @@ public:
 	void setVertexArray(Float3Array&& array) noexcept;
 	void setNormalArray(Float3Array&& array) noexcept;
 	void setColorArray(Float4Array&& array) noexcept;
-	void setTangentArray(Float3Array&& array) noexcept;
+	void setTangentArray(Float4Array&& array) noexcept;
+	void setTangentQuatArray(Float4Array&& array) noexcept;
 	void setTexcoordArray(Float2Array&& array) noexcept;
 	void setWeightArray(VertexWeights&& array) noexcept;
 	void setFaceArray(UintArray&& array) noexcept;
@@ -238,6 +240,8 @@ public:
 
 	Float3Array& getVertexArray() noexcept;
 	Float3Array& getNormalArray() noexcept;
+	Float4Array& getTangentArray() noexcept;
+	Float4Array& getTangentQuatArray() noexcept;
 	Float4Array& getColorArray() noexcept;
 	Float2Array& getTexcoordArray() noexcept;
 	VertexWeights& getWeightArray() noexcept;
@@ -246,7 +250,8 @@ public:
 
 	const Float3Array& getVertexArray() const noexcept;
 	const Float3Array& getNormalArray() const noexcept;
-	const Float3Array& getTangentArray() const noexcept;
+	const Float4Array& getTangentArray() const noexcept;
+	const Float4Array& getTangentQuatArray() const noexcept;
 	const Float4Array& getColorArray() const noexcept;
 	const Float2Array& getTexcoordArray() const noexcept;
 	const VertexWeights& getWeightArray() const noexcept;
@@ -276,6 +281,7 @@ public:
 	void computeVertexNormals(std::size_t width, std::size_t height) noexcept;
 	void computeMorphNormals() noexcept;
 	void computeTangents() noexcept;
+	void computeTangentQuats() noexcept;
 	void computeBoundingBox() noexcept;
 
 	const Bound& getBoundingBox() const noexcept;
@@ -291,7 +297,8 @@ private:
 	Float3Array _normals;
 	Float4Array _colors;
 	Float2Array _texcoords;
-	Float3Array _tangent;
+	Float4Array _tangent;
+	Float4Array _tangentQuat;
 	Float3Array _facesNormal;
 	VertexWeights _weights;
 	Float4x4Array _bindposes;

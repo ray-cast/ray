@@ -54,7 +54,6 @@ SET(ALSOFT_REQUIRE_SNDIO FALSE) # "Require SndIO backend"
 SET(ALSOFT_REQUIRE_QSA FALSE) # "Require QSA backend"
 SET(ALSOFT_NO_UID_DEFS FALSE) # "Do not define GUIDs, IIDs, CLSIDs, or PropertyKeys"
 SET(ALSOFT_BUILD_IMPORT_LIB TRUE) #"Build an import .lib using dlltool (requires sed)"
-SET(ALSOFT_FORCE_STATIC_VCRT FALSE) # "Force /MT for static VC runtimes"
 SET(ALSOFT_REQUIRE_SSE FALSE) # "Require SSE support"
 SET(ALSOFT_REQUIRE_SSE2 FALSE) # "Require SSE2 support"
 SET(ALSOFT_REQUIRE_SSE2 FALSE) # "Require SSE3 support"
@@ -307,16 +306,6 @@ IF(MSVC)
     ENDIF()
     IF(DXSDK_DIR)
         MESSAGE(STATUS "Using DirectX SDK directory: ${DXSDK_DIR}")
-    ENDIF()
-
-    IF(ALSOFT_FORCE_STATIC_VCRT)
-        FOREACH(flag_var
-                CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-                CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-            IF(${flag_var} MATCHES "/MD")
-                STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-            ENDIF()
-        ENDFOREACH(flag_var)
     ENDIF()
 ELSE()
     ADD_DEFINITIONS(-Winline -Wall)

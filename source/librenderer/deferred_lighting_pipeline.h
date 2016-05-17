@@ -52,24 +52,24 @@ public:
 
 	void render3DEnvMap(const CameraPtr& camera) noexcept;
 
-	void renderOpaques(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
-	void renderOpaquesDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
-	void renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
-	void renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
+	void renderOpaques(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderOpaquesDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
-	void renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
-	void renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
-	void renderTransparentShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
-	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
+	void renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
-	void renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
-	void renderSunLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
-	void renderDirectionalLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
-	void renderAmbientLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
-	void renderPointLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
-	void renderSpotLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
+	void renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderDirectionalLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderPointLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
 
-	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
+	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
 
 private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
@@ -136,15 +136,11 @@ private:
 
 	float _shadowEsmFactor;
 
-	MaterialParamPtr _materialDepthMap;
-	MaterialParamPtr _materialColorMap;
-	MaterialParamPtr _materialNormalMap;
 	MaterialParamPtr _materialDeferredDepthMap;
 	MaterialParamPtr _materialDeferredDepthLinearMap;
 	MaterialParamPtr _materialDeferredGraphicMap;
 	MaterialParamPtr _materialDeferredNormalMap;
 	MaterialParamPtr _materialDeferredLightMap;
-	MaterialParamPtr _materialDeferredShadowMap;
 
 	GraphicsFormat _deferredDepthFormat;
 	GraphicsFormat _deferredDepthLinearFormat;

@@ -38,7 +38,6 @@
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/geometry.h>
-#include <ray/material.h>
 
 _NAME_BEGIN
 
@@ -51,65 +50,54 @@ DefaultRenderDataManager::~DefaultRenderDataManager() noexcept
 }
 
 void
-DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderObjectPtr& object) noexcept
+DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept
 {
 	assert(object);
 	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
-
 	_renderQueue[queue].push_back(object);
 }
 
-void
-DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderObjectPtr&& object) noexcept
-{
-	assert(object);
-	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
-
-	_renderQueue[queue].push_back(std::move(object));
-}
-
-RenderObjects&
-DefaultRenderDataManager::getRenderData(RenderQueue queue) noexcept
+const RenderObjects&
+DefaultRenderDataManager::getRenderData(RenderQueue queue) const noexcept
 {
 	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
-
 	return _renderQueue[queue];
 }
 
 void
-DefaultRenderDataManager::assginVisiableLight(CameraPtr camera) noexcept
+DefaultRenderDataManager::assginVisiableLight(const Camera& camera) noexcept
 {
 	_visiable.clear();
 
 	_renderQueue[RenderQueue::RenderQueueShadow].clear();
 	_renderQueue[RenderQueue::RenderQueueLighting].clear();
 
-	auto scene = camera->getRenderScene();
-	scene->computVisiableLight(camera->getViewProject(), _visiable);
+	auto scene = camera.getRenderScene();
+	scene->computVisiableLight(camera.getViewProject(), _visiable);
 
 	this->sortDistance(_visiable);
 
 	for (auto& it : _visiable.iter())
 	{
 		auto object = it.getOcclusionCullNode();
-		object->addRenderData(*this);
+		object->onAddRenderData(*this);
 	}
 }
 
 void
-DefaultRenderDataManager::assginVisiableObject(CameraPtr camera) noexcept
+DefaultRenderDataManager::assginVisiableObject(const Camera& camera) noexcept
 {
 	_visiable.clear();
 
-	auto scene = camera->getRenderScene();
-	scene->computVisiableObject(camera->getViewProject(), _visiable);
+	auto scene = camera.getRenderScene();
+	scene->computVisiableObject(camera.getViewProject(), _visiable);
 
 	this->sortDistance(_visiable);
 
 	for (auto& it : _visiable.iter())
 	{
 		auto object = it.getOcclusionCullNode();
-		object->addRenderData(*this);
+		object->onAddRenderData(*this);
 	}
 }
 
@@ -138,13 +126,8 @@ DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 		{
 			auto object = it.getOcclusionCullNode();
 
-			if (camera.getCameraOrder() == CameraOrder::CameraOrderShadow)
-			{
-				if (!object->getCastShadow())
-					return;
-			}
-
-			object->addRenderData(*this);
+			object->onRenderPre(camera);
+			object->onAddRenderData(*this);
 		}
 	}
 }

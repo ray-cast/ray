@@ -868,17 +868,20 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			texcoords.push_back(v.coord);
 			faces.push_back(i);
 
-			VertexWeight weight;
-			weight.weight1 = v.weight.weight1;
-			weight.weight2 = v.weight.weight2;
-			weight.weight3 = v.weight.weight3;
-			weight.weight4 = v.weight.weight4;
-			weight.bone1 = v.weight.bone1;
-			weight.bone2 = v.weight.bone2;
-			weight.bone3 = v.weight.bone3;
-			weight.bone4 = v.weight.bone4;
+			if (pmx.bones.size() > 1)
+			{
+				VertexWeight weight;
+				weight.weight1 = v.weight.weight1;
+				weight.weight2 = v.weight.weight2;
+				weight.weight3 = v.weight.weight3;
+				weight.weight4 = v.weight.weight4;
+				weight.bone1 = v.weight.bone1;
+				weight.bone2 = v.weight.bone2;
+				weight.bone3 = v.weight.bone3;
+				weight.bone4 = v.weight.bone4;
 
-			weights.push_back(std::move(weight));
+				weights.push_back(weight);
+			}
 		}
 
 		MeshPropertyPtr mesh = std::make_shared<MeshProperty>();

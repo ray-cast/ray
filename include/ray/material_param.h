@@ -69,9 +69,8 @@ public:
 	void setType(GraphicsUniformType type) noexcept;
 	GraphicsUniformType getType() const noexcept;
 
-	void setSemantic(MaterialParamPtr& semantic) noexcept;
-	void setSemantic(MaterialParamPtr&& semantic) noexcept;
-	MaterialParamPtr getSemantic() const noexcept;
+	void setSemanticType(GlobalSemanticType type) noexcept;
+	GlobalSemanticType getSemanticType() const noexcept;
 
 	void uniform1b(bool value) noexcept;
 	void uniform1i(std::int32_t i1) noexcept;
@@ -131,21 +130,6 @@ public:
 	void uniform2fmatv(const std::vector<float2x2>& value) noexcept;
 	void uniform3fmatv(const std::vector<float3x3>& value) noexcept;
 	void uniform4fmatv(const std::vector<float4x4>& value) noexcept;
-	void uniform1iv(std::vector<int1>&& value) noexcept;
-	void uniform2iv(std::vector<int2>&& value) noexcept;
-	void uniform3iv(std::vector<int3>&& value) noexcept;
-	void uniform4iv(std::vector<int4>&& value) noexcept;
-	void uniform1uiv(std::vector<uint1>&& value) noexcept;
-	void uniform2uiv(std::vector<uint2>&& value) noexcept;
-	void uniform3uiv(std::vector<uint3>&& value) noexcept;
-	void uniform4uiv(std::vector<uint4>&& value) noexcept;
-	void uniform1fv(std::vector<float1>&& value) noexcept;
-	void uniform2fv(std::vector<float2>&& value) noexcept;
-	void uniform3fv(std::vector<float3>&& value) noexcept;
-	void uniform4fv(std::vector<float4>&& value) noexcept;
-	void uniform2fmatv(std::vector<float2x2>&& value) noexcept;
-	void uniform3fmatv(std::vector<float3x3>&& value) noexcept;
-	void uniform4fmatv(std::vector<float4x4>&& value) noexcept;
 	void uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 	void uniformBuffer(GraphicsDataPtr ubo) noexcept;
 
@@ -184,13 +168,10 @@ public:
 	GraphicsSamplerPtr getTextureSampler() const noexcept;
 	GraphicsDataPtr getBuffer() const noexcept;
 
-	void addParamListener(MaterialParamListener* listener) noexcept;
-	void removeParamListener(MaterialParamListener* listener) noexcept;
+	void addParamListener(GraphicsUniformSetPtr listener) noexcept;
+	void removeParamListener(GraphicsUniformSetPtr listener) noexcept;
 
 	MaterialParamPtr clone() const noexcept;
-
-private:
-	void _needUpdate() noexcept;
 
 private:
 	MaterialParam(const MaterialParam&) = delete;
@@ -198,9 +179,9 @@ private:
 
 private:
 	std::string _name;
-	MaterialParamPtr _semantic;
+	GlobalSemanticType _semanticType;
 	MaterialVariant _variant;
-	std::vector<MaterialParamListener*> _listeners;
+	std::vector<GraphicsUniformSetPtr> _listeners;
 };
 
 _NAME_END

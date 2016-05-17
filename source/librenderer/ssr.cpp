@@ -63,7 +63,7 @@ SSR::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsF
 	//_clipInfo->assign(pipeline.camera->getClipConstant());
 
 	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_ssrPass);
+	pipeline.drawScreenQuad(*_ssrPass);
 
 	return true;
 }

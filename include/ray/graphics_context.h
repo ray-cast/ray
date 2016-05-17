@@ -97,22 +97,22 @@ public:
 	virtual void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept = 0;
 	virtual std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept = 0;
 
-	virtual void setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept = 0;
+	virtual void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept = 0;
 	virtual GraphicsPipelinePtr getRenderPipeline() const noexcept = 0;
 
-	virtual void setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept = 0;
+	virtual void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept = 0;
 	virtual GraphicsDescriptorSetPtr getDescriptorSet() const noexcept = 0;
 
-	virtual void setVertexBufferData(GraphicsDataPtr& data) noexcept = 0;
+	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept = 0;
 	virtual GraphicsDataPtr getVertexBufferData() const noexcept = 0;
 
-	virtual void setIndexBufferData(GraphicsDataPtr& data) noexcept = 0;
+	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept = 0;
 	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
 
 	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
 	virtual void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
-	virtual void discardFramebuffer() noexcept = 0;
+	virtual void discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept = 0;
 	virtual void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
 	virtual GraphicsFramebufferPtr getFramebuffer() const noexcept = 0;
 

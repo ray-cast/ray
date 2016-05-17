@@ -194,7 +194,7 @@ SkinnedMeshRenderComponent::onMeshChange() noexcept
 }
 
 void 
-SkinnedMeshRenderComponent::onMeshWillRender(class RenderPipeline&) noexcept
+SkinnedMeshRenderComponent::onMeshWillRender(const Camera&) noexcept
 {
 	if (!_mesh)
 		return;

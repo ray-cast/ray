@@ -7,31 +7,14 @@
     <parameter name="texMRT1" type="texture2D" semantic="DeferredNormalMap" />
     <parameter name="texDepthLinear" type="texture2D" semantic="DeferredDepthLinearMap" />
     <parameter name="projInfo" type="float4"/>
-    <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
     <parameter name="matViewInverse" type="float4x4" semantic="matViewInverse" />
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
-    <parameter name="texSkybox" type="texture2D"/>
     <parameter name="texEnvDiffuse" type="textureCUBE"/>
     <parameter name="texEnvSpecular" type="textureCUBE"/>
     <parameter name="texEnvFactor" type="float3"/>
     <shader>
         <![CDATA[
-            void SkyVS(
-                in float4 Position : POSITION,
-                in float4 Normal : NORMAL0,
-                out float4 oNormal : TEXCOORD0,
-                out float4 oPosition : SV_Position)
-            {
-                oNormal = Normal;
-                oPosition = mul(matModelViewProject, Position);
-            }
-
-            float4 SkyPS(in float3 normal : TEXCOORD0) : SV_Target
-            {
-                return srgb2linear(texSkybox.Sample(PointClamp, computeSphereCoord(normal)));
-            }
-
-            void SkyboxEnvLightingVS(
+             void SkyboxEnvLightingVS(
                 in float4 Position : POSITION,
                 out float2 oTexcoord : TEXCOORD0,
                 out float3 oViewDir : TEXCOORD1,
@@ -44,8 +27,8 @@
 
             float4 SkyboxEnvLightingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
             {
-                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
 
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
@@ -70,16 +53,8 @@
             }
         ]]>
     </shader>
-    <technique name="SkyboxRender">
-        <pass name="p0">
-            <state name="inputlayout" value="POS3F_N3F"/>
-            <state name="vertex" value="SkyVS"/>
-            <state name="fragment" value="SkyPS"/>
-            <state name="cullmode" value="front"/>
-        </pass>
-    </technique>
-    <technique name="SkyLighting">
-        <pass name="p0">
+    <technique name="opaqueshading">
+        <pass name="SkyLighting">
             <state name="inputlayout" value="POS3F"/>
 
             <state name="vertex" value="SkyboxEnvLightingVS"/>

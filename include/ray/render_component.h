@@ -49,35 +49,26 @@ public:
 	RenderComponent() noexcept;
 	virtual ~RenderComponent() noexcept;
 
-	void setCastShadow(bool value) noexcept;
-	bool getCastShadow() const noexcept;
+	void addPreRenderListener(std::function<void(const Camera&)>* listener) noexcept;
+	void removePreRenderListener(std::function<void(const Camera&)>* listener) noexcept;
 
-	void setReceiveShadow(bool value) noexcept;
-	bool getReceiveShadow() const noexcept;
-
-	void addPreRenderListener(std::function<void(RenderPipeline&)>* listener) noexcept;
-	void removePreRenderListener(std::function<void(RenderPipeline&)>* listener) noexcept;
-
-	void addPostRenderListener(std::function<void(RenderPipeline&)>* listener) noexcept;
-	void removePostRenderListener(std::function<void(RenderPipeline&)>* listener) noexcept;
+	void addPostRenderListener(std::function<void(const Camera&)>* listener) noexcept;
+	void removePostRenderListener(std::function<void(const Camera&)>* listener) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
 protected:
-	virtual void onRenderObjectPre(RenderPipeline& pipeline) noexcept;
-	virtual void onRenderObjectPost(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderObjectPre(const Camera& pipeline) noexcept;
+	virtual void onRenderObjectPost(const Camera& pipeline) noexcept;
 
 private:
 	RenderComponent(const RenderComponent&) = delete;
 	RenderComponent& operator=(const RenderComponent&) = delete;
 
 protected:
-	bool _isCastShadow;
-	bool _isReceiveShadow;
-
-	delegate<void(RenderPipeline&)> _onPreRender;
-	delegate<void(RenderPipeline&)> _onPostRender;
+	delegate<void(const Camera&)> _onPreRender;
+	delegate<void(const Camera&)> _onPostRender;
 };
 
 _NAME_END

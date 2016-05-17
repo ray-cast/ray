@@ -44,6 +44,16 @@ MaterialTech::MaterialTech() noexcept
 {
 }
 
+MaterialTech::MaterialTech(const std::string& name) noexcept
+{
+	this->setName(name);
+}
+
+MaterialTech::MaterialTech(std::string&& name) noexcept
+{
+	this->setName(name);
+}
+
 MaterialTech::~MaterialTech() noexcept
 {
 }
@@ -94,6 +104,13 @@ MaterialTech::getPass(const std::string& name) noexcept
 	return nullptr;
 }
 
+MaterialPassPtr
+MaterialTech::getPass(std::size_t index) noexcept
+{
+	assert(index < _passList.size());
+	return _passList[index];
+}
+
 const MaterialPassList&
 MaterialTech::getPassList() const noexcept
 {
@@ -118,24 +135,10 @@ MaterialTech::getName() const noexcept
 	return _name;
 }
 
-bool
-MaterialTech::empty() const noexcept
-{
-	return _passList.empty();
-}
-
-std::size_t
-MaterialTech::count() const noexcept
-{
-	return _passList.size();
-}
-
 MaterialTechPtr
 MaterialTech::clone() const noexcept
 {
-	auto tech = std::make_shared<MaterialTech>();
-	tech->setName(this->getName());
-
+	auto tech = std::make_shared<MaterialTech>(this->getName());
 	for (auto& pass : _passList)
 		tech->addPass(pass->clone());
 	return tech;

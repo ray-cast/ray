@@ -71,9 +71,11 @@ Fog::onDeactivate(RenderPipeline& pipeline) noexcept
 bool
 Fog::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(source);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_fog);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_fog);
 
 	return false;
 }

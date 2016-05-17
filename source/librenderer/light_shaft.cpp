@@ -41,6 +41,7 @@
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 #include <ray/render_pipeline.h>
+#include <ray/render_object_manager.h>
 
 _NAME_BEGIN
 
@@ -113,10 +114,10 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 
 	_illuminationRadio->uniform1f((float)width / height);
 
-	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
+	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
 	{
-		auto light = std::dynamic_pointer_cast<Light>(it);
+		auto light = it->downcast<Light>();
 
 		if (light->getLightType() == LightType::LightTypeSun)
 		{
@@ -131,7 +132,7 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 				_illuminationPosition->uniform2f(Vector2(view.x, view.y));
 				_illuminationSource->uniformTexture(texture);
 
-				pipeline.drawScreenQuad(_lightShaft);
+				pipeline.drawScreenQuad(*_lightShaft);
 			}
 		}
 	}
@@ -139,7 +140,7 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 	_illuminationSource->uniformTexture(_sampleMap);
 
 	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_lightShaftCopy);
+	pipeline.drawScreenQuad(*_lightShaftCopy);
 
 	return true;
 }

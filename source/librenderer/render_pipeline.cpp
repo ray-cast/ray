@@ -38,7 +38,6 @@
 #include <ray/render_pipeline_device.h>
 
 #include <ray/render_post_process.h>
-#include <ray/render_mesh.h>
 
 #include <ray/graphics_context.h>
 #include <ray/graphics_swapchain.h>
@@ -52,6 +51,7 @@
 #include <ray/render_object_manager.h>
 
 #include <ray/material.h>
+#include <ray/material_semantic.h>
 #include <ray/material_manager.h>
 
 _NAME_BEGIN
@@ -81,13 +81,13 @@ RenderPipeline::setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window,
 
 	_pipelineDevice = pipelineDevice;
 
-	if (!setupDeviceContext(window, w, h, interval))
+	if (!this->setupDeviceContext(window, w, h, interval))
 		return false;
 
-	if (!setupBaseMeshes())
+	if (!this->setupBaseMeshes())
 		return false;
 
-	if (!setupMaterialSemantic())
+	if (!this->setupMaterialSemantic())
 		return false;
 
 	return true;
@@ -96,9 +96,9 @@ RenderPipeline::setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window,
 void
 RenderPipeline::close() noexcept
 {
-	destroyBaseMeshes();
-	destroyMaterialSemantic();
-	destroyDataManager();
+	this->destroyBaseMeshes();
+	this->destroyMaterialSemantic();
+	this->destroyDataManager();
 }
 
 void
@@ -116,33 +116,30 @@ RenderPipeline::getSwapInterval() const noexcept
 }
 
 void
-RenderPipeline::addRenderData(RenderQueue queue, RenderObjectPtr& object) noexcept
-{
-	assert(_dataManager);
-	_dataManager->addRenderData(queue, object);
-}
-
-const RenderObjects&
-RenderPipeline::getRenderData(RenderQueue queue) const noexcept
-{
-	assert(_dataManager);
-	return _dataManager->getRenderData(queue);
-}
-
-void
 RenderPipeline::setTransform(const float4x4& transform) noexcept
 {
-	assert(_materialMatModel);
-	_materialMatModel->uniform4fmat(transform);
-	_materialMatModelView->uniform4fmat(math::transformMultiply(_materialMatView->getFloat4x4(), transform));
-	_materialMatModelViewProject->uniform4fmat(_materialMatViewProject->getFloat4x4() * transform);
+	assert(_materialSemantics);
+
+	auto& view = _materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeView)->getFloat4x4();
+	auto& viewProject = _materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProject)->getFloat4x4();
+
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeModel)->uniform4fmat(transform);
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelView)->uniform4fmat(math::transformMultiply(view, transform));
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelViewProject)->uniform4fmat(viewProject * transform);
 }
 
 void
 RenderPipeline::setTransformInverse(const float4x4& transform) noexcept
 {
-	assert(_materialMatModelInverse);
-	_materialMatModelInverse->uniform4fmat(transform);
+	assert(_materialSemantics);
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelInverse)->uniform4fmat(transform);
+}
+
+const MaterialParamPtr&
+RenderPipeline::getSemanticParam(GlobalSemanticType type) const noexcept
+{
+	assert(_materialSemantics);
+	return _materialSemantics->getSemantic(type);
 }
 
 void
@@ -195,17 +192,17 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	assert(camera);
 	assert(camera->getRenderDataManager());
 
-	_materialCameraNear->uniform1f(camera->getNear());
-	_materialCameraFar->uniform1f(camera->getFar());
-	_materialCameraAperture->uniform1f(camera->getAperture());
-	_materialCameraPosition->uniform3f(camera->getTranslate());
-	_materialCameraDirection->uniform3f(camera->getForward());
-	_materialMatView->uniform4fmat(camera->getView());
-	_materialMatViewInverse->uniform4fmat(camera->getViewInverse());
-	_materialMatProject->uniform4fmat(camera->getProject());
-	_materialMatProjectInverse->uniform4fmat(camera->getProjectInverse());
-	_materialMatViewProject->uniform4fmat(adjustProject * camera->getViewProject());
-	_materialMatViewProjectInverse->uniform4fmat(camera->getViewProjectInverse());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraNear)->uniform1f(camera->getNear());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraFar)->uniform1f(camera->getFar());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraAperture)->uniform1f(camera->getAperture());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraPosition)->uniform3f(camera->getTranslate());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraDirection)->uniform3f(camera->getForward());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeView)->uniform4fmat(camera->getView());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewInverse)->uniform4fmat(camera->getViewInverse());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeProject)->uniform4fmat(camera->getProject());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeProjectInverse)->uniform4fmat(camera->getProjectInverse());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProject)->uniform4fmat(adjustProject * camera->getViewProject());
+	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProjectInverse)->uniform4fmat(camera->getViewProjectInverse());
 
 	camera->assignVisiable();
 	_dataManager = camera->getRenderDataManager();
@@ -248,14 +245,7 @@ RenderPipeline::getScissor() const noexcept
 }
 
 void
-RenderPipeline::setFramebuffer(GraphicsFramebufferPtr& target) noexcept
-{
-	assert(_graphicsContext);
-	_graphicsContext->setFramebuffer(target);
-}
-
-void 
-RenderPipeline::setFramebuffer(GraphicsFramebufferPtr&& target) noexcept
+RenderPipeline::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setFramebuffer(target);
@@ -269,10 +259,10 @@ RenderPipeline::clearFramebuffer(GraphicsClearFlags flags, const float4& color, 
 }
 
 void
-RenderPipeline::discradRenderTexture() noexcept
+RenderPipeline::discradRenderTexture(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->discardFramebuffer();
+	_graphicsContext->discardFramebuffer(attachments, numAttachment);
 }
 
 void
@@ -283,100 +273,122 @@ RenderPipeline::blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewpor
 }
 
 void
-RenderPipeline::drawSphere(MaterialTechPtr& tech, std::uint32_t layer) noexcept
+RenderPipeline::setMaterialPass(const MaterialPassPtr& pass) noexcept
 {
-	this->drawMeshLayer(tech, _renderSphere, _renderSphereIndirect, layer);
+	pass->update(*_materialSemantics);
+	_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
+	_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
+}
+
+void 
+RenderPipeline::setVertexBuffer(GraphicsDataPtr vbo) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setVertexBufferData(vbo);
+}
+
+void 
+RenderPipeline::setIndexBuffer(GraphicsDataPtr ibo) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setIndexBufferData(ibo);
 }
 
 void
-RenderPipeline::drawCone(MaterialTechPtr& tech, std::uint32_t layer) noexcept
+RenderPipeline::drawSphere(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
-	this->drawMeshLayer(tech, _renderCone, _renderConeIndirect, layer);
-}
+	this->setVertexBuffer(_sphereVbo);
+	this->setIndexBuffer(_sphereIbo);
 
-void
-RenderPipeline::drawScreenQuad(MaterialTechPtr& tech) noexcept
-{
-	this->drawMesh(tech, _renderScreenQuad, _renderScreenQuadIndirect);
-}
-
-void
-RenderPipeline::drawScreenQuadLayer(MaterialTechPtr& tech, std::uint32_t layer) noexcept
-{
-	this->drawMeshLayer(tech, _renderScreenQuad, _renderScreenQuadIndirect, layer);
-}
-
-void
-RenderPipeline::drawMesh(MaterialTechPtr& tech, RenderMeshPtr& mesh, const GraphicsIndirect& renderable) noexcept
-{
-	auto& passList = tech->getPassList();
+	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
 	{
-		pass->update();
+		pass->update(*_materialSemantics);
 
-		auto pipeline = pass->getRenderPipeline();
-		if (pipeline)
-			_graphicsContext->setRenderPipeline(pipeline);
-
-		auto descriptor = pass->getDescriptorSet();
-		if (descriptor)
-			_graphicsContext->setDescriptorSet(descriptor);
-
-		auto vbo = mesh->getVertexBuffer();
-		if (vbo)
-			_graphicsContext->setVertexBufferData(vbo);
-
-		auto ibo = mesh->getIndexBuffer();
-		if (ibo)
-			_graphicsContext->setIndexBufferData(ibo);
-
-		_graphicsContext->drawRenderMesh(renderable);
+		this->setMaterialPass(pass);
+		this->drawMesh(_sphereIndirect);
 	}
 }
 
 void
-RenderPipeline::drawMeshLayer(MaterialTechPtr& tech, RenderMeshPtr& mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
+RenderPipeline::drawCone(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
-	auto& passList = tech->getPassList();
+	this->setVertexBuffer(_coneVbo);
+	this->setIndexBuffer(_coneIbo);
+
+	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
 	{
-		pass->update();
+		pass->update(*_materialSemantics);
 
-		auto pipeline = pass->getRenderPipeline();
-		if (pipeline)
-			_graphicsContext->setRenderPipeline(pipeline);
-
-		auto descriptor = pass->getDescriptorSet();
-		if (descriptor)
-			_graphicsContext->setDescriptorSet(descriptor);
-
-		auto vbo = mesh->getVertexBuffer();
-		if (vbo)
-			_graphicsContext->setVertexBufferData(vbo);
-
-		auto ibo = mesh->getIndexBuffer();
-		if (ibo)
-			_graphicsContext->setIndexBufferData(ibo);
-
-		_graphicsContext->setStencilReference(GraphicsStencilFace::GraphicsStencilFaceFrontBack, 1 << layer);
-		_graphicsContext->drawRenderMesh(renderable);
+		this->setMaterialPass(pass);
+		this->drawMeshLayer(_sphereIndirect, layer);
 	}
+}
+
+void
+RenderPipeline::drawScreenQuad(const MaterialTech& tech) noexcept
+{
+	this->setVertexBuffer(_screenQuadVbo);
+	this->setIndexBuffer(_screenQuadIbo);
+
+	auto& passList = tech.getPassList();
+	for (auto& pass : passList)
+	{
+		pass->update(*_materialSemantics);
+
+		this->setMaterialPass(pass);
+		this->drawMesh(_screenQuadIndirect);
+	}
+}
+
+void
+RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer) noexcept
+{
+	this->setVertexBuffer(_screenQuadVbo);
+	this->setIndexBuffer(_screenQuadIbo);
+	
+	auto& passList = tech.getPassList();
+	for (auto& pass : passList)
+	{
+		pass->update(*_materialSemantics);
+
+		this->setMaterialPass(pass);
+		this->drawMeshLayer(_screenQuadIndirect, layer);
+	}
+}
+
+void
+RenderPipeline::drawMesh(const GraphicsIndirect& renderable) noexcept
+{
+	_graphicsContext->drawRenderMesh(renderable);
+}
+
+void
+RenderPipeline::drawMeshLayer(const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
+{
+	_graphicsContext->setStencilReference(GraphicsStencilFace::GraphicsStencilFaceFrontBack, 1 << layer);
+	_graphicsContext->drawRenderMesh(renderable);
 }
 
 void 
 RenderPipeline::drawRenderQueue(RenderQueue queue) noexcept
 {
-	auto& renderable = this->getRenderData(queue);
+	assert(_camera);
+
+	auto& renderable = _camera->getRenderDataManager()->getRenderData(queue);
 	for (auto& it : renderable)
-		it->render(*this, queue, nullptr);
+		it->onRenderObject(*this, queue, nullptr);
 }
 
 void
-RenderPipeline::drawRenderQueue(RenderQueue queue, MaterialTechPtr& tech) noexcept
+RenderPipeline::drawRenderQueue(RenderQueue queue, const MaterialTechPtr& tech) noexcept
 {
-	auto& renderable = this->getRenderData(queue);
+	assert(_camera);
+
+	auto& renderable = _camera->getRenderDataManager()->getRenderData(queue);
 	for (auto& it : renderable)
-		it->render(*this, queue, tech);
+		it->onRenderObject(*this, queue, tech.get());
 }
 
 void
@@ -542,39 +554,18 @@ RenderPipeline::destroyMaterial(MaterialPtr material) noexcept
 	return _pipelineDevice->destroyMaterial(material);
 }
 
-RenderMeshPtr
-RenderPipeline::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+GraphicsDataPtr
+RenderPipeline::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(vb, ib);
+	return _pipelineDevice->createVertexBuffer(mesh, flags);
 }
 
-RenderMeshPtr
-RenderPipeline::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
+GraphicsDataPtr
+RenderPipeline::createIndexBuffer(const MeshProperty& mesh) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(mesh, flags);
-}
-
-MaterialParamPtr
-RenderPipeline::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createSemantic(name, type);
-}
-
-void
-RenderPipeline::destroySemantic(MaterialParamPtr semantic) const noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->destroySemantic(semantic);
-}
-
-MaterialParamPtr
-RenderPipeline::getSemantic(const std::string& semantic) const noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->getSemantic(semantic);
+	return _pipelineDevice->createIndexBuffer(mesh);
 }
 
 bool
@@ -605,102 +596,8 @@ RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint
 bool
 RenderPipeline::setupMaterialSemantic() noexcept
 {
-	_materialMatModel = _pipelineDevice->createSemantic("matModel", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatModel)
-		return false;
-
-	_materialMatModelInverse = _pipelineDevice->createSemantic("matModelInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatModelInverse)
-		return false;
-
-	_materialMatProject = _pipelineDevice->createSemantic("matProject", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatProject)
-		return false;
-
-	_materialMatProjectInverse = _pipelineDevice->createSemantic("matProjectInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatProjectInverse)
-		return false;
-
-	_materialMatView = _pipelineDevice->createSemantic("matView", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatView)
-		return false;
-
-	_materialMatViewInverse = _pipelineDevice->createSemantic("matViewInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatViewInverse)
-		return false;
-
-	_materialMatViewProject = _pipelineDevice->createSemantic("matViewProject", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatViewProject)
-		return false;
-
-	_materialMatViewProjectInverse = _pipelineDevice->createSemantic("matViewProjectInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatViewProjectInverse)
-		return false;
-
-	_materialMatModelView = _pipelineDevice->createSemantic("matModelView", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatModelView)
-		return false;
-
-	_materialMatModelViewProject = _pipelineDevice->createSemantic("matModelViewProject", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	if (!_materialMatModelViewProject)
-		return false;
-
-	_materialCameraAperture = _pipelineDevice->createSemantic("CameraAperture", GraphicsUniformType::GraphicsUniformTypeFloat);
-	if (!_materialCameraAperture)
-		return false;
-
-	_materialCameraFar = _pipelineDevice->createSemantic("CameraFar", GraphicsUniformType::GraphicsUniformTypeFloat);
-	if (!_materialCameraFar)
-		return false;
-
-	_materialCameraNear = _pipelineDevice->createSemantic("CameraNear", GraphicsUniformType::GraphicsUniformTypeFloat);
-	if (!_materialCameraNear)
-		return false;
-
-	_materialCameraPosition = _pipelineDevice->createSemantic("CameraPosition", GraphicsUniformType::GraphicsUniformTypeFloat3);
-	if (!_materialCameraPosition)
-		return false;
-
-	_materialCameraDirection = _pipelineDevice->createSemantic("CameraDirection", GraphicsUniformType::GraphicsUniformTypeFloat3);
-	if (!_materialCameraDirection)
-		return false;
-
-	_materialDepthMap = _pipelineDevice->createSemantic("DepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialDepthMap)
-		return false;
-
-	_materialColorMap = _pipelineDevice->createSemantic("ColorMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialColorMap)
-		return false;
-
-	_materialNormalMap = _pipelineDevice->createSemantic("NormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialNormalMap)
-		return false;
-
-	_materialDeferredDepthMap = _pipelineDevice->createSemantic("DeferredDepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialDeferredDepthMap)
-		return false;
-
-	_materialDeferredDepthLinearMap = _pipelineDevice->createSemantic("DeferredDepthLinearMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialDeferredDepthLinearMap)
-		return false;
-
-	_materialDeferredGraphicMap = _pipelineDevice->createSemantic("DeferredGraphicMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialDeferredGraphicMap)
-		return false;
-
-	_materialDeferredNormalMap = _pipelineDevice->createSemantic("DeferredNormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialDeferredNormalMap)
-		return false;
-
-	_materialDeferredLightMap = _pipelineDevice->createSemantic("DeferredLightMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialDeferredLightMap)
-		return false;
-
-	_materialDeferredShadowMap = _pipelineDevice->createSemantic("DeferredShadowMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	if (!_materialDeferredShadowMap)
-		return false;
-
+	_materialSemantics = std::make_shared<MaterialSemantic>();
+	_materialSemantics->setup();
 	return true;
 }
 
@@ -710,39 +607,51 @@ RenderPipeline::setupBaseMeshes() noexcept
 	MeshProperty mesh;
 	mesh.makePlane(2, 2, 1, 1);
 
-	_renderScreenQuad = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	if (!_renderScreenQuad)
+	_screenQuadVbo = this->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	if (!_screenQuadVbo)
 		return false;
 
-	_renderScreenQuadIndirect.startVertice = 0;
-	_renderScreenQuadIndirect.numVertices = mesh.getNumVertices();
-	_renderScreenQuadIndirect.startIndice = 0;
-	_renderScreenQuadIndirect.numIndices = mesh.getNumIndices();
-	_renderScreenQuadIndirect.numInstances = 0;
+	_screenQuadIbo = this->createIndexBuffer(mesh);
+	if (!_screenQuadIbo)
+		return false;
+
+	_screenQuadIndirect.startVertice = 0;
+	_screenQuadIndirect.numVertices = mesh.getNumVertices();
+	_screenQuadIndirect.startIndice = 0;
+	_screenQuadIndirect.numIndices = mesh.getNumIndices();
+	_screenQuadIndirect.numInstances = 0;
 
 	mesh.makeSphere(1, 24, 18);
 
-	_renderSphere = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	if (!_renderSphere)
+	_sphereVbo = this->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	if (!_sphereVbo)
 		return false;
 
-	_renderSphereIndirect.startVertice = 0;
-	_renderSphereIndirect.numVertices = mesh.getNumVertices();
-	_renderSphereIndirect.startIndice = 0;
-	_renderSphereIndirect.numIndices = mesh.getNumIndices();
-	_renderSphereIndirect.numInstances = 0;
+	_sphereIbo = this->createIndexBuffer(mesh);
+	if (!_sphereIbo)
+		return false;
+
+	_sphereIndirect.startVertice = 0;
+	_sphereIndirect.numVertices = mesh.getNumVertices();
+	_sphereIndirect.startIndice = 0;
+	_sphereIndirect.numIndices = mesh.getNumIndices();
+	_sphereIndirect.numInstances = 0;
 
 	mesh.makeCone(1, 1, 16);
 
-	_renderCone = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	if (!_renderCone)
+	_coneVbo = this->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	if (!_coneVbo)
 		return false;
 
-	_renderConeIndirect.startVertice = 0;
-	_renderConeIndirect.numVertices = mesh.getNumVertices();
-	_renderConeIndirect.startIndice = 0;
-	_renderConeIndirect.numIndices = mesh.getNumIndices();
-	_renderConeIndirect.numInstances = 0;
+	_coneIbo = this->createIndexBuffer(mesh);
+	if (!_coneIbo)
+		return false;
+
+	_coneIndirect.startVertice = 0;
+	_coneIndirect.numVertices = mesh.getNumVertices();
+	_coneIndirect.startIndice = 0;
+	_coneIndirect.numIndices = mesh.getNumIndices();
+	_coneIndirect.numInstances = 0;
 
 	return true;
 }
@@ -757,61 +666,18 @@ RenderPipeline::destroyDeviceContext() noexcept
 void
 RenderPipeline::destroyMaterialSemantic() noexcept
 {
-	_pipelineDevice->destroySemantic(_materialMatModel);
-	_pipelineDevice->destroySemantic(_materialMatModelInverse);
-	_pipelineDevice->destroySemantic(_materialMatProject);
-	_pipelineDevice->destroySemantic(_materialMatProjectInverse);
-	_pipelineDevice->destroySemantic(_materialMatView);
-	_pipelineDevice->destroySemantic(_materialMatViewInverse);
-	_pipelineDevice->destroySemantic(_materialMatViewProject);
-	_pipelineDevice->destroySemantic(_materialMatViewProjectInverse);
-	_pipelineDevice->destroySemantic(_materialCameraAperture);
-	_pipelineDevice->destroySemantic(_materialCameraFar);
-	_pipelineDevice->destroySemantic(_materialCameraNear);
-	_pipelineDevice->destroySemantic(_materialCameraPosition);
-	_pipelineDevice->destroySemantic(_materialCameraDirection);
-	_pipelineDevice->destroySemantic(_materialDepthMap);
-	_pipelineDevice->destroySemantic(_materialColorMap);
-	_pipelineDevice->destroySemantic(_materialNormalMap);
-	_pipelineDevice->destroySemantic(_materialDeferredDepthMap);
-	_pipelineDevice->destroySemantic(_materialDeferredDepthLinearMap);
-	_pipelineDevice->destroySemantic(_materialDeferredGraphicMap);
-	_pipelineDevice->destroySemantic(_materialDeferredNormalMap);
-	_pipelineDevice->destroySemantic(_materialDeferredLightMap);
-	_pipelineDevice->destroySemantic(_materialDeferredShadowMap);
-
-	_materialMatModel.reset();
-	_materialMatModelInverse.reset();
-	_materialMatProject.reset();
-	_materialMatProjectInverse.reset();
-	_materialMatView.reset();
-	_materialMatViewInverse.reset();
-	_materialMatViewProject.reset();
-	_materialMatViewProjectInverse.reset();
-	_materialMatModelView.reset();
-	_materialMatModelViewProject.reset();
-	_materialCameraAperture.reset();
-	_materialCameraFar.reset();
-	_materialCameraNear.reset();
-	_materialCameraPosition.reset();
-	_materialCameraDirection.reset();
-	_materialDepthMap.reset();
-	_materialColorMap.reset();
-	_materialNormalMap.reset();
-	_materialDeferredDepthMap.reset();
-	_materialDeferredDepthLinearMap.reset();
-	_materialDeferredGraphicMap.reset();
-	_materialDeferredNormalMap.reset();
-	_materialDeferredLightMap.reset();
-	_materialDeferredShadowMap.reset();
+	_materialSemantics.reset();
 }
 
 void
 RenderPipeline::destroyBaseMeshes() noexcept
 {
-	_renderScreenQuad.reset();
-	_renderSphere.reset();
-	_renderCone.reset();
+	_screenQuadVbo.reset();
+	_sphereVbo.reset();
+	_coneVbo.reset();
+	_screenQuadIbo.reset();
+	_sphereIbo.reset();
+	_coneIbo.reset();
 }
 
 void

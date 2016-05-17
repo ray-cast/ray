@@ -49,39 +49,34 @@ public:
 	~Light() noexcept;
 
 	void setRange(float range) noexcept;
-	float getRange() const noexcept;
-
 	void setIntensity(float intensity) noexcept;
-	float getIntensity() const noexcept;
-
 	void setLightType(LightType type) noexcept;
-	LightType getLightType() const noexcept;
-
 	void setLightColor(const float3& color) noexcept;
-	const float3& getLightColor() const noexcept;
-
 	void setLightAttenuation(const float3& attenuation) noexcept;
-	const float3& getLightAttenuation() const noexcept;
-
 	void setSpotInnerCone(float value) noexcept;
 	void setSpotOuterCone(float value) noexcept;
-	const float2& getSpotInnerCone() const noexcept;
-	const float2& getSpotOuterCone() const noexcept;
-
+	void setShadowBias(float bias) noexcept;
 	void setShadowType(LightShadowType shadowType) noexcept;
-	LightShadowType getShadowType() const noexcept;
-
 	void setSoftShadow(bool enable) noexcept;
-	bool getSoftShadow() const noexcept;
-
 	void setSubsurfaceScattering(bool enable) noexcept;
+
+	bool getSoftShadow() const noexcept;
 	bool getSubsurfaceScattering() const noexcept;
 
-	void setShadowBias(float bias) noexcept;
+	float getRange() const noexcept;
+	float getIntensity() const noexcept;
 	float getShadowBias() const noexcept;
 
+	LightType getLightType() const noexcept;
+	LightShadowType getShadowType() const noexcept;
+
+	const float2& getSpotInnerCone() const noexcept;
+	const float2& getSpotOuterCone() const noexcept;
+	const float3& getLightColor() const noexcept;
+	const float3& getLightAttenuation() const noexcept;
+
 	void setShadowMap(GraphicsTexturePtr texture) noexcept;
-	GraphicsTexturePtr getShadowMap() const noexcept;
+	const GraphicsTexturePtr& getShadowMap() const noexcept;
 
 	CameraPtr getShadowCamera(std::uint8_t i = 0) const noexcept;
 
@@ -100,8 +95,8 @@ private:
 
 	void onAddRenderData(RenderDataManager& manager) noexcept;
 
-	void onRenderObjectPre(RenderPipeline& pipeline) noexcept;
-	void onRenderObjectPost(RenderPipeline& pipeline) noexcept;
+	void onRenderObjectPre(const Camera& camera) noexcept;
+	void onRenderObjectPost(const Camera& camera) noexcept;
 
 	void onMoveAfter() noexcept;
 

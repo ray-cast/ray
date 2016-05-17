@@ -826,8 +826,33 @@ enum GraphicsViewLayout
 	GraphicsViewLayoutPresentSrcKhr = 9,
 	GraphicsViewLayoutBeginRange = GraphicsViewLayoutUndefined,
 	GraphicsViewLayoutEndRange = GraphicsViewLayoutPreinitialized,
-	GraphicsViewLayoutRangeSize = (GraphicsViewLayoutPreinitialized - GraphicsViewLayoutUndefined + 1),
+	GraphicsViewLayoutRangeSize = (GraphicsViewLayoutEndRange - GraphicsViewLayoutBeginRange + 1),
 	GraphicsViewLayoutMaxEnum = 0x7FFFFFFF
+};
+
+enum GraphicsAttachment
+{
+	GraphicsAttachmentColor0,
+	GraphicsAttachmentColor1,
+	GraphicsAttachmentColor2,
+	GraphicsAttachmentColor3,
+	GraphicsAttachmentColor4,
+	GraphicsAttachmentColor5,
+	GraphicsAttachmentColor6,
+	GraphicsAttachmentColor7,
+	GraphicsAttachmentColor8,
+	GraphicsAttachmentColor9,
+	GraphicsAttachmentColor10,
+	GraphicsAttachmentColor11,
+	GraphicsAttachmentColor12,
+	GraphicsAttachmentColor13,
+	GraphicsAttachmentColor14,
+	GraphicsAttachmentColor15,
+	GraphicsAttachmentDepthStencil,
+	GraphicsAttachmentBeginRange = GraphicsAttachmentColor0,
+	GraphicsAttachmentEndRange = GraphicsAttachmentDepthStencil,
+	GraphicsAttachmentRangeSize = (GraphicsAttachmentEndRange - GraphicsAttachmentBeginRange + 1),
+	GraphicsAttachmentMaxEnum = 0x7FFFFFFF
 };
 
 enum GraphicsViewUsageFlagBits

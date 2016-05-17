@@ -576,9 +576,15 @@ MeshProperty::setColorArray(const Float4Array& array) noexcept
 }
 
 void
-MeshProperty::setTangentArray(const Float3Array& array) noexcept
+MeshProperty::setTangentArray(const Float4Array& array) noexcept
 {
 	_tangent = array;
+}
+
+void
+MeshProperty::setTangentQuatArray(const Float4Array& array) noexcept
+{
+	_tangentQuat = array;
 }
 
 void
@@ -624,9 +630,15 @@ MeshProperty::setColorArray(Float4Array&& array) noexcept
 }
 
 void
-MeshProperty::setTangentArray(Float3Array&& array) noexcept
+MeshProperty::setTangentArray(Float4Array&& array) noexcept
 {
 	_tangent = std::move(array);
+}
+
+void
+MeshProperty::setTangentQuatArray(Float4Array&& array) noexcept
+{
+	_tangentQuat = std::move(array);
 }
 
 void
@@ -663,6 +675,18 @@ Float3Array&
 MeshProperty::getNormalArray() noexcept
 {
 	return _normals;
+}
+
+Float4Array&
+MeshProperty::getTangentArray() noexcept
+{
+	return _tangent;
+}
+
+Float4Array&
+MeshProperty::getTangentQuatArray() noexcept
+{
+	return _tangentQuat;
 }
 
 Float4Array&
@@ -707,10 +731,16 @@ MeshProperty::getNormalArray() const noexcept
 	return _normals;
 }
 
-const Float3Array&
+const Float4Array&
 MeshProperty::getTangentArray() const noexcept
 {
 	return _tangent;
+}
+
+const Float4Array&
+MeshProperty::getTangentQuatArray() const noexcept
+{
+	return _tangentQuat;
 }
 
 const Float4Array&
@@ -768,7 +798,7 @@ MeshProperty::clear() noexcept
 	_normals = Float3Array();
 	_colors = Float4Array();
 	_texcoords = Float2Array();
-	_tangent = Float3Array();
+	_tangent = Float4Array();
 	_facesNormal = Float3Array();
 	_faces = UintArray();
 }
@@ -1206,6 +1236,9 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 	_vertices.emplace_back(0.0f, 0.0f, 0.0f);
 	_vertices.emplace_back(0.0f, 0.0f, -height);
 
+	_normals.emplace_back(0.0f, 0.0f, 0.0f);
+	_normals.emplace_back(0.0f, 0.0f, -1.0f);
+
 	_texcoords.emplace_back(0.0f, 0.0f);
 	_texcoords.emplace_back(1.0f, 1.0f);
 
@@ -1224,6 +1257,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		v.z = 0;
 
 		_vertices.push_back(v);
+		_normals.push_back(v);
 
 		_texcoords.emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
 	}
@@ -1250,7 +1284,6 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		_faces.push_back(v1);
 	}
 
-	this->computeVertexNormals();
 	this->computeBoundingBox();
 }
 
@@ -1267,6 +1300,8 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 
 	bool hasVertices = false;
 	bool hasNormal = false;
+	bool hasTangent = false;
+	bool hasTangentQuat = false;
 	bool hasTexcoord = false;
 	bool hasFace = false;
 	bool hasWeight = false;
@@ -1281,6 +1316,8 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 
 			hasVertices |= !mesh->getVertexArray().empty();
 			hasNormal |= !mesh->getNormalArray().empty();
+			hasTangent |= !mesh->getTangentArray().empty();
+			hasTangentQuat |= !mesh->getTangentQuatArray().empty();
 			hasTexcoord |= !mesh->getTexcoordArray().empty();
 			hasFace |= !mesh->getFaceArray().empty();
 			hasWeight |= !mesh->getWeightArray().empty();
@@ -1294,6 +1331,12 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 
 	if (hasNormal)
 		this->_normals.resize(maxVertices);
+
+	if (hasTangent)
+		this->_tangent.resize(maxVertices);
+
+	if (hasTangentQuat)
+		this->_tangentQuat.resize(maxVertices);
 
 	if (hasTexcoord)
 		this->_texcoords.resize(maxVertices);
@@ -1315,6 +1358,8 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 
 		std::vector<float3>* vertices_;
 		std::vector<float3>* normals_;
+		std::vector<float4>* tangent_;
+		std::vector<float4>* tangentQuat_;
 		std::vector<float4>* colors_;
 		std::vector<float2>* texcoords_;
 		std::vector<VertexWeight>* weights_;
@@ -1327,6 +1372,8 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			auto child = std::make_shared<MeshProperty>();
 			child->getVertexArray().resize(mesh->getVertexArray().size());
 			child->getNormalArray().resize(mesh->getNormalArray().size());
+			child->getTangentArray().resize(mesh->getTangentArray().size());
+			child->getTangentQuatArray().resize(mesh->getTangentQuatArray().size());
 			child->getColorArray().resize(mesh->getColorArray().size());
 			child->getTexcoordArray().resize(mesh->getTexcoordArray().size());
 			child->getWeightArray().resize(mesh->getWeightArray().size());
@@ -1337,6 +1384,8 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 
 			vertices_= &child->_vertices;
 			normals_ = &child->_normals;
+			tangent_ = &child->_tangent;
+			tangentQuat_ = &child->_tangentQuat;
 			colors_ = &child->_colors;
 			texcoords_ = &child->_texcoords;
 			weights_ = &child->_weights;
@@ -1347,6 +1396,8 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 		{
 			vertices_= &this->_vertices;
 			normals_ = &this->_normals;
+			tangent_ = &this->_tangent;
+			tangentQuat_ = &this->_tangentQuat;
 			colors_ = &this->_colors;
 			texcoords_ = &this->_texcoords;
 			weights_ = &this->_weights;
@@ -1363,6 +1414,14 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			const auto& normals = mesh->getNormalArray();
 			if (!normals.empty())
 				std::memcpy((*normals_).data() + offsetVertices, normals.data(), numVertex * sizeof(Vector3));
+
+			const auto& tangents = mesh->getTangentArray();
+			if (!tangents.empty())
+				std::memcpy((*tangent_).data() + offsetVertices, tangents.data(), numVertex * sizeof(Vector4));
+
+			const auto& tangentQuats = mesh->getTangentQuatArray();
+			if (!tangentQuats.empty())
+				std::memcpy((*tangentQuat_).data() + offsetVertices, tangentQuats.data(), numVertex * sizeof(Vector4));
 
 			const auto& colors = mesh->getColorArray();
 			if (!colors.empty())
@@ -1415,8 +1474,8 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			}
 			else
 			{
-				for (std::size_t i = 0; i < size; i++)
-					(*faces_)[i + offsetIndices] = (faces[i] + offsetIndices);
+				for (std::size_t j = 0; j < size; j++)
+					(*faces_)[j + offsetIndices] = (faces[j] + offsetIndices);
 			}
 		}
 
@@ -1644,54 +1703,85 @@ MeshProperty::computeTangents() noexcept
 	tan2.resize(_vertices.size(), Vector3::Zero);
 
 	std::size_t size = _faces.size();
-	for (size_t i = 0; i < size; i += 3)
+	for (std::size_t i = 0; i < size; i += 3)
 	{
 		std::uint32_t f1 = (_faces)[i];
 		std::uint32_t f2 = (_faces)[i + 1];
 		std::uint32_t f3 = (_faces)[i + 2];
 
-		auto& vA = _vertices[f1];
-		auto& vB = _vertices[f2];
-		auto& vC = _vertices[f3];
+		auto& v1 = _vertices[f1];
+		auto& v2 = _vertices[f2];
+		auto& v3 = _vertices[f3];
 
-		auto& uvA = _texcoords[f1];
-		auto& uvB = _texcoords[f2];
-		auto& uvC = _texcoords[f3];
+		auto& w1 = _texcoords[f1];
+		auto& w2 = _texcoords[f2];
+		auto& w3 = _texcoords[f3];
 
-		auto x1 = vB.x - vA.x;
-		auto x2 = vC.x - vA.x;
-		auto y1 = vB.y - vA.y;
-		auto y2 = vC.y - vA.y;
-		auto z1 = vB.z - vA.z;
-		auto z2 = vC.z - vA.z;
+		auto x1 = v2.x - v1.x;
+		auto x2 = v3.x - v1.x;
+		auto y1 = v2.y - v1.y;
+		auto y2 = v3.y - v1.y;
+		auto z1 = v2.z - v1.z;
+		auto z2 = v3.z - v1.z;
 
-		auto s1 = uvB.x - uvA.x;
-		auto s2 = uvC.x - uvA.x;
-		auto t1 = uvB.y - uvA.y;
-		auto t2 = uvC.y - uvA.y;
+		auto s1 = w2.x - w1.x;
+		auto s2 = w3.x - w1.x;
+		auto t1 = w2.y - w1.y;
+		auto t2 = w3.y - w1.y;
 
-		auto r = 1.0 / (s1 * t2 - s2 * t1);
+		auto r = 1.0f / (s1 * t2 - s2 * t1);
+		if (!std::isinf(r))
+		{
+			Vector3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+			Vector3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
 
-		Vector3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
-		Vector3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+			tan1[f1] += sdir;
+			tan1[f2] += sdir;
+			tan1[f3] += sdir;
 
-		tan1[f1] += sdir;
-		tan1[f2] += sdir;
-		tan1[f3] += sdir;
-
-		tan2[f1] += tdir;
-		tan2[f2] += tdir;
-		tan2[f3] += tdir;
+			tan2[f1] += tdir;
+			tan2[f2] += tdir;
+			tan2[f3] += tdir;
+		}
 	}
 
 	_tangent.resize(_vertices.size());
 
 	for (std::size_t i = 0; i < _vertices.size(); i++)
 	{
-		auto n = _normals[i];
-		auto t = tan1[i];
+		auto& n = _normals[i];
+		auto& t = tan1[i];
 
-		_tangent[i] = math::normalize(t - n * math::dot(n, t));
+		float handedness = math::dot(math::cross(n, t), tan2[i]) < 0.0f ? 1.0f : -1.0f;
+
+		_tangent[i] = float4(math::normalize(t - n * math::dot(n, t)), handedness);
+	}
+}
+
+void
+MeshProperty::computeTangentQuats() noexcept
+{
+	assert(_tangent.size() > 1);
+	assert(_tangent.size() == _normals.size());
+
+	_tangentQuat.resize(_tangent.size());
+
+	std::size_t numTangent = _tangent.size();
+	for (std::size_t i = 0; i < numTangent; i++)
+	{
+		auto& normal = _normals[i];
+		auto tangent = _tangent[i].xyz();
+		auto bitangent = math::cross(normal, tangent);
+
+		Quaternion quat;
+		quat.makeRotate(normal, bitangent, tangent);
+
+		if (quat.w < 0.0f)
+			quat = -quat;
+		if (_tangent[i].w < 0.0f)
+			quat = -quat;
+		
+		_tangentQuat[i] = float4(quat.x, quat.y, quat.z, quat.w);
 	}
 }
 

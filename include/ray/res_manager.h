@@ -51,6 +51,7 @@ public:
 	~ResManager() noexcept;
 	
 	MaterialPtr createMaterial(const std::string& name) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear) noexcept;
 	GameObjectPtr createGameObject(const std::string& name, const std::string& anim = "") noexcept;
 
 	template<typename T>

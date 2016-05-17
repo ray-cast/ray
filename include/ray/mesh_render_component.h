@@ -52,6 +52,12 @@ public:
 	MeshRenderComponent(Materials&& materials, bool shared = true) noexcept;
 	~MeshRenderComponent() noexcept;
 
+	void setCastShadow(bool value) noexcept;
+	bool getCastShadow() const noexcept;
+
+	void setReceiveShadow(bool value) noexcept;
+	bool getReceiveShadow() const noexcept;
+
 	void setMaterial(MaterialPtr& material) noexcept;
 	void setSharedMaterial(MaterialPtr& material) noexcept;
 
@@ -104,7 +110,7 @@ protected:
 
 	bool _buildRenderObjects(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
 	bool _buildRenderObject(const MeshProperty& mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept;
-	bool _buildRenderObject(GeometryPtr geometry, const MeshProperty& mesh, RenderMeshPtr buffer) noexcept;
+	bool _buildRenderObject(GeometryPtr geometry, const MeshProperty& mesh, GraphicsDataPtr vbo, GraphicsDataPtr ibo) noexcept;
 
 	void _updateMaterial(std::size_t n) noexcept;
 	void _updateMaterials() noexcept;
@@ -114,11 +120,15 @@ private:
 	MeshRenderComponent& operator=(const MeshRenderComponent&) noexcept = delete;
 
 protected:
+	bool _isCastShadow;
+	bool _isReceiveShadow;
 
 	Materials _materials;
 	Materials _sharedMaterials;
 
-	RenderMeshPtr _renderMesh;
+	GraphicsDataPtr _renderMeshVbo;
+	GraphicsDataPtr _renderMeshIbo;
+
 	Geometryes _renderObjects;
 
 	std::function<void()> _onMeshChange;

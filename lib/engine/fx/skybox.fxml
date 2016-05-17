@@ -1,0 +1,33 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/GBuffer.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
+    <parameter name="texSkybox" type="texture2D"/>
+    <shader>
+        <![CDATA[
+            void SkyVS(
+                in float4 Position : POSITION,
+                in float4 Tangent : TANGENT0,
+                out float3 oNormal : TEXCOORD0,
+                out float4 oPosition : SV_Position)
+            {
+                oNormal = GetRight(Tangent);
+                oPosition = mul(matModelViewProject, Position);
+            }
+
+            float4 SkyPS(in float3 normal : TEXCOORD0) : SV_Target
+            {
+                return srgb2linear(texSkybox.Sample(PointClamp, computeSphereCoord(normal)));
+            }
+        ]]>
+    </shader>
+    <technique name="opaquespecific">
+        <pass name="SkyboxRender">
+            <state name="inputlayout" value="POS3F_T4F"/>
+            <state name="vertex" value="SkyVS"/>
+            <state name="fragment" value="SkyPS"/>
+            <state name="cullmode" value="front"/>
+        </pass>
+    </technique>
+</effect>

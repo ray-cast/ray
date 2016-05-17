@@ -87,7 +87,7 @@ SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	_clipInfo->uniform3f(pipeline.getCamera()->getClipConstant().xyz());
 
 	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_ambientOcclusionPass);
+	pipeline.drawScreenQuad(*_ambientOcclusionPass);
 }
 
 void
@@ -119,7 +119,7 @@ SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphic
 	_blurTexSource->uniformTexture(source);
 
 	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_ambientOcclusionBlurPass);
+	pipeline.drawScreenQuad(*_ambientOcclusionBlurPass);
 }
 
 void
@@ -128,7 +128,7 @@ SSGI::shading(RenderPipeline& pipeline, GraphicsTexturePtr ao, GraphicsFramebuff
 	_copyAmbient->uniformTexture(ao);
 
 	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);
+	pipeline.drawScreenQuad(*_ambientOcclusionCopyPass);
 }
 
 void

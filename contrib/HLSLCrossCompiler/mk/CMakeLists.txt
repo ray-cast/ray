@@ -15,10 +15,6 @@ ELSE()
     ADD_DEFINITIONS(-D__LITTLE_ENDIAN__)
 ENDIF()
 
-IF(MSVC)
-  ADD_DEFINITIONS(/fp:fast)
-ENDIF(MSVC)
-
 INCLUDE_DIRECTORIES( ../include ../src/cbstring/ ../src/ )
 
 FILE(GLOB CBSTRING_CFILES ../src/cbstring/*.c)

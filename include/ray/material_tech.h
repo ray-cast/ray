@@ -46,6 +46,8 @@ class EXPORT MaterialTech final : public rtti::Interface
 	__DeclareSubClass(MaterialTech, rtti::Interface)
 public:
 	MaterialTech() noexcept;
+	MaterialTech(const std::string& name) noexcept;
+	MaterialTech(std::string&& name) noexcept;
 	~MaterialTech() noexcept;
 
 	void setName(const std::string& name) noexcept;
@@ -57,12 +59,9 @@ public:
 	void removePass(MaterialPassPtr& pass);
 	void removePass(MaterialPassPtr&& pass);
 	MaterialPassPtr getPass(const std::string& name) noexcept;
-
+	MaterialPassPtr getPass(std::size_t index) noexcept;
 	const MaterialPassList& getPassList() const noexcept;
-
-	bool empty() const noexcept;
-	std::size_t count() const noexcept;
-
+	
 	MaterialTechPtr clone() const noexcept;
 
 private:

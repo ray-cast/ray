@@ -251,6 +251,12 @@ inline bool operator!=(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexc
 	return !(q1 == q2);
 }
 
+template<typename T>
+inline Quaterniont<T> operator-(const Quaterniont<T>& q) noexcept
+{
+	return Quaterniont<T>(-q.x, -q.y, -q.z, -q.w);
+}
+
 template <typename T>
 inline Quaterniont<T> min(const Quaterniont<T>& a, const Quaterniont<T>& b) noexcept
 {

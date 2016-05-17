@@ -49,7 +49,7 @@ public:
 	~OcclusionCullNode() noexcept;
 
 	void setOcclusionCullNode(RenderObjectPtr node) noexcept;
-	RenderObjectPtr getOcclusionCullNode() noexcept;
+	const RenderObjectPtr& getOcclusionCullNode() const noexcept;
 	void setDistanceSqrt(float distSq) noexcept;
 
 	float getDistanceSqrt() const noexcept;

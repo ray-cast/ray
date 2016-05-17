@@ -64,7 +64,7 @@ private:
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 	virtual void onMeshChange() noexcept;
-	virtual void onMeshWillRender(class RenderPipeline&) noexcept;
+	virtual void onMeshWillRender(const class Camera&) noexcept;
 
 	virtual void onFrameEnd() noexcept;
 
@@ -77,7 +77,7 @@ private:
 	MeshPropertyPtr _mesh;
 
 	std::function<void()> _onMeshChange;
-	std::function<void(RenderPipeline&)> _onMeshWillRender;
+	std::function<void(const Camera&)> _onMeshWillRender;
 };
 
 _NAME_END

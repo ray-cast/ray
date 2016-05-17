@@ -305,7 +305,7 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 	auto& cameras = scene.getCameraList();
 	for (auto& camera : cameras)
 	{
-		camera->onRenderPre(*_pipeline);
+		camera->onRenderPre(*camera);
 
 		if (camera->getCameraOrder() != CameraOrder::CameraOrder3D &&
 			camera->getCameraOrder() != CameraOrder::CameraOrder2D)
@@ -329,7 +329,7 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 		renderPipeline->onRenderPipeline(camera);
 		renderPipeline->onRenderPost();
 
-		camera->onRenderPost(*_pipeline);
+		camera->onRenderPost(*camera);
 	}
 }
 
@@ -350,20 +350,6 @@ CameraPtr
 RenderPipelineManager::getCamera() const noexcept
 {
 	return _pipeline->getCamera();
-}
-
-void
-RenderPipelineManager::addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept
-{
-	assert(_pipeline);
-	_pipeline->addRenderData(queue, object);
-}
-
-const RenderObjects&
-RenderPipelineManager::getRenderData(RenderQueue queue) const noexcept
-{
-	assert(_pipeline);
-	return _pipeline->getRenderData(queue);
 }
 
 void
@@ -434,32 +420,53 @@ RenderPipelineManager::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const V
 	_pipeline->blitFramebuffer(srcTarget, src, destTarget, dest);
 }
 
+void 
+RenderPipelineManager::setMaterialPass(const MaterialPassPtr& pass) noexcept
+{
+	assert(_pipeline);
+	_pipeline->setMaterialPass(pass);
+}
+
+void 
+RenderPipelineManager::setVertexBuffer(GraphicsDataPtr vbo) noexcept
+{
+	assert(_pipeline);
+	_pipeline->setVertexBuffer(vbo);
+}
+
+void 
+RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo) noexcept
+{
+	assert(_pipeline);
+	_pipeline->setIndexBuffer(ibo);
+}
+
 void
-RenderPipelineManager::drawCone(MaterialTechPtr tech) noexcept
+RenderPipelineManager::drawCone(const MaterialTech& tech) noexcept
 {
 	assert(_pipeline);
 	_pipeline->drawCone(tech);
 }
 
 void
-RenderPipelineManager::drawSphere(MaterialTechPtr tech) noexcept
+RenderPipelineManager::drawSphere(const MaterialTech& tech) noexcept
 {
 	assert(_pipeline);
 	_pipeline->drawSphere(tech);
 }
 
 void
-RenderPipelineManager::drawScreenQuad(MaterialTechPtr tech) noexcept
+RenderPipelineManager::drawScreenQuad(const MaterialTech& tech) noexcept
 {
 	assert(_pipeline);
 	_pipeline->drawScreenQuad(tech);
 }
 
 void
-RenderPipelineManager::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
+RenderPipelineManager::drawMesh(const GraphicsIndirect& renderable) noexcept
 {
 	assert(_pipeline);
-	_pipeline->drawMesh(tech, mesh, renderable);
+	_pipeline->drawMesh(renderable);
 }
 
 void
@@ -620,18 +627,18 @@ RenderPipelineManager::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	return _pipelineDevice->createGraphicsData(desc);
 }
 
-RenderMeshPtr
-RenderPipelineManager::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+GraphicsDataPtr
+RenderPipelineManager::createIndexBuffer(const MeshProperty& mesh) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(vb, ib);
+	return _pipelineDevice->createIndexBuffer(mesh);
 }
 
-RenderMeshPtr
-RenderPipelineManager::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
+GraphicsDataPtr
+RenderPipelineManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(mesh, flags);
+	return _pipelineDevice->createVertexBuffer(mesh, flags);
 }
 
 bool

@@ -95,9 +95,11 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	_cameraProjInfo->uniform4f(pipeline.getCamera()->getProjConstant());
 	_cameraProjScale->uniform1f(((float)width / height) * _setting.radius);
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_ambientOcclusionPass);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_ambientOcclusionPass);
 }
 
 void
@@ -111,9 +113,11 @@ SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 	_blurDirection->uniform2f(direction);
 	_blurSource->uniformTexture(source);
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_ambientOcclusionBlurXPass);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_ambientOcclusionBlurXPass);
 }
 
 void
@@ -127,9 +131,11 @@ SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	_blurDirection->uniform2f(direction);
 	_blurSource->uniformTexture(source);
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_ambientOcclusionBlurYPass);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_ambientOcclusionBlurYPass);
 }
 
 void

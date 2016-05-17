@@ -9,8 +9,8 @@
     <parameter name="specular" type="float"/>
     <parameter name="shininess" type="float"/>
     <parameter name="texDiffuse" type="texture2D"/>
-    <parameter name="texSpecular" type="texture2D" />
     <parameter name="texNormal" type="texture2D" />
+    <parameter name="texSpecular" type="texture2D" />
     <buffer name="joints">
         <parameter name="bindpose[NUM_JOINT]" type="float4x4[]"/>
     </buffer>
@@ -24,25 +24,50 @@
                 return normalize(bump);
             }
 
-            float3 GetNormal(Texture2D normal, float2 coord, float quality)
+            float3 GetDiffuse(Texture2D diffuseMap, float3 diffuse, float2 coord)
             {
-                if (quality > 0.5)
-                    return SphereNormalMap(normal, coord);
+                return diffuseMap.Sample(PointClamp, coord).rgb * diffuse;
+            }
+
+            float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
+            {
+                float3 tangentNormal;
+                if (quality > 0.55)
+                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb;
                 else
-                    return normal.Sample(PointClamp, coord).rgb;
+                    tangentNormal = SphereNormalMap(normalMap, coord);
+
+                float3 N = normalize(normal);
+                float3 T = normalize(tangent);
+                float3 B = normalize(cross(N, T));
+
+                float3x3 tbn = float3x3(T, B, N);
+                float3 highNormal = mul(tangentNormal, tbn);
+                return normalize(highNormal);
+            }
+
+            float2 GetSpecular(Texture2D specularMap, float2 coord)
+            {
+                return specularMap.Sample(PointClamp, coord).rg;
             }
 
             void DepthVS(
                 in float4 Position : POSITION,
+#if SKINNING > 0
                 in float4 BlendWeight : BLENDWEIGHT,
                 in float4 BlendIndice : BLENDINDICES,
+#endif
                 out float4 oPosition : SV_Position)
             {
+#if SKINNING > 0
                 oPosition = mul(bindpose[(uint)BlendIndice.x], Position) * BlendWeight.x;
                 oPosition += mul(bindpose[(uint)BlendIndice.y], Position) * BlendWeight.y;
                 oPosition += mul(bindpose[(uint)BlendIndice.z], Position) * BlendWeight.z;
                 oPosition += mul(bindpose[(uint)BlendIndice.w], Position) * BlendWeight.w;
                 oPosition = mul(matModelViewProject, oPosition);
+#else
+                oPosition = mul(matModelViewProject, Position);
+#endif
             }
 
             void DepthPS()
@@ -51,14 +76,21 @@
 
             void OpaqueVS(
                 in float4 Position : POSITION,
-                in float3 Normal : NORMAL,
+                in float4 TangentQuat : TANGENT0,
                 in float2 Texcoord : TEXCOORD,
+#if SKINNING > 0
                 in float4 BlendWeight : BLENDWEIGHT,
                 in float4 BlendIndice : BLENDINDICES,
+#endif
                 out float3 oNormal : TEXCOORD0,
-                out float2 oTexcoord : TEXCOORD1,
+                out float3 oTangent : TEXCOORD1,
+                out float2 oTexcoord : TEXCOORD2,
                 out float4 oPosition : SV_Position)
             {
+                float3 Normal = GetRight(TangentQuat);
+                float3 Tangent = GetForward(TangentQuat);
+
+#if SKINNING > 0
                 oPosition = mul(bindpose[(uint)BlendIndice.x], Position) * BlendWeight.x;
                 oPosition += mul(bindpose[(uint)BlendIndice.y], Position) * BlendWeight.y;
                 oPosition += mul(bindpose[(uint)BlendIndice.z], Position) * BlendWeight.z;
@@ -69,6 +101,11 @@
                 oNormal += mul((float3x3)bindpose[(uint)BlendIndice.z], Normal) * BlendWeight.z;
                 oNormal += mul((float3x3)bindpose[(uint)BlendIndice.w], Normal) * BlendWeight.w;
                 oNormal = mul((float3x3)matView, oNormal);
+#else
+                oNormal = mul((float3x3)matView, Normal);
+                oTangent = mul((float3x3)matView, Tangent);
+                oPosition = Position;
+#endif
 
                 oTexcoord = Texcoord;
                 oPosition = mul(matModelViewProject, oPosition);
@@ -76,15 +113,17 @@
 
             void OpaquePS(
                 in float3 iNormal : TEXCOORD0,
-                in float2 iTexcoord : TEXCOORD1,
+                in float3 iTangent : TEXCOORD1,
+                in float2 iTexcoord : TEXCOORD2,
                 out float4 fragData0 : SV_Target0,
                 out float4 fragData1 : SV_Target1)
             {
-                float3 albedo = quality.r > 0.0 ? texDiffuse.Sample(PointClamp, iTexcoord).rgb : diffuse.rgb;
-                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iTexcoord, quality.g) : iNormal;
+                float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse.rgb;
+                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord) : float2(specular, shininess);
 
-                fragData0 = StoreGBufferRT0(srgb2linear(albedo), specular);
-                fragData1 = StoreGBufferRT1(normalize(normal.xyz), shininess);
+                fragData0 = StoreGBufferRT0(srgb2linear(albedo), brdfParm.r);
+                fragData1 = StoreGBufferRT1(normal, brdfParm.g);
             }
         ]]>
     </shader>
@@ -101,7 +140,7 @@
     </technique>
     <technique name="opaque">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F_N3F_UV2F_W4F_B4UI"/>
+            <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
             <state name="vertex" value="OpaqueVS"/>
             <state name="fragment" value="OpaquePS"/>
             <state name="primitive" value="triangle" />

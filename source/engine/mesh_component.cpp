@@ -65,7 +65,15 @@ MeshComponent::setMesh(MeshPropertyPtr& mesh) noexcept
 	if (_mesh != mesh)
 	{
 		if (mesh)
+		{
+			if (mesh->getTangentArray().empty())
+				mesh->computeTangents();
+
+			if (mesh->getTangentQuatArray().empty())
+				mesh->computeTangentQuats();
+
 			mesh->computeBoundingBox();
+		}
 
 		_mesh = mesh;
 
@@ -79,7 +87,16 @@ MeshComponent::setSharedMesh(MeshPropertyPtr& mesh) noexcept
 	if (_sharedMesh != mesh)
 	{
 		if (mesh)
+		{
+			if (mesh->getTangentArray().empty())
+				mesh->computeTangents();
+
+			if (mesh->getTangentQuatArray().empty())
+				mesh->computeTangentQuats();
+
 			mesh->computeBoundingBox();
+		}
+
 		_sharedMesh = mesh;
 	}
 }

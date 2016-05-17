@@ -103,9 +103,11 @@ ColorGrading::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, 
 	_gammGrading->uniform2i(int2(_enableGammaGrading, _enableColorGrading));
 	_texSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_colorGrading);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_colorGrading);
 
 	return true;
 }

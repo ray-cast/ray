@@ -73,58 +73,11 @@ MaterialManager::getDeviceType() const noexcept
 void
 MaterialManager::close() noexcept
 {
-	_semantics.clear();
-}
-
-MaterialParamPtr
-MaterialManager::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
-{
-	assert(!name.empty());
-	assert(type != GraphicsUniformType::GraphicsUniformTypeNone);
-
-	auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr& it) { return it->getName() == name;});
-	if (it == _semantics.end())
-	{
-		_semantics.push_back(std::make_shared<MaterialParam>(name, type));
-		return _semantics.back();
-	}
-
-	return nullptr;
-}
-
-MaterialParamPtr
-MaterialManager::getSemantic(const std::string& name) noexcept
-{
-	if (!name.empty())
-	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr it) { return it->getName() == name;});
-		if (it != _semantics.end())
-			return *it;
-	}
-
-	return nullptr;
-}
-
-void
-MaterialManager::destroySemantic(MaterialParamPtr& semantc) noexcept
-{
-	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
-	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr& it) { return it->getName() == semantc->getName();});
-		if (it == _semantics.end())
-			_semantics.push_back(semantc);
-	}
-}
-
-void
-MaterialManager::destroySemantic(MaterialParamPtr&& semantc) noexcept
-{
-	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
-	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr& it) { return it->getName() == semantc->getName();});
-		if (it == _semantics.end())
-			_semantics.push_back(semantc);
-	}
+	_shaders.clear();
+	_samplers.clear();
+	_textures.clear();
+	_inputLayouts.clear();
+	_materials.clear();
 }
 
 GraphicsStatePtr

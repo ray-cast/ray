@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/render_object.h>
 #include <ray/render_scene.h>
-#include <ray/material.h>
+
 _NAME_BEGIN
 
 __ImplementSubInterface(RenderObject, rtti::Interface, "RenderObject")
@@ -51,13 +51,10 @@ RenderListener::~RenderListener() noexcept
 
 RenderObject::RenderObject() noexcept
 	: _layer(0)
-	, _isCastShadow(true)
-	, _isReceiveShadow(true)
 	, _boundingBox(Vector3::Zero, Vector3::Zero)
 	, _worldBoundingxBox(Vector3::Zero, Vector3::Zero)
 	, _transform(float4x4::One)
 	, _transformInverse(float4x4::One)
-	, _transformInverseTranspose(float4x4::One)
 	, _renderListener(nullptr)
 {
 }
@@ -96,30 +93,6 @@ const Bound&
 RenderObject::getBoundingBoxInWorld() const noexcept
 {
 	return _worldBoundingxBox;
-}
-
-void
-RenderObject::setReceiveShadow(bool enable) noexcept
-{
-	_isReceiveShadow = enable;
-}
-
-bool
-RenderObject::getReceiveShadow() const noexcept
-{
-	return _isReceiveShadow;
-}
-
-void
-RenderObject::setCastShadow(bool value) noexcept
-{
-	_isCastShadow = value;
-}
-
-bool
-RenderObject::getCastShadow()  const noexcept
-{
-	return _isCastShadow;
 }
 
 void
@@ -166,7 +139,6 @@ RenderObject::setTransform(const float4x4& transform) noexcept
 
 	_transform = transform;
 	_transformInverse = math::transformInverse(transform);
-	_transformInverseTranspose = math::transpose(_transformInverse);
 
 	_worldBoundingxBox = _boundingBox;
 	_worldBoundingxBox.applyMatrix(_transform);
@@ -210,45 +182,20 @@ RenderObject::getTransformInverse() const noexcept
 	return _transformInverse;
 }
 
-const float4x4&
-RenderObject::getTransformInverseTranspose() const noexcept
-{
-	return _transformInverseTranspose;
-}
-
-void
-RenderObject::addRenderData(RenderDataManager& manager) noexcept
-{
-	this->onAddRenderData(manager);
-}
-
-void
-RenderObject::render(RenderPipeline& pipeline, RenderQueue queue, MaterialTechPtr tech) noexcept
+void 
+RenderObject::onRenderPre(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onRenderObjectPre(pipeline);
-
-	this->onRenderObject(pipeline, queue, tech);
-
-	if (listener)
-		listener->onRenderObjectPost(pipeline);
+		listener->onRenderObjectPre(camera);
 }
 
 void 
-RenderObject::onRenderPre(RenderPipeline& pipeline) noexcept
+RenderObject::onRenderPost(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onRenderObjectPre(pipeline);
-}
-
-void 
-RenderObject::onRenderPost(RenderPipeline& pipeline) noexcept
-{
-	auto listener = this->getOwnerListener();
-	if (listener)
-		listener->onRenderObjectPre(pipeline);
+		listener->onRenderObjectPre(camera);
 }
 
 void
@@ -271,13 +218,19 @@ RenderObject::onSceneChangeAfter() noexcept
 {
 }
 
+bool
+RenderObject::onVisiableTest(const Frustum& fru) noexcept
+{
+	return fru.contains(this->getBoundingBoxInWorld().aabb());
+}
+
 void
 RenderObject::onAddRenderData(RenderDataManager& manager) noexcept
 {
 }
 
 void
-RenderObject::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept
+RenderObject::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTech* tech) noexcept
 {
 }
 

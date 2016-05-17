@@ -39,7 +39,6 @@
 
 #include <ray/render_feature.h>
 #include <ray/render_system.h>
-#include <ray/render_mesh.h>
 #include <ray/geometry.h>
 #include <ray/material.h>
 
@@ -53,7 +52,9 @@ _NAME_BEGIN
 __ImplementSubClass(MeshRenderComponent, RenderComponent, "MeshRender")
 
 MeshRenderComponent::MeshRenderComponent() noexcept
-	: _onMeshChange(std::bind(&MeshRenderComponent::onMeshChange, this))
+	: _isCastShadow(true)
+	, _isReceiveShadow(true)
+	, _onMeshChange(std::bind(&MeshRenderComponent::onMeshChange, this))
 {
 }
 
@@ -93,6 +94,30 @@ MeshRenderComponent::~MeshRenderComponent() noexcept
 {
 	this->_destroyMaterials();
 	this->_destroyRenderhObjects();
+}
+
+void
+MeshRenderComponent::setCastShadow(bool value) noexcept
+{
+	_isCastShadow = value;
+}
+
+bool
+MeshRenderComponent::getCastShadow() const noexcept
+{
+	return _isCastShadow;
+}
+
+void
+MeshRenderComponent::setReceiveShadow(bool value) noexcept
+{
+	_isReceiveShadow = value;
+}
+
+bool
+MeshRenderComponent::getReceiveShadow() const noexcept
+{
+	return _isReceiveShadow;
 }
 
 void
@@ -207,12 +232,16 @@ MeshRenderComponent::load(iarchive& reader) noexcept
 {
 	RenderComponent::load(reader);
 	reader.getValue("material", _material);
+	reader >> make_archive(_isCastShadow, "castshadow");
+	reader >> make_archive(_isReceiveShadow, "receiveshadow");
 }
 
 void
 MeshRenderComponent::save(oarchive& write) noexcept
 {
 	RenderComponent::save(write);
+	write << make_archive(_isCastShadow, "castshadow");
+	write << make_archive(_isReceiveShadow, "receiveshadow");
 }
 
 GameComponentPtr
@@ -232,7 +261,10 @@ MeshRenderComponent::clone() const noexcept
 	if (component)
 	{
 		if (component->getMesh() == component->getSharedMesh())
-			result->_renderMesh = this->_renderMesh;
+		{
+			result->_renderMeshVbo = this->_renderMeshVbo;
+			result->_renderMeshIbo = this->_renderMeshIbo;
+		}
 	}
 
 	return result;
@@ -321,7 +353,7 @@ MeshRenderComponent::onMeshChange() except
 			if (!_material.empty())
 				_buildMaterials(_material);
 			else
-				_buildDefaultMaterials("sys:fx/opacity.fxml");
+				_buildDefaultMaterials("sys:fx/opacity_skinning0.fxml");
 		}
 
 		_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
@@ -365,7 +397,8 @@ MeshRenderComponent::_destroyRenderhObjects() noexcept
 		it->setRenderScene(nullptr);
 
 	_renderObjects.clear();
-	_renderMesh.reset();
+	_renderMeshVbo.reset();
+	_renderMeshIbo.reset();
 }
 
 void
@@ -458,10 +491,14 @@ MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFla
 {
 	_destroyRenderhObjects();
 
-	if (!_renderMesh)
+	if (!_renderMeshVbo)
 	{
-		_renderMesh = RenderSystem::instance()->createRenderMesh(mesh, flags);
-		if (!_renderMesh)
+		_renderMeshVbo = RenderSystem::instance()->createVertexBuffer(mesh, flags);
+		if (!_renderMeshVbo)
+			return false;
+
+		_renderMeshIbo = RenderSystem::instance()->createIndexBuffer(mesh);
+		if (!_renderMeshIbo)
 			return false;
 	}
 
@@ -487,7 +524,7 @@ MeshRenderComponent::_buildRenderObject(const MeshProperty& mesh, std::size_t& s
 {
 	auto renderObject = std::make_shared<Geometry>();
 
-	if (this->_buildRenderObject(renderObject, mesh, _renderMesh))
+	if (this->_buildRenderObject(renderObject, mesh, _renderMeshVbo, _renderMeshIbo))
 	{
 		auto renderable = renderObject->getGraphicsIndirect();
 
@@ -507,9 +544,11 @@ MeshRenderComponent::_buildRenderObject(const MeshProperty& mesh, std::size_t& s
 }
 
 bool
-MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, const MeshProperty& mesh, RenderMeshPtr buffer) noexcept
+MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, const MeshProperty& mesh, GraphicsDataPtr vbo, GraphicsDataPtr ibo) noexcept
 {
-	renderObject->setRenderMesh(buffer);
+	renderObject->setVertexBuffer(vbo);
+	renderObject->setIndexBuffer(ibo);
+
 	renderObject->setBoundingBox(mesh.getBoundingBox());
 	renderObject->setOwnerListener(this);
 

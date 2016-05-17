@@ -71,10 +71,14 @@ public:
 	void discradRenderTexture() noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
-	void drawCone(MaterialTechPtr pass) noexcept;
-	void drawSphere(MaterialTechPtr pass) noexcept;
-	void drawScreenQuad(MaterialTechPtr pass) noexcept;
-	void drawMesh(MaterialTechPtr pass, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
+	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
+	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
+	void setIndexBuffer(GraphicsDataPtr ibo) noexcept;
+
+	void drawCone(const MaterialTech& tech) noexcept;
+	void drawSphere(const MaterialTech& tech) noexcept;
+	void drawScreenQuad(const MaterialTech& tech) noexcept;
+	void drawMesh(const GraphicsIndirect& renderable) noexcept;
 
 	bool isTextureSupport(GraphicsFormat format) noexcept;
 	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
@@ -86,14 +90,14 @@ public:
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
+
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
 	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 	GraphicsPipelinePtr createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept;
 	MaterialPtr createMaterial(const std::string& name) noexcept;
-
-	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
-	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 
 	void renderBegin() noexcept;
 	void render() noexcept;

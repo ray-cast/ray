@@ -41,8 +41,6 @@ _NAME_BEGIN
 __ImplementSubInterface(RenderComponent, GameComponent, "RenderComponent")
 
 RenderComponent::RenderComponent() noexcept
-	: _isCastShadow(true)
-	, _isReceiveShadow(true)
 {
 }
 
@@ -51,52 +49,28 @@ RenderComponent::~RenderComponent() noexcept
 }
 
 void
-RenderComponent::setCastShadow(bool value) noexcept
-{
-	_isCastShadow = value;
-}
-
-bool
-RenderComponent::getCastShadow() const noexcept
-{
-	return _isCastShadow;
-}
-
-void
-RenderComponent::setReceiveShadow(bool value) noexcept
-{
-	_isReceiveShadow = value;
-}
-
-bool
-RenderComponent::getReceiveShadow() const noexcept
-{
-	return _isReceiveShadow;
-}
-
-void
-RenderComponent::addPreRenderListener(std::function<void(RenderPipeline&)>* func) noexcept
+RenderComponent::addPreRenderListener(std::function<void(const Camera&)>* func) noexcept
 {
 	assert(!_onPreRender.find(func));
 	_onPreRender.attach(func);
 }
 
 void
-RenderComponent::removePreRenderListener(std::function<void(RenderPipeline&)>* func) noexcept
+RenderComponent::removePreRenderListener(std::function<void(const Camera&)>* func) noexcept
 {
 	assert(_onPreRender.find(func));
 	_onPreRender.remove(func);
 }
 
 void
-RenderComponent::addPostRenderListener(std::function<void(RenderPipeline&)>* func) noexcept
+RenderComponent::addPostRenderListener(std::function<void(const Camera&)>* func) noexcept
 {
 	assert(!_onPostRender.find(func));
 	_onPostRender.attach(func);
 }
 
 void
-RenderComponent::removePostRenderListener(std::function<void(RenderPipeline&)>* func) noexcept
+RenderComponent::removePostRenderListener(std::function<void(const Camera&)>* func) noexcept
 {
 	assert(_onPostRender.find(func));
 	_onPostRender.remove(func);
@@ -106,30 +80,24 @@ void
 RenderComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
-
-	reader >> make_archive(_isCastShadow, "castshadow");
-	reader >> make_archive(_isReceiveShadow, "receiveshadow");
 }
 
 void
 RenderComponent::save(oarchive& write) noexcept
 {
 	GameComponent::save(write);
-
-	write << make_archive(_isCastShadow, "castshadow");
-	write << make_archive(_isReceiveShadow, "receiveshadow");
 }
 
 void
-RenderComponent::onRenderObjectPre(RenderPipeline& pipeline) noexcept
+RenderComponent::onRenderObjectPre(const Camera& camera) noexcept
 {
-	_onPreRender.run(pipeline);
+	_onPreRender.run(camera);
 }
 
 void
-RenderComponent::onRenderObjectPost(RenderPipeline& pipeline) noexcept
+RenderComponent::onRenderObjectPost(const Camera& camera) noexcept
 {
-	_onPostRender.run(pipeline);
+	_onPostRender.run(camera);
 }
 
 _NAME_END

@@ -69,9 +69,6 @@ public:
 private:
 
 	Setting _setting;
-
-	RenderMeshPtr _sphere;
-
 	MaterialPtr _sat;
 	MaterialTechPtr _sky;
 	MaterialTechPtr _ground;
@@ -91,6 +88,8 @@ private:
 	MaterialParamPtr _scaleDepth;
 	MaterialParamPtr _scaleOverScaleDepth;
 
+	GraphicsDataPtr _sphereVbo;
+	GraphicsDataPtr _sphereIbo;
 	GraphicsIndirect _renderable;
 };
 

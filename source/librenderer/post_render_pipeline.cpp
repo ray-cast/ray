@@ -38,7 +38,11 @@
 #include "ssss.h"
 
 #include <ray/render_pipeline.h>
+#include <ray/render_object_manager.h>
+
 #include <ray/light.h>
+#include <ray/camera.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
@@ -69,30 +73,33 @@ PostRenderPipeline::isEnableSSSS() const noexcept
 }
 
 void
-PostRenderPipeline::render(RenderPipeline& pipeline) noexcept
+PostRenderPipeline::render(RenderPipeline& pipeline, GraphicsFramebufferPtr& source) noexcept
 {
-	/*if (_SSSS)
+	_deferredDepthMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthTexture)->getTexture();
+	_deferredDepthLinearMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthLinearTexture)->getTexture();
+	_deferredGraphicMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDiffuseTexture)->getTexture();
+	_deferredNormalMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeNormalTexture)->getTexture();
+	_deferredLightMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeLightingTexture)->getTexture();
+
+	if (_SSSS)
 	{
 		std::size_t shadowIndex = 0;
 
-		auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
+		auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 		for (auto& it : lights)
 		{
 			auto light = it->downcast<Light>();
-			if (light->getShadow() && light->getSubsurfaceScattering())
+			if (light->getShadowType() != LightShadowType::LightShadowTypeNone && light->getSubsurfaceScattering())
 			{
-				if (light->getSoftShadow())
-					_SSSS->applyTranslucency(pipeline, _deferredShadingView, light, _deferredDepthLinearMap, _softShadowMaps[shadowIndex]);
-				else
-					_SSSS->applyTranslucency(pipeline, _deferredShadingView, light, _deferredDepthLinearMap, light->getShadowMap());
+				_SSSS->applyTranslucency(pipeline, source, light, _deferredDepthLinearMap, light->getShadowMap());
 			}
 
 			if (light->getSoftShadow())
 				shadowIndex++;
 		}
 
-		_SSSS->applyGuassBlur(pipeline, _deferredShadingView, _deferredGraphicsMap, _deferredNormalMap, _deferredDepthLinearMap, _deferredSwapView);
-	}*/
+		_SSSS->applyGuassBlur(pipeline, source, _deferredGraphicMap, _deferredNormalMap, _deferredDepthLinearMap, _swapView);
+	}
 }
 
 _NAME_END

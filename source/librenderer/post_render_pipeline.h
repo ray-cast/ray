@@ -50,10 +50,20 @@ public:
 	bool enableSSSS(RenderPipeline& pipeline, bool enable) noexcept;
 	bool isEnableSSSS() const noexcept;
 
-	void render(RenderPipeline& pipeline) noexcept;
+	void render(RenderPipeline& pipeline, GraphicsFramebufferPtr& framebuffer) noexcept;
 
 private:
 	std::shared_ptr<class SSSS> _SSSS;
+
+	GraphicsTexturePtr _deferredDepthMap;
+	GraphicsTexturePtr _deferredDepthLinearMap;
+	GraphicsTexturePtr _deferredGraphicMap;
+	GraphicsTexturePtr _deferredNormalMap;
+	GraphicsTexturePtr _deferredLightMap;
+	GraphicsTexturePtr _deferredShadowMap;
+
+	GraphicsTexturePtr _swapMap;
+	GraphicsFramebufferPtr _swapView;
 };
 
 _NAME_END

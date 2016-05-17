@@ -146,8 +146,8 @@ SOURCE_GROUP("renderer\\light" FILES ${RENDERER_LIGHT})
 SET(RENDERER_MATERIAL
     ${HEADER_PATH}/material.h
     ${SOURCE_PATH}/material.cpp
-    ${HEADER_PATH}/material_desc.h
-    ${SOURCE_PATH}/material_desc.cpp
+    ${HEADER_PATH}/material_semantic.h
+    ${SOURCE_PATH}/material_semantic.cpp
     ${HEADER_PATH}/material_loader.h
     ${SOURCE_PATH}/material_loader.cpp
     ${HEADER_PATH}/material_maker.h

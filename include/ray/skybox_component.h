@@ -82,11 +82,11 @@ private:
 
 	bool _buildQuadMesh(MeshProperty& mesh) noexcept;
 	bool _buildQuadRenderMesh(const MeshProperty& mesh) noexcept;
-	bool _buildQuadRenderObject(const MeshProperty& mesh, MaterialTechPtr technique) noexcept;
+	bool _buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept;
 
 	bool _buildSphereMesh(MeshProperty& mesh) noexcept;
 	bool _buildSphereRenderMesh(const MeshProperty& mesh) noexcept;
-	bool _buildSphereRenderObject(const MeshProperty& mesh, MaterialTechPtr technique) noexcept;
+	bool _buildSphereRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept;
 
 	bool _setupSkybox() noexcept;
 	bool _setupSkyLighting() noexcept;
@@ -131,12 +131,18 @@ private:
 	std::string _skyDiffuse;
 	std::string _skySpecular;
 
+	MaterialPtr _skyBoxMaterial;
+	MaterialPtr _skyLightingMaterial;
+
 	GraphicsTexturePtr _skyTexture;
 	GraphicsTexturePtr _skyDiffTexture;
 	GraphicsTexturePtr _skySpecTexture;
 
-	RenderMeshPtr _renderScreenQuad;
-	RenderMeshPtr _renderSphere;
+	GraphicsDataPtr _renderScreenQuadVbo;
+	GraphicsDataPtr _renderScreenQuadIbo;
+
+	GraphicsDataPtr _renderSphereVbo;
+	GraphicsDataPtr _renderSphereIbo;
 
 	GeometryPtr _quadObject;
 	GeometryPtr _sphereObject;

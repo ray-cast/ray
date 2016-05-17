@@ -39,6 +39,7 @@
 #include <ray/camera.h>
 #include <ray/material.h>
 #include <ray/render_pipeline.h>
+#include <ray/render_object_manager.h>
 
 _NAME_BEGIN
 
@@ -76,7 +77,8 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 	_renderable.numVertices = mesh.getNumVertices();
 	_renderable.numIndices = mesh.getNumIndices();
 
-	_sphere = pipeline.createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	_sphereVbo = pipeline.createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	_sphereIbo = pipeline.createIndexBuffer(mesh);
 
 	_sat = pipeline.createMaterial("sys:fx/atmospheric.fxml");
 
@@ -127,7 +129,7 @@ Atmospheric::onDeactivate(RenderPipeline& pipeline) noexcept
 bool
 Atmospheric::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	auto& lighting = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
+	auto& lighting = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lighting)
 	{
 		if (it->downcast<Light>()->getLightType() != LightType::LightTypeSun)
@@ -135,9 +137,15 @@ Atmospheric::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, G
 
 		_lightDirection->uniform3f(-it->downcast<Light>()->getForward());
 
+		pipeline.setVertexBuffer(_sphereVbo);
+		pipeline.setIndexBuffer(_sphereIbo);
+
 		pipeline.setFramebuffer(source);
-		pipeline.drawMesh(_ground, _sphere, _renderable);
-		pipeline.drawMesh(_sky, _sphere, _renderable);
+		pipeline.setMaterialPass(_ground->getPass(0));
+		pipeline.drawMesh(_renderable);
+
+		pipeline.setMaterialPass(_sky->getPass(0));
+		pipeline.drawMesh(_renderable);
 	}
 
 	return false;

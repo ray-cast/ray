@@ -491,7 +491,7 @@ inline bool operator!=(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
 template<typename T>
 inline Vector4t<T> operator-(const Vector4t<T>& v) noexcept
 {
-	return Vector4t<T>(-v.x, -v.y, -v.z, -v.w)
+	return Vector4t<T>(-v.x, -v.y, -v.z, -v.w);
 }
 
 template<typename T>

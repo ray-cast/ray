@@ -82,9 +82,11 @@ FXAA::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Graphics
 	_texelStep->uniform2f(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
 	_texelSource->uniformTexture(texture);
 
+	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+
 	pipeline.setFramebuffer(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_fxaaTech);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_fxaaTech);
 
 	return true;
 }

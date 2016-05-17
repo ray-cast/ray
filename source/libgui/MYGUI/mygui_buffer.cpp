@@ -66,7 +66,7 @@ MyGuiVertexBuffer::getVertexCount() noexcept
 MyGUI::Vertex*
 MyGuiVertexBuffer::lock() noexcept
 {
-	if (!_vb || _needVertexCount != _vertexCount)
+	if (!_vbo || _needVertexCount != _vertexCount)
 	{
 		std::uint32_t inputSize = 0;
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
@@ -79,14 +79,13 @@ MyGuiVertexBuffer::lock() noexcept
 		vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 		vb.setStreamSize(inputSize * _needVertexCount);
 
-		_vb = RenderSystem::instance()->createGraphicsData(vb);
-		_buffer = RenderSystem::instance()->createRenderMesh(_vb, nullptr);
+		_vbo = RenderSystem::instance()->createGraphicsData(vb);
 
 		_vertexCount = _needVertexCount;
 	}
 
 	MyGUI::Vertex* data;
-	if (_vb->map(0, _vb->getGraphicsDataDesc().getStreamSize(), (void**)&data))
+	if (_vbo->map(0, _vbo->getGraphicsDataDesc().getStreamSize(), (void**)&data))
 		return data;
 	return nullptr;
 }
@@ -94,13 +93,13 @@ MyGuiVertexBuffer::lock() noexcept
 void
 MyGuiVertexBuffer::unlock() noexcept
 {
-	_vb->unmap();
+	_vbo->unmap();
 }
 
-RenderMeshPtr
+GraphicsDataPtr
 MyGuiVertexBuffer::getBuffer() const
 {
-	return _buffer;
+	return _vbo;
 }
 
 _NAME_END

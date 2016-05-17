@@ -47,8 +47,8 @@ public:
 	RenderListener() noexcept;
 	virtual ~RenderListener() noexcept;
 
-	virtual void onRenderObjectPre(RenderPipeline& pipeline) noexcept = 0;
-	virtual void onRenderObjectPost(RenderPipeline& pipeline) noexcept = 0;
+	virtual void onRenderObjectPre(const Camera& camera) noexcept = 0;
+	virtual void onRenderObjectPost(const Camera& camera) noexcept = 0;
 };
 
 class EXPORT RenderObject : public rtti::Interface
@@ -60,12 +60,6 @@ public:
 
 	void setLayer(std::uint8_t layer) noexcept;
 	std::uint8_t getLayer() const noexcept;
-
-	void setCastShadow(bool enable) noexcept;
-	bool getCastShadow() const noexcept;
-
-	void setReceiveShadow(bool enable) noexcept;
-	bool getReceiveShadow() const noexcept;
 
 	void setOwnerListener(RenderListener* listener) noexcept;
 	RenderListener* getOwnerListener() noexcept;
@@ -80,44 +74,34 @@ public:
 	void setTransform(const float4x4& transform) noexcept;
 	const float4x4& getTransform() const noexcept;
 	const float4x4& getTransformInverse() const noexcept;
-	const float4x4& getTransformInverseTranspose() const noexcept;
 
 	const Vector3& getRight() const noexcept;
 	const Vector3& getUpVector() const noexcept;
 	const Vector3& getForward() const noexcept;
 	const Vector3& getTranslate() const noexcept;
 
-	void addRenderData(RenderDataManager& manager) noexcept;
-
-	void render(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
-
 public:
-	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
-	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
-
-protected:
 	virtual void onMoveBefor() noexcept;
 	virtual void onMoveAfter() noexcept;
 
 	virtual void onSceneChangeBefor() noexcept;
 	virtual void onSceneChangeAfter() noexcept;
 
+	virtual bool onVisiableTest(const Frustum& fru) noexcept;
 	virtual void onAddRenderData(RenderDataManager& manager) noexcept;
 
-	virtual void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
+	virtual void onRenderPre(const Camera& camera) noexcept;
+	virtual void onRenderPost(const Camera& camera) noexcept;
+	virtual void onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTech* tech) noexcept;
 
 private:
 	std::uint8_t _layer;
-
-	bool _isCastShadow;
-	bool _isReceiveShadow;
 
 	Bound _boundingBox;
 	Bound _worldBoundingxBox;
 
 	float4x4 _transform;
 	float4x4 _transformInverse;
-	float4x4 _transformInverseTranspose;
 
 	RenderListener* _renderListener;
 	RenderSceneWeakPtr  _renderScene;

@@ -36,9 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/material.h>
 #include <ray/material_tech.h>
-#include <ray/material_param.h>
-#include <ray/graphics_shader.h>
-#include <ray/graphics_input_layout.h>
 
 _NAME_BEGIN
 

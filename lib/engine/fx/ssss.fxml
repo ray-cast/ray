@@ -10,7 +10,7 @@
     <parameter name="lightColor" type="float3"/>
     <parameter name="lightEyePosition" type="float3" />
     <parameter name="blurFactor" type="float3"/>
-    <parameter name="shadowFactor" type="float4"/>
+    <parameter name="shadowFactor" type="float"/>
     <parameter name="shadowMap" type="texture2D" />
     <parameter name="shadowEye2LightView" type="float4x4"/>
     <parameter name="shadowEye2LightViewProject" type="float4x4"/>
@@ -54,12 +54,12 @@
                 proj /= proj.w;
                 proj = PosToCoord(proj);
 
-                float d1 = linearDepthPerspectiveOffCenterLH(shadowFactor.xyz, shadowMap.Sample(LinearClamp, proj.xy).r);
+                float d1 = shadowMap.Sample(LinearClamp, proj.xy).r;
                 float d2 = length(mul(shadowEye2LightView, float4(P, 1.0)).xyz);
                 float d = abs(d2 - d1);
 
                 float3 diffuse = restoreDiffuse(MRT0);
-                transmittance = CalcTransmittance(d * shadowFactor.w) * irradiance * lightColor * diffuse;
+                transmittance = CalcTransmittance(d * shadowFactor) * irradiance * lightColor * diffuse;
             }
 
             return float4(transmittance, 1.0);
@@ -74,15 +74,14 @@
             float depthM = texDepthLinear.Sample(PointClamp, coord).r;
 
             float2 finalStep = blurFactor.xy / depthM;
-            float4 colorBlurred = colorM * 0.382;
+            float4 colorBlurred = colorM * 0.382f;
 
-            [unroll]
             for (int i = 0; i < 6; i++)
             {
                 float2 offset = coord +  o[i] * finalStep;
                 float3 color = texSource.Sample(PointClamp, offset).rgb;
                 float depth = texDepthLinear.Sample(PointClamp, offset).r;
-                float s = min(0.0125 * blurFactor.z * abs(depthM - depth), 1);
+                float s = min(0.0125f * blurFactor.z * abs(depthM - depth), 1);
                 colorBlurred.rgb += w[i] * lerp(color, colorM.rgb, s);
             }
 

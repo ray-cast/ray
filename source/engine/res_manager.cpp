@@ -70,6 +70,15 @@ ResManager::createMaterial(const std::string& name) noexcept
 	return material;
 }
 
+GraphicsTexturePtr
+ResManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
+{
+	auto texture = ray::RenderSystem::instance()->createTexture(name, dim, filter);
+	if (!texture)
+		return nullptr;
+	return texture;
+}
+
 GameObjectPtr
 ResManager::createGameObject(const std::string& name, const std::string& anim) noexcept
 {
@@ -140,7 +149,13 @@ ResManager::createMeshes(const Model& model, GameObjectPtr& object) noexcept
 {
 	CombineMeshes combineMeshes;
 	for (auto& meshProp : model.getMeshsList())
+	{
+		if (meshProp->getTangentArray().empty())
+			meshProp->computeTangents();
+		if (meshProp->getTangentQuatArray().empty())
+			meshProp->computeTangentQuats();
 		combineMeshes.push_back(CombineMesh(std::move(meshProp)));
+	}
 
 	if (combineMeshes.size() > 0)
 	{
@@ -435,6 +450,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 	if (texture)
 	{
 		quality.x = 1.0f;
+		diffuseColor = float3::One;
 		effect->getParameter("texDiffuse")->uniformTexture(texture);
 	}
 

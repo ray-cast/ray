@@ -216,7 +216,7 @@ SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 	Float3Array vertices;
 	Float3Array normals;
-	Float3Array tangets;
+	Float4Array tangets;
 	Float2Array texcoord;
 	UintArray faces;
 
@@ -283,7 +283,7 @@ SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 					}
 					else if (vbs[i].Decl[element].Usage == USAGE_TANGENT)
 					{
-						tangets.push_back(*(Vector3*)((char*)&buffer + offset));
+						tangets.push_back(float4(*(Vector3*)((char*)&buffer + offset), 1.0));
 						offset += sizeof(Vector3);
 					}
 					else if (vbs[i].Decl[element].Usage == USAGE_TEXCOORD)

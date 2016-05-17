@@ -276,7 +276,7 @@ EGL3DeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
 }
 
 void
-EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept
+EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
 	assert(pipeline->isInstanceOf<EGL3Pipeline>());
@@ -316,7 +316,7 @@ EGL3DeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-EGL3DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept
+EGL3DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<EGL3DescriptorSet>());
@@ -350,7 +350,7 @@ EGL3DeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-EGL3DeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
+EGL3DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<EGL3GraphicsData>());
@@ -368,7 +368,7 @@ EGL3DeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
 }
 
 void
-EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr& data) noexcept
+EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(_glcontext->getActive());
 
@@ -553,7 +553,7 @@ EGL3DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 }
 
 void
-EGL3DeviceContext::discardFramebuffer() noexcept
+EGL3DeviceContext::discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept
 {
 	assert(_glcontext->getActive());
 }

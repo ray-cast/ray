@@ -40,7 +40,7 @@
 #include <ray/render_object_manager.h>
 #include <ray/render_post_process.h>
 #include <ray/render_scene.h>
-#include <ray/render_mesh.h>
+
 #include <ray/light.h>
 #include <ray/geometry.h>
 #include <ray/camera.h>
@@ -179,42 +179,79 @@ RenderPipelineDevice::createFramebuffer(const GraphicsFramebufferDesc& desc) noe
 	return _graphicsDevice->createFramebuffer(desc);
 }
 
-RenderMeshPtr
-RenderPipelineDevice::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+GraphicsDataPtr
+RenderPipelineDevice::createIndexBuffer(const MeshProperty& mesh) noexcept
 {
-	auto mesh = std::make_shared<RenderMesh>();
-	mesh->setVertexBuffer(vb);
-	mesh->setIndexBuffer(ib);
-	return mesh;
+	std::size_t numIndices = mesh.getNumIndices();
+	for (auto& it : mesh.getChildren())
+		numIndices += it->getNumIndices();
+
+	if (numIndices == 0)
+		return nullptr;
+
+	auto _buildIndiceBuffer = [&](const MeshProperty& mesh, std::size_t& offsetIndices, const std::vector<char>& _ibo)
+	{
+		auto& array = mesh.getFaceArray();
+		if (!array.empty())
+		{
+			char* indices = (char*)_ibo.data() + offsetIndices;
+			std::memcpy(indices, array.data(), array.size() * sizeof(std::uint32_t));
+			offsetIndices += mesh.getFaceArray().size() * sizeof(std::uint32_t);
+		}
+	};
+
+	std::vector<char> faces(numIndices * sizeof(std::uint32_t));
+	std::size_t offsetIndices = 0;
+
+	_buildIndiceBuffer(mesh, offsetIndices, faces);
+
+	auto subMeshCount = mesh.getChildCount();
+	for (std::size_t i = 0; i < subMeshCount; i++)
+	{
+		auto submesh = mesh.getChildren()[i];
+		_buildIndiceBuffer(*submesh, offsetIndices, faces);
+	}
+
+	GraphicsDataDesc _ib;
+	_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_ib.setStream((std::uint8_t*)faces.data());
+	_ib.setStride(sizeof(std::uint32_t));
+	_ib.setStreamSize(faces.size());
+
+	return this->createGraphicsData(_ib);
 }
 
-RenderMeshPtr
-RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
+GraphicsDataPtr
+RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
 {
+	std::size_t numVertex = mesh.getNumVertices();
+	for (auto& it : mesh.getChildren())
+		numVertex += it->getNumVertices();
+
+	if (numVertex == 0)
+		return nullptr;
+
 	std::uint32_t inputSize = 0;
 	if (!mesh.getVertexArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
+	if (!mesh.getTangentArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
 	if (!mesh.getColorArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
-	if (!mesh.getNormalArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitNormal)
-		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!mesh.getTangentArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
-		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
 	if (!mesh.getTexcoordArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32SFloat);
-	if (!mesh.getTexcoordArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitWeight)
+	if (!mesh.getWeightArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitWeight)
 	{
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR16G16B16A16UInt);
-	}
-		
+	}		
 
 	auto _buildVertexBuffer = [&](const MeshProperty& mesh, std::size_t& offsetVertices, const std::vector<char>& _vbo)
 	{
 		auto& vertices = mesh.getVertexArray();
+		auto& tangentQuats = mesh.getTangentQuatArray();
 		auto& colors = mesh.getColorArray();
-		auto& normals = mesh.getNormalArray();
-		auto& tangents = mesh.getTangentArray();
 		auto& texcoords = mesh.getTexcoordArray();
 		auto& weight = mesh.getWeightArray();
 
@@ -233,6 +270,18 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags
 			offset1 += sizeof(float3);
 		}
 
+		if (!tangentQuats.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+		{
+			char* data = mapBuffer + offset1 + offsetVertices;
+			for (auto& it : tangentQuats)
+			{
+				*(float4*)data = it;
+				data += inputSize;
+			}
+
+			offset1 += sizeof(float4);
+		}
+
 		if (!colors.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		{
 			char* data = mapBuffer + offset1 + offsetVertices;
@@ -243,30 +292,6 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags
 			}
 
 			offset1 += sizeof(float4);
-		}
-
-		if (!normals.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitNormal)
-		{
-			char* data = mapBuffer + offset1 + offsetVertices;
-			for (auto& it : normals)
-			{
-				*(float3*)data = it;
-				data += inputSize;
-			}
-
-			offset1 += sizeof(float3);
-		}
-
-		if (!tangents.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
-		{
-			char* data = mapBuffer + offset1 + offsetVertices;
-			for (auto& it : tangents)
-			{
-				*(float3*)data = it;
-				data += inputSize;
-			}
-
-			offset1 += sizeof(float3);
 		}
 
 		if (!texcoords.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
@@ -296,78 +321,26 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags
 		offsetVertices += mesh.getNumVertices() * inputSize;
 	};
 
-	auto _buildIndiceBuffer = [&](const MeshProperty& mesh, std::size_t& offsetIndices, const std::vector<char>& _ibo)
-	{
-		auto& array = mesh.getFaceArray();
-		if (!array.empty())
-		{
-			char* indices = (char*)_ibo.data() + offsetIndices;
-			std::memcpy(indices, array.data(), array.size() * sizeof(std::uint32_t));
-			offsetIndices += mesh.getFaceArray().size() * sizeof(std::uint32_t);
-		}
-	};
+	std::vector<char> _data(numVertex * inputSize);
+	std::size_t offsetVertices = 0;
 
-	auto numVertex = mesh.getNumVertices();
-	auto numIndices = mesh.getNumIndices();
+	_buildVertexBuffer(mesh, offsetVertices, _data);
 
-	for (auto& it : mesh.getChildren())
+	auto subMeshCount = mesh.getChildCount();
+	for (std::size_t i = 0; i < subMeshCount; i++)
 	{
-		numVertex += it->getNumVertices();
-		numIndices += it->getNumIndices();
+		auto submesh = mesh.getChildren()[i];
+		_buildVertexBuffer(*submesh, offsetVertices, _data);
 	}
 
-	GraphicsDataPtr vb;
-	GraphicsDataPtr ib;
+	GraphicsDataDesc _vb;
+	_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	_vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_vb.setStream((std::uint8_t*)_data.data());
+	_vb.setStreamSize(_data.size());
+	_vb.setStride(inputSize);
 
-	if (numVertex)
-	{
-		std::vector<char> _data(numVertex * inputSize);
-		std::size_t offsetVertices = 0;
-
-		_buildVertexBuffer(mesh, offsetVertices, _data);
-
-		auto subMeshCount = mesh.getChildCount();
-		for (std::size_t i = 0; i < subMeshCount; i++)
-		{
-			auto submesh = mesh.getChildren()[i];
-			_buildVertexBuffer(*submesh, offsetVertices, _data);
-		}
-
-		GraphicsDataDesc _vb;
-		_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
-		_vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
-		_vb.setStream((std::uint8_t*)_data.data());
-		_vb.setStreamSize(_data.size());
-		_vb.setStride(inputSize);
-
-		vb = this->createGraphicsData(_vb);
-	}
-
-	if (numIndices > 0)
-	{
-		std::vector<char> faces(numIndices * sizeof(std::uint32_t));
-		std::size_t offsetIndices = 0;
-
-		_buildIndiceBuffer(mesh, offsetIndices, faces);
-
-		auto subMeshCount = mesh.getChildCount();
-		for (std::size_t i = 0; i < subMeshCount; i++)
-		{
-			auto submesh = mesh.getChildren()[i];
-			_buildIndiceBuffer(*submesh, offsetIndices, faces);
-		}
-
-		GraphicsDataDesc _ib;
-		_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-		_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
-		_ib.setStream((std::uint8_t*)faces.data());
-		_ib.setStride(sizeof(std::uint32_t));
-		_ib.setStreamSize(faces.size());
-
-		ib = this->createGraphicsData(_ib);
-	}
-
-	return this->createRenderMesh(vb, ib);
+	return this->createGraphicsData(_vb);
 }
 
 GraphicsInputLayoutPtr
@@ -389,27 +362,6 @@ RenderPipelineDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_graphicsDevice);
 	return _graphicsDevice->createGraphicsData(desc);
-}
-
-MaterialParamPtr
-RenderPipelineDevice::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
-{
-	assert(_materialManager);
-	return _materialManager->createSemantic(name, type);
-}
-
-void
-RenderPipelineDevice::destroySemantic(MaterialParamPtr semantic) const noexcept
-{
-	assert(_materialManager);
-	return _materialManager->destroySemantic(semantic);
-}
-
-MaterialParamPtr
-RenderPipelineDevice::getSemantic(const std::string& semantic) const noexcept
-{
-	assert(_materialManager);
-	return _materialManager->getSemantic(semantic);
 }
 
 _NAME_END

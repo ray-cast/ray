@@ -274,7 +274,7 @@ OGLDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
 }
 
 void
-OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept
+OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
 	assert(pipeline->isInstanceOf<OGLPipeline>());
@@ -314,7 +314,7 @@ OGLDeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept
+OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<OGLDescriptorSet>());
@@ -337,7 +337,7 @@ OGLDeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-OGLDeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
+OGLDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLGraphicsData>());
@@ -355,7 +355,7 @@ OGLDeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
 }
 
 void
-OGLDeviceContext::setIndexBufferData(GraphicsDataPtr& data) noexcept
+OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(_glcontext->getActive());
 
@@ -506,6 +506,13 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 }
 
 void
+OGLDeviceContext::discardFramebuffer(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept
+{
+	assert(_glcontext->getActive());
+	_renderTexture->discard(attachments, numAttachment);
+}
+
+void
 OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
@@ -526,12 +533,6 @@ GraphicsFramebufferPtr
 OGLDeviceContext::getFramebuffer() const noexcept
 {
 	return _renderTexture;
-}
-
-void
-OGLDeviceContext::discardFramebuffer() noexcept
-{
-	assert(_glcontext->getActive());
 }
 
 void

@@ -57,7 +57,7 @@ private:
 	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
-	void onPostRender(class RenderPipeline& pipeline) noexcept;
+	void onPostRender(const class Camera& camera) noexcept;
 
 private:
 	GuiCameraComponent(const GuiCameraComponent&) noexcept = delete;
@@ -68,7 +68,7 @@ private:
 	GameComponentPtr _mouseFocus;
 	GameComponentPtr _motionFocus;
 
-	std::function<void(RenderPipeline&)> _onPostRender;
+	std::function<void(const Camera&)> _onPostRender;
 };
 
 _NAME_END

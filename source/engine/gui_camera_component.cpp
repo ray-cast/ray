@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_GUI)
 #include <ray/gui_camera_component.h>
 #include <ray/gui_system.h>
 #include <ray/game_server.h>
@@ -90,11 +89,9 @@ GuiCameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
 }
 
 void
-GuiCameraComponent::onPostRender(RenderPipeline& pipeline) noexcept
+GuiCameraComponent::onPostRender(const Camera&) noexcept
 {
 	GuiSystem::instance()->render(GameServer::instance()->getTimer()->delta());
 }
 
 _NAME_END
-
-#endif

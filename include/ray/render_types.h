@@ -43,6 +43,7 @@
 _NAME_BEGIN
 
 typedef std::shared_ptr<class Material> MaterialPtr;
+typedef std::shared_ptr<class MaterialSemantic> MaterialSemanticPtr;
 typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
 typedef std::shared_ptr<class MaterialTech> MaterialTechPtr;
 typedef std::shared_ptr<class MaterialParam> MaterialParamPtr;
@@ -58,7 +59,7 @@ typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
 typedef std::shared_ptr<class RenderDataManager> RenderDataManagerPtr;
 typedef std::shared_ptr<class Geometry> GeometryPtr;
 typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
-typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
+typedef std::shared_ptr<class RenderPipelineStage> RenderPipelineStagePtr;
 typedef std::shared_ptr<class RenderScene> RenderScenePtr;
 typedef std::shared_ptr<class Camera> CameraPtr;
 typedef std::shared_ptr<class Light> LightPtr;
@@ -82,12 +83,12 @@ typedef std::weak_ptr<class RenderPipelineManager> RenderPipelineManagerWeakPtr;
 typedef std::weak_ptr<class RenderDataManager> RenderDataManagerWeakPtr;
 typedef std::weak_ptr<class Geometry> GeometryWeakPtr;
 typedef std::weak_ptr<class RenderSystem> RenderSystemWeakPtr;
-typedef std::weak_ptr<class RenderMesh> RenderMeshWeakPtr;
+typedef std::weak_ptr<class RenderPipelineStage> RenderPipelineStageWeakPtr;
 typedef std::weak_ptr<class RenderScene> RenderSceneWeakPtr;
 typedef std::weak_ptr<class Camera> CameraWeakPtr;
 typedef std::weak_ptr<class Light> LightWeakPtr;
 
-typedef std::vector<RenderMeshPtr> RenderMeshs;
+typedef std::vector<RenderPipelineStagePtr> RenderPipelineStages;
 typedef std::vector<GeometryPtr> Geometryes;
 typedef std::vector<RenderObjectPtr> RenderObjects;
 typedef std::vector<RenderScenePtr> RenderScenes;
@@ -214,6 +215,35 @@ enum ModelMakerFlagBits
 };
 
 typedef std::uint32_t ModelMakerFlags;
+
+enum GlobalSemanticType
+{
+	GlobalSemanticTypeNone,
+	GlobalSemanticTypeModel,
+	GlobalSemanticTypeModelInverse,
+	GlobalSemanticTypeView,
+	GlobalSemanticTypeViewInverse,
+	GlobalSemanticTypeProject,
+	GlobalSemanticTypeProjectInverse,
+	GlobalSemanticTypeViewProject,
+	GlobalSemanticTypeViewProjectInverse,
+	GlobalSemanticTypeModelView,
+	GlobalSemanticTypeModelViewProject,
+	GlobalSemanticTypeCameraAperture,
+	GlobalSemanticTypeCameraNear,
+	GlobalSemanticTypeCameraFar,
+	GlobalSemanticTypeCameraPosition,
+	GlobalSemanticTypeCameraDirection,
+	GlobalSemanticTypeDepthTexture,
+	GlobalSemanticTypeDepthLinearTexture,
+	GlobalSemanticTypeDiffuseTexture,
+	GlobalSemanticTypeNormalTexture,
+	GlobalSemanticTypeLightingTexture,
+	GlobalSemanticTypeBeginRange = GlobalSemanticTypeNone,
+	GlobalSemanticTypeEndRange = GlobalSemanticTypeLightingTexture,
+	GlobalSemanticTypeRangeSize = (GlobalSemanticTypeEndRange - GlobalSemanticTypeBeginRange + 1),
+	GlobalSemanticTypeMaxEnum = 0x7FFFFFFF
+};
 
 _NAME_END
 

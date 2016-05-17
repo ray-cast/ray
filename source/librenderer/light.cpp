@@ -230,7 +230,7 @@ Light::setShadowMap(GraphicsTexturePtr texture) noexcept
 	_shadowMap = texture;
 }
 
-GraphicsTexturePtr
+const GraphicsTexturePtr&
 Light::getShadowMap() const noexcept
 {
 	return _shadowMap;
@@ -308,7 +308,6 @@ Light::_updateBoundingBox() noexcept
 	Bound bound;
 
 	auto lightRange = this->getRange();
-
 	if (_lightType == LightType::LightTypeSun ||
 		_lightType == LightType::LightTypeDirectional ||
 		_lightType == LightType::LightTypeAmbient ||
@@ -406,19 +405,19 @@ Light::onAddRenderData(RenderDataManager& manager) noexcept
 }
 
 void
-Light::onRenderObjectPre(RenderPipeline& pipeline) noexcept
+Light::onRenderObjectPre(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onRenderObjectPre(pipeline);
+		listener->onRenderObjectPre(camera);
 }
 
 void
-Light::onRenderObjectPost(RenderPipeline& pipeline) noexcept
+Light::onRenderObjectPost(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onRenderObjectPost(pipeline);
+		listener->onRenderObjectPost(camera);
 }
 
 void
@@ -435,7 +434,6 @@ Light::clone() const noexcept
 	light->setLightColor(this->getLightColor());
 	light->setIntensity(this->getIntensity());
 	light->setRange(this->getRange());
-	light->setCastShadow(this->getCastShadow());
 	light->setTransform(this->getTransform());
 	light->setBoundingBox(this->getBoundingBox());
 

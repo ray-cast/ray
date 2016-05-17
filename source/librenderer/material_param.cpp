@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_param.h>
+#include <ray/graphics_descriptor.h>
 
 _NAME_BEGIN
 
@@ -47,17 +48,20 @@ MaterialParamListener::~MaterialParamListener() noexcept
 }
 
 MaterialParam::MaterialParam() noexcept
+	: _semanticType(GlobalSemanticType::GlobalSemanticTypeNone)
 {
 }
 
 MaterialParam::MaterialParam(const std::string& name, GraphicsUniformType type) noexcept
 	: _name(name)
+	, _semanticType(GlobalSemanticType::GlobalSemanticTypeNone)
 {
 	_variant.setType(type);
 }
 
 MaterialParam::MaterialParam(std::string&& name, GraphicsUniformType type) noexcept
 	: _name(std::move(name))
+	, _semanticType(GlobalSemanticType::GlobalSemanticTypeNone)
 {
 	_variant.setType(type);
 }
@@ -97,546 +101,495 @@ MaterialParam::getType() const noexcept
 }
 
 void
-MaterialParam::setSemantic(MaterialParamPtr& semantic) noexcept
+MaterialParam::setSemanticType(GlobalSemanticType type) noexcept
 {
-	_semantic = semantic;
+	_semanticType = type;
 }
 
-void
-MaterialParam::setSemantic(MaterialParamPtr&& semantic) noexcept
+GlobalSemanticType
+MaterialParam::getSemanticType() const noexcept
 {
-	_semantic = std::move(semantic);
-}
-
-MaterialParamPtr
-MaterialParam::getSemantic() const noexcept
-{
-	return _semantic;
+	return _semanticType;
 }
 
 void
 MaterialParam::uniform1b(bool value) noexcept
 {
 	_variant.uniform1b(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1b(value);
 }
 
 void
 MaterialParam::uniform1i(std::int32_t i1) noexcept
 {
 	_variant.uniform1i(i1);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1i(i1);
 }
 
 void
 MaterialParam::uniform2i(const int2& value) noexcept
 {
 	_variant.uniform2i(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2i(value);
 }
 
 void
 MaterialParam::uniform2i(std::int32_t i1, std::int32_t i2) noexcept
 {
 	_variant.uniform2i(i1, i2);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2i(i1, i2);
 }
 
 void
 MaterialParam::uniform3i(const int3& value) noexcept
 {
 	_variant.uniform3i(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3i(value);
 }
 
 void
 MaterialParam::uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noexcept
 {
 	_variant.uniform3i(i1, i2, i3);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3i(i1, i2, i3);
 }
 
 void
 MaterialParam::uniform4i(const int4& value) noexcept
 {
 	_variant.uniform4i(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4i(value);
 }
 
 void
 MaterialParam::uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std::int32_t i4) noexcept
 {
 	_variant.uniform4i(i1, i2, i3, i4);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4i(i1, i2, i3, i4);
 }
 
 void
 MaterialParam::uniform1ui(std::uint32_t ui1) noexcept
 {
 	_variant.uniform1ui(ui1);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1ui(ui1);
 }
 
 void
 MaterialParam::uniform2ui(const uint2& value) noexcept
 {
 	_variant.uniform2ui(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2ui(value);
 }
 
 void
 MaterialParam::uniform2ui(std::uint32_t ui1, std::uint32_t ui2) noexcept
 {
 	_variant.uniform2ui(ui1, ui2);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2ui(ui1, ui2);
 }
 
 void
 MaterialParam::uniform3ui(const uint3& value) noexcept
 {
 	_variant.uniform3ui(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3ui(value);
 }
 
 void
 MaterialParam::uniform3ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3) noexcept
 {
 	_variant.uniform3ui(ui1, ui2, ui3);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3ui(ui1, ui2, ui3);
 }
 
 void
 MaterialParam::uniform4ui(const uint4& value) noexcept
 {
 	_variant.uniform4ui(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4ui(value);
 }
 
 void
 MaterialParam::uniform4ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3, std::uint32_t ui4) noexcept
 {
 	_variant.uniform4ui(ui1, ui2, ui3, ui4);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4ui(ui1, ui2, ui3, ui4);
 }
 
 void
 MaterialParam::uniform1f(float f1) noexcept
 {
 	_variant.uniform1f(f1);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1f(f1);
 }
 
 void
 MaterialParam::uniform2f(const float2& value) noexcept
 {
 	_variant.uniform2f(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2f(value);
 }
 
 void
 MaterialParam::uniform2f(float f1, float f2) noexcept
 {
 	_variant.uniform2f(f1, f2);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2f(f1, f2);
 }
 
 void
 MaterialParam::uniform3f(const float3& value) noexcept
 {
 	_variant.uniform3f(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3f(value);
 }
 
 void
 MaterialParam::uniform3f(float f1, float f2, float f3) noexcept
 {
 	_variant.uniform3f(f1, f2, f3);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3f(f1, f2, f3);
 }
 
 void
 MaterialParam::uniform4f(const float4& value) noexcept
 {
 	_variant.uniform4f(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4f(value);
 }
 
 void
 MaterialParam::uniform4f(float f1, float f2, float f3, float f4) noexcept
 {
 	_variant.uniform4f(f1, f2, f3, f4);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4f(f1, f2, f3, f4);
 }
 
 void
 MaterialParam::uniform2fmat(const float2x2& value) noexcept
 {
 	_variant.uniform2fmat(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2fmat(value);
 }
 
 void
 MaterialParam::uniform2fmat(const float* mat2) noexcept
 {
 	_variant.uniform2fmat(mat2);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2fmat(mat2);
 }
 
 void
 MaterialParam::uniform3fmat(const float3x3& value) noexcept
 {
 	_variant.uniform3fmat(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3fmat(value);
 }
 
 void
 MaterialParam::uniform3fmat(const float* mat3) noexcept
 {
 	_variant.uniform3fmat(mat3);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3fmat(mat3);
 }
 
 void
 MaterialParam::uniform4fmat(const float4x4& value) noexcept
 {
 	_variant.uniform4fmat(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4fmat(value);
 }
 
 void
 MaterialParam::uniform4fmat(const float* mat4) noexcept
 {
 	_variant.uniform4fmat(mat4);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4fmat(mat4);
 }
 
 void
 MaterialParam::uniform1iv(std::size_t num, const std::int32_t* i1v) noexcept
 {
 	_variant.uniform1iv(num, i1v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1iv(num, i1v);
 }
 
 void
 MaterialParam::uniform2iv(std::size_t num, const std::int32_t* i2v) noexcept
 {
 	_variant.uniform2iv(num, i2v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2iv(num, i2v);
 }
 
 void
 MaterialParam::uniform3iv(std::size_t num, const std::int32_t* i3v) noexcept
 {
 	_variant.uniform3iv(num, i3v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3iv(num, i3v);
 }
 
 void
 MaterialParam::uniform4iv(std::size_t num, const std::int32_t* i4v) noexcept
 {
 	_variant.uniform4iv(num, i4v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4iv(num, i4v);
 }
 
 void
 MaterialParam::uniform1uiv(std::size_t num, const std::uint32_t* ui1v) noexcept
 {
 	_variant.uniform1uiv(num, ui1v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1uiv(num, ui1v);
 }
 
 void
 MaterialParam::uniform2uiv(std::size_t num, const std::uint32_t* ui2v) noexcept
 {
 	_variant.uniform2uiv(num, ui2v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2uiv(num, ui2v);
 }
 
 void
 MaterialParam::uniform3uiv(std::size_t num, const std::uint32_t* ui3v) noexcept
 {
 	_variant.uniform3uiv(num, ui3v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3uiv(num, ui3v);
 }
 
 void
 MaterialParam::uniform4uiv(std::size_t num, const std::uint32_t* ui4v) noexcept
 {
 	_variant.uniform4uiv(num, ui4v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4uiv(num, ui4v);
 }
 
 void
 MaterialParam::uniform1fv(std::size_t num, const float* f1v) noexcept
 {
 	_variant.uniform1fv(num, f1v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1fv(num, f1v);
 }
 
 void
 MaterialParam::uniform2fv(std::size_t num, const float* f2v) noexcept
 {
 	_variant.uniform2fv(num, f2v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2fv(num, f2v);
 }
 
 void
 MaterialParam::uniform3fv(std::size_t num, const float* f3v) noexcept
 {
 	_variant.uniform3fv(num, f3v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3fv(num, f3v);
 }
 
 void
 MaterialParam::uniform4fv(std::size_t num, const float* f4v) noexcept
 {
 	_variant.uniform4fv(num, f4v);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4fv(num, f4v);
 }
 
 void
 MaterialParam::uniform2fmatv(std::size_t num, const float* mat2) noexcept
 {
 	_variant.uniform2fmatv(num, mat2);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2fmatv(num, mat2);
 }
 
 void
 MaterialParam::uniform3fmatv(std::size_t num, const float* mat3) noexcept
 {
 	_variant.uniform3fmatv(num, mat3);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3fmatv(num, mat3);
 }
 
 void
 MaterialParam::uniform4fmatv(std::size_t num, const float* mat4) noexcept
 {
 	_variant.uniform4fmatv(num, mat4);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4fmatv(num, mat4);
 }
 
 void
 MaterialParam::uniform1iv(const std::vector<int1>& value) noexcept
 {
 	_variant.uniform1iv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1iv(value);
 }
 
 void
 MaterialParam::uniform2iv(const std::vector<int2>& value) noexcept
 {
 	_variant.uniform2iv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2iv(value);
 }
 
 void
 MaterialParam::uniform3iv(const std::vector<int3>& value) noexcept
 {
 	_variant.uniform3iv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3iv(value);
 }
 
 void
 MaterialParam::uniform4iv(const std::vector<int4>& value) noexcept
 {
 	_variant.uniform4iv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4iv(value);
 }
 
 void
 MaterialParam::uniform1uiv(const std::vector<uint1>& value) noexcept
 {
 	_variant.uniform1uiv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1uiv(value);
 }
 
 void
 MaterialParam::uniform2uiv(const std::vector<uint2>& value) noexcept
 {
 	_variant.uniform2uiv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2uiv(value);
 }
 
 void
 MaterialParam::uniform3uiv(const std::vector<uint3>& value) noexcept
 {
 	_variant.uniform3uiv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3uiv(value);
 }
 
 void
 MaterialParam::uniform4uiv(const std::vector<uint4>& value) noexcept
 {
 	_variant.uniform4uiv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4uiv(value);
 }
 
 void
 MaterialParam::uniform1fv(const std::vector<float1>& value) noexcept
 {
 	_variant.uniform1fv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform1fv(value);
 }
 
 void
 MaterialParam::uniform2fv(const std::vector<float2>& value) noexcept
 {
 	_variant.uniform2fv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2fv(value);
 }
 
 void
 MaterialParam::uniform3fv(const std::vector<float3>& value) noexcept
 {
 	_variant.uniform3fv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3fv(value);
 }
 
 void
 MaterialParam::uniform4fv(const std::vector<float4>& value) noexcept
 {
 	_variant.uniform4fv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4fv(value);
 }
 
 void
 MaterialParam::uniform2fmatv(const std::vector<float2x2>& value) noexcept
 {
 	_variant.uniform2fmatv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform2fmatv(value);
 }
 
 void
 MaterialParam::uniform3fmatv(const std::vector<float3x3>& value) noexcept
 {
 	_variant.uniform3fmatv(value);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform3fmatv(value);
 }
 
 void
 MaterialParam::uniform4fmatv(const std::vector<float4x4>& value) noexcept
 {
 	_variant.uniform4fmatv(value);
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform1iv(std::vector<int1>&& value) noexcept
-{
-	_variant.uniform1iv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform2iv(std::vector<int2>&& value) noexcept
-{
-	_variant.uniform2iv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform3iv(std::vector<int3>&& value) noexcept
-{
-	_variant.uniform3iv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform4iv(std::vector<int4>&& value) noexcept
-{
-	_variant.uniform4iv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform1uiv(std::vector<uint1>&& value) noexcept
-{
-	_variant.uniform1uiv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform2uiv(std::vector<uint2>&& value) noexcept
-{
-	_variant.uniform2uiv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform3uiv(std::vector<uint3>&& value) noexcept
-{
-	_variant.uniform3uiv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform4uiv(std::vector<uint4>&& value) noexcept
-{
-	_variant.uniform4uiv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform1fv(std::vector<float1>&& value) noexcept
-{
-	_variant.uniform1fv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform2fv(std::vector<float2>&& value) noexcept
-{
-	_variant.uniform2fv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform3fv(std::vector<float3>&& value) noexcept
-{
-	_variant.uniform3fv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform4fv(std::vector<float4>&& value) noexcept
-{
-	_variant.uniform4fv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform2fmatv(std::vector<float2x2>&& value) noexcept
-{
-	_variant.uniform2fmatv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform3fmatv(std::vector<float3x3>&& value) noexcept
-{
-	_variant.uniform3fmatv(std::move(value));
-	this->_needUpdate();
-}
-
-void
-MaterialParam::uniform4fmatv(std::vector<float4x4>&& value) noexcept
-{
-	_variant.uniform4fmatv(std::move(value));
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniform4fmatv(value);
 }
 
 void
 MaterialParam::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
 	_variant.uniformTexture(texture, sampler);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniformTexture(texture, sampler);
 }
 
 void
 MaterialParam::uniformBuffer(GraphicsDataPtr ubo) noexcept
 {
 	_variant.uniformBuffer(ubo);
-	this->_needUpdate();
+	for (auto& it : _listeners)
+		it->uniformBuffer(ubo);
 }
 
 bool
@@ -844,7 +797,7 @@ MaterialParam::getBuffer() const noexcept
 }
 
 void
-MaterialParam::addParamListener(MaterialParamListener* listener) noexcept
+MaterialParam::addParamListener(GraphicsUniformSetPtr listener) noexcept
 {
 	auto it = std::find(_listeners.begin(), _listeners.end(), listener);
 	if (it == _listeners.end())
@@ -852,7 +805,7 @@ MaterialParam::addParamListener(MaterialParamListener* listener) noexcept
 }
 
 void
-MaterialParam::removeParamListener(MaterialParamListener* listener) noexcept
+MaterialParam::removeParamListener(GraphicsUniformSetPtr listener) noexcept
 {
 	auto it = std::find(_listeners.begin(), _listeners.end(), listener);
 	if (it != _listeners.end())
@@ -864,16 +817,9 @@ MaterialParam::clone() const noexcept
 {
 	auto param = std::make_shared<MaterialParam>();
 	param->setName(this->getName());
-	param->setSemantic(this->getSemantic());
+	param->setSemanticType(this->getSemanticType());
 	param->_variant.copy(this->_variant);
 	return param;
-}
-
-void
-MaterialParam::_needUpdate() noexcept
-{
-	for (auto& it : _listeners)
-		it->onNeedUpdate();
 }
 
 _NAME_END

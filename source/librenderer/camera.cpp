@@ -369,13 +369,13 @@ Camera::getCameraRenderFlags() const noexcept
 }
 
 void
-Camera::setGraphicsSwapchain(GraphicsSwapchainPtr swapchin) noexcept
+Camera::setSwapchain(GraphicsSwapchainPtr swapchin) noexcept
 {
 	_swapchain = swapchin;
 }
 
-GraphicsSwapchainPtr
-Camera::getGraphicsSwapchain() const noexcept
+const GraphicsSwapchainPtr&
+Camera::getSwapchain() const noexcept
 {
 	return _swapchain;
 }
@@ -386,7 +386,7 @@ Camera::setFramebuffer(GraphicsFramebufferPtr texture) noexcept
 	_renderTexture = texture;
 }
 
-GraphicsFramebufferPtr
+const GraphicsFramebufferPtr&
 Camera::getFramebuffer() const noexcept
 {
 	return _renderTexture;
@@ -399,7 +399,7 @@ Camera::setRenderDataManager(RenderDataManagerPtr manager) noexcept
 	_dataManager = manager;
 }
 
-RenderDataManagerPtr
+const RenderDataManagerPtr&
 Camera::getRenderDataManager() const noexcept
 {
 	return _dataManager;
@@ -490,13 +490,13 @@ Camera::onMoveAfter() noexcept
 }
 
 void 
-Camera::onRenderPre(RenderPipeline& pipeline) noexcept
+Camera::onRenderPre(const Camera& camera) noexcept
 {
 	_needUpdateVisiable = true;
 }
 
 void 
-Camera::onRenderPost(RenderPipeline& pipeline) noexcept
+Camera::onRenderPost(const Camera& camera) noexcept
 {
 }
 

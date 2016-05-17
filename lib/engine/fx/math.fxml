@@ -185,7 +185,25 @@
 			return dot(rgb, lumfact);
 		}
 
-		float3 rotate(float4 quat, float3 v)
+		float3 GetForward(float4 quat)
+		{
+			float3 qv = float3(quat.w, quat.z, -quat.y);
+			return float3(1,0,0) + cross(quat.xyz, qv) * 2;
+		}
+
+		float3 GetUp(float4 quat)
+		{
+			float3 qv = float3(-quat.z, quat.w, -quat.x);
+			return float3(0,1,0) + cross(quat.xyz, qv) * 2;
+		}
+
+		float3 GetRight(float4 quat)
+		{
+			float3 qv = float3(quat.y, -quat.x, quat.w);
+			return float3(0,0,1) + cross(quat.xyz, qv) * 2;
+		}
+
+		float3 GetAxis(float3 v, float4 quat)
 		{
 			return v + cross(quat.xyz, cross(quat.xyz, v) + quat.w * v) * 2;
 		}

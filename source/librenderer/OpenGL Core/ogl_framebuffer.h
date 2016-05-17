@@ -77,10 +77,7 @@ public:
 	bool setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept;
 	void close() noexcept;
 
-	void setLayer(GraphicsTexturePtr texture, GLuint layer) noexcept;
-	GLuint getLayer() const noexcept;
-
-	void discard() noexcept;
+	void discard(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept;
 
 	GLuint getInstanceID() noexcept;
 

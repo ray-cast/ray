@@ -195,7 +195,7 @@ AnimationComponent::onMeshChange() noexcept
 }
 
 void
-AnimationComponent::onMeshWillRender(RenderPipeline& pipeline) noexcept
+AnimationComponent::onMeshWillRender(const Camera&) noexcept
 {
 	if (_needUpdate && _enableAnimOnVisableOnly)
 	{

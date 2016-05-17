@@ -38,7 +38,6 @@
 #include <ray/render_system.h>
 #include <ray/material.h>
 #include <ray/geometry.h>
-#include <ray/render_mesh.h>
 #include <ray/render_feature.h>
 #include <ray/game_server.h>
 #include <ray/graphics_data.h>
@@ -76,9 +75,11 @@ SkinnedJointRenderComponent::_buildJointObject() noexcept
 	_geometry->setMaterial(RenderSystem::instance()->createMaterial("sys:fx/debug.fxml"));
 	_geometry->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
 
-	_renderBuffer = RenderSystem::instance()->createRenderMesh(meshes, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	_renderMeshVbo = RenderSystem::instance()->createVertexBuffer(meshes, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	if (!_renderMeshVbo)
+		return false;
 
-	_buildRenderObject(_geometry, meshes, _renderBuffer);
+	_buildRenderObject(_geometry, meshes, _renderMeshVbo, nullptr);
 
 	return true;
 }
@@ -98,7 +99,7 @@ void
 SkinnedJointRenderComponent::onFrameEnd() noexcept
 {
 	float3* data;
-	if (_renderBuffer->getVertexBuffer()->map(0, _renderBuffer->getVertexBuffer()->getGraphicsDataDesc().getStreamSize(), (void**)&data))
+	if (_renderMeshVbo->map(0, _renderMeshVbo->getGraphicsDataDesc().getStreamSize(), (void**)&data))
 	{
 		for (auto& transform : _trasnforms)
 		{
@@ -109,7 +110,7 @@ SkinnedJointRenderComponent::onFrameEnd() noexcept
 			}
 		}
 
-		_renderBuffer->getVertexBuffer()->unmap();
+		_renderMeshVbo->unmap();
 	}
 }
 

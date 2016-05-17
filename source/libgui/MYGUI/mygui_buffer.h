@@ -38,7 +38,6 @@
 #define _MYGUI_BUFFER_H_
 
 #include "mygui_types.h"
-#include <ray/render_mesh.h>
 
 _NAME_BEGIN
 
@@ -54,14 +53,13 @@ public:
 	virtual MyGUI::Vertex* lock() noexcept;
 	virtual void unlock() noexcept;
 
-	RenderMeshPtr getBuffer() const;
+	GraphicsDataPtr getBuffer() const;
 
 private:
 
 	MemoryStream _stream;
 
-	RenderMeshPtr _buffer;
-	GraphicsDataPtr _vb;
+	GraphicsDataPtr _vbo;
 
 	std::size_t _vertexCount;
 	std::size_t _needVertexCount;

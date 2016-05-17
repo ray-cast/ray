@@ -60,7 +60,7 @@ private:
 private:
 	GameObjects _trasnforms;
 	GeometryPtr _geometry;
-	RenderMeshPtr _renderBuffer;
+	RenderPipelineStagePtr _renderBuffer;
 };
 
 _NAME_END

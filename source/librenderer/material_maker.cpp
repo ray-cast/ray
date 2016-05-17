@@ -415,11 +415,11 @@ MaterialMaker::instanceParameter(MaterialManager& manager, Material& material, i
 
 	if (!semantic.empty())
 	{
-		auto materialSemantic = manager.getSemantic(semantic);
-		if (!materialSemantic)
+		auto materialType = stringToSemanticType(semantic);
+		if (!materialType)
 			throw failure(__TEXT("Unknown semantic : ") + semantic);
 
-		param->setSemantic(std::move(materialSemantic));
+		param->setSemanticType(materialType);
 	}
 
 	material.addParameter(std::move(param));
@@ -1116,6 +1116,39 @@ MaterialMaker::stringToFormat(const std::string& format) noexcept
 
 	assert(false);
 	return GraphicsFormat::GraphicsFormatMaxEnum;
+}
+
+GlobalSemanticType 
+MaterialMaker::stringToSemanticType(const std::string& type) noexcept
+{
+	if (type == "matModel") return GlobalSemanticType::GlobalSemanticTypeModel;
+	if (type == "matModelInverse") return GlobalSemanticType::GlobalSemanticTypeModelInverse;
+	if (type == "matView") return GlobalSemanticType::GlobalSemanticTypeView;
+	if (type == "matViewInverse") return GlobalSemanticType::GlobalSemanticTypeViewInverse;
+	if (type == "matProject") return GlobalSemanticType::GlobalSemanticTypeProject;
+	if (type == "matProjectInverse") return GlobalSemanticType::GlobalSemanticTypeProjectInverse;
+	if (type == "matViewProject") return GlobalSemanticType::GlobalSemanticTypeViewProject;
+	if (type == "matViewProjectInverse") return GlobalSemanticType::GlobalSemanticTypeViewProjectInverse;
+	if (type == "matModelView") return GlobalSemanticType::GlobalSemanticTypeModelView;
+	if (type == "matModelViewProject") return GlobalSemanticType::GlobalSemanticTypeModelViewProject;
+	if (type == "CameraAperture") return GlobalSemanticType::GlobalSemanticTypeCameraAperture;
+	if (type == "CameraNear") return GlobalSemanticType::GlobalSemanticTypeCameraNear;
+	if (type == "CameraFar") return GlobalSemanticType::GlobalSemanticTypeCameraFar;
+	if (type == "CameraPosition") return GlobalSemanticType::GlobalSemanticTypeCameraPosition;
+	if (type == "CameraDirection") return GlobalSemanticType::GlobalSemanticTypeCameraDirection;
+	if (type == "DepthTexture") return GlobalSemanticType::GlobalSemanticTypeDepthTexture;
+	if (type == "DepthLinearTexture") return GlobalSemanticType::GlobalSemanticTypeDepthLinearTexture;
+	if (type == "DiffuseTexture") return GlobalSemanticType::GlobalSemanticTypeDiffuseTexture;
+	if (type == "NormalTexture") return GlobalSemanticType::GlobalSemanticTypeNormalTexture;
+	if (type == "LightingTexture") return GlobalSemanticType::GlobalSemanticTypeLightingTexture;
+	if (type == "DeferredDepthMap") return GlobalSemanticType::GlobalSemanticTypeDepthTexture;
+	if (type == "DeferredDepthLinearMap") return GlobalSemanticType::GlobalSemanticTypeDepthLinearTexture;
+	if (type == "DeferredGraphicMap") return GlobalSemanticType::GlobalSemanticTypeDiffuseTexture;
+	if (type == "DeferredNormalMap") return GlobalSemanticType::GlobalSemanticTypeNormalTexture;
+	if (type == "DeferredLightMap") return GlobalSemanticType::GlobalSemanticTypeLightingTexture;
+
+	assert(false);
+	return GlobalSemanticType::GlobalSemanticTypeNone;
 }
 
 _NAME_END

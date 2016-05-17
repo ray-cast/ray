@@ -63,9 +63,6 @@ public:
 	void setCamera(CameraPtr renderer) noexcept;
 	CameraPtr getCamera() const noexcept;
 
-	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;	
-	const RenderObjects& getRenderData(RenderQueue queue) const noexcept;
-
 	void setViewport(const Viewport& view) noexcept;
 	const Viewport& getViewport() const noexcept;
 
@@ -80,10 +77,14 @@ public:
 	void discradRenderTexture() noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
-	void drawCone(MaterialTechPtr tech) noexcept;
-	void drawSphere(MaterialTechPtr tech) noexcept;
-	void drawScreenQuad(MaterialTechPtr tech) noexcept;
-	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
+	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
+	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
+	void setIndexBuffer(GraphicsDataPtr ibo) noexcept;
+
+	void drawCone(const MaterialTech& tech) noexcept;
+	void drawSphere(const MaterialTech& tech) noexcept;
+	void drawScreenQuad(const MaterialTech& tech) noexcept;
+	void drawMesh(const GraphicsIndirect& renderable) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
@@ -109,8 +110,8 @@ public:
 	GraphicsPipelinePtr createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
 
 	void render(const RenderScene& scene) noexcept;
 

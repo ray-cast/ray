@@ -201,7 +201,10 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 		{
 			GraphicsIndirect renderable;
 			renderable.numVertices = _count;
-			RenderSystem::instance()->drawMesh(_materialTech, renderBuffer, renderable);
+
+			RenderSystem::instance()->setMaterialPass(_materialTech->getPass(0));
+			RenderSystem::instance()->setVertexBuffer(renderBuffer);
+			RenderSystem::instance()->drawMesh(renderable);
 		}
 		else
 		{

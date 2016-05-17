@@ -271,7 +271,7 @@ EGL2DeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
 }
 
 void
-EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept
+EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
 
@@ -310,7 +310,7 @@ EGL2DeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-EGL2DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept
+EGL2DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<EGL2DescriptorSet>());
@@ -339,7 +339,7 @@ EGL2DeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
+EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 
@@ -354,7 +354,7 @@ EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
 }
 
 void
-EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr& data) noexcept
+EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
 	if (_ibo != data)
 	{
@@ -509,7 +509,7 @@ EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 }
 
 void
-EGL2DeviceContext::discardFramebuffer() noexcept
+EGL2DeviceContext::discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept
 {
 	GL_PLATFORM_LOG("Can't support discardFramebuffer");
 }

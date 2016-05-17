@@ -37,6 +37,8 @@
 #include "shadow_render_pipeline.h"
 
 #include <ray/render_pipeline.h>
+#include <ray/render_object_manager.h>
+
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/material.h>
@@ -97,7 +99,7 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
 {
 	_pipeline->setCamera(camera);
 
-	const auto& lights = _pipeline->getRenderData(RenderQueue::RenderQueueLighting);
+	const auto& lights = _pipeline->getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
@@ -105,8 +107,8 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
 			continue;
 
 		auto lightType = light->getLightType();
-		auto lightShadowView = light->getShadowCamera()->getFramebuffer();
 		auto lightShadowType = light->getShadowType();
+		auto& lightShadowView = light->getShadowCamera()->getFramebuffer();
 
 		_pipeline->setCamera(light->getShadowCamera());
 		_pipeline->setFramebuffer(_softShadowDepthViewTemp[lightShadowType]);
@@ -123,17 +125,17 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
 			if (lightType == LightType::LightTypeSun ||
 				lightType == LightType::LightTypeDirectional)
 			{
-				_pipeline->drawScreenQuad(_softBlurOrthoShadowX);
+				_pipeline->drawScreenQuad(*_softBlurOrthoShadowX);
 			}
 			else
 			{
-				_pipeline->drawScreenQuad(_softBlurPerspectiveFovShadowX);
+				_pipeline->drawScreenQuad(*_softBlurPerspectiveFovShadowX);
 			}
 
 			_softShadowSource->uniformTexture(_softShadowMapTemp[lightShadowType]);
 			_softShadowSourceInv->uniform1f(_shadowMapSizeInv[lightShadowType]);
-			_pipeline->setFramebuffer(light->getShadowCamera()->getFramebuffer());
-			_pipeline->drawScreenQuad(_softBlurShadowY);
+			_pipeline->setFramebuffer(lightShadowView);
+			_pipeline->drawScreenQuad(*_softBlurShadowY);
 		}
 		else
 		{
@@ -141,16 +143,16 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
 				lightType == LightType::LightTypeDirectional)
 			{
 				_softShadowSource->uniformTexture(_softShadowDepthMapTemp[lightShadowType]);
-				_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0, 1.0));
+				_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0f, 1.0f));
 				_pipeline->setFramebuffer(lightShadowView);
-				_pipeline->drawScreenQuad(_softConvOrthoLinearDepth);
+				_pipeline->drawScreenQuad(*_softConvOrthoLinearDepth);
 			}
 			else
 			{
 				_softShadowSource->uniformTexture(_softShadowDepthMapTemp[lightShadowType]);
-				_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0, 1.0));
+				_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0f, 1.0f));
 				_pipeline->setFramebuffer(lightShadowView);
-				_pipeline->drawScreenQuad(_softConvPerspectiveFovLinearDepth);
+				_pipeline->drawScreenQuad(*_softConvPerspectiveFovLinearDepth);
 			}
 		}
 	}

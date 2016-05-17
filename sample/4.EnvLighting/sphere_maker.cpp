@@ -261,12 +261,22 @@ SphereMakerComponent::~SphereMakerComponent() noexcept
 void
 SphereMakerComponent::onActivate() except
 {
+	/*auto diffuseMap = ray::ResManager::instance()->createTexture("E:/libraries/bgfx/cmftStudio/res/Bricks_ao.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
+	if (!diffuseMap)
+		return;
+
+	auto normalMap = ray::ResManager::instance()->createTexture("E:/libraries/bgfx/cmftStudio/res/Bricks_n.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
+	if (!normalMap)
+		return;*/
+
 	auto material = ray::ResManager::instance()->createMaterial("sys:fx/opacity_skinning0.fxml");
 	if (!material)
 		return;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
-	sphereMesh->makeSphere(1.0, 32, 24);
+	sphereMesh->makeSphere(1.0, 64, 48);
+	sphereMesh->computeTangents();
+	sphereMesh->computeTangentQuats();
 
 	for (std::size_t i = 0; i < 10; i++)
 	{
@@ -276,16 +286,19 @@ SphereMakerComponent::onActivate() except
 			gameObject->setActive(true);
 			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
 			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material->clone()));
-			gameObject->setTranslate(ray::Vector3(-10.0f + i * 2.0f, 0, j * 2.0f));
+			gameObject->setScale(ray::float3(0.8));
+			gameObject->setTranslate(ray::float3(-10.0f + i * 2.0f, 0, j * 2.0f));
 
 			ray::float3 diff = diff_spec_parametes[i * 10 + j].xyz();
 			diff = ray::math::pow(diff, ray::float3(1.0f / 2.2f));
 
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
-			material->getParameter("quality")->uniform4f(ray::float4::Zero);
+			material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0,0.0));
 			material->getParameter("diffuse")->uniform3f(diff);
 			material->getParameter("specular")->uniform1f(diff_spec_parametes[i * 10 + j].w);
 			material->getParameter("shininess")->uniform1f(shininess_parametes[i * 10 + j]);
+			//material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
+			//material->getParameter("texNormal")->uniformTexture(normalMap);
 
 			_objects.push_back(gameObject);
 		}

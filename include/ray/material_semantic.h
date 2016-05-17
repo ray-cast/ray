@@ -34,16 +34,28 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/material_desc.h>
+#ifndef _H_MATERIAL_SEMANTIC_H_
+#define _H_MATERIAL_SEMANTIC_H_
+
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
-MaterialDesc::MaterialDesc() noexcept
+class MaterialSemantic final
 {
-}
+public:
+	MaterialSemantic() noexcept;
+	~MaterialSemantic() noexcept;
 
-MaterialDesc::~MaterialDesc() noexcept
-{
-}
+	bool setup() noexcept;
+	void close() noexcept;
+
+	const MaterialParamPtr& getSemantic(GlobalSemanticType type) const noexcept;
+
+private:
+	MaterialParamPtr _parametes[GlobalSemanticType::GlobalSemanticTypeRangeSize];
+};
 
 _NAME_END
+
+#endif

@@ -200,7 +200,7 @@ VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& co
 }
 
 void
-VulkanDeviceContext::discardFramebuffer() noexcept
+VulkanDeviceContext::discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept
 {
 }
 
@@ -216,7 +216,7 @@ VulkanDeviceContext::getFramebuffer() const noexcept
 }
 
 void
-VulkanDeviceContext::setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept
+VulkanDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
 	assert(pipeline->isInstanceOf<VulkanRenderPipeline>());
@@ -231,7 +231,7 @@ VulkanDeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-VulkanDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept
+VulkanDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<VulkanDescriptorSet>());
@@ -247,7 +247,7 @@ VulkanDeviceContext::getDescriptorSet() const noexcept
 }
 
 void
-VulkanDeviceContext::setVertexBufferData(GraphicsDataPtr& data) noexcept
+VulkanDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<VulkanGraphicsData>());
@@ -264,7 +264,7 @@ VulkanDeviceContext::getVertexBufferData() const noexcept
 }
 
 void
-VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr& data) noexcept
+VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<VulkanGraphicsData>());

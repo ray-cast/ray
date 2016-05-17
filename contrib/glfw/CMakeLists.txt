@@ -78,25 +78,6 @@ endif()
 #--------------------------------------------------------------------
 # Set compiler specific flags
 #--------------------------------------------------------------------
-if (MSVC)
-    if (NOT USE_MSVC_RUNTIME_LIBRARY_DLL)
-        foreach (flag CMAKE_C_FLAGS
-                      CMAKE_C_FLAGS_DEBUG
-                      CMAKE_C_FLAGS_RELEASE
-                      CMAKE_C_FLAGS_MINSIZEREL
-                      CMAKE_C_FLAGS_RELWITHDEBINFO)
-
-            if (${flag} MATCHES "/MD")
-                string(REGEX REPLACE "/MD" "/MT" ${flag} "${${flag}}")
-            endif()
-            if (${flag} MATCHES "/MDd")
-                string(REGEX REPLACE "/MDd" "/MTd" ${flag} "${${flag}}")
-            endif()
-
-        endforeach()
-    endif()
-endif()
-
 if (MINGW)
     # Enable link-time exploit mitigation features enabled by default on MSVC
     include(CheckCCompilerFlag)

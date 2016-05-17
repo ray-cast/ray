@@ -277,6 +277,8 @@ bool
 SkyboxComponent::_buildSphereMesh(MeshProperty& mesh) noexcept
 {
 	mesh.makeSphere(1, 16, 12);
+	mesh.computeTangents();
+	mesh.computeTangentQuats();
 	return true;
 }
 
@@ -290,59 +292,71 @@ SkyboxComponent::_buildQuadMesh(MeshProperty& mesh) noexcept
 bool 
 SkyboxComponent::_buildQuadRenderMesh(const MeshProperty& mesh) noexcept
 {
-	_renderScreenQuad = RenderSystem::instance()->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	if (!_renderScreenQuad)
+	_renderScreenQuadVbo = RenderSystem::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	if (!_renderScreenQuadVbo)
 		return true;
+
+	_renderScreenQuadIbo = RenderSystem::instance()->createIndexBuffer(mesh);
+	if (!_renderScreenQuadIbo)
+		return true;
+
 	return false;
 }
 
 bool 
-SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialTechPtr technique) noexcept
+SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept
 {
 	MeshProperty sphere;
 	sphere.makeSphere(1, 16, 12);
 	_quadObject = std::make_shared<Geometry>();
-	_quadObject->setMaterialTech(RenderQueue::RenderQueueOpaqueShading, technique);
-	return _buildRenderObject(_quadObject, sphere, _renderScreenQuad);
+	_quadObject->setMaterial(technique);
+	return _buildRenderObject(_quadObject, sphere, _renderScreenQuadVbo, _renderScreenQuadIbo);
 }
 
 bool 
 SkyboxComponent::_buildSphereRenderMesh(const MeshProperty& mesh) noexcept
 {
-	_renderSphere = RenderSystem::instance()->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBit_VER_NORMAL);
-	if (!_renderSphere)
+	_renderSphereVbo = RenderSystem::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitTangent);
+	if (!_renderSphereVbo)
+		return true;
+
+	_renderSphereIbo = RenderSystem::instance()->createIndexBuffer(mesh);
+	if (!_renderSphereIbo)
 		return true;
 	return false;
 }
 
 bool 
-SkyboxComponent::_buildSphereRenderObject(const MeshProperty& mesh, MaterialTechPtr technique) noexcept
+SkyboxComponent::_buildSphereRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept
 {
 	_sphereObject = std::make_shared<Geometry>();
-	_sphereObject->setMaterialTech(RenderQueue::RenderQueueOpaqueSpecific, technique);
-	return _buildRenderObject(_sphereObject, mesh, _renderSphere);
+	_sphereObject->setMaterial(technique);
+	return _buildRenderObject(_sphereObject, mesh, _renderSphereVbo, _renderSphereIbo);
 }
 
 bool
 SkyboxComponent::_setupMaterial() noexcept
 {
-	auto material = RenderSystem::instance()->createMaterial("sys:fx/sky.fxml");
-	if (!material)
+	_skyBoxMaterial = RenderSystem::instance()->createMaterial("sys:fx/skybox.fxml");
+	if (!_skyBoxMaterial)
 		return false;
 
-	this->setMaterial(material);
+	_skyLightingMaterial = RenderSystem::instance()->createMaterial("sys:fx/skylighting.fxml");
+	if (!_skyLightingMaterial)
+		return false;
+
 	return true;
 }
 
 bool
 SkyboxComponent::_setupSkybox() noexcept
 {
-	if (_loadSkybox(_skyMap) && this->getMaterial())
+	if (_loadSkybox(_skyMap) && _skyBoxMaterial)
 	{
 		MeshProperty sphereMesh;
 		_buildSphereMesh(sphereMesh);
 		_buildSphereRenderMesh(sphereMesh);
-		_buildSphereRenderObject(sphereMesh, this->getMaterial()->getTech("SkyboxRender"));
+		_buildSphereRenderObject(sphereMesh, _skyBoxMaterial);
 
 		this->_attacRenderObject(_sphereObject);
 		return true;
@@ -354,14 +368,14 @@ SkyboxComponent::_setupSkybox() noexcept
 bool 
 SkyboxComponent::_setupSkyLighting() noexcept
 {
-	if (!_skyDiffuse.empty() && !_skySpecular.empty() && this->getMaterial())
+	if (!_skyDiffuse.empty() && !_skySpecular.empty() && _skyLightingMaterial)
 	{
 		if (_loadSkyDiffuse(_skyDiffuse) && _loadSkySpecular(_skySpecular))
 		{
 			MeshProperty quadMesh;
 			_buildQuadMesh(quadMesh);
 			_buildQuadRenderMesh(quadMesh);
-			_buildQuadRenderObject(quadMesh, this->getMaterial()->getTech("SkyLighting"));
+			_buildQuadRenderObject(quadMesh, _skyLightingMaterial);
 
 			this->_attacRenderObject(_quadObject);
 		}
@@ -381,7 +395,8 @@ SkyboxComponent::_destroySkybox() noexcept
 		_sphereObject.reset();
 	}
 	
-	_renderSphere.reset();
+	_renderSphereVbo.reset();
+	_renderSphereIbo.reset();
 }
 
 void 
@@ -393,7 +408,8 @@ SkyboxComponent::_destroySkyLighting() noexcept
 		_quadObject.reset();
 	}
 	
-	_renderScreenQuad.reset();
+	_renderScreenQuadVbo.reset();
+	_renderScreenQuadIbo.reset();
 }
 
 void 
@@ -428,7 +444,7 @@ SkyboxComponent::_updateTransform() noexcept
 {
 	float4x4 transforam;
 	transforam.makeScale(_skyboxSize, _skyboxSize, _skyboxSize);
-	//transforam.setTranslate(this->getGameObject()->getWorldTranslate());
+	transforam.setTranslate(this->getGameObject()->getWorldTranslate());
 	
 	if (_sphereObject)
 		_sphereObject->setTransform(transforam);
@@ -440,36 +456,31 @@ SkyboxComponent::_updateTransform() noexcept
 void 
 SkyboxComponent::_updateMaterial() noexcept
 {
-	auto material = this->getMaterial();
-	if (material)
+	if (_enableSkyBox && _skyBoxMaterial)
 	{
-		if (_enableSkyBox)
+		auto texSkybox = _skyBoxMaterial->getParameter("texSkybox");
+		if (texSkybox)
+			texSkybox->uniformTexture(_skyTexture);
+	}
+
+	if (_enableSkyLighting && _skyLightingMaterial)
+	{
+		auto texEnvDiffuse = _skyLightingMaterial->getParameter("texEnvDiffuse");
+		if (texEnvDiffuse)
+			texEnvDiffuse->uniformTexture(_skyDiffTexture);
+
+		auto texEnvSpecular = _skyLightingMaterial->getParameter("texEnvSpecular");
+		if (texEnvSpecular)
+			texEnvSpecular->uniformTexture(_skySpecTexture);
+
+		auto texEnvFactor = _skyLightingMaterial->getParameter("texEnvFactor");
+		if (texEnvFactor)
 		{
-			auto texSkybox = material->getParameter("texSkybox");
-			if (texSkybox)
-				texSkybox->uniformTexture(_skyTexture);
-		}
-
-		if (_enableSkyLighting)
-		{
-			auto texEnvDiffuse = material->getParameter("texEnvDiffuse");
-			if (texEnvDiffuse)
-				texEnvDiffuse->uniformTexture(_skyDiffTexture);
-
-			auto texEnvSpecular = material->getParameter("texEnvSpecular");
-			if (texEnvSpecular)
-				texEnvSpecular->uniformTexture(_skySpecTexture);
-
-			auto texEnvFactor = material->getParameter("texEnvFactor");
-			if (texEnvFactor)
-			{
-				float3 factor;
-				factor.x = _skySpecTexture->getGraphicsTextureDesc().getMipLevel();
-				factor.y = _skyLightingIntensity.x;
-				factor.z = _skyLightingIntensity.y;
-				texEnvFactor->uniform3f(factor);
-			}
-				
+			float3 factor;
+			factor.x = _skySpecTexture->getGraphicsTextureDesc().getMipLevel();
+			factor.y = _skyLightingIntensity.x;
+			factor.z = _skyLightingIntensity.y;
+			texEnvFactor->uniform3f(factor);
 		}
 	}
 }

@@ -215,11 +215,11 @@ EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, Graphics
 
 	pipeline.setFramebuffer(_paraboloidDualViews);
 	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-	pipeline.drawScreenQuad(_irradianceParaboloid);
+	pipeline.drawScreenQuad(*_irradianceParaboloid);
 
 	pipeline.setFramebuffer(_irradianceSHCoefficientsView);
 	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-	pipeline.drawScreenQuad(_irradianceProjectDualParaboloidToSH);
+	pipeline.drawScreenQuad(*_irradianceProjectDualParaboloidToSH);
 }
 
 void

@@ -47,8 +47,8 @@ public:
 	MaterialParamBinding() noexcept;
 	~MaterialParamBinding() noexcept;
 
-	void setSemantic(bool semantic) noexcept;
-	bool getSemantic() const noexcept;
+	void setSemanticType(GlobalSemanticType semanticType) noexcept;
+	GlobalSemanticType getSemanticType() const noexcept;
 
 	void setMaterialParam(MaterialParamPtr param) noexcept;
 	const MaterialParamPtr& getMaterialParam() const noexcept;
@@ -68,8 +68,8 @@ private:
 
 private:
 	bool _needUpdate;
-	bool _isSemantic;
 	MaterialParamPtr _param;
+	GlobalSemanticType _semanticType;
 	GraphicsUniformSetPtr _uniformSet;
 };
 
@@ -99,17 +99,17 @@ public:
 	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr&& pool) noexcept;
 	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr&& descriptorSetLayout) noexcept;
 
-	GraphicsStatePtr getGraphicsState() const noexcept;
-	GraphicsProgramPtr getGraphicsProgram() const noexcept;
-	GraphicsInputLayoutPtr getGraphicsInputLayout() const noexcept;
-	GraphicsDescriptorPoolPtr getGraphicsDescriptorPool() const noexcept;
-	GraphicsDescriptorSetLayoutPtr getGraphicsDescriptorSetLayout() const noexcept;
-	GraphicsPipelinePtr getRenderPipeline() const noexcept;
-	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
+	const GraphicsStatePtr& getGraphicsState() const noexcept;
+	const GraphicsProgramPtr& getGraphicsProgram() const noexcept;
+	const GraphicsInputLayoutPtr& getGraphicsInputLayout() const noexcept;
+	const GraphicsDescriptorPoolPtr& getGraphicsDescriptorPool() const noexcept;
+	const GraphicsDescriptorSetLayoutPtr& getGraphicsDescriptorSetLayout() const noexcept;
+	const GraphicsPipelinePtr& getRenderPipeline() const noexcept;
+	const GraphicsDescriptorSetPtr& getDescriptorSet() const noexcept;
 
-	void update() noexcept;
+	void update(const MaterialSemantic& semantic) noexcept;
 
-	MaterialPassPtr clone() noexcept;
+	MaterialPassPtr clone() const noexcept;
 
 private:
 	MaterialPass(const MaterialPass&) = delete;
@@ -120,6 +120,7 @@ private:
 
 	std::string _name;
 	MaterialParamBindings _bindings;
+	MaterialParamBindings _bindingParams;
 
 	GraphicsStatePtr _state;
 	GraphicsProgramPtr _program;

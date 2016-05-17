@@ -65,8 +65,8 @@ OcclusionCullNode::setOcclusionCullNode(RenderObjectPtr node) noexcept
 	_item = node;
 }
 
-RenderObjectPtr
-OcclusionCullNode::getOcclusionCullNode() noexcept
+const RenderObjectPtr&
+OcclusionCullNode::getOcclusionCullNode() const noexcept
 {
 	return _item;
 }
@@ -223,10 +223,8 @@ RenderScene::computVisiable(const float4x4& viewProject, OcclusionCullList& list
 
 	for (auto& it : _renderObjectList)
 	{
-		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
-			continue;
-
-		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
+		if (it->onVisiableTest(fru))
+			list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
 	}
 }
 

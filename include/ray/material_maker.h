@@ -77,6 +77,7 @@ private:
 	static GraphicsCompareFunc stringToCompareFunc(const std::string& func) noexcept;
 	static GraphicsStencilOp stringToStencilOp(const std::string& stencilop) noexcept;
 	static GraphicsFormat stringToFormat(const std::string& format) noexcept;
+	static GlobalSemanticType stringToSemanticType(const std::string& type) noexcept;
 
 private:
 	MaterialMaker(const MaterialMaker&) noexcept = delete;

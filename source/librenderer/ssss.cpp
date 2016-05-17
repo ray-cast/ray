@@ -142,12 +142,12 @@ SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source,
 	_lightEyeProjInfo->uniform4f(pipeline.getCamera()->getProjConstant());
 
 	_shadowMap->uniformTexture(shaodwMap);
-	_shadowFactor->uniform4f(float4(light->getShadowCamera()->getClipConstant().xyz(), _sssScale));
-	_shadowEye2LightView->uniform4fmat((pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getView()));
-	_shadowEye2LightViewProject->uniform4fmat(pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getViewProject());
+	_shadowFactor->uniform1f(_sssScale);
+	_shadowEye2LightView->uniform4fmat((light->getShadowCamera()->getView() * pipeline.getCamera()->getViewInverse()));
+	_shadowEye2LightViewProject->uniform4fmat(light->getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 	pipeline.setFramebuffer(source);
-	pipeline.drawScreenQuad(_sssTranslucency);
+	pipeline.drawScreenQuad(*_sssTranslucency);
 }
 
 void
@@ -161,15 +161,15 @@ SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 	_texDepthLinear->uniformTexture(linearDepth);
 
 	_sssSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());
-	_sssFactor->uniform3f(float3(float2(_sssStrength / widght, 0.0), _sssCorrection));
+	_sssFactor->uniform3f(_sssStrength / widght, 0.0f, _sssCorrection);
 
 	pipeline.setFramebuffer(swap);
-	pipeline.drawScreenQuad(_sssGuassBlur);
+	pipeline.drawScreenQuad(*_sssGuassBlur);
 
-	_sssFactor->uniform3f(float3(float2(0.0, _sssStrength / height), _sssCorrection));
+	_sssFactor->uniform3f(0.0, _sssStrength / height, _sssCorrection);
 
 	pipeline.setFramebuffer(source);
-	pipeline.drawScreenQuad(_sssGuassBlur);
+	pipeline.drawScreenQuad(*_sssGuassBlur);
 }
 
 _NAME_END

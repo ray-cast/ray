@@ -173,52 +173,21 @@ OGLFramebuffer::close() noexcept
 }
 
 void
-OGLFramebuffer::setLayer(GraphicsTexturePtr renderTexture, GLuint layer) noexcept
+OGLFramebuffer::discard(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept
 {
-	auto texture = renderTexture->downcast<OGLTexture>();
-	auto textureID = texture->getInstanceID();
-	auto& textureDesc = renderTexture->getGraphicsTextureDesc();
-	if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
-		textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
-		textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
+	assert(numAttachment < GraphicsAttachment::GraphicsAttachmentRangeSize);
+
+	GLenum discardAttachment[GraphicsAttachment::GraphicsAttachmentRangeSize];
+
+	for (std::size_t i = 0; i < numAttachment; i++)
 	{
-		return;
+		if (attachments[i] == GraphicsAttachment::GraphicsAttachmentDepthStencil)
+			discardAttachment[i] = GL_DEPTH_STENCIL_ATTACHMENT;
+		else
+			discardAttachment[i] = GL_COLOR_ATTACHMENT0 + attachments[i];
 	}
-
-	GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-	for (auto& it : _framebufferDesc.getTextures())
-	{
-		if (it == renderTexture)
-			break;
-		attachment++;
-	}
-
-	glFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer);
-}
-
-GLuint
-OGLFramebuffer::getLayer() const noexcept
-{
-	return 0;
-}
-
-void
-OGLFramebuffer::discard() noexcept
-{
-	GLenum attachments[24];
-	GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-	auto& targets = _framebufferDesc.getTextures();
-	auto size = targets.size();
-
-	for (std::size_t i = 0; i < size; i++)
-	{
-		attachments[i] = attachment;
-		attachment++;
-	}
-
-	glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
+	
+	glInvalidateFramebuffer(GL_FRAMEBUFFER, numAttachment, discardAttachment);
 }
 
 GLuint

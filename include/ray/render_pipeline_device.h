@@ -58,10 +58,6 @@ public:
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	void destroyMaterial(MaterialPtr material) noexcept;
 
-	MaterialParamPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
-	void destroySemantic(MaterialParamPtr semantic) const noexcept;
-	MaterialParamPtr getSemantic(const std::string& semantic) const noexcept;
-
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
 	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
@@ -71,11 +67,10 @@ public:
 	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 	GraphicsPipelinePtr createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept;
-
-	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
 
 private:
 	RenderPipelineDevice(const RenderPipelineDevice&) noexcept = delete;

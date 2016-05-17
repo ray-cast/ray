@@ -49,15 +49,13 @@ public:
 	~Camera() noexcept;
 
 	void setAperture(float aspect) noexcept;
-	float getAperture() const noexcept;
-
 	void setNear(float znear) noexcept;
-	float getNear() const noexcept;
-
 	void setFar(float znear) noexcept;
-	float getFar() const noexcept;
-
 	void setRatio(float ratio) noexcept;
+
+	float getAperture() const noexcept;
+	float getNear() const noexcept;
+	float getFar() const noexcept;
 	float getRatio() const noexcept;
 
 	void setViewport(const float4& viewport) noexcept;
@@ -69,21 +67,17 @@ public:
 
 	const float4x4& getView() const noexcept;
 	const float4x4& getViewInverse() const noexcept;
-
 	const float4x4& getProject() const noexcept;
 	const float4x4& getProjectInverse() const noexcept;
-
 	const float4x4& getViewProject() const noexcept;
 	const float4x4& getViewProjectInverse() const noexcept;
 
 	const float2& getProjLength() const noexcept;
 	const float4& getProjConstant() const noexcept;
-
 	const float4& getClipConstant() const noexcept;
 
 	float3 worldToScreen(const float3& pos) const noexcept;
 	float3 worldToProject(const float3& pos) const noexcept;
-
 	float3 screenToWorld(const float3& pos) const noexcept;
 	float3 screenToDirection(const float2& pos) const noexcept;
 
@@ -94,22 +88,21 @@ public:
 	GraphicsClearFlags getClearFlags() const noexcept;
 
 	void setCameraType(CameraType type) noexcept;
-	CameraType getCameraType() const noexcept;
-
+	void setCameraOrder(CameraOrder order) noexcept;
 	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
+
+	CameraType getCameraType() const noexcept;
+	CameraOrder getCameraOrder() const noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
 
-	void setCameraOrder(CameraOrder order) noexcept;
-	CameraOrder getCameraOrder() const noexcept;
-
-	void setGraphicsSwapchain(GraphicsSwapchainPtr swapchin) noexcept;
-	GraphicsSwapchainPtr getGraphicsSwapchain() const noexcept;
-
+	void setSwapchain(GraphicsSwapchainPtr swapchin) noexcept;
 	void setFramebuffer(GraphicsFramebufferPtr texture) noexcept;
-	GraphicsFramebufferPtr getFramebuffer() const noexcept;
+
+	const GraphicsSwapchainPtr& getSwapchain() const noexcept;
+	const GraphicsFramebufferPtr& getFramebuffer() const noexcept;
 
 	void setRenderDataManager(RenderDataManagerPtr manager) noexcept;
-	RenderDataManagerPtr getRenderDataManager() const noexcept;
+	const RenderDataManagerPtr& getRenderDataManager() const noexcept;
 
 	void assignVisiable() noexcept;
 
@@ -122,8 +115,8 @@ private:
 public:
 	virtual void onMoveAfter() noexcept;
 
-	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
-	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPre(const Camera& camera) noexcept;
+	virtual void onRenderPost(const Camera& camera) noexcept;
 
 private:
 	Camera(const Camera&) noexcept = delete;

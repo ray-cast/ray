@@ -173,32 +173,53 @@ RenderSystem::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& 
 	_pipelineManager->blitFramebuffer(srcTarget, src, destTarget, dest);
 }
 
+void 
+RenderSystem::setMaterialPass(const MaterialPassPtr& pass) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->setMaterialPass(pass);
+}
+
 void
-RenderSystem::drawCone(MaterialTechPtr tech) noexcept
+RenderSystem::setVertexBuffer(GraphicsDataPtr vbo) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->setVertexBuffer(vbo);
+}
+
+void
+RenderSystem::setIndexBuffer(GraphicsDataPtr ibo) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->setIndexBuffer(ibo);
+}
+
+void
+RenderSystem::drawCone(const MaterialTech& tech) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->drawCone(tech);
 }
 
 void
-RenderSystem::drawSphere(MaterialTechPtr tech) noexcept
+RenderSystem::drawSphere(const MaterialTech& tech) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->drawSphere(tech);
 }
 
 void
-RenderSystem::drawScreenQuad(MaterialTechPtr tech) noexcept
+RenderSystem::drawScreenQuad(const MaterialTech& tech) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->drawScreenQuad(tech);
 }
 
 void
-RenderSystem::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
+RenderSystem::drawMesh(const GraphicsIndirect& renderable) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawMesh(tech, mesh, renderable);
+	_pipelineManager->drawMesh(renderable);
 }
 
 bool
@@ -285,25 +306,25 @@ RenderSystem::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	return _pipelineManager->createGraphicsData(desc);
 }
 
+GraphicsDataPtr
+RenderSystem::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->createVertexBuffer(mesh, flags);
+}
+
+GraphicsDataPtr
+RenderSystem::createIndexBuffer(const MeshProperty& mesh) noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->createIndexBuffer(mesh);
+}
+
 GraphicsInputLayoutPtr
 RenderSystem::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->createInputLayout(desc);
-}
-
-RenderMeshPtr
-RenderSystem::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
-{
-	assert(_pipelineManager);
-	return _pipelineManager->createRenderMesh(vb, ib);
-}
-
-RenderMeshPtr
-RenderSystem::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
-{
-	assert(_pipelineManager);
-	return _pipelineManager->createRenderMesh(mesh, flags);
 }
 
 void

@@ -69,16 +69,16 @@ public:
 	void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
 	std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept;
 
-	void setRenderPipeline(GraphicsPipelinePtr& pipeline) noexcept;
+	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
 	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 
-	void setDescriptorSet(GraphicsDescriptorSetPtr& descriptorSet) noexcept;
+	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
 	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
 
-	void setVertexBufferData(GraphicsDataPtr& data) noexcept;
+	void setVertexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getVertexBufferData() const noexcept;
 
-	void setIndexBufferData(GraphicsDataPtr& data) noexcept;
+	void setIndexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
 	void* mapTexture(GraphicsTexturePtr texture, std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, GraphicsAccessFlags flags) noexcept;
@@ -87,7 +87,7 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void discardFramebuffer() noexcept;
+	void discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 

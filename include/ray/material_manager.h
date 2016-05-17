@@ -57,11 +57,6 @@ public:
 	void destroyMaterial(MaterialPtr& material) noexcept;
 	void destroyMaterial(MaterialPtr&& material) noexcept;
 
-	MaterialParamPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
-	MaterialParamPtr getSemantic(const std::string& name) noexcept;
-	void destroySemantic(MaterialParamPtr& semantc) noexcept;
-	void destroySemantic(MaterialParamPtr&& semantc) noexcept;
-
 	GraphicsStatePtr createRenderState(const GraphicsStateDesc& shaderDesc) noexcept;
 	GraphicsShaderPtr createShader(const GraphicsShaderDesc& shaderDesc) noexcept;
 	GraphicsProgramPtr createProgram(const GraphicsProgramDesc& programDesc) noexcept;
@@ -87,7 +82,6 @@ private:
 
 private:
 	GraphicsDevicePtr _graphicsDevice;
-	MaterialParams _semantics;
 
 	std::map<std::string, GraphicsShaderPtr> _shaders;
 	std::map<std::string, GraphicsSamplerPtr> _samplers;

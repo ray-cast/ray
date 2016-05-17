@@ -38,17 +38,44 @@
 #include <ray/render_pipeline.h>
 #include <ray/render_object_manager.h>
 #include <ray/material.h>
+#include <ray/graphics_data.h>
 
 _NAME_BEGIN
 
 __ImplementSubClass(Geometry, RenderObject, "Geometry")
 
 Geometry::Geometry() noexcept
+	: _isCastShadow(true)
+	, _isReceiveShadow(true)
 {
 }
 
 Geometry::~Geometry() noexcept
 {
+}
+
+void
+Geometry::setReceiveShadow(bool enable) noexcept
+{
+	_isReceiveShadow = enable;
+}
+
+bool
+Geometry::getReceiveShadow() const noexcept
+{
+	return _isReceiveShadow;
+}
+
+void
+Geometry::setCastShadow(bool value) noexcept
+{
+	_isCastShadow = value;
+}
+
+bool
+Geometry::getCastShadow()  const noexcept
+{
+	return _isCastShadow;
 }
 
 void
@@ -84,29 +111,30 @@ Geometry::getMaterial() noexcept
 	return _material;
 }
 
-void
-Geometry::setMaterialTech(RenderQueue queue, MaterialTechPtr materialTech) noexcept
+void 
+Geometry::setVertexBuffer(GraphicsDataPtr data) noexcept
 {
-	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
-	_techniques[queue] = materialTech;
+	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer));
+	_vbo = data;
 }
 
-MaterialTechPtr 
-Geometry::getMaterialTech(RenderQueue queue) noexcept
+const GraphicsDataPtr& 
+Geometry::getVertexBuffer() const noexcept
 {
-	return _techniques[queue];
+	return _vbo;
 }
 
-void
-Geometry::setRenderMesh(RenderMeshPtr mesh) noexcept
+void 
+Geometry::setIndexBuffer(GraphicsDataPtr data) noexcept
 {
-	_mesh = mesh;
+	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer));
+	_ibo = data;
 }
 
-RenderMeshPtr
-Geometry::getRenderMesh() noexcept
+const GraphicsDataPtr&
+Geometry::getIndexBuffer() const noexcept
 {
-	return _mesh;
+	return _ibo;
 }
 
 void
@@ -144,15 +172,34 @@ Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 }
 
 void
-Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTechPtr _tech) noexcept
+Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTech* tech) noexcept
 {
-	auto tech = _techniques[queue] ? _techniques[queue] : _tech;
-	if (tech)
+	if (_techniques[queue] || tech)
 	{
 		pipeline.setTransform(this->getTransform());
 		pipeline.setTransformInverse(this->getTransformInverse());
 
-		pipeline.drawMeshLayer(tech, _mesh, *_renderable, this->getLayer());
+		pipeline.setVertexBuffer(_vbo);
+		pipeline.setIndexBuffer(_ibo);
+
+		if (_techniques[queue])
+		{
+			auto& passList = _techniques[queue]->getPassList();
+			for (auto& pass : passList)
+			{
+				pipeline.setMaterialPass(pass);
+				pipeline.drawMeshLayer(*_renderable, this->getLayer());
+			}
+		}
+		else if (tech)
+		{
+			auto& passList = tech->getPassList();
+			for (auto& pass : passList)
+			{
+				pipeline.setMaterialPass(pass);
+				pipeline.drawMeshLayer(*_renderable, this->getLayer());
+			}
+		}
 	}
 }
 
@@ -163,6 +210,7 @@ Geometry::stringToRenderQueue(const std::string& techName) noexcept
 	if (techName == "shadow")			return RenderQueue::RenderQueueShadow;
 	if (techName == "opaque")			return RenderQueue::RenderQueueOpaque;
 	if (techName == "opaquespecific")   return RenderQueue::RenderQueueOpaqueSpecific;
+	if (techName == "opaqueshading")    return RenderQueue::RenderQueueOpaqueShading;
 	if (techName == "transparent")		return RenderQueue::RenderQueueTransparent;
 	if (techName == "lighting")			return RenderQueue::RenderQueueLighting;
 	if (techName == "postprocess")		return RenderQueue::RenderQueuePostprocess;

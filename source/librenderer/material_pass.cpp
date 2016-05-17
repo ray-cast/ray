@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/material_pass.h>
 #include <ray/material.h>
+#include <ray/material_semantic.h>
 #include <ray/graphics_device.h>
 #include <ray/graphics_shader.h>
 #include <ray/graphics_pipeline.h>
@@ -48,24 +49,26 @@ __ImplementSubClass(MaterialPass, rtti::Interface, "MaterialPass")
 
 MaterialParamBinding::MaterialParamBinding() noexcept
 	: _needUpdate(true)
-	, _isSemantic(false)
+	, _semanticType(GlobalSemanticType::GlobalSemanticTypeNone)
 {
 }
 
 MaterialParamBinding::~MaterialParamBinding() noexcept
 {
+	if (_param)
+		_param->removeParamListener(_uniformSet);
 }
 
 void 
-MaterialParamBinding::setSemantic(bool semantic) noexcept
+MaterialParamBinding::setSemanticType(GlobalSemanticType semanticType) noexcept
 {
-	_isSemantic = semantic;
+	_semanticType = semanticType;
 }
 
-bool 
-MaterialParamBinding::getSemantic() const noexcept
+GlobalSemanticType
+MaterialParamBinding::getSemanticType() const noexcept
 {
-	return _isSemantic;
+	return _semanticType;
 }
 
 void
@@ -126,26 +129,6 @@ MaterialPass::setup(Material& material) noexcept
 	assert(_program);
 	assert(_inputLayout);
 
-	if (!_inputLayout)
-	{
-		GraphicsInputLayoutDesc inputLayoutDesc;
-
-		std::size_t offset = 0;
-		std::size_t location = 0;
-		const auto& attributes = _program->getActiveAttributes();
-		for (auto& attrib : attributes)
-		{
-			const auto& semantic = attrib->getSemantic();
-			inputLayoutDesc.addComponent(GraphicsVertexLayout(semantic, attrib->getType(), offset));
-			location++;
-			offset += GraphicsVertexLayout::getVertexSize(attrib->getType());
-		}
-		
-		_inputLayout = _program->getDevice()->createInputLayout(inputLayoutDesc);
-		if (!_inputLayout)
-			return false;
-	}
-
 	if (!_descriptorSetLayout)
 	{
 		GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
@@ -153,18 +136,6 @@ MaterialPass::setup(Material& material) noexcept
 		descriptorSetLayoutDesc.setUniformBlockComponents(_program->getActiveUniformBlocks());
 		_descriptorSetLayout = _program->getDevice()->createDescriptorSetLayout(descriptorSetLayoutDesc);
 		if (!_descriptorSetLayout)
-			return false;
-	}
-
-	if (!_pipeline)
-	{
-		GraphicsPipelineDesc pipelineDesc;
-		pipelineDesc.setGraphicsState(_state);
-		pipelineDesc.setGraphicsProgram(_program);
-		pipelineDesc.setGraphicsInputLayout(_inputLayout);
-		pipelineDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
-		_pipeline = _program->getDevice()->createRenderPipeline(pipelineDesc);
-		if (!_pipeline)
 			return false;
 	}
 
@@ -226,20 +197,52 @@ MaterialPass::setup(Material& material) noexcept
 		{
 			auto binding = std::make_unique<MaterialParamBinding>();
 			binding->setGraphicsUniformSet(activeUniformSet);
-
-			if (param->getSemantic())
+			if (param->getSemanticType())
 			{
-				binding->setSemantic(true);
-				binding->setMaterialParam(param->getSemantic());
+				binding->setSemanticType(param->getSemanticType());
+				binding->setMaterialParam(param);
+				_bindings.push_back(std::move(binding));
 			}
 			else
 			{
-				param->addParamListener(binding.get());
+				param->addParamListener(activeUniformSet);
 				binding->setMaterialParam(param);
-			}
 
-			_bindings.push_back(std::move(binding));
+				_bindings.push_back(std::move(binding));
+			}
 		}
+	}
+
+	if (!_inputLayout)
+	{
+		GraphicsInputLayoutDesc inputLayoutDesc;
+
+		std::size_t offset = 0;
+		std::size_t location = 0;
+		const auto& attributes = _program->getActiveAttributes();
+		for (auto& attrib : attributes)
+		{
+			const auto& semantic = attrib->getSemantic();
+			inputLayoutDesc.addComponent(GraphicsVertexLayout(semantic, attrib->getType(), offset));
+			location++;
+			offset += GraphicsVertexLayout::getVertexSize(attrib->getType());
+		}
+
+		_inputLayout = _program->getDevice()->createInputLayout(inputLayoutDesc);
+		if (!_inputLayout)
+			return false;
+	}
+
+	if (!_pipeline)
+	{
+		GraphicsPipelineDesc pipelineDesc;
+		pipelineDesc.setGraphicsState(_state);
+		pipelineDesc.setGraphicsProgram(_program);
+		pipelineDesc.setGraphicsInputLayout(_inputLayout);
+		pipelineDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
+		_pipeline = _program->getDevice()->createRenderPipeline(pipelineDesc);
+		if (!_pipeline)
+			return false;
 	}
 
 	return true;
@@ -248,11 +251,7 @@ MaterialPass::setup(Material& material) noexcept
 void
 MaterialPass::close() noexcept
 {
-	for (auto& it : _bindings)
-	{
-		it->getMaterialParam()->removeParamListener(it.get());
-	}
-
+	_bindingParams.clear();
 	_bindings.clear();
 	_pipeline.reset();
 	_descriptorSet.reset();
@@ -337,52 +336,53 @@ MaterialPass::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr&& de
 	_descriptorSetLayout = std::move(descriptorSetLayout);
 }
 
-GraphicsStatePtr
+const GraphicsStatePtr&
 MaterialPass::getGraphicsState() const noexcept
 {
 	return _state;
 }
 
-GraphicsProgramPtr
+const GraphicsProgramPtr&
 MaterialPass::getGraphicsProgram() const noexcept
 {
 	return _program;
 }
 
-GraphicsInputLayoutPtr
+const GraphicsInputLayoutPtr&
 MaterialPass::getGraphicsInputLayout() const noexcept
 {
 	return _inputLayout;
 }
 
-GraphicsDescriptorPoolPtr
+const GraphicsDescriptorPoolPtr&
 MaterialPass::getGraphicsDescriptorPool() const noexcept
 {
 	return _descriptorPool;
 }
 
-GraphicsDescriptorSetLayoutPtr
+const GraphicsDescriptorSetLayoutPtr&
 MaterialPass::getGraphicsDescriptorSetLayout() const noexcept
 {
 	return _descriptorSetLayout;
 }
 
-GraphicsPipelinePtr
+const GraphicsPipelinePtr&
 MaterialPass::getRenderPipeline() const noexcept
 {
 	return _pipeline;
 }
 
-GraphicsDescriptorSetPtr
+const GraphicsDescriptorSetPtr&
 MaterialPass::getDescriptorSet() const noexcept
 {
 	return _descriptorSet;
 }
 
 MaterialPassPtr
-MaterialPass::clone() noexcept
+MaterialPass::clone() const noexcept
 {
 	auto pass = std::make_shared<MaterialPass>();
+	pass->_name = this->_name;
 	pass->_state = this->_state;
 	pass->_program = this->_program;
 	pass->_descriptorPool = this->_descriptorPool;
@@ -393,18 +393,13 @@ MaterialPass::clone() noexcept
 }
 
 void
-MaterialPass::update() noexcept
+MaterialPass::update(const MaterialSemantic& semantic) noexcept
 {
 	for (auto& it : _bindings)
 	{
-		if (!it->needUpdate() && !it->getSemantic())
-			continue;
-
-		it->needUpdate(false);
-
-		auto& param = it->getMaterialParam();		
+		auto semanticType = it->getSemanticType();
+		auto& param = (semanticType == GlobalSemanticType::GlobalSemanticTypeNone) ? it->getMaterialParam() : semantic.getSemantic(semanticType);
 		auto& uniform = it->getGraphicsUniformSet();
-
 		switch (param->getType())
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:

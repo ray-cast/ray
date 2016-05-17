@@ -70,26 +70,25 @@ public:
 	void setScissor(const Scissor& scissor) noexcept;
 	const Scissor& getScissor() const noexcept;
 
-	void addRenderData(RenderQueue queue, RenderObjectPtr& object) noexcept;
-	const RenderObjects& getRenderData(RenderQueue queue) const noexcept;
-
-	void setTransform(const float4x4& transform) noexcept;
-	void setTransformInverse(const float4x4& transform) noexcept;
-
-	void setFramebuffer(GraphicsFramebufferPtr& target) noexcept;
-	void setFramebuffer(GraphicsFramebufferPtr&& target) noexcept;
+	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void discradRenderTexture() noexcept;
+	void discradRenderTexture(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
-	void drawCone(MaterialTechPtr& tech, std::uint32_t layer = 0) noexcept;
-	void drawSphere(MaterialTechPtr& tech, std::uint32_t layer = 0) noexcept;
-	void drawMesh(MaterialTechPtr& tech, RenderMeshPtr& mesh, const GraphicsIndirect& renderable) noexcept;
-	void drawMeshLayer(MaterialTechPtr& tech, RenderMeshPtr& mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept;
-	void drawScreenQuad(MaterialTechPtr& tech) noexcept;
-	void drawScreenQuadLayer(MaterialTechPtr& tech, std::uint32_t layer) noexcept;
+	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
+	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
+	void setIndexBuffer(GraphicsDataPtr ibo) noexcept;
+
+	void drawCone(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
+	void drawSphere(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
+	void drawScreenQuad(const MaterialTech& tech) noexcept;
+	void drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer) noexcept;
+
+	void drawMesh(const GraphicsIndirect& renderable) noexcept;
+	void drawMeshLayer(const GraphicsIndirect& renderable, std::uint32_t layer) noexcept;
+
 	void drawRenderQueue(RenderQueue queue) noexcept;
-	void drawRenderQueue(RenderQueue queue, MaterialTechPtr& tech) noexcept;
+	void drawRenderQueue(RenderQueue queue, const MaterialTechPtr& tech) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr& postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr& postprocess) noexcept;
@@ -103,7 +102,15 @@ public:
 	bool isVertexSupport(GraphicsFormat format) noexcept;
 	bool isShaderSupport(GraphicsShaderStage stage) noexcept;
 
+	void setTransform(const float4x4& transform) noexcept;
+	void setTransformInverse(const float4x4& transform) noexcept;
+
+	const MaterialParamPtr& getSemanticParam(GlobalSemanticType type) const noexcept;
+
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
+
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
@@ -113,13 +120,6 @@ public:
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	void destroyMaterial(MaterialPtr material) noexcept;
-
-	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
-
-	MaterialParamPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
-	void destroySemantic(MaterialParamPtr semantic) const noexcept;
-	MaterialParamPtr getSemantic(const std::string& semantic) const noexcept;
 
 private:
 	bool setupDeviceContext(WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept;
@@ -146,39 +146,19 @@ private:
 
 	CameraPtr _camera;
 
-	RenderMeshPtr _renderScreenQuad;
-	RenderMeshPtr _renderSphere;
-	RenderMeshPtr _renderCone;
+	GraphicsDataPtr _screenQuadVbo;
+	GraphicsDataPtr _screenQuadIbo;
+	GraphicsIndirect _screenQuadIndirect;
 
-	GraphicsIndirect _renderConeIndirect;
-	GraphicsIndirect _renderSphereIndirect;
-	GraphicsIndirect _renderScreenQuadIndirect;
+	GraphicsDataPtr _sphereVbo;
+	GraphicsDataPtr _sphereIbo;
+	GraphicsIndirect _sphereIndirect;
 
-	MaterialParamPtr _materialMatModel;
-	MaterialParamPtr _materialMatModelInverse;
-	MaterialParamPtr _materialMatProject;
-	MaterialParamPtr _materialMatProjectInverse;
-	MaterialParamPtr _materialMatView;
-	MaterialParamPtr _materialMatViewInverse;
-	MaterialParamPtr _materialMatViewProject;
-	MaterialParamPtr _materialMatViewProjectAdj;
-	MaterialParamPtr _materialMatViewProjectInverse;
-	MaterialParamPtr _materialMatModelView;
-	MaterialParamPtr _materialMatModelViewProject;
-	MaterialParamPtr _materialCameraAperture;
-	MaterialParamPtr _materialCameraFar;
-	MaterialParamPtr _materialCameraNear;
-	MaterialParamPtr _materialCameraPosition;
-	MaterialParamPtr _materialCameraDirection;
-	MaterialParamPtr _materialDepthMap;
-	MaterialParamPtr _materialColorMap;
-	MaterialParamPtr _materialNormalMap;
-	MaterialParamPtr _materialDeferredDepthMap;
-	MaterialParamPtr _materialDeferredDepthLinearMap;
-	MaterialParamPtr _materialDeferredGraphicMap;
-	MaterialParamPtr _materialDeferredNormalMap;
-	MaterialParamPtr _materialDeferredLightMap;
-	MaterialParamPtr _materialDeferredShadowMap;
+	GraphicsDataPtr _coneVbo;
+	GraphicsDataPtr _coneIbo;
+	GraphicsIndirect _coneIndirect;	
+
+	MaterialSemanticPtr _materialSemantics;
 
 	RenderDataManagerPtr _dataManager;
 

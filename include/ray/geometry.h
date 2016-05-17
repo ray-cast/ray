@@ -48,31 +48,42 @@ public:
 	Geometry() noexcept;
 	~Geometry() noexcept;
 
+	void setCastShadow(bool enable) noexcept;
+	void setReceiveShadow(bool enable) noexcept;
+
+	bool getCastShadow() const noexcept;
+	bool getReceiveShadow() const noexcept;
+
 	void setMaterial(MaterialPtr material) noexcept;
 	MaterialPtr getMaterial() noexcept;
 
-	void setMaterialTech(RenderQueue queue, MaterialTechPtr materialTech) noexcept;
-	MaterialTechPtr getMaterialTech(RenderQueue queue) noexcept;
+	void setVertexBuffer(GraphicsDataPtr data) noexcept;
+	const GraphicsDataPtr& getVertexBuffer() const noexcept;
 
-	void setRenderMesh(RenderMeshPtr mesh) noexcept;
-	RenderMeshPtr getRenderMesh() noexcept;
+	void setIndexBuffer(GraphicsDataPtr data) noexcept;
+	const GraphicsDataPtr& getIndexBuffer() const noexcept;
 
 	void setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept;
 	GraphicsIndirectPtr getGraphicsIndirect() noexcept;
 
 private:
 	void onAddRenderData(RenderDataManager& manager) noexcept;
-	void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
+	void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTech* tech) noexcept;
 
 private:
 	static RenderQueue stringToRenderQueue(const std::string& techName) noexcept;
 
 private:
+	bool _isCastShadow;
+	bool _isReceiveShadow;
+
 	MaterialPtr _material;
-	RenderMeshPtr _mesh;
+	RenderPipelineStagePtr _pipelineStages[RenderQueue::RenderQueueRangeSize];
 	MaterialTechPtr _techniques[RenderQueue::RenderQueueRangeSize];
+	GraphicsDataPtr _vbo;
+	GraphicsDataPtr _ibo;
 	GraphicsIndirectPtr _renderable;
-	GraphicsPipelinePtr _pipeline;
+	GraphicsInputLayoutPtr _inputLayout;
 };
 
 _NAME_END

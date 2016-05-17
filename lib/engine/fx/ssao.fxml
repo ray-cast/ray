@@ -17,7 +17,7 @@
     <parameter name="blurSharpness" type="float" />
     <parameter name="blurDirection" type="float2"/>
     <parameter name="texDepth" type="texture2D" semantic="DeferredDepthLinearMap" />
-    <parameter name="texNormal" type="texture2D" semantic="NormalMap" />
+    <parameter name="texNormal" type="texture2D" semantic="NormalTexture" />
     <parameter name="texOcclusion" type="texture2D" />
     <parameter name="texSource" type="texture2D"/>
     <shader>

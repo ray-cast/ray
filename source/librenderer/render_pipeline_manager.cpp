@@ -56,6 +56,7 @@
 #include "fxaa.h"
 #include "light_shaft.h"
 #include "color_grading.h"
+#include "post_render_pipeline.h"
 
 _NAME_BEGIN
 
@@ -109,6 +110,9 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 		_deferredLighting = deferredLighting;
 	}
 
+	_postprocess = std::make_shared<PostRenderPipeline>();
+	_pipeline->addPostProcess(_postprocess);
+
 	this->setRenderSetting(setting);
 	return true;
 }
@@ -122,7 +126,6 @@ RenderPipelineManager::close() noexcept
 	_SSAO.reset();
 	_SSGI.reset();
 	_SSR.reset();
-	_SSSS.reset();
 	_fog.reset();
 	_DOF.reset();
 	_fimicToneMapping.reset();
@@ -189,6 +192,11 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 			this->removePostProcess(_SSGI);
 			_SSGI.reset();
 		}
+	}
+
+	if (_setting.enableSSSS != setting.enableSSSS)
+	{
+		_postprocess->downcast<PostRenderPipeline>()->enableSSSS(setting.enableSSSS);
 	}
 
 	if (_setting.enableSSR != setting.enableSSR)

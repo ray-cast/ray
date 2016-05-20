@@ -41,6 +41,7 @@
 #include <ray/material_tech.h>
 #include <ray/material_param.h>
 #include <ray/material_variant.h>
+#include <ray/material_semantic.h>
 
 _NAME_BEGIN
 
@@ -69,13 +70,13 @@ public:
 	MaterialParams& getParameters() noexcept;
 	const MaterialParams& getParameters() const noexcept;
 
-	void addMacro(MaterialParamPtr& macro) noexcept;
-	void addMacro(MaterialParamPtr&& macro) noexcept;
-	void removeMacro(MaterialParamPtr& macro) noexcept;
-	void removeMacro(MaterialParamPtr&& macro) noexcept;
-	MaterialParamPtr getMacro(const std::string& name) const noexcept;
-	MaterialParams& getMacros() noexcept;
-	const MaterialParams& getMacros() const noexcept;
+	void addMacro(MaterialMacroPtr& macro) noexcept;
+	void addMacro(MaterialMacroPtr&& macro) noexcept;
+	void removeMacro(MaterialMacroPtr& macro) noexcept;
+	void removeMacro(MaterialMacroPtr&& macro) noexcept;
+	MaterialMacroPtr getMacro(const std::string& name) const noexcept;
+	MaterialMacros& getMacros() noexcept;
+	const MaterialMacros& getMacros() const noexcept;
 
 	MaterialPtr clone() const noexcept;
 
@@ -85,7 +86,7 @@ private:
 
 private:
 	MaterialParams _parameters;
-	MaterialParams _macros;
+	MaterialMacros _macros;
 	MaterialTechniques _techniques;
 };
 

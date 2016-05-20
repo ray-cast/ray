@@ -47,6 +47,9 @@ typedef std::shared_ptr<class MaterialSemantic> MaterialSemanticPtr;
 typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
 typedef std::shared_ptr<class MaterialTech> MaterialTechPtr;
 typedef std::shared_ptr<class MaterialParam> MaterialParamPtr;
+typedef std::shared_ptr<class MaterialMacro> MaterialMacroPtr;
+typedef std::shared_ptr<class MaterialSemantic> MaterialSemanticPtr;
+typedef std::shared_ptr<class MaterialSemanticManager> MaterialSemanticManagerPtr;
 typedef std::shared_ptr<class MaterialDesc> MaterialDescPtr;
 typedef std::shared_ptr<class MaterialPassDesc> MaterialPassDescPtr;
 typedef std::shared_ptr<class MaterialTechDesc> MaterialTechDescPtr;
@@ -97,6 +100,7 @@ typedef std::vector<MaterialPtr> Materials;
 typedef std::vector<MaterialPassPtr> MaterialPassList;
 typedef std::vector<MaterialTechPtr> MaterialTechniques;
 typedef std::vector<MaterialParamPtr> MaterialParams;
+typedef std::vector<MaterialMacroPtr> MaterialMacros;
 typedef std::vector<MaterialPassDescPtr> MaterialPassDescList;
 typedef std::vector<MaterialTechDescPtr> MaterialTechniqueDescList;
 typedef std::vector<MaterialVariantPtr> MaterialVariants;
@@ -159,8 +163,9 @@ enum LightShadowType
 	LightShadowTypeLow,
 	LightShadowTypeMedium,
 	LightShadowTypeHigh,
+	LightShadowTypeVeryHigh,
 	LightShadowTypeBeginRange = LightShadowTypeNone,
-	LightShadowTypeEndRange = LightShadowTypeHigh,
+	LightShadowTypeEndRange = LightShadowTypeVeryHigh,
 	LightShadowTypeRangeSize = (LightShadowTypeEndRange - LightShadowTypeBeginRange + 1),
 	LightShadowTypeMaxEnum = 0x7FFFFFFF
 };
@@ -170,7 +175,8 @@ enum LightShadowSize
 	LightShadowSizeLow = 256,
 	LightShadowSizeMedium = 512,
 	LightShadowSizeHigh = 1024,
-	LightShadowSizeEnumCount = 3
+	LightShadowSizeVeryHigh = 2048,
+	LightShadowSizeEnumCount = 4
 };
 
 enum RenderQueue
@@ -229,6 +235,7 @@ enum GlobalSemanticType
 	GlobalSemanticTypeViewProjectInverse,
 	GlobalSemanticTypeModelView,
 	GlobalSemanticTypeModelViewProject,
+	GlobalSemanticTypeModelViewInverse,
 	GlobalSemanticTypeCameraAperture,
 	GlobalSemanticTypeCameraNear,
 	GlobalSemanticTypeCameraFar,

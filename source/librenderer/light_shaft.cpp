@@ -102,7 +102,7 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+LightShaft::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
 {
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 

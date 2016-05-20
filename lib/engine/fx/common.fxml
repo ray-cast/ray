@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<effect version="1270" language="hlsl">
+<effect language="hlsl">
     <shader>
         <![CDATA[
             float2 PosToCoord(float2 Position)

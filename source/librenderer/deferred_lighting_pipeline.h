@@ -38,6 +38,7 @@
 #define _H_DEFERRED_LIGHTING_PIPELINE_H_
 
 #include <ray/render_pipeline_controller.h>
+#include "post_render_pipeline.h"
 
 _NAME_BEGIN
 
@@ -120,7 +121,6 @@ private:
 
 	MaterialParamPtr _eyePosition;
 	MaterialParamPtr _clipInfo;
-	MaterialParamPtr _projInfo;
 
 	MaterialParamPtr _shadowDecal;
 	MaterialParamPtr _shadowMap;
@@ -136,11 +136,11 @@ private:
 
 	float _shadowEsmFactor;
 
-	MaterialParamPtr _materialDeferredDepthMap;
-	MaterialParamPtr _materialDeferredDepthLinearMap;
-	MaterialParamPtr _materialDeferredGraphicMap;
-	MaterialParamPtr _materialDeferredNormalMap;
-	MaterialParamPtr _materialDeferredLightMap;
+	MaterialSemanticPtr _materialDeferredDepthMap;
+	MaterialSemanticPtr _materialDeferredDepthLinearMap;
+	MaterialSemanticPtr _materialDeferredGraphicMap;
+	MaterialSemanticPtr _materialDeferredNormalMap;
+	MaterialSemanticPtr _materialDeferredLightMap;
 
 	GraphicsFormat _deferredDepthFormat;
 	GraphicsFormat _deferredDepthLinearFormat;
@@ -175,6 +175,7 @@ private:
 	GraphicsFramebufferPtr _deferredGraphicsViews;
 
 	RenderPipelinePtr _pipeline;
+	
 };
 
 _NAME_END

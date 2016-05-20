@@ -47,6 +47,7 @@
 _NAME_BEGIN
 
 PostRenderPipeline::PostRenderPipeline() noexcept
+	: _enableSSSS(false)
 {
 }
 
@@ -55,12 +56,21 @@ PostRenderPipeline::~PostRenderPipeline() noexcept
 }
 
 bool
-PostRenderPipeline::enableSSSS(RenderPipeline& pipeline, bool enable) noexcept
+PostRenderPipeline::enableSSSS(bool enable) noexcept
 {
-	if (!_SSSS)
+	if (_enableSSSS != enable)
 	{
-		_SSSS = std::make_shared<SSSS>();
-		_SSSS->setup(pipeline);
+		if (enable)
+		{
+			_SSSS = std::make_shared<SSSS>();
+			_SSSS->setup(*this->getRenderPipeline());
+		}
+		else
+		{
+			_SSSS.reset();
+		}
+
+		_enableSSSS = enable;
 	}
 
 	return true;
@@ -72,9 +82,47 @@ PostRenderPipeline::isEnableSSSS() const noexcept
 	return _SSSS ? true : false;
 }
 
-void
-PostRenderPipeline::render(RenderPipeline& pipeline, GraphicsFramebufferPtr& source) noexcept
+void 
+PostRenderPipeline::onActivate(RenderPipeline& pipeline) noexcept
 {
+	if (_enableSSSS)
+	{
+		_SSSS = std::make_shared<SSSS>();
+		_SSSS->setup(pipeline);
+	}
+}
+
+void 
+PostRenderPipeline::onDeactivate(RenderPipeline& pipeline) noexcept
+{
+}
+
+void 
+PostRenderPipeline::onResolutionChangeBefore(RenderPipeline& pipeline) noexcept
+{
+}
+
+void 
+PostRenderPipeline::onResolutionChangeAfter(RenderPipeline& pipeline) noexcept
+{
+}
+
+void 
+PostRenderPipeline::onRenderPre(RenderPipeline& pipeline) noexcept
+{
+}
+
+void 
+PostRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
+{
+}
+
+bool 
+PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
+{
+	if (queue != RenderQueue::RenderQueuePostprocess)
+		return false;
+
 	_deferredDepthMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthTexture)->getTexture();
 	_deferredDepthLinearMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthLinearTexture)->getTexture();
 	_deferredGraphicMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDiffuseTexture)->getTexture();
@@ -91,15 +139,17 @@ PostRenderPipeline::render(RenderPipeline& pipeline, GraphicsFramebufferPtr& sou
 			auto light = it->downcast<Light>();
 			if (light->getShadowType() != LightShadowType::LightShadowTypeNone && light->getSubsurfaceScattering())
 			{
-				_SSSS->applyTranslucency(pipeline, source, light, _deferredDepthLinearMap, light->getShadowMap());
+				_SSSS->applyTranslucency(pipeline, source, _deferredGraphicMap, _deferredNormalMap, light, _deferredDepthLinearMap, light->getShadowMap());
 			}
 
 			if (light->getSoftShadow())
 				shadowIndex++;
 		}
 
-		_SSSS->applyGuassBlur(pipeline, source, _deferredGraphicMap, _deferredNormalMap, _deferredDepthLinearMap, _swapView);
+		_SSSS->applyGuassBlur(pipeline, source, _deferredDepthLinearMap, dest);
 	}
+
+	return false;
 }
 
 _NAME_END

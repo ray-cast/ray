@@ -55,15 +55,15 @@ MaterialParam::MaterialParam() noexcept
 MaterialParam::MaterialParam(const std::string& name, GraphicsUniformType type) noexcept
 	: _name(name)
 	, _semanticType(GlobalSemanticType::GlobalSemanticTypeNone)
+	, _uniformType(type)
 {
-	_variant.setType(type);
 }
 
 MaterialParam::MaterialParam(std::string&& name, GraphicsUniformType type) noexcept
 	: _name(std::move(name))
 	, _semanticType(GlobalSemanticType::GlobalSemanticTypeNone)
+	, _uniformType(type)
 {
-	_variant.setType(type);
 }
 
 MaterialParam::~MaterialParam() noexcept
@@ -91,13 +91,13 @@ MaterialParam::getName() const noexcept
 void
 MaterialParam::setType(GraphicsUniformType type) noexcept
 {
-	_variant.setType(type);
+	_uniformType = type;
 }
 
 GraphicsUniformType
 MaterialParam::getType() const noexcept
 {
-	return _variant.getType();
+	return _uniformType;
 }
 
 void
@@ -115,7 +115,6 @@ MaterialParam::getSemanticType() const noexcept
 void
 MaterialParam::uniform1b(bool value) noexcept
 {
-	_variant.uniform1b(value);
 	for (auto& it : _listeners)
 		it->uniform1b(value);
 }
@@ -123,7 +122,6 @@ MaterialParam::uniform1b(bool value) noexcept
 void
 MaterialParam::uniform1i(std::int32_t i1) noexcept
 {
-	_variant.uniform1i(i1);
 	for (auto& it : _listeners)
 		it->uniform1i(i1);
 }
@@ -131,7 +129,6 @@ MaterialParam::uniform1i(std::int32_t i1) noexcept
 void
 MaterialParam::uniform2i(const int2& value) noexcept
 {
-	_variant.uniform2i(value);
 	for (auto& it : _listeners)
 		it->uniform2i(value);
 }
@@ -139,7 +136,6 @@ MaterialParam::uniform2i(const int2& value) noexcept
 void
 MaterialParam::uniform2i(std::int32_t i1, std::int32_t i2) noexcept
 {
-	_variant.uniform2i(i1, i2);
 	for (auto& it : _listeners)
 		it->uniform2i(i1, i2);
 }
@@ -147,7 +143,6 @@ MaterialParam::uniform2i(std::int32_t i1, std::int32_t i2) noexcept
 void
 MaterialParam::uniform3i(const int3& value) noexcept
 {
-	_variant.uniform3i(value);
 	for (auto& it : _listeners)
 		it->uniform3i(value);
 }
@@ -155,7 +150,6 @@ MaterialParam::uniform3i(const int3& value) noexcept
 void
 MaterialParam::uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noexcept
 {
-	_variant.uniform3i(i1, i2, i3);
 	for (auto& it : _listeners)
 		it->uniform3i(i1, i2, i3);
 }
@@ -163,7 +157,6 @@ MaterialParam::uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noex
 void
 MaterialParam::uniform4i(const int4& value) noexcept
 {
-	_variant.uniform4i(value);
 	for (auto& it : _listeners)
 		it->uniform4i(value);
 }
@@ -171,7 +164,6 @@ MaterialParam::uniform4i(const int4& value) noexcept
 void
 MaterialParam::uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std::int32_t i4) noexcept
 {
-	_variant.uniform4i(i1, i2, i3, i4);
 	for (auto& it : _listeners)
 		it->uniform4i(i1, i2, i3, i4);
 }
@@ -179,7 +171,6 @@ MaterialParam::uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std:
 void
 MaterialParam::uniform1ui(std::uint32_t ui1) noexcept
 {
-	_variant.uniform1ui(ui1);
 	for (auto& it : _listeners)
 		it->uniform1ui(ui1);
 }
@@ -187,7 +178,6 @@ MaterialParam::uniform1ui(std::uint32_t ui1) noexcept
 void
 MaterialParam::uniform2ui(const uint2& value) noexcept
 {
-	_variant.uniform2ui(value);
 	for (auto& it : _listeners)
 		it->uniform2ui(value);
 }
@@ -195,7 +185,6 @@ MaterialParam::uniform2ui(const uint2& value) noexcept
 void
 MaterialParam::uniform2ui(std::uint32_t ui1, std::uint32_t ui2) noexcept
 {
-	_variant.uniform2ui(ui1, ui2);
 	for (auto& it : _listeners)
 		it->uniform2ui(ui1, ui2);
 }
@@ -203,7 +192,6 @@ MaterialParam::uniform2ui(std::uint32_t ui1, std::uint32_t ui2) noexcept
 void
 MaterialParam::uniform3ui(const uint3& value) noexcept
 {
-	_variant.uniform3ui(value);
 	for (auto& it : _listeners)
 		it->uniform3ui(value);
 }
@@ -211,7 +199,6 @@ MaterialParam::uniform3ui(const uint3& value) noexcept
 void
 MaterialParam::uniform3ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3) noexcept
 {
-	_variant.uniform3ui(ui1, ui2, ui3);
 	for (auto& it : _listeners)
 		it->uniform3ui(ui1, ui2, ui3);
 }
@@ -219,7 +206,6 @@ MaterialParam::uniform3ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui
 void
 MaterialParam::uniform4ui(const uint4& value) noexcept
 {
-	_variant.uniform4ui(value);
 	for (auto& it : _listeners)
 		it->uniform4ui(value);
 }
@@ -227,7 +213,6 @@ MaterialParam::uniform4ui(const uint4& value) noexcept
 void
 MaterialParam::uniform4ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3, std::uint32_t ui4) noexcept
 {
-	_variant.uniform4ui(ui1, ui2, ui3, ui4);
 	for (auto& it : _listeners)
 		it->uniform4ui(ui1, ui2, ui3, ui4);
 }
@@ -235,7 +220,6 @@ MaterialParam::uniform4ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui
 void
 MaterialParam::uniform1f(float f1) noexcept
 {
-	_variant.uniform1f(f1);
 	for (auto& it : _listeners)
 		it->uniform1f(f1);
 }
@@ -243,7 +227,6 @@ MaterialParam::uniform1f(float f1) noexcept
 void
 MaterialParam::uniform2f(const float2& value) noexcept
 {
-	_variant.uniform2f(value);
 	for (auto& it : _listeners)
 		it->uniform2f(value);
 }
@@ -251,7 +234,6 @@ MaterialParam::uniform2f(const float2& value) noexcept
 void
 MaterialParam::uniform2f(float f1, float f2) noexcept
 {
-	_variant.uniform2f(f1, f2);
 	for (auto& it : _listeners)
 		it->uniform2f(f1, f2);
 }
@@ -259,7 +241,6 @@ MaterialParam::uniform2f(float f1, float f2) noexcept
 void
 MaterialParam::uniform3f(const float3& value) noexcept
 {
-	_variant.uniform3f(value);
 	for (auto& it : _listeners)
 		it->uniform3f(value);
 }
@@ -267,7 +248,6 @@ MaterialParam::uniform3f(const float3& value) noexcept
 void
 MaterialParam::uniform3f(float f1, float f2, float f3) noexcept
 {
-	_variant.uniform3f(f1, f2, f3);
 	for (auto& it : _listeners)
 		it->uniform3f(f1, f2, f3);
 }
@@ -275,7 +255,6 @@ MaterialParam::uniform3f(float f1, float f2, float f3) noexcept
 void
 MaterialParam::uniform4f(const float4& value) noexcept
 {
-	_variant.uniform4f(value);
 	for (auto& it : _listeners)
 		it->uniform4f(value);
 }
@@ -283,7 +262,6 @@ MaterialParam::uniform4f(const float4& value) noexcept
 void
 MaterialParam::uniform4f(float f1, float f2, float f3, float f4) noexcept
 {
-	_variant.uniform4f(f1, f2, f3, f4);
 	for (auto& it : _listeners)
 		it->uniform4f(f1, f2, f3, f4);
 }
@@ -291,7 +269,6 @@ MaterialParam::uniform4f(float f1, float f2, float f3, float f4) noexcept
 void
 MaterialParam::uniform2fmat(const float2x2& value) noexcept
 {
-	_variant.uniform2fmat(value);
 	for (auto& it : _listeners)
 		it->uniform2fmat(value);
 }
@@ -299,7 +276,6 @@ MaterialParam::uniform2fmat(const float2x2& value) noexcept
 void
 MaterialParam::uniform2fmat(const float* mat2) noexcept
 {
-	_variant.uniform2fmat(mat2);
 	for (auto& it : _listeners)
 		it->uniform2fmat(mat2);
 }
@@ -307,7 +283,6 @@ MaterialParam::uniform2fmat(const float* mat2) noexcept
 void
 MaterialParam::uniform3fmat(const float3x3& value) noexcept
 {
-	_variant.uniform3fmat(value);
 	for (auto& it : _listeners)
 		it->uniform3fmat(value);
 }
@@ -315,7 +290,6 @@ MaterialParam::uniform3fmat(const float3x3& value) noexcept
 void
 MaterialParam::uniform3fmat(const float* mat3) noexcept
 {
-	_variant.uniform3fmat(mat3);
 	for (auto& it : _listeners)
 		it->uniform3fmat(mat3);
 }
@@ -323,7 +297,6 @@ MaterialParam::uniform3fmat(const float* mat3) noexcept
 void
 MaterialParam::uniform4fmat(const float4x4& value) noexcept
 {
-	_variant.uniform4fmat(value);
 	for (auto& it : _listeners)
 		it->uniform4fmat(value);
 }
@@ -331,7 +304,6 @@ MaterialParam::uniform4fmat(const float4x4& value) noexcept
 void
 MaterialParam::uniform4fmat(const float* mat4) noexcept
 {
-	_variant.uniform4fmat(mat4);
 	for (auto& it : _listeners)
 		it->uniform4fmat(mat4);
 }
@@ -339,7 +311,6 @@ MaterialParam::uniform4fmat(const float* mat4) noexcept
 void
 MaterialParam::uniform1iv(std::size_t num, const std::int32_t* i1v) noexcept
 {
-	_variant.uniform1iv(num, i1v);
 	for (auto& it : _listeners)
 		it->uniform1iv(num, i1v);
 }
@@ -347,7 +318,6 @@ MaterialParam::uniform1iv(std::size_t num, const std::int32_t* i1v) noexcept
 void
 MaterialParam::uniform2iv(std::size_t num, const std::int32_t* i2v) noexcept
 {
-	_variant.uniform2iv(num, i2v);
 	for (auto& it : _listeners)
 		it->uniform2iv(num, i2v);
 }
@@ -355,7 +325,6 @@ MaterialParam::uniform2iv(std::size_t num, const std::int32_t* i2v) noexcept
 void
 MaterialParam::uniform3iv(std::size_t num, const std::int32_t* i3v) noexcept
 {
-	_variant.uniform3iv(num, i3v);
 	for (auto& it : _listeners)
 		it->uniform3iv(num, i3v);
 }
@@ -363,7 +332,6 @@ MaterialParam::uniform3iv(std::size_t num, const std::int32_t* i3v) noexcept
 void
 MaterialParam::uniform4iv(std::size_t num, const std::int32_t* i4v) noexcept
 {
-	_variant.uniform4iv(num, i4v);
 	for (auto& it : _listeners)
 		it->uniform4iv(num, i4v);
 }
@@ -371,7 +339,6 @@ MaterialParam::uniform4iv(std::size_t num, const std::int32_t* i4v) noexcept
 void
 MaterialParam::uniform1uiv(std::size_t num, const std::uint32_t* ui1v) noexcept
 {
-	_variant.uniform1uiv(num, ui1v);
 	for (auto& it : _listeners)
 		it->uniform1uiv(num, ui1v);
 }
@@ -379,7 +346,6 @@ MaterialParam::uniform1uiv(std::size_t num, const std::uint32_t* ui1v) noexcept
 void
 MaterialParam::uniform2uiv(std::size_t num, const std::uint32_t* ui2v) noexcept
 {
-	_variant.uniform2uiv(num, ui2v);
 	for (auto& it : _listeners)
 		it->uniform2uiv(num, ui2v);
 }
@@ -387,7 +353,6 @@ MaterialParam::uniform2uiv(std::size_t num, const std::uint32_t* ui2v) noexcept
 void
 MaterialParam::uniform3uiv(std::size_t num, const std::uint32_t* ui3v) noexcept
 {
-	_variant.uniform3uiv(num, ui3v);
 	for (auto& it : _listeners)
 		it->uniform3uiv(num, ui3v);
 }
@@ -395,7 +360,6 @@ MaterialParam::uniform3uiv(std::size_t num, const std::uint32_t* ui3v) noexcept
 void
 MaterialParam::uniform4uiv(std::size_t num, const std::uint32_t* ui4v) noexcept
 {
-	_variant.uniform4uiv(num, ui4v);
 	for (auto& it : _listeners)
 		it->uniform4uiv(num, ui4v);
 }
@@ -403,7 +367,6 @@ MaterialParam::uniform4uiv(std::size_t num, const std::uint32_t* ui4v) noexcept
 void
 MaterialParam::uniform1fv(std::size_t num, const float* f1v) noexcept
 {
-	_variant.uniform1fv(num, f1v);
 	for (auto& it : _listeners)
 		it->uniform1fv(num, f1v);
 }
@@ -411,7 +374,6 @@ MaterialParam::uniform1fv(std::size_t num, const float* f1v) noexcept
 void
 MaterialParam::uniform2fv(std::size_t num, const float* f2v) noexcept
 {
-	_variant.uniform2fv(num, f2v);
 	for (auto& it : _listeners)
 		it->uniform2fv(num, f2v);
 }
@@ -419,7 +381,6 @@ MaterialParam::uniform2fv(std::size_t num, const float* f2v) noexcept
 void
 MaterialParam::uniform3fv(std::size_t num, const float* f3v) noexcept
 {
-	_variant.uniform3fv(num, f3v);
 	for (auto& it : _listeners)
 		it->uniform3fv(num, f3v);
 }
@@ -427,7 +388,6 @@ MaterialParam::uniform3fv(std::size_t num, const float* f3v) noexcept
 void
 MaterialParam::uniform4fv(std::size_t num, const float* f4v) noexcept
 {
-	_variant.uniform4fv(num, f4v);
 	for (auto& it : _listeners)
 		it->uniform4fv(num, f4v);
 }
@@ -435,7 +395,6 @@ MaterialParam::uniform4fv(std::size_t num, const float* f4v) noexcept
 void
 MaterialParam::uniform2fmatv(std::size_t num, const float* mat2) noexcept
 {
-	_variant.uniform2fmatv(num, mat2);
 	for (auto& it : _listeners)
 		it->uniform2fmatv(num, mat2);
 }
@@ -443,7 +402,6 @@ MaterialParam::uniform2fmatv(std::size_t num, const float* mat2) noexcept
 void
 MaterialParam::uniform3fmatv(std::size_t num, const float* mat3) noexcept
 {
-	_variant.uniform3fmatv(num, mat3);
 	for (auto& it : _listeners)
 		it->uniform3fmatv(num, mat3);
 }
@@ -451,7 +409,6 @@ MaterialParam::uniform3fmatv(std::size_t num, const float* mat3) noexcept
 void
 MaterialParam::uniform4fmatv(std::size_t num, const float* mat4) noexcept
 {
-	_variant.uniform4fmatv(num, mat4);
 	for (auto& it : _listeners)
 		it->uniform4fmatv(num, mat4);
 }
@@ -459,7 +416,6 @@ MaterialParam::uniform4fmatv(std::size_t num, const float* mat4) noexcept
 void
 MaterialParam::uniform1iv(const std::vector<int1>& value) noexcept
 {
-	_variant.uniform1iv(value);
 	for (auto& it : _listeners)
 		it->uniform1iv(value);
 }
@@ -467,7 +423,6 @@ MaterialParam::uniform1iv(const std::vector<int1>& value) noexcept
 void
 MaterialParam::uniform2iv(const std::vector<int2>& value) noexcept
 {
-	_variant.uniform2iv(value);
 	for (auto& it : _listeners)
 		it->uniform2iv(value);
 }
@@ -475,7 +430,6 @@ MaterialParam::uniform2iv(const std::vector<int2>& value) noexcept
 void
 MaterialParam::uniform3iv(const std::vector<int3>& value) noexcept
 {
-	_variant.uniform3iv(value);
 	for (auto& it : _listeners)
 		it->uniform3iv(value);
 }
@@ -483,7 +437,6 @@ MaterialParam::uniform3iv(const std::vector<int3>& value) noexcept
 void
 MaterialParam::uniform4iv(const std::vector<int4>& value) noexcept
 {
-	_variant.uniform4iv(value);
 	for (auto& it : _listeners)
 		it->uniform4iv(value);
 }
@@ -491,7 +444,6 @@ MaterialParam::uniform4iv(const std::vector<int4>& value) noexcept
 void
 MaterialParam::uniform1uiv(const std::vector<uint1>& value) noexcept
 {
-	_variant.uniform1uiv(value);
 	for (auto& it : _listeners)
 		it->uniform1uiv(value);
 }
@@ -499,7 +451,6 @@ MaterialParam::uniform1uiv(const std::vector<uint1>& value) noexcept
 void
 MaterialParam::uniform2uiv(const std::vector<uint2>& value) noexcept
 {
-	_variant.uniform2uiv(value);
 	for (auto& it : _listeners)
 		it->uniform2uiv(value);
 }
@@ -507,7 +458,6 @@ MaterialParam::uniform2uiv(const std::vector<uint2>& value) noexcept
 void
 MaterialParam::uniform3uiv(const std::vector<uint3>& value) noexcept
 {
-	_variant.uniform3uiv(value);
 	for (auto& it : _listeners)
 		it->uniform3uiv(value);
 }
@@ -515,7 +465,6 @@ MaterialParam::uniform3uiv(const std::vector<uint3>& value) noexcept
 void
 MaterialParam::uniform4uiv(const std::vector<uint4>& value) noexcept
 {
-	_variant.uniform4uiv(value);
 	for (auto& it : _listeners)
 		it->uniform4uiv(value);
 }
@@ -523,7 +472,6 @@ MaterialParam::uniform4uiv(const std::vector<uint4>& value) noexcept
 void
 MaterialParam::uniform1fv(const std::vector<float1>& value) noexcept
 {
-	_variant.uniform1fv(value);
 	for (auto& it : _listeners)
 		it->uniform1fv(value);
 }
@@ -531,7 +479,6 @@ MaterialParam::uniform1fv(const std::vector<float1>& value) noexcept
 void
 MaterialParam::uniform2fv(const std::vector<float2>& value) noexcept
 {
-	_variant.uniform2fv(value);
 	for (auto& it : _listeners)
 		it->uniform2fv(value);
 }
@@ -539,7 +486,6 @@ MaterialParam::uniform2fv(const std::vector<float2>& value) noexcept
 void
 MaterialParam::uniform3fv(const std::vector<float3>& value) noexcept
 {
-	_variant.uniform3fv(value);
 	for (auto& it : _listeners)
 		it->uniform3fv(value);
 }
@@ -547,7 +493,6 @@ MaterialParam::uniform3fv(const std::vector<float3>& value) noexcept
 void
 MaterialParam::uniform4fv(const std::vector<float4>& value) noexcept
 {
-	_variant.uniform4fv(value);
 	for (auto& it : _listeners)
 		it->uniform4fv(value);
 }
@@ -555,7 +500,6 @@ MaterialParam::uniform4fv(const std::vector<float4>& value) noexcept
 void
 MaterialParam::uniform2fmatv(const std::vector<float2x2>& value) noexcept
 {
-	_variant.uniform2fmatv(value);
 	for (auto& it : _listeners)
 		it->uniform2fmatv(value);
 }
@@ -563,7 +507,6 @@ MaterialParam::uniform2fmatv(const std::vector<float2x2>& value) noexcept
 void
 MaterialParam::uniform3fmatv(const std::vector<float3x3>& value) noexcept
 {
-	_variant.uniform3fmatv(value);
 	for (auto& it : _listeners)
 		it->uniform3fmatv(value);
 }
@@ -571,7 +514,6 @@ MaterialParam::uniform3fmatv(const std::vector<float3x3>& value) noexcept
 void
 MaterialParam::uniform4fmatv(const std::vector<float4x4>& value) noexcept
 {
-	_variant.uniform4fmatv(value);
 	for (auto& it : _listeners)
 		it->uniform4fmatv(value);
 }
@@ -579,7 +521,6 @@ MaterialParam::uniform4fmatv(const std::vector<float4x4>& value) noexcept
 void
 MaterialParam::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
-	_variant.uniformTexture(texture, sampler);
 	for (auto& it : _listeners)
 		it->uniformTexture(texture, sampler);
 }
@@ -587,217 +528,12 @@ MaterialParam::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sam
 void
 MaterialParam::uniformBuffer(GraphicsDataPtr ubo) noexcept
 {
-	_variant.uniformBuffer(ubo);
 	for (auto& it : _listeners)
 		it->uniformBuffer(ubo);
 }
 
-bool
-MaterialParam::getBool() const noexcept
-{
-	return _variant.getBool();
-}
-
-int
-MaterialParam::getInt() const noexcept
-{
-	return _variant.getInt();
-}
-
-const int2&
-MaterialParam::getInt2() const noexcept
-{
-	return _variant.getInt2();
-}
-
-const int3&
-MaterialParam::getInt3() const noexcept
-{
-	return _variant.getInt3();
-}
-
-const int4&
-MaterialParam::getInt4() const noexcept
-{
-	return _variant.getInt4();
-}
-
-uint
-MaterialParam::getUInt() const noexcept
-{
-	return _variant.getUInt();
-}
-
-const uint2&
-MaterialParam::getUInt2() const noexcept
-{
-	return _variant.getUInt2();
-}
-
-const uint3&
-MaterialParam::getUInt3() const noexcept
-{
-	return _variant.getUInt3();
-}
-
-const uint4&
-MaterialParam::getUInt4() const noexcept
-{
-	return _variant.getUInt4();
-}
-
-float
-MaterialParam::getFloat() const noexcept
-{
-	return _variant.getFloat();
-}
-
-const float2&
-MaterialParam::getFloat2() const noexcept
-{
-	return _variant.getFloat2();
-}
-
-const float3&
-MaterialParam::getFloat3() const noexcept
-{
-	return _variant.getFloat3();
-}
-
-const float4&
-MaterialParam::getFloat4() const noexcept
-{
-	return _variant.getFloat4();
-}
-
-const float2x2&
-MaterialParam::getFloat2x2() const noexcept
-{
-	return _variant.getFloat2x2();
-}
-
-const float3x3&
-MaterialParam::getFloat3x3() const noexcept
-{
-	return _variant.getFloat3x3();
-}
-
-const float4x4&
-MaterialParam::getFloat4x4() const noexcept
-{
-	return _variant.getFloat4x4();
-}
-
-const std::vector<int1>&
-MaterialParam::getIntArray() const noexcept
-{
-	return _variant.getIntArray();
-}
-
-const std::vector<int2>&
-MaterialParam::getInt2Array() const noexcept
-{
-	return _variant.getInt2Array();
-}
-
-const std::vector<int3>&
-MaterialParam::getInt3Array() const noexcept
-{
-	return _variant.getInt3Array();
-}
-
-const std::vector<int4>&
-MaterialParam::getInt4Array() const noexcept
-{
-	return _variant.getInt4Array();
-}
-
-const std::vector<uint1>&
-MaterialParam::getUIntArray() const noexcept
-{
-	return _variant.getUIntArray();
-}
-
-const std::vector<uint2>&
-MaterialParam::getUInt2Array() const noexcept
-{
-	return _variant.getUInt2Array();
-}
-
-const std::vector<uint3>&
-MaterialParam::getUInt3Array() const noexcept
-{
-	return _variant.getUInt3Array();
-}
-
-const std::vector<uint4>&
-MaterialParam::getUInt4Array() const noexcept
-{
-	return _variant.getUInt4Array();
-}
-
-const std::vector<float1>&
-MaterialParam::getFloatArray() const noexcept
-{
-	return _variant.getFloatArray();
-}
-
-const std::vector<float2>&
-MaterialParam::getFloat2Array() const noexcept
-{
-	return _variant.getFloat2Array();
-}
-
-const std::vector<float3>&
-MaterialParam::getFloat3Array() const noexcept
-{
-	return _variant.getFloat3Array();
-}
-
-const std::vector<float4>&
-MaterialParam::getFloat4Array() const noexcept
-{
-	return _variant.getFloat4Array();
-}
-
-const std::vector<float2x2>&
-MaterialParam::getFloat2x2Array() const noexcept
-{
-	return _variant.getFloat2x2Array();
-}
-
-const std::vector<float3x3>&
-MaterialParam::getFloat3x3Array() const noexcept
-{
-	return _variant.getFloat3x3Array();
-}
-
-const std::vector<float4x4>&
-MaterialParam::getFloat4x4Array() const noexcept
-{
-	return _variant.getFloat4x4Array();
-}
-
-GraphicsTexturePtr
-MaterialParam::getTexture() const noexcept
-{
-	return _variant.getTexture();
-}
-
-GraphicsSamplerPtr
-MaterialParam::getTextureSampler() const noexcept
-{
-	return _variant.getTextureSampler();
-}
-
-GraphicsDataPtr
-MaterialParam::getBuffer() const noexcept
-{
-	return _variant.getBuffer();
-}
-
 void
-MaterialParam::addParamListener(GraphicsUniformSetPtr listener) noexcept
+MaterialParam::addParamListener(MaterialParamListener* listener) noexcept
 {
 	auto it = std::find(_listeners.begin(), _listeners.end(), listener);
 	if (it == _listeners.end())
@@ -805,7 +541,7 @@ MaterialParam::addParamListener(GraphicsUniformSetPtr listener) noexcept
 }
 
 void
-MaterialParam::removeParamListener(GraphicsUniformSetPtr listener) noexcept
+MaterialParam::removeParamListener(MaterialParamListener* listener) noexcept
 {
 	auto it = std::find(_listeners.begin(), _listeners.end(), listener);
 	if (it != _listeners.end())
@@ -817,9 +553,768 @@ MaterialParam::clone() const noexcept
 {
 	auto param = std::make_shared<MaterialParam>();
 	param->setName(this->getName());
+	param->setType(this->getType());
 	param->setSemanticType(this->getSemanticType());
-	param->_variant.copy(this->_variant);
 	return param;
+}
+
+MaterialMacro::MaterialMacro() noexcept
+{
+}
+
+MaterialMacro::MaterialMacro(const std::string& name, GraphicsUniformType type) noexcept
+	: _name(name)
+{
+	_variant.setType(type);
+}
+
+MaterialMacro::MaterialMacro(std::string&& name, GraphicsUniformType type) noexcept
+	: _name(std::move(name))
+{
+	_variant.setType(type);
+}
+
+MaterialMacro::~MaterialMacro() noexcept
+{
+}
+
+void
+MaterialMacro::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+void
+MaterialMacro::setName(std::string&& name) noexcept
+{
+	_name = std::move(name);
+}
+
+const std::string&
+MaterialMacro::getName() const noexcept
+{
+	return _name;
+}
+
+void
+MaterialMacro::setType(GraphicsUniformType type) noexcept
+{
+	_variant.setType(type);
+}
+
+GraphicsUniformType
+MaterialMacro::getType() const noexcept
+{
+	return _variant.getType();
+}
+
+void
+MaterialMacro::uniform1b(bool value) noexcept
+{
+	_variant.uniform1b(value);
+	for (auto& it : _listeners)
+		it->uniform1b(value);
+}
+
+void
+MaterialMacro::uniform1i(std::int32_t i1) noexcept
+{
+	_variant.uniform1i(i1);
+	for (auto& it : _listeners)
+		it->uniform1i(i1);
+}
+
+void
+MaterialMacro::uniform2i(const int2& value) noexcept
+{
+	_variant.uniform2i(value);
+	for (auto& it : _listeners)
+		it->uniform2i(value);
+}
+
+void
+MaterialMacro::uniform2i(std::int32_t i1, std::int32_t i2) noexcept
+{
+	_variant.uniform2i(i1, i2);
+	for (auto& it : _listeners)
+		it->uniform2i(i1, i2);
+}
+
+void
+MaterialMacro::uniform3i(const int3& value) noexcept
+{
+	_variant.uniform3i(value);
+	for (auto& it : _listeners)
+		it->uniform3i(value);
+}
+
+void
+MaterialMacro::uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noexcept
+{
+	_variant.uniform3i(i1, i2, i3);
+	for (auto& it : _listeners)
+		it->uniform3i(i1, i2, i3);
+}
+
+void
+MaterialMacro::uniform4i(const int4& value) noexcept
+{
+	_variant.uniform4i(value);
+	for (auto& it : _listeners)
+		it->uniform4i(value);
+}
+
+void
+MaterialMacro::uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std::int32_t i4) noexcept
+{
+	_variant.uniform4i(i1, i2, i3, i4);
+	for (auto& it : _listeners)
+		it->uniform4i(i1, i2, i3, i4);
+}
+
+void
+MaterialMacro::uniform1ui(std::uint32_t ui1) noexcept
+{
+	_variant.uniform1ui(ui1);
+	for (auto& it : _listeners)
+		it->uniform1ui(ui1);
+}
+
+void
+MaterialMacro::uniform2ui(const uint2& value) noexcept
+{
+	_variant.uniform2ui(value);
+	for (auto& it : _listeners)
+		it->uniform2ui(value);
+}
+
+void
+MaterialMacro::uniform2ui(std::uint32_t ui1, std::uint32_t ui2) noexcept
+{
+	_variant.uniform2ui(ui1, ui2);
+	for (auto& it : _listeners)
+		it->uniform2ui(ui1, ui2);
+}
+
+void
+MaterialMacro::uniform3ui(const uint3& value) noexcept
+{
+	_variant.uniform3ui(value);
+	for (auto& it : _listeners)
+		it->uniform3ui(value);
+}
+
+void
+MaterialMacro::uniform3ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3) noexcept
+{
+	_variant.uniform3ui(ui1, ui2, ui3);
+	for (auto& it : _listeners)
+		it->uniform3ui(ui1, ui2, ui3);
+}
+
+void
+MaterialMacro::uniform4ui(const uint4& value) noexcept
+{
+	_variant.uniform4ui(value);
+	for (auto& it : _listeners)
+		it->uniform4ui(value);
+}
+
+void
+MaterialMacro::uniform4ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3, std::uint32_t ui4) noexcept
+{
+	_variant.uniform4ui(ui1, ui2, ui3, ui4);
+	for (auto& it : _listeners)
+		it->uniform4ui(ui1, ui2, ui3, ui4);
+}
+
+void
+MaterialMacro::uniform1f(float f1) noexcept
+{
+	_variant.uniform1f(f1);
+	for (auto& it : _listeners)
+		it->uniform1f(f1);
+}
+
+void
+MaterialMacro::uniform2f(const float2& value) noexcept
+{
+	_variant.uniform2f(value);
+	for (auto& it : _listeners)
+		it->uniform2f(value);
+}
+
+void
+MaterialMacro::uniform2f(float f1, float f2) noexcept
+{
+	_variant.uniform2f(f1, f2);
+	for (auto& it : _listeners)
+		it->uniform2f(f1, f2);
+}
+
+void
+MaterialMacro::uniform3f(const float3& value) noexcept
+{
+	_variant.uniform3f(value);
+	for (auto& it : _listeners)
+		it->uniform3f(value);
+}
+
+void
+MaterialMacro::uniform3f(float f1, float f2, float f3) noexcept
+{
+	_variant.uniform3f(f1, f2, f3);
+	for (auto& it : _listeners)
+		it->uniform3f(f1, f2, f3);
+}
+
+void
+MaterialMacro::uniform4f(const float4& value) noexcept
+{
+	_variant.uniform4f(value);
+	for (auto& it : _listeners)
+		it->uniform4f(value);
+}
+
+void
+MaterialMacro::uniform4f(float f1, float f2, float f3, float f4) noexcept
+{
+	_variant.uniform4f(f1, f2, f3, f4);
+	for (auto& it : _listeners)
+		it->uniform4f(f1, f2, f3, f4);
+}
+
+void
+MaterialMacro::uniform2fmat(const float2x2& value) noexcept
+{
+	_variant.uniform2fmat(value);
+	for (auto& it : _listeners)
+		it->uniform2fmat(value);
+}
+
+void
+MaterialMacro::uniform2fmat(const float* mat2) noexcept
+{
+	_variant.uniform2fmat(mat2);
+	for (auto& it : _listeners)
+		it->uniform2fmat(mat2);
+}
+
+void
+MaterialMacro::uniform3fmat(const float3x3& value) noexcept
+{
+	_variant.uniform3fmat(value);
+	for (auto& it : _listeners)
+		it->uniform3fmat(value);
+}
+
+void
+MaterialMacro::uniform3fmat(const float* mat3) noexcept
+{
+	_variant.uniform3fmat(mat3);
+	for (auto& it : _listeners)
+		it->uniform3fmat(mat3);
+}
+
+void
+MaterialMacro::uniform4fmat(const float4x4& value) noexcept
+{
+	_variant.uniform4fmat(value);
+	for (auto& it : _listeners)
+		it->uniform4fmat(value);
+}
+
+void
+MaterialMacro::uniform4fmat(const float* mat4) noexcept
+{
+	_variant.uniform4fmat(mat4);
+	for (auto& it : _listeners)
+		it->uniform4fmat(mat4);
+}
+
+void
+MaterialMacro::uniform1iv(std::size_t num, const std::int32_t* i1v) noexcept
+{
+	_variant.uniform1iv(num, i1v);
+	for (auto& it : _listeners)
+		it->uniform1iv(num, i1v);
+}
+
+void
+MaterialMacro::uniform2iv(std::size_t num, const std::int32_t* i2v) noexcept
+{
+	_variant.uniform2iv(num, i2v);
+	for (auto& it : _listeners)
+		it->uniform2iv(num, i2v);
+}
+
+void
+MaterialMacro::uniform3iv(std::size_t num, const std::int32_t* i3v) noexcept
+{
+	_variant.uniform3iv(num, i3v);
+	for (auto& it : _listeners)
+		it->uniform3iv(num, i3v);
+}
+
+void
+MaterialMacro::uniform4iv(std::size_t num, const std::int32_t* i4v) noexcept
+{
+	_variant.uniform4iv(num, i4v);
+	for (auto& it : _listeners)
+		it->uniform4iv(num, i4v);
+}
+
+void
+MaterialMacro::uniform1uiv(std::size_t num, const std::uint32_t* ui1v) noexcept
+{
+	_variant.uniform1uiv(num, ui1v);
+	for (auto& it : _listeners)
+		it->uniform1uiv(num, ui1v);
+}
+
+void
+MaterialMacro::uniform2uiv(std::size_t num, const std::uint32_t* ui2v) noexcept
+{
+	_variant.uniform2uiv(num, ui2v);
+	for (auto& it : _listeners)
+		it->uniform2uiv(num, ui2v);
+}
+
+void
+MaterialMacro::uniform3uiv(std::size_t num, const std::uint32_t* ui3v) noexcept
+{
+	_variant.uniform3uiv(num, ui3v);
+	for (auto& it : _listeners)
+		it->uniform3uiv(num, ui3v);
+}
+
+void
+MaterialMacro::uniform4uiv(std::size_t num, const std::uint32_t* ui4v) noexcept
+{
+	_variant.uniform4uiv(num, ui4v);
+	for (auto& it : _listeners)
+		it->uniform4uiv(num, ui4v);
+}
+
+void
+MaterialMacro::uniform1fv(std::size_t num, const float* f1v) noexcept
+{
+	_variant.uniform1fv(num, f1v);
+	for (auto& it : _listeners)
+		it->uniform1fv(num, f1v);
+}
+
+void
+MaterialMacro::uniform2fv(std::size_t num, const float* f2v) noexcept
+{
+	_variant.uniform2fv(num, f2v);
+	for (auto& it : _listeners)
+		it->uniform2fv(num, f2v);
+}
+
+void
+MaterialMacro::uniform3fv(std::size_t num, const float* f3v) noexcept
+{
+	_variant.uniform3fv(num, f3v);
+	for (auto& it : _listeners)
+		it->uniform3fv(num, f3v);
+}
+
+void
+MaterialMacro::uniform4fv(std::size_t num, const float* f4v) noexcept
+{
+	_variant.uniform4fv(num, f4v);
+	for (auto& it : _listeners)
+		it->uniform4fv(num, f4v);
+}
+
+void
+MaterialMacro::uniform2fmatv(std::size_t num, const float* mat2) noexcept
+{
+	_variant.uniform2fmatv(num, mat2);
+	for (auto& it : _listeners)
+		it->uniform2fmatv(num, mat2);
+}
+
+void
+MaterialMacro::uniform3fmatv(std::size_t num, const float* mat3) noexcept
+{
+	_variant.uniform3fmatv(num, mat3);
+	for (auto& it : _listeners)
+		it->uniform3fmatv(num, mat3);
+}
+
+void
+MaterialMacro::uniform4fmatv(std::size_t num, const float* mat4) noexcept
+{
+	_variant.uniform4fmatv(num, mat4);
+	for (auto& it : _listeners)
+		it->uniform4fmatv(num, mat4);
+}
+
+void
+MaterialMacro::uniform1iv(const std::vector<int1>& value) noexcept
+{
+	_variant.uniform1iv(value);
+	for (auto& it : _listeners)
+		it->uniform1iv(value);
+}
+
+void
+MaterialMacro::uniform2iv(const std::vector<int2>& value) noexcept
+{
+	_variant.uniform2iv(value);
+	for (auto& it : _listeners)
+		it->uniform2iv(value);
+}
+
+void
+MaterialMacro::uniform3iv(const std::vector<int3>& value) noexcept
+{
+	_variant.uniform3iv(value);
+	for (auto& it : _listeners)
+		it->uniform3iv(value);
+}
+
+void
+MaterialMacro::uniform4iv(const std::vector<int4>& value) noexcept
+{
+	_variant.uniform4iv(value);
+	for (auto& it : _listeners)
+		it->uniform4iv(value);
+}
+
+void
+MaterialMacro::uniform1uiv(const std::vector<uint1>& value) noexcept
+{
+	_variant.uniform1uiv(value);
+	for (auto& it : _listeners)
+		it->uniform1uiv(value);
+}
+
+void
+MaterialMacro::uniform2uiv(const std::vector<uint2>& value) noexcept
+{
+	_variant.uniform2uiv(value);
+	for (auto& it : _listeners)
+		it->uniform2uiv(value);
+}
+
+void
+MaterialMacro::uniform3uiv(const std::vector<uint3>& value) noexcept
+{
+	_variant.uniform3uiv(value);
+	for (auto& it : _listeners)
+		it->uniform3uiv(value);
+}
+
+void
+MaterialMacro::uniform4uiv(const std::vector<uint4>& value) noexcept
+{
+	_variant.uniform4uiv(value);
+	for (auto& it : _listeners)
+		it->uniform4uiv(value);
+}
+
+void
+MaterialMacro::uniform1fv(const std::vector<float1>& value) noexcept
+{
+	_variant.uniform1fv(value);
+	for (auto& it : _listeners)
+		it->uniform1fv(value);
+}
+
+void
+MaterialMacro::uniform2fv(const std::vector<float2>& value) noexcept
+{
+	_variant.uniform2fv(value);
+	for (auto& it : _listeners)
+		it->uniform2fv(value);
+}
+
+void
+MaterialMacro::uniform3fv(const std::vector<float3>& value) noexcept
+{
+	_variant.uniform3fv(value);
+	for (auto& it : _listeners)
+		it->uniform3fv(value);
+}
+
+void
+MaterialMacro::uniform4fv(const std::vector<float4>& value) noexcept
+{
+	_variant.uniform4fv(value);
+	for (auto& it : _listeners)
+		it->uniform4fv(value);
+}
+
+void
+MaterialMacro::uniform2fmatv(const std::vector<float2x2>& value) noexcept
+{
+	_variant.uniform2fmatv(value);
+	for (auto& it : _listeners)
+		it->uniform2fmatv(value);
+}
+
+void
+MaterialMacro::uniform3fmatv(const std::vector<float3x3>& value) noexcept
+{
+	_variant.uniform3fmatv(value);
+	for (auto& it : _listeners)
+		it->uniform3fmatv(value);
+}
+
+void
+MaterialMacro::uniform4fmatv(const std::vector<float4x4>& value) noexcept
+{
+	_variant.uniform4fmatv(value);
+	for (auto& it : _listeners)
+		it->uniform4fmatv(value);
+}
+
+void
+MaterialMacro::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+{
+	_variant.uniformTexture(texture, sampler);
+	for (auto& it : _listeners)
+		it->uniformTexture(texture, sampler);
+}
+
+void
+MaterialMacro::uniformBuffer(GraphicsDataPtr ubo) noexcept
+{
+	_variant.uniformBuffer(ubo);
+	for (auto& it : _listeners)
+		it->uniformBuffer(ubo);
+}
+
+bool
+MaterialMacro::getBool() const noexcept
+{
+	return _variant.getBool();
+}
+
+int
+MaterialMacro::getInt() const noexcept
+{
+	return _variant.getInt();
+}
+
+const int2&
+MaterialMacro::getInt2() const noexcept
+{
+	return _variant.getInt2();
+}
+
+const int3&
+MaterialMacro::getInt3() const noexcept
+{
+	return _variant.getInt3();
+}
+
+const int4&
+MaterialMacro::getInt4() const noexcept
+{
+	return _variant.getInt4();
+}
+
+uint
+MaterialMacro::getUInt() const noexcept
+{
+	return _variant.getUInt();
+}
+
+const uint2&
+MaterialMacro::getUInt2() const noexcept
+{
+	return _variant.getUInt2();
+}
+
+const uint3&
+MaterialMacro::getUInt3() const noexcept
+{
+	return _variant.getUInt3();
+}
+
+const uint4&
+MaterialMacro::getUInt4() const noexcept
+{
+	return _variant.getUInt4();
+}
+
+float
+MaterialMacro::getFloat() const noexcept
+{
+	return _variant.getFloat();
+}
+
+const float2&
+MaterialMacro::getFloat2() const noexcept
+{
+	return _variant.getFloat2();
+}
+
+const float3&
+MaterialMacro::getFloat3() const noexcept
+{
+	return _variant.getFloat3();
+}
+
+const float4&
+MaterialMacro::getFloat4() const noexcept
+{
+	return _variant.getFloat4();
+}
+
+const float2x2&
+MaterialMacro::getFloat2x2() const noexcept
+{
+	return _variant.getFloat2x2();
+}
+
+const float3x3&
+MaterialMacro::getFloat3x3() const noexcept
+{
+	return _variant.getFloat3x3();
+}
+
+const float4x4&
+MaterialMacro::getFloat4x4() const noexcept
+{
+	return _variant.getFloat4x4();
+}
+
+const std::vector<int1>&
+MaterialMacro::getIntArray() const noexcept
+{
+	return _variant.getIntArray();
+}
+
+const std::vector<int2>&
+MaterialMacro::getInt2Array() const noexcept
+{
+	return _variant.getInt2Array();
+}
+
+const std::vector<int3>&
+MaterialMacro::getInt3Array() const noexcept
+{
+	return _variant.getInt3Array();
+}
+
+const std::vector<int4>&
+MaterialMacro::getInt4Array() const noexcept
+{
+	return _variant.getInt4Array();
+}
+
+const std::vector<uint1>&
+MaterialMacro::getUIntArray() const noexcept
+{
+	return _variant.getUIntArray();
+}
+
+const std::vector<uint2>&
+MaterialMacro::getUInt2Array() const noexcept
+{
+	return _variant.getUInt2Array();
+}
+
+const std::vector<uint3>&
+MaterialMacro::getUInt3Array() const noexcept
+{
+	return _variant.getUInt3Array();
+}
+
+const std::vector<uint4>&
+MaterialMacro::getUInt4Array() const noexcept
+{
+	return _variant.getUInt4Array();
+}
+
+const std::vector<float1>&
+MaterialMacro::getFloatArray() const noexcept
+{
+	return _variant.getFloatArray();
+}
+
+const std::vector<float2>&
+MaterialMacro::getFloat2Array() const noexcept
+{
+	return _variant.getFloat2Array();
+}
+
+const std::vector<float3>&
+MaterialMacro::getFloat3Array() const noexcept
+{
+	return _variant.getFloat3Array();
+}
+
+const std::vector<float4>&
+MaterialMacro::getFloat4Array() const noexcept
+{
+	return _variant.getFloat4Array();
+}
+
+const std::vector<float2x2>&
+MaterialMacro::getFloat2x2Array() const noexcept
+{
+	return _variant.getFloat2x2Array();
+}
+
+const std::vector<float3x3>&
+MaterialMacro::getFloat3x3Array() const noexcept
+{
+	return _variant.getFloat3x3Array();
+}
+
+const std::vector<float4x4>&
+MaterialMacro::getFloat4x4Array() const noexcept
+{
+	return _variant.getFloat4x4Array();
+}
+
+GraphicsTexturePtr
+MaterialMacro::getTexture() const noexcept
+{
+	return _variant.getTexture();
+}
+
+GraphicsSamplerPtr
+MaterialMacro::getTextureSampler() const noexcept
+{
+	return _variant.getTextureSampler();
+}
+
+GraphicsDataPtr
+MaterialMacro::getBuffer() const noexcept
+{
+	return _variant.getBuffer();
+}
+
+void
+MaterialMacro::addParamListener(MaterialParamListener* listener) noexcept
+{
+	auto it = std::find(_listeners.begin(), _listeners.end(), listener);
+	if (it == _listeners.end())
+		_listeners.push_back(listener);
+}
+
+void
+MaterialMacro::removeParamListener(MaterialParamListener* listener) noexcept
+{
+	auto it = std::find(_listeners.begin(), _listeners.end(), listener);
+	if (it != _listeners.end())
+		_listeners.erase(it);
+}
+
+MaterialMacroPtr
+MaterialMacro::clone() const noexcept
+{
+	auto macro = std::make_shared<MaterialMacro>();
+	macro->_name = _name;
+	macro->_variant.copy(_variant);
+	return macro;
 }
 
 _NAME_END

@@ -42,7 +42,7 @@
 #include <ray/graphics_state.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_framebuffer.h>
-#include <ray/material_manager.h>
+#include <ray/material.h>
 #include <ray/render_object_manager.h>
 
 _NAME_BEGIN
@@ -98,7 +98,6 @@ void
 DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 {
 	_clipInfo->uniform2f(camera->getClipConstant().xy());
-	_projInfo->uniform4f(camera->getProjConstant());
 
 	_pipeline->setCamera(camera);
 
@@ -271,7 +270,7 @@ void
 DeferredLightingPipeline::renderPointLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
-	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTransform().getTranslate()));
+	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTranslate()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	auto transform = light.getTransform();
@@ -285,7 +284,7 @@ void
 DeferredLightingPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
-	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTransform().getTranslate()));
+	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTranslate()));
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 	_lightOuterInner->uniform2f(light.getSpotOuterCone().y, light.getSpotInnerCone().y);
@@ -319,7 +318,7 @@ void
 DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
-	_lightEyePosition->uniform3f(light.getTransform().getTranslate());
+	_lightEyePosition->uniform3f(light.getTranslate());
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
@@ -416,7 +415,6 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_texSource = _deferredLighting->getParameter("texSource"); if (!_texSource) return false;
 
 	_clipInfo = _deferredLighting->getParameter("clipInfo"); if (!_clipInfo) return false;
-	_projInfo = _deferredLighting->getParameter("projInfo"); if (!_projInfo) return false;
 
 	_lightColor = _deferredLighting->getParameter("lightColor"); if (!_lightColor) return false;
 	_lightEyePosition = _deferredLighting->getParameter("lightEyePosition"); if (!_lightEyePosition) return false;
@@ -674,7 +672,6 @@ DeferredLightingPipeline::destroyDeferredMaterials() noexcept
 	_texSource.reset();
 
 	_clipInfo.reset();
-	_projInfo.reset();
 
 	_shadowDecal.reset();
 	_shadowMap.reset();

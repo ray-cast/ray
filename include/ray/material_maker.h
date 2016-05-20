@@ -50,12 +50,16 @@ public:
 
 	bool doCanRead(StreamReader& stream) const noexcept;
 
-	bool load(MaterialManager& manager, Material& material, StreamReader& stream) noexcept;
-	bool load(MaterialManager& manager, Material& material, iarchive& reader) except;
 	bool load(MaterialManager& manager, Material& material, const std::string& filename) noexcept;
+	bool load(MaterialManager& manager, Material& material, iarchive& reader) except;
+	bool load(MaterialManager& manager, Material& material, StreamReader& stream) noexcept;
 
 private:
-	void instanceInclude(MaterialManager& manager, Material& material, iarchive& reader) except;
+	bool loadMaterial(MaterialManager& manager, Material& material, iarchive& reader) except;
+	bool loadEffect(MaterialManager& manager, Material& material, iarchive& reader) except;
+
+private:
+	bool instanceInclude(MaterialManager& manager, Material& material, iarchive& reader) except;
 	void instancePass(MaterialManager& manager, Material& material, MaterialTechPtr& tech, iarchive& reader) except;
 	void instanceTech(MaterialManager& manager, Material& material, iarchive& reader) except;
 	void instanceSampler(MaterialManager& manager, Material& material, iarchive& reader) except;

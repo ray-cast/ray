@@ -189,7 +189,7 @@ Material::getParameters() const noexcept
 }
 
 void
-Material::addMacro(MaterialParamPtr& macro) noexcept
+Material::addMacro(MaterialMacroPtr& macro) noexcept
 {
 	assert(macro);
 	assert(std::find(_macros.begin(), _macros.end(), macro) == _macros.end());
@@ -197,7 +197,7 @@ Material::addMacro(MaterialParamPtr& macro) noexcept
 }
 
 void
-Material::addMacro(MaterialParamPtr&& macro) noexcept
+Material::addMacro(MaterialMacroPtr&& macro) noexcept
 {
 	assert(macro);
 	assert(std::find(_macros.begin(), _macros.end(), macro) == _macros.end());
@@ -205,7 +205,7 @@ Material::addMacro(MaterialParamPtr&& macro) noexcept
 }
 
 void
-Material::removeMacro(MaterialParamPtr& macro) noexcept
+Material::removeMacro(MaterialMacroPtr& macro) noexcept
 {
 	assert(macro);
 	auto it = std::find(_macros.begin(), _macros.end(), macro);
@@ -216,7 +216,7 @@ Material::removeMacro(MaterialParamPtr& macro) noexcept
 }
 
 void
-Material::removeMacro(MaterialParamPtr&& macro) noexcept
+Material::removeMacro(MaterialMacroPtr&& macro) noexcept
 {
 	assert(macro);
 	auto it = std::find(_macros.begin(), _macros.end(), macro);
@@ -226,7 +226,7 @@ Material::removeMacro(MaterialParamPtr&& macro) noexcept
 	}
 }
 
-MaterialParamPtr
+MaterialMacroPtr
 Material::getMacro(const std::string& name) const noexcept
 {
 	assert(!name.empty());
@@ -239,13 +239,13 @@ Material::getMacro(const std::string& name) const noexcept
 	return nullptr;
 }
 
-MaterialParams&
+MaterialMacros&
 Material::getMacros() noexcept
 {
 	return _macros;
 }
 
-const MaterialParams&
+const MaterialMacros&
 Material::getMacros() const noexcept
 {
 	return _macros;
@@ -259,7 +259,7 @@ Material::clone() const noexcept
 		material->addParameter(it->clone());
 
 	for (auto& it : _macros)
-		material->addParameter(it->clone());
+		material->addMacro(it->clone());
 
 	for (auto& it : _techniques)
 		material->addTech(it->clone());

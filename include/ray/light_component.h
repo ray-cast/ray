@@ -64,8 +64,8 @@ public:
 	const float2& getSpotOuterCone() const noexcept;
 	const float3& getLightColor() const noexcept;
 
-	void setShadow(bool shadow) noexcept;
-	bool getShadow() const noexcept;
+	void setShadow(LightShadowType shadowType) noexcept;
+	LightShadowType getShadow() const noexcept;
 
 	void setSoftShadow(bool softEnable) noexcept;
 	bool getSoftShadow() const noexcept;

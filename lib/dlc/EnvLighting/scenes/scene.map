@@ -29,9 +29,11 @@
         <component class="Light">
             <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="200.0"/>
-            <attribute intensity="2.0"/>
+            <attribute range="60.0"/>
+            <attribute intensity="1.0"/>
             <attribute shadow="false"/>
+            <attribute soft="true"/>
+            <attribute sss="true"/>
         </component>
     </object>
     <object>

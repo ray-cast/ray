@@ -46,7 +46,7 @@
 _NAME_BEGIN
 
 SSSS::SSSS() noexcept
-	: _sssScale(15.0f)
+	: _sssScale(50.0f)
 	, _sssStrength(1.0f)
 	, _sssCorrection(1.0f)
 {
@@ -78,7 +78,6 @@ SSSS::setup(RenderPipeline& pipeline) noexcept
 
 	_lightColor = _material->getParameter("lightColor");
 	_lightEyePosition = _material->getParameter("lightEyePosition");
-	_lightEyeProjInfo = _material->getParameter("eyeProjInfo");
 
 	_shadowMap = _material->getParameter("shadowMap");
 	_shadowFactor = _material->getParameter("shadowFactor");
@@ -130,20 +129,21 @@ SSSS::getCorrection() const noexcept
 }
 
 void
-SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, LightPtr light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwMap) noexcept
+SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, LightPtr light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwMap) noexcept
 {
 	assert(light && shaodwMap && source);
 	assert(linearDepth);
 
+	_texMRT0->uniformTexture(MRT0);
+	_texMRT1->uniformTexture(MRT1);
 	_texDepthLinear->uniformTexture(linearDepth);
 
 	_lightColor->uniform3f(light->getLightColor() * light->getIntensity());
-	_lightEyePosition->uniform3f(light->getTranslate() * pipeline.getCamera()->getView());
-	_lightEyeProjInfo->uniform4f(pipeline.getCamera()->getProjConstant());
+	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light->getTranslate()));
 
 	_shadowMap->uniformTexture(shaodwMap);
 	_shadowFactor->uniform1f(_sssScale);
-	_shadowEye2LightView->uniform4fmat((light->getShadowCamera()->getView() * pipeline.getCamera()->getViewInverse()));
+	_shadowEye2LightView->uniform4fmat(light->getShadowCamera()->getView() * pipeline.getCamera()->getViewInverse());
 	_shadowEye2LightViewProject->uniform4fmat(light->getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 	pipeline.setFramebuffer(source);
@@ -151,13 +151,11 @@ SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source,
 }
 
 void
-SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, GraphicsTexturePtr linearDepth, GraphicsFramebufferPtr swap) noexcept
+SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr linearDepth, GraphicsFramebufferPtr swap) noexcept
 {
 	std::uint32_t widght = source->getGraphicsFramebufferDesc().getWidth();
 	std::uint32_t height = source->getGraphicsFramebufferDesc().getHeight();
 
-	_texMRT0->uniformTexture(MRT0);
-	_texMRT1->uniformTexture(MRT1);
 	_texDepthLinear->uniformTexture(linearDepth);
 
 	_sssSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());

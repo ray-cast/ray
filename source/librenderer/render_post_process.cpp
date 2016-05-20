@@ -38,11 +38,10 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(RenderPostProcess, rtti::Interface, "RenderPostProcess")
+__ImplementSubInterface(RenderPostProcess, rtti::Interface, "RenderPostProcess")
 
 RenderPostProcess::RenderPostProcess() noexcept
 	: _active(false)
-	, _renderQueue(RenderQueue::RenderQueuePostprocess)
 	, _renderPipeline(nullptr)
 {
 }
@@ -54,6 +53,8 @@ RenderPostProcess::~RenderPostProcess() noexcept
 void
 RenderPostProcess::setActive(bool active) noexcept
 {
+	assert(_renderPipeline);
+
 	if (_active != active)
 	{
 		if (active)
@@ -69,18 +70,6 @@ bool
 RenderPostProcess::getActive() const noexcept
 {
 	return _active;
-}
-
-void
-RenderPostProcess::setRenderQueue(RenderQueue queue) noexcept
-{
-	_renderQueue = queue;
-}
-
-RenderQueue
-RenderPostProcess::getRenderQueue() const noexcept
-{
-	return _renderQueue;
 }
 
 void
@@ -113,16 +102,16 @@ RenderPostProcess::onRenderPost(RenderPipeline& pipeline) noexcept
 {
 }
 
-bool
-RenderPostProcess::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
-{
-	return false;
-}
-
 void
 RenderPostProcess::_setRenderPipeline(RenderPipeline* pipeline) noexcept
 {
 	_renderPipeline = pipeline;
+}
+
+RenderPipeline* 
+RenderPostProcess::getRenderPipeline() const noexcept
+{
+	return _renderPipeline;
 }
 
 _NAME_END

@@ -1011,6 +1011,9 @@ MeshProperty::makeFloor(float width, float height, std::uint32_t widthSegments, 
 {
 	this->clear();
 	this->makePlane(width, height, 0, widthSegments, 0, heightSegments, 'x', 'z', 1.0, 1.0);
+
+	this->computeTangents();
+	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1080,6 +1083,8 @@ MeshProperty::makeNoise(float width, float height, std::uint32_t widthSegments, 
 		}
 	}
 
+	this->computeTangents();
+	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1099,6 +1104,8 @@ MeshProperty::makeCube(float width, float height, float depth, std::uint32_t wid
 	this->makePlane(width, height, depthHalf, widthSegments, heightSegments, depthSegments, 'x', 'y', 1, -1, false); // pz
 	this->makePlane(width, height, -depthHalf, widthSegments, heightSegments, depthSegments, 'x', 'y', -1, -1, false); // nz
 
+	this->computeTangents();
+	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1185,6 +1192,8 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 		}
 	}
 
+	this->computeTangents();
+	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1284,6 +1293,8 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		_faces.push_back(v1);
 	}
 
+	this->computeTangents();
+	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1452,7 +1463,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 				else
 				{
 					auto transformInverse = math::transformInverse(transform);
-					auto transformInverseTranspose = math::transpose(transformInverse);
+					auto transformInverseTranspose = (float3x3)math::transpose(transformInverse);
 
 					for (std::size_t j = offsetIndices; j < vertices.size(); j++)
 						(*vertices_)[j] *= transform;

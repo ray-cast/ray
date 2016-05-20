@@ -74,8 +74,11 @@ FXAA::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-FXAA::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+FXAA::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
 {
+	if (queue != RenderQueue::RenderQueuePostprocess)
+		return false;
+
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
 	auto& textureDesc = texture->getGraphicsTextureDesc();

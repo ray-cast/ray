@@ -6,7 +6,6 @@
     <parameter name="texDepthLinear" type="texture2D"/>
     <parameter name="texMRT0" type="texture2D"/>
     <parameter name="texMRT1" type="texture2D"/>
-    <parameter name="eyeProjInfo" type="float4"/>
     <parameter name="lightColor" type="float3"/>
     <parameter name="lightEyePosition" type="float3" />
     <parameter name="blurFactor" type="float3"/>
@@ -14,16 +13,19 @@
     <parameter name="shadowMap" type="texture2D" />
     <parameter name="shadowEye2LightView" type="float4x4"/>
     <parameter name="shadowEye2LightViewProject" type="float4x4"/>
+    <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <shader name="vertex">
         <![CDATA[
         void PostProcessVS(
             in float4 Position : POSITION0,
-            out float2 oTexcoord : TEXCOORD0,
+            out float4 oTexcoord : TEXCOORD0,
+            out float3 oViewDir : TEXCOORD1,
             out float4 oPosition : SV_Position
             )
         {
             oPosition = Position;
-            oTexcoord = PosToCoord(Position.xy);
+            oViewDir  = mul(matProjectInverse, Position).xyz;
+            oTexcoord = PosToCoord(Position);
         }
 
         float3 CalcTransmittance(float d)
@@ -37,30 +39,26 @@
                     float3(0.078, 0.0,   0.0)   * exp(dd / 7.41);
         }
 
-        float4 TranslucencyPS(in float2 coord : TEXCOORD0, in float3 viewidr : TEXCOORD1) : SV_Target
+        float4 TranslucencyPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
         {
             float4 MRT0 = texMRT0.Sample(PointClamp, coord);
             float4 MRT1 = texMRT1.Sample(PointClamp, coord);
 
             float3 N = restoreNormal(MRT1);
-            float3 P = restorePosition(texDepthLinear, eyeProjInfo, coord);
+            float3 P = restorePosition(texDepthLinear, coord, normalize(viewdir));
             float3 L = normalize(P - lightEyePosition);
-            float3 transmittance = 0;
+
+            float4 proj = mul(shadowEye2LightViewProject, float4(P-N*0.02, 1.0));
+            proj.xy /= proj.w;
+            proj.xy = PosToCoord(proj.xy);
+
+            float d1 = shadowMap.Sample(LinearClamp, proj.xy).r;
+            float d2 = length(mul(shadowEye2LightView, float4(P, 1.0)).xyz);
+            float d = abs(d2 - d1);
 
             float irradiance = max(0.0, 0.3 + dot(N, L));
-            if (irradiance > 0.0)
-            {
-                float4 proj = mul(shadowEye2LightViewProject, float4(P, 1.0));
-                proj /= proj.w;
-                proj = PosToCoord(proj);
-
-                float d1 = shadowMap.Sample(LinearClamp, proj.xy).r;
-                float d2 = length(mul(shadowEye2LightView, float4(P, 1.0)).xyz);
-                float d = abs(d2 - d1);
-
-                float3 diffuse = restoreDiffuse(MRT0);
-                transmittance = CalcTransmittance(d * shadowFactor) * irradiance * lightColor * diffuse;
-            }
+            float3 diffuse = restoreDiffuse(MRT0);
+            float3 transmittance = CalcTransmittance(d * shadowFactor) * lightColor * diffuse * irradiance;
 
             return float4(transmittance, 1.0);
         }
@@ -73,7 +71,7 @@
             float4 colorM = texSource.Sample(PointClamp, coord);
             float depthM = texDepthLinear.Sample(PointClamp, coord).r;
 
-            float2 finalStep = blurFactor.xy / depthM;
+            float2 finalStep = blurFactor.xy;
             float4 colorBlurred = colorM * 0.382f;
 
             for (int i = 0; i < 6; i++)
@@ -99,7 +97,7 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
-            <state name="cullmode" value="none"/>
+            <state name="cullmode" value="back"/>
 
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>

@@ -59,7 +59,6 @@ Atmospheric::Setting::Setting() noexcept
 
 Atmospheric::Atmospheric() noexcept
 {
-	this->setRenderQueue(RenderQueue::RenderQueueOpaqueSpecific);
 }
 
 Atmospheric::~Atmospheric() noexcept
@@ -127,8 +126,11 @@ Atmospheric::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-Atmospheric::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+Atmospheric::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
 {
+	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
+		return false;
+
 	auto& lighting = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lighting)
 	{

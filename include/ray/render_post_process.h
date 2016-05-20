@@ -43,16 +43,13 @@ _NAME_BEGIN
 
 class EXPORT RenderPostProcess : public rtti::Interface
 {
-	__DeclareSubClass(RenderPostProcess, rtti::Interface)
+	__DeclareSubInterface(RenderPostProcess, rtti::Interface)
 public:
 	RenderPostProcess() noexcept;
 	virtual ~RenderPostProcess() noexcept;
 
 	void setActive(bool active) noexcept;
 	bool getActive() const noexcept;
-
-	void setRenderQueue(RenderQueue queue) noexcept;
-	RenderQueue getRenderQueue() const noexcept;
 
 public:
 	virtual void onActivate(RenderPipeline& pipeline) noexcept;
@@ -64,14 +61,17 @@ public:
 	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
 	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
 
-	virtual bool onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept;
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept = 0;
 
+private:
+	friend class RenderPipeline;
 	void _setRenderPipeline(RenderPipeline* pipeline) noexcept;
+
+protected:
+	RenderPipeline* getRenderPipeline() const noexcept;
 
 private:
 	bool _active;
-
-	RenderQueue _renderQueue;
 	RenderPipeline* _renderPipeline;
 };
 

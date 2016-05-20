@@ -64,7 +64,7 @@ ResManager::~ResManager() noexcept
 MaterialPtr
 ResManager::createMaterial(const std::string& name) noexcept
 {
-	auto material = ray::RenderSystem::instance()->createMaterial(name);
+	auto material = RenderSystem::instance()->createMaterial(name);
 	if (!material)
 		return nullptr;
 	return material;
@@ -73,7 +73,7 @@ ResManager::createMaterial(const std::string& name) noexcept
 GraphicsTexturePtr
 ResManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
 {
-	auto texture = ray::RenderSystem::instance()->createTexture(name, dim, filter);
+	auto texture = RenderSystem::instance()->createTexture(name, dim, filter);
 	if (!texture)
 		return nullptr;
 	return texture;
@@ -98,11 +98,11 @@ ResManager::createGameObject(const std::string& name, const std::string& anim) n
 
 	this->createAnimation(*model, gameObject, bones, anim);
 
-	/*GameObjects rigidbodys;
+	GameObjects rigidbodys;
 	this->createRigidbodyToBone(*model, rigidbodys, bones);
 
 	GameObjects joints;
-	this->createJoints(*model, rigidbodys, joints);*/
+	this->createJoints(*model, rigidbodys, joints);
 
 	Materials materials;
 	this->createMaterials(*model, materials);
@@ -150,6 +150,9 @@ ResManager::createMeshes(const Model& model, GameObjectPtr& object) noexcept
 	CombineMeshes combineMeshes;
 	for (auto& meshProp : model.getMeshsList())
 	{
+		if (meshProp->getTexcoordArray().empty())
+			continue;
+
 		if (meshProp->getTangentArray().empty())
 			meshProp->computeTangents();
 		if (meshProp->getTangentQuatArray().empty())

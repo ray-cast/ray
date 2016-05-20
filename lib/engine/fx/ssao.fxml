@@ -3,11 +3,10 @@
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <macro name="NUM_SAMPLE" type="int" value="8"/>
-    <macro name="NUM_SAMPLE_INV" type="float" value="0.125"/>
+    <macro name="NUM_SAMPLE" type="int" value="10"/>
+    <macro name="NUM_SAMPLE_INV" type="float" value="0.1"/>
     <macro name="BLUR_RADIUS" type="int" value="8"/>
     <parameter name="projScale" type="float"/>
-    <parameter name="projInfo" type="float4"/>
     <parameter name="radius" type="float"/>
     <parameter name="radius2" type="float"/>
     <parameter name="sphere[NUM_SAMPLE]" type="float2[]"/>
@@ -20,6 +19,7 @@
     <parameter name="texNormal" type="texture2D" semantic="NormalTexture" />
     <parameter name="texOcclusion" type="texture2D" />
     <parameter name="texSource" type="texture2D"/>
+    <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <shader>
         <![CDATA[
             float linearizeDepth(float2 uv)
@@ -27,9 +27,9 @@
                 return texDepth.Sample(PointClamp, uv).r;
             }
 
-            float3 GetPosition(float2 uv)
+            float3 GetPosition(float2 uv, float3 viewdir)
             {
-                return restorePosition(texDepth, projInfo, uv);
+                return restorePosition(texDepth, uv, viewdir);
             }
 
             float3 GetNormal(float2 uv)
@@ -57,18 +57,23 @@
             void PostProcessVS(
                 in float4 Position : POSITION0,
                 out float4 oTexcoord : TEXCOORD0,
+                out float3 oViewDir : TEXCOORD1,
                 out float4 oPosition : SV_Position
                 )
             {
                 oPosition = Position;
+                oViewDir  = mul(matProjectInverse, Position).xyz;
                 oTexcoord = PosToCoord(Position);
             }
 
             float AmbientOcclustionPS(
                 in float4 coord : TEXCOORD0,
+                in float3 viewdir : TEXCOORD1,
                 in float4 screenSpace : SV_Position) : SV_Target
             {
-                float3 viewPosition = GetPosition(coord.xy);
+                viewdir = normalize(viewdir);
+
+                float3 viewPosition = GetPosition(coord.xy, viewdir);
                 float3 viewNormal = GetNormal(coord.xy);
 
                 int2 ssC = int2(screenSpace.xy);
@@ -82,7 +87,7 @@
                 for (int i = 0; i < NUM_SAMPLE; ++i)
                 {
                     float2 sampleOffset = coord.xy + tapLocation(i, sampleNoise, sampleRadius);
-                    float3 samplePosition = GetPosition(sampleOffset);
+                    float3 samplePosition = GetPosition(sampleOffset, viewdir);
                     float3 sampleDirection = samplePosition - viewPosition;
 
                     float sampleAngle = dot(sampleDirection, viewNormal);
@@ -161,7 +166,7 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
-            <state name="blend" value="true"/>
+            <state name="blend" value="false"/>
             <state name="blendsrc" value="dstcol" />
             <state name="blenddst" value="zero" />
             <state name="blendalphasrc" value="zero" />

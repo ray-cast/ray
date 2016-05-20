@@ -58,7 +58,7 @@
                 return float3(projInfo.xy * coord + projInfo.zw, 1.0) * depth;
             }
 
-            float3 restorePosition(texture2D texDepthLinear, float2 coord, float3 viewdir, float farClipDist)
+            float3 restorePosition(texture2D texDepthLinear, float2 coord, float3 viewdir)
             {
                 float depth = texDepthLinear.Sample(PointClamp, coord).r;
                 return viewdir * depth / viewdir.z;

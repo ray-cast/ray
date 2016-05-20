@@ -98,8 +98,11 @@ ColorGrading::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-ColorGrading::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+ColorGrading::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
 {
+	if (queue != RenderQueue::RenderQueuePostprocess)
+		return false;
+
 	_gammGrading->uniform2i(int2(_enableGammaGrading, _enableColorGrading));
 	_texSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());
 

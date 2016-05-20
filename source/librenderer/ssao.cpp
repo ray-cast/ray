@@ -56,7 +56,6 @@ SSAO::Setting::Setting() noexcept
 
 SSAO::SSAO() noexcept
 {
-	this->setRenderQueue(RenderQueue::RenderQueueOpaqueSpecific);
 }
 
 SSAO::~SSAO() noexcept
@@ -92,7 +91,6 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_cameraProjInfo->uniform4f(pipeline.getCamera()->getProjConstant());
 	_cameraProjScale->uniform1f(((float)width / height) * _setting.radius);
 
 	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
@@ -194,7 +192,6 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_ambientOcclusionBlurYPass = _ambientOcclusion->getTech("BlurYAO");
 
 	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
-	_cameraProjInfo = _ambientOcclusion->getParameter("projInfo");
 
 	_occlusionRadius = _ambientOcclusion->getParameter("radius");
 	_occlusionRadius2 = _ambientOcclusion->getParameter("radius2");
@@ -224,8 +221,11 @@ SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-SSAO::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
 {
+	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
+		return false;
+
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
 	this->computeRawAO(pipeline, texture, _texAmbientView);

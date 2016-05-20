@@ -185,20 +185,6 @@ Camera::getViewProjectInverse() const noexcept
 	return _viewProjectInverse;
 }
 
-const float2&
-Camera::getProjLength() const noexcept
-{
-	_updateViewProject();
-	return _projLength;
-}
-
-const float4&
-Camera::getProjConstant() const noexcept
-{
-	_updateViewProject();
-	return _projConstant;
-}
-
 const float4&
 Camera::getClipConstant() const noexcept
 {
@@ -421,14 +407,6 @@ Camera::_updateOrtho() const noexcept
 	_project.makeOrtho_lh(_left, _right, _bottom, _top, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
 
-	_projLength.x = _project.a1;
-	_projLength.y = _project.b2;
-
-	_projConstant.x = 2.0 / _projLength.x;
-	_projConstant.y = 2.0 / _projLength.y;
-	_projConstant.z = -(1.0 + _project.a3) / _projLength.x;
-	_projConstant.w = -(1.0 + _project.b3) / _projLength.y;
-
 	_clipConstant.x = _znear;
 	_clipConstant.y = (_zfar - _znear);
 	_clipConstant.z = _znear;
@@ -440,14 +418,6 @@ Camera::_updatePerspective() const noexcept
 {
 	_project.makePerspective_fov_lh(_aperture, _ratio, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
-
-	_projLength.x = _project.a1;
-	_projLength.y = _project.b2;
-
-	_projConstant.x = 2.0 / _projLength.x;
-	_projConstant.y = 2.0 / _projLength.y;
-	_projConstant.z = -(1.0 + _project.a3) / _projLength.x;
-	_projConstant.w = -(1.0 + _project.b3) / _projLength.y;
 
 	_clipConstant.x = _znear * (_zfar / (_zfar - _znear));
 	_clipConstant.y = _zfar / (_zfar - _znear);

@@ -311,6 +311,16 @@ struct _mathutil<float>
 		return t >= 0.0f ? t : -t;
 	}
 
+	static inline float exp(float x) noexcept
+	{
+		return std::expf(x);
+	}
+
+	static inline float exp2(float x) noexcept
+	{
+		return std::exp2f(x);
+	}
+
 	static inline float fast_exp2(float x) noexcept
 	{
 		static const float c[3] = { 5.79526f, 12.82461f, -2.88611f };
@@ -467,6 +477,16 @@ struct _mathutil<double>
 	static inline double abs(double t) noexcept
 	{
 		return t >= 0.0f ? t : -t;
+	}
+
+	static inline double exp(double x) noexcept
+	{
+		return std::exp(x);
+	}
+
+	static inline double exp2(double x) noexcept
+	{
+		return std::exp2(x);
 	}
 
 	static inline double fast_exp2(double x) noexcept
@@ -632,6 +652,18 @@ inline T abs(T t) noexcept
 }
 
 template<typename T>
+inline T exp(T x) noexcept
+{
+	return _mathutil<T>::exp(x);
+}
+
+template<typename T>
+inline T exp2(T x) noexcept
+{
+	return _mathutil<T>::exp2(x);
+}
+
+template<typename T>
 inline T fast_exp2(T x) noexcept
 {
 	return _mathutil<T>::fast_exp2(x);
@@ -783,26 +815,16 @@ inline std::uint64_t fpToIEEE(double fp) noexcept
     return *reinterpret_cast<std::uint64_t*>(&fp);
 }
 
-inline bool closeTo(float a, float b, float epsilon) noexcept
+template<typename T>
+inline bool closeTo(T a, T b, T epsilon) noexcept
 {
     if (a == b) return true;
 
-    float diff = fabs(a - b);
-    if ((a == 0 || b == 0) && (diff < epsilon))
+    T diff = abs(a - b);
+    if ((a == T(0.0) || b == T(0.0)) && (diff < epsilon))
         return true;
 
-    return diff / (fabs(a) + fabs(b)) < epsilon;
-}
-
-inline bool closeTo(double a, double b, double epsilon) noexcept
-{
-    if (a == b) return true;
-
-    double diff = fabs(a - b);
-    if ((a == 0 || b == 0) && (diff < epsilon))
-        return true;
-
-    return diff / (fabs(a) + fabs(b)) < epsilon;
+    return diff / (abs(a) + abs(b)) < epsilon;
 }
 
 template<typename T>
@@ -814,18 +836,15 @@ inline T GaussianDistribution(T x, T y, T r) noexcept
 }
 
 template<typename T>
-inline void GaussianKernel(std::vector<T>& weights, std::vector<T>& offsets, std::size_t radius, T deviation, T size) noexcept
+inline void GaussianKernel(T weights[], T offsets[], std::size_t radius, T deviation, T size) noexcept
 {
-	weights.resize(radius);
-	offsets.resize(radius);
-
 	for (std::size_t i = 0; i < radius; ++i)
 		weights[i] = GaussianDistribution(-1.0f * i, 0.0f, radius / deviation);
 
-	for (std::size_t i = 0; i < weights.size(); ++i)
+	for (std::size_t i = 0; i < radius; ++i)
 		weights[i] /= weights[0];
 
-	for (std::size_t i = 0; i < offsets.size(); ++i)
+	for (std::size_t i = 0; i < radius; ++i)
 		offsets[i] = i / size;
 }
 

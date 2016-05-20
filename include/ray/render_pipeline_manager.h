@@ -129,13 +129,13 @@ private:
 	RenderPostProcessPtr _SSAO;
 	RenderPostProcessPtr _atmospheric;
 	RenderPostProcessPtr _SSR;
-	RenderPostProcessPtr _SSSS;
 	RenderPostProcessPtr _DOF;
 	RenderPostProcessPtr _fog;
 	RenderPostProcessPtr _lightShaft;
 	RenderPostProcessPtr _fimicToneMapping;
 	RenderPostProcessPtr _FXAA;
 	RenderPostProcessPtr _colorGrading;
+	RenderPostProcessPtr _postprocess;
 
 	RenderPipelinePtr _pipeline;
 	RenderPipelineDevicePtr _pipelineDevice;

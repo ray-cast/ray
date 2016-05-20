@@ -70,7 +70,6 @@
 
             float3 ToneBlueShift(float3 color, float lum)
             {
-                // martin's modified blue shift
                 const float3 BLUE_SHIFT = float3(0.4f, 0.4f, 0.7f);
                 return lerp(lum * BLUE_SHIFT, color, saturate(16.0f * lum));
             }
@@ -131,7 +130,7 @@
             float4 BloomPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
                 float4 color = texSource.Sample(PointClamp, coord.xy);
-                return color * max(luminance(color.rgb) - bloomThreshold, 0.0) * bloomIntensity;
+                return float4(max((color.rgb - bloomThreshold) * bloomIntensity, 0), color.a);
             }
 
             void BlurXVS(

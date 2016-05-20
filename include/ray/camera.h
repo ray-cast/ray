@@ -72,8 +72,6 @@ public:
 	const float4x4& getViewProject() const noexcept;
 	const float4x4& getViewProjectInverse() const noexcept;
 
-	const float2& getProjLength() const noexcept;
-	const float4& getProjConstant() const noexcept;
 	const float4& getClipConstant() const noexcept;
 
 	float3 worldToScreen(const float3& pos) const noexcept;
@@ -149,8 +147,6 @@ private:
 	mutable bool _needUpdateViewProject;
 	mutable bool _needUpdateVisiable;
 
-	mutable float2 _projLength;
-	mutable float4 _projConstant;
 	mutable float4 _clipConstant;
 
 	mutable float4x4 _project;

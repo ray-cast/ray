@@ -75,8 +75,8 @@ private:
 	GLuint _pbo;
 	GLuint _upbo;
 	GLuint _texture;
-	GLuint _pboSize;
-	GLuint _upboSize;
+	GLsizei _pboSize;
+	GLsizei _upboSize;
 	GraphicsTextureDesc _textureDesc;
 	GraphicsDeviceWeakPtr _device;
 };

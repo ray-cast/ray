@@ -334,8 +334,7 @@ MaterialManager::createMaterial(const std::string& name) noexcept
 		if (!materialLoader.load(*this, *newMaterial, name))
 			return nullptr;
 
-		if (newMaterial->setup())
-			_materials[name] = newMaterial;
+		_materials[name] = newMaterial;
 	}
 
 	return material;

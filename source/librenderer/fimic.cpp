@@ -306,8 +306,11 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
 {
+	if (queue != RenderQueue::RenderQueuePostprocess)
+		return false;
+
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
 	this->sunLum(pipeline, texture, _texSample4View);

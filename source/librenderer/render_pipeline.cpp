@@ -118,28 +118,32 @@ RenderPipeline::getSwapInterval() const noexcept
 void
 RenderPipeline::setTransform(const float4x4& transform) noexcept
 {
-	assert(_materialSemantics);
+	assert(_semanticsManager);
 
-	auto& view = _materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeView)->getFloat4x4();
-	auto& viewProject = _materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProject)->getFloat4x4();
+	auto& view = _semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeView)->getFloat4x4();
+	auto& viewProject = _semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProject)->getFloat4x4();
 
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeModel)->uniform4fmat(transform);
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelView)->uniform4fmat(math::transformMultiply(view, transform));
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelViewProject)->uniform4fmat(viewProject * transform);
+	auto modelView = math::transformMultiply(view, transform);
+	auto modelViewInverse = math::transformInverse(modelView);
+
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeModel)->uniform4fmat(transform);
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelView)->uniform4fmat(modelView);
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelViewProject)->uniform4fmat(viewProject * transform);
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelViewInverse)->uniform4fmat(modelViewInverse);
 }
 
 void
 RenderPipeline::setTransformInverse(const float4x4& transform) noexcept
 {
-	assert(_materialSemantics);
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelInverse)->uniform4fmat(transform);
+	assert(_semanticsManager);
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeModelInverse)->uniform4fmat(transform);
 }
 
-const MaterialParamPtr&
+const MaterialSemanticPtr&
 RenderPipeline::getSemanticParam(GlobalSemanticType type) const noexcept
 {
-	assert(_materialSemantics);
-	return _materialSemantics->getSemantic(type);
+	assert(_semanticsManager);
+	return _semanticsManager->getSemantic(type);
 }
 
 void
@@ -147,8 +151,7 @@ RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) n
 {
 	if (_width != width || _height != height)
 	{
-		auto& drawPostProcess = _postprocessors[RenderQueue::RenderQueuePostprocess];
-		for (auto& it : drawPostProcess)
+		for (auto& it : _postprocessors)
 		{
 			if (it->getActive())
 				it->onResolutionChangeBefore(*this);
@@ -157,7 +160,7 @@ RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) n
 		_width = width;
 		_height = height;
 
-		for (auto& it : drawPostProcess)
+		for (auto& it : _postprocessors)
 		{
 			if (it->getActive())
 				it->onResolutionChangeAfter(*this);
@@ -192,17 +195,17 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	assert(camera);
 	assert(camera->getRenderDataManager());
 
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraNear)->uniform1f(camera->getNear());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraFar)->uniform1f(camera->getFar());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraAperture)->uniform1f(camera->getAperture());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraPosition)->uniform3f(camera->getTranslate());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraDirection)->uniform3f(camera->getForward());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeView)->uniform4fmat(camera->getView());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewInverse)->uniform4fmat(camera->getViewInverse());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeProject)->uniform4fmat(camera->getProject());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeProjectInverse)->uniform4fmat(camera->getProjectInverse());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProject)->uniform4fmat(adjustProject * camera->getViewProject());
-	_materialSemantics->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProjectInverse)->uniform4fmat(camera->getViewProjectInverse());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraNear)->uniform1f(camera->getNear());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraFar)->uniform1f(camera->getFar());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraAperture)->uniform1f(camera->getAperture());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraPosition)->uniform3f(camera->getTranslate());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraDirection)->uniform3f(camera->getForward());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeView)->uniform4fmat(camera->getView());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewInverse)->uniform4fmat(camera->getViewInverse());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeProject)->uniform4fmat(camera->getProject());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeProjectInverse)->uniform4fmat(camera->getProjectInverse());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProject)->uniform4fmat(adjustProject * camera->getViewProject());
+	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProjectInverse)->uniform4fmat(camera->getViewProjectInverse());
 
 	camera->assignVisiable();
 	_dataManager = camera->getRenderDataManager();
@@ -275,7 +278,7 @@ RenderPipeline::blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewpor
 void
 RenderPipeline::setMaterialPass(const MaterialPassPtr& pass) noexcept
 {
-	pass->update(*_materialSemantics);
+	pass->update(*_semanticsManager);
 	_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
 	_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
 }
@@ -303,7 +306,7 @@ RenderPipeline::drawSphere(const MaterialTech& tech, std::uint32_t layer) noexce
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
 	{
-		pass->update(*_materialSemantics);
+		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
 		this->drawMesh(_sphereIndirect);
@@ -319,7 +322,7 @@ RenderPipeline::drawCone(const MaterialTech& tech, std::uint32_t layer) noexcept
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
 	{
-		pass->update(*_materialSemantics);
+		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
 		this->drawMeshLayer(_sphereIndirect, layer);
@@ -335,7 +338,7 @@ RenderPipeline::drawScreenQuad(const MaterialTech& tech) noexcept
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
 	{
-		pass->update(*_materialSemantics);
+		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
 		this->drawMesh(_screenQuadIndirect);
@@ -351,7 +354,7 @@ RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t laye
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
 	{
-		pass->update(*_materialSemantics);
+		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
 		this->drawMeshLayer(_screenQuadIndirect, layer);
@@ -394,41 +397,32 @@ RenderPipeline::drawRenderQueue(RenderQueue queue, const MaterialTechPtr& tech) 
 void
 RenderPipeline::addPostProcess(RenderPostProcessPtr& postprocess) noexcept
 {
-	auto renderQueue = postprocess->getRenderQueue();
-	auto& drawPostProcess = _postprocessors[renderQueue];
-
-	if (std::find(drawPostProcess.begin(), drawPostProcess.end(), postprocess) == drawPostProcess.end())
+	if (std::find(_postprocessors.begin(), _postprocessors.end(), postprocess) == _postprocessors.end())
 	{
 		postprocess->_setRenderPipeline(this);
 		postprocess->setActive(true);
-		drawPostProcess.push_back(postprocess);
+		_postprocessors.push_back(postprocess);
 	}
 }
 
 void
 RenderPipeline::removePostProcess(RenderPostProcessPtr& postprocess) noexcept
 {
-	auto renderQueue = postprocess->getRenderQueue();
-	auto& drawPostProcess = _postprocessors[renderQueue];
-
-	auto it = std::find(drawPostProcess.begin(), drawPostProcess.end(), postprocess);
-	if (it != drawPostProcess.end())
+	auto it = std::find(_postprocessors.begin(), _postprocessors.end(), postprocess);
+	if (it != _postprocessors.end())
 	{
 		postprocess->setActive(false);
-		drawPostProcess.erase(it);
+		_postprocessors.erase(it);
 	}
 }
 
 void
 RenderPipeline::destroyPostProcess() noexcept
 {
-	for (auto& postprocess : _postprocessors)
-	{
-		for (auto& it : postprocess)
-			it->setActive(false);
+	for (auto& it : _postprocessors)
+		it->setActive(false);
 
-		postprocess.clear();
-	}
+	_postprocessors.clear();
 }
 
 void
@@ -437,13 +431,12 @@ RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& sourc
 	GraphicsFramebufferPtr view = swap;
 	GraphicsFramebufferPtr cur = source;
 
-	auto& drawPostProcess = _postprocessors[queue];
-	for (auto& it : drawPostProcess)
+	for (auto& it : _postprocessors)
 	{
 		if (!it->getActive())
 			continue;
 
-		if (it->onRender(*this, cur, view))
+		if (it->onRender(*this, queue, cur, view))
 		{
 			std::swap(view, cur);
 		}
@@ -596,8 +589,8 @@ RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint
 bool
 RenderPipeline::setupMaterialSemantic() noexcept
 {
-	_materialSemantics = std::make_shared<MaterialSemantic>();
-	_materialSemantics->setup();
+	_semanticsManager = std::make_shared<MaterialSemanticManager>();
+	_semanticsManager->setup();
 	return true;
 }
 
@@ -666,7 +659,7 @@ RenderPipeline::destroyDeviceContext() noexcept
 void
 RenderPipeline::destroyMaterialSemantic() noexcept
 {
-	_materialSemantics.reset();
+	_semanticsManager.reset();
 }
 
 void

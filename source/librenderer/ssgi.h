@@ -76,7 +76,7 @@ private:
 	void onActivate(RenderPipeline& pipeline) noexcept;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	bool onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept;
+	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept;
 
 private:
 
@@ -91,7 +91,6 @@ private:
 	MaterialParamPtr _radius;
 	MaterialParamPtr _radius2;
 	MaterialParamPtr _projScale;
-	MaterialParamPtr _projInfo;
 	MaterialParamPtr _clipInfo;
 	MaterialParamPtr _bias;
 	MaterialParamPtr _intensityDivR6;

@@ -58,10 +58,12 @@ ShadowRenderPipeline::ShadowRenderPipeline() noexcept
 	_shadowMapSize[LightShadowType::LightShadowTypeLow] = LightShadowSize::LightShadowSizeLow;
 	_shadowMapSize[LightShadowType::LightShadowTypeMedium] = LightShadowSize::LightShadowSizeMedium;
 	_shadowMapSize[LightShadowType::LightShadowTypeHigh] = LightShadowSize::LightShadowSizeHigh;
+	_shadowMapSize[LightShadowType::LightShadowTypeVeryHigh] = LightShadowSize::LightShadowSizeVeryHigh;
 	_shadowMapSizeInv[LightShadowType::LightShadowTypeNone] = 0;
 	_shadowMapSizeInv[LightShadowType::LightShadowTypeLow] = 1.0f / LightShadowSize::LightShadowSizeLow;
 	_shadowMapSizeInv[LightShadowType::LightShadowTypeMedium] = 1.0f / LightShadowSize::LightShadowSizeMedium;
 	_shadowMapSizeInv[LightShadowType::LightShadowTypeHigh] = 1.0f / LightShadowSize::LightShadowSizeHigh;
+	_shadowMapSizeInv[LightShadowType::LightShadowTypeVeryHigh] = 1.0f / LightShadowSize::LightShadowSizeVeryHigh;
 }
 
 ShadowRenderPipeline::~ShadowRenderPipeline() noexcept
@@ -199,10 +201,10 @@ ShadowRenderPipeline::setupShadowMaterial(RenderPipeline& pipeline) noexcept
 	_softWeight = _softBlur->getParameter("weight");
 
 	const float offsets[4] = { 1.3846153846f, 3.2307692308f, -1.3846153846f, -3.2307692308f };
-	const float weight[3] = { 0.2270270270f,  0.3162162162f, 0.0702702703f };
+	const float weights[3] = { 0.2270270270f,  0.3162162162f, 0.0702702703f };
 
 	_softOffset->uniform1fv(4, offsets);
-	_softWeight->uniform1fv(3, weight);
+	_softWeight->uniform1fv(3, weights);
 
 	return true;
 }
@@ -222,7 +224,7 @@ ShadowRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
 	if (!_softShadowDepthViewLayout)
 		return false;
 
-	for (std::size_t i = LightShadowType::LightShadowTypeLow; i <= LightShadowType::LightShadowTypeHigh; i++)
+	for (std::size_t i = LightShadowType::LightShadowTypeLow; i <= LightShadowType::LightShadowTypeVeryHigh; i++)
 	{
 		_softShadowMapTemp[i] = pipeline.createTexture(_shadowMapSize[i], _shadowMapSize[i], GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
 		if (!_softShadowMapTemp[i])

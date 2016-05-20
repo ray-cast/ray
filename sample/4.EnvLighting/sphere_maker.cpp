@@ -269,14 +269,12 @@ SphereMakerComponent::onActivate() except
 	if (!normalMap)
 		return;*/
 
-	auto material = ray::ResManager::instance()->createMaterial("sys:fx/opacity_skinning0.fxml");
-	if (!material)
+	auto materialTemp = ray::ResManager::instance()->createMaterial("sys:fx/opacity_skinning0.fxml");
+	if (!materialTemp)
 		return;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
 	sphereMesh->makeSphere(1.0, 64, 48);
-	sphereMesh->computeTangents();
-	sphereMesh->computeTangentQuats();
 
 	for (std::size_t i = 0; i < 10; i++)
 	{
@@ -285,7 +283,7 @@ SphereMakerComponent::onActivate() except
 			auto gameObject = std::make_shared<ray::GameObject>();
 			gameObject->setActive(true);
 			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
-			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material->clone()));
+			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
 			gameObject->setScale(ray::float3(0.8));
 			gameObject->setTranslate(ray::float3(-10.0f + i * 2.0f, 0, j * 2.0f));
 

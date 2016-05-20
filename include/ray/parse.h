@@ -118,85 +118,58 @@ double parseFloat<double>(const std::string& line)
 template<typename T = float> inline
 Vector2t<T> parseFloat2(const std::string& line)
 {
-	std::string value = line;
+	Vector2t<T> v(0, 0);
 
-	if (!value.empty())
+	if (!line.empty())
 	{
-		float f1 = 0;
-		float f2 = 0;
+		std::istringstream is(line);
 
-		for (auto& it : value)
-		{
-			if (it == ',')
-			{
-				it = ' ';
-			}
-		}
-
-		std::istringstream sin(value.c_str());
-
-		sin >> f1 >> f2;
-		return float2(f1, f2);
+		is >> v.x;
+		is.ignore(1);
+		is >> v.y;
 	}
 
-	return float2(0, 0);
+	return v;
 }
 
 template<typename T = float> inline
 Vector3t<T> parseFloat3(const std::string& line)
 {
-	std::string value = line;
+	Vector3t<T> v(0, 0, 0);
 
-	if (!value.empty())
+	if (!line.empty())
 	{
-		float f1 = 0;
-		float f2 = 0;
-		float f3 = 0;
+		std::istringstream is(line);
 
-		for (auto& it : value)
-		{
-			if (it == ',')
-			{
-				it = ' ';
-			}
-		}
-
-		std::istringstream sin(value.c_str());
-
-		sin >> f1 >> f2 >> f3;
-		return float3(f1, f2, f3);
+		is >> v.x;
+		is.ignore(1);
+		is >> v.y;
+		is.ignore(1);
+		is >> v.z;
 	}
 
-	return float3(0, 0, 0);
+	return v;
 }
 
 template<typename T = float> inline
 Vector4t<T> parseFloat4(const std::string& line)
 {
-	std::string value = line;
+	Vector4t<T> v(0, 0, 0, 0);
 
-	if (!value.empty())
+	if (!line.empty())
 	{
-		float f1 = 0;
-		float f2 = 0;
-		float f3 = 0;
-		float f4 = 0;
+		std::istringstream is(line);
 
-		for (auto& it : value)
-		{
-			if (it == ',')
-			{
-				it = ' ';
-			}
-		}
-
-		std::istringstream sin(value.c_str());
-
-		sin >> f1 >> f2 >> f3 >> f4;
-		return float4(f1, f2, f3, f4);
+		is >> v.x;
+		is.ignore(1);
+		is >> v.y;
+		is.ignore(1);
+		is >> v.z;
+		is.ignore(1);
+		is >> v.w;
 	}
 
-	return float4(0, 0, 0, 0);
+	return v;
 }
 
 _NAME_END

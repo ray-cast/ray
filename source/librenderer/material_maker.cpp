@@ -443,7 +443,7 @@ MaterialMaker::instanceMacro(MaterialManager& manager, Material& material, iarch
 
 	if (!type.empty())
 	{
-		auto macro = std::make_shared<MaterialParam>();
+		auto macro = std::make_shared<MaterialMacro>();
 		macro->setName(std::move(name));
 
 		if (type == "bool")
@@ -650,18 +650,30 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, iarc
 	material.addParameter(std::move(buffer));
 }
 
-void
+bool
 MaterialMaker::instanceInclude(MaterialManager& manager, Material& material, iarchive& reader) except
 {
-	auto path = reader.getValue<std::string>("name");
-	if (!path.empty())
-	{
-		if (!_onceInclude[path])
-		{
-			this->load(manager, material, path);
-			_onceInclude[path] = true;
-		}
-	}
+	auto filename = reader.getValue<std::string>("name");
+	if (filename.empty())
+		throw failure(__TEXT("Empty file"));
+
+	if (_onceInclude[filename])
+		return true;
+
+	StreamReaderPtr stream;
+	if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
+		throw failure(__TEXT("Opening file fail:") + filename);
+
+	XMLReader xml;
+	if (!xml.open(*stream))
+		return false;
+
+	xml.setToFirstChild();
+	if (!this->loadEffect(manager, material, xml))
+		return false;
+
+	_onceInclude[filename] = true;
+	return true;
 }
 
 bool
@@ -677,7 +689,9 @@ MaterialMaker::load(MaterialManager& manager, Material& material, const std::str
 		if (reader.open(*stream))
 		{
 			reader.setToFirstChild();
-			return this->load(manager, material, reader);
+			if (!this->load(manager, material, reader))
+				return false;
+			return true;
 		}
 
 		return false;
@@ -710,105 +724,126 @@ MaterialMaker::load(MaterialManager& manager, Material& material, StreamReader& 
 	}
 }
 
+bool 
+MaterialMaker::loadEffect(MaterialManager& manager, Material& material, iarchive& reader) except
+{
+	std::string nodeName = reader.getCurrentNodeName();
+	if (nodeName != "effect")
+		throw failure(__TEXT("Unknown node name " + nodeName + ", so I can't open it"));
+
+	std::string language = reader.getValue<std::string>("language");
+	if (language == "hlsl")
+		_isHlsl = true;
+	else if (language == "bytecodes")
+		_isHlsl = false;
+	else
+		throw failure("Can't support language : " + language + ", so I can't open it");
+
+	if (!reader.setToFirstChild())
+		throw failure("The file has been damaged and can't be recovered, so I can't open it");
+
+	_shaderCodes.clear();
+
+	do
+	{
+		std::string name = reader.getCurrentNodeName();
+		if (name == "include")
+			instanceInclude(manager, material, reader);
+		else if (name == "parameter")
+			instanceParameter(manager, material, reader);
+		else if (name == "buffer")
+			instanceBuffer(manager, material, reader);
+		else if (name == "macro")
+			instanceMacro(manager, material, reader);
+		else if (name == "sampler")
+			instanceSampler(manager, material, reader);
+		else if (name == "shader")
+			instanceCodes(manager, reader);
+		else if (name == "technique")
+			instanceTech(manager, material, reader);
+		else if (name == "inputlayout")
+			instanceInputLayout(manager, material, reader);
+	} while (reader.setToNextChild());
+
+	return true;
+}
+
+bool 
+MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, iarchive& reader) except
+{
+	std::string nodeName = reader.getCurrentNodeName();
+	if (nodeName != "material")
+		throw failure(__TEXT("Unknown node name " + nodeName + ", so I can't open it"));
+
+	std::string name;
+	std::map<std::string, std::string> args;
+
+	reader.clearAttrs();
+	reader.addAttrsInChildren("attribute");
+	auto& attributes = reader.getAttrList();
+	for (auto& it : attributes)
+	{
+		if (it == "shader")
+			name = reader.getValue<std::string>(it);
+		else
+			args[it] = reader.getValue<std::string>(it);
+	}
+
+	if (name.empty())
+		throw failure(__TEXT("The shader is not set"));
+
+	MaterialMaker maker;
+	if (!maker.load(manager, material, name))
+		return false;
+
+	for (auto& arg : args)
+	{
+		auto param = material.getParameter(arg.first);
+		if (!param)
+			continue;
+
+		switch (param->getType())
+		{
+		case GraphicsUniformType::GraphicsUniformTypeFloat:
+			param->uniform1f(parseFloat<Float>(arg.second));
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat2:
+			param->uniform2f(parseFloat2(arg.second));
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat3:
+			param->uniform3f(parseFloat3(arg.second));
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat4:
+			param->uniform4f(parseFloat4(arg.second));
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+			param->uniformTexture(RenderSystem::instance()->createTexture(arg.second, GraphicsTextureDim::GraphicsTextureDim2D));
+			break;
+		default:
+			assert(false);
+		}
+	}
+
+	return true;
+}
+
 bool
 MaterialMaker::load(MaterialManager& manager, Material& material, iarchive& reader) except
 {
-	std::string nodeName;
-	nodeName = reader.getCurrentNodeName();
-	if (nodeName != "material" && nodeName != "effect")
-		throw failure(__TEXT("Unknown node name " + nodeName + ", so I can't open it"));
-
+	std::string nodeName = reader.getCurrentNodeName();
 	if (nodeName == "material")
 	{
-		std::string name;
-		std::map<std::string, std::string> args;
-
-		reader.clearAttrs();
-		reader.addAttrsInChildren("attribute");
-		auto& attributes = reader.getAttrList();
-		for (auto& it : attributes)
-		{
-			if (it == "shader")
-				name = reader.getValue<std::string>(it);
-			else
-				args[it] = reader.getValue<std::string>(it);
-		}
-
-		if (!name.empty())
-		{
-			MaterialMaker maker;
-			if (maker.load(manager, material, name))
-			{
-				for (auto& arg : args)
-				{
-					auto param = material.getParameter(arg.first);
-					if (!param)
-						continue;
-
-					switch (param->getType())
-					{
-					case GraphicsUniformType::GraphicsUniformTypeFloat:
-						param->uniform1f(parseFloat<Float>(arg.second));
-						break;
-					case GraphicsUniformType::GraphicsUniformTypeFloat2:
-						param->uniform2f(parseFloat2(arg.second));
-						break;
-					case GraphicsUniformType::GraphicsUniformTypeFloat3:
-						param->uniform3f(parseFloat3(arg.second));
-						break;
-					case GraphicsUniformType::GraphicsUniformTypeFloat4:
-						param->uniform4f(parseFloat4(arg.second));
-						break;
-					case GraphicsUniformType::GraphicsUniformTypeStorageImage:
-						param->uniformTexture(RenderSystem::instance()->createTexture(arg.second, GraphicsTextureDim::GraphicsTextureDim2D));
-						break;
-					default:
-						assert(false);
-					}
-				}
-
-				return true;
-			}
-		}
+		if (loadMaterial(manager, material, reader))
+			return true;
 	}
 	else if (nodeName == "effect")
 	{
-		std::string language = reader.getValue<std::string>("language");
-		
-		if (language == "hlsl")
-			_isHlsl = true;
-		else if (language == "bytecodes")
-			_isHlsl = false;
-		else
-			throw failure("Can't support language : " + language + ", so I can't open it");
-
-		if (!reader.setToFirstChild())
-			throw failure("The file has been damaged and can't be recovered, so I can't open it");
-
-		_shaderCodes.clear();
-
-		do
-		{
-			std::string name = reader.getCurrentNodeName();
-			if (name == "include")
-				instanceInclude(manager, material, reader);
-			else if (name == "parameter")
-				instanceParameter(manager, material, reader);
-			else if (name == "buffer")
-				instanceBuffer(manager, material, reader);
-			else if (name == "macro")
-				instanceMacro(manager, material, reader);
-			else if (name == "sampler")
-				instanceSampler(manager, material, reader);
-			else if (name == "shader")
-				instanceCodes(manager, reader);
-			else if (name == "technique")
-				instanceTech(manager, material, reader);
-			else if (name == "inputlayout")
-				instanceInputLayout(manager, material, reader);
-		} while (reader.setToNextChild());
-
-		return true;
+		if (loadEffect(manager, material, reader))
+			return material.setup();
+	}
+	else
+	{
+		throw failure(__TEXT("Unknown node name " + nodeName + ", so I can't open it"));
 	}
 
 	return false;
@@ -1131,6 +1166,7 @@ MaterialMaker::stringToSemanticType(const std::string& type) noexcept
 	if (type == "matViewProjectInverse") return GlobalSemanticType::GlobalSemanticTypeViewProjectInverse;
 	if (type == "matModelView") return GlobalSemanticType::GlobalSemanticTypeModelView;
 	if (type == "matModelViewProject") return GlobalSemanticType::GlobalSemanticTypeModelViewProject;
+	if (type == "matModelViewInverse") return GlobalSemanticType::GlobalSemanticTypeModelViewInverse;
 	if (type == "CameraAperture") return GlobalSemanticType::GlobalSemanticTypeCameraAperture;
 	if (type == "CameraNear") return GlobalSemanticType::GlobalSemanticTypeCameraNear;
 	if (type == "CameraFar") return GlobalSemanticType::GlobalSemanticTypeCameraFar;

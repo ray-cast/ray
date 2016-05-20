@@ -82,8 +82,7 @@ SSGI::getSetting() const noexcept
 void
 SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_projInfo->uniform4f(pipeline.getCamera()->getProjConstant());
-	_projScale->uniform1f(pipeline.getCamera()->getProjLength().y * _setting.radius);
+	_projScale->uniform1f(_setting.radius);
 	_clipInfo->uniform3f(pipeline.getCamera()->getClipConstant().xyz());
 
 	pipeline.setFramebuffer(dest);
@@ -148,7 +147,6 @@ SSGI::onActivate(RenderPipeline& pipeline) noexcept
 	_radius = _ambientOcclusion->getParameter("radius");
 	_radius2 = _ambientOcclusion->getParameter("radius2");
 	_projScale = _ambientOcclusion->getParameter("projScale");
-	_projInfo = _ambientOcclusion->getParameter("projInfo");
 	_clipInfo = _ambientOcclusion->getParameter("clipInfo");
 	_bias = _ambientOcclusion->getParameter("bias");
 	_intensityDivR6 = _ambientOcclusion->getParameter("intensityDivR6");
@@ -181,7 +179,7 @@ SSGI::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-SSGI::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+SSGI::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
 {
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 

@@ -47,7 +47,66 @@ public:
 	MaterialParamListener() noexcept;
 	virtual ~MaterialParamListener() noexcept;
 
-	virtual void onNeedUpdate() noexcept = 0;
+	virtual void uniform1b(bool value) noexcept = 0;
+	virtual void uniform1i(std::int32_t i1) noexcept = 0;
+	virtual void uniform2i(const int2& value) noexcept = 0;
+	virtual void uniform2i(std::int32_t i1, std::int32_t i2) noexcept = 0;
+	virtual void uniform3i(const int3& value) noexcept = 0;
+	virtual void uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noexcept = 0;
+	virtual void uniform4i(const int4& value) noexcept = 0;
+	virtual void uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std::int32_t i4) noexcept = 0;
+	virtual void uniform1ui(std::uint32_t i1) noexcept = 0;
+	virtual void uniform2ui(const uint2& value) noexcept = 0;
+	virtual void uniform2ui(std::uint32_t i1, std::uint32_t i2) noexcept = 0;
+	virtual void uniform3ui(const uint3& value) noexcept = 0;
+	virtual void uniform3ui(std::uint32_t i1, std::uint32_t i2, std::uint32_t i3) noexcept = 0;
+	virtual void uniform4ui(const uint4& value) noexcept = 0;
+	virtual void uniform4ui(std::uint32_t i1, std::uint32_t i2, std::uint32_t i3, std::uint32_t i4) noexcept = 0;
+	virtual void uniform1f(float i1) noexcept = 0;
+	virtual void uniform2f(const float2& value) noexcept = 0;
+	virtual void uniform2f(float i1, float i2) noexcept = 0;
+	virtual void uniform3f(const float3& value) noexcept = 0;
+	virtual void uniform3f(float i1, float i2, float i3) noexcept = 0;
+	virtual void uniform4f(const float4& value) noexcept = 0;
+	virtual void uniform4f(float i1, float i2, float i3, float i4) noexcept = 0;
+	virtual void uniform2fmat(const float* mat2) noexcept = 0;
+	virtual void uniform2fmat(const float2x2& value) noexcept = 0;
+	virtual void uniform3fmat(const float* mat3) noexcept = 0;
+	virtual void uniform3fmat(const float3x3& value) noexcept = 0;
+	virtual void uniform4fmat(const float* mat4) noexcept = 0;
+	virtual void uniform4fmat(const float4x4& value) noexcept = 0;
+	virtual void uniform1iv(std::size_t num, const std::int32_t* str) noexcept = 0;
+	virtual void uniform2iv(std::size_t num, const std::int32_t* str) noexcept = 0;
+	virtual void uniform3iv(std::size_t num, const std::int32_t* str) noexcept = 0;
+	virtual void uniform4iv(std::size_t num, const std::int32_t* str) noexcept = 0;
+	virtual void uniform1uiv(std::size_t num, const std::uint32_t* str) noexcept = 0;
+	virtual void uniform2uiv(std::size_t num, const std::uint32_t* str) noexcept = 0;
+	virtual void uniform3uiv(std::size_t num, const std::uint32_t* str) noexcept = 0;
+	virtual void uniform4uiv(std::size_t num, const std::uint32_t* str) noexcept = 0;
+	virtual void uniform1fv(std::size_t num, const float* str) noexcept = 0;
+	virtual void uniform2fv(std::size_t num, const float* str) noexcept = 0;
+	virtual void uniform3fv(std::size_t num, const float* str) noexcept = 0;
+	virtual void uniform4fv(std::size_t num, const float* str) noexcept = 0;
+	virtual void uniform2fmatv(std::size_t num, const float* mat2) noexcept = 0;
+	virtual void uniform3fmatv(std::size_t num, const float* mat3) noexcept = 0;
+	virtual void uniform4fmatv(std::size_t num, const float* mat4) noexcept = 0;
+	virtual void uniform1iv(const std::vector<int1>& value) noexcept = 0;
+	virtual void uniform2iv(const std::vector<int2>& value) noexcept = 0;
+	virtual void uniform3iv(const std::vector<int3>& value) noexcept = 0;
+	virtual void uniform4iv(const std::vector<int4>& value) noexcept = 0;
+	virtual void uniform1uiv(const std::vector<uint1>& value) noexcept = 0;
+	virtual void uniform2uiv(const std::vector<uint2>& value) noexcept = 0;
+	virtual void uniform3uiv(const std::vector<uint3>& value) noexcept = 0;
+	virtual void uniform4uiv(const std::vector<uint4>& value) noexcept = 0;
+	virtual void uniform1fv(const std::vector<float1>& value) noexcept = 0;
+	virtual void uniform2fv(const std::vector<float2>& value) noexcept = 0;
+	virtual void uniform3fv(const std::vector<float3>& value) noexcept = 0;
+	virtual void uniform4fv(const std::vector<float4>& value) noexcept = 0;
+	virtual void uniform2fmatv(const std::vector<float2x2>& value) noexcept = 0;
+	virtual void uniform3fmatv(const std::vector<float3x3>& value) noexcept = 0;
+	virtual void uniform4fmatv(const std::vector<float4x4>& value) noexcept = 0;
+	virtual void uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept = 0;
+	virtual void uniformBuffer(GraphicsDataPtr ubo) noexcept = 0;
 
 private:
 	MaterialParamListener(const MaterialParamListener&) = delete;
@@ -71,6 +130,98 @@ public:
 
 	void setSemanticType(GlobalSemanticType type) noexcept;
 	GlobalSemanticType getSemanticType() const noexcept;
+
+	void uniform1b(bool value) noexcept;
+	void uniform1i(std::int32_t i1) noexcept;
+	void uniform2i(const int2& value) noexcept;
+	void uniform2i(std::int32_t i1, std::int32_t i2) noexcept;
+	void uniform3i(const int3& value) noexcept;
+	void uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noexcept;
+	void uniform4i(const int4& value) noexcept;
+	void uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std::int32_t i4) noexcept;
+	void uniform1ui(std::uint32_t i1) noexcept;
+	void uniform2ui(const uint2& value) noexcept;
+	void uniform2ui(std::uint32_t i1, std::uint32_t i2) noexcept;
+	void uniform3ui(const uint3& value) noexcept;
+	void uniform3ui(std::uint32_t i1, std::uint32_t i2, std::uint32_t i3) noexcept;
+	void uniform4ui(const uint4& value) noexcept;
+	void uniform4ui(std::uint32_t i1, std::uint32_t i2, std::uint32_t i3, std::uint32_t i4) noexcept;
+	void uniform1f(float i1) noexcept;
+	void uniform2f(const float2& value) noexcept;
+	void uniform2f(float i1, float i2) noexcept;
+	void uniform3f(const float3& value) noexcept;
+	void uniform3f(float i1, float i2, float i3) noexcept;
+	void uniform4f(const float4& value) noexcept;
+	void uniform4f(float i1, float i2, float i3, float i4) noexcept;
+	void uniform2fmat(const float* mat2) noexcept;
+	void uniform2fmat(const float2x2& value) noexcept;
+	void uniform3fmat(const float* mat3) noexcept;
+	void uniform3fmat(const float3x3& value) noexcept;
+	void uniform4fmat(const float* mat4) noexcept;
+	void uniform4fmat(const float4x4& value) noexcept;
+	void uniform1iv(std::size_t num, const std::int32_t* str) noexcept;
+	void uniform2iv(std::size_t num, const std::int32_t* str) noexcept;
+	void uniform3iv(std::size_t num, const std::int32_t* str) noexcept;
+	void uniform4iv(std::size_t num, const std::int32_t* str) noexcept;
+	void uniform1uiv(std::size_t num, const std::uint32_t* str) noexcept;
+	void uniform2uiv(std::size_t num, const std::uint32_t* str) noexcept;
+	void uniform3uiv(std::size_t num, const std::uint32_t* str) noexcept;
+	void uniform4uiv(std::size_t num, const std::uint32_t* str) noexcept;
+	void uniform1fv(std::size_t num, const float* str) noexcept;
+	void uniform2fv(std::size_t num, const float* str) noexcept;
+	void uniform3fv(std::size_t num, const float* str) noexcept;
+	void uniform4fv(std::size_t num, const float* str) noexcept;
+	void uniform2fmatv(std::size_t num, const float* mat2) noexcept;
+	void uniform3fmatv(std::size_t num, const float* mat3) noexcept;
+	void uniform4fmatv(std::size_t num, const float* mat4) noexcept;
+	void uniform1iv(const std::vector<int1>& value) noexcept;
+	void uniform2iv(const std::vector<int2>& value) noexcept;
+	void uniform3iv(const std::vector<int3>& value) noexcept;
+	void uniform4iv(const std::vector<int4>& value) noexcept;
+	void uniform1uiv(const std::vector<uint1>& value) noexcept;
+	void uniform2uiv(const std::vector<uint2>& value) noexcept;
+	void uniform3uiv(const std::vector<uint3>& value) noexcept;
+	void uniform4uiv(const std::vector<uint4>& value) noexcept;
+	void uniform1fv(const std::vector<float1>& value) noexcept;
+	void uniform2fv(const std::vector<float2>& value) noexcept;
+	void uniform3fv(const std::vector<float3>& value) noexcept;
+	void uniform4fv(const std::vector<float4>& value) noexcept;
+	void uniform2fmatv(const std::vector<float2x2>& value) noexcept;
+	void uniform3fmatv(const std::vector<float3x3>& value) noexcept;
+	void uniform4fmatv(const std::vector<float4x4>& value) noexcept;
+	void uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
+	void uniformBuffer(GraphicsDataPtr ubo) noexcept;
+
+	void addParamListener(MaterialParamListener* listener) noexcept;
+	void removeParamListener(MaterialParamListener* listener) noexcept;
+
+	MaterialParamPtr clone() const noexcept;
+
+private:
+	MaterialParam(const MaterialParam&) = delete;
+	MaterialParam& operator=(const MaterialParam&) = delete;
+
+private:
+	std::string _name;
+	GlobalSemanticType _semanticType;
+	GraphicsUniformType _uniformType;
+	std::vector<MaterialParamListener*> _listeners;
+};
+
+class EXPORT MaterialMacro
+{
+public:
+	MaterialMacro() noexcept;
+	MaterialMacro(const std::string& name, GraphicsUniformType type) noexcept;
+	MaterialMacro(std::string&& name, GraphicsUniformType type) noexcept;
+	virtual ~MaterialMacro() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	void setName(std::string&& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
 
 	void uniform1b(bool value) noexcept;
 	void uniform1i(std::int32_t i1) noexcept;
@@ -168,20 +319,19 @@ public:
 	GraphicsSamplerPtr getTextureSampler() const noexcept;
 	GraphicsDataPtr getBuffer() const noexcept;
 
-	void addParamListener(GraphicsUniformSetPtr listener) noexcept;
-	void removeParamListener(GraphicsUniformSetPtr listener) noexcept;
+	void addParamListener(MaterialParamListener* listener) noexcept;
+	void removeParamListener(MaterialParamListener* listener) noexcept;
 
-	MaterialParamPtr clone() const noexcept;
+	MaterialMacroPtr clone() const noexcept;
 
 private:
-	MaterialParam(const MaterialParam&) = delete;
-	MaterialParam& operator=(const MaterialParam&) = delete;
+	MaterialMacro(const MaterialMacro&) = delete;
+	MaterialMacro& operator=(const MaterialMacro&) = delete;
 
 private:
 	std::string _name;
-	GlobalSemanticType _semanticType;
 	MaterialVariant _variant;
-	std::vector<GraphicsUniformSetPtr> _listeners;
+	std::vector<MaterialParamListener*> _listeners;
 };
 
 _NAME_END

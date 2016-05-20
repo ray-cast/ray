@@ -5,8 +5,6 @@
     <include name="sys:fx/lighting.fxml"/>
     <parameter name="texMRT0" type="texture2D" semantic="DeferredGraphicMap" />
     <parameter name="texMRT1" type="texture2D" semantic="DeferredNormalMap" />
-    <parameter name="texDepthLinear" type="texture2D" semantic="DeferredDepthLinearMap" />
-    <parameter name="projInfo" type="float4"/>
     <parameter name="matViewInverse" type="float4x4" semantic="matViewInverse" />
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <parameter name="texEnvDiffuse" type="textureCUBE"/>
@@ -34,7 +32,6 @@
                 float specular = restoreSpecular(MRT0);
                 float3 diffuse = restoreDiffuse(texMRT0, coord);
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(viewdir);
 
                 float mipLayer = brefEnvironmentEnvMip(shininess, texEnvFactor.r);

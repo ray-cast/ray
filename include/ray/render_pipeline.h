@@ -105,7 +105,7 @@ public:
 	void setTransform(const float4x4& transform) noexcept;
 	void setTransformInverse(const float4x4& transform) noexcept;
 
-	const MaterialParamPtr& getSemanticParam(GlobalSemanticType type) const noexcept;
+	const MaterialSemanticPtr& getSemanticParam(GlobalSemanticType type) const noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
@@ -158,11 +158,11 @@ private:
 	GraphicsDataPtr _coneIbo;
 	GraphicsIndirect _coneIndirect;	
 
-	MaterialSemanticPtr _materialSemantics;
+	MaterialSemanticManagerPtr _semanticsManager;
 
 	RenderDataManagerPtr _dataManager;
 
-	RenderPostProcessor _postprocessors[RenderQueue::RenderQueueRangeSize];
+	RenderPostProcessor _postprocessors;
 };
 
 _NAME_END

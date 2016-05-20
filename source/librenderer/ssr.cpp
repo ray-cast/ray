@@ -57,7 +57,7 @@ SSR::~SSR() noexcept
 }
 
 bool
-SSR::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+SSR::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
 {
 	//_projInfo->assign(pipeline.camera->getProjConstant());
 	//_clipInfo->assign(pipeline.camera->getClipConstant());

@@ -249,6 +249,8 @@ Light::setupShadowMap(LightShadowType type) noexcept
 		shadowMapSize = LightShadowSize::LightShadowSizeMedium;
 	else if (type == LightShadowType::LightShadowTypeHigh)
 		shadowMapSize = LightShadowSize::LightShadowSizeHigh;
+	else if (type == LightShadowType::LightShadowTypeVeryHigh)
+		shadowMapSize = LightShadowSize::LightShadowSizeVeryHigh;
 	else
 		return false;
 
@@ -338,7 +340,7 @@ Light::_updateBoundingBox() noexcept
 		}
 		else
 		{
-			_shadowCamera[0]->setAperture(this->getSpotOuterCone().x * 2.0f);
+			_shadowCamera[0]->setAperture(this->getSpotOuterCone().x*2.0);
 			_shadowCamera[0]->setFar(zfar);
 			_shadowCamera[0]->setCameraType(CameraType::CameraTypePerspective);
 		}

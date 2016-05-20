@@ -103,18 +103,15 @@ LightComponent::getSpotOuterCone() const noexcept
 }
 
 void
-LightComponent::setShadow(bool shadow) noexcept
+LightComponent::setShadow(LightShadowType shadow) noexcept
 {
-	if (shadow)
-		_light->setShadowType(LightShadowType::LightShadowTypeMedium);
-	else
-		_light->setShadowType(LightShadowType::LightShadowTypeNone);
+	_light->setShadowType(shadow);
 }
 
-bool
+LightShadowType
 LightComponent::getShadow() const noexcept
 {
-	return _light->getShadowType() != LightShadowType::LightShadowTypeNone;
+	return _light->getShadowType();;
 }
 
 void
@@ -181,11 +178,11 @@ void
 LightComponent::load(iarchive& reader) noexcept
 {
 	std::string lightType;
+	std::string shadowType;
 	float3 lightColor(1, 1, 1);
 	float lightIntensity = 1.0f;
 	float lightRange = 1.0f;
 	float shadowBias = 0.0;
-	bool shadow = false;
 	bool softShadow = false;
 	bool subsurfaceScattering = false;
 
@@ -193,7 +190,7 @@ LightComponent::load(iarchive& reader) noexcept
 
 	reader >> make_archive(lightIntensity, "intensity");
 	reader >> make_archive(lightRange, "range");
-	reader >> make_archive(shadow, "shadow");
+	reader >> make_archive(shadowType, "shadow");
 	reader >> make_archive(lightColor, "color");
 	reader >> make_archive(lightType, "type");
 	reader >> make_archive(softShadow, "soft");
@@ -213,10 +210,20 @@ LightComponent::load(iarchive& reader) noexcept
 	else
 		this->setLightType(LightType::LightTypePoint);
 
+	if (shadowType == "low")
+		this->setShadow(LightShadowType::LightShadowTypeLow);
+	else if (shadowType == "medium")
+		this->setShadow(LightShadowType::LightShadowTypeMedium);
+	else if (shadowType == "high")
+		this->setShadow(LightShadowType::LightShadowTypeHigh);
+	else if (shadowType == "veryhigh")
+		this->setShadow(LightShadowType::LightShadowTypeVeryHigh);
+	else
+		this->setShadow(LightShadowType::LightShadowTypeNone);
+
 	this->setLightColor(lightColor);
 	this->setRange(lightRange);
 	this->setIntensity(lightIntensity);
-	this->setShadow(shadow);
 	this->setShadowBias(shadowBias);
 	this->setSoftShadow(softShadow);
 	this->setSubsurfaceScattering(subsurfaceScattering);

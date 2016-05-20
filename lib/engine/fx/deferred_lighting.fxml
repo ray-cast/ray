@@ -5,7 +5,6 @@
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matModelView" type="float4x4" semantic="matModelView"/>
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
-    <parameter name="matViewInverse" type="float4x4" semantic="matViewInverse" />
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <parameter name="texMRT0" type="texture2D" semantic="DeferredGraphicMap" />
     <parameter name="texMRT1" type="texture2D" semantic="DeferredNormalMap" />
@@ -14,7 +13,6 @@
     <parameter name="texLight" type="texture2D" semantic="DeferredLightMap" />
     <parameter name="texSource" type="texture2D"/>
     <parameter name="clipInfo" type="float2"/>
-    <parameter name="projInfo" type="float4"/>
     <parameter name="lightColor" type="float3" />
     <parameter name="lightEyeDirection" type="float3" />
     <parameter name="lightEyePosition" type="float3" />
@@ -59,7 +57,7 @@
                 out float3 oViewDir : TEXCOORD1,
                 out float4 oPosition : SV_Position)
             {
-                oViewDir = mul(matModelView, Position).xyz;
+                oViewDir = -mul(matModelView, Position).xyz;
                 oPosition = mul(matModelViewProject, Position);
                 oTexcoord.xy = PosToCoord(oPosition.xy / oPosition.w);
                 oTexcoord.xy = oTexcoord.xy * oPosition.w;
@@ -102,9 +100,11 @@
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
+                viewdir = normalize(viewdir);
+
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
                 float4 lighting = 0;
 
@@ -126,9 +126,11 @@
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
+                viewdir = normalize(viewdir);
+
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
                 float4 lighting = 0;
 
@@ -151,9 +153,11 @@
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
+                viewdir = normalize(viewdir);
+
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
                 float4 lighting = 0;
 
@@ -175,9 +179,11 @@
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
+                viewdir = normalize(viewdir);
+
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
                 float4 lighting = 0;
 
@@ -202,9 +208,11 @@
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
+                viewdir = normalize(viewdir);
+
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, texcoord);
-                float3 V = normalize(-viewdir);
+                float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
                 float4 lighting = 0;
 
@@ -231,8 +239,8 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, texcoord);
-                float3 V = normalize(-viewdir);
+                float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
                 float4 lighting = 0;
 
@@ -260,8 +268,8 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, texcoord);
-                float3 V = normalize(-viewdir);
+                float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
                 float4 lighting = 0;
 

@@ -37,22 +37,34 @@
 #ifndef _H_POST_RENDER_PIPELINE_H_
 #define _H_POST_RENDER_PIPELINE_H_
 
-#include <ray/render_pipeline_controller.h>
+#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
-class PostRenderPipeline final
+class EXPORT PostRenderPipeline final : public RenderPostProcess
 {
 public:
 	PostRenderPipeline() noexcept;
 	~PostRenderPipeline() noexcept;
 
-	bool enableSSSS(RenderPipeline& pipeline, bool enable) noexcept;
+	bool enableSSSS(bool enable) noexcept;
 	bool isEnableSSSS() const noexcept;
 
-	void render(RenderPipeline& pipeline, GraphicsFramebufferPtr& framebuffer) noexcept;
+public:
+	virtual void onActivate(RenderPipeline& pipeline) noexcept;
+	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
+
+	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
+
+	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
+
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept;
 
 private:
+	bool _enableSSSS;
+
 	std::shared_ptr<class SSSS> _SSSS;
 
 	GraphicsTexturePtr _deferredDepthMap;

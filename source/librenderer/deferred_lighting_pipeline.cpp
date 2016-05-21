@@ -97,23 +97,23 @@ DeferredLightingPipeline::close() noexcept
 void
 DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 {
-	_clipInfo->uniform2f(camera->getClipConstant().xy());
-
-	_pipeline->setCamera(camera);
-
 	this->renderOpaques(*_pipeline, _deferredGraphicsViews);
 	this->renderOpaquesDepthLinear(*_pipeline, _deferredDepthLinearView);
 	this->renderLights(*_pipeline, _deferredLightingView);
 	this->renderOpaquesShading(*_pipeline, _deferredShadingView);
 	this->renderOpaquesSpecificShading(*_pipeline, _deferredShadingView);
 
-	/*if (!pipeline.getRenderData(RenderQueue::RenderQueueTransparent).empty())
+	auto& dataManager = _pipeline->getCamera()->getRenderDataManager();
+	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecific).empty())
 	{
-		this->renderTransparent(pipeline, _deferredGraphicsViews);
-		this->renderLights(pipeline, _deferredLightingView);
-		this->renderTransparentShading(pipeline, _deferredShadingView);
-		this->renderTransparentSpecificShading(pipeline, _deferredShadingView);
-	}*/
+		this->renderTransparent(*_pipeline, _deferredGraphicsViews);
+		this->renderTransparentDepthLinear(*_pipeline, _deferredDepthLinearView);
+		this->renderLights(*_pipeline, _deferredLightingView);
+		this->renderTransparentShading(*_pipeline, _deferredShadingView);
+		this->renderTransparentSpecificShading(*_pipeline, _deferredShadingView);
+	}
 
 	_pipeline->drawPostProcess(RenderQueue::RenderQueuePostprocess, _deferredShadingView, _deferredSwapView);
 }
@@ -124,11 +124,14 @@ DeferredLightingPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFrameb
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueBatch);
 }
 
 void
 DeferredLightingPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
+	_clipInfo->uniform2f(_pipeline->getCamera()->getClipConstant().xy());
+
 	pipeline.setFramebuffer(target);
 	pipeline.drawScreenQuad(*_deferredDepthLinear);
 }
@@ -140,6 +143,7 @@ DeferredLightingPipeline::renderOpaquesShading(RenderPipeline& pipeline, Graphic
 	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	pipeline.drawScreenQuad(*_deferredShadingOpaques);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueShading);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueOpaqueShading, target, target);
 }
 
 void
@@ -154,15 +158,17 @@ void
 DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatch);
 }
 
 void
 DeferredLightingPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
+	_clipInfo->uniform2f(_pipeline->getCamera()->getClipConstant().xy());
+
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(*_deferredDepthLinear);
 }
 
@@ -171,6 +177,8 @@ DeferredLightingPipeline::renderTransparentShading(RenderPipeline& pipeline, Gra
 {
 	pipeline.setFramebuffer(target);
 	pipeline.drawScreenQuad(*_deferredShadingTransparents);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparent, target, target);
 }
 
 void
@@ -752,6 +760,8 @@ DeferredLightingPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 {
 	assert(camera);
 	assert(camera->getCameraOrder() == CameraOrder::CameraOrder3D);
+
+	_pipeline->setCamera(camera);
 	this->render3DEnvMap(camera);
 }
 

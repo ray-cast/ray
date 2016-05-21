@@ -310,6 +310,8 @@ SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr te
 	sphere.makeSphere(1, 16, 12);
 	_quadObject = std::make_shared<Geometry>();
 	_quadObject->setMaterial(technique);
+	_quadObject->setCastShadow(false);
+	_quadObject->setReceiveShadow(false);
 	return _buildRenderObject(_quadObject, sphere, _renderScreenQuadVbo, _renderScreenQuadIbo);
 }
 
@@ -331,6 +333,8 @@ SkyboxComponent::_buildSphereRenderObject(const MeshProperty& mesh, MaterialPtr 
 {
 	_sphereObject = std::make_shared<Geometry>();
 	_sphereObject->setMaterial(technique);
+	_sphereObject->setCastShadow(false);
+	_sphereObject->setReceiveShadow(false);
 	return _buildRenderObject(_sphereObject, mesh, _renderSphereVbo, _renderSphereIbo);
 }
 
@@ -451,9 +455,15 @@ SkyboxComponent::_updateTransform() noexcept
 	
 	if (_quadObject)
 		_quadObject->setTransform(transforam);
+
+	if (_enableSkyLighting)
+	{
+		if (_envBoxCenter)
+			_envBoxCenter->uniform3f(this->getGameObject()->getWorldTranslate());
+	}
 }
 
-void 
+void
 SkyboxComponent::_updateMaterial() noexcept
 {
 	if (_enableSkyBox && _skyBoxMaterial)
@@ -482,6 +492,18 @@ SkyboxComponent::_updateMaterial() noexcept
 			factor.z = _skyLightingIntensity.y;
 			texEnvFactor->uniform3f(factor);
 		}
+
+		_envBoxMax = _skyLightingMaterial->getParameter("envBoxMax");
+		if (_envBoxMax)
+			_envBoxMax->uniform3f(float3(_skyboxSize));
+
+		_envBoxMin = _skyLightingMaterial->getParameter("envBoxMin");
+		if (_envBoxMin)
+			_envBoxMin->uniform3f(float3(-_skyboxSize));
+
+		_envBoxCenter = _skyLightingMaterial->getParameter("envBoxCenter");
+		if (_envBoxCenter)
+			_envBoxCenter->uniform3f(0.0, 0.0, 0.0);
 	}
 }
 

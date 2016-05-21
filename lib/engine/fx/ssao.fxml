@@ -166,7 +166,7 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
-            <state name="blend" value="false"/>
+            <state name="blend" value="true"/>
             <state name="blendsrc" value="dstcol" />
             <state name="blenddst" value="zero" />
             <state name="blendalphasrc" value="zero" />

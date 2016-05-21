@@ -48,7 +48,7 @@
             float3 P = restorePosition(texDepthLinear, coord, normalize(viewdir));
             float3 L = normalize(P - lightEyePosition);
 
-            float4 proj = mul(shadowEye2LightViewProject, float4(P-N*0.02, 1.0));
+            float4 proj = mul(shadowEye2LightViewProject, float4(P-N*0.01, 1.0));
             proj.xy /= proj.w;
             proj.xy = PosToCoord(proj.xy);
 

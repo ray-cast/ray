@@ -118,7 +118,7 @@ PostRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 }
 
 bool 
-PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
+PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;
@@ -146,7 +146,7 @@ PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphi
 				shadowIndex++;
 		}
 
-		_SSSS->applyGuassBlur(pipeline, source, _deferredDepthLinearMap, dest);
+		_SSSS->applyGuassBlur(pipeline, source, _deferredDepthLinearMap, swap);
 	}
 
 	return false;

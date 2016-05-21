@@ -79,7 +79,7 @@
 
         float3 brdfEnvironmentEnvVec(float3 normal, float3 view)
         {
-            return -reflect(view, normal);
+            return reflect(-view, normal);
         }
 
         float3 brdfEnvironmentDiffuse(float3 prefilteredColor, float3 diff)

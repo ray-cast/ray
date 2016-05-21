@@ -69,7 +69,7 @@ Fog::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-Fog::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
+Fog::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
 {
 	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
 

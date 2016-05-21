@@ -15,6 +15,40 @@
             #define NUM_ORDER    3
             #define NUM_ORDER_P2 4
 
+            const static float3x3 M = float3x3(
+                0.2209, 0.3390, 0.4184,
+                0.1138, 0.6780, 0.7319,
+                0.0102, 0.1130, 0.2969);
+
+            // Inverse M matrix, for decoding
+            const static float3x3 InverseM = float3x3(
+                6.0013, -2.700, -1.7995,
+                -1.332, 3.1029, -5.7720,
+                .3007,  -1.088, 5.6268);
+
+            float4 LogLuvEncode(in float3 vRGB)
+            {
+                float4 vResult;
+                float3 Xp_Y_XYZp = mul(vRGB, M);
+                Xp_Y_XYZp = max(Xp_Y_XYZp, float3(1e-6, 1e-6, 1e-6));
+                vResult.xy = Xp_Y_XYZp.xy / Xp_Y_XYZp.z;
+                float Le = 2 * log2(Xp_Y_XYZp.y) + 128;
+                vResult.z = Le / 256;
+                vResult.w = frac(Le);
+                return vResult;
+            }
+
+            float3 LogLuvDecode(in float4 vLogLuv)
+            {
+                float Le = vLogLuv.z * 256 + vLogLuv.w;
+                float3 Xp_Y_XYZp;
+                Xp_Y_XYZp.y = exp2((Le - 128) / 2);
+                Xp_Y_XYZp.z = Xp_Y_XYZp.y / vLogLuv.y;
+                Xp_Y_XYZp.x = vLogLuv.x * Xp_Y_XYZp.z;
+                float3 vRGB = mul(Xp_Y_XYZp, InverseM);
+                return max(vRGB, 0);
+            }
+
             void ConvertHemisphereVS(
                 in float4 Position : POSITION0,
                 out float4 oPosition : SV_Position)

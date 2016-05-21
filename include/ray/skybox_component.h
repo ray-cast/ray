@@ -133,6 +133,9 @@ private:
 
 	MaterialPtr _skyBoxMaterial;
 	MaterialPtr _skyLightingMaterial;
+	MaterialParamPtr _envBoxMax;
+	MaterialParamPtr _envBoxMin;
+	MaterialParamPtr _envBoxCenter;
 
 	GraphicsTexturePtr _skyTexture;
 	GraphicsTexturePtr _skyDiffTexture;

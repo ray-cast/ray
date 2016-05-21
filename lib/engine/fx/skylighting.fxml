@@ -5,11 +5,15 @@
     <include name="sys:fx/lighting.fxml"/>
     <parameter name="texMRT0" type="texture2D" semantic="DeferredGraphicMap" />
     <parameter name="texMRT1" type="texture2D" semantic="DeferredNormalMap" />
+    <parameter name="texDepthLinear" type="texture2D" semantic="DeferredDepthLinearMap" />
     <parameter name="matViewInverse" type="float4x4" semantic="matViewInverse" />
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <parameter name="texEnvDiffuse" type="textureCUBE"/>
     <parameter name="texEnvSpecular" type="textureCUBE"/>
     <parameter name="texEnvFactor" type="float3"/>
+    <parameter name="envBoxMax" type="float3"/>
+    <parameter name="envBoxMin" type="float3"/>
+    <parameter name="envBoxCenter" type="float3"/>
     <shader>
         <![CDATA[
              void SkyboxEnvLightingVS(
@@ -33,20 +37,29 @@
                 float3 diffuse = restoreDiffuse(texMRT0, coord);
                 float3 N = restoreNormal(MRT1);
                 float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, coord, V);
 
                 float mipLayer = brefEnvironmentEnvMip(shininess, texEnvFactor.r);
 
+                float3 worldPosition = mul(matViewInverse, P);
                 float3 worldNormal = mul((float3x3)matViewInverse, N);
                 float3 worldView = mul((float3x3)matViewInverse, V);
                 float3 R = brdfEnvironmentEnvVec(worldNormal, worldView);
 
+                // Box Projected Cubemap Environment Mapping
+                float3 rbmax = (envBoxMax - worldPosition) / R;
+                float3 rbmin = (envBoxMin - worldPosition) / R;
+                float3 rbminmax = (R > 0.0f) ? rbmax : rbmin;
+                float3 posonbox = worldPosition + R * min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+                float3 R2 = normalize(posonbox - envBoxCenter);
+
                 float3 prefilteredDiffuse = texEnvDiffuse.Sample(PointClamp, worldNormal).rgb;
-                float3 prefilteredSpeculr = texEnvSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
+                float3 prefilteredSpeculr = texEnvSpecular.SampleLevel(PointClamp, R2, mipLayer).rgb;
 
                 float3 shading = brdfEnvironmentDiffuse(prefilteredDiffuse, diffuse) * texEnvFactor.g;
                 shading += brdfEnvironmentSpecular(prefilteredSpeculr, worldNormal, worldView, shininess, specular) * texEnvFactor.b;
 
-                return float4(shading, 1.0);
+                return float4(shading, 0.0);
             }
         ]]>
     </shader>
@@ -65,7 +78,7 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
-            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphasrc" value="zero"/>
             <state name="blendalphadst" value="one"/>
 
             <state name="stencilTest" value="true"/>

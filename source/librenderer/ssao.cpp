@@ -221,7 +221,7 @@ SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
+SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;
@@ -230,8 +230,8 @@ SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 
 	this->computeRawAO(pipeline, texture, _texAmbientView);
 	this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
-	this->blurVertical(pipeline, _texBlurMap, dest);
-	return true;
+	this->blurVertical(pipeline, _texBlurMap, source);
+	return false;
 }
 
 _NAME_END

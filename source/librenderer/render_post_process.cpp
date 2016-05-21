@@ -93,16 +93,6 @@ RenderPostProcess::onResolutionChangeAfter(RenderPipeline&) noexcept
 }
 
 void
-RenderPostProcess::onRenderPre(RenderPipeline& pipeline) noexcept
-{
-}
-
-void
-RenderPostProcess::onRenderPost(RenderPipeline& pipeline) noexcept
-{
-}
-
-void
 RenderPostProcess::_setRenderPipeline(RenderPipeline* pipeline) noexcept
 {
 	_renderPipeline = pipeline;

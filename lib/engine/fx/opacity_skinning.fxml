@@ -3,7 +3,7 @@
     <include name="sys:fx/Gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
-    <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
+    <parameter name="matView" type="float4x4" semantic="matView"/>
     <parameter name="quality" type="float4"/>
     <parameter name="diffuse" type="float3"/>
     <parameter name="specular" type="float"/>
@@ -105,10 +105,10 @@
                 oNormal += mul((float3x3)bindpose[blendIndices.z], Normal) * BlendWeight.z;
                 oNormal += mul((float3x3)bindpose[blendIndices.w], Normal) * BlendWeight.w;
 
-                oNormal = mul(oNormal, (float3x3)matModelViewInverse);
+                oNormal = mul((float3x3)matView, oNormal);
 #else
-                oNormal = mul(Normal, (float3x3)matModelViewInverse);
-                oTangent = mul(Tangent, (float3x3)matModelViewInverse);
+                oNormal = mul((float3x3)matView, Normal);
+                oTangent = mul((float3x3)matView, Tangent);
 
                 oPosition = Position;
 #endif

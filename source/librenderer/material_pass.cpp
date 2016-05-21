@@ -542,12 +542,6 @@ MaterialPass::setup(Material& material) noexcept
 			if (pos != std::string::npos)
 				uniformName = uniformName.substr(0, pos);
 		}
-		else
-		{
-			auto pos = uniformName.find_first_of('[');
-			if (pos != std::string::npos)
-				uniformName = uniformName.substr(0, pos);
-		}
 
 		auto param = material.getParameter(uniformName);
 		if (!param)

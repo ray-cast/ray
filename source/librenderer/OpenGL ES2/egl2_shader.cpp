@@ -556,27 +556,34 @@ EGL2Program::_initActiveUniform() noexcept
 	if (numUniform == 0)
 		return;
 
-	auto nameUniform = std::make_unique<GLchar[]>(maxUniformLength + 1);
-	nameUniform[maxUniformLength] = 0;
+	std::string nameUniform(maxUniformLength + 1, 0);
 
+	GLint textureUnit = 0;
 	for (GLint i = 0; i < numUniform; ++i)
 	{
 		GLint size;
 		GLenum type;
+		GLsizei length;
+		glGetActiveUniform(_program, (GLuint)i, maxUniformLength, &length, &size, &type, (GLchar*)nameUniform.c_str());
 
-		glGetActiveUniform(_program, (GLuint)i, maxUniformLength, 0, &size, &type, nameUniform.get());
-
-		if (std::strstr(nameUniform.get(), ".") != 0 || nameUniform[0] == '_')
-			continue;
-
-		GLint location = glGetUniformLocation(_program, nameUniform.get());
+		GLint location = glGetUniformLocation(_program, nameUniform.c_str());
 		if (location == GL_INVALID_INDEX)
 			continue;
 
 		auto uniform = std::make_shared<EGL2GraphicsUniform>();
-		uniform->setName(nameUniform.get());
+		uniform->setName(nameUniform.substr(0, std::min((std::size_t)length, nameUniform.find('['))));
 		uniform->setBindingPoint(location);
-		uniform->setType(toGraphicsUniformType(uniform->getName(), type));
+		uniform->setType(toGraphicsUniformType(nameUniform, type));
+
+		if (type == GL_SAMPLER_2D ||
+			type == GL_SAMPLER_3D_OES ||
+			type == GL_SAMPLER_CUBE ||
+			type == GL_SAMPLER_CUBE_MAP_ARRAY_EXT)
+		{
+			glUniform1i(location, textureUnit);
+			uniform->setBindingPoint(textureUnit);
+			textureUnit++;
+		}
 
 		_activeUniforms.push_back(uniform);
 	}

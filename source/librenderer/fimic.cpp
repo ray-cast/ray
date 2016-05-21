@@ -106,16 +106,17 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsTexturePtr 
 		this->sunLumLog(pipeline, source, _texSampleLogView);
 
 		float* data;
-		_texSampleLogMap->map(0, 0, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, (void**)&data);
+		if (_texSampleLogMap->map(0, 0, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, (void**)&data))
+		{
+			float lum = 0.0f;
+			for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
+				lum += data[i];
 
-		float lum = 0.0f;
-		for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
-			lum += data[i];
+			_lum = lum / (float)SAMPLE_LOG_COUNT;
+			_lum = std::exp(_lum);
 
-		_lum = lum / (float)SAMPLE_LOG_COUNT;
-		_lum = std::exp(_lum);
-
-		_lumRate = 0.0f;
+			_lumRate = 0.0f;
+		}
 
 		_texSampleLogMap->unmap();
 	}
@@ -306,7 +307,7 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
+FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;
@@ -323,7 +324,7 @@ FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphics
 	this->blurh(pipeline, _texCombieMap, _texSample8View);
 	this->blurv(pipeline, _texSample8Map, _texCombieView);
 
-	this->generateToneMapping(pipeline, _texCombieMap, texture, dest);
+	this->generateToneMapping(pipeline, _texCombieMap, texture, swap);
 
 	return true;
 }

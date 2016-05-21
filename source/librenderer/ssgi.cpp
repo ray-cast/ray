@@ -179,7 +179,7 @@ SSGI::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-SSGI::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
+SSGI::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
 {
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
@@ -191,7 +191,7 @@ SSGI::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 		this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
 	}
 
-	this->shading(pipeline, _texAmbientMap, dest);
+	this->shading(pipeline, _texAmbientMap, swap);
 
 	return true;
 }

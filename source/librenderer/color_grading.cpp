@@ -98,7 +98,7 @@ ColorGrading::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-ColorGrading::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
+ColorGrading::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;
@@ -108,7 +108,7 @@ ColorGrading::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFram
 
 	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
 
-	pipeline.setFramebuffer(dest);
+	pipeline.setFramebuffer(swap);
 	pipeline.discradRenderTexture(attachment, 1);
 	pipeline.drawScreenQuad(*_colorGrading);
 

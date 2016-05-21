@@ -13,8 +13,6 @@
         <component class="FirstPersonCamera">
         </component>
         <component class="Skybox">
-            <attribute castshadow="false"/>
-            <attribute receiveshadow="false"/>
             <attribute flags="skybox|skylighting"/>
             <attribute skymap="dlc:EnvLighting/texture/skybox.dds"/>
             <attribute skydiffuse="dlc:EnvLighting/texture/sky_diff.dds"/>

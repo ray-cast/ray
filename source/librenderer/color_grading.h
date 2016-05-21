@@ -56,7 +56,7 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) noexcept;
 	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept;
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept;
 
 private:
 

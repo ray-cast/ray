@@ -538,27 +538,30 @@ OGLProgram::_initActiveUniform() noexcept
 	if (numUniform == 0)
 		return;
 
-	auto nameUniform = std::make_unique<GLchar[]>(maxUniformLength + 1);
-	nameUniform[maxUniformLength] = 0;
+	std::string nameUniform(maxUniformLength + 1, 0);
 
 	GLuint textureUnit = 0;
 	for (GLint i = 0; i < numUniform; ++i)
 	{
 		GLint size;
 		GLenum type;
-		glGetActiveUniform(_program, (GLuint)i, maxUniformLength, 0, &size, &type, nameUniform.get());
+		GLsizei length;
+		glGetActiveUniform(_program, (GLuint)i, maxUniformLength, &length, &size, &type, (GLchar*)nameUniform.c_str());
 
-		GLuint location = glGetUniformLocation(_program, nameUniform.get());
+		GLuint location = glGetUniformLocation(_program, nameUniform.c_str());
 		if (location == GL_INVALID_INDEX)
 			continue;
 
-		auto uniformType = toGraphicsUniformType(nameUniform.get(), type);
 		auto uniform = std::make_shared<OGLGraphicsUniform>();
-		uniform->setName(nameUniform.get());
+		uniform->setName(nameUniform.substr(0, std::min((std::size_t)length, nameUniform.find('['))));
 		uniform->setBindingPoint(location);
-		uniform->setType(toGraphicsUniformType(uniform->getName(), type));
+		uniform->setType(toGraphicsUniformType(nameUniform, type));
 
-		if (uniformType == GraphicsUniformType::GraphicsUniformTypeStorageImage)
+		if (type == GL_SAMPLER_2D ||
+			type == GL_SAMPLER_3D ||
+			type == GL_SAMPLER_2D_ARRAY ||
+			type == GL_SAMPLER_CUBE ||
+			type == GL_SAMPLER_CUBE_MAP_ARRAY)
 		{
 			glProgramUniform1i(_program, location, textureUnit);
 			uniform->setBindingPoint(textureUnit);
@@ -686,17 +689,17 @@ OGLProgram::toGraphicsFormat(GLenum type) noexcept
 GraphicsUniformType
 OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 {
-	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
-		type == GL_SAMPLER_2D_SHADOW ||
-		type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
-		type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
+	if (type == GL_SAMPLER_2D || 
+		type == GL_SAMPLER_3D ||
+		type == GL_SAMPLER_2D_ARRAY || 
+		type == GL_SAMPLER_CUBE || 
+		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
 		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
 	}
 	else
 	{
-		bool isArray = name.find("[0]") != std::string::npos;
-
+		bool isArray = name.find('[') != std::string::npos;
 		if (type == GL_BOOL)
 		{
 			return GraphicsUniformType::GraphicsUniformTypeBool;

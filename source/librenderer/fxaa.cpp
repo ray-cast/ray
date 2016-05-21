@@ -74,7 +74,7 @@ FXAA::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-FXAA::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept
+FXAA::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;
@@ -87,7 +87,7 @@ FXAA::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 
 	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
 
-	pipeline.setFramebuffer(dest);
+	pipeline.setFramebuffer(swap);
 	pipeline.discradRenderTexture(attachment, 1);
 	pipeline.drawScreenQuad(*_fxaaTech);
 

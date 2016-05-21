@@ -100,8 +100,6 @@
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                viewdir = normalize(viewdir);
-
                 float3 N = restoreNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
@@ -125,8 +123,6 @@
 
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
-
-                viewdir = normalize(viewdir);
 
                 float3 N = restoreNormal(MRT1);
                 float3 V = normalize(viewdir);
@@ -153,8 +149,6 @@
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                viewdir = normalize(viewdir);
-
                 float3 N = restoreNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
@@ -178,8 +172,6 @@
 
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
-
-                viewdir = normalize(viewdir);
 
                 float3 N = restoreNormal(MRT1);
                 float3 V = normalize(viewdir);
@@ -207,8 +199,6 @@
 
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
-
-                viewdir = normalize(viewdir);
 
                 float3 N = restoreNormal(MRT1);
                 float3 V = normalize(viewdir);

@@ -43,6 +43,8 @@ __ImplementSubClass(OGLCoreTexture, GraphicsTexture, "OGLCoreTexture")
 OGLCoreTexture::OGLCoreTexture() noexcept
 	: _texture(GL_NONE)
 	, _target(GL_INVALID_ENUM)
+	, _pbo(GL_NONE)
+	, _pboSize(0)
 {
 }
 

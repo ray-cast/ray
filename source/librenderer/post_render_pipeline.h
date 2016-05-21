@@ -60,7 +60,7 @@ public:
 	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
 	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
 
-	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& dest) noexcept;
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept;
 
 private:
 	bool _enableSSSS;

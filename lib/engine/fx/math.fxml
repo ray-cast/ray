@@ -229,6 +229,22 @@
 			normal.z = f / 2 - 1;
 			return normal;
 		}
+
+		float4 SmoothCurve(float4 x)
+		{
+			return x * x * (3.0 - 2.0 * x);
+		}
+
+		float4 TriangleWave(float4 x)
+		{
+			return abs(frac(x + 0.5) * 2.0 - 1.0);
+		}
+
+		float4 SmoothTriangleWave(float4 x)
+		{
+			return SmoothCurve(TriangleWave(x));
+		}
+
     	]]>
     </shader>
  </effect>

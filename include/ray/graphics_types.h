@@ -156,6 +156,7 @@ typedef std::vector<GraphicsUniformSetPtr> GraphicsUniformSets;
 typedef std::vector<GraphicsTexturePtr> GraphicsTextures;
 typedef std::vector<GraphicsSamplerPtr> GraphicsSamplers;
 typedef std::vector<GraphicsAttributePtr> GraphicsAttributes;
+typedef std::vector<GraphicsParamPtr> GraphicsParams;
 typedef std::vector<GraphicsUniformPtr> GraphicsUniforms;
 typedef std::vector<GraphicsUniformBlockPtr> GraphicsUniformBlocks;
 typedef std::vector<GraphicsDescriptorSetLayoutPtr> GraphicsDescriptorSetLayouts;

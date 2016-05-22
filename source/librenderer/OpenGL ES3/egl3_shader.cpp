@@ -462,8 +462,7 @@ EGL3Program::close() noexcept
 	}
 
 	_activeAttributes.clear();
-	_activeUniforms.clear();
-	_activeUniformBlocks.clear();
+	_activeParams.clear();
 }
 
 void
@@ -478,16 +477,10 @@ EGL3Program::getInstanceID() const noexcept
 	return _program;
 }
 
-const GraphicsUniforms&
-EGL3Program::getActiveUniforms() const noexcept
+const GraphicsParams&
+EGL3Program::getActiveParams() const noexcept
 {
-	return _activeUniforms;
-}
-
-const GraphicsUniformBlocks&
-EGL3Program::getActiveUniformBlocks() const noexcept
-{
-	return _activeUniformBlocks;
+	return _activeParams;
 }
 
 const GraphicsAttributes&
@@ -594,7 +587,7 @@ EGL3Program::_initActiveUniform() noexcept
 			textureUnit++;
 		}
 
-		_activeUniforms.push_back(uniform);
+		_activeParams.push_back(uniform);
 	}
 }
 
@@ -662,7 +655,7 @@ EGL3Program::_initActiveUniformBlock() noexcept
 			uniformblock->addGraphicsUniform(uniform);
 		}
 
-		_activeUniformBlocks.push_back(uniformblock);
+		_activeParams.push_back(uniformblock);
 	}
 }
 

@@ -82,15 +82,6 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			return false;
 		}
 
-		for (auto& ch : semantic)
-		{
-			if (ch < 'a' && ch > 'z')
-			{
-				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
-				return false;
-			}
-		}
-
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{

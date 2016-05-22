@@ -65,21 +65,14 @@ public:
 	GraphicsDescriptorSetLayoutDesc() noexcept;
 	~GraphicsDescriptorSetLayoutDesc() noexcept;
 
-	void addUniformComponent(GraphicsUniformPtr component) noexcept;
-	void removeUniformComponent(GraphicsUniformPtr component) noexcept;
+	void addUniformComponent(GraphicsParamPtr component) noexcept;
+	void removeUniformComponent(GraphicsParamPtr component) noexcept;
 
-	void setUniformComponents(const GraphicsUniforms& component) noexcept;
-	const GraphicsUniforms& getUniformComponents() const noexcept;
-
-	void addUniformBlockComponent(GraphicsUniformBlockPtr component) noexcept;
-	void removeUniformBlockComponent(GraphicsUniformBlockPtr component) noexcept;
-
-	void setUniformBlockComponents(const GraphicsUniformBlocks& component) noexcept;
-	const GraphicsUniformBlocks& getUniformBlockComponents() const noexcept;
+	void setUniformComponents(const GraphicsParams& component) noexcept;
+	const GraphicsParams& getUniformComponents() const noexcept;
 
 private:
-	GraphicsUniforms _uniforms;
-	GraphicsUniformBlocks _uniformBlocks;
+	GraphicsParams _params;
 };
 
 class EXPORT GraphicsDescriptorPoolDesc final

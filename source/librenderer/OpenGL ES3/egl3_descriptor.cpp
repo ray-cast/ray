@@ -725,19 +725,11 @@ EGL3DescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noe
 
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
 
-	auto& uniforms = descriptorSetLayoutDesc.getUniformComponents();
-	for (auto& uniform : uniforms)
+	auto& params = descriptorSetLayoutDesc.getUniformComponents();
+	for (auto& param : params)
 	{
 		auto uniformSet = std::make_shared<EGL3GraphicsUniformSet>();
-		uniformSet->setGraphicsParam(uniform);
-		_activeUniformSets.push_back(uniformSet);
-	}
-
-	auto& uniformBlocks = descriptorSetLayoutDesc.getUniformBlockComponents();
-	for (auto& uniformBlock : uniformBlocks)
-	{
-		auto uniformSet = std::make_shared<EGL3GraphicsUniformSet>();
-		uniformSet->setGraphicsParam(uniformBlock);
+		uniformSet->setGraphicsParam(param);
 		_activeUniformSets.push_back(uniformSet);
 	}
 

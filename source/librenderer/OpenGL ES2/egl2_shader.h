@@ -189,8 +189,7 @@ public:
 
 	GLuint getInstanceID() const noexcept;
 
-	const GraphicsUniforms& getActiveUniforms() const noexcept;
-	const GraphicsUniformBlocks& getActiveUniformBlocks() const noexcept;
+	const GraphicsParams& getActiveParams() const noexcept;
 	const GraphicsAttributes& getActiveAttributes() const noexcept;
 
 	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
@@ -216,8 +215,7 @@ private:
 
 	GLuint _program;
 
-	GraphicsUniforms    _activeUniforms;
-	GraphicsUniformBlocks _activeUniformBlocks;
+	GraphicsParams _activeParams;
 	GraphicsAttributes  _activeAttributes;
 
 	GraphicsDeviceWeakPtr _device;

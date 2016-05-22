@@ -492,8 +492,7 @@ MaterialPass::setup(Material& material) noexcept
 	if (!_descriptorSetLayout)
 	{
 		GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
-		descriptorSetLayoutDesc.setUniformComponents(_program->getActiveUniforms());
-		descriptorSetLayoutDesc.setUniformBlockComponents(_program->getActiveUniformBlocks());
+		descriptorSetLayoutDesc.setUniformComponents(_program->getActiveParams());
 		_descriptorSetLayout = _program->getDevice()->createDescriptorSetLayout(descriptorSetLayoutDesc);
 		if (!_descriptorSetLayout)
 			return false;
@@ -503,20 +502,16 @@ MaterialPass::setup(Material& material) noexcept
 	{
 		GraphicsDescriptorPoolDesc  descriptorPoolDesc;
 		descriptorPoolDesc.setMaxSets(1);
-		for (auto& activeUniform : _program->getActiveUniforms())
+		for (auto& activeUniform : _program->getActiveParams())
 		{
 			auto type = activeUniform->getType();
 			if (type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
 				type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
-				type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+				type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler ||
+				type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
 			{
 				descriptorPoolDesc.addGraphicsDescriptorPoolComponent(GraphicsDescriptorPoolComponent(activeUniform->getType(), 1));
 			}
-		}
-
-		for (auto& activeUniformBlock : _program->getActiveUniformBlocks())
-		{
-			descriptorPoolDesc.addGraphicsDescriptorPoolComponent(GraphicsDescriptorPoolComponent(activeUniformBlock->getType(), 1));
 		}
 
 		_descriptorPool = _program->getDevice()->createDescriptorPool(descriptorPoolDesc);
@@ -538,24 +533,27 @@ MaterialPass::setup(Material& material) noexcept
 		if (!param)
 			continue;
 
-		if (param->getType() == activeUniform->getType())
+		if (param->getType() != activeUniform->getType())
 		{
-			if (param->getSemanticType() != GlobalSemanticType::GlobalSemanticTypeNone)
-			{
-				MaterialSemanticBinding binding;
-				binding.setSemanticType(param->getSemanticType());
-				binding.setGraphicsUniformSet(activeUniformSet);
-				_bindingSemantics.push_back(binding);
-			}
-			else
-			{
-				auto binding = std::make_unique<MaterialParamBinding>();
-				binding->setGraphicsUniformSet(activeUniformSet);
-				binding->setMaterialParam(param);
+			assert(false);
+			continue;
+		}
 
-				param->addParamListener(binding.get());
-				_bindingParams.push_back(std::move(binding));
-			}
+		if (param->getSemanticType() != GlobalSemanticType::GlobalSemanticTypeNone)
+		{
+			MaterialSemanticBinding binding;
+			binding.setSemanticType(param->getSemanticType());
+			binding.setGraphicsUniformSet(activeUniformSet);
+			_bindingSemantics.push_back(binding);
+		}
+		else
+		{
+			auto binding = std::make_unique<MaterialParamBinding>();
+			binding->setGraphicsUniformSet(activeUniformSet);
+			binding->setMaterialParam(param);
+
+			param->addParamListener(binding.get());
+			_bindingParams.push_back(std::move(binding));
 		}
 	}
 

@@ -68,7 +68,7 @@
                 oPosition += mul(bindpose[blendIndices.w], Position) * BlendWeight.w;
                 oPosition = mul(matModelViewProject, oPosition);
 #else
-                oPosition = mul(matModelViewProject, float4(Position.xyz, 1.0f));
+                oPosition = mul(matModelViewProject, Position);
 #endif
             }
 

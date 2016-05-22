@@ -64,31 +64,15 @@ VulkanDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descript
 		auto type = it->getType();
 		if (type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
 			type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
-			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
-		{
-			VkDescriptorSetLayoutBinding layout;
-			layout.descriptorType = VulkanTypes::asDescriptorType(it->getType());
-			layout.descriptorCount = 1;
-			layout.pImmutableSamplers = nullptr;
-			layout.binding = it->downcast<VulkanGraphicsUniform>()->getBindingPoint();
-			layout.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
-
-			layouts.push_back(layout);
-		}
-	}
-
-	const auto& uniformBlocks = descriptorSetLayoutDesc.getUniformBlockComponents();
-	for (const auto& it : uniformBlocks)
-	{
-		auto type = it->getType();
-		if (type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer ||
+			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler ||
+			type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer ||
 			type == GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic)
 		{
 			VkDescriptorSetLayoutBinding layout;
 			layout.descriptorType = VulkanTypes::asDescriptorType(it->getType());
 			layout.descriptorCount = 1;
 			layout.pImmutableSamplers = nullptr;
-			layout.binding = it->downcast<VulkanGraphicsUniformBlock>()->getBindingPoint();
+			layout.binding = it->getBindingPoint();
 			layout.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
 
 			layouts.push_back(layout);

@@ -75,6 +75,9 @@ private:
 		GLenum type;
 		GLsizei offset;
 	};
+	GLuint _vao;
+	GLuint _vbo;
+	GLuint _ibo;
 
 	std::vector<VertexAttrib> _attributes;
 

@@ -458,8 +458,7 @@ EGL2Program::close() noexcept
 	}
 
 	_activeAttributes.clear();
-	_activeUniforms.clear();
-	_activeUniformBlocks.clear();
+	_activeParams.clear();
 }
 
 void
@@ -474,16 +473,10 @@ EGL2Program::getInstanceID() const noexcept
 	return _program;
 }
 
-const GraphicsUniforms&
-EGL2Program::getActiveUniforms() const noexcept
+const GraphicsParams&
+EGL2Program::getActiveParams() const noexcept
 {
-	return _activeUniforms;
-}
-
-const GraphicsUniformBlocks&
-EGL2Program::getActiveUniformBlocks() const noexcept
-{
-	return _activeUniformBlocks;
+	return _activeParams;
 }
 
 const GraphicsAttributes&
@@ -589,7 +582,7 @@ EGL2Program::_initActiveUniform() noexcept
 			textureUnit++;
 		}
 
-		_activeUniforms.push_back(uniform);
+		_activeParams.push_back(uniform);
 	}
 }
 

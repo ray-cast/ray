@@ -161,8 +161,7 @@ public:
 	GraphicsProgram() noexcept;
 	virtual ~GraphicsProgram() noexcept;
 
-	virtual const GraphicsUniforms& getActiveUniforms() const noexcept = 0;
-	virtual const GraphicsUniformBlocks& getActiveUniformBlocks() const noexcept = 0;
+	virtual const GraphicsParams& getActiveParams() const noexcept = 0;
 	virtual const GraphicsAttributes& getActiveAttributes() const noexcept = 0;
 
 	virtual const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept = 0;

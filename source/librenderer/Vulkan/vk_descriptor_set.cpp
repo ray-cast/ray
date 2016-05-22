@@ -743,9 +743,13 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 	}
 
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
-	auto& uniformBlocks = descriptorSetLayoutDesc.getUniformBlockComponents();
-	for (auto& uniformBlock : uniformBlocks)
+	auto& params = descriptorSetLayoutDesc.getUniformComponents();
+	for (auto& param : params)
 	{
+		if (param->getType() != GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
+			continue;
+
+		auto uniformBlock = param->downcast<VulkanGraphicsUniformBlock>();
 		auto& name = uniformBlock->getName();
 		if (name == "Globals")
 		{
@@ -774,7 +778,7 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 		else
 		{
 			auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
-			uniformSet->setGraphicsParam(uniformBlock);
+			uniformSet->setGraphicsParam(param);
 			_activeUniformSets.push_back(uniformSet);
 		}
 	}

@@ -250,12 +250,12 @@ OGLGraphicsUniformBlock::getGraphicsUniforms() const noexcept
 }
 
 void
-OGLGraphicsUniformBlock::setBindingPoint(GLuint bindingPoint) noexcept
+OGLGraphicsUniformBlock::setBindingPoint(std::uint32_t bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
 }
 
-GLuint
+std::uint32_t
 OGLGraphicsUniformBlock::getBindingPoint() const noexcept
 {
 	return _bindingPoint;
@@ -439,8 +439,7 @@ OGLProgram::close() noexcept
 	}
 
 	_activeAttributes.clear();
-	_activeUniforms.clear();
-	_activeUniformBlocks.clear();
+	_activeParams.clear();
 }
 
 void
@@ -461,16 +460,10 @@ OGLProgram::getActiveAttributes() const noexcept
 	return _activeAttributes;
 }
 
-const GraphicsUniforms&
-OGLProgram::getActiveUniforms() const noexcept
+const GraphicsParams&
+OGLProgram::getActiveParams() const noexcept
 {
-	return _activeUniforms;
-}
-
-const GraphicsUniformBlocks&
-OGLProgram::getActiveUniformBlocks() const noexcept
-{
-	return _activeUniformBlocks;
+	return _activeParams;
 }
 
 void
@@ -534,7 +527,7 @@ OGLProgram::_initActiveUniform() noexcept
 	if (numUniform == 0)
 		return;
 
-	std::string nameUniform(maxUniformLength + 1, 0);
+	std::string nameUniform(maxUniformLength, 0);
 
 	GLuint textureUnit = 0;
 	for (GLint i = 0; i < numUniform; ++i)
@@ -571,7 +564,7 @@ OGLProgram::_initActiveUniform() noexcept
 			textureUnit++;
 		}
 
-		_activeUniforms.push_back(uniform);
+		_activeParams.push_back(uniform);
 	}
 }
 
@@ -643,7 +636,7 @@ OGLProgram::_initActiveUniformBlock() noexcept
 			uniformblock->addGraphicsUniform(uniform);
 		}
 
-		_activeUniformBlocks.push_back(uniformblock);
+		_activeParams.push_back(uniformblock);
 	}
 }
 
@@ -702,7 +695,7 @@ OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 	}
 	else
 	{
-		bool isArray = name.find('[') != std::string::npos;
+		bool isArray = strstr(name.c_str(), "[") != nullptr;
 		if (type == GL_BOOL)
 		{
 			return GraphicsUniformType::GraphicsUniformTypeBool;

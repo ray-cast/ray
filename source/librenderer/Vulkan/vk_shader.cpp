@@ -718,7 +718,7 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 				uniform->setName(name);
 			}
 
-			_activeUniforms.push_back(uniform);
+			_activeParams.push_back(uniform);
 		}
 	}
 
@@ -764,7 +764,7 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 			}
 		}
 
-		_activeUniformBlocks.push_back(uniformBlock);
+		_activeParams.push_back(uniformBlock);
 	}
 
 	_programDesc = programDesc;
@@ -775,20 +775,13 @@ void
 VulkanProgram::close() noexcept
 {
 	_activeAttributes.clear();
-	_activeUniforms.clear();
-	_activeUniformBlocks.clear();
+	_activeParams.clear();
 }
 
-const GraphicsUniforms&
-VulkanProgram::getActiveUniforms() const noexcept
+const GraphicsParams&
+VulkanProgram::getActiveParams() const noexcept
 {
-	return _activeUniforms;
-}
-
-const GraphicsUniformBlocks&
-VulkanProgram::getActiveUniformBlocks() const noexcept
-{
-	return _activeUniformBlocks;
+	return _activeParams;
 }
 
 const GraphicsAttributes&

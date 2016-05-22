@@ -727,19 +727,11 @@ OGLDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noex
 
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
 
-	auto& uniforms = descriptorSetLayoutDesc.getUniformComponents();
-	for (auto& uniform : uniforms)
+	auto& params = descriptorSetLayoutDesc.getUniformComponents();
+	for (auto& uniform : params)
 	{
 		auto uniformSet = std::make_shared<OGLGraphicsUniformSet>();
 		uniformSet->setGraphicsParam(uniform);
-		_activeUniformSets.push_back(uniformSet);
-	}
-
-	auto& uniformBlocks = descriptorSetLayoutDesc.getUniformBlockComponents();
-	for (auto& uniformBlock : uniformBlocks)
-	{
-		auto uniformSet = std::make_shared<OGLGraphicsUniformSet>();
-		uniformSet->setGraphicsParam(uniformBlock);
 		_activeUniformSets.push_back(uniformSet);
 	}
 

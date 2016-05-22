@@ -61,63 +61,33 @@ GraphicsDescriptorSetLayoutDesc::~GraphicsDescriptorSetLayoutDesc() noexcept
 }
 
 void
-GraphicsDescriptorSetLayoutDesc::setUniformComponents(const GraphicsUniforms& component) noexcept
+GraphicsDescriptorSetLayoutDesc::setUniformComponents(const GraphicsParams& component) noexcept
 {
-	_uniforms = component;
+	_params = component;
 }
 
-const GraphicsUniforms&
+const GraphicsParams&
 GraphicsDescriptorSetLayoutDesc::getUniformComponents() const noexcept
 {
-	return _uniforms;
+	return _params;
 }
 
 void
-GraphicsDescriptorSetLayoutDesc::addUniformComponent(GraphicsUniformPtr component) noexcept
+GraphicsDescriptorSetLayoutDesc::addUniformComponent(GraphicsParamPtr component) noexcept
 {
 	assert(component);
-	auto it = std::find(_uniforms.begin(), _uniforms.end(), component);
-	if (it == _uniforms.end())
-		_uniforms.erase(it);
+	auto it = std::find(_params.begin(), _params.end(), component);
+	if (it == _params.end())
+		_params.erase(it);
 }
 
 void
-GraphicsDescriptorSetLayoutDesc::removeUniformComponent(GraphicsUniformPtr component) noexcept
+GraphicsDescriptorSetLayoutDesc::removeUniformComponent(GraphicsParamPtr component) noexcept
 {
 	assert(component);
-	auto it = std::find(_uniforms.begin(), _uniforms.end(), component);
-	if (it != _uniforms.end())
-		_uniforms.erase(it);
-}
-
-void
-GraphicsDescriptorSetLayoutDesc::setUniformBlockComponents(const GraphicsUniformBlocks& component) noexcept
-{
-	_uniformBlocks = component;
-}
-
-const GraphicsUniformBlocks&
-GraphicsDescriptorSetLayoutDesc::getUniformBlockComponents() const noexcept
-{
-	return _uniformBlocks;
-}
-
-void
-GraphicsDescriptorSetLayoutDesc::addUniformBlockComponent(GraphicsUniformBlockPtr component) noexcept
-{
-	assert(component);
-	auto it = std::find(_uniformBlocks.begin(), _uniformBlocks.end(), component);
-	if (it == _uniformBlocks.end())
-		_uniformBlocks.erase(it);
-}
-
-void
-GraphicsDescriptorSetLayoutDesc::removeUniformBlockComponent(GraphicsUniformBlockPtr component) noexcept
-{
-	assert(component);
-	auto it = std::find(_uniformBlocks.begin(), _uniformBlocks.end(), component);
-	if (it != _uniformBlocks.end())
-		_uniformBlocks.erase(it);
+	auto it = std::find(_params.begin(), _params.end(), component);
+	if (it != _params.end())
+		_params.erase(it);
 }
 
 GraphicsDescriptorPoolComponent::GraphicsDescriptorPoolComponent() noexcept

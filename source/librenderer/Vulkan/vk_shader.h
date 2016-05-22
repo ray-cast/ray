@@ -186,8 +186,7 @@ public:
 	bool setup(const GraphicsProgramDesc& desc) noexcept;
 	void close() noexcept;
 
-	const GraphicsUniforms& getActiveUniforms() const noexcept;
-	const GraphicsUniformBlocks& getActiveUniformBlocks() const noexcept;
+	const GraphicsParams& getActiveParams() const noexcept;
 	const GraphicsAttributes& getActiveAttributes() const noexcept;
 
 	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
@@ -205,8 +204,7 @@ private:
 	VulkanProgram& operator=(const VulkanProgram&) noexcept = delete;
 
 private:
-	GraphicsUniforms    _activeUniforms;
-	GraphicsUniformBlocks _activeUniformBlocks;
+	GraphicsParams    _activeParams;
 	GraphicsAttributes  _activeAttributes;
 
 	GraphicsDeviceWeakPtr _device;

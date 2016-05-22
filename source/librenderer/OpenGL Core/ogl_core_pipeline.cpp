@@ -71,6 +71,15 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLInputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<OGLDescriptorSetLayout>());
 
+	glCreateVertexArrays(1, &_vao);
+	if (_vao == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
+		return false;
+	}
+
+	GLuint offset = 0;
+
 	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getGraphicsVertexLayouts();
 	for (auto& it : components)
 	{
@@ -81,26 +90,6 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			return false;
 		}
 
-		for (auto& ch : semantic)
-		{
-			if (ch < 'a' && ch > 'z')
-			{
-				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
-				return false;
-			}
-		}
-	}
-
-	glCreateVertexArrays(1, &_vao);
-	if (_vao == GL_NONE)
-	{
-		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
-		return false;
-	}
-
-	GLuint offset = 0;
-	for (auto& it : components)
-	{
 		GLuint attribIndex = GL_INVALID_INDEX;
 		GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
 
@@ -110,13 +99,15 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			if (attrib->getSemantic() == it.getSemantic())
 			{
 				attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
-
-				glEnableVertexArrayAttrib(_vao, attribIndex);
-				glVertexArrayAttribBinding(_vao, attribIndex, 0);
-				glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
-
 				break;
 			}
+		}
+
+		if (attribIndex != GL_INVALID_INDEX)
+		{
+			glEnableVertexArrayAttrib(_vao, attribIndex);
+			glVertexArrayAttribBinding(_vao, attribIndex, 0);
+			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, it.getVertexOffset() == 0 ? offset : it.getVertexOffset());
 		}
 
 		offset += it.getVertexSize();

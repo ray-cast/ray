@@ -279,7 +279,7 @@ OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 	assert(_glcontext->getActive());
 
 	auto glpipeline = pipeline->downcast<OGLPipeline>();
-	if (_pipeline != glpipeline)
+	if (_pipeline != glpipeline || _needUpdateState)
 	{
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
@@ -287,7 +287,6 @@ OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 		if (_state != glstate || _needUpdateState)
 		{
 			glstate->apply(_stateCaptured);
-
 			_state = glstate;
 			_needUpdateState = false;
 		}
@@ -299,10 +298,13 @@ OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		_pipeline = glpipeline;
-		_pipeline->apply();
+		if (_pipeline != glpipeline)
+		{
+			_pipeline = glpipeline;
+			_pipeline->apply();
 
-		_needUpdateLayout = true;
+			_needUpdateLayout = true;
+		}
 	}
 }
 
@@ -410,11 +412,14 @@ OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	assert(_pipeline);
 	assert(_glcontext->getActive());
 
-	if (_vbo)
-		_pipeline->bindVbo(*_vbo);
+	if (_needUpdateLayout)
+	{
+		if (_vbo)
+			_pipeline->bindVbo(*_vbo);
 
-	if (_ibo)
-		_pipeline->bindIbo(*_ibo);
+		if (_ibo)
+			_pipeline->bindIbo(*_ibo);
+	}
 
 	if (_ibo)
 	{

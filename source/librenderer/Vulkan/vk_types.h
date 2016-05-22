@@ -52,6 +52,7 @@
 #include <ray/graphics_system.h>
 #include <ray/graphics_command.h>
 #include <ray/graphics_semaphore.h>
+#include <ray/graphics_variant.h>
 
 #if defined(__WINDOWS__)
 #	define VK_USE_PLATFORM_WIN32_KHR 1

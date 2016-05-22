@@ -57,15 +57,15 @@ VulkanGraphicsUniformSet::~VulkanGraphicsUniformSet() noexcept
 }
 
 void
-VulkanGraphicsUniformSet::setType(GraphicsUniformType type) noexcept
+VulkanGraphicsUniformSet::needUpdate(bool needUpdate) noexcept
 {
-	_variant.setType(type);
+	_needUpdate = needUpdate;
 }
 
-GraphicsUniformType
-VulkanGraphicsUniformSet::getType() const noexcept
+bool
+VulkanGraphicsUniformSet::needUpdate() const noexcept
 {
-	return _variant.getType();
+	return _needUpdate;
 }
 
 void
@@ -693,39 +693,17 @@ VulkanGraphicsUniformSet::getBuffer() const noexcept
 }
 
 void
-VulkanGraphicsUniformSet::setGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+VulkanGraphicsUniformSet::setGraphicsParam(GraphicsParamPtr param) noexcept
 {
-	_uniform = uniform;
+	assert(param);
+	_param = param;
+	_variant.setType(param->getType());
 }
 
-const GraphicsUniformPtr&
-VulkanGraphicsUniformSet::getGraphicsUniform() const noexcept
+const GraphicsParamPtr&
+VulkanGraphicsUniformSet::getGraphicsParam() const noexcept
 {
-	return _uniform;
-}
-
-void
-VulkanGraphicsUniformSet::setGraphicsUniformBlock(GraphicsUniformBlockPtr uniformBlock) noexcept
-{
-	_uniformBlock = uniformBlock;
-}
-
-GraphicsUniformBlockPtr
-VulkanGraphicsUniformSet::getGraphicsUniformBlock() const noexcept
-{
-	return _uniformBlock;
-}
-
-void
-VulkanGraphicsUniformSet::needUpdate(bool needUpdate) noexcept
-{
-	_needUpdate = needUpdate;
-}
-
-bool
-VulkanGraphicsUniformSet::needUpdate() const noexcept
-{
-	return _needUpdate;
+	return _param;
 }
 
 VulkanDescriptorSet::VulkanDescriptorSet() noexcept
@@ -786,9 +764,7 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 			for (auto& uniform : uniforms)
 			{
 				auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
-				uniformSet->setType(uniform->getType());
-				uniformSet->setGraphicsUniform(uniform);
-
+				uniformSet->setGraphicsParam(uniform);
 				_activeUniformSets.push_back(uniformSet);
 			}
 
@@ -798,9 +774,7 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 		else
 		{
 			auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
-			uniformSet->setType(uniformBlock->getType());
-			uniformSet->setGraphicsUniformBlock(uniformBlock);
-
+			uniformSet->setGraphicsParam(uniformBlock);
 			_activeUniformSets.push_back(uniformSet);
 		}
 	}

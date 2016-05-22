@@ -49,6 +49,7 @@
 #include <ray/graphics_pipeline.h>
 #include <ray/graphics_descriptor.h>
 #include <ray/graphics_input_layout.h>
+#include <ray/graphics_variant.h>
 
 #include "ogl_basic.h"
 

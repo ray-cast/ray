@@ -62,12 +62,10 @@ OGLCoreDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) 
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
 
 	auto& uniforms = descriptorSetLayoutDesc.getUniformComponents();
-	for (auto& unniform : uniforms)
+	for (auto& uniform : uniforms)
 	{
 		auto uniformSet = std::make_shared<OGLGraphicsUniformSet>();
-		uniformSet->setGraphicsUniform(unniform);
-		uniformSet->setType(unniform->getType());
-
+		uniformSet->setGraphicsParam(uniform);
 		_activeUniformSets.push_back(uniformSet);
 	}
 
@@ -75,9 +73,7 @@ OGLCoreDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) 
 	for (auto& uniformBlock : uniformBlocks)
 	{
 		auto uniformSet = std::make_shared<OGLGraphicsUniformSet>();
-		uniformSet->setGraphicsUniform(uniformBlock);
-		uniformSet->setType(uniformBlock->getType());
-
+		uniformSet->setGraphicsParam(uniformBlock);
 		_activeUniformSets.push_back(uniformSet);
 	}
 
@@ -88,6 +84,7 @@ OGLCoreDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) 
 void
 OGLCoreDescriptorSet::close() noexcept
 {
+	_activeUniformSets.clear();
 }
 
 void
@@ -96,8 +93,8 @@ OGLCoreDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 	auto program = shaderObject->downcast<OGLProgram>()->getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
-		auto location = it->getGraphicsUniform()->getBindingPoint();
-		auto type = it->getGraphicsUniform()->getType();
+		auto type = it->getGraphicsParam()->getType();
+		auto location = it->getGraphicsParam()->getBindingPoint();
 		switch (type)
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:

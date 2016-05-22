@@ -532,18 +532,9 @@ MaterialPass::setup(Material& material) noexcept
 	const auto& activeUniformSets = _descriptorSet->getGraphicsUniformSets();
 	for (const auto& activeUniformSet : activeUniformSets)
 	{
-		auto activeUniform = activeUniformSet->getGraphicsUniform();
-		auto uniformName = activeUniform->getName();
-		if (activeUniform->getType() == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
-			activeUniform->getType() == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler ||
-			activeUniform->getType() == GraphicsUniformType::GraphicsUniformTypeSamplerImage)
-		{
-			auto pos = uniformName.find_first_of("_X_");
-			if (pos != std::string::npos)
-				uniformName = uniformName.substr(0, pos);
-		}
+		auto activeUniform = activeUniformSet->getGraphicsParam();
 
-		auto param = material.getParameter(uniformName);
+		auto param = material.getParameter(activeUniform->getName());
 		if (!param)
 			continue;
 

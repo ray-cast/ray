@@ -177,12 +177,6 @@ SET(RENDERER_SCENE
 )
 SOURCE_GROUP("renderer\\renderable" FILES ${RENDERER_SCENE})
 
-SET(RENDERER_MESH
-    ${HEADER_PATH}/render_mesh.h
-    ${SOURCE_PATH}/render_mesh.cpp
-)
-SOURCE_GROUP("renderer\\mesh" FILES ${RENDERER_MESH})
-
 SET(RENDERER_GEOMETRY
     ${SOURCE_PATH}/geometry.cpp
     ${HEADER_PATH}/geometry.h
@@ -214,6 +208,8 @@ SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/ssss.cpp
     ${SOURCE_PATH}/irradiance.h
     ${SOURCE_PATH}/irradiance.cpp
+    ${SOURCE_PATH}/post_render_pipeline.h
+    ${SOURCE_PATH}/post_render_pipeline.cpp
 )
 SOURCE_GROUP("renderer\\postprocess" FILES ${RENDERER_POST_PROCESS})
 
@@ -241,8 +237,6 @@ SET(RENDER_PIPELINE
     ${SOURCE_PATH}/forward_render_pipeline.cpp
     ${SOURCE_PATH}/shadow_render_pipeline.h
     ${SOURCE_PATH}/shadow_render_pipeline.cpp
-    ${SOURCE_PATH}/post_render_pipeline.h
-    ${SOURCE_PATH}/post_render_pipeline.cpp
 )
 SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
 

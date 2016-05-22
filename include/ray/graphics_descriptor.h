@@ -38,7 +38,6 @@
 #define _H_GRAPHICS_DESCRIPTOR_H_
 
 #include <ray/graphics_child.h>
-#include <ray/graphics_variant.h>
 
 _NAME_BEGIN
 
@@ -221,7 +220,7 @@ public:
 	virtual const GraphicsSamplerPtr& getTextureSampler() const noexcept = 0;
 	virtual const GraphicsDataPtr& getBuffer() const noexcept = 0;
 
-	virtual const GraphicsUniformPtr& getGraphicsUniform() const noexcept = 0;
+	virtual const GraphicsParamPtr& getGraphicsParam() const noexcept = 0;
 
 private:
 	GraphicsUniformSet(const GraphicsUniformSet&) noexcept = delete;

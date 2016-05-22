@@ -37,7 +37,14 @@
 #include "vk_system.h"
 #include "vk_device.h"
 
+#pragma warning (push)
+#pragma warning (disable:4458)
+#pragma warning (disable:4464)
+#pragma warning (disable:4623)
+#pragma warning (disable:5026)
+#pragma warning (disable:5027)
 #include <SPIRV/GlslangToSpv.h>
+#pragma warning (pop)
 
 _NAME_BEGIN
 

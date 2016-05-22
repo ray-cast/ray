@@ -57,11 +57,8 @@ public:
 	void setSemantic(const std::string& semantic) noexcept;
 	const std::string& getSemantic() const noexcept;
 
-	void setSemanticIndex(std::uint8_t index) noexcept;
-	std::uint8_t getSemanticIndex() const noexcept;
-
-	void setBindingPoint(GLuint bindingPoint) noexcept;
-	GLuint getBindingPoint() const noexcept;
+	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
+	std::uint32_t getBindingPoint() const noexcept;
 
 private:
 	OGLGraphicsAttribute(const OGLGraphicsAttribute&) noexcept = delete;
@@ -70,8 +67,7 @@ private:
 private:
 	std::string _name;
 	std::string _semantic;
-	std::uint8_t _index;
-	GLuint _bindingPoint;
+	std::uint32_t _bindingPoint;
 	GraphicsFormat _type;
 };
 
@@ -84,6 +80,9 @@ public:
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
+
+	void setSamplerName(const std::string& name) noexcept;
+	const std::string& getSamplerName() const noexcept;
 
 	void setType(GraphicsUniformType type) noexcept;
 	GraphicsUniformType getType() const noexcept;
@@ -100,6 +99,7 @@ private:
 
 private:
 	std::string _name;
+	std::string _samplerName;
 	std::uint32_t _offset;
 	std::uint32_t _bindingPoint;
 	GraphicsUniformType _type;

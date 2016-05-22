@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsParam, rtti::Interface, "GraphicsParam")
-__ImplementSubInterface(GraphicsAttribute, GraphicsParam, "GraphicsAttribute")
+__ImplementSubInterface(GraphicsAttribute, rtti::Interface, "GraphicsAttribute")
 __ImplementSubInterface(GraphicsUniform, GraphicsParam, "GraphicsUniform")
 __ImplementSubInterface(GraphicsUniformBlock, GraphicsParam, "GraphicsUniformBlock")
 __ImplementSubInterface(GraphicsShader, GraphicsChild, "GraphicsShader")

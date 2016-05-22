@@ -57,18 +57,6 @@ OGLGraphicsUniformSet::~OGLGraphicsUniformSet() noexcept
 }
 
 void
-OGLGraphicsUniformSet::setType(GraphicsUniformType type) noexcept
-{
-	_variant.setType(type);
-}
-
-GraphicsUniformType
-OGLGraphicsUniformSet::getType() const noexcept
-{
-	return _variant.getType();
-}
-
-void
 OGLGraphicsUniformSet::uniform1b(bool value) noexcept
 {
 	_variant.uniform1b(value);
@@ -633,15 +621,17 @@ OGLGraphicsUniformSet::getBuffer() const noexcept
 }
 
 void
-OGLGraphicsUniformSet::setGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+OGLGraphicsUniformSet::setGraphicsParam(GraphicsParamPtr param) noexcept
 {
-	_uniform = uniform;
+	assert(param);
+	_param = param;
+	_variant.setType(param->getType());
 }
 
-const GraphicsUniformPtr&
-OGLGraphicsUniformSet::getGraphicsUniform() const noexcept
+const GraphicsParamPtr&
+OGLGraphicsUniformSet::getGraphicsParam() const noexcept
 {
-	return _uniform;
+	return _param;
 }
 
 OGLDescriptorPool::OGLDescriptorPool() noexcept
@@ -738,12 +728,10 @@ OGLDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noex
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
 
 	auto& uniforms = descriptorSetLayoutDesc.getUniformComponents();
-	for (auto& unniform : uniforms)
+	for (auto& uniform : uniforms)
 	{
 		auto uniformSet = std::make_shared<OGLGraphicsUniformSet>();
-		uniformSet->setGraphicsUniform(unniform);
-		uniformSet->setType(unniform->getType());
-
+		uniformSet->setGraphicsParam(uniform);
 		_activeUniformSets.push_back(uniformSet);
 	}
 
@@ -751,9 +739,7 @@ OGLDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noex
 	for (auto& uniformBlock : uniformBlocks)
 	{
 		auto uniformSet = std::make_shared<OGLGraphicsUniformSet>();
-		uniformSet->setGraphicsUniform(uniformBlock);
-		uniformSet->setType(uniformBlock->getType());
-
+		uniformSet->setGraphicsParam(uniformBlock);
 		_activeUniformSets.push_back(uniformSet);
 	}
 
@@ -764,6 +750,7 @@ OGLDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noex
 void
 OGLDescriptorSet::close() noexcept
 {
+	_activeUniformSets.clear();
 }
 
 void
@@ -772,8 +759,8 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 	auto program = shaderObject->downcast<OGLProgram>()->getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
-		auto location = it->getGraphicsUniform()->getBindingPoint();
-		auto type = it->getGraphicsUniform()->getType();
+		auto type = it->getGraphicsParam()->getType();
+		auto location = it->getGraphicsParam()->getBindingPoint();
 		switch (type)
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:

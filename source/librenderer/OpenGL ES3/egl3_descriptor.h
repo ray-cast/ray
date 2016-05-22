@@ -48,9 +48,6 @@ public:
 	EGL3GraphicsUniformSet() noexcept;
 	virtual ~EGL3GraphicsUniformSet() noexcept;
 
-	void setType(GraphicsUniformType type) noexcept;
-	GraphicsUniformType getType() const noexcept;
-
 	void uniform1b(bool value) noexcept;
 	void uniform1i(std::int32_t i1) noexcept;
 	void uniform2i(const int2& value) noexcept;
@@ -147,16 +144,16 @@ public:
 	const GraphicsSamplerPtr& getTextureSampler() const noexcept;
 	const GraphicsDataPtr& getBuffer() const noexcept;
 
-	void setGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
-	const GraphicsUniformPtr& getGraphicsUniform() const noexcept;
+	void setGraphicsParam(GraphicsParamPtr param) noexcept;
+	const GraphicsParamPtr& getGraphicsParam() const noexcept;
 
 private:
 	EGL3GraphicsUniformSet(const EGL3GraphicsUniformSet&) = delete;
 	EGL3GraphicsUniformSet& operator=(const EGL3GraphicsUniformSet&) = delete;
 
 private:
+	GraphicsParamPtr _param;
 	GraphicsVariant _variant;
-	GraphicsUniformPtr _uniform;
 };
 
 class EGL3DescriptorPool final : public GraphicsDescriptorPool

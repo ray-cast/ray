@@ -79,6 +79,21 @@ private:
 	GraphicsShaders _shaders;
 };
 
+class EXPORT GraphicsAttribute : public rtti::Interface
+{
+	__DeclareSubInterface(GraphicsAttribute, GraphicsParam)
+public:
+	GraphicsAttribute() noexcept;
+	virtual ~GraphicsAttribute() noexcept;
+
+	virtual GraphicsFormat getType() const noexcept = 0;
+	virtual const std::string& getSemantic() const noexcept = 0;
+
+private:
+	GraphicsAttribute(const GraphicsAttribute&) noexcept = delete;
+	GraphicsAttribute& operator=(const GraphicsAttribute&) noexcept = delete;
+};
+
 class EXPORT GraphicsParam : public rtti::Interface
 {
 	__DeclareSubInterface(GraphicsParam, rtti::Interface)
@@ -87,26 +102,12 @@ public:
 	virtual ~GraphicsParam() noexcept;
 
 	virtual const std::string& getName() const noexcept = 0;
+	virtual GraphicsUniformType getType() const noexcept = 0;
+	virtual std::uint32_t getBindingPoint() const noexcept = 0;
 
 private:
 	GraphicsParam(const GraphicsParam&) noexcept = delete;
 	GraphicsParam& operator=(const GraphicsParam&) noexcept = delete;
-};
-
-class EXPORT GraphicsAttribute : public GraphicsParam
-{
-	__DeclareSubInterface(GraphicsAttribute, GraphicsParam)
-public:
-	GraphicsAttribute() noexcept;
-	virtual ~GraphicsAttribute() noexcept;
-
-	virtual const std::string& getSemantic() const noexcept = 0;
-	virtual std::uint8_t getSemanticIndex() const noexcept = 0;
-	virtual GraphicsFormat getType() const noexcept = 0;
-
-private:
-	GraphicsAttribute(const GraphicsAttribute&) noexcept = delete;
-	GraphicsAttribute& operator=(const GraphicsAttribute&) noexcept = delete;
 };
 
 class EXPORT GraphicsUniform : public GraphicsParam
@@ -116,21 +117,20 @@ public:
 	GraphicsUniform() noexcept;
 	virtual ~GraphicsUniform() noexcept;
 
-	virtual std::uint32_t getBindingPoint() const noexcept = 0;
 	virtual std::uint32_t getOffset() const noexcept = 0;
-	virtual GraphicsUniformType getType() const noexcept = 0;
+	virtual const std::string& getSamplerName() const noexcept = 0;
 
 private:
 	GraphicsUniform(const GraphicsUniform&) noexcept = delete;
 	GraphicsUniform& operator=(const GraphicsUniform&) noexcept = delete;
 };
 
-class EXPORT GraphicsUniformBlock : public GraphicsUniform
+class EXPORT GraphicsUniformBlock : public GraphicsParam
 {
-	__DeclareSubInterface(GraphicsUniformBlock, GraphicsUniform)
+	__DeclareSubInterface(GraphicsUniformBlock, GraphicsParam)
 public:
 	GraphicsUniformBlock() noexcept;
-	~GraphicsUniformBlock() noexcept;
+	virtual ~GraphicsUniformBlock() noexcept;
 
 	virtual std::uint32_t getBlockSize() const noexcept = 0;
 	virtual const GraphicsUniforms& getGraphicsUniforms() const noexcept = 0;

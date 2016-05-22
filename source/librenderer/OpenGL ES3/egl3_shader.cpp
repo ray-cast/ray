@@ -97,24 +97,12 @@ EGL3GraphicsAttribute::getSemantic() const noexcept
 }
 
 void
-EGL3GraphicsAttribute::setSemanticIndex(std::uint8_t index) noexcept
-{
-	_index = index;
-}
-
-std::uint8_t
-EGL3GraphicsAttribute::getSemanticIndex() const noexcept
-{
-	return _index;
-}
-
-void
-EGL3GraphicsAttribute::setBindingPoint(GLuint bindingPoint) noexcept
+EGL3GraphicsAttribute::setBindingPoint(std::uint32_t bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
 }
 
-GLuint
+std::uint32_t
 EGL3GraphicsAttribute::getBindingPoint() const noexcept
 {
 	return _bindingPoint;
@@ -141,6 +129,18 @@ const std::string&
 EGL3GraphicsUniform::getName() const noexcept
 {
 	return _name;
+}
+
+void
+EGL3GraphicsUniform::setSamplerName(const std::string& name) noexcept
+{
+	_samplerName = name;
+}
+
+const std::string&
+EGL3GraphicsUniform::getSamplerName() const noexcept
+{
+	return _samplerName;
 }
 
 void
@@ -528,11 +528,9 @@ EGL3Program::_initActiveAttribute() noexcept
 				name = name.substr(0, off);
 			}
 
-			std::uint8_t semanticIndex = 0;
 			auto it = std::find_if(semantic.begin(), semantic.end(), [](char ch) { return ch >= '0' && ch <= '9'; });
 			if (it != semantic.end())
 			{
-				semanticIndex = atoi(&*it);
 				semantic = semantic.substr(0, it - semantic.begin());
 			}
 
@@ -540,7 +538,6 @@ EGL3Program::_initActiveAttribute() noexcept
 			attrib->setName(name);
 			attrib->setBindingPoint(location);
 			attrib->setSemantic(semantic);
-			attrib->setSemanticIndex(semanticIndex);
 			attrib->setType(toGraphicsFormat(type));
 
 			_activeAttributes.push_back(attrib);
@@ -585,6 +582,13 @@ EGL3Program::_initActiveUniform() noexcept
 			type == GL_SAMPLER_CUBE ||
 			type == GL_SAMPLER_CUBE_MAP_ARRAY_EXT)
 		{
+			auto pos = nameUniform.find_first_of("_X_");
+			if (pos != std::string::npos)
+			{
+				uniform->setName(nameUniform.substr(0, pos));
+				uniform->setSamplerName(nameUniform.substr(pos + 3));
+			}
+
 			glProgramUniform1i(_program, location, textureUnit);
 			uniform->setBindingPoint(textureUnit);
 			textureUnit++;

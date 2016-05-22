@@ -755,7 +755,7 @@ enum GraphicsShaderLang
 	GraphicsShaderLangHLSL = 1,
 	GraphicsShaderLangHLSLbytecodes = 2,
 	GraphicsShaderLangGLSL = 3,
-	GraphicsShaderLangBeginRange = GraphicsShaderLangHLSL,
+	GraphicsShaderLangBeginRange = GraphicsShaderLangNone,
 	GraphicsShaderLangEndRange = GraphicsShaderLangGLSL,
 	GraphicsShaderLangRangeSize = (GraphicsShaderLangEndRange - GraphicsShaderLangBeginRange + 1),
 	GraphicsShaderLangMaxEnum = 0x7FFFFFFF

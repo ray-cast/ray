@@ -48,8 +48,8 @@ public:
 	VulkanGraphicsUniformSet() noexcept;
 	virtual ~VulkanGraphicsUniformSet() noexcept;
 
-	void setType(GraphicsUniformType type) noexcept;
-	GraphicsUniformType getType() const noexcept;
+	void needUpdate(bool needUpdate) noexcept;
+	bool needUpdate() const noexcept;
 
 	void uniform1b(bool value) noexcept;
 	void uniform1i(std::int32_t i1) noexcept;
@@ -147,14 +147,8 @@ public:
 	const GraphicsSamplerPtr& getTextureSampler() const noexcept;
 	const GraphicsDataPtr& getBuffer() const noexcept;
 
-	void setGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
-	const GraphicsUniformPtr& getGraphicsUniform() const noexcept;
-
-	void setGraphicsUniformBlock(GraphicsUniformBlockPtr uniformBlock) noexcept;
-	GraphicsUniformBlockPtr getGraphicsUniformBlock() const noexcept;
-
-	void needUpdate(bool needUpdate) noexcept;
-	bool needUpdate() const noexcept;
+	void setGraphicsParam(GraphicsParamPtr param) noexcept;
+	const GraphicsParamPtr& getGraphicsParam() const noexcept;
 
 private:
 	VulkanGraphicsUniformSet(const VulkanGraphicsUniformSet&) = delete;
@@ -163,8 +157,7 @@ private:
 private:
 	bool _needUpdate;
 	GraphicsVariant _variant;
-	GraphicsUniformPtr _uniform;
-	GraphicsUniformBlockPtr _uniformBlock;
+	GraphicsParamPtr _param;
 };
 
 class VulkanDescriptorSet final : public GraphicsDescriptorSet

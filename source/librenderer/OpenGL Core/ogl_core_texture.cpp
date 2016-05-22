@@ -209,7 +209,7 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 	GLenum type = OGLTypes::asTextureType(_textureDesc.getTexFormat());
 	if (type == GL_INVALID_ENUM)
 		return false;
-
+	
 	GLsizei num = OGLTypes::getFormatNum(format, type);
 	if (num == 0)
 		return false;
@@ -219,16 +219,16 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
 
-	GLsizei mapSize = w * h * num;
+	GLuint mapSize = w * h * num;
 	if (_pboSize < mapSize)
 	{
-		glBufferData(_pbo, mapSize, nullptr, GL_STREAM_READ);
+		glBufferData(GL_PIXEL_PACK_BUFFER, mapSize, nullptr, GL_STREAM_READ);
 		_pboSize = mapSize;
 	}
 
 	glBindTexture(_target, _texture);
 	glReadPixels(x, y, w, h, format, type, 0);
-
+	
 	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 	return *data ? true : false;
 }

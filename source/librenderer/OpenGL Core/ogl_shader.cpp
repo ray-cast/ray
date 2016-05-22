@@ -48,8 +48,7 @@ __ImplementSubClass(OGLGraphicsUniform, GraphicsUniform, "OGLGraphicsUniform")
 __ImplementSubClass(OGLGraphicsUniformBlock, GraphicsUniformBlock, "OGLGraphicsUniformBlock")
 
 OGLGraphicsAttribute::OGLGraphicsAttribute() noexcept
-	: _index(0)
-	, _bindingPoint(GL_INVALID_INDEX)
+	: _bindingPoint(GL_INVALID_INDEX)
 	, _type(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
@@ -95,18 +94,6 @@ OGLGraphicsAttribute::getSemantic() const noexcept
 }
 
 void
-OGLGraphicsAttribute::setSemanticIndex(std::uint8_t index) noexcept
-{
-	_index = index;
-}
-
-std::uint8_t
-OGLGraphicsAttribute::getSemanticIndex() const noexcept
-{
-	return _index;
-}
-
-void
 OGLGraphicsAttribute::setBindingPoint(std::uint32_t bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
@@ -139,6 +126,18 @@ const std::string&
 OGLGraphicsUniform::getName() const noexcept
 {
 	return _name;
+}
+
+void 
+OGLGraphicsUniform::setSamplerName(const std::string& name) noexcept
+{
+	_samplerName = name;
+}
+
+const std::string& 
+OGLGraphicsUniform::getSamplerName() const noexcept
+{
+	return _samplerName;
 }
 
 void
@@ -506,11 +505,9 @@ OGLProgram::_initActiveAttribute() noexcept
 				name = name.substr(0, off);
 			}
 
-			std::uint8_t semanticIndex = 0;
 			auto it = std::find_if(semantic.begin(), semantic.end(), [](char ch) { return ch >= '0' && ch <= '9'; });
 			if (it != semantic.end())
 			{
-				semanticIndex = std::atoi(&*it);
 				semantic = semantic.substr(0, it - semantic.begin());
 			}
 
@@ -518,7 +515,6 @@ OGLProgram::_initActiveAttribute() noexcept
 			attrib->setName(name);
 			attrib->setBindingPoint(location);
 			attrib->setSemantic(semantic);
-			attrib->setSemanticIndex(semanticIndex);
 			attrib->setType(toGraphicsFormat(type));
 
 			_activeAttributes.push_back(attrib);
@@ -563,6 +559,13 @@ OGLProgram::_initActiveUniform() noexcept
 			type == GL_SAMPLER_CUBE ||
 			type == GL_SAMPLER_CUBE_MAP_ARRAY)
 		{
+			auto pos = nameUniform.find_first_of("_X_");
+			if (pos != std::string::npos)
+			{
+				uniform->setName(nameUniform.substr(0, pos));
+				uniform->setSamplerName(nameUniform.substr(pos + 3));
+			}
+
 			glProgramUniform1i(_program, location, textureUnit);
 			uniform->setBindingPoint(textureUnit);
 			textureUnit++;

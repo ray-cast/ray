@@ -55,18 +55,6 @@ EGL2GraphicsUniformSet::~EGL2GraphicsUniformSet() noexcept
 }
 
 void
-EGL2GraphicsUniformSet::setType(GraphicsUniformType type) noexcept
-{
-	_variant.setType(type);
-}
-
-GraphicsUniformType
-EGL2GraphicsUniformSet::getType() const noexcept
-{
-	return _variant.getType();
-}
-
-void
 EGL2GraphicsUniformSet::uniform1b(bool value) noexcept
 {
 	_variant.uniform1b(value);
@@ -631,15 +619,17 @@ EGL2GraphicsUniformSet::getBuffer() const noexcept
 }
 
 void
-EGL2GraphicsUniformSet::setGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+EGL2GraphicsUniformSet::setGraphicsParam(GraphicsParamPtr param) noexcept
 {
-	_uniform = uniform;
+	assert(param);
+	_param = param;
+	_variant.setType(param->getType());
 }
 
-const GraphicsUniformPtr&
-EGL2GraphicsUniformSet::getGraphicsUniform() const noexcept
+const GraphicsParamPtr&
+EGL2GraphicsUniformSet::getGraphicsParam() const noexcept
 {
-	return _uniform;
+	return _param;
 }
 
 EGL2DescriptorPool::EGL2DescriptorPool() noexcept
@@ -734,13 +724,11 @@ EGL2DescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noe
 	assert(descriptorSetDesc.getGraphicsDescriptorSetLayout());
 
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
-	auto& components = descriptorSetLayoutDesc.getUniformComponents();
-	for (auto& component : components)
+	auto& uniforms = descriptorSetLayoutDesc.getUniformComponents();
+	for (auto& uniform : uniforms)
 	{
 		auto uniformSet = std::make_shared<EGL2GraphicsUniformSet>();
-		uniformSet->setGraphicsUniform(component);
-		uniformSet->setType(component->getType());
-
+		uniformSet->setGraphicsParam(uniform);
 		_activeUniformSets.push_back(uniformSet);
 	}
 
@@ -751,6 +739,7 @@ EGL2DescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noe
 void
 EGL2DescriptorSet::close() noexcept
 {
+	_activeUniformSets.clear();
 }
 
 void
@@ -759,8 +748,8 @@ EGL2DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 	std::uint32_t textureUnit = 0;
 	for (auto& it : _activeUniformSets)
 	{
-		auto type = it->getGraphicsUniform()->getType();
-		auto location = it->getGraphicsUniform()->getBindingPoint();
+		auto type = it->getGraphicsParam()->getType();
+		auto location = it->getGraphicsParam()->getBindingPoint();
 		switch (type)
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:

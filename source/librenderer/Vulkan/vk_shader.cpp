@@ -108,18 +108,6 @@ VulkanGraphicsAttribute::getSemantic() const noexcept
 }
 
 void
-VulkanGraphicsAttribute::setSemanticIndex(std::uint8_t index) noexcept
-{
-	_index = index;
-}
-
-std::uint8_t
-VulkanGraphicsAttribute::getSemanticIndex() const noexcept
-{
-	return _index;
-}
-
-void
 VulkanGraphicsAttribute::setBindingPoint(GLuint bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
@@ -152,6 +140,18 @@ const std::string&
 VulkanGraphicsUniform::getName() const noexcept
 {
 	return _name;
+}
+
+void
+VulkanGraphicsUniform::setSamplerName(const std::string& name) noexcept
+{
+	_samplerName = name;
+}
+
+const std::string&
+VulkanGraphicsUniform::getSamplerName() const noexcept
+{
+	return _samplerName;
 }
 
 void
@@ -703,10 +703,20 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 			uniformType == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
 		{
 			auto uniform = std::make_shared<VulkanGraphicsUniform>();
-			uniform->setName(name);
 			uniform->setType(uniformType);
 			uniform->setBindingPoint(index);
 			uniform->setOffset(offset);
+
+			auto pos = strstr(name, "_X_");
+			if (pos != 0)
+			{
+				uniform->setName(std::string(name, pos - name));
+				uniform->setSamplerName(std::string(name, pos - name + 3));
+			}
+			else
+			{
+				uniform->setName(name);
+			}
 
 			_activeUniforms.push_back(uniform);
 		}

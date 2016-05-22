@@ -69,7 +69,7 @@ public:
 	const Bound& getBoundingBoxInWorld() const noexcept;
 
 	void setRenderScene(RenderScenePtr scene) noexcept;
-	RenderScenePtr getRenderScene() const noexcept;
+	const RenderScenePtr& getRenderScene() const noexcept;
 
 	void setTransform(const float4x4& transform) noexcept;
 	const float4x4& getTransform() const noexcept;
@@ -104,7 +104,7 @@ private:
 	float4x4 _transformInverse;
 
 	RenderListener* _renderListener;
-	RenderSceneWeakPtr  _renderScene;
+	RenderScenePtr  _renderScene;
 };
 
 _NAME_END

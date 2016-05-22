@@ -83,7 +83,7 @@ GraphicsSwapchainPtr
 OGLDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 {
 	auto swapchain = std::make_shared<OGLSwapchain>();
-	swapchain->setDevice(this->downcast<OGLDevice>());
+	swapchain->setDevice(this->downcast_pointer<OGLDevice>());
 	if (swapchain->setup(desc))
 		return swapchain;
 	return false;
@@ -95,14 +95,14 @@ OGLDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	{
 		auto context = std::make_shared<OGLDeviceContext>();
-		context->setDevice(this->downcast<OGLDevice>());
+		context->setDevice(this->downcast_pointer<OGLDevice>());
 		if (context->setup(desc))
 			return context;
 	}
 	else
 	{
 		auto context = std::make_shared<OGLCoreDeviceContext>();
-		context->setDevice(this->downcast<OGLDevice>());
+		context->setDevice(this->downcast_pointer<OGLDevice>());
 		if (context->setup(desc))
 			return context;
 	}
@@ -114,7 +114,7 @@ GraphicsInputLayoutPtr
 OGLDevice::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
 	auto inputLayout = std::make_shared<OGLInputLayout>();
-	inputLayout->setDevice(this->downcast<OGLDevice>());
+	inputLayout->setDevice(this->downcast_pointer<OGLDevice>());
 	if (inputLayout->setup(desc))
 		return inputLayout;
 	return nullptr;
@@ -126,14 +126,14 @@ OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	{
 		auto data = std::make_shared<OGLGraphicsData>();
-		data->setDevice(this->downcast<OGLDevice>());
+		data->setDevice(this->downcast_pointer<OGLDevice>());
 		if (data->setup(desc))
 			return data;
 	}
 	else
 	{
 		auto data = std::make_shared<OGLCoreGraphicsData>();
-		data->setDevice(this->downcast<OGLDevice>());
+		data->setDevice(this->downcast_pointer<OGLDevice>());
 		if (data->setup(desc))
 			return data;
 	}
@@ -146,14 +146,14 @@ OGLDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	{
 		auto texture = std::make_shared<OGLTexture>();
-		texture->setDevice(this->downcast<OGLDevice>());
+		texture->setDevice(this->downcast_pointer<OGLDevice>());
 		if (texture->setup(desc))
 			return texture;
 	}
 	else
 	{
 		auto texture = std::make_shared<OGLCoreTexture>();
-		texture->setDevice(this->downcast<OGLDevice>());
+		texture->setDevice(this->downcast_pointer<OGLDevice>());
 		if (texture->setup(desc))
 			return texture;
 	}
@@ -164,7 +164,7 @@ GraphicsSamplerPtr
 OGLDevice::createSampler(const GraphicsSamplerDesc& desc) noexcept
 {
 	auto sampler = std::make_shared<OGLSampler>();
-	sampler->setDevice(this->downcast<OGLDevice>());
+	sampler->setDevice(this->downcast_pointer<OGLDevice>());
 	if (sampler->setup(desc))
 		return sampler;
 	return nullptr;
@@ -176,14 +176,14 @@ OGLDevice::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	{
 		auto framebuffer = std::make_shared<OGLFramebuffer>();
-		framebuffer->setDevice(this->downcast<OGLDevice>());
+		framebuffer->setDevice(this->downcast_pointer<OGLDevice>());
 		if (framebuffer->setup(desc))
 			return framebuffer;
 	}
 	else
 	{
 		auto framebuffer = std::make_shared<OGLCoreFramebuffer>();
-		framebuffer->setDevice(this->downcast<OGLDevice>());
+		framebuffer->setDevice(this->downcast_pointer<OGLDevice>());
 		if (framebuffer->setup(desc))
 			return framebuffer;
 	}
@@ -194,7 +194,7 @@ GraphicsFramebufferLayoutPtr
 OGLDevice::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
 {
 	auto framebufferLayout = std::make_shared<OGLFramebufferLayout>();
-	framebufferLayout->setDevice(this->downcast<OGLDevice>());
+	framebufferLayout->setDevice(this->downcast_pointer<OGLDevice>());
 	if (framebufferLayout->setup(desc))
 		return framebufferLayout;
 	return nullptr;
@@ -204,7 +204,7 @@ GraphicsStatePtr
 OGLDevice::createRenderState(const GraphicsStateDesc& desc) noexcept
 {
 	auto state = std::make_shared<OGLGraphicsState>();
-	state->setDevice(this->downcast<OGLDevice>());
+	state->setDevice(this->downcast_pointer<OGLDevice>());
 	if (state->setup(desc))
 		return state;
 	return nullptr;
@@ -214,7 +214,7 @@ GraphicsShaderPtr
 OGLDevice::createShader(const GraphicsShaderDesc& desc) noexcept
 {
 	auto shader = std::make_shared<OGLShader>();
-	shader->setDevice(this->downcast<OGLDevice>());
+	shader->setDevice(this->downcast_pointer<OGLDevice>());
 	if (shader->setup(desc))
 		return shader;
 	return nullptr;
@@ -224,7 +224,7 @@ GraphicsProgramPtr
 OGLDevice::createProgram(const GraphicsProgramDesc& desc) noexcept
 {
 	auto program = std::make_shared<OGLProgram>();
-	program->setDevice(this->downcast<OGLDevice>());
+	program->setDevice(this->downcast_pointer<OGLDevice>());
 	if (program->setup(desc))
 		return program;
 	return nullptr;
@@ -236,14 +236,14 @@ OGLDevice::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	{
 		auto pipeline = std::make_shared<OGLPipeline>();
-		pipeline->setDevice(this->downcast<OGLDevice>());
+		pipeline->setDevice(this->downcast_pointer<OGLDevice>());
 		if (pipeline->setup(desc))
 			return pipeline;
 	}
 	else
 	{
 		auto pipeline = std::make_shared<OGLCorePipeline>();
-		pipeline->setDevice(this->downcast<OGLDevice>());
+		pipeline->setDevice(this->downcast_pointer<OGLDevice>());
 		if (pipeline->setup(desc))
 			return pipeline;
 	}
@@ -256,14 +256,14 @@ OGLDevice::createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
 	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	{
 		auto descriptorSet = std::make_shared<OGLDescriptorSet>();
-		descriptorSet->setDevice(this->downcast<OGLDevice>());
+		descriptorSet->setDevice(this->downcast_pointer<OGLDevice>());
 		if (descriptorSet->setup(desc))
 			return descriptorSet;
 	}
 	else
 	{
 		auto descriptorSet = std::make_shared<OGLCoreDescriptorSet>();
-		descriptorSet->setDevice(this->downcast<OGLDevice>());
+		descriptorSet->setDevice(this->downcast_pointer<OGLDevice>());
 		if (descriptorSet->setup(desc))
 			return descriptorSet;
 	}
@@ -275,7 +275,7 @@ GraphicsDescriptorSetLayoutPtr
 OGLDevice::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
 {
 	auto descriptorSetLayout = std::make_shared<OGLDescriptorSetLayout>();
-	descriptorSetLayout->setDevice(this->downcast<OGLDevice>());
+	descriptorSetLayout->setDevice(this->downcast_pointer<OGLDevice>());
 	if (descriptorSetLayout->setup(desc))
 		return descriptorSetLayout;
 	return nullptr;
@@ -285,7 +285,7 @@ GraphicsDescriptorPoolPtr
 OGLDevice::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
 {
 	auto descriptorPool = std::make_shared<OGLDescriptorPool>();
-	descriptorPool->setDevice(this->downcast<OGLDevice>());
+	descriptorPool->setDevice(this->downcast_pointer<OGLDevice>());
 	if (descriptorPool->setup(desc))
 		return descriptorPool;
 	return nullptr;

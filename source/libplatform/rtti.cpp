@@ -77,8 +77,9 @@ Rtti::getName() const noexcept
 bool
 Rtti::isDerivedFrom(const Rtti* other) const
 {
-	const Rtti* cur;
-	for (cur = this; cur != 0; cur = cur->getParent())
+	assert(other);
+
+	for (const Rtti* cur = this; cur != 0; cur = cur->getParent())
 	{
 		if (cur == other)
 		{
@@ -92,23 +93,13 @@ Rtti::isDerivedFrom(const Rtti* other) const
 bool
 Rtti::isDerivedFrom(const Rtti& other) const
 {
-	const Rtti* cur;
-	for (cur = this; cur != 0; cur = cur->getParent())
-	{
-		if (cur == &other)
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return this->isDerivedFrom(&other);
 }
 
 bool
 Rtti::isDerivedFrom(const std::string& name) const
 {
-	const Rtti* cur;
-	for (cur = this; cur != 0; cur = cur->getParent())
+	for (const Rtti* cur = this; cur != 0; cur = cur->getParent())
 	{
 		if (cur->_name == name)
 		{

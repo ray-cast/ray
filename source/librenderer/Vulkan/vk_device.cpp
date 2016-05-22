@@ -163,7 +163,7 @@ GraphicsSwapchainPtr
 VulkanDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 {
 	auto swapchain = std::make_shared<VulkanSwapchain>();
-	swapchain->setDevice(this->downcast<VulkanDevice>());
+	swapchain->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (swapchain->setup(desc))
 		return swapchain;
 	return nullptr;
@@ -173,7 +173,7 @@ GraphicsContextPtr
 VulkanDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 {
 	auto context = std::make_shared<VulkanDeviceContext>();
-	context->setDevice(this->downcast<VulkanDevice>());
+	context->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (context->setup(desc))
 		return context;
 	return nullptr;
@@ -183,7 +183,7 @@ GraphicsTexturePtr
 VulkanDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	auto texture = std::make_shared<VulkanTexture>();
-	texture->setDevice(this->downcast<VulkanDevice>());
+	texture->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (texture->setup(desc))
 		return texture;
 	return nullptr;
@@ -193,7 +193,7 @@ GraphicsSamplerPtr
 VulkanDevice::createSampler(const GraphicsSamplerDesc& desc) noexcept
 {
 	auto sampler = std::make_shared<VulkanSampler>();
-	sampler->setDevice(this->downcast<VulkanDevice>());
+	sampler->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (sampler->setup(desc))
 		return sampler;
 	return nullptr;
@@ -203,7 +203,7 @@ GraphicsFramebufferLayoutPtr
 VulkanDevice::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
 {
 	auto pass = std::make_shared<VulkanFramebufferLayout>();
-	pass->setDevice(this->downcast<VulkanDevice>());
+	pass->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (pass->setup(desc))
 		return pass;
 	return nullptr;
@@ -213,7 +213,7 @@ GraphicsFramebufferPtr
 VulkanDevice::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	auto framebuffer = std::make_shared<VulkanFramebuffer>();
-	framebuffer->setDevice(this->downcast<VulkanDevice>());
+	framebuffer->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (framebuffer->setup(desc))
 		return framebuffer;
 	return nullptr;
@@ -223,7 +223,7 @@ GraphicsShaderPtr
 VulkanDevice::createShader(const GraphicsShaderDesc& desc) noexcept
 {
 	auto shader = std::make_shared<VulkanShader>();
-	shader->setDevice(this->downcast<VulkanDevice>());
+	shader->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (shader->setup(desc))
 		return shader;
 	return nullptr;
@@ -233,7 +233,7 @@ GraphicsProgramPtr
 VulkanDevice::createProgram(const GraphicsProgramDesc& desc) noexcept
 {
 	auto program = std::make_shared<VulkanProgram>();
-	program->setDevice(this->downcast<VulkanDevice>());
+	program->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (program->setup(desc))
 		return program;
 	return nullptr;
@@ -243,7 +243,7 @@ GraphicsPipelinePtr
 VulkanDevice::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
 	auto pipeline = std::make_shared<VulkanRenderPipeline>();
-	pipeline->setDevice(this->downcast<VulkanDevice>());
+	pipeline->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (pipeline->setup(desc))
 		return pipeline;
 	return nullptr;
@@ -253,7 +253,7 @@ GraphicsDataPtr
 VulkanDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	auto buffer = std::make_shared<VulkanGraphicsData>();
-	buffer->setDevice(this->downcast<VulkanDevice>());
+	buffer->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (buffer->setup(desc))
 		return buffer;
 	return nullptr;
@@ -263,7 +263,7 @@ GraphicsInputLayoutPtr
 VulkanDevice::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
 	auto inputLayout = std::make_shared<VulkanInputLayout>();
-	inputLayout->setDevice(this->downcast<VulkanDevice>());
+	inputLayout->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (inputLayout->setup(desc))
 		return inputLayout;
 	return nullptr;
@@ -273,7 +273,7 @@ GraphicsStatePtr
 VulkanDevice::createRenderState(const GraphicsStateDesc& desc) noexcept
 {
 	auto renderState = std::make_shared<VulkanRenderState>();
-	renderState->setDevice(this->downcast<VulkanDevice>());
+	renderState->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (renderState->setup(desc))
 		return renderState;
 	return nullptr;
@@ -283,7 +283,7 @@ GraphicsDescriptorSetLayoutPtr
 VulkanDevice::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
 {
 	auto descriptorSetLayout = std::make_shared<VulkanDescriptorSetLayout>();
-	descriptorSetLayout->setDevice(this->downcast<VulkanDevice>());
+	descriptorSetLayout->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (descriptorSetLayout->setup(desc))
 		return descriptorSetLayout;
 	return nullptr;
@@ -293,7 +293,7 @@ GraphicsDescriptorSetPtr
 VulkanDevice::createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
 {
 	auto descriptorSet = std::make_shared<VulkanDescriptorSet>();
-	descriptorSet->setDevice(this->downcast<VulkanDevice>());
+	descriptorSet->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (descriptorSet->setup(desc))
 		return descriptorSet;
 	return nullptr;
@@ -303,7 +303,7 @@ GraphicsDescriptorPoolPtr
 VulkanDevice::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
 {
 	auto descriptorPool = std::make_shared<VulkanDescriptorPool>();
-	descriptorPool->setDevice(this->downcast<VulkanDevice>());
+	descriptorPool->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (descriptorPool->setup(desc))
 		return descriptorPool;
 	return nullptr;
@@ -313,7 +313,7 @@ GraphicsCommandQueuePtr
 VulkanDevice::createCommandQueue(const GraphicsCommandQueueDesc& desc) noexcept
 {
 	auto queue = std::make_shared<VulkanCommandQueue>();
-	queue->setDevice(this->downcast<VulkanDevice>());
+	queue->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (queue->setup(desc))
 		return queue;
 	return nullptr;
@@ -323,7 +323,7 @@ GraphicsCommandPoolPtr
 VulkanDevice::createCommandPool(const GraphicsCommandPoolDesc& desc) noexcept
 {
 	auto pool = std::make_shared<VulkanCommandPool>();
-	pool->setDevice(this->downcast<VulkanDevice>());
+	pool->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (pool->setup(desc))
 		return pool;
 	return nullptr;
@@ -333,7 +333,7 @@ GraphicsCommandListPtr
 VulkanDevice::createCommandList(const GraphicsCommandListDesc& desc) noexcept
 {
 	auto list = std::make_shared<VulkanCommandList>();
-	list->setDevice(this->downcast<VulkanDevice>());
+	list->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (list->setup(desc))
 		return list;
 	return nullptr;
@@ -343,7 +343,7 @@ GraphicsSemaphorePtr
 VulkanDevice::createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept
 {
 	auto semaphore = std::make_shared<VulkanSemaphore>();
-	semaphore->setDevice(this->downcast<VulkanDevice>());
+	semaphore->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (semaphore->setup(desc))
 		return semaphore;
 	return nullptr;

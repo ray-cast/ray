@@ -93,8 +93,8 @@ private:
 	std::vector<VkBuffer> _vkVertexBuffers;
 	std::vector<VkDeviceSize> _vkVertexOffsets;
 
-	VulkanRenderPipelinePtr _pipeline;
-	VulkanFramebufferPtr _framebuffer;
+	VulkanRenderPipeline* _pipeline;
+	VulkanFramebuffer* _framebuffer;
 
 	GraphicsCommandListDesc _commandListDesc;
 	GraphicsDeviceWeakPtr _device;

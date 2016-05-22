@@ -149,18 +149,16 @@ OGLCorePipeline::apply() noexcept
 }
 
 void
-OGLCorePipeline::bindVbo(const OGLCoreGraphicsDataPtr& vbo, GLuint slot) noexcept
+OGLCorePipeline::bindVbo(const OGLCoreGraphicsData& vbo, GLuint slot) noexcept
 {
-	assert(vbo);
-	GLuint stride = vbo->getGraphicsDataDesc().getStride();
-	glVertexArrayVertexBuffer(_vao, slot, vbo->getInstanceID(), 0, stride);
+	GLuint stride = vbo.getGraphicsDataDesc().getStride();
+	glVertexArrayVertexBuffer(_vao, slot, vbo.getInstanceID(), 0, stride);
 }
 
 void
-OGLCorePipeline::bindIbo(const OGLCoreGraphicsDataPtr& ibo) noexcept
+OGLCorePipeline::bindIbo(const OGLCoreGraphicsData& ibo) noexcept
 {
-	assert(ibo);
-	glVertexArrayElementBuffer(_vao, ibo->getInstanceID());
+	glVertexArrayElementBuffer(_vao, ibo.getInstanceID());
 }
 
 void

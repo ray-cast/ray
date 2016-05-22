@@ -403,7 +403,7 @@ Light::onSceneChangeAfter() noexcept
 void
 Light::onAddRenderData(RenderDataManager& manager) noexcept
 {
-	manager.addRenderData(RenderQueue::RenderQueueLighting, this->upcast<RenderObject>());
+	manager.addRenderData(RenderQueue::RenderQueueLighting, this);
 }
 
 void

@@ -752,11 +752,10 @@ EGL3DescriptorSet::close() noexcept
 }
 
 void
-EGL3DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
+EGL3DescriptorSet::apply(const EGL3Program& shaderObject) noexcept
 {
 	GLuint textureUnit = 0;
-	GLuint program = shaderObject->downcast<EGL3Program>()->getInstanceID();
-
+	GLuint program = shaderObject.getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
 		auto type = it->getGraphicsParam()->getType();

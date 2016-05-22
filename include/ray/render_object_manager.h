@@ -48,22 +48,20 @@ public:
 	DefaultRenderDataManager() noexcept;
 	~DefaultRenderDataManager() noexcept;
 
-	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;
-	const RenderObjects& getRenderData(RenderQueue queue) const noexcept;
+	void addRenderData(RenderQueue queue, RenderObject* object) noexcept;
+	const RenderObjectRaws& getRenderData(RenderQueue queue) const noexcept;
 
 	void assginVisiable(const Camera& camera) noexcept;
 	void assginVisiableLight(const Camera& camera) noexcept;
 	void assginVisiableObject(const Camera& camera) noexcept;
 
 private:
-	void sortMaterial(RenderObjects& list) noexcept;
+	void sortMaterial(RenderObjectRaws& list) noexcept;
 	void sortDistance(OcclusionCullList& list) noexcept;
 
 private:
-
 	OcclusionCullList _visiable;
-
-	RenderObjects _renderQueue[RenderQueue::RenderQueueRangeSize];
+	RenderObjectRaws _renderQueue[RenderQueue::RenderQueueRangeSize];
 };
 
 _NAME_END

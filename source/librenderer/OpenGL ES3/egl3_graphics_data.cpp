@@ -191,7 +191,7 @@ EGL3GraphicsData::unmap() noexcept
 }
 
 GLuint
-EGL3GraphicsData::getInstanceID() noexcept
+EGL3GraphicsData::getInstanceID() const noexcept
 {
 	return _buffer;
 }

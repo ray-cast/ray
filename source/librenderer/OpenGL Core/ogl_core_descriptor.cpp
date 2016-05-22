@@ -88,9 +88,9 @@ OGLCoreDescriptorSet::close() noexcept
 }
 
 void
-OGLCoreDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
+OGLCoreDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 {
-	auto program = shaderObject->downcast<OGLProgram>()->getInstanceID();
+	auto program = shaderObject.getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
 		auto type = it->getGraphicsParam()->getType();

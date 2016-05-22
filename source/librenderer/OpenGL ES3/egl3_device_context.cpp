@@ -58,7 +58,6 @@ EGL3DeviceContext::EGL3DeviceContext() noexcept
 	, _startVertices(0)
 	, _needUpdateLayout(true)
 	, _needUpdateState(true)
-	, _stateDefault(std::make_shared<EGL3GraphicsState>())
 {
 }
 
@@ -108,18 +107,17 @@ EGL3DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 void
 EGL3DeviceContext::close() noexcept
 {
-	_renderTexture.reset();
-	_shaderObject.reset();
-	_pipeline.reset();
-	_descriptorSet.reset();
-	_state.reset();
-	_stateDefault.reset();
-	_vbo.reset();
-	_ibo.reset();
-	_inputLayout.reset();
+	_framebuffer = nullptr;
+	_shaderObject = nullptr;
+	_pipeline = nullptr;
+	_descriptorSet = nullptr;
+	_state = nullptr;
+	_vbo = nullptr;
+	_ibo = nullptr;
+	_inputLayout = nullptr;
+	_glcontext = nullptr;
 	_supportTextures.clear();
 	_supportAttribute.clear();
-	_glcontext.reset();
 }
 
 void
@@ -282,7 +280,8 @@ EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 	assert(pipeline->isInstanceOf<EGL3Pipeline>());
 	assert(_glcontext->getActive());
 
-	if (_pipeline != pipeline)
+	auto glpipeline = pipeline->downcast<EGL3Pipeline>();
+	if (_pipeline != glpipeline)
 	{
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
@@ -302,7 +301,7 @@ EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		_pipeline = pipeline->downcast<EGL3Pipeline>();
+		_pipeline = glpipeline;
 		_pipeline->apply();
 
 		_needUpdateLayout = true;
@@ -312,7 +311,9 @@ EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 GraphicsPipelinePtr
 EGL3DeviceContext::getRenderPipeline() const noexcept
 {
-	return _pipeline;
+	if (_pipeline)
+		return _pipeline->upcast_pointer<GraphicsPipeline>();
+	return nullptr;
 }
 
 void
@@ -321,32 +322,18 @@ EGL3DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noex
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<EGL3DescriptorSet>());
 	assert(_glcontext->getActive());
+	assert(_shaderObject);
 
 	_descriptorSet = descriptorSet->downcast<EGL3DescriptorSet>();
-	_descriptorSet->apply(_shaderObject);
+	_descriptorSet->apply(*_shaderObject);
 }
 
 GraphicsDescriptorSetPtr
 EGL3DeviceContext::getDescriptorSet() const noexcept
 {
-	return _descriptorSet;
-}
-
-void*
-EGL3DeviceContext::mapTexture(GraphicsTexturePtr texture, std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, GraphicsAccessFlags flags) noexcept
-{
+	if (_descriptorSet)
+		return _descriptorSet->upcast_pointer<GraphicsDescriptorSet>();
 	return nullptr;
-}
-
-void 
-EGL3DeviceContext::unmapTexture(GraphicsTexturePtr texture) noexcept
-{
-}
-
-GraphicsDataPtr
-EGL3DeviceContext::getIndexBufferData() const noexcept
-{
-	return _ibo;
 }
 
 void
@@ -355,47 +342,68 @@ EGL3DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 	assert(data);
 	assert(data->isInstanceOf<EGL3GraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
-
-	if (_vbo != data)
-	{
-		if (data)
-		{
-			_vbo = data->downcast<EGL3GraphicsData>();
-		}
-
-		_needUpdateLayout = true;
-	}
-}
-
-void
-EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
-{
 	assert(_glcontext->getActive());
 
-	if (_ibo != data)
+	if (data)
 	{
-		if (data)
+		auto vbo = data->downcast<EGL3GraphicsData>();
+		if (_vbo != vbo)
 		{
-			assert(data->isInstanceOf<EGL3GraphicsData>());
-			assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-
-			_ibo = data->downcast<EGL3GraphicsData>();
+			_vbo = vbo;
+			_needUpdateLayout = true;
 		}
-		else
+	}
+	else
+	{
+		if (_vbo)
 		{
-			_ibo = nullptr;
+			_vbo = nullptr;
+			_needUpdateLayout = true;
 		}
-
-		_needUpdateLayout = true;
 	}
 }
 
 GraphicsDataPtr
 EGL3DeviceContext::getVertexBufferData() const noexcept
 {
-	return _vbo;
+	if (_vbo)
+		return _vbo->upcast_pointer<GraphicsData>();
+	return nullptr;
 }
 
+void
+EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+{
+	assert(!data || data->isInstanceOf<EGL3GraphicsData>());
+	assert(!data || data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	assert(_glcontext->getActive());
+
+	if (data)
+	{
+		auto ibo = data->downcast<EGL3GraphicsData>();
+		if (_ibo != ibo)
+		{
+			_ibo = ibo;
+			_needUpdateLayout = true;
+		}
+	}
+	else
+	{
+		if (_ibo)
+		{
+			_ibo = nullptr;
+			_needUpdateLayout = true;
+		}
+	}
+}
+
+GraphicsDataPtr
+EGL3DeviceContext::getIndexBufferData() const noexcept
+{
+	if (_ibo)
+		return _ibo->upcast_pointer<GraphicsData>();
+	return nullptr;
+}
 void
 EGL3DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
@@ -406,10 +414,10 @@ EGL3DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	if (_needUpdateLayout || _startVertices != renderable.startVertice)
 	{
 		if (_vbo)
-			_pipeline->bindVbo(_vbo, renderable.startVertice);
+			_pipeline->bindVbo(*_vbo, renderable.startVertice);
 
 		if (_ibo)
-			_pipeline->bindIbo(_ibo);
+			_pipeline->bindIbo(*_ibo);
 
 		_startVertices = renderable.startVertice;
 
@@ -442,22 +450,24 @@ EGL3DeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size
 void
 EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
-	if (_renderTexture != target)
+	assert(_glcontext->getActive());
+
+	if (target)
 	{
-		if (target)
+		auto framebuffer = target->downcast<EGL3Framebuffer>();
+		if (_framebuffer != framebuffer)
 		{
-			_renderTexture = target->downcast<EGL3Framebuffer>();
-			auto& framebufferDesc = _renderTexture->getGraphicsFramebufferDesc();
+			_framebuffer = framebuffer;
+			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
 
-			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
-
+			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
 			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
-		else
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-			_renderTexture = nullptr;
-		}
+	}
+	else
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+		_framebuffer = nullptr;
 	}
 }
 
@@ -492,7 +502,9 @@ EGL3DeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v
 GraphicsFramebufferPtr
 EGL3DeviceContext::getFramebuffer() const noexcept
 {
-	return _renderTexture;
+	if (_framebuffer)
+		return _framebuffer->upcast_pointer<GraphicsFramebuffer>();
+	return nullptr;
 }
 
 void

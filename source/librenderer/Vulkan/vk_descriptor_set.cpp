@@ -768,8 +768,8 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 				_activeUniformSets.push_back(uniformSet);
 			}
 
-			_globalUniformBlock = uniformBlock->downcast<VulkanGraphicsUniformBlock>();
-			_globalData = ubo->downcast<VulkanGraphicsData>();
+			_globalUniformBlock = uniformBlock->downcast_pointer<VulkanGraphicsUniformBlock>();
+			_globalData = ubo->downcast_pointer<VulkanGraphicsData>();
 		}
 		else
 		{

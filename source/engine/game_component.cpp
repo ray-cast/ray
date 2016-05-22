@@ -89,14 +89,14 @@ void
 GameComponent::addComponentDispatch(GameDispatchType type, GameComponent* component) noexcept
 {
 	assert(_gameObject && component);
-	_gameObject->addComponentDispatch(type, component->cast<GameComponent>());
+	_gameObject->addComponentDispatch(type, component->cast_pointer<GameComponent>());
 }
 
 void 
 GameComponent::removeComponentDispatch(GameDispatchType type, GameComponent* component) noexcept
 {
 	assert(_gameObject && component);
-	_gameObject->removeComponentDispatch(type, component->cast<GameComponent>());
+	_gameObject->removeComponentDispatch(type, component->cast_pointer<GameComponent>());
 }
 
 void
@@ -109,7 +109,7 @@ GameObjectPtr
 GameComponent::getGameObject() const noexcept
 {
 	if (_gameObject)
-		return _gameObject->downcast<GameObject>();
+		return _gameObject->cast_pointer<GameObject>();
 	return nullptr;
 }
 

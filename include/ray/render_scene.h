@@ -45,11 +45,11 @@ class EXPORT OcclusionCullNode
 {
 public:
 	OcclusionCullNode() noexcept;
-	OcclusionCullNode(RenderObjectPtr item, float distSqrt) noexcept;
+	OcclusionCullNode(RenderObject* item, float distSqrt) noexcept;
 	~OcclusionCullNode() noexcept;
 
-	void setOcclusionCullNode(RenderObjectPtr node) noexcept;
-	const RenderObjectPtr& getOcclusionCullNode() const noexcept;
+	void setOcclusionCullNode(RenderObject* node) noexcept;
+	RenderObject* getOcclusionCullNode() const noexcept;
 	void setDistanceSqrt(float distSq) noexcept;
 
 	float getDistanceSqrt() const noexcept;
@@ -57,7 +57,7 @@ public:
 private:
 
 	float _distanceSqrt;
-	RenderObjectPtr _item;
+	RenderObject* _item;
 };
 
 class EXPORT OcclusionCullList
@@ -75,7 +75,7 @@ public:
 	OcclusionCullNodes& iter() noexcept;
 	const OcclusionCullNodes& iter() const noexcept;
 
-	void insert(RenderObjectPtr item, float distanceSqrt) noexcept;
+	void insert(RenderObject* item, float distanceSqrt) noexcept;
 	void sort() noexcept;
 	void sort(iterator begin, iterator end) noexcept;
 
@@ -96,8 +96,8 @@ public:
 	Cameras& getCameraList() noexcept;
 	const Cameras& getCameraList() const noexcept;
 
-	void addRenderObject(RenderObjectPtr object) noexcept;
-	void removeRenderObject(RenderObjectPtr object) noexcept;
+	void addRenderObject(RenderObject* object) noexcept;
+	void removeRenderObject(RenderObject* object) noexcept;
 
 	void computVisiable(const float4x4& viewProject, OcclusionCullList& list) noexcept;
 	void computVisiableObject(const float4x4& viewProject, OcclusionCullList& list) noexcept;
@@ -107,9 +107,8 @@ private:
 	void sortCamera() noexcept;
 
 private:
-
 	Cameras _cameraList;
-	RenderObjects _renderObjectList;
+	RenderObjectRaws _renderObjectList;
 };
 
 _NAME_END

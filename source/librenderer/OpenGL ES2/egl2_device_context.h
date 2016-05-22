@@ -126,23 +126,21 @@ private:
 	Viewport _viewport;
 	Scissor _scissor;
 
-	EGL2FramebufferPtr _renderTexture;
-
 	bool _needUpdateState;
 	bool _needUpdateLayout;
 	GLsizei _startVertices;
 
-	EGL2GraphicsDataPtr _vbo;
-	EGL2GraphicsDataPtr _ibo;
-	EGL2InputLayoutPtr _inputLayout;
-	EGL2ProgramPtr _shaderObject;
-	EGL2DescriptorSetPtr _descriptorSet;
-	EGL2PipelinePtr _pipeline;
+	EGL2GraphicsData* _vbo;
+	EGL2GraphicsData* _ibo;
+	EGL2InputLayout* _inputLayout;
+	EGL2Program* _shaderObject;
+	EGL2DescriptorSet* _descriptorSet;
+	EGL2Pipeline* _pipeline;
+	EGL2Framebuffer* _framebuffer;
 
-	EGL2SwapchainPtr _glcontext;
+	EGL2Swapchain* _glcontext;
 
-	EGL2GraphicsStatePtr _state;
-	EGL2GraphicsStatePtr _stateDefault;
+	EGL2GraphicsState* _state;
 	GraphicsStateDesc _stateCaptured;
 
 	std::vector<GraphicsFormat> _supportTextures;

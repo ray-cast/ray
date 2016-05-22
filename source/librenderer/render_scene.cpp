@@ -49,7 +49,7 @@ OcclusionCullNode::OcclusionCullNode() noexcept
 {
 }
 
-OcclusionCullNode::OcclusionCullNode(RenderObjectPtr item, float distSqrt) noexcept
+OcclusionCullNode::OcclusionCullNode(RenderObject* item, float distSqrt) noexcept
 	: _distanceSqrt(distSqrt)
 	, _item(item)
 {
@@ -60,12 +60,12 @@ OcclusionCullNode::~OcclusionCullNode() noexcept
 }
 
 void
-OcclusionCullNode::setOcclusionCullNode(RenderObjectPtr node) noexcept
+OcclusionCullNode::setOcclusionCullNode(RenderObject* node) noexcept
 {
 	_item = node;
 }
 
-const RenderObjectPtr&
+RenderObject*
 OcclusionCullNode::getOcclusionCullNode() const noexcept
 {
 	return _item;
@@ -110,7 +110,7 @@ OcclusionCullList::iter() const noexcept
 }
 
 void
-OcclusionCullList::insert(RenderObjectPtr item, float distanceSqrt) noexcept
+OcclusionCullList::insert(RenderObject* item, float distanceSqrt) noexcept
 {
 	_iter.push_back(OcclusionCullNode(item, distanceSqrt));
 }
@@ -126,9 +126,9 @@ OcclusionCullList::sort(iterator begin, iterator end) noexcept
 {
 	std::sort(begin, end,
 		[](const OcclusionCullNode& lhs, const OcclusionCullNode& rhs)
-	{
-		return lhs.getDistanceSqrt() < rhs.getDistanceSqrt();
-	}
+		{
+			return lhs.getDistanceSqrt() < rhs.getDistanceSqrt();
+		}
 	);
 }
 
@@ -156,7 +156,7 @@ RenderScene::addCamera(CameraPtr camera) noexcept
 void
 RenderScene::removeCamera(CameraPtr camera) noexcept
 {
-	assert(camera->getRenderScene() == this->cast<RenderScene>());
+	assert(camera->getRenderScene() == this->cast_pointer<RenderScene>());
 
 	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
 	if (it != _cameraList.end())
@@ -189,13 +189,13 @@ RenderScene::sortCamera() noexcept
 }
 
 void
-RenderScene::addRenderObject(RenderObjectPtr object) noexcept
+RenderScene::addRenderObject(RenderObject* object) noexcept
 {
 	assert(!object->getRenderScene());
 
 	if (object->isInstanceOf<Camera>())
 	{
-		this->addCamera(object->downcast<Camera>());
+		this->addCamera(object->downcast_pointer<Camera>());
 	}
 	else
 	{
@@ -204,7 +204,7 @@ RenderScene::addRenderObject(RenderObjectPtr object) noexcept
 }
 
 void
-RenderScene::removeRenderObject(RenderObjectPtr object) noexcept
+RenderScene::removeRenderObject(RenderObject* object) noexcept
 {
 	auto it = std::find(_renderObjectList.begin(), _renderObjectList.end(), object);
 	if (it != _renderObjectList.end())

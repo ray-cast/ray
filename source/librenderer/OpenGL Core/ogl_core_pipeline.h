@@ -51,8 +51,8 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const OGLCoreGraphicsDataPtr& vbo, GLuint slot) noexcept;
-	void bindIbo(const OGLCoreGraphicsDataPtr& ibo) noexcept;
+	void bindVbo(const OGLCoreGraphicsData& vbo, GLuint slot) noexcept;
+	void bindIbo(const OGLCoreGraphicsData& ibo) noexcept;
 
 	void apply() noexcept;
 

@@ -137,11 +137,11 @@ OGLPipeline::apply() noexcept
 }
 
 void
-OGLPipeline::bindVbo(const OGLGraphicsDataPtr& vbo) noexcept
+OGLPipeline::bindVbo(const OGLGraphicsData& vbo) noexcept
 {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo->getInstanceID());
+	glBindBuffer(GL_ARRAY_BUFFER, vbo.getInstanceID());
 
-	GLuint stride = vbo->getGraphicsDataDesc().getStride();
+	GLuint stride = vbo.getGraphicsDataDesc().getStride();
 	for (auto& attrib : _attributes)
 	{
 		glEnableVertexAttribArray(attrib.index);
@@ -150,10 +150,9 @@ OGLPipeline::bindVbo(const OGLGraphicsDataPtr& vbo) noexcept
 }
 
 void
-OGLPipeline::bindIbo(const OGLGraphicsDataPtr& ibo) noexcept
+OGLPipeline::bindIbo(const OGLGraphicsData& ibo) noexcept
 {
-	assert(ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getInstanceID());
 }
 
 void

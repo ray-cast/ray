@@ -110,15 +110,15 @@ RenderObject::getOwnerListener() noexcept
 void
 RenderObject::setRenderScene(RenderScenePtr scene) noexcept
 {
-	if (_renderScene.lock() != scene)
+	if (_renderScene != scene)
 	{
 		this->onSceneChangeBefor();
 
-		if (_renderScene.use_count())
-			_renderScene.lock()->removeRenderObject(this->cast<RenderObject>());
+		if (_renderScene)
+			_renderScene->removeRenderObject(this);
 
 		if (scene)
-			scene->addRenderObject(this->cast<RenderObject>());
+			scene->addRenderObject(this);
 
 		_renderScene = scene;
 
@@ -126,10 +126,10 @@ RenderObject::setRenderScene(RenderScenePtr scene) noexcept
 	}
 }
 
-RenderScenePtr
+const RenderScenePtr&
 RenderObject::getRenderScene() const noexcept
 {
-	return _renderScene.lock();
+	return _renderScene;
 }
 
 void

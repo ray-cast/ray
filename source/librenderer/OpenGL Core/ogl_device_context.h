@@ -128,19 +128,18 @@ private:
 
 	GLuint _maxViewports;
 
-	OGLPipelinePtr _pipeline;
-	OGLDescriptorSetPtr _descriptorSet;
+	OGLPipeline* _pipeline;
+	OGLDescriptorSet* _descriptorSet;
 
-	OGLFramebufferPtr _renderTexture;
+	OGLFramebuffer* _framebuffer;
 
-	OGLGraphicsDataPtr _vbo;
-	OGLGraphicsDataPtr _ibo;
-	OGLProgramPtr _shaderObject;
+	OGLGraphicsData* _vbo;
+	OGLGraphicsData* _ibo;
+	OGLProgram* _shaderObject;
 
-	OGLSwapchainPtr _glcontext;
+	OGLSwapchain* _glcontext;
 
-	OGLGraphicsStatePtr _state;
-	OGLGraphicsStatePtr _stateDefault;
+	OGLGraphicsState* _state;
 	GraphicsStateDesc _stateCaptured;
 
 	bool _needUpdateLayout;

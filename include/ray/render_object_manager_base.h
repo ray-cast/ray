@@ -47,8 +47,8 @@ public:
 	RenderDataManager() noexcept;
 	virtual ~RenderDataManager() noexcept;
 
-	virtual void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept = 0;
-	virtual const RenderObjects& getRenderData(RenderQueue queue) const noexcept = 0;
+	virtual void addRenderData(RenderQueue queue, RenderObject* object) noexcept = 0;
+	virtual const RenderObjectRaws& getRenderData(RenderQueue queue) const noexcept = 0;
 
 	virtual void assginVisiable(const Camera& camera) noexcept = 0;
 };

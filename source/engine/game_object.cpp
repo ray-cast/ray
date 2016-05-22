@@ -190,7 +190,7 @@ GameObject::setParent(GameObjectPtr& parent) noexcept
 
 		_parent = parent;
 		if (parent)
-			parent->_children.push_back(this->cast<GameObject>());
+			parent->_children.push_back(this->downcast_pointer<GameObject>());
 
 		this->_updateWorldChildren();
 		this->_onMoveAfter();

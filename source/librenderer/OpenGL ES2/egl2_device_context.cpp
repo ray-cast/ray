@@ -56,11 +56,10 @@ EGL2DeviceContext::EGL2DeviceContext() noexcept
 	, _clearStencil(0xFFFFFFFF)
 	, _viewport(0, 0, 0, 0)
 	, _state(GL_NONE)
-	, _renderTexture(GL_NONE)
+	, _framebuffer(GL_NONE)
 	, _needUpdateState(false)
 	, _needUpdateLayout(false)
 	, _startVertices(0)
-	, _stateDefault(std::make_shared<EGL2GraphicsState>())
 {
 }
 
@@ -110,18 +109,17 @@ EGL2DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 void
 EGL2DeviceContext::close() noexcept
 {
-	_renderTexture.reset();
-	_shaderObject.reset();
-	_pipeline.reset();
-	_descriptorSet.reset();
-	_state.reset();
-	_stateDefault.reset();
-	_vbo.reset();
-	_ibo.reset();
-	_inputLayout.reset();
+	_framebuffer = nullptr;
+	_shaderObject = nullptr;
+	_pipeline = nullptr;
+	_descriptorSet = nullptr;
+	_state = nullptr;
+	_vbo = nullptr;
+	_ibo = nullptr;
+	_inputLayout = nullptr;
+	_glcontext = nullptr;
 	_supportTextures.clear();
 	_supportAttribute.clear();
-	_glcontext.reset();
 }
 
 void
@@ -275,7 +273,8 @@ EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
 
-	if (_pipeline != pipeline)
+	auto glpipeline = pipeline->downcast<EGL2Pipeline>();
+	if (_pipeline != glpipeline)
 	{
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
@@ -296,7 +295,7 @@ EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		_pipeline = pipeline->downcast<EGL2Pipeline>();
+		_pipeline = glpipeline;
 		_pipeline->apply();
 
 		_needUpdateLayout = true;
@@ -306,7 +305,9 @@ EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 GraphicsPipelinePtr
 EGL2DeviceContext::getRenderPipeline() const noexcept
 {
-	return _pipeline;
+	if (_pipeline)
+		return _pipeline->upcast_pointer<GraphicsPipeline>();
+	return nullptr;
 }
 
 void
@@ -317,13 +318,15 @@ EGL2DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noex
 	assert(_glcontext->getActive());
 
 	_descriptorSet = descriptorSet->downcast<EGL2DescriptorSet>();
-	_descriptorSet->apply(_shaderObject);
+	_descriptorSet->apply(*_shaderObject);
 }
 
 GraphicsDescriptorSetPtr
 EGL2DeviceContext::getDescriptorSet() const noexcept
 {
-	return _descriptorSet;
+	if (_descriptorSet)
+		return _descriptorSet->upcast_pointer<GraphicsDescriptorSet>();
+	return nullptr;
 }
 
 const Viewport&
@@ -332,44 +335,73 @@ EGL2DeviceContext::getViewport() const noexcept
 	return _viewport;
 }
 
-GraphicsDataPtr
-EGL2DeviceContext::getIndexBufferData() const noexcept
-{
-	return _ibo;
-}
-
 void
 EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
+	assert(data);
+	assert(data->isInstanceOf<EGL2GraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	assert(_glcontext->getActive());
 
-	if (_vbo != data)
+	if (data)
 	{
-		if (data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
-			_vbo = data->downcast<EGL2GraphicsData>();
-		else
-			_vbo = nullptr;
-		_needUpdateLayout = true;
+		auto vbo = data->downcast<EGL2GraphicsData>();
+		if (_vbo != vbo)
+		{
+			_vbo = vbo;
+			_needUpdateLayout = true;
+		}
 	}
-}
-
-void
-EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
-{
-	if (_ibo != data)
+	else
 	{
-		if (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
-			_ibo = data->downcast<EGL2GraphicsData>();
-		else
-			_ibo = nullptr;
-		_needUpdateLayout = true;
+		if (_vbo)
+		{
+			_vbo = nullptr;
+			_needUpdateLayout = true;
+		}
 	}
 }
 
 GraphicsDataPtr
 EGL2DeviceContext::getVertexBufferData() const noexcept
 {
-	return _vbo;
+	if (_vbo)
+		return _vbo->upcast_pointer<GraphicsData>();
+	return nullptr;
+}
+
+void
+EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+{
+	assert(!data || data->isInstanceOf<EGL2GraphicsData>());
+	assert(!data || data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	assert(_glcontext->getActive());
+
+	if (data)
+	{
+		auto ibo = data->downcast<EGL2GraphicsData>();
+		if (_ibo != ibo)
+		{
+			_ibo = ibo;
+			_needUpdateLayout = true;
+		}
+	}
+	else
+	{
+		if (_ibo)
+		{
+			_ibo = nullptr;
+			_needUpdateLayout = true;
+		}
+	}
+}
+
+GraphicsDataPtr
+EGL2DeviceContext::getIndexBufferData() const noexcept
+{
+	if (_ibo)
+		return _ibo->upcast_pointer<GraphicsData>();
+	return nullptr;
 }
 
 void
@@ -381,10 +413,10 @@ EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	if (_needUpdateLayout || _startVertices != renderable.startVertice)
 	{
 		if (_vbo)
-			_pipeline->bindVbo(_vbo, renderable.startVertice);
+			_pipeline->bindVbo(*_vbo, renderable.startVertice);
 
 		if (_ibo)
-			_pipeline->bindIbo(_ibo);
+			_pipeline->bindIbo(*_ibo);
 
 		_startVertices = renderable.startVertice;
 		_needUpdateLayout = false;
@@ -415,22 +447,24 @@ EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size
 void
 EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
-	if (_renderTexture != target)
+	assert(_glcontext->getActive());
+
+	if (target)
 	{
-		if (target)
+		auto framebuffer = target->downcast<EGL2Framebuffer>();
+		if (_framebuffer != framebuffer)
 		{
-			_renderTexture = target->downcast<EGL2Framebuffer>();
-			auto& framebufferDesc = _renderTexture->getGraphicsFramebufferDesc();
+			_framebuffer = framebuffer;
+			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
 
-			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
-
+			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
 			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
-		else
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-			_renderTexture = nullptr;
-		}
+	}
+	else
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+		_framebuffer = nullptr;
 	}
 }
 
@@ -450,7 +484,9 @@ EGL2DeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v
 GraphicsFramebufferPtr
 EGL2DeviceContext::getFramebuffer() const noexcept
 {
-	return _renderTexture;
+	if (_framebuffer)
+		return _framebuffer->upcast_pointer<GraphicsFramebuffer>();
+	return nullptr;
 }
 
 void

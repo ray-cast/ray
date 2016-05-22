@@ -130,11 +130,11 @@ EGL2Pipeline::apply() noexcept
 }
 
 void
-EGL2Pipeline::bindVbo(const EGL2GraphicsDataPtr& vbo, GLsizei startVertices) noexcept
+EGL2Pipeline::bindVbo(const EGL2GraphicsData& vbo, GLsizei startVertices) noexcept
 {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo->getInstanceID());
+	glBindBuffer(GL_ARRAY_BUFFER, vbo.getInstanceID());
 
-	GLuint stride = vbo->getGraphicsDataDesc().getStride();
+	GLuint stride = vbo.getGraphicsDataDesc().getStride();
 	for (auto& attrib : _attributes)
 	{
 		glEnableVertexAttribArray(attrib.index);
@@ -143,9 +143,9 @@ EGL2Pipeline::bindVbo(const EGL2GraphicsDataPtr& vbo, GLsizei startVertices) noe
 }
 
 void
-EGL2Pipeline::bindIbo(const EGL2GraphicsDataPtr& ibo) noexcept
+EGL2Pipeline::bindIbo(const EGL2GraphicsData& ibo) noexcept
 {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getInstanceID());
 }
 
 const GraphicsPipelineDesc&

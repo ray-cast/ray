@@ -153,22 +153,22 @@ void
 Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 {
 	if (this->getCastShadow())
-		manager.addRenderData(RenderQueue::RenderQueueShadow, this->upcast<RenderObject>());
+		manager.addRenderData(RenderQueue::RenderQueueShadow, this);
 
 	if (_techniques[RenderQueue::RenderQueueOpaque])
-		manager.addRenderData(RenderQueue::RenderQueueOpaque, this->upcast<RenderObject>());
+		manager.addRenderData(RenderQueue::RenderQueueOpaque, this);
 
 	if (_techniques[RenderQueue::RenderQueueOpaqueShading])
-		manager.addRenderData(RenderQueue::RenderQueueOpaqueShading, this->upcast<RenderObject>());
+		manager.addRenderData(RenderQueue::RenderQueueOpaqueShading, this);
 
 	if (_techniques[RenderQueue::RenderQueueOpaqueSpecific])
-		manager.addRenderData(RenderQueue::RenderQueueOpaqueSpecific, this->upcast<RenderObject>());
+		manager.addRenderData(RenderQueue::RenderQueueOpaqueSpecific, this);
 
 	if (_techniques[RenderQueue::RenderQueueTransparent])
-		manager.addRenderData(RenderQueue::RenderQueueTransparent, this->upcast<RenderObject>());
+		manager.addRenderData(RenderQueue::RenderQueueTransparent, this);
 
 	if (_techniques[RenderQueue::RenderQueueTransparentSpecific])
-		manager.addRenderData(RenderQueue::RenderQueueTransparentSpecific, this->upcast<RenderObject>());
+		manager.addRenderData(RenderQueue::RenderQueueTransparentSpecific, this);
 }
 
 void

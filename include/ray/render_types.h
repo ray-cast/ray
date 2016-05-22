@@ -107,6 +107,8 @@ typedef std::vector<MaterialVariantPtr> MaterialVariants;
 typedef std::vector<CameraPtr> Cameras;
 typedef std::vector<LightPtr> Lights;
 
+typedef std::vector<RenderObject*> RenderObjectRaws;
+
 enum CameraType
 {
 	CameraTypeOrtho,

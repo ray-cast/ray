@@ -315,14 +315,14 @@ void
 PhysicsBodyComponent::onAttachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isA<PhysicsShapeComponent>())
-		component->cast<PhysicsShapeComponent>()->addShapeChangeListener(&_onCollisionChange);
+		component->downcast<PhysicsShapeComponent>()->addShapeChangeListener(&_onCollisionChange);
 }
 
 void
 PhysicsBodyComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isA<PhysicsShapeComponent>())
-		component->cast<PhysicsShapeComponent>()->removeShapeChangeListener(&_onCollisionChange);
+		component->downcast<PhysicsShapeComponent>()->removeShapeChangeListener(&_onCollisionChange);
 }
 
 void

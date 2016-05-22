@@ -54,12 +54,6 @@ GameScene::RootObject::~RootObject() noexcept
 {
 }
 
-GameScenePtr
-GameScene::RootObject::getGameScene() noexcept
-{
-	return _scene->downcast<GameScene>();
-}
-
 GameScene::GameScene() noexcept
 	: _root(std::make_unique<RootObject>(this))
 {

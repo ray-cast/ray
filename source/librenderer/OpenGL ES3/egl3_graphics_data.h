@@ -64,7 +64,7 @@ public:
 	bool map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept;
 	void unmap() noexcept;
 
-	GLuint getInstanceID() noexcept;
+	GLuint getInstanceID() const noexcept;
 
 	void bind() noexcept;
 

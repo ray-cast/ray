@@ -51,8 +51,8 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const EGL3GraphicsDataPtr& vbo, GLsizei startVertices) noexcept;
-	void bindIbo(const EGL3GraphicsDataPtr& ibo) noexcept;
+	void bindVbo(const EGL3GraphicsData& vbo, GLsizei startVertices) noexcept;
+	void bindIbo(const EGL3GraphicsData& ibo) noexcept;
 
 	void apply() noexcept;
 

@@ -50,14 +50,14 @@ DefaultRenderDataManager::~DefaultRenderDataManager() noexcept
 }
 
 void
-DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept
+DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderObject* object) noexcept
 {
 	assert(object);
 	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
 	_renderQueue[queue].push_back(object);
 }
 
-const RenderObjects&
+const RenderObjectRaws&
 DefaultRenderDataManager::getRenderData(RenderQueue queue) const noexcept
 {
 	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
@@ -133,10 +133,10 @@ DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 }
 
 void
-DefaultRenderDataManager::sortMaterial(RenderObjects& list) noexcept
+DefaultRenderDataManager::sortMaterial(RenderObjectRaws& list) noexcept
 {
 	std::sort(list.begin(), list.end(),
-		[](RenderObjectPtr& lh, RenderObjectPtr& rh)
+		[](RenderObject* lh, RenderObject* rh)
 	{
 		MaterialPtr m1, m2;
 		if (lh->isInstanceOf<Geometry>())

@@ -75,7 +75,7 @@ GraphicsSwapchainPtr
 EGL2Device::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 {
 	auto swapchain = std::make_shared<EGL2Swapchain>();
-	swapchain->setDevice(this->downcast<EGL2Device>());
+	swapchain->setDevice(this->downcast_pointer<EGL2Device>());
 	if (swapchain->setup(desc))
 		return swapchain;
 	return false;
@@ -85,7 +85,7 @@ GraphicsContextPtr
 EGL2Device::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 {
 	auto context = std::make_shared<EGL2DeviceContext>();
-	context->setDevice(this->downcast<EGL2Device>());
+	context->setDevice(this->downcast_pointer<EGL2Device>());
 	if (context->setup(desc))
 		return context;
 	return false;
@@ -95,7 +95,7 @@ GraphicsInputLayoutPtr
 EGL2Device::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
 	auto inputLayout = std::make_shared<EGL2InputLayout>();
-	inputLayout->setDevice(this->downcast<EGL2Device>());
+	inputLayout->setDevice(this->downcast_pointer<EGL2Device>());
 	if (inputLayout->setup(desc))
 		return inputLayout;
 	return nullptr;
@@ -105,7 +105,7 @@ GraphicsDataPtr
 EGL2Device::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	auto data = std::make_shared<EGL2GraphicsData>();
-	data->setDevice(this->downcast<EGL2Device>());
+	data->setDevice(this->downcast_pointer<EGL2Device>());
 	if (data->setup(desc))
 		return data;
 	return nullptr;
@@ -115,7 +115,7 @@ GraphicsTexturePtr
 EGL2Device::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	auto texture = std::make_shared<EGL2Texture>();
-	texture->setDevice(this->downcast<EGL2Device>());
+	texture->setDevice(this->downcast_pointer<EGL2Device>());
 	if (texture->setup(desc))
 		return texture;
 	return nullptr;
@@ -125,7 +125,7 @@ GraphicsSamplerPtr
 EGL2Device::createSampler(const GraphicsSamplerDesc& desc) noexcept
 {
 	auto sampler = std::make_shared<EGL2Sampler>();
-	sampler->setDevice(this->downcast<EGL2Device>());
+	sampler->setDevice(this->downcast_pointer<EGL2Device>());
 	if (sampler->setup(desc))
 		return sampler;
 	return nullptr;
@@ -135,7 +135,7 @@ GraphicsFramebufferPtr
 EGL2Device::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	auto framebuffer = std::make_shared<EGL2Framebuffer>();
-	framebuffer->setDevice(this->downcast<EGL2Device>());
+	framebuffer->setDevice(this->downcast_pointer<EGL2Device>());
 	if (framebuffer->setup(desc))
 		return framebuffer;
 	return nullptr;
@@ -145,7 +145,7 @@ GraphicsFramebufferLayoutPtr
 EGL2Device::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
 {
 	auto framebufferLayout = std::make_shared<EGL2FramebufferLayout>();
-	framebufferLayout->setDevice(this->downcast<EGL2Device>());
+	framebufferLayout->setDevice(this->downcast_pointer<EGL2Device>());
 	if (framebufferLayout->setup(desc))
 		return framebufferLayout;
 	return nullptr;
@@ -155,7 +155,7 @@ GraphicsStatePtr
 EGL2Device::createRenderState(const GraphicsStateDesc& desc) noexcept
 {
 	auto state = std::make_shared<EGL2GraphicsState>();
-	state->setDevice(this->downcast<EGL2Device>());
+	state->setDevice(this->downcast_pointer<EGL2Device>());
 	if (state->setup(desc))
 		return state;
 	return nullptr;
@@ -165,7 +165,7 @@ GraphicsShaderPtr
 EGL2Device::createShader(const GraphicsShaderDesc& desc) noexcept
 {
 	auto shader = std::make_shared<EGL2Shader>();
-	shader->setDevice(this->downcast<EGL2Device>());
+	shader->setDevice(this->downcast_pointer<EGL2Device>());
 	if (shader->setup(desc))
 		return shader;
 	return nullptr;
@@ -175,7 +175,7 @@ GraphicsProgramPtr
 EGL2Device::createProgram(const GraphicsProgramDesc& desc) noexcept
 {
 	auto program = std::make_shared<EGL2Program>();
-	program->setDevice(this->downcast<EGL2Device>());
+	program->setDevice(this->downcast_pointer<EGL2Device>());
 	if (program->setup(desc))
 		return program;
 	return nullptr;
@@ -185,7 +185,7 @@ GraphicsPipelinePtr
 EGL2Device::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
 	auto pipeline = std::make_shared<EGL2Pipeline>();
-	pipeline->setDevice(this->downcast<EGL2Device>());
+	pipeline->setDevice(this->downcast_pointer<EGL2Device>());
 	if (pipeline->setup(desc))
 		return pipeline;
 	return nullptr;
@@ -195,7 +195,7 @@ GraphicsDescriptorSetPtr
 EGL2Device::createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
 {
 	auto descriptorSet = std::make_shared<EGL2DescriptorSet>();
-	descriptorSet->setDevice(this->downcast<EGL2Device>());
+	descriptorSet->setDevice(this->downcast_pointer<EGL2Device>());
 	if (descriptorSet->setup(desc))
 		return descriptorSet;
 	return nullptr;
@@ -205,7 +205,7 @@ GraphicsDescriptorSetLayoutPtr
 EGL2Device::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
 {
 	auto descriptorSetLayout = std::make_shared<EGL2DescriptorSetLayout>();
-	descriptorSetLayout->setDevice(this->downcast<EGL2Device>());
+	descriptorSetLayout->setDevice(this->downcast_pointer<EGL2Device>());
 	if (descriptorSetLayout->setup(desc))
 		return descriptorSetLayout;
 	return nullptr;
@@ -215,7 +215,7 @@ GraphicsDescriptorPoolPtr
 EGL2Device::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
 {
 	auto descriptorPool = std::make_shared<EGL2DescriptorPool>();
-	descriptorPool->setDevice(this->downcast<EGL2Device>());
+	descriptorPool->setDevice(this->downcast_pointer<EGL2Device>());
 	if (descriptorPool->setup(desc))
 		return descriptorPool;
 	return nullptr;

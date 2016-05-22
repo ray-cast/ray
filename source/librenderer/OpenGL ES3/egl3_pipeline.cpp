@@ -144,18 +144,16 @@ EGL3Pipeline::apply() noexcept
 }
 
 void
-EGL3Pipeline::bindVbo(const EGL3GraphicsDataPtr& vbo, GLsizei startVertices) noexcept
+EGL3Pipeline::bindVbo(const EGL3GraphicsData& vbo, GLsizei startVertices) noexcept
 {
-	assert(vbo);
-	GLuint stride = vbo->getGraphicsDataDesc().getStride();
-	GL_CHECK(glBindVertexBuffer(0, vbo->getInstanceID(), startVertices * stride, stride));
+	GLuint stride = vbo.getGraphicsDataDesc().getStride();
+	GL_CHECK(glBindVertexBuffer(0, vbo.getInstanceID(), startVertices * stride, stride));
 }
 
 void
-EGL3Pipeline::bindIbo(const EGL3GraphicsDataPtr& ibo) noexcept
+EGL3Pipeline::bindIbo(const EGL3GraphicsData& ibo) noexcept
 {
-	assert(ibo);
-	GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID()));
+	GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getInstanceID()));
 }
 
 const GraphicsPipelineDesc&

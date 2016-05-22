@@ -81,9 +81,6 @@ public:
 	void setIndexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
-	void* mapTexture(GraphicsTexturePtr texture, std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, GraphicsAccessFlags flags) noexcept;
-	void unmapTexture(GraphicsTexturePtr texture) noexcept;
-
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
@@ -132,20 +129,15 @@ private:
 
 	GLuint _maxViewports;
 
-	EGL3PipelinePtr _pipeline;
-	EGL3DescriptorSetPtr _descriptorSet;
-
-	EGL3FramebufferPtr _renderTexture;
-
-	EGL3GraphicsDataPtr _vbo;
-	EGL3GraphicsDataPtr _ibo;
-	EGL3InputLayoutPtr _inputLayout;
-	EGL3ProgramPtr _shaderObject;
-
-	EGL3SwapchainPtr _glcontext;
-
-	EGL3GraphicsStatePtr _state;
-	EGL3GraphicsStatePtr _stateDefault;
+	EGL3Pipeline* _pipeline;
+	EGL3DescriptorSet* _descriptorSet;
+	EGL3Framebuffer* _framebuffer;
+	EGL3GraphicsData* _vbo;
+	EGL3GraphicsData* _ibo;
+	EGL3InputLayout* _inputLayout;
+	EGL3Program* _shaderObject;
+	EGL3Swapchain* _glcontext;
+	EGL3GraphicsState* _state;
 	GraphicsStateDesc _stateCaptured;
 
 	bool _needUpdateLayout;

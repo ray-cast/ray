@@ -75,8 +75,6 @@ private:
 		RootObject(GameScene* scene) noexcept;
 		virtual ~RootObject() noexcept;
 
-		virtual GameScenePtr getGameScene() noexcept;
-
 	private:
 		GameScene* _scene;
 	};

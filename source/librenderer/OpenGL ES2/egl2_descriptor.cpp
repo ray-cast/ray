@@ -743,7 +743,7 @@ EGL2DescriptorSet::close() noexcept
 }
 
 void
-EGL2DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
+EGL2DescriptorSet::apply(const EGL2Program& shaderObject) noexcept
 {
 	std::uint32_t textureUnit = 0;
 	for (auto& it : _activeUniformSets)

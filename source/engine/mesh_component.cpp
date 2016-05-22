@@ -249,8 +249,8 @@ MeshComponent::_onSetMesh(MeshPropertyPtr& mesh) noexcept
 		if (it->getBoundingBox().empty())
 			it->computeBoundingBox();
 
-		for (auto& it : it->getChildren())
-			meshes.push(it);
+		for (auto& child : it->getChildren())
+			meshes.push(child);
 	}
 }
 

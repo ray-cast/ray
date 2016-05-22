@@ -754,9 +754,9 @@ OGLDescriptorSet::close() noexcept
 }
 
 void
-OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
+OGLDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 {
-	auto program = shaderObject->downcast<OGLProgram>()->getInstanceID();
+	auto program = shaderObject.getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
 		auto type = it->getGraphicsParam()->getType();

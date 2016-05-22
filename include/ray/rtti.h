@@ -98,24 +98,85 @@ namespace rtti
 		}
 
 		template<typename T>
-		std::shared_ptr<T> upcast() noexcept
+		T* upcast() noexcept
+		{
+			assert(this->isA<T>());
+			return dynamic_cast<T*>(this);
+		}
+
+		template<typename T>
+		T* downcast() noexcept
+		{
+			assert(this->isA<T>());
+			return dynamic_cast<T*>(this);
+		}
+
+		template<typename T>
+		T* cast() noexcept
+		{
+			return reinterpret_cast<T*>(this);
+		}
+
+		template<typename T>
+		const T* upcast() const noexcept
+		{
+			assert(this->isA<T>());
+			return dynamic_cast<const T*>(this);
+		}
+
+		template<typename T>
+		const T* downcast() const noexcept
+		{
+			assert(this->isA<T>());
+			return dynamic_cast<const T*>(this);
+		}
+
+		template<typename T>
+		const T* cast() const noexcept
+		{
+			return reinterpret_cast<const T*>(this);
+		}
+
+		template<typename T>
+		std::shared_ptr<T> upcast_pointer() noexcept
 		{
 			assert(this->isA<T>());
 			return std::dynamic_pointer_cast<T>(this->shared_from_this());
 		}
 
 		template<typename T>
-		std::shared_ptr<T> downcast() noexcept
+		std::shared_ptr<T> downcast_pointer() noexcept
 		{
-			assert(this->isInstanceOf<T>());
+			assert(this->isA<T>());
 			return std::dynamic_pointer_cast<T>(this->shared_from_this());
 		}
 
 		template<typename T>
-		std::shared_ptr<T> cast() noexcept
+		std::shared_ptr<T> cast_pointer() noexcept
 		{
 			assert(this->isA<T>());
 			return std::dynamic_pointer_cast<T>(this->shared_from_this());
+		}
+
+		template<typename T>
+		std::shared_ptr<const T> upcast_pointer() const noexcept
+		{
+			assert(this->isA<T>());
+			return std::dynamic_pointer_cast<const T>(this->shared_from_this());
+		}
+
+		template<typename T>
+		std::shared_ptr<const T> downcast_pointer() const noexcept
+		{
+			assert(this->isA<T>());
+			return std::dynamic_pointer_cast<const T>(this->shared_from_this());
+		}
+
+		template<typename T>
+		std::shared_ptr<const T> cast_pointer() const noexcept
+		{
+			assert(this->isA<T>());
+			return std::dynamic_pointer_cast<const T>(this->shared_from_this());
 		}
 	};
 }

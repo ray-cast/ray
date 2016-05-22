@@ -129,22 +129,22 @@ SSSS::getCorrection() const noexcept
 }
 
 void
-SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, LightPtr light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwMap) noexcept
+SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, const Light& light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwMap) noexcept
 {
-	assert(light && shaodwMap && source);
+	assert(shaodwMap && source);
 	assert(linearDepth);
 
 	_texMRT0->uniformTexture(MRT0);
 	_texMRT1->uniformTexture(MRT1);
 	_texDepthLinear->uniformTexture(linearDepth);
 
-	_lightColor->uniform3f(light->getLightColor() * light->getIntensity());
-	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light->getTranslate()));
+	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
+	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTranslate()));
 
 	_shadowMap->uniformTexture(shaodwMap);
 	_shadowFactor->uniform1f(_sssScale);
-	_shadowEye2LightView->uniform4fmat(light->getShadowCamera()->getView() * pipeline.getCamera()->getViewInverse());
-	_shadowEye2LightViewProject->uniform4fmat(light->getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
+	_shadowEye2LightView->uniform4fmat(light.getShadowCamera()->getView() * pipeline.getCamera()->getViewInverse());
+	_shadowEye2LightViewProject->uniform4fmat(light.getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 	pipeline.setFramebuffer(source);
 	pipeline.drawScreenQuad(*_sssTranslucency);

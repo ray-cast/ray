@@ -218,7 +218,7 @@ public:
 	bool setup(const GraphicsDescriptorSetDesc& desc) noexcept;
 	void close() noexcept;
 
-	void apply(GraphicsProgramPtr program) noexcept;
+	void apply(const EGL3Program& program) noexcept;
 
 	const GraphicsUniformSets& getGraphicsUniformSets() const noexcept;
 	const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept;

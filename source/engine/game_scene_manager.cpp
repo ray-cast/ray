@@ -115,7 +115,7 @@ GameSceneManager::findScene(const std::string& name) noexcept
 			continue;
 
 		if (it->getName() == name)
-			return it->downcast<GameScene>();
+			return it->downcast_pointer<GameScene>();
 	}
 
 	return nullptr;
@@ -130,7 +130,7 @@ GameSceneManager::findActiveScene(const std::string& name) noexcept
 			continue;
 
 		if (it->getName() == name && it->getActive())
-			return it->downcast<GameScene>();
+			return it->downcast_pointer<GameScene>();
 	}
 
 	return nullptr;

@@ -121,21 +121,20 @@ private:
 	OGLCoreDeviceContext& operator=(const OGLCoreDeviceContext&) noexcept = delete;
 
 private:
-	OGLSwapchainPtr _glcontext;
+	OGLSwapchain* _glcontext;
 
 	float4 _clearColor;
 	GLfloat _clearDepth;
 	GLint   _clearStencil;
 
-	OGLCoreFramebufferPtr _renderTexture;
+	OGLCoreFramebuffer* _framebuffer;
 
-	OGLProgramPtr _shaderObject;
+	OGLProgram* _shaderObject;
 
-	OGLCorePipelinePtr _pipeline;
-	OGLCoreDescriptorSetPtr _descriptorSet;
+	OGLCorePipeline* _pipeline;
+	OGLCoreDescriptorSet* _descriptorSet;
 
-	OGLGraphicsStatePtr _state;
-	OGLGraphicsStatePtr _stateDefault;
+	OGLGraphicsState* _state;
 	GraphicsStateDesc _stateCaptured;
 
 	GLuint _stateObjDraw;
@@ -148,8 +147,8 @@ private:
 	bool _needUpdateLayout;
 	bool _needUpdateState;
 
-	OGLCoreGraphicsDataPtr _vbo;
-	OGLCoreGraphicsDataPtr _ibo;
+	OGLCoreGraphicsData* _vbo;
+	OGLCoreGraphicsData* _ibo;
 
 	Viewport _viewport;
 	Scissor _scissor;

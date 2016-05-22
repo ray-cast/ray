@@ -58,7 +58,7 @@ public:
 	float getStrength() const noexcept;
 	float getCorrection() const noexcept;
 
-	void applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, LightPtr light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwmap) noexcept;
+	void applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, const Light& light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwmap) noexcept;
 	void applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr linearDepth, GraphicsFramebufferPtr swap) noexcept;
 
 private:

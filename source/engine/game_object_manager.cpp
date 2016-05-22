@@ -108,7 +108,7 @@ GameObjectManager::findObject(const std::string& name) noexcept
 			continue;
 
 		if (it->getName() == name)
-			return it->downcast<GameObject>();
+			return it->downcast_pointer<GameObject>();
 	}
 
 	return nullptr;
@@ -123,7 +123,7 @@ GameObjectManager::findActiveObject(const std::string& name) noexcept
 			continue;
 
 		if (it->getName() == name && it->getActive())
-			return it->downcast<GameObject>();
+			return it->downcast_pointer<GameObject>();
 	}
 
 	return nullptr;

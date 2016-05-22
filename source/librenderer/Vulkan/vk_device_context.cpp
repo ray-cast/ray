@@ -66,7 +66,7 @@ VulkanDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	assert(desc.getSwapchain());
 	assert(desc.getSwapchain()->isInstanceOf<VulkanSwapchain>());
 
-	_swapchain = desc.getSwapchain()->downcast<VulkanSwapchain>();
+	_swapchain = desc.getSwapchain()->downcast_pointer<VulkanSwapchain>();
 
 	if (!this->initTextureSupports())
 		return false;
@@ -97,7 +97,7 @@ VulkanDeviceContext::close() noexcept
 void
 VulkanDeviceContext::renderBegin() noexcept
 {
-	auto swapchaic = _swapchain->downcast<VulkanSwapchain>();
+	auto swapchaic = _swapchain->downcast_pointer<VulkanSwapchain>();
 	swapchaic->acquireNextImage();
 
 	_commandList->renderBegin();
@@ -236,7 +236,7 @@ VulkanDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) no
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<VulkanDescriptorSet>());
 
-	descriptorSet->downcast<VulkanDescriptorSet>()->update();
+	descriptorSet->downcast_pointer<VulkanDescriptorSet>()->update();
 	_commandList->setDescriptorSet(descriptorSet);
 }
 

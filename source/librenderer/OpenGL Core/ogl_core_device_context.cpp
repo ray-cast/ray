@@ -56,7 +56,6 @@ OGLCoreDeviceContext::OGLCoreDeviceContext() noexcept
 	, _clearStencil(0)
 	, _needUpdateLayout(true)
 	, _needUpdateState(true)
-	, _stateDefault(std::make_shared<OGLGraphicsState>())
 {
 	std::memset(&_viewport, 0, sizeof(_viewport));
 	std::memset(&_scissor, 0, sizeof(_scissor));
@@ -108,17 +107,16 @@ OGLCoreDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 void
 OGLCoreDeviceContext::close() noexcept
 {
-	_renderTexture.reset();
-	_shaderObject.reset();
-	_pipeline.reset();
-	_descriptorSet.reset();
-	_state.reset();
-	_stateDefault.reset();
-	_vbo.reset();
-	_ibo.reset();
+	_framebuffer = nullptr;
+	_shaderObject = nullptr;
+	_pipeline = nullptr;
+	_descriptorSet = nullptr;
+	_state = nullptr;
+	_vbo = nullptr;
+	_ibo = nullptr;
+	_glcontext = nullptr;
 	_supportTextures.clear();
 	_supportAttribute.clear();
-	_glcontext.reset();
 }
 
 void
@@ -281,7 +279,8 @@ OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 	assert(pipeline->isInstanceOf<OGLCorePipeline>());
 	assert(_glcontext->getActive());
 
-	if (_pipeline != pipeline)
+	auto glpipeline = pipeline->downcast<OGLCorePipeline>();
+	if (_pipeline != glpipeline)
 	{
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
@@ -301,7 +300,7 @@ OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		_pipeline = pipeline->downcast<OGLCorePipeline>();
+		_pipeline = glpipeline;
 		_pipeline->apply();
 
 		_needUpdateLayout = true;
@@ -311,7 +310,9 @@ OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 GraphicsPipelinePtr
 OGLCoreDeviceContext::getRenderPipeline() const noexcept
 {
-	return _pipeline;
+	if (_pipeline)
+		return _pipeline->upcast_pointer<GraphicsPipeline>();
+	return nullptr;
 }
 
 void
@@ -320,15 +321,18 @@ OGLCoreDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) n
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<OGLCoreDescriptorSet>());
 	assert(_glcontext->getActive());
+	assert(_shaderObject);
 
 	_descriptorSet = descriptorSet->downcast<OGLCoreDescriptorSet>();
-	_descriptorSet->apply(_shaderObject);
+	_descriptorSet->apply(*_shaderObject);
 }
 
 GraphicsDescriptorSetPtr
 OGLCoreDeviceContext::getDescriptorSet() const noexcept
 {
-	return _descriptorSet;
+	if (_descriptorSet)
+		return _descriptorSet->upcast_pointer<GraphicsDescriptorSet>();
+	return nullptr;
 }
 
 void
@@ -339,48 +343,65 @@ OGLCoreDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 	assert(_glcontext->getActive());
 
-	if (_vbo != data)
+	if (data)
 	{
-		if (data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
-			_vbo = data->downcast<OGLCoreGraphicsData>();
-		else
+		auto vbo = data->downcast<OGLCoreGraphicsData>();
+		if (_vbo != vbo)
+		{
+			_vbo = vbo;
+			_needUpdateLayout = true;
+		}
+	}
+	else
+	{
+		if (_vbo)
+		{
 			_vbo = nullptr;
-		_needUpdateLayout = true;
+			_needUpdateLayout = true;
+		}
 	}
 }
 
 GraphicsDataPtr
 OGLCoreDeviceContext::getVertexBufferData() const noexcept
 {
-	return _vbo;
+	if (_vbo)
+		return _vbo->upcast_pointer<GraphicsData>();
+	return nullptr;
 }
 
 void
 OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
+	assert(!data || data->isInstanceOf<OGLCoreGraphicsData>());
+	assert(!data || data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 	assert(_glcontext->getActive());
 
-	if (_ibo != data)
+	if (data)
 	{
-		if (data)
+		auto ibo = data->downcast<OGLCoreGraphicsData>();
+		if (_ibo != ibo)
 		{
-			assert(data->isInstanceOf<OGLCoreGraphicsData>());
-			assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-			_ibo = data->downcast<OGLCoreGraphicsData>();
+			_ibo = ibo;
+			_needUpdateLayout = true;
 		}
-		else
+	}
+	else
+	{
+		if (_ibo)
 		{
 			_ibo = nullptr;
+			_needUpdateLayout = true;
 		}
-
-		_needUpdateLayout = true;
 	}
 }
 
 GraphicsDataPtr
 OGLCoreDeviceContext::getIndexBufferData() const noexcept
 {
-	return _ibo;
+	if (_ibo)
+		return _ibo->upcast_pointer<GraphicsData>();
+	return nullptr;
 }
 
 void
@@ -392,10 +413,10 @@ OGLCoreDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcep
 	if (_needUpdateLayout)
 	{
 		if (_vbo)
-			_pipeline->bindVbo(_vbo, 0);
+			_pipeline->bindVbo(*_vbo, 0);
 
 		if (_ibo)
-			_pipeline->bindIbo(_ibo);
+			_pipeline->bindIbo(*_ibo);
 
 		_needUpdateLayout = false;
 	}
@@ -430,21 +451,22 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	assert(_glcontext->getActive());
 
-	if (_renderTexture != target)
+	if (target)
 	{
-		if (target)
+		auto framebuffer = target->downcast<OGLCoreFramebuffer>();
+		if (_framebuffer != framebuffer)
 		{
-			_renderTexture = target->downcast<OGLCoreFramebuffer>();
-			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
+			_framebuffer = framebuffer;
+			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
 
-			auto& framebufferDesc = _renderTexture->getGraphicsFramebufferDesc();
+			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
 			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
-		else
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-			_renderTexture = nullptr;
-		}
+	}
+	else
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+		_framebuffer = nullptr;
 	}
 }
 
@@ -472,7 +494,9 @@ OGLCoreDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport
 GraphicsFramebufferPtr
 OGLCoreDeviceContext::getFramebuffer() const noexcept
 {
-	return _renderTexture;
+	if (_framebuffer)
+		return _framebuffer->upcast_pointer<GraphicsFramebuffer>();
+	return nullptr;
 }
 
 void

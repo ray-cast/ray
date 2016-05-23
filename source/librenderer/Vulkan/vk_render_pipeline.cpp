@@ -107,25 +107,23 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	memset(&dynamicStateEnables[0], 0, sizeof(dynamicStateEnables));
 	memset(&shaderStages[0], 0, sizeof(shaderStages));
 
-	VkVertexInputBindingDescription vib;
-	vib.binding = 0;
-	vib.stride = inputLayoutDesc.getVertexSize();
-	vib.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-	vibs.push_back(vib);
-
-	std::uint16_t offset = 0;
 	std::uint16_t location = 0;
-	const auto& components = inputLayoutDesc.getGraphicsVertexLayouts();
+	const auto& components = inputLayoutDesc.getVertexLayouts();
 	for (auto& component : components)
 	{
+		VkVertexInputBindingDescription vib;
+		vib.binding = component.getVertexSlot();
+		vib.stride = inputLayoutDesc.getVertexSize();
+		vib.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		vibs.push_back(vib);
+
 		VkVertexInputAttributeDescription attr;
 		attr.binding = 0;
 		attr.location = location;
-		attr.offset = offset;
+		attr.offset = component.getVertexOffset();
 		attr.format = VulkanTypes::asGraphicsFormat(component.getVertexFormat());
 
-		offset += component.getVertexSize();
 		location++;
 
 		vias.push_back(attr);

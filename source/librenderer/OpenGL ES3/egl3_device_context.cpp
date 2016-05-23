@@ -565,7 +565,7 @@ EGL3DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 }
 
 void
-EGL3DeviceContext::discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept
+EGL3DeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept
 {
 	assert(_glcontext->getActive());
 }

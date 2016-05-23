@@ -67,25 +67,16 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLInputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<OGLDescriptorSetLayout>());
 
-	GLuint offset = 0;
-
-	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getGraphicsVertexLayouts();
-	for (auto& it : components)
+	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
+	for (auto& it : layouts)
 	{
 		GLuint attribIndex = GL_INVALID_INDEX;
-		GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
-
-		auto& semantic = it.getSemantic();
-		if (semantic.empty())
-		{
-			GL_PLATFORM_LOG("Empty semantic");
-			return false;
-		}
 
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{
-			if (attrib->getSemantic() == it.getSemantic())
+			if (attrib->getSemantic() == it.getSemantic() &&
+				attrib->getSemanticIndex() == it.getSemanticIndex())
 			{
 				attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
 				break;
@@ -95,14 +86,30 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		if (attribIndex != GL_INVALID_INDEX)
 		{
 			VertexAttrib attrib;
+			attrib.type = OGLTypes::asVertexFormat(it.getVertexFormat());
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
-			attrib.type = type;
-			attrib.offset = it.getVertexOffset() > 0 ? it.getVertexOffset() : offset;
+			attrib.slot = it.getVertexSlot();
+			attrib.offset = it.getVertexOffset();
 
 			_attributes.push_back(attrib);
+		}
+	}
 
-			offset += it.getVertexSize();
+	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();
+	for (auto& it : bindings)
+	{
+		for (auto& attrib : _attributes)
+		{
+			if (attrib.slot != it.getVertexSlot())
+				continue;
+
+			VertexBinding binding;
+			binding.slot = attrib.slot;
+			binding.index = attrib.index;
+			binding.divisor = it.getVertexDivisor();
+
+			_bindings.push_back(binding);
 		}
 	}
 
@@ -128,15 +135,26 @@ OGLPipeline::apply() noexcept
 }
 
 void
-OGLPipeline::bindVbo(const OGLGraphicsData& vbo) noexcept
+OGLPipeline::bindVbo(const OGLGraphicsData& vbo, GLuint slot) noexcept
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo.getInstanceID());
 
 	GLuint stride = vbo.getGraphicsDataDesc().getStride();
-	for (auto& attrib : _attributes)
+	for (auto& it : _attributes)
 	{
-		glEnableVertexAttribArray(attrib.index);
-		glVertexAttribPointer(attrib.index, attrib.count, attrib.type, GL_FALSE, stride, (GLbyte*)nullptr + attrib.offset);
+		if (it.slot != slot)
+			continue;
+
+		glEnableVertexAttribArray(it.index);
+		glVertexAttribPointer(it.index, it.count, it.type, GL_FALSE, stride, (GLbyte*)nullptr + it.offset);
+	}
+
+	for (auto& it : _bindings)
+	{
+		if (it.slot != slot)
+			continue;
+
+		glVertexAttribDivisor(it.index, it.divisor);
 	}
 }
 

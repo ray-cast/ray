@@ -78,25 +78,17 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		return false;
 	}
 
-	GLuint offset = 0;
-
-	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getGraphicsVertexLayouts();
-	for (auto& it : components)
+	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
+	for (auto& it : layouts)
 	{
-		auto& semantic = it.getSemantic();
-		if (semantic.empty())
-		{
-			GL_PLATFORM_LOG("Empty semantic");
-			return false;
-		}
-
 		GLuint attribIndex = GL_INVALID_INDEX;
 		GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
 
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{
-			if (attrib->getSemantic() == it.getSemantic())
+			if (attrib->getSemantic() == it.getSemantic() &&
+				attrib->getSemanticIndex() == it.getSemanticIndex())
 			{
 				attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
 				break;
@@ -106,11 +98,19 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		if (attribIndex != GL_INVALID_INDEX)
 		{
 			glEnableVertexArrayAttrib(_vao, attribIndex);
-			glVertexArrayAttribBinding(_vao, attribIndex, 0);
-			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, it.getVertexOffset() == 0 ? offset : it.getVertexOffset());
+			glVertexArrayAttribBinding(_vao, attribIndex, it.getVertexSlot());
+			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, it.getVertexOffset());
 		}
+	}
 
-		offset += it.getVertexSize();
+	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();
+	for (auto& it : bindings)
+	{
+		auto divisor = it.getVertexDivisor();
+		if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+			glVertexArrayBindingDivisor(_vao, it.getVertexSlot(), 0);
+		else if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
+			glVertexArrayBindingDivisor(_vao, it.getVertexSlot(), 1);
 	}
 
 	_pipelineDesc = pipelineDesc;

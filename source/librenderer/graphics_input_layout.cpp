@@ -40,18 +40,61 @@ _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsInputLayout, GraphicsChild, "GraphicsInputLayoutDesc")
 
+GraphicsVertexBinding::GraphicsVertexBinding() noexcept
+	: _divisor(GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+{
+}
+
+GraphicsVertexBinding::GraphicsVertexBinding(std::uint8_t slot, GraphicsVertexDivisor divisor) noexcept
+	: _slot(slot)
+	, _divisor(divisor)
+{
+}
+
+GraphicsVertexBinding::~GraphicsVertexBinding() noexcept
+{
+}
+
+void
+GraphicsVertexBinding::setVertexSlot(std::uint8_t slot) noexcept
+{
+	_slot = slot;
+}
+
+std::uint8_t
+GraphicsVertexBinding::getVertexSlot() const noexcept
+{
+	return _slot;
+}
+
+void
+GraphicsVertexBinding::setVertexDivisor(GraphicsVertexDivisor divisor) noexcept
+{
+	_divisor = divisor;
+}
+
+GraphicsVertexDivisor
+GraphicsVertexBinding::getVertexDivisor() const noexcept
+{
+	return _divisor;
+}
+
 GraphicsVertexLayout::GraphicsVertexLayout() noexcept
-	: _count(0)
+	: _index(0)
+	, _count(0)
 	, _size(0)
 	, _offset(0)
+	, _slot(0)
 	, _format(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
-GraphicsVertexLayout::GraphicsVertexLayout(const std::string& semantic, GraphicsFormat format, std::uint16_t offset, std::uint8_t slot) noexcept
-	: _semantic(semantic)
+GraphicsVertexLayout::GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset) noexcept
+	: _name(semantic)
+	, _index(semanticIndex)
 	, _offset(offset)
 	, _format(format)
+	, _slot(slot)
 {
 	_count = getVertexCount(format);
 	_size = getVertexSize(format);
@@ -62,9 +105,27 @@ GraphicsVertexLayout::~GraphicsVertexLayout() noexcept
 }
 
 void
-GraphicsVertexLayout::setSemantic(const std::string& semantic) noexcept
+GraphicsVertexLayout::setSemantic(const std::string& name) noexcept
 {
-	_semantic = semantic;
+	_name = name;
+}
+
+const std::string&
+GraphicsVertexLayout::getSemantic() const noexcept
+{
+	return _name;
+}
+
+void
+GraphicsVertexLayout::setSemanticIndex(std::uint8_t index) noexcept
+{
+	_index = index;
+}
+
+std::uint8_t
+GraphicsVertexLayout::getSemanticIndex() const noexcept
+{
+	return _index;
 }
 
 void
@@ -77,12 +138,6 @@ GraphicsVertexLayout::setVertexFormat(GraphicsFormat format) noexcept
 
 		_format = format;
 	}
-}
-
-const std::string&
-GraphicsVertexLayout::getSemantic() const noexcept
-{
-	return _semantic;
 }
 
 GraphicsFormat
@@ -101,6 +156,18 @@ std::uint16_t
 GraphicsVertexLayout::getVertexOffset() const noexcept
 {
 	return _offset;
+}
+
+void
+GraphicsVertexLayout::setVertexSlot(std::uint8_t slot) noexcept
+{
+	_slot = slot;
+}
+
+std::uint8_t
+GraphicsVertexLayout::getVertexSlot() const noexcept
+{
+	return _slot;
 }
 
 std::uint8_t
@@ -528,39 +595,57 @@ GraphicsInputLayoutDesc::~GraphicsInputLayoutDesc() noexcept
 }
 
 void
-GraphicsInputLayoutDesc::setGraphicsVertexLayouts(const GraphicsVertexLayouts& component) noexcept
+GraphicsInputLayoutDesc::addVertexLayout(const GraphicsVertexLayout& layout) noexcept
 {
-	_components = component;
+	assert(!layout.getSemantic().empty());
+
+	auto it = std::find_if(_layouts.begin(), _layouts.end(), [layout](const GraphicsVertexLayout& it) { return it.getSemantic() == layout.getSemantic() && it.getSemanticIndex() == layout.getSemanticIndex();});
+	if (it == _layouts.end())
+		_layouts.push_back(layout);
+}
+
+void
+GraphicsInputLayoutDesc::addVertexBinding(const GraphicsVertexBinding& binding) noexcept
+{
+	auto it = std::find_if(_bindings.begin(), _bindings.end(), [binding](const GraphicsVertexBinding& it) { return it.getVertexSlot() == binding.getVertexSlot();});
+	if (it == _bindings.end())
+		_bindings.push_back(binding);
+}
+
+void
+GraphicsInputLayoutDesc::setVertexLayouts(const GraphicsVertexLayouts& _layout) noexcept
+{
+	_layouts = _layout;
 }
 
 const GraphicsVertexLayouts&
-GraphicsInputLayoutDesc::getGraphicsVertexLayouts() const noexcept
+GraphicsInputLayoutDesc::getVertexLayouts() const noexcept
 {
-	return _components;
+	return _layouts;
 }
 
 void
-GraphicsInputLayoutDesc::addComponent(const GraphicsVertexLayout& compoent) noexcept
+GraphicsInputLayoutDesc::setVertexBindings(const GraphicsVertexBindings& binding) noexcept
 {
-	auto it = std::find_if(_components.begin(), _components.end(), [compoent](const GraphicsVertexLayout& it) { return it.getSemantic() == compoent.getSemantic();});
-	if (it == _components.end())
-		_components.push_back(compoent);
+	_bindings = binding;
 }
 
-void
-GraphicsInputLayoutDesc::removeComponent(const GraphicsVertexLayout& compoent) noexcept
+const GraphicsVertexBindings&
+GraphicsInputLayoutDesc::getVertexBindings() const noexcept
 {
-	auto it = std::find_if(_components.begin(), _components.end(), [compoent](const GraphicsVertexLayout& it) { return it.getSemantic() == compoent.getSemantic();});
-	if (it != _components.end())
-		_components.erase(it);
+	return _bindings;
 }
 
 std::uint32_t
-GraphicsInputLayoutDesc::getVertexSize() const noexcept
+GraphicsInputLayoutDesc::getVertexSize(std::uint8_t slot) const noexcept
 {
 	std::uint32_t size = 0;
-	for (auto& it : _components)
-		size += it.getVertexSize();
+	for (auto& it : _layouts)
+	{
+		if (it.getVertexSlot() == slot)
+			size += it.getVertexSize();
+	}
+
 	return size;
 }
 

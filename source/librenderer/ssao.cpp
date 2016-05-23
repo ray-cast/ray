@@ -93,7 +93,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 
 	_cameraProjScale->uniform1f(((float)width / height) * _setting.radius);
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -111,7 +111,7 @@ SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 	_blurDirection->uniform2f(direction);
 	_blurSource->uniformTexture(source);
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -129,7 +129,7 @@ SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	_blurDirection->uniform2f(direction);
 	_blurSource->uniformTexture(source);
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -169,7 +169,7 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
 
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8UNorm, 0));
+	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8UNorm));
 	_framebufferLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
 
 	GraphicsFramebufferDesc ambientViewDesc;

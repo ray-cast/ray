@@ -77,7 +77,7 @@ public:
 	bool setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept;
 	void close() noexcept;
 
-	void discard(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept;
+	void discard(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept;
 
 	GLuint getInstanceID() noexcept;
 

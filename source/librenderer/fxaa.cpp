@@ -85,7 +85,7 @@ FXAA::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 	_texelStep->uniform2f(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
 	_texelSource->uniformTexture(texture);
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(swap);
 	pipeline.discradRenderTexture(attachment, 1);

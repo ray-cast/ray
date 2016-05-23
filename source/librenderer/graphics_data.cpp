@@ -63,7 +63,7 @@ GraphicsDataDesc::~GraphicsDataDesc() noexcept
 }
 
 void
-GraphicsDataDesc::setUsage(std::uint32_t usage) noexcept
+GraphicsDataDesc::setUsage(GraphicsUsageFlags usage) noexcept
 {
 	_usage = usage;
 }

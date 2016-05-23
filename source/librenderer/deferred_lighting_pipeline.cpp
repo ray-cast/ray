@@ -513,47 +513,47 @@ bool
 DeferredLightingPipeline::setupDeferredRenderTextureLayouts(RenderPipeline& pipeline) noexcept
 {
 	GraphicsFramebufferLayoutDesc deferredDepthLayoutDesc;
-	deferredDepthLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat, 0));
+	deferredDepthLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
 	_deferredDepthViewLayout = pipeline.createFramebufferLayout(deferredDepthLayoutDesc);
 	if (!_deferredDepthViewLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc deferredDepthLinearLayoutDesc;
-	deferredDepthLinearLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _deferredDepthLinearFormat, 0));
+	deferredDepthLinearLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredDepthLinearFormat));
 	_deferredDepthLinearViewLayout = pipeline.createFramebufferLayout(deferredDepthLinearLayoutDesc);
 	if (!_deferredDepthLinearViewLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc deferredGraphicsLayoutDesc;
-	deferredGraphicsLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _deferredGraphicsFormat, 0));
-	_deferredGraphicsViewLayout = pipeline.createFramebufferLayout(deferredGraphicsLayoutDesc);
-	if (!_deferredGraphicsViewLayout)
+	deferredGraphicsLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGraphicsFormat));
+	_deferredGraphicsImageLayout = pipeline.createFramebufferLayout(deferredGraphicsLayoutDesc);
+	if (!_deferredGraphicsImageLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc deferredNormalLayoutDesc;
-	deferredNormalLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _deferredNormalFormat, 0));
+	deferredNormalLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredNormalFormat));
 	_deferredNormalViewLayout = pipeline.createFramebufferLayout(deferredNormalLayoutDesc);
 	if (!_deferredNormalViewLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc deferredGraphicsViewsLayoutDesc;
-	deferredGraphicsViewsLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _deferredGraphicsFormat, 0));
-	deferredGraphicsViewsLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _deferredNormalFormat, 1));
-	deferredGraphicsViewsLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat, 2));
+	deferredGraphicsViewsLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGraphicsFormat));
+	deferredGraphicsViewsLayoutDesc.addComponent(GraphicsAttachment(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredNormalFormat));
+	deferredGraphicsViewsLayoutDesc.addComponent(GraphicsAttachment(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
 	_deferredGraphicsViewsLayout = pipeline.createFramebufferLayout(deferredGraphicsViewsLayoutDesc);
 	if (!_deferredGraphicsViewsLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc deferredLightingLayoutDesc;
-	deferredLightingLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _deferredLightFormat, 0));
-	deferredLightingLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilReadOnlyOptimal, _deferredDepthFormat, 1));
+	deferredLightingLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredLightFormat));
+	deferredLightingLayoutDesc.addComponent(GraphicsAttachment(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, _deferredDepthFormat));
 	_deferredLightingViewLayout = pipeline.createFramebufferLayout(deferredLightingLayoutDesc);
 	if (!_deferredLightingViewLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc deferredShadingLayoutDesc;
-	deferredShadingLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _deferredShadingFormat, 0));
-	deferredShadingLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilReadOnlyOptimal, _deferredDepthFormat, 1));
+	deferredShadingLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredShadingFormat));
+	deferredShadingLayoutDesc.addComponent(GraphicsAttachment(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, _deferredDepthFormat));
 	_deferredShadingViewLayout = pipeline.createFramebufferLayout(deferredShadingLayoutDesc);
 	if (!_deferredShadingViewLayout)
 		return false;
@@ -589,7 +589,7 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 	deferredGraphicsDesc.setWidth(width);
 	deferredGraphicsDesc.setHeight(height);
 	deferredGraphicsDesc.attach(_deferredGraphicsMap);
-	deferredGraphicsDesc.setGraphicsFramebufferLayout(_deferredGraphicsViewLayout);
+	deferredGraphicsDesc.setGraphicsFramebufferLayout(_deferredGraphicsImageLayout);
 	_deferredGraphicsView = pipeline.createFramebuffer(deferredGraphicsDesc);
 	if (!_deferredGraphicsView)
 		return false;
@@ -699,7 +699,7 @@ DeferredLightingPipeline::destroyDeferredRenderTextureLayouts() noexcept
 {
 	_deferredDepthViewLayout.reset();
 	_deferredDepthLinearViewLayout.reset();
-	_deferredGraphicsViewLayout.reset();
+	_deferredGraphicsImageLayout.reset();
 	_deferredNormalViewLayout.reset();
 	_deferredLightingViewLayout.reset();
 	_deferredShadingViewLayout.reset();

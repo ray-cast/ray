@@ -51,7 +51,7 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const OGLGraphicsData& vbo) noexcept;
+	void bindVbo(const OGLGraphicsData& vbo, GLuint slot) noexcept;
 	void bindIbo(const OGLGraphicsData& ibo) noexcept;
 
 	void apply() noexcept;
@@ -70,16 +70,22 @@ private:
 private:
 	struct VertexAttrib
 	{
+		GLenum type;
 		GLuint index;
 		GLuint count;
-		GLenum type;
+		GLuint slot;
 		GLsizei offset;
 	};
-	GLuint _vao;
-	GLuint _vbo;
-	GLuint _ibo;
+
+	struct VertexBinding
+	{
+		GLuint slot;
+		GLuint index;
+		GLuint divisor;
+	};
 
 	std::vector<VertexAttrib> _attributes;
+	std::vector<VertexBinding> _bindings;
 
 	GraphicsPipelineDesc _pipelineDesc;
 	GraphicsDeviceWeakPtr _device;

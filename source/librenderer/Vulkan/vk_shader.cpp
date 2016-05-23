@@ -61,7 +61,7 @@ __ImplementSubClass(VulkanGraphicsUniform, GraphicsUniform, "VulkanGraphicsUnifo
 __ImplementSubClass(VulkanGraphicsUniformBlock, GraphicsUniformBlock, "VulkanGraphicsUniformBlock")
 
 VulkanGraphicsAttribute::VulkanGraphicsAttribute() noexcept
-	: _index(0)
+	: _semanticIndex(0)
 	, _bindingPoint(GL_INVALID_INDEX)
 	, _type(GraphicsFormat::GraphicsFormatUndefined)
 {
@@ -69,30 +69,6 @@ VulkanGraphicsAttribute::VulkanGraphicsAttribute() noexcept
 
 VulkanGraphicsAttribute::~VulkanGraphicsAttribute() noexcept
 {
-}
-
-void
-VulkanGraphicsAttribute::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string&
-VulkanGraphicsAttribute::getName() const noexcept
-{
-	return _name;
-}
-
-void
-VulkanGraphicsAttribute::setType(GraphicsFormat type) noexcept
-{
-	_type = type;
-}
-
-GraphicsFormat
-VulkanGraphicsAttribute::getType() const noexcept
-{
-	return _type;
 }
 
 void
@@ -108,12 +84,36 @@ VulkanGraphicsAttribute::getSemantic() const noexcept
 }
 
 void
-VulkanGraphicsAttribute::setBindingPoint(GLuint bindingPoint) noexcept
+VulkanGraphicsAttribute::setSemanticIndex(std::uint32_t index) noexcept
+{
+	_semanticIndex = index;
+}
+
+std::uint32_t
+VulkanGraphicsAttribute::getSemanticIndex() const noexcept
+{
+	return _semanticIndex;
+}
+
+void
+VulkanGraphicsAttribute::setType(GraphicsFormat type) noexcept
+{
+	_type = type;
+}
+
+GraphicsFormat
+VulkanGraphicsAttribute::getType() const noexcept
+{
+	return _type;
+}
+
+void
+VulkanGraphicsAttribute::setBindingPoint(std::uint32_t bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
 }
 
-GLuint
+std::uint32_t
 VulkanGraphicsAttribute::getBindingPoint() const noexcept
 {
 	return _bindingPoint;

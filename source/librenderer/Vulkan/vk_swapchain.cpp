@@ -340,8 +340,8 @@ bool
 VulkanSwapchain::initFramebuffer() noexcept
 {
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _swapchainDesc.getColorFormat(), 0));
-	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal, _swapchainDesc.getDepthStencilFormat(), 1));
+	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _swapchainDesc.getColorFormat()));
+	framebufferLayoutDesc.addComponent(GraphicsAttachment(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _swapchainDesc.getDepthStencilFormat()));
 	_swapchainFramebufferLayout = this->getDevice()->downcast<VulkanDevice>()->createFramebufferLayout(framebufferLayoutDesc);
 
 	for (auto& swapchainImageView : _swapchainImageViews)

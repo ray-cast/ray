@@ -756,29 +756,29 @@ VulkanTypes::asPrimitiveTopology(GraphicsVertexType type) noexcept
 }
 
 VkImageLayout
-VulkanTypes::asImageLayout(GraphicsViewLayout layout) noexcept
+VulkanTypes::asImageLayout(GraphicsImageLayout layout) noexcept
 {
 	switch (layout)
 	{
-	case GraphicsViewLayout::GraphicsViewLayoutUndefined:
+	case GraphicsImageLayout::GraphicsImageLayoutUndefined:
 		return VK_IMAGE_LAYOUT_UNDEFINED;
-	case GraphicsViewLayout::GraphicsViewLayoutGeneral:
+	case GraphicsImageLayout::GraphicsImageLayoutGeneral:
 		return VK_IMAGE_LAYOUT_GENERAL;
-	case GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal:
+	case GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal:
 		return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	case GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal:
+	case GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal:
 		return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	case GraphicsViewLayout::GraphicsViewLayoutDepthStencilReadOnlyOptimal:
+	case GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal:
 		return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-	case GraphicsViewLayout::GraphicsViewLayoutShaderReadOnlyOptimal:
+	case GraphicsImageLayout::GraphicsImageLayoutShaderReadOnlyOptimal:
 		return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	case GraphicsViewLayout::GraphicsViewLayoutTransferSrcOptimal:
+	case GraphicsImageLayout::GraphicsImageLayoutTransferSrcOptimal:
 		return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-	case GraphicsViewLayout::GraphicsViewLayoutTransferDstOptimal:
+	case GraphicsImageLayout::GraphicsImageLayoutTransferDstOptimal:
 		return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	case GraphicsViewLayout::GraphicsViewLayoutPreinitialized:
+	case GraphicsImageLayout::GraphicsImageLayoutPreinitialized:
 		return VK_IMAGE_LAYOUT_PREINITIALIZED;
-	case GraphicsViewLayout::GraphicsViewLayoutPresentSrcKhr:
+	case GraphicsImageLayout::GraphicsImageLayoutPresentSrcKhr:
 		return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	default:
 		assert(false);

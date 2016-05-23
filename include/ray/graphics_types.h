@@ -95,8 +95,9 @@ typedef std::shared_ptr<class GraphicsCommandPoolDesc> GraphicsCommandPoolDescPt
 typedef std::shared_ptr<class GraphicsCommandListDesc> GraphicsCommandListDescPtr;
 typedef std::shared_ptr<class GraphicsSemaphoreDesc> GraphicsSemaphoreDescPtr;
 typedef std::shared_ptr<class GraphicsVertexLayout> GraphicsVertexLayoutPtr;
+typedef std::shared_ptr<class GraphicsVertexBinding> GraphicsVertexBindingPtr;
 typedef std::shared_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponentPtr;
-typedef std::shared_ptr<class GraphicsAttachmentDesc> GraphicsAttachmentDescPtr;
+typedef std::shared_ptr<class GraphicsAttachment> GraphicsAttachmentPtr;
 
 typedef std::weak_ptr<class GraphicsDevice> GraphicsDeviceWeakPtr;
 typedef std::weak_ptr<class GraphicsSwapchain> GraphicsSwapchainWeakPtr;
@@ -145,8 +146,9 @@ typedef std::weak_ptr<class GraphicsCommandPoolDesc> GraphicsCommandPoolDescWeak
 typedef std::weak_ptr<class GraphicsCommandListDesc> GraphicsCommandListDescWeakPtr;
 typedef std::weak_ptr<class GraphicsSemaphoreDesc> GraphicsSemaphoreDescWeakPtr;
 typedef std::weak_ptr<class GraphicsVertexLayout> GraphicsVertexLayoutWeakPtr;
+typedef std::weak_ptr<class GraphicsVertexBinding> GraphicsVertexBindingWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponentWeakPtr;
-typedef std::weak_ptr<class GraphicsAttachmentDesc> GraphicsAttachmentDescWeakPtr;
+typedef std::weak_ptr<class GraphicsAttachment> GraphicsAttachmentWeakPtr;
 
 typedef std::vector<GraphicsShaderPtr> GraphicsShaders;
 typedef std::vector<GraphicsVariantPtr> GraphicsVariants;
@@ -184,8 +186,9 @@ typedef std::vector<GraphicsCommandListDescPtr> GraphicsCommandListDescs;
 typedef std::vector<GraphicsSemaphoreDescPtr> GraphicsSemaphoreDescs;
 
 typedef std::vector<GraphicsVertexLayout> GraphicsVertexLayouts;
+typedef std::vector<GraphicsVertexBinding> GraphicsVertexBindings;
 typedef std::vector<GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
-typedef std::vector<GraphicsAttachmentDesc> GraphicsAttachmentDescs;
+typedef std::vector<GraphicsAttachment> GraphicsAttachments;
 
 typedef void* WindHandle;
 
@@ -813,47 +816,47 @@ enum GraphicsUniformType
 	GraphicsUniformTypeMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsViewLayout
+enum GraphicsImageLayout
 {
-	GraphicsViewLayoutUndefined = 0,
-	GraphicsViewLayoutGeneral = 1,
-	GraphicsViewLayoutColorAttachmentOptimal = 2,
-	GraphicsViewLayoutDepthStencilAttachmentOptimal = 3,
-	GraphicsViewLayoutDepthStencilReadOnlyOptimal = 4,
-	GraphicsViewLayoutShaderReadOnlyOptimal = 5,
-	GraphicsViewLayoutTransferSrcOptimal = 6,
-	GraphicsViewLayoutTransferDstOptimal = 7,
-	GraphicsViewLayoutPreinitialized = 8,
-	GraphicsViewLayoutPresentSrcKhr = 9,
-	GraphicsViewLayoutBeginRange = GraphicsViewLayoutUndefined,
-	GraphicsViewLayoutEndRange = GraphicsViewLayoutPreinitialized,
-	GraphicsViewLayoutRangeSize = (GraphicsViewLayoutEndRange - GraphicsViewLayoutBeginRange + 1),
-	GraphicsViewLayoutMaxEnum = 0x7FFFFFFF
+	GraphicsImageLayoutUndefined = 0,
+	GraphicsImageLayoutGeneral = 1,
+	GraphicsImageLayoutColorAttachmentOptimal = 2,
+	GraphicsImageLayoutDepthStencilAttachmentOptimal = 3,
+	GraphicsImageLayoutDepthStencilReadOnlyOptimal = 4,
+	GraphicsImageLayoutShaderReadOnlyOptimal = 5,
+	GraphicsImageLayoutTransferSrcOptimal = 6,
+	GraphicsImageLayoutTransferDstOptimal = 7,
+	GraphicsImageLayoutPreinitialized = 8,
+	GraphicsImageLayoutPresentSrcKhr = 9,
+	GraphicsImageLayoutBeginRange = GraphicsImageLayoutUndefined,
+	GraphicsImageLayoutEndRange = GraphicsImageLayoutPreinitialized,
+	GraphicsImageLayoutRangeSize = (GraphicsImageLayoutEndRange - GraphicsImageLayoutBeginRange + 1),
+	GraphicsImageLayoutMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsAttachment
+enum GraphicsAttachmentType
 {
-	GraphicsAttachmentColor0,
-	GraphicsAttachmentColor1,
-	GraphicsAttachmentColor2,
-	GraphicsAttachmentColor3,
-	GraphicsAttachmentColor4,
-	GraphicsAttachmentColor5,
-	GraphicsAttachmentColor6,
-	GraphicsAttachmentColor7,
-	GraphicsAttachmentColor8,
-	GraphicsAttachmentColor9,
-	GraphicsAttachmentColor10,
-	GraphicsAttachmentColor11,
-	GraphicsAttachmentColor12,
-	GraphicsAttachmentColor13,
-	GraphicsAttachmentColor14,
-	GraphicsAttachmentColor15,
-	GraphicsAttachmentDepthStencil,
-	GraphicsAttachmentBeginRange = GraphicsAttachmentColor0,
-	GraphicsAttachmentEndRange = GraphicsAttachmentDepthStencil,
-	GraphicsAttachmentRangeSize = (GraphicsAttachmentEndRange - GraphicsAttachmentBeginRange + 1),
-	GraphicsAttachmentMaxEnum = 0x7FFFFFFF
+	GraphicsAttachmentTypeColor0,
+	GraphicsAttachmentTypeColor1,
+	GraphicsAttachmentTypeColor2,
+	GraphicsAttachmentTypeColor3,
+	GraphicsAttachmentTypeColor4,
+	GraphicsAttachmentTypeColor5,
+	GraphicsAttachmentTypeColor6,
+	GraphicsAttachmentTypeColor7,
+	GraphicsAttachmentTypeColor8,
+	GraphicsAttachmentTypeColor9,
+	GraphicsAttachmentTypeColor10,
+	GraphicsAttachmentTypeColor11,
+	GraphicsAttachmentTypeColor12,
+	GraphicsAttachmentTypeColor13,
+	GraphicsAttachmentTypeColor14,
+	GraphicsAttachmentTypeColor15,
+	GraphicsAttachmentTypeDepthStencil,
+	GraphicsAttachmentTypeBeginRange = GraphicsAttachmentTypeColor0,
+	GraphicsAttachmentTypeEndRange = GraphicsAttachmentTypeDepthStencil,
+	GraphicsAttachmentTypeRangeSize = (GraphicsAttachmentTypeEndRange - GraphicsAttachmentTypeBeginRange + 1),
+	GraphicsAttachmentTypeMaxEnum = 0x7FFFFFFF
 };
 
 enum GraphicsViewUsageFlagBits

@@ -48,37 +48,14 @@ __ImplementSubClass(OGLGraphicsUniform, GraphicsUniform, "OGLGraphicsUniform")
 __ImplementSubClass(OGLGraphicsUniformBlock, GraphicsUniformBlock, "OGLGraphicsUniformBlock")
 
 OGLGraphicsAttribute::OGLGraphicsAttribute() noexcept
-	: _bindingPoint(GL_INVALID_INDEX)
+	: _semanticIndex(0)
+	, _bindingPoint(GL_INVALID_INDEX)
 	, _type(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
 OGLGraphicsAttribute::~OGLGraphicsAttribute() noexcept
 {
-}
-
-void
-OGLGraphicsAttribute::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string&
-OGLGraphicsAttribute::getName() const noexcept
-{
-	return _name;
-}
-
-void
-OGLGraphicsAttribute::setType(GraphicsFormat type) noexcept
-{
-	_type = type;
-}
-
-GraphicsFormat
-OGLGraphicsAttribute::getType() const noexcept
-{
-	return _type;
 }
 
 void
@@ -91,6 +68,30 @@ const std::string&
 OGLGraphicsAttribute::getSemantic() const noexcept
 {
 	return _semantic;
+}
+
+void
+OGLGraphicsAttribute::setSemanticIndex(std::uint32_t index) noexcept
+{
+	_semanticIndex = index;
+}
+
+std::uint32_t
+OGLGraphicsAttribute::getSemanticIndex() const noexcept
+{
+	return _semanticIndex;
+}
+
+void
+OGLGraphicsAttribute::setType(GraphicsFormat type) noexcept
+{
+	_type = type;
+}
+
+GraphicsFormat
+OGLGraphicsAttribute::getType() const noexcept
+{
+	return _type;
 }
 
 void
@@ -490,6 +491,7 @@ OGLProgram::_initActiveAttribute() noexcept
 
 			std::string name = nameAttribute.get();
 			std::string semantic;
+			std::uint32_t semanticIndex = 0;
 
 			std::size_t off = name.find_last_of('_');
 			if (off != std::string::npos)
@@ -498,16 +500,17 @@ OGLProgram::_initActiveAttribute() noexcept
 				name = name.substr(0, off);
 			}
 
-			auto it = std::find_if(semantic.begin(), semantic.end(), [](char ch) { return ch >= '0' && ch <= '9'; });
-			if (it != semantic.end())
+			auto it = std::find_if_not(semantic.rbegin(), semantic.rend(), [](char ch) { return ch >= '0' && ch <= '9'; });
+			if (it != semantic.rend())
 			{
-				semantic = semantic.substr(0, it - semantic.begin());
+				semantic = semantic.substr(0, semantic.rend()- it);
+				semanticIndex = std::atoi(semantic.substr(semantic.rend() - it).c_str());
 			}
-
+			
 			auto attrib = std::make_shared<OGLGraphicsAttribute>();
-			attrib->setName(name);
-			attrib->setBindingPoint(location);
 			attrib->setSemantic(semantic);
+			attrib->setSemanticIndex(semanticIndex);
+			attrib->setBindingPoint(location);
 			attrib->setType(toGraphicsFormat(type));
 
 			_activeAttributes.push_back(attrib);

@@ -41,20 +41,44 @@
 
 _NAME_BEGIN
 
+class EXPORT GraphicsVertexBinding final
+{
+public:
+	GraphicsVertexBinding() noexcept;
+	GraphicsVertexBinding(std::uint8_t slot, GraphicsVertexDivisor divisor) noexcept;
+	~GraphicsVertexBinding() noexcept;
+
+	void setVertexSlot(std::uint8_t slot) noexcept;
+	std::uint8_t getVertexSlot() const noexcept;
+
+	void setVertexDivisor(GraphicsVertexDivisor divisor) noexcept;
+	GraphicsVertexDivisor getVertexDivisor() const noexcept;
+
+public:
+	std::uint8_t _slot;
+	GraphicsVertexDivisor _divisor;
+};
+
 class EXPORT GraphicsVertexLayout final
 {
 public:
 	GraphicsVertexLayout() noexcept;
-	GraphicsVertexLayout(const std::string& semantic, GraphicsFormat format, std::uint16_t offset = 0, std::uint8_t slot = 0) noexcept;
+	GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset) noexcept;
 	~GraphicsVertexLayout() noexcept;
 
 	void setSemantic(const std::string& semantic) noexcept;
 	const std::string& getSemantic() const noexcept;
 
+	void setSemanticIndex(std::uint8_t index) noexcept;
+	std::uint8_t getSemanticIndex() const noexcept;
+
+	void setVertexSlot(std::uint8_t slot) noexcept;
+	std::uint8_t getVertexSlot() const noexcept;
+
 	void setVertexFormat(GraphicsFormat format) noexcept;
 	GraphicsFormat getVertexFormat() const noexcept;
 
-	void setVertexOffset(std::uint16_t slot) noexcept;
+	void setVertexOffset(std::uint16_t offset) noexcept;
 	std::uint16_t getVertexOffset() const noexcept;
 
 	std::uint8_t getVertexCount() const noexcept;
@@ -64,9 +88,11 @@ public:
 	static std::uint8_t getVertexSize(GraphicsFormat) noexcept;
 
 private:
-	std::string _semantic;
+	std::string _name;
+	std::uint8_t _index;
 	std::uint8_t _count;
 	std::uint8_t _size;
+	std::uint8_t _slot;
 	std::uint16_t _offset;
 	GraphicsFormat _format;
 };
@@ -77,16 +103,20 @@ public:
 	GraphicsInputLayoutDesc() noexcept;
 	~GraphicsInputLayoutDesc() noexcept;
 
-	void setGraphicsVertexLayouts(const GraphicsVertexLayouts& component) noexcept;
-	const GraphicsVertexLayouts& getGraphicsVertexLayouts() const noexcept;
+	void addVertexLayout(const GraphicsVertexLayout& layout) noexcept;
+	void addVertexBinding(const GraphicsVertexBinding& binding) noexcept;
 
-	void addComponent(const GraphicsVertexLayout& compoent) noexcept;
-	void removeComponent(const GraphicsVertexLayout& compoent) noexcept;
+	void setVertexLayouts(const GraphicsVertexLayouts& layouts) noexcept;
+	const GraphicsVertexLayouts& getVertexLayouts() const noexcept;
 
-	std::uint32_t getVertexSize() const noexcept;
+	void setVertexBindings(const GraphicsVertexBindings& binding) noexcept;
+	const GraphicsVertexBindings& getVertexBindings() const noexcept;
+
+	std::uint32_t getVertexSize(std::uint8_t slot = 0) const noexcept;
 
 private:
-	GraphicsVertexLayouts _components;
+	GraphicsVertexLayouts _layouts;
+	GraphicsVertexBindings _bindings;
 };
 
 class EXPORT GraphicsInputLayout : public GraphicsChild

@@ -72,7 +72,7 @@ public:
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void discradRenderTexture(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept;
+	void discradRenderTexture(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;

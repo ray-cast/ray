@@ -200,7 +200,7 @@ VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& co
 }
 
 void
-VulkanDeviceContext::discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept
+VulkanDeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept
 {
 }
 

@@ -132,7 +132,7 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 	_texSource->uniformTexture(source);
 	_texSourceSizeInv->uniform2f(float2(1.0f / source->getGraphicsTextureDesc().getWidth(), 1.0f / source->getGraphicsTextureDesc().getHeight()));
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -145,7 +145,7 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 	_texSource->uniformTexture(source);
 	_texSourceSizeInv->uniform2f(float2(1.0 / source->getGraphicsTextureDesc().getWidth(), 1.0 / source->getGraphicsTextureDesc().getHeight()));
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -157,7 +157,7 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr sou
 {
 	_texSource->uniformTexture(source);
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -169,7 +169,7 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 {
 	_texSource->uniformTexture(source);
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -181,7 +181,7 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 {
 	_texSource->uniformTexture(source);
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -194,7 +194,7 @@ FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsTextureP
 	_texSource->uniformTexture(source);
 	_toneBloom->uniformTexture(bloom);
 
-	GraphicsAttachment attachment[] = { GraphicsAttachment::GraphicsAttachmentColor0 };
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture(attachment, 1);
@@ -214,11 +214,11 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	_texSampleLogMap = pipeline.createTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm, 0));
+	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm));
 	_sampleViewLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
 
 	GraphicsFramebufferLayoutDesc framebufferLogLayoutDesc;
-	framebufferLogLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat, 0));
+	framebufferLogLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat));
 	_sampleLogViewLayout = pipeline.createFramebufferLayout(framebufferLogLayoutDesc);
 
 	GraphicsFramebufferDesc sample4ViewDesc;

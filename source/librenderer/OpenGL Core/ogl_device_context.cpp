@@ -55,8 +55,9 @@ OGLDeviceContext::OGLDeviceContext() noexcept
 	, _clearDepth(1.0f)
 	, _clearStencil(0)
 	, _viewport(0, 0, 0, 0)
-	, _needUpdateLayout(true)
 	, _needUpdateState(true)
+	, _needUpdateLayout(true)
+	, _needUpdateDescriptor(true)
 {
 }
 
@@ -322,10 +323,10 @@ OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexc
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<OGLDescriptorSet>());
 	assert(_glcontext->getActive());
-	assert(_shaderObject);
 
-	_descriptorSet = descriptorSet->downcast<OGLDescriptorSet>();
-	_descriptorSet->apply(*_shaderObject);
+	auto glDescriptorSet = descriptorSet->downcast<OGLDescriptorSet>();
+	_descriptorSet = glDescriptorSet;
+	_needUpdateDescriptor = true;
 }
 
 GraphicsDescriptorSetPtr
@@ -415,10 +416,18 @@ OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	if (_needUpdateLayout)
 	{
 		if (_vbo)
-			_pipeline->bindVbo(*_vbo);
+			_pipeline->bindVbo(*_vbo, 0);
 
 		if (_ibo)
 			_pipeline->bindIbo(*_ibo);
+
+		_needUpdateLayout = false;
+	}
+
+	if (_needUpdateDescriptor)
+	{
+		_descriptorSet->apply(*_shaderObject);
+		_needUpdateDescriptor = false;
 	}
 
 	if (_ibo)
@@ -533,7 +542,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 }
 
 void
-OGLDeviceContext::discardFramebuffer(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept
+OGLDeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept
 {
 	assert(_glcontext->getActive());
 	_framebuffer->discard(attachments, numAttachment);

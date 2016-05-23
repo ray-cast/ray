@@ -283,7 +283,7 @@ MyGuiRenderTexture::MyGuiRenderTexture(GraphicsTexturePtr texture) noexcept
 	_renderTargetInfo.pixScaleY = 1.0f / float(textureDes.getHeight());
 
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, textureDes.getTexFormat(), 0));
+	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, textureDes.getTexFormat()));
 	_framebufferLayout = RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
 
 	GraphicsFramebufferDesc framebufferDesc;

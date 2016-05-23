@@ -64,9 +64,9 @@ public:
 	std::uint32_t getStreamSize() const noexcept;
 
 private:
-	std::uint32_t _stride;
 	std::uint8_t* _data;
 	std::uint32_t _dataSize;
+	std::uint32_t _stride;
 	GraphicsUsageFlags _usage;
 	GraphicsDataType _type;
 };

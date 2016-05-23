@@ -41,56 +41,56 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsFramebuffer, GraphicsChild, "GraphicsFramebuffer")
 __ImplementSubInterface(GraphicsFramebufferLayout, GraphicsChild, "GraphicsFramebufferLayout")
 
-GraphicsAttachmentDesc::GraphicsAttachmentDesc() noexcept
-	: _type(GraphicsViewLayout::GraphicsViewLayoutUndefined)
+GraphicsAttachment::GraphicsAttachment() noexcept
+	: _type(GraphicsImageLayout::GraphicsImageLayoutUndefined)
 	, _slot(0)
 	, _format(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
-GraphicsAttachmentDesc::GraphicsAttachmentDesc(GraphicsViewLayout type, GraphicsFormat format, std::uint32_t slot) noexcept
+GraphicsAttachment::GraphicsAttachment(std::uint32_t slot, GraphicsImageLayout type, GraphicsFormat format) noexcept
 	: _type(type)
 	, _slot(slot)
 	, _format(format)
 {
 }
 
-GraphicsAttachmentDesc::~GraphicsAttachmentDesc() noexcept
+GraphicsAttachment::~GraphicsAttachment() noexcept
 {
 }
 
 void
-GraphicsAttachmentDesc::setType(GraphicsViewLayout type) noexcept
+GraphicsAttachment::setAttachType(GraphicsImageLayout type) noexcept
 {
 	_type = type;
 }
 
-GraphicsViewLayout
-GraphicsAttachmentDesc::getType() const noexcept
+GraphicsImageLayout
+GraphicsAttachment::getAttachType() const noexcept
 {
 	return _type;
 }
 
 void
-GraphicsAttachmentDesc::setFormat(GraphicsFormat format) noexcept
+GraphicsAttachment::setAttachFormat(GraphicsFormat format) noexcept
 {
 	_format = format;
 }
 
 GraphicsFormat
-GraphicsAttachmentDesc::getFormat() const noexcept
+GraphicsAttachment::getAttachFormat() const noexcept
 {
 	return _format;
 }
 
 void
-GraphicsAttachmentDesc::setSlot(std::uint32_t slot) noexcept
+GraphicsAttachment::setAttachSlot(std::uint32_t slot) noexcept
 {
 	_slot = slot;
 }
 
 std::uint32_t
-GraphicsAttachmentDesc::getSlot() const noexcept
+GraphicsAttachment::getAttachSlot() const noexcept
 {
 	return _slot;
 }
@@ -104,22 +104,20 @@ GraphicsFramebufferLayoutDesc::~GraphicsFramebufferLayoutDesc() noexcept
 }
 
 void
-GraphicsFramebufferLayoutDesc::addComponent(const GraphicsAttachmentDesc& component) noexcept
+GraphicsFramebufferLayoutDesc::addComponent(const GraphicsAttachment& component) noexcept
 {
-	assert(component.getFormat() != GraphicsFormat::GraphicsFormatUndefined);
-	assert(std::find_if(_components.begin(), _components.end(), [&](const GraphicsAttachmentDesc& it) { return  it.getSlot() == component.getSlot(); }) == _components.end());
+	assert(component.getAttachFormat() != GraphicsFormat::GraphicsFormatUndefined);
+	assert(std::find_if(_components.begin(), _components.end(), [&](const GraphicsAttachment& it) { return  it.getAttachSlot() == component.getAttachSlot(); }) == _components.end());
 	_components.push_back(component);
 }
 
-void
-GraphicsFramebufferLayoutDesc::removeComponent(std::uint32_t slot) noexcept
+void 
+GraphicsFramebufferLayoutDesc::setComponents(const GraphicsAttachments& components) noexcept
 {
-	auto it = std::find_if(_components.begin(), _components.end(), [&](const GraphicsAttachmentDesc& it) { return  it.getSlot() == slot; });
-	if (it != _components.end())
-		_components.erase(it);
+	_components = components;
 }
 
-const GraphicsAttachmentDescs&
+const GraphicsAttachments&
 GraphicsFramebufferLayoutDesc::getComponents() const noexcept
 {
 	return _components;

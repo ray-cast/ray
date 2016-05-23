@@ -84,7 +84,7 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept;
+	void discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
@@ -142,8 +142,9 @@ private:
 	OGLGraphicsState* _state;
 	GraphicsStateDesc _stateCaptured;
 
-	bool _needUpdateLayout;
 	bool _needUpdateState;
+	bool _needUpdateLayout;
+	bool _needUpdateDescriptor;
 
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;

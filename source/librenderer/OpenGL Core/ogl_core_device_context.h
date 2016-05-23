@@ -85,7 +85,7 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebufferIndexed(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept;
-	void discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept;
+	void discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
@@ -127,31 +127,21 @@ private:
 	GLfloat _clearDepth;
 	GLint   _clearStencil;
 
-	OGLCoreFramebuffer* _framebuffer;
+	Viewport _viewport;
+	Scissor _scissor;
 
 	OGLProgram* _shaderObject;
-
+	OGLCoreGraphicsData* _vbo;
+	OGLCoreGraphicsData* _ibo;
 	OGLCorePipeline* _pipeline;
+	OGLCoreFramebuffer* _framebuffer;
 	OGLCoreDescriptorSet* _descriptorSet;
-
 	OGLGraphicsState* _state;
 	GraphicsStateDesc _stateCaptured;
 
-	GLuint _stateObjDraw;
-	GLuint _stateObjDrawGeo;
-
-	GLuint      _tokenBuffer;
-	GLuint      _tokenCmdList;
-	std::string _tokenData;
-
-	bool _needUpdateLayout;
 	bool _needUpdateState;
-
-	OGLCoreGraphicsData* _vbo;
-	OGLCoreGraphicsData* _ibo;
-
-	Viewport _viewport;
-	Scissor _scissor;
+	bool _needUpdateLayout;
+	bool _needUpdateDescriptor;
 
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;

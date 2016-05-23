@@ -159,7 +159,7 @@ private:
 
 	GraphicsFramebufferLayoutPtr _deferredDepthViewLayout;
 	GraphicsFramebufferLayoutPtr _deferredDepthLinearViewLayout;
-	GraphicsFramebufferLayoutPtr _deferredGraphicsViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredGraphicsImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredNormalViewLayout;
 	GraphicsFramebufferLayoutPtr _deferredLightingViewLayout;
 	GraphicsFramebufferLayoutPtr _deferredShadingViewLayout;

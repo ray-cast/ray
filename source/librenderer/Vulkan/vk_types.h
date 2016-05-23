@@ -145,7 +145,7 @@ public:
 	static VkBufferUsageFlagBits asBufferUsageFlagBits(GraphicsDataType type) noexcept;
 	static VkDescriptorType asDescriptorType(GraphicsUniformType type) noexcept;
 	static VkPrimitiveTopology asPrimitiveTopology(GraphicsVertexType type) noexcept;
-	static VkImageLayout asImageLayout(GraphicsViewLayout layout) noexcept;
+	static VkImageLayout asImageLayout(GraphicsImageLayout layout) noexcept;
 
 	static bool isStencilFormat(GraphicsFormat format) noexcept;
 	static bool isDepthFormat(GraphicsFormat format) noexcept;

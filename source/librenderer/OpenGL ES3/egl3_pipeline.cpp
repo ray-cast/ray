@@ -68,26 +68,6 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<EGL3InputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<EGL3DescriptorSetLayout>());
 
-	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getGraphicsVertexLayouts();
-	for (auto& it : components)
-	{
-		auto& semantic = it.getSemantic();
-		if (semantic.empty())
-		{
-			GL_PLATFORM_LOG("Empty semantic");
-			return false;
-		}
-
-		for (auto& ch : semantic)
-		{
-			if (ch < 'a' && ch > 'z')
-			{
-				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
-				return false;
-			}
-		}
-	}
-
 	GL_CHECK(glGenVertexArrays(1, &_vao));
 	if (_vao == GL_NONE)
 	{
@@ -97,8 +77,8 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 	GL_CHECK(glBindVertexArray(_vao));
 
-	GLuint offset = 0;
-	for (auto& it : components)
+	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
+	for (auto& it : layouts)
 	{
 		GLuint attribIndex = GL_INVALID_INDEX;
 		GLenum type = EGL3Types::asVertexFormat(it.getVertexFormat());
@@ -106,19 +86,44 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{
-			if (attrib->getSemantic() == it.getSemantic())
+			if (attrib->getSemantic() == it.getSemantic() &&
+				attrib->getSemanticIndex() == it.getSemanticIndex())
 			{
 				attribIndex = attrib->downcast<EGL3GraphicsAttribute>()->getBindingPoint();
 
 				GL_CHECK(glEnableVertexAttribArray(attribIndex));
-				GL_CHECK(glVertexAttribBinding(attribIndex, 0));
-				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, offset));
+				GL_CHECK(glVertexAttribBinding(attribIndex, it.getVertexSlot()));
+				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, it.getVertexOffset()));
 
 				break;
 			}
 		}
+	}
 
-		offset += it.getVertexSize();
+	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();
+	for (auto& it : bindings)
+	{
+		for (auto& layout : layouts)
+		{
+			if (layout.getVertexSlot() != it.getVertexSlot())
+				continue;
+
+			auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
+			for (auto& attrib : attributes)
+			{
+				if (attrib->getSemantic() == layout.getSemantic() &&
+					attrib->getSemanticIndex() == layout.getSemanticIndex())
+				{
+					GLuint index = attrib->downcast<EGL3GraphicsAttribute>()->getBindingPoint();
+
+					auto divisor = it.getVertexDivisor();
+					if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+						GL_CHECK(glVertexAttribDivisor(index, 0));
+					else if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
+						GL_CHECK(glVertexAttribDivisor(index, 1));
+				}
+			}
+		}
 	}
 
 	GL_CHECK(glBindVertexArray(GL_NONE));

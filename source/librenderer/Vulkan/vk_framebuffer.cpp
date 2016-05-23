@@ -63,12 +63,12 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 
 	for (const auto& component : passDesc.getComponents())
 	{
-		auto imageLayout = VulkanTypes::asImageLayout(component.getType());
-		if (imageLayout == GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal ||
-			imageLayout == GraphicsViewLayout::GraphicsViewLayoutDepthStencilReadOnlyOptimal)
+		auto imageLayout = VulkanTypes::asImageLayout(component.getAttachType());
+		if (imageLayout == GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal ||
+			imageLayout == GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal)
 		{
 			VkAttachmentReference reference;
-			reference.attachment = component.getSlot();
+			reference.attachment = component.getAttachSlot();
 			reference.layout = imageLayout;
 
 			depthAttachments.push_back(reference);
@@ -76,14 +76,14 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 		else
 		{
 			VkAttachmentReference reference;
-			reference.attachment = component.getSlot();
+			reference.attachment = component.getAttachSlot();
 			reference.layout = imageLayout;
 			colorAttachments.push_back(reference);
 		}
 
 		VkAttachmentDescription attachment;
 		attachment.flags = 0;
-		attachment.format = VulkanTypes::asGraphicsFormat(component.getFormat());
+		attachment.format = VulkanTypes::asGraphicsFormat(component.getAttachFormat());
 		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -185,7 +185,7 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 
 	for (auto& attachment : framebufferAttachments)
 	{
-		auto format = attachment.getFormat();
+		auto format = attachment.getAttachFormat();
 		if (VulkanTypes::isDepthStencilFormat(format))
 		{
 			if (!framebufferDesc.getSharedDepthStencilTexture())
@@ -229,7 +229,7 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 
 		if (textureDesc.getWidth() < framebufferDesc.getWidth() &&
 			textureDesc.getHeight() < framebufferDesc.getHeight() &&
-			textureDesc.getTexFormat() != framebufferAttachments[i].getFormat())
+			textureDesc.getTexFormat() != framebufferAttachments[i].getAttachFormat())
 		{
 			return false;
 		}

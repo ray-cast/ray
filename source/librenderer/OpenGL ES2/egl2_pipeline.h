@@ -51,7 +51,7 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const EGL2GraphicsData& vbo, GLsizei startVertices) noexcept;
+	void bindVbo(const EGL2GraphicsData& vbo, GLsizei startVertices, GLuint slot) noexcept;
 	void bindIbo(const EGL2GraphicsData& ibo) noexcept;
 
 	void apply() noexcept;
@@ -70,9 +70,10 @@ private:
 private:
 	struct VertexAttrib
 	{
+		GLenum type;
 		GLuint index;
 		GLuint count;
-		GLenum type;
+		GLuint slot;
 		GLsizei offset;
 	};
 

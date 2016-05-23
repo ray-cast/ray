@@ -262,7 +262,7 @@ RenderPipeline::clearFramebuffer(GraphicsClearFlags flags, const float4& color, 
 }
 
 void
-RenderPipeline::discradRenderTexture(GraphicsAttachment attachments[], std::size_t numAttachment) noexcept
+RenderPipeline::discradRenderTexture(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->discardFramebuffer(attachments, numAttachment);

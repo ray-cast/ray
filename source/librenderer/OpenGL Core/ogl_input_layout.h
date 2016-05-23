@@ -52,6 +52,7 @@ public:
 	void close() noexcept;
 
 	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
+
 private:
 	friend class OGLDevice;
 	void setDevice(GraphicsDevicePtr device) noexcept;

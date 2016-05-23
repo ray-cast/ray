@@ -213,13 +213,13 @@ bool
 ShadowRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
 {
 	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
-	shaodwMapLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _shadowFormat, 0));
+	shaodwMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _shadowFormat));
 	_softShadowViewLayout = pipeline.createFramebufferLayout(shaodwMapLayoutDesc);
 	if (!_softShadowViewLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc shadowDephLayoutDesc;
-	shadowDephLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal, _shadowDepthFormat, 0));
+	shadowDephLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _shadowDepthFormat));
 	_softShadowDepthViewLayout = pipeline.createFramebufferLayout(shadowDephLayoutDesc);
 	if (!_softShadowDepthViewLayout)
 		return false;

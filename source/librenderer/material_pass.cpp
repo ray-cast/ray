@@ -562,13 +562,10 @@ MaterialPass::setup(Material& material) noexcept
 		GraphicsInputLayoutDesc inputLayoutDesc;
 
 		std::size_t offset = 0;
-		std::size_t location = 0;
 		const auto& attributes = _program->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{
-			const auto& semantic = attrib->getSemantic();
-			inputLayoutDesc.addComponent(GraphicsVertexLayout(semantic, attrib->getType(), offset));
-			location++;
+			inputLayoutDesc.addVertexLayout(GraphicsVertexLayout(0, attrib->getSemantic(), attrib->getSemanticIndex(), attrib->getType(), offset));
 			offset += GraphicsVertexLayout::getVertexSize(attrib->getType());
 		}
 

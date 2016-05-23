@@ -413,7 +413,7 @@ EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	if (_needUpdateLayout || _startVertices != renderable.startVertice)
 	{
 		if (_vbo)
-			_pipeline->bindVbo(*_vbo, renderable.startVertice);
+			_pipeline->bindVbo(*_vbo, renderable.startVertice, 0);
 
 		if (_ibo)
 			_pipeline->bindIbo(*_ibo);
@@ -545,7 +545,7 @@ EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 }
 
 void
-EGL2DeviceContext::discardFramebuffer(GraphicsAttachment attachments[], std::size_t i) noexcept
+EGL2DeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept
 {
 	GL_PLATFORM_LOG("Can't support discardFramebuffer");
 }

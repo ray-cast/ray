@@ -66,34 +66,17 @@ EGL2Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<EGL2InputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<EGL2DescriptorSetLayout>());
 
-	GLuint offset = 0;
-
-	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getGraphicsVertexLayouts();
+	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
 	for (auto& it : components)
 	{
 		GLuint attribIndex = GL_INVALID_INDEX;
 		GLenum type = EGL2Types::asVertexFormat(it.getVertexFormat());
 
-		auto& semantic = it.getSemantic();
-		if (semantic.empty())
-		{
-			GL_PLATFORM_LOG("Empty semantic");
-			return false;
-		}
-
-		for (auto& ch : semantic)
-		{
-			if (ch < 'a' && ch > 'z')
-			{
-				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
-				return false;
-			}
-		}
-
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{
-			if (attrib->getSemantic() == it.getSemantic())
+			if (attrib->getSemantic() == it.getSemantic() &&
+				attrib->getSemanticIndex() == it.getSemanticIndex())
 			{
 				attribIndex = attrib->downcast<EGL2GraphicsAttribute>()->getBindingPoint();
 				break;
@@ -103,14 +86,13 @@ EGL2Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		if (attribIndex != GL_INVALID_INDEX)
 		{
 			VertexAttrib attrib;
+			attrib.type = type;
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
-			attrib.type = type;
-			attrib.offset = offset;
+			attrib.slot = it.getVertexSlot();
+			attrib.offset = it.getVertexOffset();
 
 			_attributes.push_back(attrib);
-
-			offset += it.getVertexSize();
 		}
 	}
 
@@ -130,22 +112,25 @@ EGL2Pipeline::apply() noexcept
 }
 
 void
-EGL2Pipeline::bindVbo(const EGL2GraphicsData& vbo, GLsizei startVertices) noexcept
+EGL2Pipeline::bindVbo(const EGL2GraphicsData& vbo, GLsizei startVertices, GLuint slot) noexcept
 {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo.getInstanceID());
+	GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, vbo.getInstanceID()));
 
 	GLuint stride = vbo.getGraphicsDataDesc().getStride();
 	for (auto& attrib : _attributes)
 	{
-		glEnableVertexAttribArray(attrib.index);
-		glVertexAttribPointer(attrib.index, attrib.count, attrib.type, GL_FALSE, stride, (GLbyte*)nullptr + attrib.offset);
+		if (attrib.slot != slot)
+			continue;
+
+		GL_CHECK(glEnableVertexAttribArray(attrib.index));
+		GL_CHECK(glVertexAttribPointer(attrib.index, attrib.count, attrib.type, GL_FALSE, stride, (GLbyte*)nullptr + startVertices * stride + attrib.offset));
 	}
 }
 
 void
 EGL2Pipeline::bindIbo(const EGL2GraphicsData& ibo) noexcept
 {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getInstanceID());
+	GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getInstanceID()));
 }
 
 const GraphicsPipelineDesc&

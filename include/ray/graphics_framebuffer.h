@@ -41,26 +41,26 @@
 
 _NAME_BEGIN
 
-class EXPORT GraphicsAttachmentDesc final
+class EXPORT GraphicsAttachment final
 {
 public:
-	GraphicsAttachmentDesc() noexcept;
-	GraphicsAttachmentDesc(GraphicsViewLayout type, GraphicsFormat format, std::uint32_t slot) noexcept;
-	~GraphicsAttachmentDesc() noexcept;
+	GraphicsAttachment() noexcept;
+	GraphicsAttachment(std::uint32_t slot, GraphicsImageLayout type, GraphicsFormat format) noexcept;
+	~GraphicsAttachment() noexcept;
 
-	void setType(GraphicsViewLayout layout) noexcept;
-	GraphicsViewLayout getType() const noexcept;
+	void setAttachSlot(std::uint32_t slot) noexcept;
+	std::uint32_t getAttachSlot() const noexcept;
 
-	void setFormat(GraphicsFormat format) noexcept;
-	GraphicsFormat getFormat() const noexcept;
+	void setAttachType(GraphicsImageLayout layout) noexcept;
+	GraphicsImageLayout getAttachType() const noexcept;
 
-	void setSlot(std::uint32_t slot) noexcept;
-	std::uint32_t getSlot() const noexcept;
+	void setAttachFormat(GraphicsFormat format) noexcept;
+	GraphicsFormat getAttachFormat() const noexcept;
 
 private:
 	std::uint32_t _slot;
 	GraphicsFormat _format;
-	GraphicsViewLayout _type;
+	GraphicsImageLayout _type;
 };
 
 class EXPORT GraphicsFramebufferLayoutDesc final
@@ -69,13 +69,13 @@ public:
 	GraphicsFramebufferLayoutDesc() noexcept;
 	~GraphicsFramebufferLayoutDesc() noexcept;
 
-	void addComponent(const GraphicsAttachmentDesc& component) noexcept;
-	void removeComponent(std::uint32_t slot) noexcept;
+	void addComponent(const GraphicsAttachment& component) noexcept;
 
-	const GraphicsAttachmentDescs& getComponents() const noexcept;
+	void setComponents(const GraphicsAttachments& components) noexcept;
+	const GraphicsAttachments& getComponents() const noexcept;
 
 private:
-	GraphicsAttachmentDescs _components;
+	GraphicsAttachments _components;
 };
 
 class EXPORT GraphicsFramebufferDesc final

@@ -109,19 +109,26 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material,
 		if (name == "layout")
 		{
 			std::string layoutName = reader.getValue<std::string>("name");
-			std::string layoutFormat = reader.getValue<std::string>("format");
-
 			if (layoutName.empty())
 				throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
 
+			std::uint32_t index = 0;
+			reader.getValue("index", index);
+
+			std::string layoutFormat = reader.getValue<std::string>("format");
 			GraphicsFormat format = stringToFormat(layoutFormat);
 			if (format == GraphicsFormat::GraphicsFormatMaxEnum)
-				throw failure(__TEXT("Undefined format: ") + reader.getCurrentNodePath());
+				throw failure(__TEXT("Undefined format : ") + reader.getCurrentNodePath());
 
-			int offset = 0;
-			reader.getValue("offset", offset);
+			std::uint32_t slot = 0;
+			if (!reader.getValue("slot", slot))
+				throw failure(__TEXT("Undefined slot : ") + reader.getCurrentNodePath());
 
-			inputLayoutDesc.addComponent(GraphicsVertexLayout(layoutName, format, offset));
+			std::uint32_t offset = 0;
+			if (!reader.getValue("offset", offset))
+				throw failure(__TEXT("Undefined offset : ") + reader.getCurrentNodePath());
+
+			inputLayoutDesc.addVertexLayout(GraphicsVertexLayout(slot, layoutName, index, format, offset));
 		}
 	} while (reader.setToNextChild());
 

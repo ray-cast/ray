@@ -264,7 +264,7 @@ Light::setupShadowMap(LightShadowType type) noexcept
 		return false;
 
 	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
-	shaodwMapLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _shadowFormat, 0));
+	shaodwMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _shadowFormat));
 	_shadowViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwMapLayoutDesc);
 	if (!_shadowViewLayout)
 		return false;

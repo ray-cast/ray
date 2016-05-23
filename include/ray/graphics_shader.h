@@ -88,6 +88,7 @@ public:
 
 	virtual GraphicsFormat getType() const noexcept = 0;
 	virtual const std::string& getSemantic() const noexcept = 0;
+	virtual std::uint32_t getSemanticIndex() const noexcept = 0;
 
 private:
 	GraphicsAttribute(const GraphicsAttribute&) noexcept = delete;

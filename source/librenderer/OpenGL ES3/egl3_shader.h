@@ -48,14 +48,14 @@ public:
 	EGL3GraphicsAttribute() noexcept;
 	~EGL3GraphicsAttribute() noexcept;
 
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
+	void setSemantic(const std::string& semantic) noexcept;
+	const std::string& getSemantic() const noexcept;
+
+	void setSemanticIndex(std::uint32_t index) noexcept;
+	std::uint32_t getSemanticIndex() const noexcept;
 
 	void setType(GraphicsFormat type) noexcept;
 	GraphicsFormat getType() const noexcept;
-
-	void setSemantic(const std::string& semantic) noexcept;
-	const std::string& getSemantic() const noexcept;
 
 	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
 	std::uint32_t getBindingPoint() const noexcept;
@@ -65,9 +65,8 @@ private:
 	EGL3GraphicsAttribute& operator=(const EGL3GraphicsAttribute&) noexcept = delete;
 
 private:
-	std::string _name;
 	std::string _semantic;
-	std::uint8_t _index;
+	std::uint8_t _semanticIndex;
 	std::uint32_t _bindingPoint;
 	GraphicsFormat _type;
 };

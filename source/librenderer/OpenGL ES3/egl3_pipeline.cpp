@@ -80,8 +80,14 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
 	for (auto& it : layouts)
 	{
-		GLuint attribIndex = GL_INVALID_INDEX;
 		GLenum type = EGL3Types::asVertexFormat(it.getVertexFormat());
+		if (type == GL_INVALID_ENUM)
+		{
+			GL_PLATFORM_LOG("Undefined vertex format.");
+			return false;
+		}
+
+		GLuint attribIndex = GL_INVALID_INDEX;
 
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
@@ -93,7 +99,7 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 				GL_CHECK(glEnableVertexAttribArray(attribIndex));
 				GL_CHECK(glVertexAttribBinding(attribIndex, it.getVertexSlot()));
-				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, it.getVertexOffset()));
+				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, EGL3Types::isScaledFormat(it.getVertexFormat()), it.getVertexOffset()));
 
 				break;
 			}

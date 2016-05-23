@@ -438,6 +438,26 @@ namespace math
 		return v;
 	}
 
+	template<typename T>
+	inline Vector3t<T> snorm2unorm(const Vector3t<T>& v) noexcept
+	{
+		return Vector3t<T>(
+			_mathutil<T>::snorm2unorm(v.x),
+			_mathutil<T>::snorm2unorm(v.y),
+			_mathutil<T>::snorm2unorm(v.z)
+			);
+	}
+
+	template<typename T>
+	inline Vector3t<T> unorm2snorm(const Vector3t<T>& v) noexcept
+	{
+		return Vector3t<T>(
+			_mathutil<T>::unorm2snorm(v.x),
+			_mathutil<T>::unorm2snorm(v.y),
+			_mathutil<T>::unorm2snorm(v.z)
+			);
+	}
+
 	template <typename T>
 	inline Vector3t<T> min(const Vector3t<T>& a, const Vector3t<T>& b)
 	{

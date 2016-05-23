@@ -85,12 +85,20 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 		if (attribIndex != GL_INVALID_INDEX)
 		{
+			GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
+			if (type == GL_INVALID_ENUM)
+			{
+				GL_PLATFORM_LOG("Undefined vertex format.");
+				return false;
+			}
+
 			VertexAttrib attrib;
-			attrib.type = OGLTypes::asVertexFormat(it.getVertexFormat());
+			attrib.type = type;
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
 			attrib.slot = it.getVertexSlot();
 			attrib.offset = it.getVertexOffset();
+			attrib.normalize = OGLTypes::isScaledFormat(it.getVertexFormat());
 
 			_attributes.push_back(attrib);
 		}
@@ -146,7 +154,7 @@ OGLPipeline::bindVbo(const OGLGraphicsData& vbo, GLuint slot) noexcept
 			continue;
 
 		glEnableVertexAttribArray(it.index);
-		glVertexAttribPointer(it.index, it.count, it.type, GL_FALSE, stride, (GLbyte*)nullptr + it.offset);
+		glVertexAttribPointer(it.index, it.count, it.type, it.normalize, stride, (GLbyte*)nullptr + it.offset);
 	}
 
 	for (auto& it : _bindings)

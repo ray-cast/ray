@@ -89,6 +89,8 @@
                 out float2 oTexcoord : TEXCOORD2,
                 out float4 oPosition : SV_Position)
             {
+                TangentQuat = TangentQuat * 2 - 1;
+
                 float3 Normal = GetRight(TangentQuat);
                 float3 Tangent = GetForward(TangentQuat);
 

@@ -71,11 +71,17 @@ GameServer::open() noexcept
 void
 GameServer::close() noexcept
 {
-	this->stop();
-
+	_isActive = false;
 	_isQuitRequest = true;
 
+	for (auto& it : _scenes)
+		it->setActive(false);
+
 	_scenes.clear();
+
+	for (auto& it : _features)
+		it->setActive(false);
+
 	_features.clear();
 }
 
@@ -119,10 +125,10 @@ GameServer::stop() noexcept
 {
 	if (_isActive)
 	{
-		for (auto& it : _features)
+		for (auto& it : _scenes)
 			it->setActive(false);
 
-		for (auto& it : _scenes)
+		for (auto& it : _features)
 			it->setActive(false);
 
 		_isActive = false;

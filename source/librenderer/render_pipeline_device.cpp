@@ -235,8 +235,8 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 	std::uint32_t inputSize = 0;
 	if (!mesh.getVertexArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!mesh.getTangentArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
-		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
+	if (!mesh.getTangentQuatArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UScaled);
 	if (!mesh.getColorArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
 	if (!mesh.getTexcoordArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
@@ -256,11 +256,11 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 		auto& weight = mesh.getWeightArray();
 
 		std::size_t offset1 = 0;
-		char* mapBuffer = (char*)_vbo.data();
+		std::uint8_t* mapBuffer = (std::uint8_t*)_vbo.data();
 
 		if (!vertices.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 		{
-			char* data = mapBuffer + offset1 + offsetVertices;
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
 			for (auto& it : vertices)
 			{
 				*(float3*)data = it;
@@ -272,19 +272,25 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 
 		if (!tangentQuats.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
 		{
-			char* data = mapBuffer + offset1 + offsetVertices;
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
 			for (auto& it : tangentQuats)
 			{
-				*(float4*)data = it;
+				float4 unorm = math::snorm2unorm(it);
+
+				data[0] = math::ceil(unorm.x * 254);
+				data[1] = math::ceil(unorm.y * 254);
+				data[2] = math::ceil(unorm.z * 254);
+				data[3] = math::ceil(unorm.w * 254);
+				
 				data += inputSize;
 			}
 
-			offset1 += sizeof(float4);
+			offset1 += 4;
 		}
 
 		if (!colors.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		{
-			char* data = mapBuffer + offset1 + offsetVertices;
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
 			for (auto& it : colors)
 			{
 				*(float4*)data = it;
@@ -296,7 +302,7 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 
 		if (!texcoords.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
 		{
-			char* data = mapBuffer + offset1 + offsetVertices;
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
 			for (auto& it : texcoords)
 			{
 				*(float2*)data = it;
@@ -308,14 +314,22 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 
 		if (!weight.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitWeight)
 		{
-			char* data = mapBuffer + offset1 + offsetVertices;
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
 			for (auto& it : weight)
 			{
-				*(VertexWeight*)data = it;
+				data[0] = math::ceil(it.weight1 * 254);
+				data[1] = math::ceil(it.weight2 * 254);
+				data[2] = math::ceil(it.weight3 * 254);
+				data[3] = math::ceil(it.weight4 * 254);
+				data[4] = it.bone1;
+				data[5] = it.bone2;
+				data[6] = it.bone3;
+				data[7] = it.bone4;
+				
 				data += inputSize;
 			}
 
-			offset1 += sizeof(VertexWeight);
+			offset1 += 8;
 		}
 
 		offsetVertices += mesh.getNumVertices() * inputSize;

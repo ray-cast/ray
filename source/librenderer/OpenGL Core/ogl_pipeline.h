@@ -74,6 +74,7 @@ private:
 		GLuint index;
 		GLuint count;
 		GLuint slot;
+		GLboolean normalize;
 		GLsizei offset;
 	};
 

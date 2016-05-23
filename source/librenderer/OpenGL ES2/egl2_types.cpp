@@ -678,8 +678,8 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR8G8B8SRGB:	             internalFormat = GL_SRGB_EXT; break;
 	case GraphicsFormatB8G8R8UNorm:	             internalFormat = GL_RGB8_OES; break;
 	case GraphicsFormatB8G8R8SNorm:	             internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatB8G8R8UScaled:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatB8G8R8SScaled:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatB8G8R8UScaled:	         internalFormat = GL_RGB8_OES; break;
+	case GraphicsFormatB8G8R8SScaled:	         internalFormat = GL_RGB8_OES; break;
 	case GraphicsFormatB8G8R8UInt:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8SInt:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8SRGB:	             internalFormat = GL_SRGB_EXT; break;
@@ -707,7 +707,7 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatA2R10G10B10UNormPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatA2R10G10B10SNormPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatA2R10G10B10UScaledPack32: internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_RGB10_A2_EXT; break;
+	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA2R10G10B10UIntPack32:	 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA2R10G10B10SIntPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatA2B10G10R10UNormPack32:	 internalFormat = GL_INVALID_ENUM; break;
@@ -718,29 +718,29 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatA2B10G10R10SIntPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatR16UNorm:	             internalFormat = GL_R16_EXT; break;
 	case GraphicsFormatR16SNorm:	             internalFormat = GL_R16_SNORM_EXT; break;
-	case GraphicsFormatR16UScaled:	             internalFormat = GL_R16_EXT; break;
-	case GraphicsFormatR16SScaled:	             internalFormat = GL_R16_EXT; break;
+	case GraphicsFormatR16UScaled:	             internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR16SScaled:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16UInt:	                 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16SInt:	                 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16SFloat:	             internalFormat = GL_R16F_EXT; break;
 	case GraphicsFormatR16G16UNorm:	             internalFormat = GL_RG16_EXT; break;
 	case GraphicsFormatR16G16SNorm:	             internalFormat = GL_RG16_SNORM_EXT; break;
-	case GraphicsFormatR16G16UScaled:	         internalFormat = GL_RG16_EXT; break;
-	case GraphicsFormatR16G16SScaled:	         internalFormat = GL_RG16_EXT; break;
+	case GraphicsFormatR16G16UScaled:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR16G16SScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16UInt:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16SInt:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16SFloat:	         internalFormat = GL_RG16F_EXT; break;
 	case GraphicsFormatR16G16B16UNorm:	         internalFormat = GL_RGB16_EXT; break;
 	case GraphicsFormatR16G16B16SNorm:	         internalFormat = GL_RGB16_SNORM_EXT; break;
-	case GraphicsFormatR16G16B16UScaled:	     internalFormat = GL_RGB16_EXT; break;
-	case GraphicsFormatR16G16B16SScaled:	     internalFormat = GL_RGB16_EXT; break;
+	case GraphicsFormatR16G16B16UScaled:	     internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR16G16B16SScaled:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16B16UInt:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16B16SInt:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16B16SFloat:	         internalFormat = GL_RGB16F_EXT; break;
 	case GraphicsFormatR16G16B16A16UNorm:	     internalFormat = GL_RGBA16_EXT; break;
 	case GraphicsFormatR16G16B16A16SNorm:	     internalFormat = GL_RGBA16_SNORM_EXT; break;
-	case GraphicsFormatR16G16B16A16UScaled:	     internalFormat = GL_RGBA16_EXT; break;
-	case GraphicsFormatR16G16B16A16SScaled:	     internalFormat = GL_RGBA16_EXT; break;
+	case GraphicsFormatR16G16B16A16UScaled:	     internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR16G16B16A16SScaled:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16B16A16UInt:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16B16A16SInt:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16B16A16SFloat:	     internalFormat = GL_RGBA16F_EXT; break;
@@ -836,8 +836,8 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 		return GL_INVALID_ENUM;
 	}
 
-	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.")
-		return internalFormat;
+	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.");
+	return internalFormat;
 }
 
 GLenum
@@ -1009,6 +1009,43 @@ EGL2Types::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
 	default:
 		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
+	}
+}
+
+GLboolean
+EGL2Types::isScaledFormat(GraphicsFormat format) noexcept
+{
+	switch (format)
+	{
+	case GraphicsFormatR8UScaled:
+	case GraphicsFormatR8SScaled:
+	case GraphicsFormatR8G8UScaled:
+	case GraphicsFormatR8G8SScaled:
+	case GraphicsFormatR8G8B8UScaled:
+	case GraphicsFormatR8G8B8SScaled:
+	case GraphicsFormatB8G8R8UScaled:
+	case GraphicsFormatB8G8R8SScaled:
+	case GraphicsFormatR8G8B8A8UScaled:
+	case GraphicsFormatR8G8B8A8SScaled:
+	case GraphicsFormatB8G8R8A8UScaled:
+	case GraphicsFormatB8G8R8A8SScaled:
+	case GraphicsFormatA8B8G8R8UScaledPack32:
+	case GraphicsFormatA8B8G8R8SScaledPack32:
+	case GraphicsFormatA2R10G10B10UScaledPack32:
+	case GraphicsFormatA2R10G10B10SScaledPack32:
+	case GraphicsFormatA2B10G10R10UScaledPack32:
+	case GraphicsFormatA2B10G10R10SScaledPack32:
+	case GraphicsFormatR16UScaled:
+	case GraphicsFormatR16SScaled:
+	case GraphicsFormatR16G16UScaled:
+	case GraphicsFormatR16G16SScaled:
+	case GraphicsFormatR16G16B16UScaled:
+	case GraphicsFormatR16G16B16SScaled:
+	case GraphicsFormatR16G16B16A16UScaled:
+	case GraphicsFormatR16G16B16A16SScaled:
+		return GL_TRUE;
+	default:
+		return GL_FALSE;
 	}
 }
 

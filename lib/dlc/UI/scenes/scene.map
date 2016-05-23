@@ -11,16 +11,16 @@
         </component>
         <component class="GuiCamera"/>
     </object>
-    <object position="0,0,0"  scale="400, 400, 0" active="true">
+    <object position="0,0,0"  scale="400, 400, 1" active="true">
         <component class="GuiWindow" skin="WindowCS" text="hello world" />
-        <object active="true" position="10,10,0" scale="350, 300, 0">
+        <object active="true" position="10,10,0" scale="350, 300, 1">
             <component class="GuiScrollView" skin="ScrollViewEmpty" canvasSize="256,256" align="Stretch" />
-            <object active="true" position="0,0,0" scale="256, 256, 0">
+            <object active="true" position="0,0,0" scale="256, 256, 1">
                 <component class="GuiImage" skin="ImageBox" texture="dlc:ui/textures/Crystal_Clear_View.png"/>
             </object>
         </object>
     </object>
-    <object position="400,400,0"  scale="200, 200, 0" active="true">
+    <object position="400,400,0"  scale="200, 200, 1" active="true">
         <component class="GuiButton" skin="Button" text="hello world"/>
     </object>
 </scene>

@@ -462,12 +462,15 @@ Camera::onMoveAfter() noexcept
 void 
 Camera::onRenderPre(const Camera& camera) noexcept
 {
+	RenderObject::onRenderPre(camera);
+
 	_needUpdateVisiable = true;
 }
 
 void 
 Camera::onRenderPost(const Camera& camera) noexcept
 {
+	RenderObject::onRenderPost(camera);
 }
 
 _NAME_END

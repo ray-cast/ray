@@ -83,6 +83,11 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	{
 		GLuint attribIndex = GL_INVALID_INDEX;
 		GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
+		if (type == GL_INVALID_ENUM)
+		{
+			GL_PLATFORM_LOG("Undefined vertex format.");
+			return false;
+		}
 
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
@@ -99,7 +104,7 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		{
 			glEnableVertexArrayAttrib(_vao, attribIndex);
 			glVertexArrayAttribBinding(_vao, attribIndex, it.getVertexSlot());
-			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, it.getVertexOffset());
+			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, OGLTypes::isScaledFormat(it.getVertexFormat()), it.getVertexOffset());
 		}
 	}
 

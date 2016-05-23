@@ -70,7 +70,6 @@ EGL2Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	for (auto& it : components)
 	{
 		GLuint attribIndex = GL_INVALID_INDEX;
-		GLenum type = EGL2Types::asVertexFormat(it.getVertexFormat());
 
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
@@ -85,11 +84,19 @@ EGL2Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 		if (attribIndex != GL_INVALID_INDEX)
 		{
+			GLenum type = EGL2Types::asVertexFormat(it.getVertexFormat());
+			if (type == GL_INVALID_ENUM)
+			{
+				GL_PLATFORM_LOG("Undefined vertex format.");
+				return false;
+			}
+
 			VertexAttrib attrib;
 			attrib.type = type;
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
 			attrib.slot = it.getVertexSlot();
+			attrib.normalize = EGL2Types::isScaledFormat(it.getVertexFormat());
 			attrib.offset = it.getVertexOffset();
 
 			_attributes.push_back(attrib);
@@ -123,7 +130,7 @@ EGL2Pipeline::bindVbo(const EGL2GraphicsData& vbo, GLsizei startVertices, GLuint
 			continue;
 
 		GL_CHECK(glEnableVertexAttribArray(attrib.index));
-		GL_CHECK(glVertexAttribPointer(attrib.index, attrib.count, attrib.type, GL_FALSE, stride, (GLbyte*)nullptr + startVertices * stride + attrib.offset));
+		GL_CHECK(glVertexAttribPointer(attrib.index, attrib.count, attrib.type, attrib.normalize, stride, (GLbyte*)nullptr + startVertices * stride + attrib.offset));
 	}
 }
 

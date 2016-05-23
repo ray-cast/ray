@@ -195,7 +195,7 @@ RenderObject::onRenderPost(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onRenderObjectPre(camera);
+		listener->onRenderObjectPost(camera);
 }
 
 void

@@ -61,17 +61,11 @@ GuiCameraComponent::clone() const noexcept
 void 
 GuiCameraComponent::onActivate() noexcept
 {
-	auto component = this->getComponent<CameraComponent>();
-	if (component)
-		component->downcast<CameraComponent>()->addPostRenderListener(&_onPostRender);
 }
 
 void 
 GuiCameraComponent::onDeactivate() noexcept
 {
-	auto component = this->getComponent<CameraComponent>();
-	if (component)
-		component->downcast<CameraComponent>()->removePostRenderListener(&_onPostRender);
 }
 
 void

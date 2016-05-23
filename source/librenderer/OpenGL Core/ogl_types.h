@@ -172,6 +172,7 @@ public:
 
 	static GLsizei getFormatNum(GLenum format, GLenum type) noexcept;
 
+	static GLboolean isScaledFormat(GraphicsFormat format) noexcept;
 	static GLboolean isStencilFormat(GraphicsFormat format) noexcept;
 	static GLboolean isDepthFormat(GraphicsFormat format) noexcept;
 	static GLboolean isDepthStencilFormat(GraphicsFormat format) noexcept;

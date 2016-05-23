@@ -2,7 +2,7 @@
 <effect language="hlsl">
     <inputlayout name="POS3F_COL4C_UV2F">
         <layout name="POSITION" format="R32G32B32SFloat" slot="0" offset="0"/>
-        <layout name="COLOR" format="R8G8B8A8UInt" slot="0" offset="12"/>
+        <layout name="COLOR" format="R8G8B8A8UScaled" slot="0" offset="12"/>
         <layout name="TEXCOORD" format="R32G32SFloat" slot="0" offset="16"/>
     </inputlayout>
     <inputlayout name="POS3F">
@@ -14,29 +14,29 @@
     </inputlayout>
     <inputlayout name="POS3F_T4F">
         <layout name="POSITION" format="R32G32B32SFloat" slot="0" offset="0"/>
-        <layout name="TANGENT" format="R32G32B32A32SFloat" slot="0" offset="12"/>
+        <layout name="TANGENT" format="R8G8B8A8UScaled" slot="0" offset="12"/>
     </inputlayout>
     <inputlayout name="POS3F_T4F_UV2F">
         <layout name="POSITION" format="R32G32B32SFloat" slot="0" offset="0"/>
-        <layout name="TANGENT" format="R32G32B32A32SFloat" slot="0" offset="12"/>
+        <layout name="TANGENT" format="R8G8B8A8UScaled" slot="0" offset="12"/>
         <layout name="TEXCOORD" format="R32G32SFloat" slot="0" offset="28"/>
     </inputlayout>
     <inputlayout name="POS3F_T4F_UV2F_W4F_B4UI">
         <layout name="POSITION" format="R32G32B32SFloat" slot="0" offset="0"/>
-        <layout name="TANGENT" format="R32G32B32A32SFloat" slot="0" offset="12"/>
-        <layout name="TEXCOORD" format="R32G32SFloat" slot="0" offset="28"/>
-        <layout name="BLENDWEIGHT" format="R32G32B32A32SFloat" slot="0" offset="36"/>
-        <layout name="BLENDINDICES" format="R8G8B8A8UInt" slot="0" offset="52"/>
+        <layout name="TANGENT" format="R8G8B8A8UScaled" slot="0" offset="12"/>
+        <layout name="TEXCOORD" format="R32G32SFloat" slot="0" offset="16"/>
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UScaled" slot="0" offset="24"/>
+        <layout name="BLENDINDICES" format="R8G8B8A8UInt" slot="0" offset="28"/>
     </inputlayout>
     <inputlayout name="POS3F_T4F_W4F_B4UI">
         <layout name="POSITION" format="R32G32B32SFloat" slot="0" offset="0"/>
-        <layout name="TANGENT" format="R32G32B32A32SFloat" slot="0" offset="12"/>
-        <layout name="BLENDWEIGHT" format="R32G32B32A32SFloat" slot="0" offset="36"/>
-        <layout name="BLENDINDICES" format="R8G8B8A8UInt" slot="0" offset="52"/>
+        <layout name="TANGENT" format="R8G8B8A8UScaled" slot="0" offset="12"/>
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UScaled" slot="0" offset="24"/>
+        <layout name="BLENDINDICES" format="R8G8B8A8UInt" slot="0" offset="28"/>
     </inputlayout>
     <inputlayout name="POS3F_W4F_B4UI">
         <layout name="POSITION" format="R32G32B32SFloat" slot="0" offset="0"/>
-        <layout name="BLENDWEIGHT" format="R32G32B32A32SFloat" slot="0" offset="36"/>
-        <layout name="BLENDINDICES" format="R8G8B8A8UInt" slot="0" offset="52"/>
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UScaled" slot="0" offset="24"/>
+        <layout name="BLENDINDICES" format="R8G8B8A8UInt" slot="0" offset="28"/>
     </inputlayout>
 </effect>

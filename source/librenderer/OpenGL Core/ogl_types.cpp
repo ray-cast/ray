@@ -605,8 +605,8 @@ OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatB8G8R8SRGB:	             internalFormat = GL_SRGB8; break;
 	case GraphicsFormatR8G8B8A8UNorm:	         internalFormat = GL_RGBA8; break;
 	case GraphicsFormatR8G8B8A8SNorm:	         internalFormat = GL_RGBA8_SNORM; break;
-	case GraphicsFormatR8G8B8A8UScaled:	         internalFormat = GL_RGBA8; break;
-	case GraphicsFormatR8G8B8A8SScaled:	         internalFormat = GL_RGBA8; break;
+	case GraphicsFormatR8G8B8A8UScaled:	         internalFormat = GL_RGBA8UI; break;
+	case GraphicsFormatR8G8B8A8SScaled:	         internalFormat = GL_RGBA8I; break;
 	case GraphicsFormatR8G8B8A8UInt:	         internalFormat = GL_RGBA8UI; break;
 	case GraphicsFormatR8G8B8A8SInt:	         internalFormat = GL_RGBA8I; break;
 	case GraphicsFormatR8G8B8A8SRGB:	         internalFormat = GL_SRGB8_ALPHA8; break;
@@ -626,41 +626,41 @@ OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatA8B8G8R8SRGBPack32:	     internalFormat = GL_SRGB8_ALPHA8; break;
 	case GraphicsFormatA2R10G10B10UNormPack32:	 internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2R10G10B10SNormPack32:	 internalFormat = GL_RGB10_A2; break;
-	case GraphicsFormatA2R10G10B10UScaledPack32: internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2R10G10B10UScaledPack32: internalFormat = GL_RGB10_A2UI; break;
 	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2R10G10B10UIntPack32:	 internalFormat = GL_RGB10_A2UI; break;
 	case GraphicsFormatA2R10G10B10SIntPack32:	 internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2B10G10R10UNormPack32:	 internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2B10G10R10SNormPack32:	 internalFormat = GL_RGB10_A2; break;
-	case GraphicsFormatA2B10G10R10UScaledPack32: internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2B10G10R10UScaledPack32: internalFormat = GL_RGB10_A2UI; break;
 	case GraphicsFormatA2B10G10R10SScaledPack32: internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2B10G10R10UIntPack32:	 internalFormat = GL_RGB10_A2UI; break;
 	case GraphicsFormatA2B10G10R10SIntPack32:	 internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatR16UNorm:	             internalFormat = GL_R16; break;
 	case GraphicsFormatR16SNorm:	             internalFormat = GL_R16_SNORM; break;
-	case GraphicsFormatR16UScaled:	             internalFormat = GL_R16; break;
-	case GraphicsFormatR16SScaled:	             internalFormat = GL_R16; break;
+	case GraphicsFormatR16UScaled:	             internalFormat = GL_R16UI; break;
+	case GraphicsFormatR16SScaled:	             internalFormat = GL_R16I; break;
 	case GraphicsFormatR16UInt:	                 internalFormat = GL_R16UI; break;
 	case GraphicsFormatR16SInt:	                 internalFormat = GL_R16I; break;
 	case GraphicsFormatR16SFloat:	             internalFormat = GL_R16F; break;
 	case GraphicsFormatR16G16UNorm:	             internalFormat = GL_RG16; break;
 	case GraphicsFormatR16G16SNorm:	             internalFormat = GL_RG16_SNORM; break;
-	case GraphicsFormatR16G16UScaled:	         internalFormat = GL_RG16; break;
-	case GraphicsFormatR16G16SScaled:	         internalFormat = GL_RG16; break;
+	case GraphicsFormatR16G16UScaled:	         internalFormat = GL_RG16UI; break;
+	case GraphicsFormatR16G16SScaled:	         internalFormat = GL_RG16I; break;
 	case GraphicsFormatR16G16UInt:	             internalFormat = GL_RG16UI; break;
 	case GraphicsFormatR16G16SInt:	             internalFormat = GL_RG16I; break;
 	case GraphicsFormatR16G16SFloat:	         internalFormat = GL_RG16F; break;
 	case GraphicsFormatR16G16B16UNorm:	         internalFormat = GL_RGB16; break;
 	case GraphicsFormatR16G16B16SNorm:	         internalFormat = GL_RGB16_SNORM; break;
-	case GraphicsFormatR16G16B16UScaled:	     internalFormat = GL_RGB16; break;
-	case GraphicsFormatR16G16B16SScaled:	     internalFormat = GL_RGB16; break;
+	case GraphicsFormatR16G16B16UScaled:	     internalFormat = GL_RGB16UI; break;
+	case GraphicsFormatR16G16B16SScaled:	     internalFormat = GL_RGB16I; break;
 	case GraphicsFormatR16G16B16UInt:	         internalFormat = GL_RGB16UI; break;
 	case GraphicsFormatR16G16B16SInt:	         internalFormat = GL_RGB16I; break;
 	case GraphicsFormatR16G16B16SFloat:	         internalFormat = GL_RGB16F; break;
 	case GraphicsFormatR16G16B16A16UNorm:	     internalFormat = GL_RGBA16; break;
 	case GraphicsFormatR16G16B16A16SNorm:	     internalFormat = GL_RGBA16_SNORM; break;
-	case GraphicsFormatR16G16B16A16UScaled:	     internalFormat = GL_RGBA16; break;
-	case GraphicsFormatR16G16B16A16SScaled:	     internalFormat = GL_RGBA16; break;
+	case GraphicsFormatR16G16B16A16UScaled:	     internalFormat = GL_RGBA16UI; break;
+	case GraphicsFormatR16G16B16A16SScaled:	     internalFormat = GL_RGBA16I; break;
 	case GraphicsFormatR16G16B16A16UInt:	     internalFormat = GL_RGBA16UI; break;
 	case GraphicsFormatR16G16B16A16SInt:	     internalFormat = GL_RGBA16I; break;
 	case GraphicsFormatR16G16B16A16SFloat:	     internalFormat = GL_RGBA16F; break;
@@ -960,6 +960,43 @@ OGLTypes::getFormatNum(GLenum format, GLenum type) noexcept
 	{
 		assert(false);
 		return 0;
+	}
+}
+
+GLboolean 
+OGLTypes::isScaledFormat(GraphicsFormat format) noexcept
+{
+	switch (format)
+	{
+	case GraphicsFormatR8UScaled:
+	case GraphicsFormatR8SScaled:
+	case GraphicsFormatR8G8UScaled:
+	case GraphicsFormatR8G8SScaled:
+	case GraphicsFormatR8G8B8UScaled:
+	case GraphicsFormatR8G8B8SScaled:
+	case GraphicsFormatB8G8R8UScaled:
+	case GraphicsFormatB8G8R8SScaled:
+	case GraphicsFormatR8G8B8A8UScaled:
+	case GraphicsFormatR8G8B8A8SScaled:
+	case GraphicsFormatB8G8R8A8UScaled:
+	case GraphicsFormatB8G8R8A8SScaled:
+	case GraphicsFormatA8B8G8R8UScaledPack32:
+	case GraphicsFormatA8B8G8R8SScaledPack32:
+	case GraphicsFormatA2R10G10B10UScaledPack32:
+	case GraphicsFormatA2R10G10B10SScaledPack32:
+	case GraphicsFormatA2B10G10R10UScaledPack32:
+	case GraphicsFormatA2B10G10R10SScaledPack32:
+	case GraphicsFormatR16UScaled:
+	case GraphicsFormatR16SScaled:
+	case GraphicsFormatR16G16UScaled:
+	case GraphicsFormatR16G16SScaled:
+	case GraphicsFormatR16G16B16UScaled:
+	case GraphicsFormatR16G16B16SScaled:
+	case GraphicsFormatR16G16B16A16UScaled:
+	case GraphicsFormatR16G16B16A16SScaled:
+		return GL_TRUE;
+	default:
+		return false;
 	}
 }
 

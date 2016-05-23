@@ -448,6 +448,16 @@ struct _mathutil<float>
 		if (x >= 1.0f) { return 0.0f; }
 		return std::acosf(x);
 	}
+
+	static inline float snorm2unorm(float x) noexcept
+	{
+		return x * 0.5f + 0.5f;
+	}
+
+	static inline float unorm2snorm(float x) noexcept
+	{
+		return x * 2.0f - 1.0f;
+	}
 };
 
 template<>
@@ -618,6 +628,16 @@ struct _mathutil<double>
 		if (x <= -1.0) { return M_PI; }
 		if (x >= 1.0) { return 0.0; }
 		return std::acos(x);
+	}
+
+	static inline double snorm2unorm(double x) noexcept
+	{
+		return x * 0.5 + 0.5;
+	}
+
+	static inline double unorm2snorm(double x) noexcept
+	{
+		return x * 2.0 - 1.0;
 	}
 };
 
@@ -793,6 +813,18 @@ template<typename T>
 inline T safeAcos(T theta) noexcept
 {
 	return _mathutil<T>::safeAcos(theta);
+}
+
+template<typename T>
+static inline T snorm2unorm(T x) noexcept
+{
+	return _mathutil<T>::snorm2unorm(x);
+}
+
+template<typename T>
+static inline T unorm2snorm(T x) noexcept
+{
+	return _mathutil<T>::unorm2snorm(x);
 }
 
 inline float fpFromIEEE(std::uint32_t raw) noexcept

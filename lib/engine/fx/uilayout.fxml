@@ -16,7 +16,7 @@
             out float4 oPosition : SV_Position)
         {
             oPosition = Position;
-            oDiffuse = Diffuse / 255;
+            oDiffuse = Diffuse;
             oCoord = float2(Texcoord.x, Texcoord.y * scaleY);
         }
 

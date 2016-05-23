@@ -237,6 +237,23 @@ typedef Plane3t<double> Plane3d;
 typedef Rect3t<double> Rect3d;
 typedef Spheret<double> Sphered;
 
+// char
+typedef std::int8_t char1;
+typedef Vector2t<std::int8_t> char2;
+typedef Vector3t<std::int8_t> char3;
+typedef Vector4t<std::int8_t> char4;
+
+// uchar
+typedef std::uint8_t uchar1;
+typedef Vector2t<std::uint8_t> uchar2;
+typedef Vector3t<std::uint8_t> uchar3;
+typedef Vector4t<std::uint8_t> uchar4;
+
+typedef RGBt<unsigned char> RGB;
+typedef RGBAt<unsigned char> RGBA;
+typedef BGRt<unsigned char> BGR;
+typedef BGRAt<unsigned char> BGRA;
+
 // short
 typedef short short1;
 typedef Vector2t<std::uint16_t> short2;
@@ -261,12 +278,6 @@ typedef std::uint32_t uint1;
 typedef Vector2t<std::uint32_t> uint2;
 typedef Vector3t<std::uint32_t> uint3;
 typedef Vector4t<std::uint32_t> uint4;
-
-// unsigned char
-typedef RGBt<unsigned char> RGB;
-typedef RGBAt<unsigned char> RGBA;
-typedef BGRt<unsigned char> BGR;
-typedef BGRAt<unsigned char> BGRA;
 
 // float
 typedef float float1;

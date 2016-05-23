@@ -256,8 +256,6 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 			defaultMaterial = "sys:fx/opacity_skinning128.fxml";
 		else if (numBones <= 256)
 			defaultMaterial = "sys:fx/opacity_skinning256.fxml";
-		else if (numBones <= 320)
-			defaultMaterial = "sys:fx/opacity_skinning320.fxml";
 		else
 			defaultMaterial = "sys:fx/opacity_skinning0.fxml";
 

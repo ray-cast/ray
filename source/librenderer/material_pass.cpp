@@ -517,12 +517,15 @@ MaterialPass::setup(Material& material) noexcept
 		_descriptorPool = _program->getDevice()->createDescriptorPool(descriptorPoolDesc);
 	}
 
-	GraphicsDescriptorSetDesc descriptorSetDesc;
-	descriptorSetDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
-	descriptorSetDesc.setGraphicsDescriptorPool(_descriptorPool);
-	_descriptorSet = _program->getDevice()->createDescriptorSet(descriptorSetDesc);
 	if (!_descriptorSet)
-		return false;
+	{
+		GraphicsDescriptorSetDesc descriptorSetDesc;
+		descriptorSetDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
+		descriptorSetDesc.setGraphicsDescriptorPool(_descriptorPool);
+		_descriptorSet = _program->getDevice()->createDescriptorSet(descriptorSetDesc);
+		if (!_descriptorSet)
+			return false;
+	}
 
 	const auto& activeUniformSets = _descriptorSet->getGraphicsUniformSets();
 	for (const auto& activeUniformSet : activeUniformSets)

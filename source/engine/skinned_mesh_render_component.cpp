@@ -120,8 +120,8 @@ SkinnedMeshRenderComponent::onActivate() except
 			jointNums = 128;
 		else if (jointNums <= 256)
 			jointNums = 256;
-		else if (jointNums <= 320)
-			jointNums = 320;
+		else
+			return;
 
 		GraphicsDataDesc jointDesc;
 		jointDesc.setStride(sizeof(float4x4));
@@ -201,6 +201,9 @@ SkinnedMeshRenderComponent::onMeshWillRender(const Camera&) noexcept
 
 	if (_needUpdate)
 	{
+		if (!_jointData)
+			return;
+
 		float4x4* data;
 		if (_jointData->map(0, _jointData->getGraphicsDataDesc().getStreamSize(), (void**)&data))
 		{

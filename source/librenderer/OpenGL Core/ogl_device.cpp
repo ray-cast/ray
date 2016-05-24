@@ -291,6 +291,17 @@ OGLDevice::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
 	return nullptr;
 }
 
+void
+OGLDevice::copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept
+{
+	assert(source);
+
+	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+		source->downcast<OGLDescriptorSet>()->copy(descriptorCopyCount, descriptorCopies);
+	else
+		source->downcast<OGLCoreDescriptorSet>()->copy(descriptorCopyCount, descriptorCopies);
+}
+
 const GraphicsDeviceDesc&
 OGLDevice::getGraphicsDeviceDesc() const noexcept
 {

@@ -382,9 +382,9 @@ SkyboxComponent::_setupSkyLighting() noexcept
 			_buildQuadRenderObject(quadMesh, _skyLightingMaterial);
 
 			this->_attacRenderObject(_quadObject);
-		}
 
-		return true;
+			return true;
+		}
 	}
 
 	return false;

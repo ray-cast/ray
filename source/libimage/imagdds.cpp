@@ -245,19 +245,36 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		break;
 	default:
 	{
-		if (info.format.blue_mask > info.format.red_mask)
+		if (info.format.blue_mask == 0 &&
+			info.format.red_mask == 0 &&
+			info.format.blue_mask == 0)
 		{
-			if (info.format.bpp == 32)
+			if (info.format.size == 24)
+				image.setImageFormat(ImageFormat::ImageFormatR32G32B32F);
+			else if (info.format.size == 32)
+				image.setImageFormat(ImageFormat::ImageFormatR32G32B32A32F);
+			else
+				return false;
+
+			info.format.bpp = info.format.size * 4;
+		}
+		else if (info.format.blue_mask > info.format.red_mask)
+		{
+			if (info.format.bpp == 24)
+				image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
+			else if (info.format.bpp == 32)
 				image.setImageFormat(ImageFormat::ImageFormatR8G8B8A8);
 			else
-				image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
+				return false;
 		}
 		else
 		{
+			if (info.format.bpp == 24)
+				image.setImageFormat(ImageFormat::ImageFormatB8G8R8);
 			if (info.format.bpp == 32)
 				image.setImageFormat(ImageFormat::ImageFormatB8G8R8A8);
 			else
-				image.setImageFormat(ImageFormat::ImageFormatB8G8R8);
+				return false;
 		}
 
 		if (info.depth > 0)
@@ -270,7 +287,7 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 	if (image.getImageType() != ImageType::ImageTypeCube)
 	{
-		if (!image.create(info.width, info.height, info.depth, info.format.size, size, (std::uint8_t*)data.get(), false))
+		if (!image.create(info.width, info.height, info.depth, info.format.bpp, size, (std::uint8_t*)data.get(), false))
 			return false;
 		data.dismiss();
 	}
@@ -285,14 +302,14 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 			if (!DDStoCubeMap(swap.get(), 0, info.mip_level, info.width, info.height, 6, info.format.size, data.get()))
 				return false;
 
-			if (!image.create(info.width, info.height, info.depth, info.format.size, size, (std::uint8_t*)swap.get(), false))
+			if (!image.create(info.width, info.height, info.depth, info.format.bpp, size, (std::uint8_t*)swap.get(), false))
 				return false;
 
 			swap.dismiss();
 		}
 		else
 		{
-			if (!image.create(info.width, info.height, info.depth, info.format.size, size, (std::uint8_t*)data.get(), false))
+			if (!image.create(info.width, info.height, info.depth, info.format.bpp, size, (std::uint8_t*)data.get(), false))
 				return false;
 
 			data.dismiss();

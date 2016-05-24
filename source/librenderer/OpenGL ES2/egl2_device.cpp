@@ -221,10 +221,11 @@ EGL2Device::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcep
 	return nullptr;
 }
 
-bool
-EGL2Device::isTextureSupport(GraphicsFormat format) noexcept
+void
+EGL2Device::copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept
 {
-	return true;
+	assert(source);
+	source->downcast<EGL2DescriptorSet>()->copy(descriptorCopyCount, descriptorCopies);
 }
 
 const GraphicsDeviceDesc&

@@ -234,6 +234,151 @@ OGLCoreDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 	}
 }
 
+void
+OGLCoreDescriptorSet::copy(std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept
+{
+	for (std::size_t i = 0; i < descriptorCopyCount; i++)
+	{
+		if (!descriptorCopies[i])
+			continue;
+
+		auto descriptorCope = descriptorCopies[i]->downcast<OGLCoreDescriptorSet>();
+		for (auto& activeUniformSet : descriptorCope->_activeUniformSets)
+		{
+			auto& it = std::find_if(_activeUniformSets.begin(), _activeUniformSets.end(), [&](GraphicsUniformSetPtr& it) { return it->getGraphicsParam() == activeUniformSet->getGraphicsParam(); });
+			if (it == _activeUniformSets.end())
+				continue;
+
+			auto type = activeUniformSet->getGraphicsParam()->getType();
+			switch (type)
+			{
+			case GraphicsUniformType::GraphicsUniformTypeBool:
+				(*it)->uniform1b(activeUniformSet->getBool());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt:
+				(*it)->uniform1i(activeUniformSet->getInt());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt2:
+				(*it)->uniform2i(activeUniformSet->getInt2());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt3:
+				(*it)->uniform3i(activeUniformSet->getInt3());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt4:
+				(*it)->uniform4i(activeUniformSet->getInt4());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUInt:
+				(*it)->uniform1ui(activeUniformSet->getUInt());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUInt2:
+				(*it)->uniform2ui(activeUniformSet->getUInt2());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUInt3:
+				(*it)->uniform3ui(activeUniformSet->getUInt3());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUInt4:
+				(*it)->uniform4ui(activeUniformSet->getUInt4());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat:
+				(*it)->uniform1f(activeUniformSet->getFloat());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat2:
+				(*it)->uniform2f(activeUniformSet->getFloat2());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat3:
+				(*it)->uniform3f(activeUniformSet->getFloat3());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat4:
+				(*it)->uniform4f(activeUniformSet->getFloat4());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat2x2:
+				(*it)->uniform2fmat(activeUniformSet->getFloat2x2());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
+				(*it)->uniform3fmat(activeUniformSet->getFloat3x3());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
+				(*it)->uniform4fmat(activeUniformSet->getFloat4x4());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeIntArray:
+				(*it)->uniform1iv(activeUniformSet->getIntArray());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt2Array:
+				(*it)->uniform2iv(activeUniformSet->getInt2Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt3Array:
+				(*it)->uniform3iv(activeUniformSet->getInt3Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt4Array:
+				(*it)->uniform4iv(activeUniformSet->getInt4Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUIntArray:
+				(*it)->uniform1uiv(activeUniformSet->getUIntArray());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
+				(*it)->uniform2uiv(activeUniformSet->getUInt2Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
+				(*it)->uniform3uiv(activeUniformSet->getUInt3Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
+				(*it)->uniform4uiv(activeUniformSet->getUInt4Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloatArray:
+				(*it)->uniform1fv(activeUniformSet->getFloatArray());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
+				(*it)->uniform2fv(activeUniformSet->getFloat2Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
+				(*it)->uniform3fv(activeUniformSet->getFloat3Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
+				(*it)->uniform4fv(activeUniformSet->getFloat4Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat2x2Array:
+				(*it)->uniform2fmatv(activeUniformSet->getFloat2x2Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
+				(*it)->uniform3fmatv(activeUniformSet->getFloat3x3Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
+				(*it)->uniform4fmatv(activeUniformSet->getFloat4x4Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeSampler:
+				(*it)->uniformTexture(activeUniformSet->getTexture(), activeUniformSet->getTextureSampler());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
+				(*it)->uniformTexture(activeUniformSet->getTexture(), activeUniformSet->getTextureSampler());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
+				(*it)->uniformTexture(activeUniformSet->getTexture(), activeUniformSet->getTextureSampler());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+				(*it)->uniformTexture(activeUniformSet->getTexture(), activeUniformSet->getTextureSampler());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeStorageTexelBuffer:
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeStorageBuffer:
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeStorageBufferDynamic:
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUniformTexelBuffer:
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUniformBuffer:
+				(*it)->uniformBuffer(activeUniformSet->getBuffer());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic:
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInputAttachment:
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
 const GraphicsUniformSets&
 OGLCoreDescriptorSet::getGraphicsUniformSets() const noexcept
 {

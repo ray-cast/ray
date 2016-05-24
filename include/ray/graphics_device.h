@@ -77,6 +77,8 @@ public:
 	virtual GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept = 0;
 	virtual GraphicsDescriptorPoolPtr createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept = 0;
 
+	virtual void copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept = 0;
+
 	virtual const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept = 0;
 
 private:

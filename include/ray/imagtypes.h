@@ -79,7 +79,11 @@ enum ImageFormat
 	ImageFormatR8G8B8,
 	ImageFormatR8G8B8A8,
 	ImageFormatB8G8R8,
-	ImageFormatB8G8R8A8
+	ImageFormatB8G8R8A8,
+	ImageFormatR32F,
+	ImageFormatR32G32F,
+	ImageFormatR32G32B32F,
+	ImageFormatR32G32B32A32F,
 };
 
 _NAME_END

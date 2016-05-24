@@ -277,10 +277,10 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 			{
 				float4 unorm = math::snorm2unorm(it);
 
-				data[0] = unorm.x * 255;
-				data[1] = unorm.y * 255;
-				data[2] = unorm.z * 255;
-				data[3] = unorm.w * 255;
+				data[0] = math::fpToInt8UNORM(unorm.x);
+				data[1] = math::fpToInt8UNORM(unorm.y);
+				data[2] = math::fpToInt8UNORM(unorm.z);
+				data[3] = math::fpToInt8UNORM(unorm.w);
 				
 				data += inputSize;
 			}
@@ -317,10 +317,10 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
 			for (auto& it : weight)
 			{
-				data[0] = it.weight1 * 255;
-				data[1] = it.weight2 * 255;
-				data[2] = it.weight3 * 255;
-				data[3] = it.weight4 * 255;
+				data[0] = math::fpToInt8UNORM(it.weight1);
+				data[1] = math::fpToInt8UNORM(it.weight2);
+				data[2] = math::fpToInt8UNORM(it.weight3);
+				data[3] = math::fpToInt8UNORM(it.weight4);
 				data[4] = it.bone1;
 				data[5] = it.bone2;
 				data[6] = it.bone3;

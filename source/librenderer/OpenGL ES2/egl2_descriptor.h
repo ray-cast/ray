@@ -220,6 +220,8 @@ public:
 
 	void apply(const EGL2Program& program) noexcept;
 
+	void copy(std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept;
+
 	const GraphicsUniformSets& getGraphicsUniformSets() const noexcept;
 	const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept;
 

@@ -67,7 +67,7 @@ public:
 	GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
 	GraphicsDescriptorPoolPtr createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept;
 
-	bool isTextureSupport(GraphicsFormat format) noexcept;
+	void copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept;
 
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 

@@ -222,6 +222,13 @@ EGL3Device::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcep
 	return nullptr;
 }
 
+void
+EGL3Device::copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept
+{
+	assert(source);
+	source->downcast<EGL3DescriptorSet>()->copy(descriptorCopyCount, descriptorCopies);
+}
+
 const GraphicsDeviceDesc&
 EGL3Device::getGraphicsDeviceDesc() const noexcept
 {

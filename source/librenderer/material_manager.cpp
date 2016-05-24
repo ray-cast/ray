@@ -209,6 +209,14 @@ MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, 
 				format = GraphicsFormat::GraphicsFormatR8UNorm;
 			else if (imageFormat == ImageFormat::ImageFormatR8G8)
 				format = GraphicsFormat::GraphicsFormatR8G8UNorm;
+			else if (imageFormat == ImageFormat::ImageFormatR32F)
+				format = GraphicsFormat::GraphicsFormatR32SFloat;
+			else if (imageFormat == ImageFormat::ImageFormatR32G32F)
+				format = GraphicsFormat::GraphicsFormatR32G32SFloat;
+			else if (imageFormat == ImageFormat::ImageFormatR32G32B32F)
+				format = GraphicsFormat::GraphicsFormatR32G32B32SFloat;
+			else if (imageFormat == ImageFormat::ImageFormatR32G32B32A32F)
+				format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
 			else
 			{
 				assert(false);

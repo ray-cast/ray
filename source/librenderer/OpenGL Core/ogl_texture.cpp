@@ -130,7 +130,19 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 		GLint oldPackStore = 1;
 		glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, pixelSize == 3 ? 1 : pixelSize);
+
+		if (pixelSize == 1)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		else if (pixelSize == 2)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+		else if (pixelSize == 4)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		else if (pixelSize == 8)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+		else if (pixelSize == 12)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		else if (pixelSize == 16)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
 
 		GLenum cubeFace[] =
 		{

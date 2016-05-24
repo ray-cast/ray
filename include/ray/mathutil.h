@@ -827,6 +827,30 @@ static inline T unorm2snorm(T x) noexcept
 	return _mathutil<T>::unorm2snorm(x);
 }
 
+template<typename T>
+inline std::int8_t fpToInt8SNORM(T f) noexcept
+{
+	return (std::int8_t)((1 << 7) * f);
+}
+
+template<typename T>
+inline std::uint8_t fpToInt8UNORM(T f) noexcept
+{
+	return (std::uint8_t)((1 << 8) * f);
+}
+
+template<typename T>
+inline std::int16_t fpToInt16SNORM(T f) noexcept
+{
+	return (std::int16_t)((1 << 15) * f);
+}
+
+template<typename T>
+inline std::uint16_t fpToInt16UNORM(T f) noexcept
+{
+	return (std::uint16_t)((1 << 16) * f);
+}
+
 inline float fpFromIEEE(std::uint32_t raw) noexcept
 {
     return *reinterpret_cast<float*>(&raw);

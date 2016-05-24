@@ -38,12 +38,12 @@
 			// float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
 			// float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
 			// return float3(Y, Cb, Cr);
-			const float4x4 RGBToYCbCr = float4x4(
-				float4(0.299, -0.168, 0.5, 0.0),
-				float4(0.587, -0.331, -0.418, 0.0),
-				float4(0.114, 0.5, -0.081, 0.0),
-				float4(0.0, 0.5, 0.5, 0.0));
-			float4 YCbCr = mul(RGBToYCbCr, float4(rgb, 1.0));
+			const float4x3 RGBToYCbCr = float4x3(
+				float3(0.299, -0.168, 0.5),
+				float3(0.587, -0.331, -0.418),
+				float3(0.114, 0.5, -0.081),
+				float3(0.0, 0.5, 0.5));
+			float3 YCbCr = mul(RGBToYCbCr, rgb);
 			return YCbCr.rgb;
 		}
 
@@ -54,12 +54,12 @@
 			// float G = YCbCr.r - 0.344 * (YCbCr.g - 0.5) - 0.714 * (YCbCr.b - 0.5);
 			// float B = YCbCr.r + 1.772 * (YCbCr.g - 0.5);
 			// return float3(R, G, B);
-			const float4x4 YCbCrToRGB = float4x4(
-				float4(1.0, 1.0, 1.0, 0.0),
-				float4(0.0, -0.344, 1.772, 0.0),
-				float4(1.402, -0.714, 0.0, 0.0),
-				float4(-0.701, 0.529, -0.886, 0.0));
-			float4 rgb = mul(YCbCrToRGB, float4(YCbCr, 1.0));
+			const float4x3 YCbCrToRGB = float4x3(
+				float3(1.0, 1.0, 1.0),
+				float3(0.0, -0.344, 1.772),
+				float3(1.402, -0.714, 0.0),
+				float3(-0.701, 0.529, -0.886));
+			float3 rgb = mul(YCbCrToRGB, YCbCr);
 			return rgb.rgb;
 		}
 

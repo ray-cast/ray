@@ -77,6 +77,8 @@ public:
 	GraphicsCommandListPtr createCommandList(const GraphicsCommandListDesc& desc) noexcept;
 	GraphicsSemaphorePtr createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept;
 
+	void copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept;
+
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
 private:

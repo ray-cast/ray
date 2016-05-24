@@ -349,6 +349,11 @@ VulkanDevice::createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept
 	return nullptr;
 }
 
+void 
+VulkanDevice::copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept
+{
+}
+
 const GraphicsDeviceDesc&
 VulkanDevice::getGraphicsDeviceDesc() const noexcept
 {

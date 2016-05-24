@@ -923,7 +923,7 @@ OGLDescriptorSet::copy(std::uint32_t descriptorCopyCount, const GraphicsDescript
 		auto descriptorCope = descriptorCopies[i]->downcast<OGLDescriptorSet>();
 		for (auto& activeUniformSet : descriptorCope->_activeUniformSets)
 		{
-			auto& it = std::find_if(_activeUniformSets.begin(), _activeUniformSets.end(), [&](GraphicsUniformSetPtr& it) { return it->getGraphicsParam() == activeUniformSet->getGraphicsParam(); });
+			auto it = std::find_if(_activeUniformSets.begin(), _activeUniformSets.end(), [&](GraphicsUniformSetPtr& it) { return it->getGraphicsParam() == activeUniformSet->getGraphicsParam(); });
 			if (it == _activeUniformSets.end())
 				continue;
 

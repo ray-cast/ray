@@ -47,15 +47,11 @@ class EXPORT Image final
 {
 public:
 	Image() noexcept;
-	Image(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, bool clear = false) noexcept;
-	Image(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool static_data = false, bool clear = false) noexcept;
-	Image(StreamReader& stream, ImageType type = ImageType::ImageTypeUnknown) noexcept;
 	~Image() noexcept;
 
-	bool create(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, bool clear = false) noexcept;
-	bool create(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool staticData = false, bool clear = false) noexcept;
-	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool staticData = false, bool clear = false) noexcept;
-	bool create(std::uint32_t width, std::uint32_t height, ImageType type, ImageFormat format, bool clear = false) noexcept;
+	bool create(std::uint32_t width, std::uint32_t height, ImageFormat format, bool clear = false) noexcept;
+	bool create(std::uint32_t width, std::uint32_t height, ImageFormat format, std::size_t dataSize, std::uint8_t* data, bool staticData = false, bool clear = false) noexcept;
+	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, std::size_t dataSize, std::uint8_t* data, bool staticData = false, bool clear = false) noexcept;
 	bool create(const Image& src) noexcept;
 
 	void destroy() noexcept;

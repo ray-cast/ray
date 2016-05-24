@@ -45,45 +45,25 @@ Image::Image() noexcept
 	this->_init();
 }
 
-Image::Image(StreamReader& stream, ImageType type) noexcept
-{
-	this->_init();
-	this->load(stream, type);
-}
-
-Image::Image(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, bool clear) noexcept
-{
-	this->_init();
-	this->create(width, height, bpp, clear);
-}
-
-Image::Image(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
-{
-	this->_init();
-	this->create(width, height, bpp, dataSize, data, staticData, clear);
-}
-
 Image::~Image() noexcept
 {
 	this->destroy();
 }
 
 bool
-Image::create(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, bool clear) noexcept
+Image::create(std::uint32_t width, std::uint32_t height, ImageFormat format, bool clear) noexcept
 {
-	std::size_t destLength = (width * height * bpp) >> 3;
-
 	this->destroy();
 
+	this->setImageFormat(format);
+
+	std::size_t destLength = (width * height * _bpp) >> 3;
 	_width = width;
 	_height = height;
 	_depth = 1;
-	_bpp = bpp;
 	_size = destLength;
 	_isStatic = false;
 	_data = new std::uint8_t[destLength];
-
-	this->setImageType(ImageType::ImageTypeUnknown);
 
 	if (clear) this->clear();
 
@@ -91,13 +71,13 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, bool
 }
 
 bool
-Image::create(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
+Image::create(std::uint32_t width, std::uint32_t height, ImageFormat format, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
 {
-	return this->create(width, height, 0, bpp, dataSize, data, staticData, clear);
+	return this->create(width, height, 0, format, dataSize, data, staticData, clear);
 }
 
 bool
-Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
+Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
 {
 	assert(data);
 
@@ -106,40 +86,21 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, st
 	_width = width;
 	_height = height;
 	_depth = depth;
-	_bpp = bpp;
 	_data = data;
 	_size = dataSize;
 	_isStatic = staticData;
+
+	this->setImageFormat(format);
 
 	if (clear) this->clear();
 
 	return true;
 }
 
-bool 
-Image::create(std::uint32_t width, std::uint32_t height, ImageType type, ImageFormat format, bool clear) noexcept
-{
-	std::uint16_t bpp = 0;
-	if (format == ImageFormat::ImageFormatR8)
-		bpp = 8;
-	else if (format == ImageFormat::ImageFormatR8G8)
-		bpp = 16;
-	else if (format == ImageFormat::ImageFormatR8G8B8 || format == ImageFormat::ImageFormatB8G8R8)
-		bpp = 24;
-	else if (format == ImageFormat::ImageFormatR8G8B8A8 || format == ImageFormat::ImageFormatB8G8R8A8)
-		bpp = 32;
-	else
-		return false;
-
-	this->setImageType(type);
-
-	return this->create(width, height, bpp, clear);
-}
-
 bool
 Image::create(const Image& copy) noexcept
 {
-	return this->create(copy.width(), copy.height(), copy.bpp(), false);
+	return this->create(copy.width(), copy.height(), copy.getImageFormat(), false);
 }
 
 void
@@ -187,6 +148,33 @@ void
 Image::setImageFormat(ImageFormat format) noexcept
 {
 	_imageFormat = format;
+
+	if (format == ImageFormat::ImageFormatR8)
+		_bpp = 8;
+	else if (format == ImageFormat::ImageFormatR8G8)
+		_bpp = 16;
+	else if (format == ImageFormat::ImageFormatR8G8B8 || format == ImageFormat::ImageFormatB8G8R8)
+		_bpp = 24;
+	else if (format == ImageFormat::ImageFormatR8G8B8A8 || format == ImageFormat::ImageFormatB8G8R8A8)
+		_bpp = 32;
+	else if (format == ImageFormat::ImageFormatR16F)
+		_bpp = 16;
+	else if (format == ImageFormat::ImageFormatR16G16F)
+		_bpp = 32;
+	else if (format == ImageFormat::ImageFormatR16G16B16F)
+		_bpp = 48;
+	else if (format == ImageFormat::ImageFormatR16G16B16A16F)
+		_bpp = 64;
+	else if (format == ImageFormat::ImageFormatR32F)
+		_bpp = 32;
+	else if (format == ImageFormat::ImageFormatR32G32F)
+		_bpp = 64;
+	else if (format == ImageFormat::ImageFormatR32G32B32F)
+		_bpp = 96;
+	else if (format == ImageFormat::ImageFormatR32G32B32A32F)
+		_bpp = 128;
+	else
+		_bpp = 8;
 }
 
 ImageFormat

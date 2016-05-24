@@ -118,6 +118,10 @@ struct DDSRawPixelData
 #define DDS_FOURCC_BC5U DDS_MAKE_FOURCC('B', 'C', '5', 'U')
 #define DDS_FOURCC_BC5S DDS_MAKE_FOURCC('B', 'C', '5', 'S')
 #define DDS_FOURCC_ATI2 DDS_MAKE_FOURCC('A', 'T', 'I', '2')
+#define DDS_FOURCC_DX10 DDS_MAKE_FOURCC('D', 'X', '1', '0')
+
+#define DDS_FOURCE_HALF_FLOAT 113
+#define DDS_FOURCE_FLOAT 116
 
 #define DDS_OK                  0
 #define DDS_CANNOT_OPEN         1
@@ -219,101 +223,148 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		return false;
 
 	image.setMipLevel(info.mip_level);
+	image.setImageType(ImageType::ImageTypeDDS);
 
+	ImageFormat format = ImageFormat::ImageFormatUnknow;
 	switch (info.format.fourcc)
 	{
 	case DDS_FOURCC_DXT1:
-		image.setImageType(ImageType::ImageTypeBC1RGBU);
-		break;
 	case DDS_FOURCC_DXT3:
-		image.setImageType(ImageType::ImageTypeBC3U);
-		break;
 	case DDS_FOURCC_DXT5:
-		image.setImageType(ImageType::ImageTypeBC5U);
-		break;
 	case DDS_FOURCC_BC4U:
-		image.setImageType(ImageType::ImageTypeBC4U);
-		break;
 	case DDS_FOURCC_BC4S:
-		image.setImageType(ImageType::ImageTypeBC4S);
-		break;
 	case DDS_FOURCC_BC5S:
-		image.setImageType(ImageType::ImageTypeBC5S);
-		break;
 	case DDS_FOURCC_ATI2:
-		image.setImageType(ImageType::ImageTypeATI2);
-		break;
+	{
+		switch (info.format.fourcc)
+		{
+		case DDS_FOURCC_DXT1:
+			format = ImageFormat::ImageFormatBC1RGBU;
+			break;
+		case DDS_FOURCC_DXT3:
+			format = ImageFormat::ImageFormatBC3U;
+			break;
+		case DDS_FOURCC_DXT5:
+			format = ImageFormat::ImageFormatBC5U;
+			break;
+		case DDS_FOURCC_BC4U:
+			format = ImageFormat::ImageFormatBC4U;
+			break;
+		case DDS_FOURCC_BC4S:
+			format = ImageFormat::ImageFormatBC4S;
+			break;
+		case DDS_FOURCC_BC5S:
+			format = ImageFormat::ImageFormatBC5S;
+			break;
+		case DDS_FOURCC_ATI2:
+			format = ImageFormat::ImageFormatATI2;
+			break;
+		}
+
+		if (!image.create(info.width, info.height, info.depth, format, size, (std::uint8_t*)data.get(), false))
+			return false;
+
+		data.dismiss();
+	}
+	break;
+	case DDS_FOURCC_DX10:
+	{
+		info.format.bpp = info.format.size * 2;
+
+		if (info.format.size == 8)
+			format = ImageFormat::ImageFormatR16F;
+		else if (info.format.size == 16)
+			format = ImageFormat::ImageFormatR16G16F;
+		else if (info.format.size == 24)
+			format = ImageFormat::ImageFormatR16G16B16F;
+		else if (info.format.size == 32)
+			format = ImageFormat::ImageFormatR16G16B16A16F;
+		else
+			return false;
+		assert(false);
+	}
+	break;
 	default:
 	{
 		if (info.format.blue_mask == 0 &&
 			info.format.red_mask == 0 &&
 			info.format.blue_mask == 0)
 		{
-			if (info.format.size == 24)
-				image.setImageFormat(ImageFormat::ImageFormatR32G32B32F);
-			else if (info.format.size == 32)
-				image.setImageFormat(ImageFormat::ImageFormatR32G32B32A32F);
+			if (info.format.fourcc == DDS_FOURCE_FLOAT)
+			{
+				info.format.bpp = info.format.size * 4;
+
+				if (info.format.size == 8)
+					format = ImageFormat::ImageFormatR32F;
+				else if (info.format.size == 16)
+					format = ImageFormat::ImageFormatR32G32F;
+				else if (info.format.size == 24)
+					format = ImageFormat::ImageFormatR32G32B32F;
+				else if (info.format.size == 32)
+					format = ImageFormat::ImageFormatR32G32B32A32F;
+				else
+					return false;
+			}
+			else if (info.format.fourcc == DDS_FOURCE_HALF_FLOAT)
+			{
+				info.format.bpp = info.format.size * 2;
+
+				if (info.format.size == 8)
+					format = ImageFormat::ImageFormatR16F;
+				else if (info.format.size == 16)
+					format = ImageFormat::ImageFormatR16G16F;
+				else if (info.format.size == 24)
+					format = ImageFormat::ImageFormatR16G16B16F;
+				else if (info.format.size == 32)
+					format = ImageFormat::ImageFormatR16G16B16A16F;
+				else
+					return false;
+			}
 			else
 				return false;
-
-			info.format.bpp = info.format.size * 4;
 		}
 		else if (info.format.blue_mask > info.format.red_mask)
 		{
 			if (info.format.bpp == 24)
-				image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
+				format = ImageFormat::ImageFormatR8G8B8;
 			else if (info.format.bpp == 32)
-				image.setImageFormat(ImageFormat::ImageFormatR8G8B8A8);
+				format = ImageFormat::ImageFormatR8G8B8A8;
 			else
 				return false;
 		}
 		else
 		{
 			if (info.format.bpp == 24)
-				image.setImageFormat(ImageFormat::ImageFormatB8G8R8);
+				format = ImageFormat::ImageFormatB8G8R8;
 			if (info.format.bpp == 32)
-				image.setImageFormat(ImageFormat::ImageFormatB8G8R8A8);
+				format = ImageFormat::ImageFormatB8G8R8A8;
 			else
 				return false;
 		}
 
-		if (info.depth > 0)
-			image.setImageType(ImageType::ImageType3D);
-		else
-			image.setImageType(ImageType::ImageTypeCube);
-	}
-	break;
-	}
-
-	if (image.getImageType() != ImageType::ImageTypeCube)
-	{
-		if (!image.create(info.width, info.height, info.depth, info.format.bpp, size, (std::uint8_t*)data.get(), false))
-			return false;
-		data.dismiss();
-	}
-	else
-	{
 		if (info.mip_level > 1)
 		{
-			if (info.format.bpp == 0)
+			if (info.format.size == 0)
 				return false;
 
 			auto swap = make_scope<char[]>(size);
 			if (!DDStoCubeMap(swap.get(), 0, info.mip_level, info.width, info.height, 6, info.format.size, data.get()))
 				return false;
 
-			if (!image.create(info.width, info.height, info.depth, info.format.bpp, size, (std::uint8_t*)swap.get(), false))
+			if (!image.create(info.width, info.height, info.depth, format, size, (std::uint8_t*)swap.get(), false))
 				return false;
 
 			swap.dismiss();
 		}
 		else
 		{
-			if (!image.create(info.width, info.height, info.depth, info.format.bpp, size, (std::uint8_t*)data.get(), false))
+			if (!image.create(info.width, info.height, info.depth, format, size, (std::uint8_t*)data.get(), false))
 				return false;
 
 			data.dismiss();
 		}
+	}
+	break;
 	}
 
 	return true;

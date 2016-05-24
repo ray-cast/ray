@@ -836,7 +836,7 @@ inline std::int8_t fpToInt8SNORM(T f) noexcept
 template<typename T>
 inline std::uint8_t fpToInt8UNORM(T f) noexcept
 {
-	return (std::uint8_t)((1 << 8) * f);
+	return (std::uint8_t)(f * 255);
 }
 
 template<typename T>
@@ -848,7 +848,7 @@ inline std::int16_t fpToInt16SNORM(T f) noexcept
 template<typename T>
 inline std::uint16_t fpToInt16UNORM(T f) noexcept
 {
-	return (std::uint16_t)((1 << 16) * f);
+	return (std::uint16_t)(f * 65535);
 }
 
 inline float fpFromIEEE(std::uint32_t raw) noexcept

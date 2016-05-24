@@ -233,17 +233,31 @@ BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 	if (!stream.read((char*)buf, (std::streamsize)length))
 		return false;
 
-	image.setImageType(ImageType::ImageTypeBMP);
-
 	if (info.info.bpp == BMP_32BPP)
-		image.setImageFormat(ImageFormat::ImageFormatB8G8R8A8);
-	else if (info.info.bpp == BMP_24BPP)
-		image.setImageFormat(ImageFormat::ImageFormatB8G8R8);
-	else
-		image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
+	{
+		if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8A8))
+			return false;
 
-	if (!image.create(columns, rows, (std::uint16_t)info.info.bpp))
+		image.setImageType(ImageType::ImageTypeBMP);
+	}
+	else if (info.info.bpp == BMP_24BPP)
+	{
+		if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8))
+			return false;
+
+		image.setImageType(ImageType::ImageTypeBMP);
+	}
+	else if (info.info.bpp == BMP_16BPP)
+	{
+		if (!image.create(columns, rows, ImageFormat::ImageFormatR8G8B8))
+			return false;
+
+		image.setImageType(ImageType::ImageTypeBMP);
+	}
+	else
+	{
 		return false;
+	}
 
 	if (info.info.bpp == BMP_32BPP || info.info.bpp == BMP_24BPP)
 	{

@@ -52,7 +52,7 @@ SkyboxComponent::SkyboxComponent() noexcept
 	, _needUpdateSkybox(true)
 	, _needUpdateSkyDiffuse(true)
 	, _needUpdateSkySpecular(true)
-	, _skyboxSize(100.0f)
+	, _skyboxSize(1000.0f)
 	, _skyLightingIntensity(1.0f, 1.0f)
 {
 }

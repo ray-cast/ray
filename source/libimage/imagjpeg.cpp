@@ -184,70 +184,67 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	// read jpeg handle parameters*/
 	::jpeg_read_header(&cinfo, TRUE);
 
-	if (image.create(cinfo.image_width, cinfo.image_height, (std::uint16_t)(cinfo.num_components << 3)))
+	if (!image.create(cinfo.image_width, cinfo.image_height, ImageFormat::ImageFormatR8G8B8))
+		return false;
+
+	image.setImageType(ImageType::ImageTypeJPEG);
+
+	RGB* data = (RGB*)image.data();
+	JDIMENSION stride = cinfo.image_width * cinfo.num_components;
+
+	if (cinfo.out_color_space == JCS_RGB)
 	{
-		image.setImageType(ImageType::ImageTypeJPEG);
-		image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
+		::jpeg_start_decompress(&cinfo);
 
-		RGB* data = (RGB*)image.data();
-		JDIMENSION stride = cinfo.image_width * cinfo.num_components;
-
-		if (cinfo.out_color_space == JCS_RGB)
+		while (cinfo.output_scanline < cinfo.image_height)
 		{
-			::jpeg_start_decompress(&cinfo);
+			::jpeg_read_scanlines(&cinfo, (JSAMPARRAY)data, 1);
+			data += cinfo.image_width;
+		}
+	}
+	else
+	{
+		JSAMPARRAY row_pointer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, stride, 1);
 
-			while (cinfo.output_scanline < cinfo.image_height)
+		::jpeg_start_decompress(&cinfo);
+
+		while (cinfo.output_scanline < cinfo.image_height)
+		{
+			::jpeg_read_scanlines(&cinfo, row_pointer, 1);
+			switch (cinfo.out_color_space)
 			{
-				::jpeg_read_scanlines(&cinfo, (JSAMPARRAY)data, 1);
+			case JCS_RGB:
+			{
+				std::memcpy(data, row_pointer[0], stride);
 				data += cinfo.image_width;
 			}
-		}
-		else
-		{
-			JSAMPARRAY row_pointer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, stride, 1);
-
-			::jpeg_start_decompress(&cinfo);
-
-			while (cinfo.output_scanline < cinfo.image_height)
+			break;
+			case JCS_CMYK:
 			{
-				::jpeg_read_scanlines(&cinfo, row_pointer, 1);
-				switch (cinfo.out_color_space)
+				std::uint8_t* inptr = (std::uint8_t*)row_pointer[0];
+				for (size_t i = 0; i < cinfo.output_width; i++)
 				{
-				case JCS_RGB:
-				{
-					std::memcpy(data, row_pointer[0], stride);
-					data += cinfo.image_width;
-				}
-				break;
-				case JCS_CMYK:
-				{
-					std::uint8_t* inptr = (std::uint8_t*)row_pointer[0];
-					for (size_t i = 0; i < cinfo.output_width; i++)
-					{
-						Image::cmyk_to_rgb(data, inptr);
-						data += 3;
-						inptr += 4;
-					}
-				}
-				break;
-				case JCS_GRAYSCALE:
-				case JCS_UNKNOWN:
-				case JCS_YCbCr:
-				case JCS_YCCK:
-				default:
-					assert(false);
+					Image::cmyk_to_rgb(data, inptr);
+					data += 3;
+					inptr += 4;
 				}
 			}
+			break;
+			case JCS_GRAYSCALE:
+			case JCS_UNKNOWN:
+			case JCS_YCbCr:
+			case JCS_YCCK:
+			default:
+				assert(false);
+			}
 		}
-
-		// clean up the JPEG object, and return.
-		::jpeg_finish_decompress(&cinfo);
-		::jpeg_destroy_decompress(&cinfo);
-
-		return true;
 	}
 
-	return false;
+	// clean up the JPEG object, and return.
+	::jpeg_finish_decompress(&cinfo);
+	::jpeg_destroy_decompress(&cinfo);
+
+	return true;
 }
 
 bool

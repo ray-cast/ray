@@ -499,28 +499,28 @@ OGLTypes::asTextureType(GraphicsFormat format) noexcept
 	case GraphicsFormatR16SScaled:               return GL_SHORT;
 	case GraphicsFormatR16UInt:                  return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16SInt:                  return GL_SHORT;
-	case GraphicsFormatR16SFloat:                return GL_FLOAT;
+	case GraphicsFormatR16SFloat:                return GL_HALF_FLOAT;
 	case GraphicsFormatR16G16UNorm:              return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16SNorm:              return GL_SHORT;
 	case GraphicsFormatR16G16UScaled:            return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16SScaled:            return GL_SHORT;
 	case GraphicsFormatR16G16UInt:               return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16SInt:               return GL_SHORT;
-	case GraphicsFormatR16G16SFloat:             return GL_FLOAT;
+	case GraphicsFormatR16G16SFloat:             return GL_HALF_FLOAT;
 	case GraphicsFormatR16G16B16UNorm:           return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16B16SNorm:           return GL_SHORT;
 	case GraphicsFormatR16G16B16UScaled:         return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16B16SScaled:         return GL_SHORT;
 	case GraphicsFormatR16G16B16UInt:            return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16B16SInt:            return GL_SHORT;
-	case GraphicsFormatR16G16B16SFloat:          return GL_FLOAT;
+	case GraphicsFormatR16G16B16SFloat:          return GL_HALF_FLOAT;
 	case GraphicsFormatR16G16B16A16UNorm:        return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16B16A16SNorm:        return GL_SHORT;
 	case GraphicsFormatR16G16B16A16UScaled:      return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16B16A16SScaled:      return GL_SHORT;
 	case GraphicsFormatR16G16B16A16UInt:         return GL_UNSIGNED_SHORT;
 	case GraphicsFormatR16G16B16A16SInt:         return GL_SHORT;
-	case GraphicsFormatR16G16B16A16SFloat:       return GL_FLOAT;
+	case GraphicsFormatR16G16B16A16SFloat:       return GL_HALF_FLOAT;
 	case GraphicsFormatR32UInt:                  return GL_UNSIGNED_INT;
 	case GraphicsFormatR32SInt:                  return GL_INT;
 	case GraphicsFormatR32SFloat:                return GL_FLOAT;
@@ -936,7 +936,7 @@ OGLTypes::getFormatNum(GLenum format, GLenum type) noexcept
 	GLsizei typeSize = 0;
 	if (type == GL_UNSIGNED_BYTE || type == GL_BYTE)
 		typeSize = 1;
-	else if (type == GL_UNSIGNED_SHORT || type == GL_SHORT)
+	else if (type == GL_UNSIGNED_SHORT || type == GL_SHORT || type == GL_HALF_FLOAT)
 		typeSize = 2;
 	else if (type == GL_UNSIGNED_INT || type == GL_INT || type == GL_FLOAT)
 		typeSize = 4;

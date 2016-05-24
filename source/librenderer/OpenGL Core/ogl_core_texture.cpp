@@ -143,7 +143,17 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			GLint oldPackStore = 1;
 			glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
-			glPixelStorei(GL_UNPACK_ALIGNMENT, pixelSize == 3 ? 1 : pixelSize);
+
+			if (pixelSize == 1)
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			else if (pixelSize == 2)
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+			else if (pixelSize == 4 || pixelSize == 12)
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+			else if (pixelSize == 8 || pixelSize == 16)
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+			else
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 			for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
@@ -209,7 +219,7 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 	GLenum type = OGLTypes::asTextureType(_textureDesc.getTexFormat());
 	if (type == GL_INVALID_ENUM)
 		return false;
-	
+
 	GLsizei num = OGLTypes::getFormatNum(format, type);
 	if (num == 0)
 		return false;
@@ -228,7 +238,7 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 
 	glBindTexture(_target, _texture);
 	glReadPixels(x, y, w, h, format, type, 0);
-	
+
 	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 	return *data ? true : false;
 }

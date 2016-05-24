@@ -61,7 +61,7 @@ FimicToneMapping::Setting::Setting() noexcept
 	: bloomThreshold(0.5f)
 	, bloomIntensity(1.0f)
 	, lumKey(0.98f)
-	, lumDelta(50.0f)
+	, lumDelta(30.0f)
 	, lumExposure(1.5f)
 {
 }

@@ -161,80 +161,69 @@ MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, 
 	if (!image.load(*stream))
 		return nullptr;
 
-	ImageType type = image.getImageType();
+	ImageFormat imageFormat = image.getImageFormat();
 	GraphicsFormat format = GraphicsFormat::GraphicsFormatUndefined;
 
-	if (type == ImageType::ImageTypeBC1RGBU)
+	if (imageFormat == ImageFormat::ImageFormatBC1RGBU)
 		format = GraphicsFormat::GraphicsFormatBC1RGBUNormBlock;
-	else if (type == ImageType::ImageTypeBC1RGBAU)
+	else if (imageFormat == ImageFormat::ImageFormatBC1RGBAU)
 		format = GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock;
-	else if (type == ImageType::ImageTypeBC1RGBSRGB)
+	else if (imageFormat == ImageFormat::ImageFormatBC1RGBSRGB)
 		format = GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock;
-	else if (type == ImageType::ImageTypeBC1RGBASRGB)
+	else if (imageFormat == ImageFormat::ImageFormatBC1RGBASRGB)
 		format = GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock;
-	else if (type == ImageType::ImageTypeBC3U)
+	else if (imageFormat == ImageFormat::ImageFormatBC3U)
 		format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
-	else if (type == ImageType::ImageTypeBC3SRGB)
+	else if (imageFormat == ImageFormat::ImageFormatBC3SRGB)
 		format = GraphicsFormat::GraphicsFormatBC3SRGBBlock;
-	else if (type == ImageType::ImageTypeBC4U)
+	else if (imageFormat == ImageFormat::ImageFormatBC4U)
 		format = GraphicsFormat::GraphicsFormatBC4UNormBlock;
-	else if (type == ImageType::ImageTypeBC4S)
+	else if (imageFormat == ImageFormat::ImageFormatBC4S)
 		format = GraphicsFormat::GraphicsFormatBC4SNormBlock;
-	else if (type == ImageType::ImageTypeBC5U)
+	else if (imageFormat == ImageFormat::ImageFormatBC5U)
 		format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
-	else if (type == ImageType::ImageTypeBC5S)
+	else if (imageFormat == ImageFormat::ImageFormatBC5S)
 		format = GraphicsFormat::GraphicsFormatBC5SNormBlock;
-	else if (type == ImageType::ImageTypeBC6HUFloat)
+	else if (imageFormat == ImageFormat::ImageFormatBC6HUFloat)
 		format = GraphicsFormat::GraphicsFormatBC6HUFloatBlock;
-	else if (type == ImageType::ImageTypeBC6HSFloat)
+	else if (imageFormat == ImageFormat::ImageFormatBC6HSFloat)
 		format = GraphicsFormat::GraphicsFormatBC6HSFloatBlock;
-	else if (type == ImageType::ImageTypeBC7U)
+	else if (imageFormat == ImageFormat::ImageFormatBC7U)
 		format = GraphicsFormat::GraphicsFormatBC7UNormBlock;
-	else if (type == ImageType::ImageTypeBC7SRGB)
+	else if (imageFormat == ImageFormat::ImageFormatBC7SRGB)
 		format = GraphicsFormat::GraphicsFormatBC7SRGBBlock;
+	else if (imageFormat == ImageFormat::ImageFormatR8G8B8)
+		format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+	else if (imageFormat == ImageFormat::ImageFormatR8G8B8A8)
+		format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+	else if (imageFormat == ImageFormat::ImageFormatB8G8R8)
+		format = GraphicsFormat::GraphicsFormatB8G8R8UNorm;
+	else if (imageFormat == ImageFormat::ImageFormatB8G8R8A8)
+		format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm;
+	else if (imageFormat == ImageFormat::ImageFormatR8)
+		format = GraphicsFormat::GraphicsFormatR8UNorm;
+	else if (imageFormat == ImageFormat::ImageFormatR8G8)
+		format = GraphicsFormat::GraphicsFormatR8G8UNorm;
+	else if (imageFormat == ImageFormat::ImageFormatR16F)
+		format = GraphicsFormat::GraphicsFormatR16SFloat;
+	else if (imageFormat == ImageFormat::ImageFormatR16G16F)
+		format = GraphicsFormat::GraphicsFormatR16G16SFloat;
+	else if (imageFormat == ImageFormat::ImageFormatR16G16B16F)
+		format = GraphicsFormat::GraphicsFormatR16G16B16SFloat;
+	else if (imageFormat == ImageFormat::ImageFormatR16G16B16A16F)
+		format = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
+	else if (imageFormat == ImageFormat::ImageFormatR32F)
+		format = GraphicsFormat::GraphicsFormatR32SFloat;
+	else if (imageFormat == ImageFormat::ImageFormatR32G32F)
+		format = GraphicsFormat::GraphicsFormatR32G32SFloat;
+	else if (imageFormat == ImageFormat::ImageFormatR32G32B32F)
+		format = GraphicsFormat::GraphicsFormatR32G32B32SFloat;
+	else if (imageFormat == ImageFormat::ImageFormatR32G32B32A32F)
+		format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
 	else
 	{
-		auto imageFormat = image.getImageFormat();
-		if (imageFormat != ImageFormat::ImageFormatUnknow)
-		{
-			if (imageFormat == ImageFormat::ImageFormatR8G8B8)
-				format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
-			else if (imageFormat == ImageFormat::ImageFormatR8G8B8A8)
-				format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
-			else if (imageFormat == ImageFormat::ImageFormatB8G8R8)
-				format = GraphicsFormat::GraphicsFormatB8G8R8UNorm;
-			else if (imageFormat == ImageFormat::ImageFormatB8G8R8A8)
-				format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm;
-			else if (imageFormat == ImageFormat::ImageFormatR8)
-				format = GraphicsFormat::GraphicsFormatR8UNorm;
-			else if (imageFormat == ImageFormat::ImageFormatR8G8)
-				format = GraphicsFormat::GraphicsFormatR8G8UNorm;
-			else if (imageFormat == ImageFormat::ImageFormatR32F)
-				format = GraphicsFormat::GraphicsFormatR32SFloat;
-			else if (imageFormat == ImageFormat::ImageFormatR32G32F)
-				format = GraphicsFormat::GraphicsFormatR32G32SFloat;
-			else if (imageFormat == ImageFormat::ImageFormatR32G32B32F)
-				format = GraphicsFormat::GraphicsFormatR32G32B32SFloat;
-			else if (imageFormat == ImageFormat::ImageFormatR32G32B32A32F)
-				format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
-			else
-			{
-				assert(false);
-				return nullptr;
-			}
-		}
-		else
-		{
-			if (image.bpp() == 24)
-				format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
-			else if (image.bpp() == 32)
-				format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
-			else
-			{
-				assert(false);
-				return nullptr;
-			}
-		}
+		assert(false);
+		return nullptr;
 	}
 
 	GraphicsTextureDesc textureDesc;

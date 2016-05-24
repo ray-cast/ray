@@ -155,8 +155,10 @@ PNGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 			pixelSize = 3;
 		}
 
-		if (!image.create(width, height, ImageType::ImageTypePNG, format))
+		if (!image.create(width, height, format))
 			return false;
+
+		image.setImageType(ImageType::ImageTypePNG);
 
 		std::size_t columnLength = width * pixelSize;
 		std::uint8_t* pixel = (std::uint8_t*)image.data();

@@ -475,12 +475,6 @@ EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& c
 	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, color, depth, stencil);
 }
 
-void
-EGL2DeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
-{
-	GL_PLATFORM_LOG("Can't support blitFramebuffer");
-}
-
 GraphicsFramebufferPtr
 EGL2DeviceContext::getFramebuffer() const noexcept
 {
@@ -542,12 +536,6 @@ EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 			GL_CHECK(glDepthMask(GL_FALSE));
 		}
 	}
-}
-
-void
-EGL2DeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept
-{
-	GL_PLATFORM_LOG("Can't support discardFramebuffer");
 }
 
 void

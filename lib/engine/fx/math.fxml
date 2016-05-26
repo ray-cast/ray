@@ -252,7 +252,7 @@
 
 		float3 PremultipliedBlend(float3 src, float3 dst, float alpha)
 		{
-			return dst + src * (1 - alpha);
+			return src * alpha + dst;
 		}
     	]]>
     </shader>

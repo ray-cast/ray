@@ -166,12 +166,8 @@
                     brdfParm = GetSpecular(texSpecular, iTexcoord);
                 }
 
-                float viewDepth = abs(1.0 / iPosition.w) * 0.5;
-                float weight = computeWeightBlendOIT(viewDepth);
-
-                fragData0 = StoreGBufferRT0(albedo.rgb*weight, brdfParm.r);
+                fragData0 = StoreGBufferRT0(float3(0,0,0), brdfParm.r);
                 fragData1 = StoreGBufferRT1(normal, brdfParm.g);
-                fragData2 = StoreGBufferRT2(albedo.a, albedo.a * weight);
             }
         ]]>
     </shader>
@@ -211,7 +207,7 @@
             <state name="blenddst0" value="one"/>
 
             <state name="blend2" value="true"/>
-            <state name="blendsrc2" value="one"/>
+            <state name="blendsrc2" value="zero"/>
             <state name="blenddst2" value="invsrccol"/>
             <state name="blendalphasrc2" value="one"/>
             <state name="blendalphadst2" value="one"/>

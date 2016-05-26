@@ -577,7 +577,7 @@ OGLCoreDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& c
 }
 
 void
-OGLCoreDeviceContext::clearFramebufferIndexed(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
+OGLCoreDeviceContext::clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
 {
 	assert(_glcontext->getActive());
 

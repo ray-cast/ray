@@ -84,8 +84,6 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept;
-	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;

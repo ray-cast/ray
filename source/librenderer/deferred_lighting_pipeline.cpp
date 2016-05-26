@@ -184,7 +184,10 @@ void
 DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebufferi(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0, 0);
+	pipeline.clearFramebufferi(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0, 1);
+	pipeline.clearFramebufferi(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4(1.0,1.0,1.0,0.0), 1.0, 0, 2);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatch);
 }

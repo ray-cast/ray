@@ -72,6 +72,7 @@ public:
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
+	void clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept;
 	void discradRenderTexture(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
@@ -142,7 +143,7 @@ private:
 	RenderPipelineDevicePtr _pipelineDevice;
 
 	GraphicsSwapchainPtr _graphicsSwapchain;
-	GraphicsContextPtr _graphicsContext;
+	GraphicsContext2Ptr _graphicsContext;
 
 	CameraPtr _camera;
 

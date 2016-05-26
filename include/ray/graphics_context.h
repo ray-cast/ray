@@ -112,8 +112,6 @@ public:
 	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
 	virtual void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
-	virtual void discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept = 0;
-	virtual void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
 	virtual GraphicsFramebufferPtr getFramebuffer() const noexcept = 0;
 
 	virtual void drawRenderMesh(const GraphicsIndirect& renderable) noexcept = 0;
@@ -138,7 +136,9 @@ public:
 	GraphicsContext2() noexcept;
 	virtual ~GraphicsContext2() noexcept;
 
-	virtual void clearFramebufferIndexed(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept = 0;
+	virtual void clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept = 0;
+	virtual void discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept = 0;
+	virtual void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
 
 private:
 	GraphicsContext2(const GraphicsContext2&) noexcept = delete;

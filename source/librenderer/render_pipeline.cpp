@@ -261,6 +261,13 @@ RenderPipeline::clearFramebuffer(GraphicsClearFlags flags, const float4& color, 
 	_graphicsContext->clearFramebuffer(flags, color, depth, stencil);
 }
 
+void 
+RenderPipeline::clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->clearFramebufferi(flags, color, depth, stencil, i);
+}
+
 void
 RenderPipeline::discradRenderTexture(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept
 {
@@ -579,7 +586,7 @@ RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint
 	GraphicsContextDesc contextDesc;
 	contextDesc.setDebugMode(true);
 	contextDesc.setSwapchain(_graphicsSwapchain);
-	_graphicsContext = _pipelineDevice->createDeviceContext(contextDesc);
+	_graphicsContext = _pipelineDevice->createDeviceContext(contextDesc)->downcast_pointer<GraphicsContext2>();
 	if (!_graphicsContext)
 		return false;
 

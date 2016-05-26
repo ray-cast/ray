@@ -48,7 +48,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLDeviceContext, GraphicsContext, "OGLDeviceContext")
+__ImplementSubClass(OGLDeviceContext, GraphicsContext2, "OGLDeviceContext")
 
 OGLDeviceContext::OGLDeviceContext() noexcept
 	: _clearColor(0.0f, 0.0f, 0.0f, 0.0f)
@@ -550,6 +550,40 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 		{
 			glDepthMask(GL_FALSE);
 		}
+	}
+}
+
+void
+OGLDeviceContext::clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
+{
+	assert(_glcontext->getActive());
+
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+	{
+		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+		{
+			glDepthMask(GL_TRUE);
+		}
+
+		GLfloat f = depth;
+		glClearBufferfv(GL_DEPTH, 0, &f);
+
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+		{
+			glDepthMask(GL_FALSE);
+		}
+	}
+
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
+	{
+		GLint s = stencil;
+		glClearBufferiv(GL_STENCIL, 0, &s);
+	}
+
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
+	{
+		glClearBufferfv(GL_COLOR, i, color.ptr());
 	}
 }
 

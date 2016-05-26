@@ -114,7 +114,7 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
 
 		_pipeline->setCamera(light->getShadowCamera());
 		_pipeline->setFramebuffer(_softShadowDepthViewTemp[lightShadowType]);
-		_pipeline->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
+		_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
 		_pipeline->drawRenderQueue(RenderQueue::RenderQueueShadow, _softGenShadowMap);
 
 		if (light->getSoftShadow())

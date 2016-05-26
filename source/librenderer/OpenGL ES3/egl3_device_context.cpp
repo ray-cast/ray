@@ -48,7 +48,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(EGL3DeviceContext, GraphicsContext2, "EGL3DeviceContext")
+__ImplementSubClass(EGL3DeviceContext, GraphicsContext, "EGL3DeviceContext")
 
 EGL3DeviceContext::EGL3DeviceContext() noexcept
 	: _clearColor(0.0, 0.0, 0.0, 0.0)
@@ -472,13 +472,6 @@ EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, color, depth, stencil);
-}
-
-void
 EGL3DeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
@@ -565,7 +558,7 @@ EGL3DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 }
 
 void
-EGL3DeviceContext::clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
+EGL3DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_glcontext->getActive());
 

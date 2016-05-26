@@ -468,13 +468,6 @@ EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 	}
 }
 
-void
-EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, color, depth, stencil);
-}
-
 GraphicsFramebufferPtr
 EGL2DeviceContext::getFramebuffer() const noexcept
 {
@@ -484,8 +477,10 @@ EGL2DeviceContext::getFramebuffer() const noexcept
 }
 
 void
-EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+EGL2DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
+	assert(i == 0);
+
 	GLbitfield mode = 0;
 
 	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)

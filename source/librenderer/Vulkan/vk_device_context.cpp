@@ -46,7 +46,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(VulkanDeviceContext, GraphicsContext2, "VulkanDeviceContext")
+__ImplementSubClass(VulkanDeviceContext, GraphicsContext, "VulkanDeviceContext")
 
 VulkanDeviceContext::VulkanDeviceContext() noexcept
 	: _viewports(8)
@@ -188,13 +188,7 @@ VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer, const fl
 }
 
 void
-VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	_commandList->clearFramebuffer(flags, color, depth, stencil);
-}
-
-void
-VulkanDeviceContext::clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
+VulkanDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	_commandList->clearFramebuffer(flags, color, depth, stencil, i);
 }

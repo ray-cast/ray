@@ -71,10 +71,8 @@ public:
 	const Scissor& getScissor() const noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
-	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept;
+	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept;
-	void blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
 	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
@@ -93,7 +91,7 @@ public:
 
 	void addPostProcess(RenderPostProcessPtr& postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr& postprocess) noexcept;
-	void drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
+	bool drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
 	void destroyPostProcess() noexcept;
 
 	void present() noexcept;
@@ -143,7 +141,7 @@ private:
 	RenderPipelineDevicePtr _pipelineDevice;
 
 	GraphicsSwapchainPtr _graphicsSwapchain;
-	GraphicsContext2Ptr _graphicsContext;
+	GraphicsContextPtr _graphicsContext;
 
 	CameraPtr _camera;
 

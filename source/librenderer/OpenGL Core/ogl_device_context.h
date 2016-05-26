@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class OGLDeviceContext final : public GraphicsContext2
+class OGLDeviceContext final : public GraphicsContext
 {
-	__DeclareSubClass(OGLDeviceContext, GraphicsContext2)
+	__DeclareSubClass(OGLDeviceContext, GraphicsContext)
 public:
 	OGLDeviceContext() noexcept;
 	~OGLDeviceContext() noexcept;
@@ -82,9 +82,8 @@ public:
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
-	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept;
+	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;

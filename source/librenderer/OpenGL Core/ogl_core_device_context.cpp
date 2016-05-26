@@ -48,7 +48,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLCoreDeviceContext, GraphicsContext2, "OGLCoreDeviceContext")
+__ImplementSubClass(OGLCoreDeviceContext, GraphicsContext, "OGLCoreDeviceContext")
 
 OGLCoreDeviceContext::OGLCoreDeviceContext() noexcept
 	: _clearColor(0.0f, 0.0f, 0.0f, 0.0f)
@@ -491,13 +491,6 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, color, depth, stencil);
-}
-
-void
 OGLCoreDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
@@ -520,64 +513,7 @@ OGLCoreDeviceContext::getFramebuffer() const noexcept
 }
 
 void
-OGLCoreDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	assert(_glcontext->getActive());
-
-	GLbitfield mode = 0;
-
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
-	{
-		mode |= GL_COLOR_BUFFER_BIT;
-
-		if (_clearColor != color)
-		{
-			glClearColor(color.x, color.y, color.z, color.w);
-			_clearColor = color;
-		}
-	}
-
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
-	{
-		mode |= GL_DEPTH_BUFFER_BIT;
-
-		if (_clearDepth != depth)
-		{
-			glClearDepth(depth);
-			_clearDepth = depth;
-		}
-	}
-
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
-	{
-		mode |= GL_STENCIL_BUFFER_BIT;
-
-		if (_clearStencil != stencil)
-		{
-			glClearStencil(stencil);
-			_clearStencil = stencil;
-		}
-	}
-
-	if (mode != 0)
-	{
-		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
-		{
-			glDepthMask(GL_TRUE);
-		}
-
-		glClear(mode);
-
-		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
-		{
-			glDepthMask(GL_FALSE);
-		}
-	}
-}
-
-void
-OGLCoreDeviceContext::clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
+OGLCoreDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_glcontext->getActive());
 

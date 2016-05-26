@@ -48,7 +48,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLDeviceContext, GraphicsContext2, "OGLDeviceContext")
+__ImplementSubClass(OGLDeviceContext, GraphicsContext, "OGLDeviceContext")
 
 OGLDeviceContext::OGLDeviceContext() noexcept
 	: _clearColor(0.0f, 0.0f, 0.0f, 0.0f)
@@ -490,13 +490,6 @@ OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, color, depth, stencil);
-}
-
-void
 OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_glcontext->getActive());
@@ -554,7 +547,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 }
 
 void
-OGLDeviceContext::clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
+OGLDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_glcontext->getActive());
 

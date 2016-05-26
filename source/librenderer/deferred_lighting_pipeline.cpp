@@ -141,14 +141,15 @@ DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 		this->renderOpaquesSpecificShading(*_pipeline, _deferredFinalShadingView);
 	}
 
-	_pipeline->drawPostProcess(RenderQueue::RenderQueuePostprocess, _deferredFinalShadingView, _deferredSwapView);
+	if (_pipeline->drawPostProcess(RenderQueue::RenderQueuePostprocess, _deferredFinalShadingView, _deferredSwapView))
+		this->copyRenderTexture(*_pipeline, _deferredSwapMap, _deferredFinalShadingView);
 }
 
 void
 DeferredLightingPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueBatch);
 }
@@ -166,7 +167,7 @@ void
 DeferredLightingPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	pipeline.drawScreenQuad(*_deferredShadingOpaques);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueShading);
 	pipeline.drawPostProcess(RenderQueue::RenderQueueOpaqueShading, target, target);
@@ -184,10 +185,10 @@ void
 DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
-	pipeline.clearFramebufferi(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0, 0);
-	pipeline.clearFramebufferi(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0, 1);
-	pipeline.clearFramebufferi(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4(1.0,1.0,1.0,0.0), 1.0, 0, 2);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4(1.0,1.0,1.0,0.0), 1.0, 0);
+
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatch);
 }
@@ -222,7 +223,7 @@ void
 DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 
 	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
@@ -371,6 +372,14 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	pipeline.drawScreenQuadLayer(*_deferredAmbientLight, light.getLayer());
+}
+
+void 
+DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept
+{
+	_texSource->uniformTexture(src);
+	pipeline.setFramebuffer(dst);
+	pipeline.drawScreenQuad(*_deferredCopyOnly);
 }
 
 void

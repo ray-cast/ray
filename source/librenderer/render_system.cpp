@@ -153,24 +153,10 @@ RenderSystem::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-RenderSystem::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+RenderSystem::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->clearFramebuffer(flags, color, depth, stencil);
-}
-
-void
-RenderSystem::discradRenderTexture() noexcept
-{
-	assert(_pipelineManager);
-	_pipelineManager->discradRenderTexture();
-}
-
-void
-RenderSystem::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
-{
-	assert(_pipelineManager);
-	_pipelineManager->blitFramebuffer(srcTarget, src, destTarget, dest);
+	_pipelineManager->clearFramebuffer(i, flags, color, depth, stencil);
 }
 
 void 

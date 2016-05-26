@@ -411,22 +411,10 @@ RenderPipelineManager::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-RenderPipelineManager::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+RenderPipelineManager::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_pipeline);
-	_pipeline->clearFramebuffer(flags, color, depth, stencil);
-}
-
-void
-RenderPipelineManager::discradRenderTexture() noexcept
-{
-}
-
-void
-RenderPipelineManager::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
-{
-	assert(_pipeline);
-	_pipeline->blitFramebuffer(srcTarget, src, destTarget, dest);
+	_pipeline->clearFramebuffer(i, flags, color, depth, stencil);
 }
 
 void 

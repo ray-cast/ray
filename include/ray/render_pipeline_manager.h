@@ -73,9 +73,7 @@ public:
 	void setTransformInverse(const float4x4& transform) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
-	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void discradRenderTexture() noexcept;
-	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
+	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
 	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;

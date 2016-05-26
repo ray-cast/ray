@@ -70,6 +70,7 @@ public:
 	void renderPointLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
 
+	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept;
 	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
 
 private:

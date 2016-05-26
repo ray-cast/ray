@@ -86,7 +86,7 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 	_texSourceSizeInv->uniform2f(1.0f / width, 1.0f / height);
 
 	pipeline.setFramebuffer(dest);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(*_sunLum);
 }
 
@@ -100,7 +100,7 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 	_texSourceSizeInv->uniform2f(1.0f / width, 1.0f / height);
 
 	pipeline.setFramebuffer(dest);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(*_sunLumLog);
 }
 
@@ -120,7 +120,7 @@ FimicToneMapping::avgLuminance(RenderPipeline& pipeline, GraphicsTexturePtr adap
 	_delta->uniform1f(_timer->delta());
 
 	pipeline.setFramebuffer(dest);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(*_avgLuminance);
 }
 

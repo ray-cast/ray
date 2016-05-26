@@ -47,7 +47,6 @@ typedef std::shared_ptr<class GraphicsDevice> GraphicsDevicePtr;
 typedef std::shared_ptr<class GraphicsSwapchain> GraphicsSwapchainPtr;
 typedef std::shared_ptr<class GraphicsResource> GraphicsResourcePtr;
 typedef std::shared_ptr<class GraphicsContext> GraphicsContextPtr;
-typedef std::shared_ptr<class GraphicsContext2> GraphicsContext2Ptr;
 typedef std::shared_ptr<class GraphicsData> GraphicsDataPtr;
 typedef std::shared_ptr<class GraphicsInputLayout> GraphicsInputLayoutPtr;
 typedef std::shared_ptr<class GraphicsState> GraphicsStatePtr;

@@ -71,7 +71,7 @@ ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 	assert(pipeline.getCamera());
 
 	pipeline.setFramebuffer(pipeline.getCamera()->getFramebuffer());
-	pipeline.clearFramebuffer(pipeline.getCamera()->getClearFlags(), pipeline.getCamera()->getClearColor(), 1.0, 0);
+	pipeline.clearFramebuffer(0, pipeline.getCamera()->getClearFlags(), pipeline.getCamera()->getClearColor(), 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 

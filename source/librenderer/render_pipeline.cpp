@@ -254,32 +254,16 @@ RenderPipeline::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 	_graphicsContext->setFramebuffer(target);
 }
 
-void
-RenderPipeline::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	assert(_graphicsContext);
-	_graphicsContext->clearFramebuffer(flags, color, depth, stencil);
-}
-
 void 
-RenderPipeline::clearFramebufferi(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
+RenderPipeline::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->clearFramebufferi(flags, color, depth, stencil, i);
+	_graphicsContext->clearFramebuffer(i, flags, color, depth, stencil);
 }
 
 void
 RenderPipeline::discradRenderTexture(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->discardFramebuffer(attachments, numAttachment);
-}
-
-void
-RenderPipeline::blitFramebuffer(GraphicsFramebufferPtr& srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
-{
-	assert(_graphicsContext);
-	_graphicsContext->blitFramebuffer(srcTarget, src, destTarget, dest);
 }
 
 void
@@ -432,7 +416,7 @@ RenderPipeline::destroyPostProcess() noexcept
 	_postprocessors.clear();
 }
 
-void
+bool
 RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	GraphicsFramebufferPtr view = swap;
@@ -449,16 +433,7 @@ RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& sourc
 		}
 	}
 
-	if (cur != source)
-	{
-		std::uint32_t w = source->getGraphicsFramebufferDesc().getWidth();
-		std::uint32_t h = source->getGraphicsFramebufferDesc().getHeight();
-		Viewport viewport(0, 0, w, h);
-		if (cur)
-			this->blitFramebuffer(cur, viewport, source, viewport);
-		else
-			this->blitFramebuffer(source, viewport, source, viewport);
-	}
+	return cur != source;
 }
 
 void
@@ -586,7 +561,7 @@ RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint
 	GraphicsContextDesc contextDesc;
 	contextDesc.setDebugMode(true);
 	contextDesc.setSwapchain(_graphicsSwapchain);
-	_graphicsContext = _pipelineDevice->createDeviceContext(contextDesc)->downcast_pointer<GraphicsContext2>();
+	_graphicsContext = _pipelineDevice->createDeviceContext(contextDesc)->downcast_pointer<GraphicsContext>();
 	if (!_graphicsContext)
 		return false;
 

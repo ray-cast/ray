@@ -39,7 +39,6 @@
 _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsContext, GraphicsChild, "GraphicsContext")
-__ImplementSubInterface(GraphicsContext2, GraphicsContext, "GraphicsContext2")
 
 GraphicsIndirect::GraphicsIndirect() noexcept
 	: startVertice(0)
@@ -90,14 +89,6 @@ GraphicsContext::GraphicsContext() noexcept
 }
 
 GraphicsContext::~GraphicsContext() noexcept
-{
-}
-
-GraphicsContext2::GraphicsContext2() noexcept
-{
-}
-
-GraphicsContext2::~GraphicsContext2() noexcept
 {
 }
 

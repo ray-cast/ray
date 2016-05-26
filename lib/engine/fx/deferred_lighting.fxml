@@ -297,7 +297,7 @@
                 float3 diffuse = restoreDiffuse(MRT0) / max(MRT2.a, 0.00001);
                 float3 shading = shadingLight(diffuse, lighting.rgb, lighting.a);
 
-                return float4(lerp(source, shading, MRT2.x), 1.0);
+                return float4(PremultipliedBlend(source, shading, MRT2.x), 1.0);
             }
         ]]>
     </shader>

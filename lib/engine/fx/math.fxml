@@ -245,6 +245,15 @@
 			return SmoothCurve(TriangleWave(x));
 		}
 
+		float3 PremultipliedAlpha(float4 color)
+		{
+			return color.rgb * color.a;
+		}
+
+		float3 PremultipliedBlend(float3 src, float3 dst, float alpha)
+		{
+			return dst + src * (1 - alpha);
+		}
     	]]>
     </shader>
  </effect>

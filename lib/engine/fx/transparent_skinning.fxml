@@ -145,7 +145,7 @@
                 float viewDepth = abs(1.0 / iPosition.w) * 0.5;
                 float weight = computeWeightBlendOIT(viewDepth) * max(0, dot(normal,L));
 
-                fragData0 = StoreGBufferRT0(albedo.rgb*weight, brdfParm.r);
+                fragData0 = StoreGBufferRT0(PremultipliedAlpha(albedo) * weight, brdfParm.r);
                 fragData2 = StoreGBufferRT2(albedo.a, albedo.a * weight);
             }
 

@@ -41,11 +41,11 @@
 
 _NAME_BEGIN
 
-class EXPORT GraphicsStateDesc final
+class EXPORT GraphicsColorBlend final
 {
 public:
-	GraphicsStateDesc() noexcept;
-	~GraphicsStateDesc() noexcept;
+	GraphicsColorBlend() noexcept;
+	~GraphicsColorBlend() noexcept;
 
 	void setBlendEnable(bool enable) noexcept;
 	void setBlendOp(GraphicsBlendOp blendop) noexcept;
@@ -55,7 +55,41 @@ public:
 	void setBlendAlphaSrc(GraphicsBlendFactor factor) noexcept;
 	void setBlendAlphaDest(GraphicsBlendFactor factor) noexcept;
 
-	void setColorWriteMask(GraphicsColorMask mask) noexcept;
+	bool getBlendEnable() const noexcept;
+	GraphicsBlendOp getBlendOp() const noexcept;
+	GraphicsBlendFactor getBlendSrc() const noexcept;
+	GraphicsBlendFactor getBlendDest() const noexcept;
+	GraphicsBlendOp getBlendAlphaOp() const noexcept;
+	GraphicsBlendFactor getBlendAlphaSrc() const noexcept;
+	GraphicsBlendFactor getBlendAlphaDest() const noexcept;
+
+	void setColorWriteMask(GraphicsColorMaskFlags mask) noexcept;
+	GraphicsColorMaskFlags getColorWriteMask() const noexcept;
+
+private:
+	bool _blendEnable;
+
+	GraphicsBlendOp _blendOp;
+	GraphicsBlendOp _blendAlphaOp;
+
+	GraphicsBlendFactor _blendSrc;
+	GraphicsBlendFactor _blendDest;
+	GraphicsBlendFactor _blendAlphaSrc;
+	GraphicsBlendFactor _blendAlphaDest;
+
+	GraphicsColorMaskFlags _colorWriteMask;
+};
+
+class EXPORT GraphicsStateDesc final
+{
+public:
+	GraphicsStateDesc() noexcept;
+	~GraphicsStateDesc() noexcept;
+
+	void setColorBlends(const GraphicsColorBlends& blends) noexcept;
+	GraphicsColorBlends& getColorBlends() noexcept;
+	const GraphicsColorBlends& getColorBlends() const noexcept;
+
 	void setCullMode(GraphicsCullMode mode) noexcept;
 	void setPolygonMode(GraphicsPolygonMode mode) noexcept;
 	void setPrimitiveType(GraphicsVertexType type) noexcept;
@@ -94,15 +128,6 @@ public:
 	void setStencilBackZFail(GraphicsStencilOp stencilOp) noexcept;
 	void setStencilBackPass(GraphicsStencilOp stencilOp) noexcept;
 
-	bool getBlendEnable() const noexcept;
-	GraphicsBlendOp getBlendOp() const noexcept;
-	GraphicsBlendFactor getBlendSrc() const noexcept;
-	GraphicsBlendFactor getBlendDest() const noexcept;
-	GraphicsBlendOp getBlendAlphaOp() const noexcept;
-	GraphicsBlendFactor getBlendAlphaSrc() const noexcept;
-	GraphicsBlendFactor getBlendAlphaDest() const noexcept;
-
-	GraphicsColorMask getColorWriteMask() const noexcept;
 	GraphicsCullMode getCullMode() const noexcept;
 	GraphicsPolygonMode getPolygonMode() const noexcept;
 	GraphicsVertexType getPrimitiveType() const noexcept;
@@ -142,7 +167,6 @@ public:
 	GraphicsStencilOp getStencilBackPass() const noexcept;
 
 private:
-	bool _blendEnable;
 	bool _scissorTestEnable;
 	bool _srgbEnable;
 	bool _multisampleEnable;
@@ -156,16 +180,6 @@ private:
 	bool _stencilEnable;
 
 	float _lineWidth;
-
-	GraphicsBlendOp _blendOp;
-	GraphicsBlendOp _blendAlphaOp;
-
-	GraphicsBlendFactor _blendSrc;
-	GraphicsBlendFactor _blendDest;
-	GraphicsBlendFactor _blendAlphaSrc;
-	GraphicsBlendFactor _blendAlphaDest;
-
-	GraphicsColorMask _colorWriteMask;
 
 	GraphicsCullMode    _cullMode;
 	GraphicsPolygonMode _polygonMode;
@@ -193,6 +207,8 @@ private:
 	GraphicsStencilOp _stencilBackZFail;
 	GraphicsStencilOp _stencilBackPass;
 	GraphicsCompareFunc _stencilBackFunc;
+
+	GraphicsColorBlends _blends;
 };
 
 class EXPORT GraphicsState : public GraphicsChild

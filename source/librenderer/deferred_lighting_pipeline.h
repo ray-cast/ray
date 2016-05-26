@@ -88,13 +88,11 @@ private:
 	void destroyDeferredRenderTextureLayouts() noexcept;
 
 private:
-	virtual void onResolutionChangeBefore() noexcept;
-	virtual void onResolutionChangeAfter() noexcept;
-
 	virtual void onRenderPre() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
 	virtual void onRenderPost() noexcept;
 
+	virtual void onResolutionChange() noexcept;
 private:
 
 	MaterialPtr _deferredLighting;
@@ -115,9 +113,11 @@ private:
 
 	MaterialParamPtr _texMRT0;
 	MaterialParamPtr _texMRT1;
+	MaterialParamPtr _texMRT2;
 	MaterialParamPtr _texDepth;
 	MaterialParamPtr _texLight;
 	MaterialParamPtr _texSource;
+	MaterialParamPtr _texOpaque;	
 
 	MaterialParamPtr _eyePosition;
 	MaterialParamPtr _clipInfo;
@@ -141,38 +141,49 @@ private:
 	MaterialSemanticPtr _materialDeferredGraphicMap;
 	MaterialSemanticPtr _materialDeferredNormalMap;
 	MaterialSemanticPtr _materialDeferredLightMap;
+	MaterialSemanticPtr _materialDeferredOpaqueShadingMap;
 
 	GraphicsFormat _deferredDepthFormat;
 	GraphicsFormat _deferredDepthLinearFormat;
-	GraphicsFormat _deferredGraphicsFormat;
+	GraphicsFormat _deferredOpaqueFormat;
+	GraphicsFormat _deferredTransparentFormat;
 	GraphicsFormat _deferredNormalFormat;
+	GraphicsFormat _deferredAbufferFormat;
 	GraphicsFormat _deferredLightFormat;
 	GraphicsFormat _deferredShadingFormat;
 
 	GraphicsTexturePtr _deferredDepthMap;
 	GraphicsTexturePtr _deferredDepthLinearMap;
-	GraphicsTexturePtr _deferredGraphicsMap;
+	GraphicsTexturePtr _deferredOpaqueMap;
+	GraphicsTexturePtr _deferredTransparentMap;
 	GraphicsTexturePtr _deferredNormalMap;
+	GraphicsTexturePtr _deferredAbufferMap;
 	GraphicsTexturePtr _deferredLightingMap;
-	GraphicsTexturePtr _deferredShadingMap;
+	GraphicsTexturePtr _deferredOpaqueShadingMap;
+	GraphicsTexturePtr _deferredFinalShadingMap;
 	GraphicsTexturePtr _deferredSwapMap;
 
-	GraphicsFramebufferLayoutPtr _deferredDepthViewLayout;
-	GraphicsFramebufferLayoutPtr _deferredDepthLinearViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredDepthImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredDepthLinearImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredGraphicsImageLayout;
-	GraphicsFramebufferLayoutPtr _deferredNormalViewLayout;
-	GraphicsFramebufferLayoutPtr _deferredLightingViewLayout;
-	GraphicsFramebufferLayoutPtr _deferredShadingViewLayout;
-	GraphicsFramebufferLayoutPtr _deferredGraphicsViewsLayout;
+	GraphicsFramebufferLayoutPtr _deferredNormalImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredAbufferImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredLightingImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredShadingImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredOpaqueImagesLayout;
+	GraphicsFramebufferLayoutPtr _deferredTransparentImagesLayout;
 
 	GraphicsFramebufferPtr _deferredDepthView;
 	GraphicsFramebufferPtr _deferredDepthLinearView;
 	GraphicsFramebufferPtr _deferredGraphicsView;
 	GraphicsFramebufferPtr _deferredNormalView;
+	GraphicsFramebufferPtr _deferredAbufferView;	
 	GraphicsFramebufferPtr _deferredLightingView;
-	GraphicsFramebufferPtr _deferredShadingView;
+	GraphicsFramebufferPtr _deferredOpaqueViews;
+	GraphicsFramebufferPtr _deferredTransparentViews;
+	GraphicsFramebufferPtr _deferredOpaqueShadingView;
+	GraphicsFramebufferPtr _deferredFinalShadingView;
 	GraphicsFramebufferPtr _deferredSwapView;
-	GraphicsFramebufferPtr _deferredGraphicsViews;
 
 	RenderPipelinePtr _pipeline;
 	

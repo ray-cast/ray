@@ -265,15 +265,15 @@ Light::setupShadowMap(LightShadowType type) noexcept
 
 	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
 	shaodwMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _shadowFormat));
-	_shadowViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwMapLayoutDesc);
-	if (!_shadowViewLayout)
+	_shadowImageLayout = RenderSystem::instance()->createFramebufferLayout(shaodwMapLayoutDesc);
+	if (!_shadowImageLayout)
 		return false;
 
 	GraphicsFramebufferDesc shadowViewDesc;
 	shadowViewDesc.setWidth(shadowMapSize);
 	shadowViewDesc.setHeight(shadowMapSize);
 	shadowViewDesc.attach(_shadowMap);
-	shadowViewDesc.setGraphicsFramebufferLayout(_shadowViewLayout);
+	shadowViewDesc.setGraphicsFramebufferLayout(_shadowImageLayout);
 	_shadowView = RenderSystem::instance()->createFramebuffer(shadowViewDesc);
 	if (!_shadowView)
 		return false;
@@ -287,7 +287,7 @@ Light::destroyShadowMap() noexcept
 {
 	_shadowCamera[0]->setFramebuffer(nullptr);
 	_shadowMap.reset();
-	_shadowViewLayout.reset();
+	_shadowImageLayout.reset();
 	_shadowView.reset();
 }
 

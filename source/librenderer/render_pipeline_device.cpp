@@ -134,7 +134,7 @@ RenderPipelineDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
+RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter) noexcept
 {
 	assert(_graphicsDevice);
 	GraphicsTextureDesc textureDesc;
@@ -142,6 +142,7 @@ RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTe
 	textureDesc.setHeight(h);
 	textureDesc.setTexDim(dim);
 	textureDesc.setTexFormat(format);
+	textureDesc.setSamplerFilter(filter);
 	return _graphicsDevice->createTexture(textureDesc);
 }
 

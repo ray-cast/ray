@@ -13,11 +13,13 @@
     <parameter name="texSource" type="texture2D" />
     <parameter name="texSourceSizeInv" type="float2" />
     <parameter name="texBloom" type="texture2D" />
+    <parameter name="texLumAve" type="texture2D" />
     <parameter name="bloomThreshold" type="float" />
     <parameter name="bloomIntensity" type="float" />
     <parameter name="bloomOffset[10]" type="float2[]" />
     <parameter name="bloomWeight[11]" type="float[]" />
     <parameter name="exposure" type="float" />
+    <parameter name="delta" type="float" />
     <shader>
         <![CDATA[
             float3 Uncharted2Tonemap(float3 x)
@@ -74,11 +76,26 @@
                 return lerp(lum * BLUE_SHIFT, color, saturate(16.0f * lum));
             }
 
-            float3 ToneMapping(float3 color, float3 bloom, float exposure)
+            float EyeAdaption(float lum)
+            {
+                return lerp(0.2f, lum, 0.5f);
+            }
+
+            float ToneExposure(float avgLum)
+            {
+                return 3 / (max(0.1f, 1 + 10 * EyeAdaption(avgLum)));
+            }
+
+            float CalcAdaptedLum(float adaptedLum, float lum, float delta)
+            {
+                return adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, 50 * delta));
+            }
+
+            float3 ToneMapping(float3 color, float3 bloom, float aveLum, float exposure)
             {
                 color += bloom;
                 color += ToneBlueShift(color, luminance(color));
-                color = FilmicTonemap(color, exposure);
+                color = FilmicTonemap(color, exposure * ToneExposure(aveLum));
                 return saturate(color);
             }
 
@@ -115,22 +132,34 @@
                 return color;
             }
 
-            float4 SumLumLogPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
+            float SumLumLogPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
             {
-                float lum = texSource.Sample(PointClamp, coord0.xy).r;
-                lum += texSource.Sample(PointClamp, coord0.zw).r;
-                lum += texSource.Sample(PointClamp, coord1.xy).r;
-                lum += texSource.Sample(PointClamp, coord1.zw).r;
-                lum *= 0.25;
+                float4 color = texSource.Sample(PointClamp, coord0.xy);
+                color += texSource.Sample(PointClamp, coord0.zw);
+                color += texSource.Sample(PointClamp, coord1.xy);
+                color += texSource.Sample(PointClamp, coord1.zw);
+                color *= 0.25;
 
-                const float epsilon = 0.0001;
-                return log(lum + epsilon);
+                const float epsilon = 0.01f;
+                return log(max(epsilon, luminance(color)));
+            }
+
+            float AvgLuminancePS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
+            {
+                float4 color = texSource.Sample(PointClamp, coord0.xy);
+                color += texSource.Sample(PointClamp, coord0.zw);
+                color += texSource.Sample(PointClamp, coord1.xy);
+                color += texSource.Sample(PointClamp, coord1.zw);
+                color *= 0.25;
+
+                float adaptedLum = texLumAve.Sample(PointClamp, float2(0,0)).r;
+                return CalcAdaptedLum(adaptedLum, exp(color.r), delta);
             }
 
             float4 BloomPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
                 float4 color = texSource.Sample(PointClamp, coord.xy);
-                return float4(max((color.rgb - bloomThreshold) * bloomIntensity, 0), color.a);
+                return float4(max(0, (color.rgb - bloomThreshold) * bloomIntensity), color.a);
             }
 
             void BlurXVS(
@@ -197,9 +226,10 @@
 
             float4 FimicTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
+                float aveLum = texLumAve.Sample(PointClamp, float2(0,0)).r;
                 float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
                 float3 bloom = texBloom.Sample(PointClamp, coord.xy).rgb;
-                float3 LDR = ToneMapping(color, bloom, exposure);
+                float3 LDR = ToneMapping(color, bloom, aveLum, exposure);
                 return float4(LDR, luminance(LDR));
             }
         ]]>
@@ -221,6 +251,18 @@
             <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="SumLumVS" />
             <state name="fragment" value="SumLumLogPS" />
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+        </pass>
+    </technique>
+    <technique name="AvgLuminance">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="SumLumVS" />
+            <state name="fragment" value="AvgLuminancePS" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>

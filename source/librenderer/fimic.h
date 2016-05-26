@@ -50,10 +50,8 @@ public:
 		float bloomThreshold;
 		float bloomIntensity;
 
-		float lumKey;
-		float lumDelta;
-		float lumExposure;
-		float lumMiddleGray;
+		float exposure;
+		float middleGray;
 
 		Setting() noexcept;
 	};
@@ -69,8 +67,7 @@ private:
 
 	void sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
-
-	void measureLuminance(RenderPipeline& pipeline, GraphicsTexturePtr source) noexcept;
+	void avgLuminance(RenderPipeline& pipeline, GraphicsTexturePtr adaptedLum, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 	void generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
@@ -83,14 +80,9 @@ private:
 	void onActivate(RenderPipeline& pipeline) noexcept;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept;
+	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
 
 private:
-
-	float _lum;
-	float _lumAdapt;
-	float _lumRate;
-	float _lumFrequency;
 
 	TimerPtr _timer;
 
@@ -99,6 +91,7 @@ private:
 	MaterialPtr _fimic;
 	MaterialTechPtr _sunLum;
 	MaterialTechPtr _sunLumLog;
+	MaterialTechPtr _avgLuminance;
 	MaterialTechPtr _bloom;
 	MaterialTechPtr _blurh;
 	MaterialTechPtr _blurv;
@@ -115,21 +108,34 @@ private:
 	MaterialParamPtr _toneLumExposure;
 	MaterialParamPtr _toneBurnout;
 	MaterialParamPtr _toneDefocus;
-
+	MaterialParamPtr _delta;
+	MaterialParamPtr _texLumAve;
 	MaterialParamPtr _texSource;
 	MaterialParamPtr _texSourceSizeInv;
 
 	GraphicsTexturePtr _texSample4Map;
 	GraphicsTexturePtr _texSample8Map;
-	GraphicsTexturePtr _texSampleLogMap;
+
+	GraphicsTexturePtr _texSampleLog64Map;
+	GraphicsTexturePtr _texSampleLog16Map;
+	GraphicsTexturePtr _texSampleLog4Map;
+	GraphicsTexturePtr _texSampleLumMap;
+	GraphicsTexturePtr _texSampleLumMap2;
+
 	GraphicsTexturePtr _texCombieMap;
 
-	GraphicsFramebufferLayoutPtr _sampleViewLayout;
-	GraphicsFramebufferLayoutPtr _sampleLogViewLayout;
+	GraphicsFramebufferLayoutPtr _sampleImageLayout;
+	GraphicsFramebufferLayoutPtr _sampleLogImageLayout;
 
 	GraphicsFramebufferPtr _texSample4View;
 	GraphicsFramebufferPtr _texSample8View;
-	GraphicsFramebufferPtr _texSampleLogView;
+
+	GraphicsFramebufferPtr _texSampleLog64View;
+	GraphicsFramebufferPtr _texSampleLog16View;
+	GraphicsFramebufferPtr _texSampleLog4View;
+	GraphicsFramebufferPtr _texSampleLumView;
+	GraphicsFramebufferPtr _texSampleLumView2;
+
 	GraphicsFramebufferPtr _texCombieView;
 };
 

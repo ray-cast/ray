@@ -19,6 +19,11 @@
                 return float4(packNormal(n), roughness);
             }
 
+            float4 StoreGBufferRT2(float weight, float alpha)
+            {
+                return float4(float3(weight,weight,weight), alpha);
+            }
+
             float3 restoreDiffuse(texture2D mrt0, float2 coord)
             {
                 return mrt0.Sample(PointClamp, coord).rgb;
@@ -62,6 +67,11 @@
             {
                 float depth = texDepthLinear.Sample(PointClamp, coord).r;
                 return viewdir * depth / viewdir.z;
+            }
+
+            float computeWeightBlendOIT(float linearDepth)
+            {
+                return clamp(0.03 / (1e-5 + pow(linearDepth, 4.0)), 1e-2, 3e3);
             }
         ]]>
     </shader>

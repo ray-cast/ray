@@ -104,15 +104,10 @@ DefaultRenderDataManager::assginVisiableObject(const Camera& camera) noexcept
 void
 DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 {
-	_renderQueue[RenderQueue::RenderQueueShadow].clear();
-	_renderQueue[RenderQueue::RenderQueueOpaque].clear();
-	_renderQueue[RenderQueue::RenderQueueOpaqueShading].clear();
-	_renderQueue[RenderQueue::RenderQueueOpaqueSpecific].clear();
-	_renderQueue[RenderQueue::RenderQueueTransparent].clear();
-	_renderQueue[RenderQueue::RenderQueueTransparentSpecific].clear();
-	_renderQueue[RenderQueue::RenderQueueLighting].clear();
-
 	_visiable.clear();
+
+	for (std::size_t i = 0; i < RenderQueue::RenderQueueEndRange; i++)
+		_renderQueue[i].clear();
 
 	auto cameraOrder = camera.getCameraOrder();
 	if (cameraOrder == CameraOrder::CameraOrder3D ||

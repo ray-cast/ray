@@ -60,51 +60,71 @@ EGL2GraphicsState::close() noexcept
 void
 EGL2GraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 {
-	if (_stateDesc.getBlendEnable())
+	auto& srcBlends = _stateDesc.getColorBlends();
+	auto& destBlends = lastStateDesc.getColorBlends();
+
+	std::size_t srcBlendCount = srcBlends.size();
+	std::size_t destBlendCount = destBlends.size();
+	for (std::size_t i = srcBlendCount; i < destBlendCount; i++)
 	{
-		if (!lastStateDesc.getBlendEnable())
+		auto& destBlend = destBlends[i];
+		if (destBlend.getBlendEnable())
 		{
-			glEnable(GL_BLEND);
-			lastStateDesc.setBlendEnable(true);
-		}
-
-		if (lastStateDesc.getBlendSrc() != _stateDesc.getBlendSrc() ||
-			lastStateDesc.getBlendDest() != _stateDesc.getBlendDest() ||
-			lastStateDesc.getBlendAlphaSrc() != _stateDesc.getBlendAlphaSrc() ||
-			lastStateDesc.getBlendAlphaDest() != _stateDesc.getBlendAlphaDest())
-		{
-			GLenum sfactorRGB = EGL2Types::asBlendFactor(_stateDesc.getBlendSrc());
-			GLenum dfactorRGB = EGL2Types::asBlendFactor(_stateDesc.getBlendDest());
-			GLenum sfactorAlpha = EGL2Types::asBlendFactor(_stateDesc.getBlendAlphaSrc());
-			GLenum dfactorAlpha = EGL2Types::asBlendFactor(_stateDesc.getBlendAlphaDest());
-
-			glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
-
-			lastStateDesc.setBlendSrc(_stateDesc.getBlendSrc());
-			lastStateDesc.setBlendDest(_stateDesc.getBlendDest());
-			lastStateDesc.setBlendAlphaSrc(_stateDesc.getBlendAlphaSrc());
-			lastStateDesc.setBlendAlphaDest(_stateDesc.getBlendAlphaDest());
-		}
-
-		if (lastStateDesc.getBlendOp() != _stateDesc.getBlendOp() ||
-			lastStateDesc.getBlendAlphaOp() != _stateDesc.getBlendAlphaOp())
-		{
-			GLenum modeRGB = EGL2Types::asBlendOperation(_stateDesc.getBlendOp());
-			GLenum modeAlpha = EGL2Types::asBlendOperation(_stateDesc.getBlendAlphaOp());
-
-			glBlendEquationSeparate(modeRGB, modeAlpha);
-
-			lastStateDesc.setBlendOp(_stateDesc.getBlendOp());
-			lastStateDesc.setBlendAlphaOp(_stateDesc.getBlendAlphaOp());
+			glDisableiEXT(GL_BLEND, i);
+			destBlend.setBlendEnable(false);
 		}
 	}
-	else
-	{
-		if (lastStateDesc.getBlendEnable())
-		{
-			glDisable(GL_BLEND);
 
-			lastStateDesc.setBlendEnable(false);
+	for (std::size_t i = 0; i < srcBlendCount; i++)
+	{
+		auto& srcBlend = srcBlends[i];
+		auto& destBlend = destBlends[i];
+
+		if (srcBlends[i].getBlendEnable())
+		{
+			if (!destBlend.getBlendEnable())
+			{
+				glEnableiEXT(GL_BLEND, i);
+				destBlend.setBlendEnable(true);
+			}
+
+			if (destBlend.getBlendSrc() != srcBlend.getBlendSrc() ||
+				destBlend.getBlendDest() != srcBlend.getBlendDest() ||
+				destBlend.getBlendAlphaSrc() != srcBlend.getBlendAlphaSrc() ||
+				destBlend.getBlendAlphaDest() != srcBlend.getBlendAlphaDest())
+			{
+				GLenum sfactorRGB = EGL2Types::asBlendFactor(srcBlend.getBlendSrc());
+				GLenum dfactorRGB = EGL2Types::asBlendFactor(srcBlend.getBlendDest());
+				GLenum sfactorAlpha = EGL2Types::asBlendFactor(srcBlend.getBlendAlphaSrc());
+				GLenum dfactorAlpha = EGL2Types::asBlendFactor(srcBlend.getBlendAlphaDest());
+
+				glBlendFuncSeparateiEXT(i, sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+
+				destBlend.setBlendSrc(srcBlend.getBlendSrc());
+				destBlend.setBlendDest(srcBlend.getBlendDest());
+				destBlend.setBlendAlphaSrc(srcBlend.getBlendAlphaSrc());
+				destBlend.setBlendAlphaDest(srcBlend.getBlendAlphaDest());
+			}
+
+			if (destBlend.getBlendOp() != srcBlend.getBlendOp() ||
+				destBlend.getBlendAlphaOp() != srcBlend.getBlendAlphaOp())
+			{
+				GLenum modeRGB = EGL2Types::asBlendOperation(srcBlend.getBlendOp());
+				GLenum modeAlpha = EGL2Types::asBlendOperation(srcBlend.getBlendAlphaOp());
+
+				glBlendEquationSeparateiEXT(i, modeRGB, modeAlpha);
+
+				destBlend.setBlendOp(srcBlend.getBlendOp());
+				destBlend.setBlendAlphaOp(srcBlend.getBlendAlphaOp());
+			}
+		}
+		else
+		{
+			if (destBlend.getBlendEnable())
+			{
+				glDisableiEXT(GL_BLEND, i);
+				destBlend.setBlendEnable(false);
+			}
 		}
 	}
 

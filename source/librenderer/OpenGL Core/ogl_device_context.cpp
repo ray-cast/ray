@@ -62,11 +62,15 @@ OGLDeviceContext::OGLDeviceContext() noexcept
 	, _vbo(nullptr)
 	, _ibo(nullptr)
 	, _glcontext(nullptr)
-	, _viewport(0, 0, 0, 0)
 	, _needUpdateState(true)
 	, _needUpdateLayout(true)
 	, _needUpdateDescriptor(true)
 {
+	std::memset(&_viewport, 0, sizeof(_viewport));
+	std::memset(&_scissor, 0, sizeof(_scissor));
+
+	GraphicsColorBlends blends(4);
+	_stateCaptured.setColorBlends(blends);
 }
 
 OGLDeviceContext::~OGLDeviceContext() noexcept

@@ -269,19 +269,48 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	break;
 	case DDS_FOURCC_DX10:
 	{
-		info.format.bpp = info.format.size * 2;
+		if (info.format.flags = 0x65)
+		{
+			if (info.format.blue_mask > info.format.red_mask)
+			{
+				if (info.format.bpp == 24)
+					format = ImageFormat::ImageFormatR8G8B8;
+				else if (info.format.bpp == 32)
+					format = ImageFormat::ImageFormatR8G8B8A8;
+				else
+					return false;
+			}
+			else
+			{
+				if (info.format.bpp == 24)
+					format = ImageFormat::ImageFormatB8G8R8;
+				else if (info.format.bpp == 32)
+					format = ImageFormat::ImageFormatB8G8R8A8;
+				else
+					return false;
+			}
 
-		if (info.format.size == 8)
-			format = ImageFormat::ImageFormatR16F;
-		else if (info.format.size == 16)
-			format = ImageFormat::ImageFormatR16G16F;
-		else if (info.format.size == 24)
-			format = ImageFormat::ImageFormatR16G16B16F;
-		else if (info.format.size == 32)
-			format = ImageFormat::ImageFormatR16G16B16A16F;
+			if (!image.create(info.width, info.height, info.depth, format, size, (std::uint8_t*)data.get(), false))
+				return false;
+
+			data.dismiss();
+		}
 		else
-			return false;
-		assert(false);
+		{
+			info.format.bpp = info.format.size * 2;
+
+			if (info.format.size == 8)
+				format = ImageFormat::ImageFormatR16F;
+			else if (info.format.size == 16)
+				format = ImageFormat::ImageFormatR16G16F;
+			else if (info.format.size == 24)
+				format = ImageFormat::ImageFormatR16G16B16F;
+			else if (info.format.size == 32)
+				format = ImageFormat::ImageFormatR16G16B16A16F;
+			else
+				return false;
+			assert(false);
+		}
 	}
 	break;
 	default:

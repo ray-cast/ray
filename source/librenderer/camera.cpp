@@ -59,14 +59,9 @@ Camera::Camera() noexcept
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)
 	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
-	, _needUpdateProject(true)
 	, _needUpdateViewProject(true)
 	, _needUpdateVisiable(true)
 {
-	std::uint32_t width, height;
-	RenderSystem::instance()->getWindowResolution(width, height);
-
-	_ratio = (float)width / height;
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
 }
 
@@ -78,7 +73,7 @@ void
 Camera::setAperture(float aspect) noexcept
 {
 	_aperture = aspect;
-	_needUpdateProject = true;
+	_needUpdateViewProject = true;
 }
 
 float
@@ -91,7 +86,7 @@ void
 Camera::setNear(float znear) noexcept
 {
 	_znear = znear;
-	_needUpdateProject = true;
+	_needUpdateViewProject = true;
 }
 
 float
@@ -104,7 +99,7 @@ void
 Camera::setFar(float zfar) noexcept
 {
 	_zfar = zfar;
-	_needUpdateProject = true;
+	_needUpdateViewProject = true;
 }
 
 float
@@ -117,7 +112,7 @@ void
 Camera::setRatio(float ratio) noexcept
 {
 	_ratio = ratio;
-	_needUpdateProject = true;
+	_needUpdateViewProject = true;
 }
 
 float
@@ -133,7 +128,7 @@ Camera::setOrtho(float left, float right, float bottom, float top) noexcept
 	_right = right;
 	_top = top;
 	_bottom = bottom;
-	_needUpdateProject = true;
+	_needUpdateViewProject = true;
 }
 
 void
@@ -321,7 +316,7 @@ void
 Camera::setCameraType(CameraType type) noexcept
 {
 	_cameraType = type;
-	_needUpdateProject = true;
+	_needUpdateViewProject = true;
 }
 
 void
@@ -416,7 +411,17 @@ Camera::_updateOrtho() const noexcept
 void
 Camera::_updatePerspective() const noexcept
 {
-	_project.makePerspective_fov_lh(_aperture, _ratio, _znear, _zfar);
+	float ratio = 1.0;
+
+	if (_cameraOrder != CameraOrder::CameraOrderShadow)
+	{
+		std::uint32_t width, height;
+		RenderSystem::instance()->getWindowResolution(width, height);
+
+		ratio = (float)width / height;
+	}
+
+	_project.makePerspective_fov_lh(_aperture, _ratio * ratio, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
 
 	_clipConstant.x = _znear * (_zfar / (_zfar - _znear));
@@ -426,26 +431,15 @@ Camera::_updatePerspective() const noexcept
 }
 
 void
-Camera::_updateProject() const noexcept
+Camera::_updateViewProject() const noexcept
 {
-	if (_needUpdateProject)
+	if (_needUpdateViewProject)
 	{
 		if (_cameraType == CameraType::CameraTypePerspective)
 			this->_updatePerspective();
 		else
 			this->_updateOrtho();
 
-		_needUpdateProject = false;
-	}
-}
-
-void
-Camera::_updateViewProject() const noexcept
-{
-	_updateProject();
-
-	if (_needUpdateViewProject)
-	{
 		_viewProejct = _project * this->getView();
 		_viewProjectInverse = math::inverse(_viewProejct);
 

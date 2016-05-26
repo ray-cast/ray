@@ -220,6 +220,9 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 	if (type == GL_INVALID_ENUM)
 		return false;
 
+	if (type == GL_HALF_FLOAT)
+		type = GL_FLOAT;
+
 	GLsizei num = OGLTypes::getFormatNum(format, type);
 	if (num == 0)
 		return false;

@@ -12,10 +12,6 @@
 #define isinf(x) (!_finite(x))
 #endif
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
 #define fpcheck(x) (isnan(x) || isinf(x))
 
 extern void AddIndentation(HLSLCrossCompilerContext* psContext);

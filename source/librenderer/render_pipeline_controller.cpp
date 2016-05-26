@@ -49,16 +49,6 @@ RenderPipelineController::~RenderPipelineController() noexcept
 }
 
 void
-RenderPipelineController::onResolutionChangeBefore() noexcept
-{
-}
-
-void
-RenderPipelineController::onResolutionChangeAfter() noexcept
-{
-}
-
-void
 RenderPipelineController::onRenderPre() noexcept
 {
 }
@@ -70,6 +60,11 @@ RenderPipelineController::onRenderPipeline(const CameraPtr& camera) noexcept
 
 void
 RenderPipelineController::onRenderPost() noexcept
+{
+}
+
+void
+RenderPipelineController::onResolutionChange() noexcept
 {
 }
 

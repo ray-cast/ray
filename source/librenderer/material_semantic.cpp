@@ -682,11 +682,12 @@ MaterialSemanticManager::setup() noexcept
 	_parametes[GlobalSemanticType::GlobalSemanticTypeCameraPosition] = std::make_shared<MaterialSemantic>("CameraPosition", GraphicsUniformType::GraphicsUniformTypeFloat3);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeCameraDirection] = std::make_shared<MaterialSemantic>("CameraDirection", GraphicsUniformType::GraphicsUniformTypeFloat3);
 
-	_parametes[GlobalSemanticType::GlobalSemanticTypeDepthTexture] = std::make_shared<MaterialSemantic>("DepthTexture", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_parametes[GlobalSemanticType::GlobalSemanticTypeDepthLinearTexture] = std::make_shared<MaterialSemantic>("DepthLinearTexture", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_parametes[GlobalSemanticType::GlobalSemanticTypeDiffuseTexture] = std::make_shared<MaterialSemantic>("DiffuseTexture", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_parametes[GlobalSemanticType::GlobalSemanticTypeNormalTexture] = std::make_shared<MaterialSemantic>("NormalTexture", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_parametes[GlobalSemanticType::GlobalSemanticTypeLightingTexture] = std::make_shared<MaterialSemantic>("LightingTexture", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_parametes[GlobalSemanticType::GlobalSemanticTypeDepthMap] = std::make_shared<MaterialSemantic>("DepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_parametes[GlobalSemanticType::GlobalSemanticTypeDepthLinearMap] = std::make_shared<MaterialSemantic>("DepthLinearMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_parametes[GlobalSemanticType::GlobalSemanticTypeDiffuseMap] = std::make_shared<MaterialSemantic>("DiffuseMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_parametes[GlobalSemanticType::GlobalSemanticTypeNormalMap] = std::make_shared<MaterialSemantic>("NormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_parametes[GlobalSemanticType::GlobalSemanticTypeLightingMap] = std::make_shared<MaterialSemantic>("LightingMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_parametes[GlobalSemanticType::GlobalSemanticTypeOpaqueShadingMap] = std::make_shared<MaterialSemantic>("OpaqueShadingMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
 
 	return true;
 }

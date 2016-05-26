@@ -466,6 +466,31 @@ static void DeclareInput(
         {
             case INDEX_2D:
             {
+				if(psShader->eShaderType == HULL_SHADER)
+				{
+					if(iNumComponents == 1)
+					{
+						const uint32_t regNum =  psDecl->asOperands[0].ui32RegisterNumber;
+						const uint32_t arraySize = psDecl->asOperands[0].aui32ArraySizes[0];
+
+						psContext->psShader->abScalarInput[psDecl->asOperands[0].ui32RegisterNumber] = -1;
+
+						bformata(glsl, "%s %s %s %s [gl_MaxPatchVertices];\n", StorageQualifier, Precision, scalarType, InputName);
+
+						bformata(glsl, "%s1 Input%d;\n", vecType, psDecl->asOperands[0].ui32RegisterNumber);
+
+						psShader->aiInputDeclaredSize[psDecl->asOperands[0].ui32RegisterNumber] = arraySize;
+					}
+					else
+					{
+						bformata(glsl, "%s %s %s%d %s [gl_MaxPatchVertices];\n", StorageQualifier, Precision, vecType, iNumComponents, InputName);
+
+						bformata(glsl, "%s%d Input%d[gl_MaxPatchVertices];\n", vecType, iNumComponents, psDecl->asOperands[0].ui32RegisterNumber);
+
+						psShader->aiInputDeclaredSize[psDecl->asOperands[0].ui32RegisterNumber] = psDecl->asOperands[0].aui32ArraySizes[0];
+					}
+				}
+				else
                 if(iNumComponents == 1)
                 {
 				    const uint32_t regNum =  psDecl->asOperands[0].ui32RegisterNumber;
@@ -1242,15 +1267,12 @@ void DeclareStructConstants(HLSLCrossCompilerContext* psContext, const uint32_t 
     /* [layout (location = X)] uniform vec4 HLSLConstantBufferName[numConsts]; */
 	if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
         bformata(glsl, "layout(location = %d) ", ui32BindingPoint);
-	else if (useGlobalsStruct)
-		bcatcstr(glsl, "layout(std140) ");
-
 	if(useGlobalsStruct)
 	{
-		bcatcstr(glsl, "uniform ");
-		TranslateOperand(psContext, psOperand, TO_FLAG_DECLARATION_NAME);
-		bcatcstr(glsl, psCBuf->Name);
-		bcatcstr(glsl, " {\n");
+    bcatcstr(glsl, "uniform struct ");
+    TranslateOperand(psContext, psOperand, TO_FLAG_DECLARATION_NAME);
+
+    bcatcstr(glsl, "_Type {\n");
 	}
 
     for(i=0; i < psCBuf->ui32NumVars; ++i)
@@ -1454,14 +1476,8 @@ static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const 
                 bcatcstr(glsl, ";\n");
             }
         }
-
         for (i = 0; i < psDecl->ui32SamplerUsedCount; i++)
         {
-			if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
-			{
-				bformata(glsl, "layout(binding = %d) ", psShader->sInfo.ui32NumConstantBuffers + psDecl->asOperands[0].ui32RegisterNumber);
-			}
-
             bcatcstr(glsl, "uniform ");
             bcatcstr(glsl, samplerTypeName);
             bcatcstr(glsl, " ");
@@ -1469,31 +1485,24 @@ static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const 
             bcatcstr(glsl, ";\n");
         }
     }
-	else
-	{
-		if (samplerCanDoShadowCmp && psDecl->ui32IsShadowTex)
-		{
-			//Create shadow and non-shadow sampler.
-			//HLSL does not have separate types for depth compare, just different functions.
 
-			bcatcstr(glsl, "uniform ");
-			bcatcstr(glsl, samplerTypeName);
-			bcatcstr(glsl, "Shadow ");
-			ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 1);
-			bcatcstr(glsl, ";\n");
-		}
+    if(samplerCanDoShadowCmp && psDecl->ui32IsShadowTex)
+    {
+        //Create shadow and non-shadow sampler.
+        //HLSL does not have separate types for depth compare, just different functions.
 
-		if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
-		{
-			bformata(glsl, "layout(binding = %d) ", psShader->sInfo.ui32NumConstantBuffers + psDecl->asOperands[0].ui32RegisterNumber);
-		}
-
-		bcatcstr(glsl, "uniform ");
-		bcatcstr(glsl, samplerTypeName);
-		bcatcstr(glsl, " ");
-		ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 0);
-		bcatcstr(glsl, ";\n");
-	}
+        bcatcstr(glsl, "uniform ");
+        bcatcstr(glsl, samplerTypeName);
+        bcatcstr(glsl, "Shadow ");
+		ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 1);
+        bcatcstr(glsl, ";\n");
+    }
+                        
+    bcatcstr(glsl, "uniform ");
+    bcatcstr(glsl, samplerTypeName);
+    bcatcstr(glsl, " ");
+	ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 0);
+    bcatcstr(glsl, ";\n");
 }
 
 void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration* psDecl)
@@ -2549,6 +2558,7 @@ Would generate a vec2 and a vec3. We discard the second one making .z invalid!
 			}
 
 			GetConstantBufferFromBindingPoint(RGROUP_UAV, ui32BindingPoint, &psContext->psShader->sInfo, &psCBuf);
+			psCBuf->iUnsized = 1;
 
 			DeclareBufferVariable(psContext, ui32BindingPoint, psCBuf, &psDecl->asOperands[0], 
 				psDecl->sUAV.ui32GloballyCoherentAccess, RTYPE_UAV_RWSTRUCTURED, glsl);
@@ -2574,6 +2584,7 @@ Would generate a vec2 and a vec3. We discard the second one making .z invalid!
 			ConstantBuffer* psCBuf = NULL;
 
 			GetConstantBufferFromBindingPoint(RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, &psContext->psShader->sInfo, &psCBuf);
+			psCBuf->iUnsized = 1;
 
 			DeclareBufferVariable(psContext, psDecl->asOperands[0].ui32RegisterNumber, psCBuf, &psDecl->asOperands[0], 
 				0, RTYPE_STRUCTURED, glsl);

@@ -98,7 +98,7 @@ ColorGrading::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-ColorGrading::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+ColorGrading::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;

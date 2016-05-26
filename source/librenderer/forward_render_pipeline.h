@@ -54,12 +54,11 @@ public:
 	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
 
 private:
-	virtual void onResolutionChangeBefore() noexcept;
-	virtual void onResolutionChangeAfter() noexcept;
-
 	virtual void onRenderPre() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
 	virtual void onRenderPost() noexcept;
+
+	virtual void onResolutionChange() noexcept;
 
 private:
 	ForwardRenderPipeline(const ForwardRenderPipeline&) = delete;

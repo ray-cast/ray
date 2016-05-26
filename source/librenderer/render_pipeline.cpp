@@ -426,7 +426,7 @@ RenderPipeline::destroyPostProcess() noexcept
 }
 
 void
-RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	GraphicsFramebufferPtr view = swap;
 	GraphicsFramebufferPtr cur = source;
@@ -527,10 +527,10 @@ RenderPipeline::createTexture(const std::string& name, GraphicsTextureDim dim, G
 }
 
 GraphicsTexturePtr
-RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
+RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(w, h, dim, format);
+	return _pipelineDevice->createTexture(w, h, dim, format, filter);
 }
 
 MaterialPtr

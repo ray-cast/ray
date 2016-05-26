@@ -35,18 +35,6 @@
         </component>
     </object>
     <object>
-        <attribute name="light"/>
-        <attribute position="0, 0, 0"/>
-        <attribute rotate="180, 0, 0"/>
-        <attribute active="false"/>
-        <component class="Light">
-            <attribute type="ambient"/>
-            <attribute color="1.0,1.0,1.0"/>
-            <attribute range="200.0"/>
-            <attribute intensity="0.1"/>
-        </component>
-    </object>
-    <object>
         <attribute active="true"/>
         <component class="SphereMaker"/>
     </object>

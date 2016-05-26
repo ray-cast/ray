@@ -61,51 +61,91 @@ OGLGraphicsState::close() noexcept
 void
 OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 {
-	if (_stateDesc.getBlendEnable())
+	auto& srcBlends = _stateDesc.getColorBlends();
+	auto& destBlends = lastStateDesc.getColorBlends();
+
+	std::size_t srcBlendCount = srcBlends.size();
+	std::size_t destBlendCount = destBlends.size();
+	for (std::size_t i = srcBlendCount; i < destBlendCount; i++)
 	{
-		if (!lastStateDesc.getBlendEnable())
+		auto& destBlend = destBlends[i];
+		if (destBlend.getBlendEnable())
 		{
-			glEnable(GL_BLEND);
-			lastStateDesc.setBlendEnable(true);
+			glDisablei(GL_BLEND, i);
+			destBlend.setBlendEnable(false);
 		}
 
-		if (lastStateDesc.getBlendSrc() != _stateDesc.getBlendSrc() ||
-			lastStateDesc.getBlendDest() != _stateDesc.getBlendDest() ||
-			lastStateDesc.getBlendAlphaSrc() != _stateDesc.getBlendAlphaSrc() ||
-			lastStateDesc.getBlendAlphaDest() != _stateDesc.getBlendAlphaDest())
+		if (destBlend.getColorWriteMask() != GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit)
 		{
-			GLenum sfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendSrc());
-			GLenum dfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendDest());
-			GLenum sfactorAlpha = OGLTypes::asBlendFactor(_stateDesc.getBlendAlphaSrc());
-			GLenum dfactorAlpha = OGLTypes::asBlendFactor(_stateDesc.getBlendAlphaDest());
-
-			glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
-
-			lastStateDesc.setBlendSrc(_stateDesc.getBlendSrc());
-			lastStateDesc.setBlendDest(_stateDesc.getBlendDest());
-			lastStateDesc.setBlendAlphaSrc(_stateDesc.getBlendAlphaSrc());
-			lastStateDesc.setBlendAlphaDest(_stateDesc.getBlendAlphaDest());
-		}
-
-		if (lastStateDesc.getBlendOp() != _stateDesc.getBlendOp() ||
-			lastStateDesc.getBlendAlphaOp() != _stateDesc.getBlendAlphaOp())
-		{
-			GLenum modeRGB = OGLTypes::asBlendOperation(_stateDesc.getBlendOp());
-			GLenum modeAlpha = OGLTypes::asBlendOperation(_stateDesc.getBlendAlphaOp());
-
-			glBlendEquationSeparate(modeRGB, modeAlpha);
-
-			lastStateDesc.setBlendOp(_stateDesc.getBlendOp());
-			lastStateDesc.setBlendAlphaOp(_stateDesc.getBlendAlphaOp());
+			glColorMaski(i, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			destBlend.setColorWriteMask(GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit);
 		}
 	}
-	else
-	{
-		if (lastStateDesc.getBlendEnable())
-		{
-			glDisable(GL_BLEND);
 
-			lastStateDesc.setBlendEnable(false);
+	for (std::size_t i = 0; i < srcBlendCount; i++)
+	{
+		auto& srcBlend = srcBlends[i];
+		auto& destBlend = destBlends[i];
+
+		if (srcBlends[i].getBlendEnable())
+		{
+			if (!destBlend.getBlendEnable())
+			{
+				glEnablei(GL_BLEND, i);
+				destBlend.setBlendEnable(true);
+			}
+
+			if (destBlend.getBlendSrc() != srcBlend.getBlendSrc() ||
+				destBlend.getBlendDest() != srcBlend.getBlendDest() ||
+				destBlend.getBlendAlphaSrc() != srcBlend.getBlendAlphaSrc() ||
+				destBlend.getBlendAlphaDest() != srcBlend.getBlendAlphaDest())
+			{
+				GLenum sfactorRGB = OGLTypes::asBlendFactor(srcBlend.getBlendSrc());
+				GLenum dfactorRGB = OGLTypes::asBlendFactor(srcBlend.getBlendDest());
+				GLenum sfactorAlpha = OGLTypes::asBlendFactor(srcBlend.getBlendAlphaSrc());
+				GLenum dfactorAlpha = OGLTypes::asBlendFactor(srcBlend.getBlendAlphaDest());
+				
+				glBlendFuncSeparatei(i, sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+
+				destBlend.setBlendSrc(srcBlend.getBlendSrc());
+				destBlend.setBlendDest(srcBlend.getBlendDest());
+				destBlend.setBlendAlphaSrc(srcBlend.getBlendAlphaSrc());
+				destBlend.setBlendAlphaDest(srcBlend.getBlendAlphaDest());
+			}
+
+			if (destBlend.getBlendOp() != srcBlend.getBlendOp() ||
+				destBlend.getBlendAlphaOp() != srcBlend.getBlendAlphaOp())
+			{
+				GLenum modeRGB = OGLTypes::asBlendOperation(srcBlend.getBlendOp());
+				GLenum modeAlpha = OGLTypes::asBlendOperation(srcBlend.getBlendAlphaOp());
+
+				glBlendEquationSeparatei(i, modeRGB, modeAlpha);
+
+				destBlend.setBlendOp(srcBlend.getBlendOp());
+				destBlend.setBlendAlphaOp(srcBlend.getBlendAlphaOp());
+			}
+		}
+		else
+		{
+			if (destBlend.getBlendEnable())
+			{
+				glDisablei(GL_BLEND, i);
+				destBlend.setBlendEnable(false);
+			}
+		}
+
+		if (destBlend.getColorWriteMask() != srcBlend.getColorWriteMask())
+		{
+			auto flags = srcBlend.getColorWriteMask();
+
+			GLboolean r = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit ? GL_TRUE: GL_FALSE;
+			GLboolean g = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit ? GL_TRUE: GL_FALSE;
+			GLboolean b = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE: GL_FALSE;
+			GLboolean a = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE: GL_FALSE;
+
+			glColorMaski(i, r, g, b, a);
+
+			destBlend.setColorWriteMask(srcBlend.getColorWriteMask());
 		}
 	}
 

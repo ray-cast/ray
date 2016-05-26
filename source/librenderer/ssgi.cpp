@@ -43,6 +43,17 @@
 
 _NAME_BEGIN
 
+SSGI::Setting::Setting() noexcept
+	: radius(5.0f)
+	, bias(0.002f)
+	, intensity(5)
+	, blur(true)
+	, blurRadius(6)
+	, blurScale(1.0f)
+	, blurSharpness(4)
+{
+}
+
 SSGI::SSGI() noexcept
 {
 }
@@ -52,25 +63,20 @@ SSGI::~SSGI() noexcept
 }
 
 void
-SSGI::setSetting(const Setting& set) noexcept
+SSGI::setSetting(const Setting& setting) noexcept
 {
-	_setting.radius = set.radius;
-	_setting.bias = set.bias;
-	_setting.intensity = set.intensity;
-	_setting.blur = set.blur;
-	_setting.blurRadius = set.blurRadius;
-	_setting.blurScale = set.blurScale;
-	_setting.blurSharpness = set.blurSharpness;
+	const float blurSigma = _setting.blurRadius * 0.5f;
+	const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
 
-	_radius->uniform1f(_setting.radius);
-	_radius2->uniform1f(_setting.radius * _setting.radius);
-
-	_bias->uniform1f(_setting.bias);
-	_intensityDivR6->uniform1f(_setting.intensity);
-
-	_blurRadius->uniform1f(_setting.blurRadius);
-	_blurFactor->uniform1f((float)1.0 / (2 * ((_setting.blurRadius + 1) / 2) * ((_setting.blurRadius + 1) / 2)));
+	_blurFactor->uniform1f(blurFalloff);
 	_blurSharpness->uniform1f(_setting.blurSharpness);
+
+	_occlusionRadius->uniform1f(_setting.radius);
+	_occlusionRadius2->uniform1f(_setting.radius * _setting.radius);
+	_occlusionBias->uniform1f(_setting.bias);
+	_occlusionIntensity->uniform1f(_setting.intensity);
+
+	_setting = setting;
 }
 
 const SSGI::Setting&
@@ -80,12 +86,18 @@ SSGI::getSetting() const noexcept
 }
 
 void
-SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSGI::computeRawGI(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_projScale->uniform1f(_setting.radius);
-	_clipInfo->uniform3f(pipeline.getCamera()->getClipConstant().xyz());
+	std::uint32_t width, height;
+	pipeline.getWindowResolution(width, height);
+
+	_occlusionSourceInv->uniform2f(1.0 / width, 1.0 / height);
+	_cameraProjScale->uniform1f(((float)width / height) * _setting.radius);
+
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
+	pipeline.discradRenderTexture(attachment, 1);
 	pipeline.drawScreenQuad(*_ambientOcclusionPass);
 }
 
@@ -97,7 +109,14 @@ SSGI::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 	float2 direction(_setting.blurScale, 0.0f);
 	direction.x /= textureDesc.getWidth();
 
-	this->blurDirection(pipeline, source, dest, direction);
+	_blurDirection->uniform2f(direction);
+	_blurSource->uniformTexture(source);
+
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
+
+	pipeline.setFramebuffer(dest);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_ambientOcclusionBlurXPass);
 }
 
 void
@@ -108,26 +127,34 @@ SSGI::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	float2 direction(0.0f, _setting.blurScale);
 	direction.y /= textureDesc.getHeight();
 
-	this->blurDirection(pipeline, source, dest, direction);
-}
-
-void
-SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, const float2& direction) noexcept
-{
 	_blurDirection->uniform2f(direction);
-	_blurTexSource->uniformTexture(source);
+	_blurSource->uniformTexture(source);
+
+	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 
 	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(*_ambientOcclusionBlurPass);
+	pipeline.discradRenderTexture(attachment, 1);
+	pipeline.drawScreenQuad(*_ambientOcclusionBlurYPass);
 }
 
 void
-SSGI::shading(RenderPipeline& pipeline, GraphicsTexturePtr ao, GraphicsFramebufferPtr dest) noexcept
+SSGI::createSphereNoise() noexcept
 {
-	_copyAmbient->uniformTexture(ao);
+	std::vector<float2> sphere;
+	std::size_t numSample = _occlusionSampleNumber->getInt();
 
-	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(*_ambientOcclusionCopyPass);
+	for (std::size_t i = 0; i < numSample; i++)
+	{
+		float sampleAlpha = (i + 0.5) * (1.0 / numSample);
+		float angle = sampleAlpha * M_TWO_PI * 7;
+
+		float2 rotate;
+		math::sinCos(&rotate.y, &rotate.x, angle);
+
+		sphere.push_back(rotate);
+	}
+
+	_occlusionSphere->uniform2fv(sphere);
 }
 
 void
@@ -136,64 +163,108 @@ SSGI::onActivate(RenderPipeline& pipeline) noexcept
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
-	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+	width *= 0.5;
+	height *= 0.5;
 
-	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssgi.glsl");
-	_ambientOcclusionPass = _ambientOcclusion->getTech("ao");
-	_ambientOcclusionBlurPass = _ambientOcclusion->getTech("blur");
-	_ambientOcclusionCopyPass = _ambientOcclusion->getTech("copy");
+	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8UNorm);
 
-	_radius = _ambientOcclusion->getParameter("radius");
-	_radius2 = _ambientOcclusion->getParameter("radius2");
-	_projScale = _ambientOcclusion->getParameter("projScale");
-	_clipInfo = _ambientOcclusion->getParameter("clipInfo");
-	_bias = _ambientOcclusion->getParameter("bias");
-	_intensityDivR6 = _ambientOcclusion->getParameter("intensityDivR6");
+	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8UNorm));
+	_framebufferLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
 
-	_blurTexSource = _ambientOcclusion->getParameter("texSource");
+	GraphicsFramebufferDesc ambientViewDesc;
+	ambientViewDesc.setWidth(width);
+	ambientViewDesc.setHeight(height);
+	ambientViewDesc.attach(_texAmbientMap);
+	ambientViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
+	_texAmbientView = pipeline.createFramebuffer(ambientViewDesc);
+
+	GraphicsFramebufferDesc blurViewDesc;
+	blurViewDesc.setWidth(width);
+	blurViewDesc.setHeight(height);
+	blurViewDesc.attach(_texBlurMap);
+	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
+	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
+
+	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssgi.fxml");
+	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeGI");
+	_ambientOcclusionBlurXPass = _ambientOcclusion->getTech("BlurX");
+	_ambientOcclusionBlurYPass = _ambientOcclusion->getTech("BlurY");
+
+	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
+
+	_occlusionRadius = _ambientOcclusion->getParameter("radius");
+	_occlusionRadius2 = _ambientOcclusion->getParameter("radius2");
+	_occlusionBias = _ambientOcclusion->getParameter("bias");
+	_occlusionIntensity = _ambientOcclusion->getParameter("intensity");
+	_occlusionAmbient = _ambientOcclusion->getParameter("texOcclusion");
+	_occlusionSphere = _ambientOcclusion->getParameter("sphere");
+	_occlusionSourceInv = _ambientOcclusion->getParameter("texSourceInv");
+	_occlusionSampleNumber = _ambientOcclusion->getMacro("NUM_SAMPLES");
+
+	_blurSource = _ambientOcclusion->getParameter("texSource");
 	_blurFactor = _ambientOcclusion->getParameter("blurFactor");
 	_blurSharpness = _ambientOcclusion->getParameter("blurSharpness");
-	_blurRadius = _ambientOcclusion->getParameter("blurRadius");
 	_blurDirection = _ambientOcclusion->getParameter("blurDirection");
 	_blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
+	_blurRadius = _ambientOcclusion->getMacro("BLUR_RADIUS");
 
-	_copyAmbient = _ambientOcclusion->getParameter("texAO");
+	_setting.blurRadius = _blurRadius->getInt();
 
-	Setting setting;
-	setting.radius = 1.0f;
-	setting.bias = 0.012f;
-	setting.intensity = 4;
+	this->createSphereNoise();
 
-	setting.blur = true;
-	setting.blurRadius = 8;
-	setting.blurScale = 2.5;
-	setting.blurSharpness = 4;
-
-	this->setSetting(setting);
+	this->setSetting(_setting);
 }
 
 void
 SSGI::onDeactivate(RenderPipeline& pipeline) noexcept
 {
+	_ambientOcclusion.reset();
+
+	_ambientOcclusionPass.reset();
+	_ambientOcclusionBlurXPass.reset();
+	_ambientOcclusionBlurYPass.reset();
+
+	_cameraProjScale.reset();
+
+	_occlusionRadius.reset();
+	_occlusionRadius2.reset();
+	_occlusionBias.reset();
+	_occlusionIntensity.reset();
+	_occlusionAmbient.reset();
+	_occlusionSphere.reset();
+	_occlusionSampleNumber.reset();
+	_occlusionSourceInv.reset();
+
+	_blurSource.reset();
+	_blurFactor.reset();
+	_blurSharpness.reset();
+	_blurDirection.reset();
+	_blurGaussian.reset();
+	_blurRadius.reset();
+
+	_texBlurMap.reset();
+	_texAmbientMap.reset();
+
+	_framebufferLayout.reset();
+
+	_texBlurView.reset();
+	_texAmbientView.reset();
 }
 
 bool
-SSGI::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+SSGI::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
+	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
+		return false;
+
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
-	this->computeRawAO(pipeline, texture, _texAmbientView);
-
-	if (_setting.blur)
-	{
-		this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
-		this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
-	}
-
-	this->shading(pipeline, _texAmbientMap, swap);
-
-	return true;
+	this->computeRawGI(pipeline, texture, _texAmbientView);
+	this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
+	this->blurVertical(pipeline, _texBlurMap, source);
+	return false;
 }
 
 _NAME_END

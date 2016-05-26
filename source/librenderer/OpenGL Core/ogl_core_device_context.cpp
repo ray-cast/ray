@@ -54,12 +54,23 @@ OGLCoreDeviceContext::OGLCoreDeviceContext() noexcept
 	: _clearColor(0.0f, 0.0f, 0.0f, 0.0f)
 	, _clearDepth(1.0f)
 	, _clearStencil(0)
+	, _framebuffer(nullptr)
+	, _shaderObject(nullptr)
+	, _pipeline(nullptr)
+	, _descriptorSet(nullptr)
+	, _state(nullptr)
+	, _vbo(nullptr)
+	, _ibo(nullptr)
+	, _glcontext(nullptr)
 	, _needUpdateState(true)
 	, _needUpdateLayout(true)
 	, _needUpdateDescriptor(true)
 {
 	std::memset(&_viewport, 0, sizeof(_viewport));
 	std::memset(&_scissor, 0, sizeof(_scissor));
+
+	GraphicsColorBlends blends(4);
+	_stateCaptured.setColorBlends(blends);
 }
 
 OGLCoreDeviceContext::~OGLCoreDeviceContext() noexcept

@@ -1,24 +1,25 @@
 <?xml version="1.0"?>
-<effect version="1270" language="hlsl">
+<effect language="hlsl">
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <macro name="NUM_SAMPLE" type="int" value="10"/>
-    <macro name="NUM_SAMPLE_INV" type="float" value="0.1"/>
-    <macro name="BLUR_RADIUS" type="int" value="8"/>
+    <macro name="NUM_SAMPLES" type="int" value="10"/>
+    <macro name="NUM_SAMPLES_INV" type="float" value="0.1"/>
+    <macro name="BLUR_RADIUS" type="int" value="6"/>
     <parameter name="projScale" type="float"/>
     <parameter name="radius" type="float"/>
     <parameter name="radius2" type="float"/>
-    <parameter name="sphere[NUM_SAMPLE]" type="float2[]"/>
+    <parameter name="sphere[NUM_SAMPLES]" type="float2[]"/>
     <parameter name="bias" type="float"/>
     <parameter name="intensity" type="float"/>
     <parameter name="blurFactor" type="float" />
     <parameter name="blurSharpness" type="float" />
     <parameter name="blurDirection" type="float2"/>
-    <parameter name="texDepth" type="texture2D" semantic="DeferredDepthLinearMap" />
-    <parameter name="texNormal" type="texture2D" semantic="NormalTexture" />
+    <parameter name="texDepth" type="texture2D" semantic="DepthLinearMap" />
+    <parameter name="texNormal" type="texture2D" semantic="NormalMap" />
     <parameter name="texOcclusion" type="texture2D" />
     <parameter name="texSource" type="texture2D"/>
+    <parameter name="texSourceInv" type="float2"/>
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <shader>
         <![CDATA[
@@ -32,9 +33,21 @@
                 return restorePosition(texDepth, uv, viewdir);
             }
 
+            float3 GetPosition(int2 pt, float3 viewdir)
+            {
+                float depth = texDepth.Load(int3(pt, 0.0));
+                return viewdir * depth / viewdir.z;
+            }
+
             float3 GetNormal(float2 uv)
             {
                 float4 MRT1 = texNormal.Sample(PointClamp, uv);
+                return restoreNormal(MRT1);
+            }
+
+            float3 GetNormal(int2 pt)
+            {
+                float4 MRT1 = texNormal.Load(int3(pt,0.0));
                 return restoreNormal(MRT1);
             }
 
@@ -44,7 +57,7 @@
                 float sinasinb = sphere[sampleIndex].y * sampleNoise.y;
                 float sinacosb = sphere[sampleIndex].y * sampleNoise.x;
                 float cosasinb = sphere[sampleIndex].x * sampleNoise.y;
-                return float2(cosacosb-sinasinb, sinacosb+cosasinb) * radius * (float(sampleIndex) * NUM_SAMPLE_INV);
+                return float2(cosacosb-sinasinb, sinacosb+cosasinb) * radius * (float(sampleIndex) * NUM_SAMPLES_INV);
             }
 
             float bilateralfilter(float2 coord, float r, float center_d)
@@ -71,22 +84,23 @@
                 in float3 viewdir : TEXCOORD1,
                 in float4 screenSpace : SV_Position) : SV_Target
             {
+                int2 ssC = int2(screenSpace.xy);
+
                 viewdir = normalize(viewdir);
 
                 float3 viewPosition = GetPosition(coord.xy, viewdir);
                 float3 viewNormal = GetNormal(coord.xy);
 
-                int2 ssC = int2(screenSpace.xy);
-                float sampleAngle = float(30 * ssC.x ^ ssC.y + 10 * ssC.x * ssC.y);
-                float sampleRadius = projScale / viewPosition.z;
+                float sampleAngle = (3 * ssC.x ^ ssC.y + 10 * ssC.x * ssC.y) * 10;
+                float sampleRadius = projScale / radius * viewPosition.z;
                 float sampleAmbient = 0.0f;
 
                 float2 sampleNoise;
                 sincos(sampleAngle, sampleNoise.x, sampleNoise.y);
 
-                for (int i = 0; i < NUM_SAMPLE; ++i)
+                for (int i = 0; i < NUM_SAMPLES; ++i)
                 {
-                    float2 sampleOffset = coord.xy + tapLocation(i, sampleNoise, sampleRadius);
+                    float2 sampleOffset = coord.xy + tapLocation(i, sampleNoise, radius) * texSourceInv;
                     float3 samplePosition = GetPosition(sampleOffset, viewdir);
                     float3 sampleDirection = samplePosition - viewPosition;
 
@@ -97,14 +111,14 @@
                     sampleAmbient += max(0.0f, (sampleAngle - viewPosition.z * bias) * rsqrt(sampleLength2));
                 }
 
-                return max(0.0f, 1.0f - sampleAmbient * intensity * NUM_SAMPLE_INV);
+                return max(0.0f, 1 - sampleAmbient * intensity * NUM_SAMPLES_INV);
             }
 
             float3 BilateralFilterPS(in float4 coord : TEXCOORD0) : SV_Target
             {
                 float center_d = linearizeDepth(coord.xy);
 
-                float total_c = texSource.Sample(PointClamp, coord.xy).r;
+                float total_c = texSource.Sample(PointClamp, coord.xy);
                 float total_w = 1.0f;
 
                 for (int r = 1; r < BLUR_RADIUS; r++)
@@ -170,7 +184,7 @@
             <state name="blendsrc" value="dstcol" />
             <state name="blenddst" value="zero" />
             <state name="blendalphasrc" value="zero" />
-            <state name="blendalphadst" value="dstalpha" />
+            <state name="blendalphadst" value="one" />
         </pass>
     </technique>
 </effect>

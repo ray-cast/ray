@@ -189,6 +189,7 @@ typedef std::vector<GraphicsVertexLayout> GraphicsVertexLayouts;
 typedef std::vector<GraphicsVertexBinding> GraphicsVertexBindings;
 typedef std::vector<GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
 typedef std::vector<GraphicsAttachment> GraphicsAttachments;
+typedef std::vector<class GraphicsColorBlend> GraphicsColorBlends;
 
 typedef void* WindHandle;
 
@@ -272,15 +273,17 @@ enum GraphicsBlendOp
 	GraphicsBlendOpMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsColorMask
+enum GraphicsColorMaskFlagBits
 {
-	GraphicsColorMaskR = 1,
-	GraphicsColorMaskG = 2,
-	GraphicsColorMaskB = 4,
-	GraphicsColorMaskA = 8,
-	GraphicsColorMaskRGB = GraphicsColorMaskR | GraphicsColorMaskG | GraphicsColorMaskB,
-	GraphicsColorMaskRGBA = GraphicsColorMaskR | GraphicsColorMaskG | GraphicsColorMaskB | GraphicsColorMaskA
+	GraphicsColorMaskFlagRedBit = 1,
+	GraphicsColorMaskFlagGreendBit = 2,
+	GraphicsColorMaskFlagBlurBit = 4,
+	GraphicsColorMaskFlagAlphaBit = 8,
+	GraphicsColorMaskFlagRGBBit = GraphicsColorMaskFlagRedBit | GraphicsColorMaskFlagGreendBit | GraphicsColorMaskFlagBlurBit,
+	GraphicsColorMaskFlagRGBABit = GraphicsColorMaskFlagRedBit | GraphicsColorMaskFlagGreendBit | GraphicsColorMaskFlagBlurBit | GraphicsColorMaskFlagAlphaBit
 };
+
+typedef std::uint32_t GraphicsColorMaskFlags;
 
 enum GraphicsCullMode
 {

@@ -155,20 +155,14 @@ Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 	if (this->getCastShadow())
 		manager.addRenderData(RenderQueue::RenderQueueShadow, this);
 
-	if (_techniques[RenderQueue::RenderQueueOpaque])
-		manager.addRenderData(RenderQueue::RenderQueueOpaque, this);
-
-	if (_techniques[RenderQueue::RenderQueueOpaqueShading])
-		manager.addRenderData(RenderQueue::RenderQueueOpaqueShading, this);
-
-	if (_techniques[RenderQueue::RenderQueueOpaqueSpecific])
-		manager.addRenderData(RenderQueue::RenderQueueOpaqueSpecific, this);
-
-	if (_techniques[RenderQueue::RenderQueueTransparent])
-		manager.addRenderData(RenderQueue::RenderQueueTransparent, this);
-
-	if (_techniques[RenderQueue::RenderQueueTransparentSpecific])
-		manager.addRenderData(RenderQueue::RenderQueueTransparentSpecific, this);
+	for (std::size_t i = 0; i < RenderQueue::RenderQueueRangeSize; i++)
+	{
+		if (i != RenderQueue::RenderQueueShadow)
+		{
+			if (_techniques[i])
+				manager.addRenderData((RenderQueue)i, this);
+		}
+	}
 }
 
 void
@@ -206,14 +200,18 @@ Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTe
 RenderQueue
 Geometry::stringToRenderQueue(const std::string& techName) noexcept
 {
-	if (techName == "custom")			return RenderQueue::RenderQueueCustom;
-	if (techName == "shadow")			return RenderQueue::RenderQueueShadow;
-	if (techName == "opaque")			return RenderQueue::RenderQueueOpaque;
-	if (techName == "opaquespecific")   return RenderQueue::RenderQueueOpaqueSpecific;
-	if (techName == "opaqueshading")    return RenderQueue::RenderQueueOpaqueShading;
-	if (techName == "transparent")		return RenderQueue::RenderQueueTransparent;
-	if (techName == "lighting")			return RenderQueue::RenderQueueLighting;
-	if (techName == "postprocess")		return RenderQueue::RenderQueuePostprocess;
+	if (techName == "custom")				return RenderQueue::RenderQueueCustom;
+	if (techName == "shadow")				return RenderQueue::RenderQueueShadow;
+	if (techName == "opaque")				return RenderQueue::RenderQueueOpaque;
+	if (techName == "opaquebatch")			return RenderQueue::RenderQueueOpaqueBatch;
+	if (techName == "opaquespecific")		return RenderQueue::RenderQueueOpaqueSpecific;
+	if (techName == "opaqueshading")		return RenderQueue::RenderQueueOpaqueShading;
+	if (techName == "transparent")			return RenderQueue::RenderQueueTransparent;
+	if (techName == "transparentbatch")     return RenderQueue::RenderQueueTransparentBatch;	
+	if (techName == "transparentshading")	return RenderQueue::RenderQueueTransparentShading;
+	if (techName == "transparentspecific")	return RenderQueue::RenderQueueTransparentSpecific;
+	if (techName == "lighting")				return RenderQueue::RenderQueueLighting;
+	if (techName == "postprocess")			return RenderQueue::RenderQueuePostprocess;
 
 	return RenderQueue::RenderQueueMaxEnum;
 }

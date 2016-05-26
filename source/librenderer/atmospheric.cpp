@@ -126,7 +126,7 @@ Atmospheric::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-Atmospheric::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+Atmospheric::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;

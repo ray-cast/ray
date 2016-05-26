@@ -80,7 +80,7 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 
 	if (setting.deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2)
 	{
-		if (setting.enableDeferredLighting)
+		if (setting.pipelineType != RenderPipelineType::RenderPipelineTypeForward)
 			return false;
 	}
 
@@ -96,12 +96,12 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 	if (!forwardShading->setup(_pipeline))
 		return false;
 
-	_forwardShading = forwardShading;
+	_forward = forwardShading;
 
 	if (!this->setupShadowRenderer(_pipeline))
 		return false;
 
-	if (setting.enableDeferredLighting)
+	if (setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
 	{
 		auto deferredLighting = std::make_shared<DeferredLightingPipeline>();
 		if (!deferredLighting->setup(_pipeline))
@@ -131,7 +131,7 @@ RenderPipelineManager::close() noexcept
 	_fimicToneMapping.reset();
 	_FXAA.reset();
 	_deferredLighting.reset();
-	_forwardShading.reset();
+	_forward.reset();
 	_pipeline.reset();
 }
 
@@ -326,10 +326,10 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 			_shadowMapGen->onRenderPost();
 		}
 
-		auto renderPipeline = _forwardShading;
+		auto renderPipeline = _forward;
 		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
 		{
-			if (_setting.enableDeferredLighting)
+			if (_setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
 				renderPipeline = _deferredLighting;
 		}
 
@@ -483,16 +483,18 @@ RenderPipelineManager::setWindowResolution(std::uint32_t width, std::uint32_t he
 {
 	if (_setting.width != width || _setting.height != height)
 	{
-		_deferredLighting->onResolutionChangeBefore();
-		_forwardShading->onResolutionChangeBefore();
-
 		_pipeline->setWindowResolution(width, height);
-
-		_deferredLighting->onResolutionChangeAfter();
-		_forwardShading->onResolutionChangeAfter();
 
 		_setting.width = width;
 		_setting.height = height;
+
+		_forward->onResolutionChange();
+
+		if (_forwardPlus)
+			_forwardPlus->onResolutionChange();
+
+		if (_deferredLighting)
+			_deferredLighting->onResolutionChange();
 	}
 }
 
@@ -588,10 +590,10 @@ RenderPipelineManager::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderPipelineManager::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
+RenderPipelineManager::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(w, h, dim, format);
+	return _pipelineDevice->createTexture(w, h, dim, format, filter);
 }
 
 GraphicsTexturePtr

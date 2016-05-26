@@ -1,5 +1,4 @@
-#include <stdint.h>
-#define EXCLUDE_PSTDINT
+
 #include "hlslcc.hpp"
 #include "stdlib.h"
 #include "stdio.h"

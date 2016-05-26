@@ -214,14 +214,14 @@ ShadowRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
 {
 	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
 	shaodwMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _shadowFormat));
-	_softShadowViewLayout = pipeline.createFramebufferLayout(shaodwMapLayoutDesc);
-	if (!_softShadowViewLayout)
+	_softShadowImageLayout = pipeline.createFramebufferLayout(shaodwMapLayoutDesc);
+	if (!_softShadowImageLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc shadowDephLayoutDesc;
 	shadowDephLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _shadowDepthFormat));
-	_softShadowDepthViewLayout = pipeline.createFramebufferLayout(shadowDephLayoutDesc);
-	if (!_softShadowDepthViewLayout)
+	_softShadowDepthImageLayout = pipeline.createFramebufferLayout(shadowDephLayoutDesc);
+	if (!_softShadowDepthImageLayout)
 		return false;
 
 	for (std::size_t i = LightShadowType::LightShadowTypeLow; i <= LightShadowType::LightShadowTypeVeryHigh; i++)
@@ -238,7 +238,7 @@ ShadowRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
 		shadowViewDesc.setWidth(_shadowMapSize[i]);
 		shadowViewDesc.setHeight(_shadowMapSize[i]);
 		shadowViewDesc.attach(_softShadowMapTemp[i]);
-		shadowViewDesc.setGraphicsFramebufferLayout(_softShadowViewLayout);
+		shadowViewDesc.setGraphicsFramebufferLayout(_softShadowImageLayout);
 		_softShadowViewTemp[i] = pipeline.createFramebuffer(shadowViewDesc);
 		if (!_softShadowViewTemp[i])
 			return false;
@@ -247,7 +247,7 @@ ShadowRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
 		shadowDepthViewDesc.setWidth(_shadowMapSize[i]);
 		shadowDepthViewDesc.setHeight(_shadowMapSize[i]);
 		shadowDepthViewDesc.setSharedDepthStencilTexture(_softShadowDepthMapTemp[i]);
-		shadowDepthViewDesc.setGraphicsFramebufferLayout(_softShadowDepthViewLayout);
+		shadowDepthViewDesc.setGraphicsFramebufferLayout(_softShadowDepthImageLayout);
 		_softShadowDepthViewTemp[i] = pipeline.createFramebuffer(shadowDepthViewDesc);
 		if (!_softShadowDepthViewTemp[i])
 			return false;
@@ -275,7 +275,7 @@ ShadowRenderPipeline::destroyShadowMap() noexcept
 	for (std::size_t i = 0; i < LightShadowType::LightShadowTypeRangeSize; i++)
 		_softShadowViewTemp[i].reset();
 
-	_softShadowViewLayout.reset();
+	_softShadowImageLayout.reset();
 }
 
 void

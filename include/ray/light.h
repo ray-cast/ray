@@ -124,7 +124,7 @@ private:
 	CameraPtr _shadowCamera[6];
 	GraphicsTexturePtr _shadowMap;
 	GraphicsFramebufferPtr _shadowView;
-	GraphicsFramebufferLayoutPtr _shadowViewLayout;
+	GraphicsFramebufferLayoutPtr _shadowImageLayout;
 	RenderSceneWeakPtr _renderScene;
 };
 

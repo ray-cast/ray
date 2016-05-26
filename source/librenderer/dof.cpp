@@ -75,7 +75,7 @@ DepthOfField::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 void
-DepthOfField::blurh(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+DepthOfField::blurh(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	/*_texColor->assign(source->getResolveTexture());
 
@@ -84,7 +84,7 @@ DepthOfField::blurh(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr& sour
 }
 
 void
-DepthOfField::blurv(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+DepthOfField::blurv(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	/*_texColor->assign(source->getResolveTexture());
 
@@ -114,7 +114,7 @@ DepthOfField::shading(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr col
 }
 
 bool
-DepthOfField::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+DepthOfField::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	/*_texColor->assign(source->getGraphicsFramebufferDesc().getTextures()[0]);
 

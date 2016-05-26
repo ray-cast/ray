@@ -151,12 +151,12 @@ LightComponent::getSubsurfaceScattering() const noexcept
 }
 
 void
-LightComponent::setLightColor(const Vector3& color) noexcept
+LightComponent::setLightColor(const float3& color) noexcept
 {
 	_light->setLightColor(color);
 }
 
-const Vector3&
+const float3&
 LightComponent::getLightColor() const noexcept
 {
 	return _light->getLightColor();

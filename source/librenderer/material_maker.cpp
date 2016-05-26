@@ -242,19 +242,20 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 void
 MaterialMaker::instancePass(MaterialManager& manager, Material& material, MaterialTechPtr& tech, iarchive& reader) except
 {
-	std::string passName;
-	reader.getValue("name", passName);
+	std::string passName = reader.getValue<std::string>("name");
 	if (passName.empty())
 		throw failure(__TEXT("Empty pass name : ") + reader.getCurrentNodePath());
 
 	if (!reader.setToFirstChild())
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
 
+	std::string name;
+
 	GraphicsStateDesc stateDesc;
 	GraphicsProgramDesc programDesc;
 	GraphicsInputLayoutPtr inputLayout;
 
-	std::string name;
+	GraphicsColorBlends blends;
 
 	do
 	{
@@ -284,23 +285,71 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 		else if (name == "linear2srgb")
 			stateDesc.setLinear2sRGBEnable(reader.getValue<bool>("value"));
 		else if (name == "linewidth")
-			stateDesc.setLineWidth(reader.getValue<float>("value"));
-		else if (name == "blend")
-			stateDesc.setBlendEnable(reader.getValue<bool>("value"));
-		else if (name == "blendOp")
-			stateDesc.setBlendOp(stringToBlendOperation(reader.getValue<std::string>("value")));
-		else if (name == "blendsrc")
-			stateDesc.setBlendSrc(stringToBlendFactor(reader.getValue<std::string>("value")));
-		else if (name == "blenddst")
-			stateDesc.setBlendDest(stringToBlendFactor(reader.getValue<std::string>("value")));
-		else if (name == "blendalphaop")
-			stateDesc.setBlendAlphaOp(stringToBlendOperation(reader.getValue<std::string>("value")));
-		else if (name == "blendalphasrc")
-			stateDesc.setBlendAlphaSrc(stringToBlendFactor(reader.getValue<std::string>("value")));
-		else if (name == "blendalphadst")
-			stateDesc.setBlendAlphaDest(stringToBlendFactor(reader.getValue<std::string>("value")));
-		else if (name == "colormask")
-			stateDesc.setColorWriteMask(stringToColorMask(reader.getValue<std::string>("value")));
+			stateDesc.setLineWidth(reader.getValue<float>("value"));	
+		else if (name.compare(0, 7, "blendop") == 0)
+		{
+			std::size_t index = std::atoi(name.substr(7).c_str());
+			if (blends.size() <= index)
+				blends.resize(index + 1);
+
+			blends[index].setBlendOp(stringToBlendOperation(reader.getValue<std::string>("value")));
+		}			
+		else if (name.compare(0, 8, "blendsrc") == 0)
+		{
+			std::size_t index = std::atoi(name.substr(8).c_str());
+			if (blends.size() <= index)
+				blends.resize(index + 1);
+
+			blends[index].setBlendSrc(stringToBlendFactor(reader.getValue<std::string>("value")));
+		}
+		else if (name.compare(0, 8, "blenddst") == 0)
+		{
+			std::size_t index = std::atoi(name.substr(8).c_str());
+			if (blends.size() <= index)
+				blends.resize(index + 1);
+
+			blends[index].setBlendDest(stringToBlendFactor(reader.getValue<std::string>("value")));
+		}
+		else if (name.compare(0, 12, "blendalphaop") == 0)
+		{
+			std::size_t index = std::atoi(name.substr(12).c_str());
+			if (blends.size() <= index)
+				blends.resize(index + 1);
+
+			blends[index].setBlendAlphaOp(stringToBlendOperation(reader.getValue<std::string>("value")));
+		}
+		else if (name.compare(0, 13, "blendalphasrc") == 0)
+		{
+			std::size_t index = std::atoi(name.substr(13).c_str());
+			if (blends.size() <= index)
+				blends.resize(index + 1);
+
+			blends[index].setBlendAlphaSrc(stringToBlendFactor(reader.getValue<std::string>("value")));
+		}			
+		else if (name.compare(0, 13, "blendalphadst") == 0)
+		{
+			std::size_t index = std::atoi(name.substr(13).c_str());
+			if (blends.size() <= index)
+				blends.resize(index + 1);
+
+			blends[index].setBlendAlphaDest(stringToBlendFactor(reader.getValue<std::string>("value")));
+		}
+		else if (name.compare(0, 5, "blend") == 0)
+		{
+			std::size_t index = std::atoi(name.substr(5).c_str());
+			if (blends.size() <= index)
+				blends.resize(index + 1);
+
+			blends[index].setBlendEnable(reader.getValue<bool>("value"));
+		}
+		else if (name.compare(0, 9, "colormask") == 0)
+		{
+			std::size_t index = std::atoi(name.substr(9).c_str());
+			if (blends.size() <= index)
+				blends.resize(index + 1);
+
+			blends[index].setColorWriteMask(stringToColorMask(reader.getValue<std::string>("value")));
+		}
 		else if (name == "depthtest")
 			stateDesc.setDepthEnable(reader.getValue<bool>("value"));
 		else if (name == "depthwrite")
@@ -348,6 +397,8 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 			throw failure(__TEXT("Unkonwn node name : ") + nodeName + reader.getCurrentNodePath());
 		}
 	} while (reader.setToNextChild());
+
+	stateDesc.setColorBlends(blends);
 
 	auto state = manager.createRenderState(stateDesc);
 	if (!state)
@@ -977,18 +1028,19 @@ MaterialMaker::stringToBlendFactor(const std::string& factor) noexcept
 	return GraphicsBlendFactor::GraphicsBlendFactorMaxEnum;
 }
 
-GraphicsColorMask
+GraphicsColorMaskFlags
 MaterialMaker::stringToColorMask(const std::string& mask) noexcept
 {
-	if (mask == "red")   return GraphicsColorMask::GraphicsColorMaskR;
-	if (mask == "green") return GraphicsColorMask::GraphicsColorMaskG;
-	if (mask == "blue")  return GraphicsColorMask::GraphicsColorMaskB;
-	if (mask == "alpha") return GraphicsColorMask::GraphicsColorMaskA;
-	if (mask == "rgb")   return GraphicsColorMask::GraphicsColorMaskRGB;
-	if (mask == "rgba")  return GraphicsColorMask::GraphicsColorMaskRGBA;
+	if (mask == "none")  return GraphicsColorMaskFlags(0);
+	if (mask == "red")   return GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit;
+	if (mask == "green") return GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit;
+	if (mask == "blue")  return GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit;
+	if (mask == "alpha") return GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit;
+	if (mask == "rgb")   return GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBBit;
+	if (mask == "rgba")  return GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit;
 
 	assert(false);
-	return GraphicsColorMask::GraphicsColorMaskRGBA;
+	return GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit;
 }
 
 GraphicsCompareFunc
@@ -1003,7 +1055,7 @@ MaterialMaker::stringToCompareFunc(const std::string& func) noexcept
 	if (func == "always")   return GraphicsCompareFunc::GraphicsCompareFuncAlways;
 	if (func == "never")    return GraphicsCompareFunc::GraphicsCompareFuncNever;
 	if (func == "none")     return GraphicsCompareFunc::GraphicsCompareFuncNone;
-
+	
 	assert(false);
 	return GraphicsCompareFunc::GraphicsCompareFuncMaxEnum;
 }
@@ -1179,16 +1231,11 @@ MaterialMaker::stringToSemanticType(const std::string& type) noexcept
 	if (type == "CameraFar") return GlobalSemanticType::GlobalSemanticTypeCameraFar;
 	if (type == "CameraPosition") return GlobalSemanticType::GlobalSemanticTypeCameraPosition;
 	if (type == "CameraDirection") return GlobalSemanticType::GlobalSemanticTypeCameraDirection;
-	if (type == "DepthTexture") return GlobalSemanticType::GlobalSemanticTypeDepthTexture;
-	if (type == "DepthLinearTexture") return GlobalSemanticType::GlobalSemanticTypeDepthLinearTexture;
-	if (type == "DiffuseTexture") return GlobalSemanticType::GlobalSemanticTypeDiffuseTexture;
-	if (type == "NormalTexture") return GlobalSemanticType::GlobalSemanticTypeNormalTexture;
-	if (type == "LightingTexture") return GlobalSemanticType::GlobalSemanticTypeLightingTexture;
-	if (type == "DeferredDepthMap") return GlobalSemanticType::GlobalSemanticTypeDepthTexture;
-	if (type == "DeferredDepthLinearMap") return GlobalSemanticType::GlobalSemanticTypeDepthLinearTexture;
-	if (type == "DeferredGraphicMap") return GlobalSemanticType::GlobalSemanticTypeDiffuseTexture;
-	if (type == "DeferredNormalMap") return GlobalSemanticType::GlobalSemanticTypeNormalTexture;
-	if (type == "DeferredLightMap") return GlobalSemanticType::GlobalSemanticTypeLightingTexture;
+	if (type == "DepthMap") return GlobalSemanticType::GlobalSemanticTypeDepthMap;
+	if (type == "DepthLinearMap") return GlobalSemanticType::GlobalSemanticTypeDepthLinearMap;
+	if (type == "DiffuseMap") return GlobalSemanticType::GlobalSemanticTypeDiffuseMap;
+	if (type == "NormalMap") return GlobalSemanticType::GlobalSemanticTypeNormalMap;
+	if (type == "LightingMap") return GlobalSemanticType::GlobalSemanticTypeLightingMap;
 
 	assert(false);
 	return GlobalSemanticType::GlobalSemanticTypeNone;

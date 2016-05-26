@@ -58,7 +58,7 @@ public:
 	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
 	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
 
-	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept = 0;
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept = 0;
 
 private:
 	friend class RenderPipeline;

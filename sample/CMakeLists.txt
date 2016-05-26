@@ -11,6 +11,7 @@ FOREACH(mySamples
     "5.SSSSS"
     "6.CubeWorld"
     "7.Skinning"
+    "8.OIT"
 )
 ADD_SUBDIRECTORY(${mySamples})
 

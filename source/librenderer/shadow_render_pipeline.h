@@ -97,8 +97,8 @@ private:
 	GraphicsTexturePtr _softShadowDepthMapTemp[LightShadowType::LightShadowTypeRangeSize];
 	GraphicsFramebufferPtr _softShadowViewTemp[LightShadowType::LightShadowTypeRangeSize];
 	GraphicsFramebufferPtr _softShadowDepthViewTemp[LightShadowType::LightShadowTypeRangeSize];
-	GraphicsFramebufferLayoutPtr _softShadowViewLayout;
-	GraphicsFramebufferLayoutPtr _softShadowDepthViewLayout;
+	GraphicsFramebufferLayoutPtr _softShadowImageLayout;
+	GraphicsFramebufferLayoutPtr _softShadowDepthImageLayout;
 
 	GraphicsFormat _shadowFormat;
 	GraphicsFormat _shadowDepthFormat;

@@ -1,5 +1,3 @@
-#include <stdint.h>
-#define EXCLUDE_PSTDINT
 #include "serializeReflection.h"
 #include "cJSON.h"
 #include <string>

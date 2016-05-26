@@ -118,16 +118,16 @@ PostRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 }
 
 bool 
-PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;
 
-	_deferredDepthMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthTexture)->getTexture();
-	_deferredDepthLinearMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthLinearTexture)->getTexture();
-	_deferredGraphicMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDiffuseTexture)->getTexture();
-	_deferredNormalMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeNormalTexture)->getTexture();
-	_deferredLightMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeLightingTexture)->getTexture();
+	_depthMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthMap)->getTexture();
+	_depthLinearMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthLinearMap)->getTexture();
+	_diffuseMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDiffuseMap)->getTexture();
+	_normalMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeNormalMap)->getTexture();
+	_lightMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeLightingMap)->getTexture();
 
 	if (_SSSS)
 	{
@@ -139,14 +139,14 @@ PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphi
 			auto light = it->downcast<Light>();
 			if (light->getShadowType() != LightShadowType::LightShadowTypeNone && light->getSubsurfaceScattering())
 			{
-				_SSSS->applyTranslucency(pipeline, source, _deferredGraphicMap, _deferredNormalMap, *light, _deferredDepthLinearMap, light->getShadowMap());
+				_SSSS->applyTranslucency(pipeline, source, _diffuseMap, _normalMap, *light, _depthLinearMap, light->getShadowMap());
 			}
 
 			if (light->getSoftShadow())
 				shadowIndex++;
 		}
 
-		_SSSS->applyGuassBlur(pipeline, source, _deferredDepthLinearMap, swap);
+		_SSSS->applyGuassBlur(pipeline, source, _depthLinearMap, swap);
 	}
 
 	return false;

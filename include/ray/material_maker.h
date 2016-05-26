@@ -77,7 +77,7 @@ private:
 	static GraphicsPolygonMode stringToFillMode(const std::string& fillmode) noexcept;
 	static GraphicsBlendOp stringToBlendOperation(const std::string& blendop) noexcept;
 	static GraphicsBlendFactor stringToBlendFactor(const std::string& factor) noexcept;
-	static GraphicsColorMask stringToColorMask(const std::string& mask) noexcept;
+	static GraphicsColorMaskFlags stringToColorMask(const std::string& mask) noexcept;
 	static GraphicsCompareFunc stringToCompareFunc(const std::string& func) noexcept;
 	static GraphicsStencilOp stringToStencilOp(const std::string& stencilop) noexcept;
 	static GraphicsFormat stringToFormat(const std::string& format) noexcept;

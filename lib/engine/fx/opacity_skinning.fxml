@@ -26,7 +26,7 @@
 
             float3 GetDiffuse(Texture2D diffuseMap, float3 diffuse, float2 coord)
             {
-                return diffuseMap.Sample(PointClamp, coord).rgb * diffuse;
+                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb) * diffuse;
             }
 
             float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
@@ -130,7 +130,7 @@
                 float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
                 float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord) : float2(specular, shininess);
 
-                fragData0 = StoreGBufferRT0(srgb2linear(albedo), brdfParm.r);
+                fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
                 fragData1 = StoreGBufferRT1(normal, brdfParm.g);
             }
         ]]>

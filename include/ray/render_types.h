@@ -181,6 +181,17 @@ enum LightShadowSize
 	LightShadowSizeEnumCount = 4
 };
 
+enum RenderPipelineType
+{
+	RenderPipelineTypeForward,
+	RenderPipelineTypeForwardPlus,
+	RenderPipelineTypeDeferredLighting,
+	RenderPipelineTypeBeginRange = RenderPipelineTypeForward,
+	RenderPipelineTypeEndRange = RenderPipelineTypeDeferredLighting,
+	RenderPipelineTypeRangeSize = (RenderPipelineTypeEndRange - RenderPipelineTypeBeginRange + 1),
+	RenderPipelineTypeMaxEnum = 0x7FFFFFFF
+};
+
 enum RenderQueue
 {
 	RenderQueueCustom,
@@ -195,6 +206,8 @@ enum RenderQueue
 	RenderQueueTransparentBatch,
 	RenderQueueTransparentSpecific,
 	RenderQueueTransparentSpecificBatch,
+	RenderQueueTransparentShading,
+	RenderQueueAmbientLighting,
 	RenderQueueLighting,
 	RenderQueuePostprocess,
 	RenderQueueBeginRange = RenderQueueCustom,
@@ -243,13 +256,14 @@ enum GlobalSemanticType
 	GlobalSemanticTypeCameraFar,
 	GlobalSemanticTypeCameraPosition,
 	GlobalSemanticTypeCameraDirection,
-	GlobalSemanticTypeDepthTexture,
-	GlobalSemanticTypeDepthLinearTexture,
-	GlobalSemanticTypeDiffuseTexture,
-	GlobalSemanticTypeNormalTexture,
-	GlobalSemanticTypeLightingTexture,
+	GlobalSemanticTypeDepthMap,
+	GlobalSemanticTypeDepthLinearMap,
+	GlobalSemanticTypeDiffuseMap,
+	GlobalSemanticTypeNormalMap,
+	GlobalSemanticTypeLightingMap,
+	GlobalSemanticTypeOpaqueShadingMap,
 	GlobalSemanticTypeBeginRange = GlobalSemanticTypeNone,
-	GlobalSemanticTypeEndRange = GlobalSemanticTypeLightingTexture,
+	GlobalSemanticTypeEndRange = GlobalSemanticTypeOpaqueShadingMap,
 	GlobalSemanticTypeRangeSize = (GlobalSemanticTypeEndRange - GlobalSemanticTypeBeginRange + 1),
 	GlobalSemanticTypeMaxEnum = 0x7FFFFFFF
 };

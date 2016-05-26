@@ -40,9 +40,120 @@ _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsState, GraphicsChild, "GraphicsState")
 
-GraphicsStateDesc::GraphicsStateDesc() noexcept
+GraphicsColorBlend::GraphicsColorBlend() noexcept
 	: _blendEnable(false)
-	, _scissorTestEnable(false)
+	, _blendOp(GraphicsBlendOp::GraphicsBlendOpAdd)
+	, _blendAlphaOp(GraphicsBlendOp::GraphicsBlendOpAdd)
+	, _blendSrc(GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha)
+	, _blendDest(GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha)
+	, _blendAlphaSrc(GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha)
+	, _blendAlphaDest(GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha)
+	, _colorWriteMask(GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit)
+{
+}
+
+GraphicsColorBlend::~GraphicsColorBlend() noexcept
+{
+}
+
+void
+GraphicsColorBlend::setBlendEnable(bool enable) noexcept
+{
+	_blendEnable = enable;
+}
+
+void
+GraphicsColorBlend::setBlendOp(GraphicsBlendOp blendOp) noexcept
+{
+	_blendOp = blendOp;
+}
+
+void
+GraphicsColorBlend::setBlendSrc(GraphicsBlendFactor factor) noexcept
+{
+	_blendSrc = factor;
+}
+
+void
+GraphicsColorBlend::setBlendDest(GraphicsBlendFactor factor) noexcept
+{
+	_blendDest = factor;
+}
+
+void
+GraphicsColorBlend::setBlendAlphaOp(GraphicsBlendOp blendOp) noexcept
+{
+	_blendAlphaOp = blendOp;
+}
+
+void
+GraphicsColorBlend::setBlendAlphaSrc(GraphicsBlendFactor factor) noexcept
+{
+	_blendAlphaSrc = factor;
+}
+
+void
+GraphicsColorBlend::setBlendAlphaDest(GraphicsBlendFactor factor) noexcept
+{
+	_blendAlphaDest = factor;
+}
+
+void
+GraphicsColorBlend::setColorWriteMask(GraphicsColorMaskFlags mask) noexcept
+{
+	_colorWriteMask = mask;
+}
+
+bool
+GraphicsColorBlend::getBlendEnable() const noexcept
+{
+	return _blendEnable;
+}
+
+GraphicsBlendOp
+GraphicsColorBlend::getBlendOp() const noexcept
+{
+	return _blendOp;
+}
+
+GraphicsBlendFactor
+GraphicsColorBlend::getBlendSrc() const noexcept
+{
+	return _blendSrc;
+}
+
+GraphicsBlendFactor
+GraphicsColorBlend::getBlendDest() const noexcept
+{
+	return _blendDest;
+}
+
+GraphicsBlendOp
+GraphicsColorBlend::getBlendAlphaOp() const noexcept
+{
+	return _blendAlphaOp;
+}
+
+GraphicsBlendFactor
+GraphicsColorBlend::getBlendAlphaSrc() const noexcept
+{
+	return _blendAlphaSrc;
+}
+
+GraphicsBlendFactor
+GraphicsColorBlend::getBlendAlphaDest() const noexcept
+{
+	return _blendAlphaDest;
+}
+
+GraphicsColorMaskFlags
+GraphicsColorBlend::getColorWriteMask() const noexcept
+{
+	return _colorWriteMask;
+}
+
+GraphicsStateDesc::GraphicsStateDesc() noexcept
+	: _scissorTestEnable(false)
 	, _srgbEnable(false)
 	, _multisampleEnable(false)
 	, _rasterizerDiscardEnable(false)
@@ -54,13 +165,6 @@ GraphicsStateDesc::GraphicsStateDesc() noexcept
 	, _depthBiasClamp(false)
 	, _stencilEnable(false)
 	, _lineWidth(1.0f)
-	, _blendOp(GraphicsBlendOp::GraphicsBlendOpAdd)
-	, _blendAlphaOp(GraphicsBlendOp::GraphicsBlendOpAdd)
-	, _blendSrc(GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha)
-	, _blendDest(GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha)
-	, _blendAlphaSrc(GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha)
-	, _blendAlphaDest(GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha)
-	, _colorWriteMask(GraphicsColorMask::GraphicsColorMaskRGBA)
 	, _cullMode(GraphicsCullMode::GraphicsCullModeBack)
 	, _polygonMode(GraphicsPolygonMode::GraphicsPolygonModeSolid)
 	, _primitiveType(GraphicsVertexType::GraphicsVertexTypeTriangleList)
@@ -92,51 +196,21 @@ GraphicsStateDesc::~GraphicsStateDesc() noexcept
 }
 
 void
-GraphicsStateDesc::setBlendEnable(bool enable) noexcept
+GraphicsStateDesc::setColorBlends(const GraphicsColorBlends& blends) noexcept
 {
-	_blendEnable = enable;
+	_blends = blends;
 }
 
-void
-GraphicsStateDesc::setBlendOp(GraphicsBlendOp blendOp) noexcept
+GraphicsColorBlends&
+GraphicsStateDesc::getColorBlends() noexcept
 {
-	_blendOp = blendOp;
+	return _blends;
 }
 
-void
-GraphicsStateDesc::setBlendSrc(GraphicsBlendFactor factor) noexcept
+const GraphicsColorBlends& 
+GraphicsStateDesc::getColorBlends() const noexcept
 {
-	_blendSrc = factor;
-}
-
-void
-GraphicsStateDesc::setBlendDest(GraphicsBlendFactor factor) noexcept
-{
-	_blendDest = factor;
-}
-
-void
-GraphicsStateDesc::setBlendAlphaOp(GraphicsBlendOp blendOp) noexcept
-{
-	_blendAlphaOp = blendOp;
-}
-
-void
-GraphicsStateDesc::setBlendAlphaSrc(GraphicsBlendFactor factor) noexcept
-{
-	_blendAlphaSrc = factor;
-}
-
-void
-GraphicsStateDesc::setBlendAlphaDest(GraphicsBlendFactor factor) noexcept
-{
-	_blendAlphaDest = factor;
-}
-
-void
-GraphicsStateDesc::setColorWriteMask(GraphicsColorMask mask) noexcept
-{
-	_colorWriteMask = mask;
+	return _blends;
 }
 
 void
@@ -187,7 +261,7 @@ GraphicsStateDesc::setRasterizerDiscardEnable(bool enable) noexcept
 	_rasterizerDiscardEnable = enable;
 }
 
-void 
+void
 GraphicsStateDesc::setLineWidth(float width) noexcept
 {
 	_lineWidth = width;
@@ -347,54 +421,6 @@ void
 GraphicsStateDesc::setStencilBackPass(GraphicsStencilOp stencilOp) noexcept
 {
 	_stencilBackPass = stencilOp;
-}
-
-bool
-GraphicsStateDesc::getBlendEnable() const noexcept
-{
-	return _blendEnable;
-}
-
-GraphicsBlendOp
-GraphicsStateDesc::getBlendOp() const noexcept
-{
-	return _blendOp;
-}
-
-GraphicsBlendFactor
-GraphicsStateDesc::getBlendSrc() const noexcept
-{
-	return _blendSrc;
-}
-
-GraphicsBlendFactor
-GraphicsStateDesc::getBlendDest() const noexcept
-{
-	return _blendDest;
-}
-
-GraphicsBlendOp
-GraphicsStateDesc::getBlendAlphaOp() const noexcept
-{
-	return _blendAlphaOp;
-}
-
-GraphicsBlendFactor
-GraphicsStateDesc::getBlendAlphaSrc() const noexcept
-{
-	return _blendAlphaSrc;
-}
-
-GraphicsBlendFactor
-GraphicsStateDesc::getBlendAlphaDest() const noexcept
-{
-	return _blendAlphaDest;
-}
-
-GraphicsColorMask
-GraphicsStateDesc::getColorWriteMask() const noexcept
-{
-	return _colorWriteMask;
 }
 
 GraphicsCullMode

@@ -60,19 +60,18 @@ public:
 	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
 	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
 
-	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept;
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
 
 private:
 	bool _enableSSSS;
 
 	std::shared_ptr<class SSSS> _SSSS;
 
-	GraphicsTexturePtr _deferredDepthMap;
-	GraphicsTexturePtr _deferredDepthLinearMap;
-	GraphicsTexturePtr _deferredGraphicMap;
-	GraphicsTexturePtr _deferredNormalMap;
-	GraphicsTexturePtr _deferredLightMap;
-	GraphicsTexturePtr _deferredShadowMap;
+	GraphicsTexturePtr _depthMap;
+	GraphicsTexturePtr _depthLinearMap;
+	GraphicsTexturePtr _diffuseMap;
+	GraphicsTexturePtr _normalMap;
+	GraphicsTexturePtr _lightMap;
 
 	GraphicsTexturePtr _swapMap;
 	GraphicsFramebufferPtr _swapView;

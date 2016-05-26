@@ -76,7 +76,7 @@ private:
 	void onActivate(RenderPipeline& pipeline) noexcept;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept;
+	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
 
 private:
 
@@ -97,6 +97,7 @@ private:
 	MaterialParamPtr _occlusionAmbient;
 	MaterialParamPtr _occlusionSphere;
 	MaterialMacroPtr _occlusionSampleNumber;
+	MaterialParamPtr _occlusionSourceInv;
 
 	MaterialParamPtr _blurSource;
 	MaterialParamPtr _blurFactor;

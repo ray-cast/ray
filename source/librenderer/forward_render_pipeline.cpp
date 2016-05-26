@@ -76,12 +76,7 @@ ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 }
 
 void
-ForwardRenderPipeline::onResolutionChangeBefore() noexcept
-{
-}
-
-void
-ForwardRenderPipeline::onResolutionChangeAfter() noexcept
+ForwardRenderPipeline::onResolutionChange() noexcept
 {
 }
 

@@ -44,12 +44,12 @@
 _NAME_BEGIN
 
 SSAO::Setting::Setting() noexcept
-	: radius(1.0f)
+	: radius(5.0f)
 	, bias(0.002f)
-	, intensity(2)
+	, intensity(5)
 	, blur(true)
 	, blurRadius(6)
-	, blurScale(1.5f)
+	, blurScale(1.0f)
 	, blurSharpness(4)
 {
 }
@@ -91,6 +91,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
+	_occlusionSourceInv->uniform2f(1.0 / width, 1.0 / height);
 	_cameraProjScale->uniform1f(((float)width / height) * _setting.radius);
 
 	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
@@ -199,7 +200,8 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_occlusionIntensity = _ambientOcclusion->getParameter("intensity");
 	_occlusionAmbient = _ambientOcclusion->getParameter("texOcclusion");
 	_occlusionSphere = _ambientOcclusion->getParameter("sphere");
-	_occlusionSampleNumber = _ambientOcclusion->getMacro("NUM_SAMPLE");
+	_occlusionSourceInv = _ambientOcclusion->getParameter("texSourceInv");
+	_occlusionSampleNumber = _ambientOcclusion->getMacro("NUM_SAMPLES");
 
 	_blurSource = _ambientOcclusion->getParameter("texSource");
 	_blurFactor = _ambientOcclusion->getParameter("blurFactor");
@@ -218,10 +220,41 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 void
 SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
 {
+	_ambientOcclusion.reset();
+
+	_ambientOcclusionPass.reset();
+	_ambientOcclusionBlurXPass.reset();
+	_ambientOcclusionBlurYPass.reset();
+
+	_cameraProjScale.reset();
+
+	_occlusionRadius.reset();
+	_occlusionRadius2.reset();
+	_occlusionBias.reset();
+	_occlusionIntensity.reset();
+	_occlusionAmbient.reset();
+	_occlusionSphere.reset();
+	_occlusionSampleNumber.reset();
+	_occlusionSourceInv.reset();
+
+	_blurSource.reset();
+	_blurFactor.reset();
+	_blurSharpness.reset();
+	_blurDirection.reset();
+	_blurGaussian.reset();
+	_blurRadius.reset();
+
+	_texBlurMap.reset();
+	_texAmbientMap.reset();
+
+	_framebufferLayout.reset();
+
+	_texBlurView.reset();
+	_texAmbientView.reset();
 }
 
 bool
-SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept
+SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;

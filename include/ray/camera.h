@@ -107,7 +107,6 @@ public:
 private:
 	void _updateOrtho() const noexcept;
 	void _updatePerspective() const noexcept;
-	void _updateProject() const noexcept;
 	void _updateViewProject() const noexcept;
 
 public:
@@ -143,7 +142,6 @@ private:
 
 	RenderDataManagerPtr _dataManager;
 
-	mutable bool _needUpdateProject;
 	mutable bool _needUpdateViewProject;
 	mutable bool _needUpdateVisiable;
 

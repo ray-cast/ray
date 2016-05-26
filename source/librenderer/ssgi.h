@@ -51,9 +51,11 @@ public:
 		float intensity;
 
 		bool blur;
-		int blurRadius;
+		float blurRadius;
 		float blurScale;
 		float blurSharpness;
+
+		Setting() noexcept;
 	};
 
 public:
@@ -64,19 +66,17 @@ public:
 	const Setting& getSetting() const noexcept;
 
 private:
-
-	void computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void computeRawGI(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
-	void blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, const float2& direction) noexcept;
-	void shading(RenderPipeline& pipeline, GraphicsTexturePtr color, GraphicsFramebufferPtr ao) noexcept;
+
+	void createSphereNoise() noexcept;
 
 private:
-
 	void onActivate(RenderPipeline& pipeline) noexcept;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr& swap) noexcept;
+	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
 
 private:
 
@@ -85,30 +85,34 @@ private:
 	MaterialPtr _ambientOcclusion;
 
 	MaterialTechPtr _ambientOcclusionPass;
-	MaterialTechPtr _ambientOcclusionBlurPass;
-	MaterialTechPtr _ambientOcclusionCopyPass;
+	MaterialTechPtr _ambientOcclusionBlurXPass;
+	MaterialTechPtr _ambientOcclusionBlurYPass;
 
-	MaterialParamPtr _radius;
-	MaterialParamPtr _radius2;
-	MaterialParamPtr _projScale;
-	MaterialParamPtr _clipInfo;
-	MaterialParamPtr _bias;
-	MaterialParamPtr _intensityDivR6;
+	MaterialParamPtr _cameraProjScale;
 
-	MaterialParamPtr _blurRadius;
-	MaterialParamPtr _blurTexSource;
+	MaterialParamPtr _occlusionRadius;
+	MaterialParamPtr _occlusionRadius2;
+	MaterialParamPtr _occlusionBias;
+	MaterialParamPtr _occlusionIntensity;
+	MaterialParamPtr _occlusionAmbient;
+	MaterialParamPtr _occlusionSphere;
+	MaterialMacroPtr _occlusionSampleNumber;
+	MaterialParamPtr _occlusionSourceInv;
+
+	MaterialParamPtr _blurSource;
 	MaterialParamPtr _blurFactor;
 	MaterialParamPtr _blurSharpness;
 	MaterialParamPtr _blurDirection;
 	MaterialParamPtr _blurGaussian;
+	MaterialMacroPtr _blurRadius;
 
-	MaterialParamPtr _copyAmbient;
-
-	GraphicsTexturePtr _texAmbientMap;
 	GraphicsTexturePtr _texBlurMap;
+	GraphicsTexturePtr _texAmbientMap;
 
-	GraphicsFramebufferPtr _texAmbientView;
+	GraphicsFramebufferLayoutPtr _framebufferLayout;
+
 	GraphicsFramebufferPtr _texBlurView;
+	GraphicsFramebufferPtr _texAmbientView;
 };
 
 _NAME_END

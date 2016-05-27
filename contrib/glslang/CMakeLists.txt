@@ -5,7 +5,6 @@ set(CMAKE_INSTALL_PREFIX "install" CACHE STRING "prefix")
 project(glslang)
 
 if(WIN32)
-    include(ChooseMSVCCRT.cmake)
     add_definitions(-DGLSLANG_OSINCLUDE_WIN32)
 elseif(UNIX)
     add_definitions(-fPIC)

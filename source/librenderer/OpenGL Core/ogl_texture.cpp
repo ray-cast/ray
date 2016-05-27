@@ -255,9 +255,11 @@ OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t
 	}
 
 	glBindTexture(_target, _texture);
-	glReadPixels(x, y, w, h, format, type, 0);
+	glGetTexImage(_target, 0, format, type, 0);
 
 	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
+	data += (y * _textureDesc.getWidth() * num) * x;
+
 	return *data ? true : false;
 }
 

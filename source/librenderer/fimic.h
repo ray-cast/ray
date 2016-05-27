@@ -113,30 +113,28 @@ private:
 	MaterialParamPtr _texSource;
 	MaterialParamPtr _texSourceSizeInv;
 
-	GraphicsTexturePtr _texSample4Map;
-	GraphicsTexturePtr _texSample8Map;
+	GraphicsTexturePtr _texBloom1Map;
+	GraphicsTexturePtr _texBloom2Map;
 
+	GraphicsTexturePtr _texSampleLog256Map;
 	GraphicsTexturePtr _texSampleLog64Map;
 	GraphicsTexturePtr _texSampleLog16Map;
 	GraphicsTexturePtr _texSampleLog4Map;
+	GraphicsTexturePtr _texSampleLog2Map;
 	GraphicsTexturePtr _texSampleLumMap;
-	GraphicsTexturePtr _texSampleLumMap2;
 
-	GraphicsTexturePtr _texCombieMap;
-
-	GraphicsFramebufferLayoutPtr _sampleImageLayout;
+	GraphicsFramebufferLayoutPtr _sampleBloomImageLayout;
 	GraphicsFramebufferLayoutPtr _sampleLogImageLayout;
 
-	GraphicsFramebufferPtr _texSample4View;
-	GraphicsFramebufferPtr _texSample8View;
+	GraphicsFramebufferPtr _texBloom1View;
+	GraphicsFramebufferPtr _texBloom2View;
 
+	GraphicsFramebufferPtr _texSampleLog256View;
 	GraphicsFramebufferPtr _texSampleLog64View;
 	GraphicsFramebufferPtr _texSampleLog16View;
 	GraphicsFramebufferPtr _texSampleLog4View;
+	GraphicsFramebufferPtr _texSampleLog2View;
 	GraphicsFramebufferPtr _texSampleLumView;
-	GraphicsFramebufferPtr _texSampleLumView2;
-
-	GraphicsFramebufferPtr _texCombieView;
 };
 
 _NAME_END

@@ -146,14 +146,14 @@
 
             float AvgLuminancePS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
             {
-                float4 color = texSource.Sample(PointClamp, coord0.xy);
-                color += texSource.Sample(PointClamp, coord0.zw);
-                color += texSource.Sample(PointClamp, coord1.xy);
-                color += texSource.Sample(PointClamp, coord1.zw);
+                float color = texSource.Sample(PointClamp, coord0.xy).r;
+                color += texSource.Sample(PointClamp, coord0.zw).r;
+                color += texSource.Sample(PointClamp, coord1.xy).r;
+                color += texSource.Sample(PointClamp, coord1.zw).r;
                 color *= 0.25;
 
-                float adaptedLum = texLumAve.Sample(PointClamp, float2(0,0)).r;
-                return CalcAdaptedLum(adaptedLum, exp(color.r), delta);
+                float adaptedLum = texLumAve.Load(int3(0,0,0)).r;
+                return saturate(CalcAdaptedLum(adaptedLum, exp(color), delta));
             }
 
             float4 BloomPS(in float4 coord : TEXCOORD0) : SV_Target0

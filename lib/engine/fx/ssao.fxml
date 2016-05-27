@@ -184,6 +184,12 @@
             <state name="blenddst" value="zero" />
             <state name="blendalphasrc" value="zero" />
             <state name="blendalphadst" value="one" />
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
         </pass>
     </technique>
 </effect>

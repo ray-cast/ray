@@ -8,13 +8,16 @@ The aim of the project is to create a lightweight 3D library with a very low lev
 ### Screenshot ###
 
 <a target="_Blank" href="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/Skinning.png">
-    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/Skinning.png" width = "32%" height = "18%" align=center/>
+    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/Skinning.png" width = "24%" height = "13%" align=center/>
 </a>
 <a target="_Blank" href="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/ssss.png">
-    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/ssss.png" width = "32%" height = "18%" align=center/>
+    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/ssss.png" width = "24%" height = "13%" align=center/>
 </a>
 <a target="_Blank" href="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/IBL.png">
-    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/IBL.png" width = "32%" height = "18%" align=center/>
+    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/IBL.png" width = "24%" height = "13%" align=center/>
+</a>
+<a target="_Blank" href="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/IBL2.jpg">
+    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/IBL2.jpg" width = "24%" height = "13%" align=center/>
 </a>
 
 ### Building ###

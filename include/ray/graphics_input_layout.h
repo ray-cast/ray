@@ -63,6 +63,7 @@ class EXPORT GraphicsVertexLayout final
 {
 public:
 	GraphicsVertexLayout() noexcept;
+	GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format) noexcept;
 	GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset) noexcept;
 	~GraphicsVertexLayout() noexcept;
 

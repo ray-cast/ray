@@ -67,6 +67,8 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLInputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<OGLDescriptorSetLayout>());
 
+	std::uint16_t offset = 0;
+
 	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
 	for (auto& it : layouts)
 	{
@@ -97,11 +99,13 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
 			attrib.slot = it.getVertexSlot();
-			attrib.offset = it.getVertexOffset();
+			attrib.offset = offset;
 			attrib.normalize = OGLTypes::isScaledFormat(it.getVertexFormat());
 
 			_attributes.push_back(attrib);
 		}
+
+		offset += it.getVertexOffset() + it.getVertexSize();
 	}
 
 	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();

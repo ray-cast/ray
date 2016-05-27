@@ -66,8 +66,10 @@ EGL2Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<EGL2InputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<EGL2DescriptorSetLayout>());
 
-	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
-	for (auto& it : components)
+	std::uint16_t offset = 0;
+
+	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
+	for (auto& it : layouts)
 	{
 		GLuint attribIndex = GL_INVALID_INDEX;
 
@@ -97,10 +99,12 @@ EGL2Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			attrib.count = it.getVertexCount();
 			attrib.slot = it.getVertexSlot();
 			attrib.normalize = EGL2Types::isScaledFormat(it.getVertexFormat());
-			attrib.offset = it.getVertexOffset();
+			attrib.offset = offset;
 
 			_attributes.push_back(attrib);
 		}
+
+		offset += it.getVertexOffset() + it.getVertexSize();
 	}
 
 	_pipelineDesc = pipelineDesc;

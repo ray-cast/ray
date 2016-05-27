@@ -112,21 +112,19 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material,
 			if (layoutName.empty())
 				throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
 
-			std::uint32_t index = 0;
-			reader.getValue("index", index);
-
 			std::string layoutFormat = reader.getValue<std::string>("format");
 			GraphicsFormat format = stringToFormat(layoutFormat);
 			if (format == GraphicsFormat::GraphicsFormatMaxEnum)
 				throw failure(__TEXT("Undefined format : ") + reader.getCurrentNodePath());
 
+			std::uint32_t index = 0;
+			reader.getValue("index", index);
+
 			std::uint32_t slot = 0;
-			if (!reader.getValue("slot", slot))
-				throw failure(__TEXT("Undefined slot : ") + reader.getCurrentNodePath());
+			reader.getValue("slot", slot);
 
 			std::uint32_t offset = 0;
-			if (!reader.getValue("offset", offset))
-				throw failure(__TEXT("Undefined offset : ") + reader.getCurrentNodePath());
+			reader.getValue("offset", offset);
 
 			inputLayoutDesc.addVertexLayout(GraphicsVertexLayout(slot, layoutName, index, format, offset));
 		}

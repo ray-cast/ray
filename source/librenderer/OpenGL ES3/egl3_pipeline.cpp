@@ -77,6 +77,8 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 	GL_CHECK(glBindVertexArray(_vao));
 
+	std::uint32_t offset = 0;
+
 	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
 	for (auto& it : layouts)
 	{
@@ -99,11 +101,13 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 				GL_CHECK(glEnableVertexAttribArray(attribIndex));
 				GL_CHECK(glVertexAttribBinding(attribIndex, it.getVertexSlot()));
-				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, EGL3Types::isScaledFormat(it.getVertexFormat()), it.getVertexOffset()));
+				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, EGL3Types::isScaledFormat(it.getVertexFormat()), offset));
 
 				break;
 			}
 		}
+
+		offset += it.getVertexOffset() + it.getVertexSize();
 	}
 
 	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();

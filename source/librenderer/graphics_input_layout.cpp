@@ -89,6 +89,18 @@ GraphicsVertexLayout::GraphicsVertexLayout() noexcept
 {
 }
 
+GraphicsVertexLayout::GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format) noexcept
+	: _name(semantic)
+	, _index(semanticIndex)
+	, _count(0)
+	, _format(format)
+	, _slot(slot)
+	, _offset(0)
+{
+	_count = getVertexCount(format);
+	_size = getVertexSize(format);
+}
+
 GraphicsVertexLayout::GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset) noexcept
 	: _name(semantic)
 	, _index(semanticIndex)
@@ -643,7 +655,10 @@ GraphicsInputLayoutDesc::getVertexSize(std::uint8_t slot) const noexcept
 	for (auto& it : _layouts)
 	{
 		if (it.getVertexSlot() == slot)
+		{
+			size += it.getVertexOffset();
 			size += it.getVertexSize();
+		}			
 	}
 
 	return size;

@@ -78,6 +78,8 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		return false;
 	}
 
+	std::uint16_t offset = 0;
+
 	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
 	for (auto& it : layouts)
 	{
@@ -104,8 +106,10 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		{
 			glEnableVertexArrayAttrib(_vao, attribIndex);
 			glVertexArrayAttribBinding(_vao, attribIndex, it.getVertexSlot());
-			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, OGLTypes::isScaledFormat(it.getVertexFormat()), it.getVertexOffset());
+			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, OGLTypes::isScaledFormat(it.getVertexFormat()), offset);
 		}
+
+		offset += it.getVertexOffset() + it.getVertexSize();
 	}
 
 	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();

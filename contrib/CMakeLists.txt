@@ -24,7 +24,7 @@ SET_TARGET_ATTRIBUTE(tinyxml "contrib")
 SET_TARGET_ATTRIBUTE(freetype "contrib")
 SET_TARGET_ATTRIBUTE(libHLSLcc "contrib")
 
-IF(BUILD_OPENGL_ES)
+IF(BUILD_OPENGL_ES2 OR BUILD_OPENGL_ES3)
     ADD_SUBDIRECTORY(glsl-optimizer)
     SET_TARGET_ATTRIBUTE(glsl_optimizer "contrib")
     SET_TARGET_ATTRIBUTE(glcpp-library "contrib")

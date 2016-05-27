@@ -154,11 +154,13 @@ public:
 
 	VkShaderModule getShaderModule() const noexcept;
 
+	const GraphicsAttributes& getAttributes() const noexcept;
+
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
-	static bool HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out);
-	static bool GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
+	bool HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out);
+	bool GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
 
 private:
 	friend class VulkanDevice;
@@ -172,6 +174,7 @@ private:
 private:
 	VkShaderModule _vkShader;
 	GraphicsShaderDesc _shaderDesc;
+	GraphicsAttributes  _attributes;
 	GraphicsDeviceWeakPtr _device;
 };
 

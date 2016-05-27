@@ -517,10 +517,9 @@ EGL3Program::_initActiveAttribute() noexcept
 
 			std::size_t off = name.find_last_of('_');
 			if (off != std::string::npos)
-			{
 				semantic = name.substr(off + 1);
-				name = name.substr(0, off);
-			}
+			else
+				semantic = name;
 
 			auto it = std::find_if_not(semantic.rbegin(), semantic.rend(), [](char ch) { return ch >= '0' && ch <= '9'; });
 			if (it != semantic.rend())

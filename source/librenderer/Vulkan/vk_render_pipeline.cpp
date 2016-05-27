@@ -107,26 +107,42 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	memset(&dynamicStateEnables[0], 0, sizeof(dynamicStateEnables));
 	memset(&shaderStages[0], 0, sizeof(shaderStages));
 
-	std::uint16_t location = 0;
-	const auto& components = inputLayoutDesc.getVertexLayouts();
-	for (auto& component : components)
+	const auto& layouts = inputLayoutDesc.getVertexLayouts();
+	for (auto& layout : layouts)
+	{
+		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
+		for (auto& it : attributes)
+		{
+			if (it->getSemantic() == layout.getSemantic() &&
+				it->getSemanticIndex() == layout.getSemanticIndex())
+			{
+				VkVertexInputAttributeDescription attr;
+				attr.location = it->downcast<VulkanGraphicsAttribute>()->getBindingPoint();
+				attr.binding = layout.getVertexSlot();
+				attr.offset = layout.getVertexOffset();
+				attr.format = VulkanTypes::asGraphicsFormat(layout.getVertexFormat());
+
+				vias.push_back(attr);
+			}
+		}
+	}
+
+	const auto& bindings = inputLayoutDesc.getVertexBindings();
+	for (auto& binding : bindings)
 	{
 		VkVertexInputBindingDescription vib;
-		vib.binding = component.getVertexSlot();
-		vib.stride = inputLayoutDesc.getVertexSize();
-		vib.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		vib.binding = binding.getVertexSlot();
+		vib.stride = inputLayoutDesc.getVertexSize(binding.getVertexSlot());
+
+		auto divisor = binding.getVertexDivisor();
+		if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+			vib.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		else if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
+			vib.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+		else
+			continue;
 
 		vibs.push_back(vib);
-
-		VkVertexInputAttributeDescription attr;
-		attr.binding = 0;
-		attr.location = location;
-		attr.offset = component.getVertexOffset();
-		attr.format = VulkanTypes::asGraphicsFormat(component.getVertexFormat());
-
-		location++;
-
-		vias.push_back(attr);
 	}
 
 	vi.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

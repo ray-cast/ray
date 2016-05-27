@@ -129,13 +129,13 @@ OGLGraphicsUniform::getName() const noexcept
 	return _name;
 }
 
-void 
+void
 OGLGraphicsUniform::setSamplerName(const std::string& name) noexcept
 {
 	_samplerName = name;
 }
 
-const std::string& 
+const std::string&
 OGLGraphicsUniform::getSamplerName() const noexcept
 {
 	return _samplerName;
@@ -212,7 +212,7 @@ OGLGraphicsUniformBlock::getType() const noexcept
 	return _type;
 }
 
-std::uint32_t 
+std::uint32_t
 OGLGraphicsUniformBlock::getOffset() const noexcept
 {
 	return 0;
@@ -495,10 +495,9 @@ OGLProgram::_initActiveAttribute() noexcept
 
 			std::size_t off = name.find_last_of('_');
 			if (off != std::string::npos)
-			{
 				semantic = name.substr(off + 1);
-				name = name.substr(0, off);
-			}
+			else
+				semantic = name;
 
 			auto it = std::find_if_not(semantic.rbegin(), semantic.rend(), [](char ch) { return ch >= '0' && ch <= '9'; });
 			if (it != semantic.rend())
@@ -506,7 +505,7 @@ OGLProgram::_initActiveAttribute() noexcept
 				semantic = semantic.substr(0, semantic.rend()- it);
 				semanticIndex = std::atoi(semantic.substr(semantic.rend() - it).c_str());
 			}
-			
+
 			auto attrib = std::make_shared<OGLGraphicsAttribute>();
 			attrib->setSemantic(semantic);
 			attrib->setSemanticIndex(semanticIndex);
@@ -643,7 +642,7 @@ OGLProgram::_initActiveUniformBlock() noexcept
 	}
 }
 
-GraphicsFormat 
+GraphicsFormat
 OGLProgram::toGraphicsFormat(GLenum type) noexcept
 {
 	if (type == GL_BOOL)
@@ -688,10 +687,10 @@ OGLProgram::toGraphicsFormat(GLenum type) noexcept
 GraphicsUniformType
 OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 {
-	if (type == GL_SAMPLER_2D || 
+	if (type == GL_SAMPLER_2D ||
 		type == GL_SAMPLER_3D ||
-		type == GL_SAMPLER_2D_ARRAY || 
-		type == GL_SAMPLER_CUBE || 
+		type == GL_SAMPLER_2D_ARRAY ||
+		type == GL_SAMPLER_CUBE ||
 		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
 		return GraphicsUniformType::GraphicsUniformTypeStorageImage;

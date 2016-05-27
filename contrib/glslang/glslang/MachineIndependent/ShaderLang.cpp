@@ -1,6 +1,6 @@
 //
 //Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
-//Copyright (C) 2013-2015 LunarG, Inc.
+//Copyright (C) 2013-2016 LunarG, Inc.
 //Copyright (C) 2015-2016 Google, Inc.
 //
 //All rights reserved.
@@ -44,9 +44,11 @@
 #include <string.h>
 #include <iostream>
 #include <sstream>
+#include <memory>
 #include "SymbolTable.h"
 #include "ParseHelper.h"
 #include "../../hlsl/hlslParseHelper.h"
+#include "../../hlsl/hlslParseables.h"
 #include "Scan.h"
 #include "ScanContext.h"
 
@@ -64,6 +66,22 @@ namespace { // anonymous namespace for file-local functions and symbols
 
 using namespace glslang;
 
+// Create a language specific version of parseables.
+TBuiltInParseables* CreateBuiltInParseables(TInfoSink& infoSink, EShSource source)
+{
+    // TODO: hardcode to the GLSL path, until HLSL intrinsics are available.
+    source = EShSourceGlsl; // REMOVE
+
+    switch (source) {
+    case EShSourceGlsl: return new TBuiltIns();              // GLSL builtIns
+    case EShSourceHlsl: return new TBuiltInParseablesHlsl(); // HLSL intrinsics
+
+    default:
+        infoSink.info.message(EPrefixInternalError, "Unable to determine source language");
+        return nullptr;
+    }
+}
+    
 // Local mapping functions for making arrays of symbol tables....
 
 int MapVersionToIndex(int version)
@@ -171,11 +189,12 @@ int CommonIndex(EProfile profile, EShLanguage language)
 //
 // To initialize per-stage shared tables, with the common table already complete.
 //
-void InitializeStageSymbolTable(TBuiltIns& builtIns, int version, EProfile profile, int spv, int vulkan, EShLanguage language, TInfoSink& infoSink, TSymbolTable** commonTable, TSymbolTable** symbolTables)
+void InitializeStageSymbolTable(TBuiltInParseables& builtInParseables, int version, EProfile profile, int spv, int vulkan,
+                                EShLanguage language, TInfoSink& infoSink, TSymbolTable** commonTable, TSymbolTable** symbolTables)
 {
     (*symbolTables[language]).adoptLevels(*commonTable[CommonIndex(profile, language)]);
-    InitializeSymbolTable(builtIns.getStageString(language), version, profile, spv, vulkan, language, infoSink, *symbolTables[language]);
-    IdentifyBuiltIns(version, profile, spv, vulkan, language, *symbolTables[language]);
+    InitializeSymbolTable(builtInParseables.getStageString(language), version, profile, spv, vulkan, language, infoSink, *symbolTables[language]);
+    builtInParseables.identifyBuiltIns(version, profile, spv, vulkan, language, *symbolTables[language]);
     if (profile == EEsProfile && version >= 300)
         (*symbolTables[language]).setNoBuiltInRedeclarations();
     if (version == 110)
@@ -186,49 +205,51 @@ void InitializeStageSymbolTable(TBuiltIns& builtIns, int version, EProfile profi
 // Initialize the full set of shareable symbol tables;
 // The common (cross-stage) and those shareable per-stage.
 //
-bool InitializeSymbolTables(TInfoSink& infoSink, TSymbolTable** commonTable,  TSymbolTable** symbolTables, int version, EProfile profile, int spv, int vulkan)
+bool InitializeSymbolTables(TInfoSink& infoSink, TSymbolTable** commonTable,  TSymbolTable** symbolTables, int version, EProfile profile, int spv, int vulkan, EShSource source)
 {
-    TBuiltIns builtIns;
-    builtIns.initialize(version, profile, spv, vulkan);
+    std::unique_ptr<TBuiltInParseables> builtInParseables(CreateBuiltInParseables(infoSink, source));
+
+    builtInParseables->initialize(version, profile, spv, vulkan);
 
     // do the common tables
-    InitializeSymbolTable(builtIns.getCommonString(), version, profile, spv, vulkan, EShLangVertex, infoSink, *commonTable[EPcGeneral]);
+    InitializeSymbolTable(builtInParseables->getCommonString(), version, profile, spv, vulkan, EShLangVertex, infoSink, *commonTable[EPcGeneral]);
     if (profile == EEsProfile)
-        InitializeSymbolTable(builtIns.getCommonString(), version, profile, spv, vulkan, EShLangFragment, infoSink, *commonTable[EPcFragment]);
+        InitializeSymbolTable(builtInParseables->getCommonString(), version, profile, spv, vulkan, EShLangFragment, infoSink, *commonTable[EPcFragment]);
 
     // do the per-stage tables
 
     // always have vertex and fragment
-    InitializeStageSymbolTable(builtIns, version, profile, spv, vulkan, EShLangVertex, infoSink, commonTable, symbolTables);
-    InitializeStageSymbolTable(builtIns, version, profile, spv, vulkan, EShLangFragment, infoSink, commonTable, symbolTables);
+    InitializeStageSymbolTable(*builtInParseables, version, profile, spv, vulkan, EShLangVertex, infoSink, commonTable, symbolTables);
+    InitializeStageSymbolTable(*builtInParseables, version, profile, spv, vulkan, EShLangFragment, infoSink, commonTable, symbolTables);
 
     // check for tessellation
     if ((profile != EEsProfile && version >= 150) ||
         (profile == EEsProfile && version >= 310)) {
-        InitializeStageSymbolTable(builtIns, version, profile, spv, vulkan, EShLangTessControl, infoSink, commonTable, symbolTables);
-        InitializeStageSymbolTable(builtIns, version, profile, spv, vulkan, EShLangTessEvaluation, infoSink, commonTable, symbolTables);
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spv, vulkan, EShLangTessControl, infoSink, commonTable, symbolTables);
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spv, vulkan, EShLangTessEvaluation, infoSink, commonTable, symbolTables);
     }
 
     // check for geometry
     if ((profile != EEsProfile && version >= 150) ||
         (profile == EEsProfile && version >= 310))
-        InitializeStageSymbolTable(builtIns, version, profile, spv, vulkan, EShLangGeometry, infoSink, commonTable, symbolTables);
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spv, vulkan, EShLangGeometry, infoSink, commonTable, symbolTables);
 
     // check for compute
     if ((profile != EEsProfile && version >= 430) ||
         (profile == EEsProfile && version >= 310))
-        InitializeStageSymbolTable(builtIns, version, profile, spv, vulkan, EShLangCompute, infoSink, commonTable, symbolTables);
-
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spv, vulkan, EShLangCompute, infoSink, commonTable, symbolTables);
+    
     return true;
 }
 
-bool AddContextSpecificSymbols(const TBuiltInResource* resources, TInfoSink& infoSink, TSymbolTable& symbolTable, int version, EProfile profile, int spv, int vulkan, EShLanguage language)
+bool AddContextSpecificSymbols(const TBuiltInResource* resources, TInfoSink& infoSink, TSymbolTable& symbolTable, int version,
+                               EProfile profile, int spv, int vulkan, EShLanguage language, EShSource source)
 {
-    TBuiltIns builtIns;
+    std::unique_ptr<TBuiltInParseables> builtInParseables(CreateBuiltInParseables(infoSink, source));
     
-    builtIns.initialize(*resources, version, profile, spv, vulkan, language);
-    InitializeSymbolTable(builtIns.getCommonString(), version, profile, spv, vulkan, language, infoSink, symbolTable);
-    IdentifyBuiltIns(version, profile, spv, vulkan, language, symbolTable, *resources);
+    builtInParseables->initialize(*resources, version, profile, spv, vulkan, language);
+    InitializeSymbolTable(builtInParseables->getCommonString(), version, profile, spv, vulkan, language, infoSink, symbolTable);
+    builtInParseables->identifyBuiltIns(version, profile, spv, vulkan, language, symbolTable, *resources);
 
     return true;
 }
@@ -245,7 +266,7 @@ bool AddContextSpecificSymbols(const TBuiltInResource* resources, TInfoSink& inf
 // This only gets done the first time any thread needs a particular symbol table
 // (lazy evaluation).
 //
-void SetupBuiltinSymbolTable(int version, EProfile profile, int spv, int vulkan)
+void SetupBuiltinSymbolTable(int version, EProfile profile, int spv, int vulkan, EShSource source)
 {
     TInfoSink infoSink;
 
@@ -275,7 +296,7 @@ void SetupBuiltinSymbolTable(int version, EProfile profile, int spv, int vulkan)
         stageTables[stage] = new TSymbolTable;
 
     // Generate the local symbol tables using the new pool
-    InitializeSymbolTables(infoSink, commonTable, stageTables, version, profile, spv, vulkan);
+    InitializeSymbolTables(infoSink, commonTable, stageTables, version, profile, spv, vulkan, source);
 
     // Switch to the process-global pool
     SetThreadPoolAllocator(*PerProcessGPA);
@@ -579,7 +600,7 @@ bool ProcessDeferred(
     intermediate.setSpv(spv);
     if (vulkan)
         intermediate.setOriginUpperLeft();
-    SetupBuiltinSymbolTable(version, profile, spv, vulkan);
+    SetupBuiltinSymbolTable(version, profile, spv, vulkan, source);
     
     TSymbolTable* cachedTable = SharedSymbolTables[MapVersionToIndex(version)]
                                                   [MapProfileToIndex(profile)]
@@ -593,7 +614,8 @@ bool ProcessDeferred(
     
     // Add built-in symbols that are potentially context dependent;
     // they get popped again further down.
-    AddContextSpecificSymbols(resources, compiler->infoSink, symbolTable, version, profile, spv, vulkan, compiler->getLanguage());
+    AddContextSpecificSymbols(resources, compiler->infoSink, symbolTable, version, profile, spv, vulkan,
+                              compiler->getLanguage(), source);
     
     //
     // Now we can process the full shader under proper symbols and rules.
@@ -629,7 +651,9 @@ bool ProcessDeferred(
     parseContext->initializeExtensionBehavior();
     
     // Fill in the strings as outlined above.
-    strings[0] = parseContext->getPreamble();
+    std::string preamble;
+    parseContext->getPreamble(preamble);
+    strings[0] = preamble.c_str();
     lengths[0] = strlen(strings[0]);
     names[0] = nullptr;
     strings[1] = customPreamble;
@@ -1502,14 +1526,34 @@ bool TProgram::linkStage(EShLanguage stage, EShMessages messages)
     if (stages[stage].size() == 0)
         return true;
 
+    int numEsShaders = 0, numNonEsShaders = 0;
+    for (auto it = stages[stage].begin(); it != stages[stage].end(); ++it) {
+        if ((*it)->intermediate->getProfile() == EEsProfile) {
+            numEsShaders++;
+        } else {
+            numNonEsShaders++;
+        }
+    }
+
+    if (numEsShaders > 0 && numNonEsShaders > 0) {
+        infoSink->info.message(EPrefixError, "Cannot mix ES profile with non-ES profile shaders");
+        return false;
+    } else if (numEsShaders > 1) {
+        infoSink->info.message(EPrefixError, "Cannot attach multiple ES shaders of the same type to a single program");
+        return false;
+    }
+
     //
     // Be efficient for the common single compilation unit per stage case,
     // reusing it's TIntermediate instead of merging into a new one.
     //
+    TIntermediate *firstIntermediate = stages[stage].front()->intermediate;
     if (stages[stage].size() == 1)
-        intermediate[stage] = stages[stage].front()->intermediate;
+        intermediate[stage] = firstIntermediate;
     else {
-        intermediate[stage] = new TIntermediate(stage);
+        intermediate[stage] = new TIntermediate(stage,
+                                                firstIntermediate->getVersion(),
+                                                firstIntermediate->getProfile());
         newedIntermediate[stage] = true;
     }
 
@@ -1570,6 +1614,9 @@ int TProgram::getUniformBlockIndex(int index)        { return reflection->getUni
 int TProgram::getUniformType(int index)              { return reflection->getUniform(index).glDefineType; }
 int TProgram::getUniformBufferOffset(int index)      { return reflection->getUniform(index).offset; }
 int TProgram::getUniformArraySize(int index)         { return reflection->getUniform(index).size; }
+int TProgram::getNumLiveAttributes()                 { return reflection->getNumAttributes(); }
+const char* TProgram::getAttributeName(int index)    { return reflection->getAttribute(index).name.c_str(); }
+int TProgram::getAttributeType(int index)            { return reflection->getAttribute(index).glDefineType; }
 
 void TProgram::dumpReflection()                      { reflection->dump(); }
 

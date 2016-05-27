@@ -76,6 +76,7 @@ public:
     virtual void updateExtensionBehavior(int line, const char* const extension, const char* behavior);
     virtual void fullIntegerCheck(const TSourceLoc&, const char* op);
     virtual void doubleCheck(const TSourceLoc&, const char* op);
+    virtual void int64Check(const TSourceLoc&, const char* op, bool builtIn = false);
     virtual void spvRemoved(const TSourceLoc&, const char* op);
     virtual void vulkanRemoved(const TSourceLoc&, const char* op);
     virtual void requireVulkan(const TSourceLoc&, const char* op);
@@ -103,7 +104,7 @@ public:
     void setCurrentSourceName(const char* name) { currentScanner->setFile(name); }
     void setCurrentString(int string) { currentScanner->setString(string); }
 
-    const char* getPreamble();
+    void getPreamble(std::string&);
     bool relaxedErrors()    const { return (messages & EShMsgRelaxedErrors) != 0; }
     bool suppressWarnings() const { return (messages & EShMsgSuppressWarnings) != 0; }
 

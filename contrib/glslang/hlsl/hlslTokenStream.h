@@ -1,5 +1,5 @@
 //
-//Copyright (C) 2014 LunarG, Inc.
+//Copyright (C) 2016 Google, Inc.
 //
 //All rights reserved.
 //
@@ -15,7 +15,7 @@
 //    disclaimer in the documentation and/or other materials provided
 //    with the distribution.
 //
-//    Neither the name of 3Dlabs Inc. Ltd. nor the names of its
+//    Neither the name of Google, Inc., nor the names of its
 //    contributors may be used to endorse or promote products derived
 //    from this software without specific prior written permission.
 //
@@ -31,19 +31,34 @@
 //LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 //ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //POSSIBILITY OF SUCH DAMAGE.
+//
 
-#include "../glslang/Include/intermediate.h"
+#ifndef HLSLTOKENSTREAM_H_
+#define HLSLTOKENSTREAM_H_
 
-#include <string>
-#include <vector>
-
-#include "Logger.h"
+#include "hlslScanContext.h"
 
 namespace glslang {
 
-void GetSpirvVersion(std::string&);
-void GlslangToSpv(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv);
-void GlslangToSpv(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv, spv::SpvBuildLogger* logger);
-void OutputSpv(const std::vector<unsigned int>& spirv, const char* baseName);
+    class HlslTokenStream {
+    public:
+        explicit HlslTokenStream(HlslScanContext& scanner)
+            : scanner(scanner) { }
+        virtual ~HlslTokenStream() { }
 
-}
+    public:
+        void advanceToken();
+        bool acceptTokenClass(EHlslTokenClass);
+        EHlslTokenClass peek() const;
+        bool peekTokenClass(EHlslTokenClass) const;
+
+    protected:
+        HlslToken token;                 // the current token we are processing
+    
+    private:
+        HlslScanContext& scanner;        // lexical scanner, to get next token
+    };
+
+} // end namespace glslang
+
+#endif // HLSLTOKENSTREAM_H_

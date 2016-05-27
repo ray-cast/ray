@@ -754,12 +754,15 @@ TIntermAggregate* HlslParseContext::handleFunctionDefinition(const TSourceLoc& l
     return paramNodes;
 }
 
-void HlslParseContext::handleFunctionArgument(TFunction* function, TIntermAggregate*& arguments, TIntermTyped* arg)
+void HlslParseContext::handleFunctionArgument(TFunction* function, TIntermTyped*& arguments, TIntermTyped* newArg)
 {
     TParameter param = { 0, new TType };
-    param.type->shallowCopy(arg->getType());
+    param.type->shallowCopy(newArg->getType());
     function->addParameter(param);
-    arguments = intermediate.growAggregate(arguments, arg);
+    if (arguments)
+        arguments = intermediate.growAggregate(arguments, newArg);
+    else
+        arguments = newArg;
 }
 
 //
@@ -1652,13 +1655,6 @@ void HlslParseContext::boolCheck(const TSourceLoc& loc, const TIntermTyped* type
         error(loc, "boolean expression expected", "", "");
 }
 
-// This function checks to see if the node (for the expression) contains a scalar boolean expression or not
-void HlslParseContext::boolCheck(const TSourceLoc& loc, const TPublicType& pType)
-{
-    if (pType.basicType != EbtBool || pType.arraySizes || pType.matrixCols > 1 || (pType.vectorSize > 1))
-        error(loc, "boolean expression expected", "", "");
-}
-
 //
 // Fix just a full qualifier (no variables or types yet, but qualifier is complete) at global level.
 //
@@ -1711,6 +1707,7 @@ void HlslParseContext::mergeQualifiers(const TSourceLoc& loc, TQualifier& dst, c
     bool repeated = false;
 #define MERGE_SINGLETON(field) repeated |= dst.field && src.field; dst.field |= src.field;
     MERGE_SINGLETON(invariant);
+    MERGE_SINGLETON(noContraction);
     MERGE_SINGLETON(centroid);
     MERGE_SINGLETON(smooth);
     MERGE_SINGLETON(flat);
@@ -2016,6 +2013,7 @@ void HlslParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& n
             oldType.getQualifier().centroid = newType.getQualifier().centroid;
             oldType.getQualifier().sample = newType.getQualifier().sample;
             oldType.getQualifier().invariant = newType.getQualifier().invariant;
+            oldType.getQualifier().noContraction = newType.getQualifier().noContraction;
             oldType.getQualifier().smooth = newType.getQualifier().smooth;
             oldType.getQualifier().flat = newType.getQualifier().flat;
             oldType.getQualifier().nopersp = newType.getQualifier().nopersp;
@@ -3380,6 +3378,14 @@ void HlslParseContext::addQualifierToExisting(const TSourceLoc& loc, TQualifier 
         if (intermediate.inIoAccessed(identifier))
             error(loc, "cannot change qualification after use", "invariant", "");
         symbol->getWritableType().getQualifier().invariant = true;
+    } else if (qualifier.noContraction) {
+        if (intermediate.inIoAccessed(identifier))
+            error(loc, "cannot change qualification after use", "precise", "");
+        symbol->getWritableType().getQualifier().noContraction = true;
+    } else if (qualifier.specConstant) {
+        symbol->getWritableType().getQualifier().makeSpecConstant();
+        if (qualifier.hasSpecConstantId())
+            symbol->getWritableType().getQualifier().layoutSpecConstantId = qualifier.layoutSpecConstantId;
     } else
         warn(loc, "unknown requalification", "", "");
 }

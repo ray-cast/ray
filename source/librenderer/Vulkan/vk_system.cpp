@@ -337,7 +337,7 @@ VulkanSystem::initInstance() noexcept
 	app.applicationVersion = 0;
 	app.pEngineName = "Vulkan";
 	app.engineVersion = 0;
-	app.apiVersion = VK_API_VERSION;
+	app.apiVersion = VK_API_VERSION_1_0;
 
 	VkInstanceCreateInfo info;
 	info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

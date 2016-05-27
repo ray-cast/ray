@@ -57,7 +57,7 @@
                 float3 prefilteredSpeculr = texEnvSpecular.SampleLevel(PointClamp, R2, mipLayer).rgb;
 
                 float3 shading = brdfEnvironmentDiffuse(prefilteredDiffuse, diffuse) * texEnvFactor.g;
-                //shading += brdfEnvironmentSpecular(prefilteredSpeculr, worldNormal, worldView, shininess, specular) * texEnvFactor.b;
+                shading += brdfEnvironmentSpecular(prefilteredSpeculr, worldNormal, worldView, shininess, specular) * texEnvFactor.b;
 
                 return float4(shading, 0.0);
             }

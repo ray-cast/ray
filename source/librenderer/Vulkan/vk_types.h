@@ -60,6 +60,20 @@
 
 #include <vulkan/vulkan.h>
 
+#include <GL/glew.h>
+
+#define EXCLUDE_PSTDINT
+#include <hlslcc.hpp>
+
+#pragma warning (push)
+#pragma warning (disable:4458)
+#pragma warning (disable:4464)
+#pragma warning (disable:4623)
+#pragma warning (disable:5026)
+#pragma warning (disable:5027)
+#include <SPIRV/GlslangToSpv.h>
+#pragma warning (pop)
+
 #define VK_MAX_SUBMIT_BUFFER 64
 #define VK_MAX_VIEWPORT_ARRAY 8
 #define VK_MAX_ATTACHMENT 8

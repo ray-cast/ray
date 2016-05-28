@@ -154,6 +154,7 @@ public:
 
 	VkShaderModule getShaderModule() const noexcept;
 
+	const GraphicsParams& getParams() const noexcept;
 	const GraphicsAttributes& getAttributes() const noexcept;
 
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
@@ -174,7 +175,8 @@ private:
 private:
 	VkShaderModule _vkShader;
 	GraphicsShaderDesc _shaderDesc;
-	GraphicsAttributes  _attributes;
+	GraphicsParams _parameters;
+	GraphicsAttributes _attributes;
 	GraphicsDeviceWeakPtr _device;
 };
 
@@ -194,7 +196,13 @@ public:
 	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
 
 private:
-	static GraphicsUniformType toGraphicsUniformType(const std::string& name, int type) noexcept;
+	void _initActiveAttribute(glslang::TProgram& program) noexcept;
+	void _initActiveUniform(glslang::TProgram& program) noexcept;
+	void _initActiveUniformBlock(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept;
+
+private:
+	static GraphicsFormat toGraphicsFormat(int type) noexcept;
+	static GraphicsUniformType toGraphicsUniformType(const std::string& name, int type, bool isArray) noexcept;
 
 private:
 	friend class VulkanDevice;

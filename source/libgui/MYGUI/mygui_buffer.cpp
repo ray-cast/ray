@@ -80,6 +80,8 @@ MyGuiVertexBuffer::lock() noexcept
 		vb.setStreamSize(inputSize * _needVertexCount);
 
 		_vbo = RenderSystem::instance()->createGraphicsData(vb);
+		if (!_vbo)
+			return nullptr;
 
 		_vertexCount = _needVertexCount;
 	}
@@ -87,6 +89,7 @@ MyGuiVertexBuffer::lock() noexcept
 	MyGUI::Vertex* data;
 	if (_vbo->map(0, _vbo->getGraphicsDataDesc().getStreamSize(), (void**)&data))
 		return data;
+
 	return nullptr;
 }
 

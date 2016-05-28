@@ -80,16 +80,18 @@ VulkanDevice::~VulkanDevice() noexcept
 bool
 VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 {
+	static const char* extensionNames[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
 	if (!initInstance())
 		return false;
 
 	if (!initPhysicalDevice())
 		return false;
 
-	if (!initPhysicalDeviceLayer())
+	if (!checkPhysicalDeviceLayer(0, nullptr))
 		return false;
 
-	if (!initPhysicalDeviceExtension())
+	if (!checkPhysicalDeviceExtension(1, extensionNames))
 		return false;
 
 	std::uint32_t queueCount = 0;
@@ -109,7 +111,6 @@ VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 	}
 
 	const float queuePriorities[1] = { 0.0 };
-	const char* extensionNames = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 	VkDeviceQueueCreateInfo queue;
 	queue.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -125,10 +126,10 @@ VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 	info.pNext = 0;
 	info.queueCreateInfoCount = 1;
 	info.pQueueCreateInfos = &queue;
-	info.enabledLayerCount = sizeof(deviceValidationLayers) / sizeof(deviceValidationLayers[0]);
-	info.ppEnabledLayerNames = deviceValidationLayers;
+	info.enabledLayerCount = 0;
+	info.ppEnabledLayerNames = nullptr;
 	info.enabledExtensionCount = 1;
-	info.ppEnabledExtensionNames = &extensionNames;
+	info.ppEnabledExtensionNames = extensionNames;
 	info.pEnabledFeatures = 0;
 
 	if (!vkGetPhysicalDeviceWin32PresentationSupportKHR(_physicalDevice, graphicsQueueNodeIndex))
@@ -422,17 +423,16 @@ VulkanDevice::initPhysicalDevice() noexcept
 }
 
 bool
-VulkanDevice::initPhysicalDeviceLayer() noexcept
+VulkanDevice::checkPhysicalDeviceLayer(std::size_t deviceEnabledLayerCount, const char* deviceValidationLayerNames[]) noexcept
 {
 	std::uint32_t deviceLayerCount = 0;
-	std::uint32_t deviceEnabledLayerCount = sizeof(deviceValidationLayers) / sizeof(deviceValidationLayers[0]);
-
 	if (vkEnumerateDeviceLayerProperties(_physicalDevice, &deviceLayerCount, 0) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkEnumerateDeviceLayerProperties fail.");
 		return false;
 	}
 
+	bool validationFound = deviceEnabledLayerCount <= deviceLayerCount ? true : false;
 	if (deviceLayerCount > 0)
 	{
 		std::vector<VkLayerProperties> deviceLayers(deviceLayerCount);
@@ -442,14 +442,12 @@ VulkanDevice::initPhysicalDeviceLayer() noexcept
 			return false;
 		}
 
-		bool validationFound = true;
-
 		for (std::uint32_t i = 0; i < deviceEnabledLayerCount; i++)
 		{
 			bool found = false;
 			for (uint32_t j = 0; j < deviceLayerCount; j++)
 			{
-				if (!strcmp(deviceValidationLayers[i], deviceLayers[j].layerName))
+				if (!strcmp(deviceValidationLayerNames[i], deviceLayers[j].layerName))
 				{
 					found = true;
 					break;
@@ -458,18 +456,28 @@ VulkanDevice::initPhysicalDeviceLayer() noexcept
 
 			if (!found)
 			{
-				VK_PLATFORM_LOG("Cannot find layer: %s.", deviceValidationLayers[i]);
+				VK_PLATFORM_LOG("Cannot find layer: %s.", deviceValidationLayerNames[i]);
 				validationFound = false;
 				break;
 			}
 		}
 	}
 
+	if (!validationFound)
+	{
+		VK_PLATFORM_LOG("vkEnumerateInstanceLayerProperties failed to find"
+			"required validation layer.\n\n"
+			"Please look at the Getting Started guide for additional"
+			"information.");
+
+		return false;
+	}
+
 	return true;
 }
 
 bool
-VulkanDevice::initPhysicalDeviceExtension() noexcept
+VulkanDevice::checkPhysicalDeviceExtension(std::size_t deviceEnabledExtensitionCount, const char* deviceEnabledExtensitionNames[]) noexcept
 {
 	std::uint32_t deviceExtensionCount = 0;
 	if (vkEnumerateDeviceExtensionProperties(_physicalDevice, 0, &deviceExtensionCount, 0) != VK_SUCCESS)
@@ -478,7 +486,7 @@ VulkanDevice::initPhysicalDeviceExtension() noexcept
 		return false;
 	}
 
-	bool swapchainExtFound = false;
+	bool validationFound = deviceEnabledExtensitionCount < deviceExtensionCount ? true : false;
 	if (deviceExtensionCount > 0)
 	{
 		std::vector<VkExtensionProperties> deviceExtensions(deviceExtensionCount);
@@ -489,20 +497,32 @@ VulkanDevice::initPhysicalDeviceExtension() noexcept
 			return false;
 		}
 
-		for (uint32_t i = 0; i < deviceExtensionCount; i++)
+		for (uint32_t i = 0; i < deviceEnabledExtensitionCount; i++)
 		{
-			if (!strcmp(VK_KHR_SWAPCHAIN_EXTENSION_NAME, deviceExtensions[i].extensionName))
+			bool found = false;
+			for (uint32_t j = 0; j < deviceExtensionCount; j++)
 			{
-				swapchainExtFound = true;
+				if (!strcmp(deviceEnabledExtensitionNames[i], deviceExtensions[j].extensionName))
+				{
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				VK_PLATFORM_LOG("Cannot find extensition: %s.", deviceEnabledExtensitionNames[i]);
+				validationFound = false;
+				break;
 			}
 		}
 	}
 
-	if (!swapchainExtFound)
+	if (!validationFound)
 	{
 		VK_PLATFORM_LOG("vkEnumerateDeviceExtensionProperties failed to find "
-			"the " VK_KHR_SWAPCHAIN_EXTENSION_NAME
-			" extension.\n\nDo you have a compatible "
+			"required extension.\n\n"
+			"Do you have a compatible "
 			"Vulkan installable client driver (ICD) installed?\nPlease "
 			"look at the Getting Started guide for additional "
 			"information.");

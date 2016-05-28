@@ -84,8 +84,9 @@ public:
 private:
 	bool initInstance() noexcept;
 	bool initPhysicalDevice() noexcept;
-	bool initPhysicalDeviceLayer() noexcept;
-	bool initPhysicalDeviceExtension() noexcept;
+
+	bool checkPhysicalDeviceLayer(std::size_t deviceEnabledLayerCount, const char* deviceValidationLayerNames[]) noexcept;
+	bool checkPhysicalDeviceExtension(std::size_t deviceEnabledExtensitionCount, const char* deviceEnabledExtensitionNames[]) noexcept;
 
 private:
 	VulkanDevice(const VulkanDevice&) noexcept = delete;

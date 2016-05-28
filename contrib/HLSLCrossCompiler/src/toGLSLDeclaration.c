@@ -1171,7 +1171,7 @@ void DeclareUBOConstants(HLSLCrossCompilerContext* psContext, const uint32_t ui3
 
     /* [layout (location = X)] uniform vec4 HLSLConstantBufferName[numConsts]; */
 	if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
-        bformata(glsl, "layout(binding = %d) ", ui32BindingPoint);
+        bformata(glsl, "layout(std140, binding = %d) ", ui32BindingPoint);
 
 	bformata(glsl, "uniform %s {\n ", Name);
 

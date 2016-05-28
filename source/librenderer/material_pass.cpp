@@ -733,21 +733,27 @@ MaterialPass::clone() const noexcept
 	pass->_name = this->_name;
 	pass->_state = this->_state;
 	pass->_program = this->_program;
-	pass->_descriptorPool = this->_descriptorPool;
 	pass->_descriptorSetLayout = this->_descriptorSetLayout;
 	pass->_inputLayout = this->_inputLayout;
 	pass->_pipeline = this->_pipeline;
 
+	if (_descriptorPool)
+	{
+		pass->_descriptorPool = _program->getDevice()->createDescriptorPool(_descriptorPool->getGraphicsDescriptorPoolDesc());
+		if (!pass->_descriptorPool)
+			return false;
+	}
+
 	if (_descriptorSet)
 	{
 		GraphicsDescriptorSetDesc descriptorSetDesc;
-		descriptorSetDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
-		descriptorSetDesc.setGraphicsDescriptorPool(_descriptorPool);
+		descriptorSetDesc.setGraphicsDescriptorSetLayout(pass->_descriptorSetLayout);
+		descriptorSetDesc.setGraphicsDescriptorPool(pass->_descriptorPool);
 		pass->_descriptorSet = _program->getDevice()->createDescriptorSet(descriptorSetDesc);
-		if (_descriptorSet)
-		{
-			_program->getDevice()->copyDescriptorSets(pass->_descriptorSet, 1, &_descriptorSet);
-		}
+		if (!pass->_descriptorSet)
+			return nullptr;
+
+		_program->getDevice()->copyDescriptorSets(pass->_descriptorSet, 1, &_descriptorSet);
 	}
 
 	return pass;

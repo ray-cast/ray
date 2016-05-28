@@ -139,18 +139,14 @@ VulkanGraphicsData::getDeviceMemory() const noexcept
 bool
 VulkanGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
-	auto device = this->getDevice()->downcast<VulkanDevice>();
-
-	void* buffer = nullptr;
-	vkMapMemory(device->getDevice(), this->getDeviceMemory(), offset, count, 0, &buffer);
-	return buffer ? true : false;
+	*data = _memory.map(offset, count, GraphicsAccessFlagBits::GraphicsAccessFlagMapWriteBit);
+	return *data ? true : false;
 }
 
 void
 VulkanGraphicsData::unmap() noexcept
 {
-	auto device = this->getDevice()->downcast<VulkanDevice>();
-	vkUnmapMemory(device->getDevice(), this->getDeviceMemory());
+	_memory.unmap();
 }
 
 void

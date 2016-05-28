@@ -99,6 +99,12 @@ GraphicsShaderDesc::setByteCodes(const std::string& codes) noexcept
 	_bytecodes = codes;
 }
 
+void 
+GraphicsShaderDesc::setByteCodes(std::string&& codes) noexcept
+{
+	_bytecodes = std::move(codes);
+}
+
 const std::string&
 GraphicsShaderDesc::getByteCodes() const noexcept
 {

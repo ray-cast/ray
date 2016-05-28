@@ -51,6 +51,9 @@ public:
 	bool open() noexcept;
 	void close() noexcept;
 
+	void geteInstanceLayerNames(std::vector<char*>& instanceLayerNames) noexcept;
+	void geteInstanceExtensitionNames(std::vector<char*>& instanceLayerNames) noexcept;
+
 	void print(const char* message, ...) noexcept;
 
 	bool startDebugControl() noexcept;
@@ -60,8 +63,8 @@ public:
 
 private:
 
-	bool checkInstanceLayer() noexcept;
-	bool checkInstanceExtenstion() noexcept;
+	bool checkInstanceLayer(std::size_t instanceEnabledLayerCount, const char* instanceValidationLayerNames[]) noexcept;
+	bool checkInstanceExtenstion(std::size_t instanceEnabledExtensition, const char* instanceValidationExtensitionName[]) noexcept;
 
 	bool initInstance() noexcept;
 
@@ -77,6 +80,9 @@ private:
 
 	VkInstance _instance;
 	VkDebugReportCallbackEXT _debugHandle;
+
+	std::vector<VkLayerProperties> _instanceLayers;
+	std::vector<VkExtensionProperties> _instanceExtensions;
 
 	std::vector<GraphicsDevicePtr> _devices;
 };

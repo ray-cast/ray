@@ -55,7 +55,8 @@ public:
 	void setStage(GraphicsShaderStage type) noexcept;
 	GraphicsShaderStage getStage() const noexcept;
 
-	void setByteCodes(const std::string& source) noexcept;
+	void setByteCodes(const std::string& codes) noexcept;
+	void setByteCodes(std::string&& codes) noexcept;
 	const std::string& getByteCodes() const noexcept;
 
 private:

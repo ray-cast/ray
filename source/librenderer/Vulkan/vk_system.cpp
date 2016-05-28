@@ -48,16 +48,6 @@
 
 _NAME_BEGIN
 
-char* instanceValidationLayers[] = {
-	"VK_LAYER_LUNARG_threading",      "VK_LAYER_LUNARG_mem_tracker",
-	"VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_draw_state",
-	"VK_LAYER_LUNARG_param_checker",  "VK_LAYER_LUNARG_swapchain",
-	"VK_LAYER_LUNARG_device_limits",  "VK_LAYER_LUNARG_image",
-	"VK_LAYER_GOOGLE_unique_objects",
-};
-
-const char* g_extensionNames[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
-
 __ImplementSingleton(VulkanSystem)
 
 VulkanSystem::VulkanSystem() noexcept
@@ -77,7 +67,7 @@ VulkanSystem::open() noexcept
 {
 	if (!_isOpened)
 	{
-		if (!glslang::InitializeProcess())
+		if (!ShInitialize())
 			return false;
 
 		if (!this->initInstance())
@@ -92,15 +82,29 @@ VulkanSystem::open() noexcept
 void
 VulkanSystem::close() noexcept
 {
-	this->stopDebugControl();
+	::ShFinalize();
 
-	glslang::FinalizeProcess();
+	this->stopDebugControl();
 
 	if (_instance != VK_NULL_HANDLE)
 	{
 		vkDestroyInstance(_instance, 0);
 		_instance = VK_NULL_HANDLE;
 	}
+}
+
+void 
+VulkanSystem::geteInstanceLayerNames(std::vector<char*>& instanceLayerNames) noexcept
+{
+	for (auto& it : _instanceLayers)
+		instanceLayerNames.push_back(it.layerName);
+}
+
+void 
+VulkanSystem::geteInstanceExtensitionNames(std::vector<char*>& instanceExtensitionNames) noexcept
+{
+	for (auto& it : _instanceExtensions)
+		instanceExtensitionNames.push_back(it.extensionName);
 }
 
 void
@@ -176,35 +180,32 @@ VulkanSystem::getInstance() const noexcept
 }
 
 bool
-VulkanSystem::checkInstanceLayer() noexcept
+VulkanSystem::checkInstanceLayer(std::size_t instanceEnabledLayerCount, const char* instanceValidationLayerNames[]) noexcept
 {
 	std::uint32_t instanceLayerCount = 0;
-	std::uint32_t instanceEnabledLayerCount = sizeof(instanceValidationLayers) / sizeof(instanceValidationLayers[0]);
-
 	if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, 0) != VK_SUCCESS)
 	{
 		this->print("vkEnumerateInstanceLayerProperties fail.");
 		return false;
 	}
 
+	bool validationFound = instanceEnabledLayerCount <= instanceLayerCount ? true : false;
 	if (instanceLayerCount > 0)
 	{
-		std::vector<VkLayerProperties> instanceLayers(instanceLayerCount);
+		_instanceLayers.resize(instanceLayerCount);
 
-		if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, &instanceLayers[0]) != VK_SUCCESS)
+		if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, &_instanceLayers[0]) != VK_SUCCESS)
 		{
 			this->print("vkEnumerateInstanceLayerProperties fail.");
 			return false;
 		}
-
-		bool validationFound = true;
 
 		for (std::uint32_t i = 0; i < instanceEnabledLayerCount; i++)
 		{
 			VkBool32 found = 0;
 			for (uint32_t j = 0; j < instanceLayerCount; j++)
 			{
-				if (!strcmp(instanceValidationLayers[i], instanceLayers[j].layerName))
+				if (!strcmp(instanceValidationLayerNames[i], _instanceLayers[j].layerName))
 				{
 					found = 1;
 					break;
@@ -213,28 +214,28 @@ VulkanSystem::checkInstanceLayer() noexcept
 
 			if (!found)
 			{
-				this->print("Cannot find layer: %s", instanceValidationLayers[i]);
+				this->print("Cannot find layer: %s", instanceValidationLayerNames[i]);
 				validationFound = false;
 				break;
 			}
 		}
+	}
 
-		if (!validationFound)
-		{
-			this->print("vkEnumerateInstanceLayerProperties failed to find"
-				"required validation layer.\n\n"
-				"Please look at the Getting Started guide for additional"
-				"information.");
+	if (!validationFound)
+	{
+		this->print("vkEnumerateInstanceLayerProperties failed to find"
+			"required validation layer.\n\n"
+			"Please look at the Getting Started guide for additional"
+			"information.");
 
-			return false;
-		}
+		return false;
 	}
 
 	return true;
 }
 
 bool
-VulkanSystem::checkInstanceExtenstion() noexcept
+VulkanSystem::checkInstanceExtenstion(std::size_t instanceEnabledLayerCount, const char* instanceValidationLayerNames[]) noexcept
 {
 	bool surfaceExtFound = false;
 	bool platformSurfaceExtFound = false;
@@ -251,9 +252,9 @@ VulkanSystem::checkInstanceExtenstion() noexcept
 
 	if (instanceExtensionCount > 0)
 	{
-		std::vector<VkExtensionProperties> instanceExtensions(instanceExtensionCount);
+		_instanceExtensions.resize(instanceExtensionCount);
 
-		if (vkEnumerateInstanceExtensionProperties(0, &instanceExtensionCount, instanceExtensions.data()) != VK_SUCCESS)
+		if (vkEnumerateInstanceExtensionProperties(0, &instanceExtensionCount, _instanceExtensions.data()) != VK_SUCCESS)
 		{
 			this->print("instanceExtensionCount fail.");
 			return false;
@@ -261,26 +262,26 @@ VulkanSystem::checkInstanceExtenstion() noexcept
 
 		for (std::uint32_t i = 0; i < instanceExtensionCount; i++)
 		{
-			if (!strcmp(VK_KHR_SURFACE_EXTENSION_NAME, instanceExtensions[i].extensionName))
+			if (!strcmp(VK_KHR_SURFACE_EXTENSION_NAME, _instanceExtensions[i].extensionName))
 			{
 				surfaceExtFound = true;
 				extensionNames[enabledExtensionCount++] = VK_KHR_SURFACE_EXTENSION_NAME;
 			}
 
 #ifdef _WIN32
-			if (!strcmp(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, instanceExtensions[i].extensionName))
+			if (!strcmp(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, _instanceExtensions[i].extensionName))
 			{
 				platformSurfaceExtFound = true;
 				extensionNames[enabledExtensionCount++] = VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
 			}
 #else
-			if (!strcmp(VK_KHR_XCB_SURFACE_EXTENSION_NAME, instanceExtensions[i].extensionName))
+			if (!strcmp(VK_KHR_XCB_SURFACE_EXTENSION_NAME, _instanceExtensions[i].extensionName))
 			{
 				platformSurfaceExtFound = true;
 				extensionNames[enabledExtensionCount++] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
 			}
 #endif
-			if (!strcmp(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, instanceExtensions[i].extensionName))
+			if (!strcmp(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, _instanceExtensions[i].extensionName))
 			{
 				extensionNames[enabledExtensionCount++] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
 			}
@@ -324,10 +325,13 @@ VulkanSystem::checkInstanceExtenstion() noexcept
 bool
 VulkanSystem::initInstance() noexcept
 {
-	if (!this->checkInstanceLayer())
+	static const char* instanceValidationLayerNames[] = { "VK_LAYER_LUNARG_swapchain" };
+	static const char* instanceExtensionNames[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
+
+	if (!this->checkInstanceLayer(1, instanceValidationLayerNames))
 		return false;
 
-	if (!this->checkInstanceExtenstion())
+	if (!this->checkInstanceExtenstion(3, instanceExtensionNames))
 		return false;
 
 	VkApplicationInfo app;
@@ -344,10 +348,10 @@ VulkanSystem::initInstance() noexcept
 	info.flags = 0;
 	info.pNext = 0;
 	info.pApplicationInfo = &app;
-	info.enabledLayerCount = sizeof(instanceValidationLayers) / sizeof(instanceValidationLayers[0]);
-	info.ppEnabledLayerNames = instanceValidationLayers;
-	info.enabledExtensionCount = sizeof(g_extensionNames) / sizeof(g_extensionNames[0]);
-	info.ppEnabledExtensionNames = g_extensionNames;
+	info.enabledLayerCount = 0;
+	info.ppEnabledLayerNames = nullptr;
+	info.enabledExtensionCount = sizeof(instanceExtensionNames) / sizeof(instanceExtensionNames[0]);
+	info.ppEnabledExtensionNames = instanceExtensionNames;
 
 	VkResult err = vkCreateInstance(&info, nullptr, &_instance);
 	if (err == VK_ERROR_INCOMPATIBLE_DRIVER)

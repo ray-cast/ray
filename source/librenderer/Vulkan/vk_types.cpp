@@ -431,7 +431,7 @@ VulkanTypes::asImageType(GraphicsTextureDim type) noexcept
 	case GraphicsTextureDim::GraphicsTextureDim2DArray:
 		return VkImageType::VK_IMAGE_TYPE_2D;
 	case GraphicsTextureDim::GraphicsTextureDimCube:
-		return VkImageType::VK_IMAGE_TYPE_3D;
+		return VkImageType::VK_IMAGE_TYPE_2D;
 	case GraphicsTextureDim::GraphicsTextureDimCubeArray:
 		return VkImageType::VK_IMAGE_TYPE_3D;
 	default:

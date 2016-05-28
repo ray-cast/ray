@@ -172,17 +172,15 @@ VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 {
 	if (_framebuffer != framebuffer)
 	{
-		_commandList->setFramebuffer(framebuffer);
-		_framebuffer = framebuffer;
-	}
-}
+		if (framebuffer)
+			_commandList->setFramebuffer(framebuffer);
+		else
+		{
+			assert(_swapchain);
+			auto swapchain = _swapchain->downcast_pointer<VulkanSwapchain>();
+			_commandList->setFramebuffer(swapchain->getSwapchainFramebuffers()[swapchain->getSwapchainImageIndex()]);
+		}
 
-void
-VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	if (_framebuffer != framebuffer)
-	{
-		_commandList->setFramebuffer(framebuffer, color, depth, stencil);
 		_framebuffer = framebuffer;
 	}
 }
@@ -191,16 +189,6 @@ void
 VulkanDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	_commandList->clearFramebuffer(flags, color, depth, stencil, i);
-}
-
-void
-VulkanDeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept
-{
-}
-
-void
-VulkanDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
-{
 }
 
 GraphicsFramebufferPtr

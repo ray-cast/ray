@@ -178,8 +178,8 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texBloom1Map = pipeline.createTexture(width / 4.0f, width / 4.0f, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8UNorm);
-	_texBloom2Map = pipeline.createTexture(width / 4.0f, height / 4.0f, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	_texBloom1Map = pipeline.createTexture(width / 4.0f, width / 4.0f, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texBloom2Map = pipeline.createTexture(width / 4.0f, height / 4.0f, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 	
 	_texSampleLog256Map = pipeline.createTexture(256, 256, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 	_texSampleLog64Map = pipeline.createTexture(64, 64, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);

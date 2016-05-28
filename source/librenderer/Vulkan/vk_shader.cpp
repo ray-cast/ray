@@ -38,20 +38,6 @@
 #include "vk_device.h"
 #include "vk_system.h"
 
-#include <GL/glew.h>
-
-#define EXCLUDE_PSTDINT
-#include <hlslcc.hpp>
-
-#pragma warning (push)
-#pragma warning (disable:4458)
-#pragma warning (disable:4464)
-#pragma warning (disable:4623)
-#pragma warning (disable:5026)
-#pragma warning (disable:5027)
-#include <SPIRV/GlslangToSpv.h>
-#pragma warning (pop)
-
 _NAME_BEGIN
 
 const TBuiltInResource defaultOptions = 
@@ -390,17 +376,14 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	if (shaderDesc.getByteCodes().empty())
 		return false;
 
-	const char* codes = shaderDesc.getByteCodes().data();
-
-	std::string conv;
+	std::string codes = shaderDesc.getByteCodes();
 	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
 	{
-		HlslByteCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), conv);
-		codes = conv.data();
+		HlslByteCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes);
 	}
 
 	std::vector<std::uint32_t> bytecodes;
-	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), codes, bytecodes))
+	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), codes.c_str(), bytecodes))
 	{
 		VK_PLATFORM_LOG("Can't conv glsl to spv.");
 		return false;
@@ -421,7 +404,7 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 
 	_shaderDesc = shaderDesc;
 	_shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
-	_shaderDesc.setByteCodes(codes);
+	_shaderDesc.setByteCodes(std::move(codes));
 	return true;
 }
 
@@ -439,6 +422,12 @@ VkShaderModule
 VulkanShader::getShaderModule() const noexcept
 {
 	return _vkShader;
+}
+
+const GraphicsParams& 
+VulkanShader::getParams() const noexcept
+{
+	return _parameters;
 }
 
 const GraphicsAttributes&
@@ -468,7 +457,7 @@ VulkanShader::getGraphicsShaderDesc() const noexcept
 bool
 VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out)
 {
-	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT;
+	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT;
 	if (stage == GraphicsShaderStage::GraphicsShaderStageGeometry)
 		flags = HLSLCC_FLAG_GS_ENABLED;
 	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessControl)
@@ -478,7 +467,12 @@ VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, s
 
 	GLSLShader shader;
 	GLSLCrossDependencyData dependency;
-	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_DEFAULT, nullptr, &dependency, &shader))
+	GlExtensions extensition;
+	extensition.ARB_explicit_uniform_location = true;
+	extensition.ARB_explicit_attrib_location = true;
+	extensition.ARB_shading_language_420pack = true;
+
+	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_440, &extensition, &dependency, &shader))
 	{
 		FreeGLSLShader(&shader);
 		return false;
@@ -503,6 +497,22 @@ VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, s
 			continue;
 
 		_attributes.push_back(attrib);
+	}
+
+	for (std::uint32_t i = 0; i < shader.reflection.ui32NumConstantBuffers; i++)
+	{
+		for (std::uint32_t j = 0; j < shader.reflection.psConstantBuffers[i].ui32NumVars; j++)
+		{
+			auto elements = shader.reflection.psConstantBuffers[i].asVars[j].sType.Elements;
+			if (elements > 0)
+			{
+				auto param = std::make_shared<VulkanGraphicsUniform>();
+				param->setName(shader.reflection.psConstantBuffers[i].asVars[j].Name);
+
+
+				_parameters.push_back(param);
+			}
+		}
 	}
 
 	out = shader.sourceCode;
@@ -536,7 +546,7 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 	shader.setStrings(shaderStrings, 1);
 
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
-	if (!shader.parse(&defaultOptions, 330, false, messages))
+	if (!shader.parse(&defaultOptions, 440, false, messages))
 	{
 		VK_PLATFORM_LOG(shader.getInfoLog());
 		VK_PLATFORM_LOG(shader.getInfoDebugLog());
@@ -586,9 +596,11 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 
 	for (auto& it : programDesc.getShaders())
 	{
+		const auto& vulkanShaderDesc = it->downcast<VulkanShader>()->getGraphicsShaderDesc();
+
 		EShLanguage stage = EShLangVertex;
 
-		auto shaderStage = it->downcast<VulkanShader>()->getGraphicsShaderDesc().getStage();
+		auto shaderStage = vulkanShaderDesc.getStage();
 		if (shaderStage == GraphicsShaderStage::GraphicsShaderStageVertex)
 			stage = EShLangVertex;
 		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
@@ -602,20 +614,14 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
 			stage = EShLangTessEvaluation;
 
-		const char *shaderStrings[1];
-		shaderStrings[0] = it->downcast<VulkanShader>()->getGraphicsShaderDesc().getByteCodes().c_str();
-
-		shaders[stage]->setStrings(shaderStrings, 1);
-		if (!shaders[stage]->parse(&defaultOptions, 330, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules)))
+		const char *shaderStrings = vulkanShaderDesc.getByteCodes().c_str();
+		shaders[stage]->setStrings(&shaderStrings, 1);
+		if (!shaders[stage]->parse(&defaultOptions, 440, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules)))
 		{
 			VK_PLATFORM_LOG(shaders[stage]->getInfoLog());
 			VK_PLATFORM_LOG(shaders[stage]->getInfoDebugLog());
 			return false;
 		}
-
-		auto& attributes = it->downcast<VulkanShader>()->getAttributes();
-		for (auto& attrib : attributes)
-			_activeAttributes.push_back(attrib);
 
 		program.addShader(shaders[stage]);
 	}
@@ -629,83 +635,9 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 
 	program.buildReflection();
 
-	std::size_t numUniforms = program.getNumLiveUniformVariables();
-	for (std::size_t i = 0; i < numUniforms; i++)
-	{
-		auto name = program.getUniformName(i);
-		auto index = program.getUniformIndex(name);
-		auto type = program.getUniformType(i);
-		auto offset = program.getUniformBufferOffset(i);
-
-		auto uniformType = toGraphicsUniformType(name, type);
-		if (uniformType == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
-			uniformType == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
-			uniformType == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
-		{
-			auto uniform = std::make_shared<VulkanGraphicsUniform>();
-			uniform->setType(uniformType);
-			uniform->setBindingPoint(index);
-			uniform->setOffset(offset);
-
-			auto pos = strstr(name, "_X_");
-			if (pos != 0)
-			{
-				uniform->setName(std::string(name, pos - name));
-				uniform->setSamplerName(std::string(name, pos - name + 3));
-			}
-			else
-			{
-				uniform->setName(name);
-			}
-
-			_activeParams.push_back(uniform);
-		}
-	}
-
-	std::size_t numUniformBlock = program.getNumLiveUniformBlocks();
-	for (std::size_t i = 0; i < numUniformBlock; i++)
-	{
-		auto index = program.getUniformBlockIndex(i);
-		auto name = program.getUniformBlockName(i);
-		auto size = program.getUniformBlockSize(i);
-
-		if (index == -1)
-			continue;
-
-		auto uniformBlock = std::make_shared<VulkanGraphicsUniformBlock>();
-		uniformBlock->setName(name);
-		uniformBlock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-		uniformBlock->setBindingPoint(index);
-		uniformBlock->setBlockSize(size);
-
-		if (strncmp(name, "Globals", 7) == 0)
-		{
-			std::size_t numUniformsInBlock = program.getNumLiveUniformVariables();
-			for (std::size_t uniformIndex = 0; uniformIndex < numUniformsInBlock; uniformIndex++)
-			{
-				auto uniformName = program.getUniformName(uniformIndex);
-				auto uniformLocation = program.getUniformIndex(uniformName);
-				auto unitoymType = program.getUniformType(uniformLocation);
-				auto uniformOffset = program.getUniformBufferOffset(uniformLocation);
-				auto type = toGraphicsUniformType(uniformName, unitoymType);
-
-				if (type != GraphicsUniformType::GraphicsUniformTypeSamplerImage &&
-					type != GraphicsUniformType::GraphicsUniformTypeStorageImage &&
-					type != GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
-				{
-					auto uniform = std::make_shared<VulkanGraphicsUniform>();
-					uniform->setName(uniformName);
-					uniform->setType(type);
-					uniform->setBindingPoint(uniformLocation);
-					uniform->setOffset(uniformOffset);
-
-					uniformBlock->addGraphicsUniform(uniform);
-				}
-			}
-		}
-
-		_activeParams.push_back(uniformBlock);
-	}
+	_initActiveAttribute(program);
+	_initActiveUniform(program);
+	_initActiveUniformBlock(program, programDesc);
 
 	_programDesc = programDesc;
 	return true;
@@ -730,19 +662,197 @@ VulkanProgram::getActiveAttributes() const noexcept
 	return _activeAttributes;
 }
 
-GraphicsUniformType
-VulkanProgram::toGraphicsUniformType(const std::string& name, int type) noexcept
+void
+VulkanProgram::_initActiveAttribute(glslang::TProgram& program) noexcept
 {
-	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
-		type == GL_SAMPLER_2D_SHADOW ||
-		type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
-		type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
+	std::size_t numAttributes = program.getNumLiveAttributes();
+	for (std::size_t i = 0; i < numAttributes; i++)
+	{
+		std::string name = program.getAttributeName(i);
+		std::string semantic;
+		std::uint32_t semanticIndex = 0;
+
+		std::size_t off = name.find_last_of('_');
+		if (off != std::string::npos)
+			semantic = name.substr(off + 1);
+		else
+			semantic = name;
+
+		auto it = std::find_if_not(semantic.rbegin(), semantic.rend(), [](char ch) { return ch >= '0' && ch <= '9'; });
+		if (it != semantic.rend())
+		{
+			semantic = semantic.substr(0, semantic.rend() - it);
+			semanticIndex = std::atoi(semantic.substr(semantic.rend() - it).c_str());
+		}
+
+		auto attrib = std::make_shared<VulkanGraphicsAttribute>();
+		attrib->setSemantic(semantic);
+		attrib->setSemanticIndex(semanticIndex);
+		attrib->setBindingPoint(i);
+		attrib->setType(toGraphicsFormat(program.getAttributeType(i)));
+
+		_activeAttributes.push_back(attrib);
+	}
+}
+
+void 
+VulkanProgram::_initActiveUniform(glslang::TProgram& program) noexcept
+{
+	std::size_t numUniforms = program.getNumLiveUniformVariables();
+	for (std::size_t i = 0; i < numUniforms; i++)
+	{
+		auto type = program.getUniformType(i);
+		if (type == GL_SAMPLER_2D ||
+			type == GL_SAMPLER_2D_ARRAY ||
+			type == GL_SAMPLER_3D ||
+			type == GL_SAMPLER_CUBE ||
+			type == GL_SAMPLER_CUBE_MAP_ARRAY)
+		{
+			std::string name = program.getUniformName(i);
+
+			auto uniform = std::make_shared<VulkanGraphicsUniform>();
+			uniform->setType(GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler);
+			uniform->setBindingPoint(program.getUniformIndex(name.c_str()));
+			uniform->setOffset(0);
+
+			auto pos = name.find("_X_");
+			if (pos != std::string::npos)
+			{
+				uniform->setName(name.substr(0, pos));
+				uniform->setSamplerName(name.substr(pos + 3));
+			}
+			else
+			{
+				uniform->setName(std::move(name));
+			}
+
+			_activeParams.push_back(uniform);
+		}
+	}
+}
+
+void 
+VulkanProgram::_initActiveUniformBlock(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept
+{
+	std::size_t numUniformBlock = program.getNumLiveUniformBlocks();
+	for (std::size_t i = 0; i < numUniformBlock; i++)
+	{
+		auto index = program.getUniformBlockIndex(i);
+		if (index == -1)
+			continue;
+
+		std::string name = program.getUniformBlockName(i);
+
+		auto uniformBlock = std::make_shared<VulkanGraphicsUniformBlock>();
+		uniformBlock->setName(name);
+		uniformBlock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+		uniformBlock->setBindingPoint(index);
+		uniformBlock->setBlockSize(program.getUniformBlockSize(i));
+
+		if (name != "Globals")
+			continue;
+
+		std::size_t numUniformsInBlock = program.getNumLiveUniformVariables();
+		for (std::size_t uniformIndex = 0; uniformIndex < numUniformsInBlock; uniformIndex++)
+		{
+			auto type = program.getUniformType(uniformIndex);
+			if (type != GL_SAMPLER_2D &&
+				type != GL_SAMPLER_2D_ARRAY &&
+				type != GL_SAMPLER_3D &&
+				type != GL_SAMPLER_CUBE &&
+				type != GL_SAMPLER_CUBE_MAP_ARRAY)
+			{
+				auto uniformName = program.getUniformName(uniformIndex);
+
+				bool isArray = false;
+
+				auto& shaders = programDesc.getShaders();
+				for (auto& shader : shaders)
+				{
+					auto& params = shader->downcast<VulkanShader>()->getParams();
+					for (auto& param : params)
+					{
+						if (param->getName() == uniformName)
+						{
+							isArray = true;
+							break;
+						}
+					}
+
+					if (isArray)
+						break;
+				}
+
+				auto uniform = std::make_shared<VulkanGraphicsUniform>();
+				uniform->setName(uniformName);
+				uniform->setType(toGraphicsUniformType(uniformName, type, isArray));
+				uniform->setBindingPoint(uniformIndex);
+				uniform->setOffset(program.getUniformBufferOffset(uniformIndex));
+
+				uniformBlock->addGraphicsUniform(uniform);
+			}
+		}
+
+		_activeParams.push_back(uniformBlock);
+	}
+}
+
+GraphicsFormat
+VulkanProgram::toGraphicsFormat(int type) noexcept
+{
+	if (type == GL_BOOL)
+		return GraphicsFormat::GraphicsFormatR8UInt;
+	else if (type == GL_UNSIGNED_INT)
+		return GraphicsFormat::GraphicsFormatR8UInt;
+	else if (type == GL_UNSIGNED_INT_VEC2)
+		return GraphicsFormat::GraphicsFormatR8G8UInt;
+	else if (type == GL_UNSIGNED_INT_VEC3)
+		return GraphicsFormat::GraphicsFormatR8G8B8UInt;
+	else if (type == GL_UNSIGNED_INT_VEC4)
+		return GraphicsFormat::GraphicsFormatR8G8B8A8UInt;
+	else if (type == GL_INT)
+		return GraphicsFormat::GraphicsFormatR8SInt;
+	else if (type == GL_INT_VEC2)
+		return GraphicsFormat::GraphicsFormatR8G8SInt;
+	else if (type == GL_INT_VEC3)
+		return GraphicsFormat::GraphicsFormatR8G8B8SInt;
+	else if (type == GL_INT_VEC4)
+		return GraphicsFormat::GraphicsFormatR8G8B8A8SInt;
+	else if (type == GL_FLOAT)
+		return GraphicsFormat::GraphicsFormatR32SFloat;
+	else if (type == GL_FLOAT_VEC2)
+		return GraphicsFormat::GraphicsFormatR32G32SFloat;
+	else if (type == GL_FLOAT_VEC3)
+		return GraphicsFormat::GraphicsFormatR32G32B32SFloat;
+	else if (type == GL_FLOAT_VEC4)
+		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	else if (type == GL_FLOAT_MAT2)
+		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	else if (type == GL_FLOAT_MAT3)
+		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	else if (type == GL_FLOAT_MAT4)
+		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	else
+	{
+		VK_PLATFORM_ASSERT(false, "Invlid attrib format");
+		return GraphicsFormat::GraphicsFormatUndefined;
+	}
+}
+
+GraphicsUniformType
+VulkanProgram::toGraphicsUniformType(const std::string& name, int type, bool forceArray) noexcept
+{
+	if (type == GL_SAMPLER_2D ||
+		type == GL_SAMPLER_2D_ARRAY ||
+		type == GL_SAMPLER_3D ||
+		type == GL_SAMPLER_CUBE ||
+		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
 		return GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler;
 	}
 	else
 	{
-		bool isArray = name.find("[0]") != std::string::npos;
+		bool isArray = name.find("[0]") != std::string::npos || forceArray;
 
 		if (type == GL_BOOL)
 		{

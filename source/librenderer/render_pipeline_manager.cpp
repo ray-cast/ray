@@ -130,6 +130,7 @@ RenderPipelineManager::close() noexcept
 	_DOF.reset();
 	_fimicToneMapping.reset();
 	_FXAA.reset();
+	_colorGrading.reset();
 	_deferredLighting.reset();
 	_forward.reset();
 	_pipeline.reset();

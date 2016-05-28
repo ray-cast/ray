@@ -79,7 +79,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.extent.width = textureDesc.getWidth();
 		image.extent.height = textureDesc.getHeight();
 		image.extent.depth = textureDesc.getDepth();
-		image.mipLevels = std::max(textureDesc.getMipLevel(), std::uint32_t(1));
+		image.mipLevels = textureDesc.getMipLevel();
 		image.arrayLayers = textureDesc.getLayerNums();
 		image.samples = VulkanTypes::asTextureSample(textureDesc.getSamplerAnis());
 		image.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -91,6 +91,12 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.queueFamilyIndexCount = 0;
 
 		if (vkCreateImage(device->getDevice(), &image, nullptr, &_vkImage) > 0)
+		{
+			VK_PLATFORM_LOG("vkCreateImage() fail");
+			return false;
+		}
+
+		if (_vkImage == VK_NULL_HANDLE)
 		{
 			VK_PLATFORM_LOG("vkCreateImage() fail");
 			return false;

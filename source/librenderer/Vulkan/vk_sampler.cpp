@@ -54,7 +54,7 @@ bool
 VulkanSampler::setup(const GraphicsSamplerDesc& samplerDesc) noexcept
 {
 	_samplerDesc = samplerDesc;
-	return false;
+	return true;
 }
 
 void

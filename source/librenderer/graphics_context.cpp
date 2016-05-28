@@ -42,11 +42,11 @@ __ImplementSubInterface(GraphicsContext, GraphicsChild, "GraphicsContext")
 
 GraphicsIndirect::GraphicsIndirect() noexcept
 	: startVertice(0)
-	, numVertices(0)
 	, startIndice(0)
-	, numIndices(0)
-	, numInstances(0)
 	, startInstances(0)
+	, numVertices(0)
+	, numIndices(0)
+	, numInstances(1)
 	, indexType(GraphicsIndexType::GraphicsIndexTypeUInt32)
 {
 }

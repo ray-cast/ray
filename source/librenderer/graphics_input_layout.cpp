@@ -45,8 +45,16 @@ GraphicsVertexBinding::GraphicsVertexBinding() noexcept
 {
 }
 
-GraphicsVertexBinding::GraphicsVertexBinding(std::uint8_t slot, GraphicsVertexDivisor divisor) noexcept
+GraphicsVertexBinding::GraphicsVertexBinding(std::uint8_t slot, std::uint16_t size) noexcept
 	: _slot(slot)
+	, _size(size)
+	, _divisor(GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+{
+}
+
+GraphicsVertexBinding::GraphicsVertexBinding(std::uint8_t slot, std::uint16_t size, GraphicsVertexDivisor divisor) noexcept
+	: _slot(slot)
+	, _size(size)
 	, _divisor(divisor)
 {
 }
@@ -65,6 +73,18 @@ std::uint8_t
 GraphicsVertexBinding::getVertexSlot() const noexcept
 {
 	return _slot;
+}
+
+void
+GraphicsVertexBinding::setVertexSize(std::uint16_t size) noexcept
+{
+	_size = size;
+}
+
+std::uint16_t
+GraphicsVertexBinding::getVertexSize() const noexcept
+{
+	return _size;
 }
 
 void
@@ -614,6 +634,10 @@ GraphicsInputLayoutDesc::addVertexLayout(const GraphicsVertexLayout& layout) noe
 	auto it = std::find_if(_layouts.begin(), _layouts.end(), [layout](const GraphicsVertexLayout& it) { return it.getSemantic() == layout.getSemantic() && it.getSemanticIndex() == layout.getSemanticIndex();});
 	if (it == _layouts.end())
 		_layouts.push_back(layout);
+	else
+	{
+		assert(false);
+	}
 }
 
 void
@@ -622,6 +646,10 @@ GraphicsInputLayoutDesc::addVertexBinding(const GraphicsVertexBinding& binding) 
 	auto it = std::find_if(_bindings.begin(), _bindings.end(), [binding](const GraphicsVertexBinding& it) { return it.getVertexSlot() == binding.getVertexSlot();});
 	if (it == _bindings.end())
 		_bindings.push_back(binding);
+	else
+	{
+		assert(false);
+	}
 }
 
 void

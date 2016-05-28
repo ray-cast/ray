@@ -39,6 +39,10 @@
 #define EXCLUDE_PSTDINT
 #include <hlslcc.hpp>
 
+#if defined(__WINDOWS__)
+#	include <d3dcompiler.h>
+#endif
+
 _NAME_BEGIN
 
 __ImplementSubClass(OGLShader, GraphicsShader, "OGLShader")
@@ -129,13 +133,13 @@ OGLGraphicsUniform::getName() const noexcept
 	return _name;
 }
 
-void
+void 
 OGLGraphicsUniform::setSamplerName(const std::string& name) noexcept
 {
 	_samplerName = name;
 }
 
-const std::string&
+const std::string& 
 OGLGraphicsUniform::getSamplerName() const noexcept
 {
 	return _samplerName;
@@ -212,7 +216,7 @@ OGLGraphicsUniformBlock::getType() const noexcept
 	return _type;
 }
 
-std::uint32_t
+std::uint32_t 
 OGLGraphicsUniformBlock::getOffset() const noexcept
 {
 	return 0;
@@ -286,16 +290,26 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 		return false;
 	}
 
-	const char* codes = shaderDesc.getByteCodes().data();
-
-	std::string conv;
-	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
+	std::string codes = shaderDesc.getByteCodes().data();
+	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSL)
 	{
-		HlslByteCodes2GLSL(shaderDesc.getStage(), codes, conv);
-		codes = conv.data();
+		if (!HlslCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes))
+		{
+			GL_PLATFORM_LOG("Can't conv hlsl to glsl.");
+			return false;
+		}
+	}
+	else if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
+	{
+		if (!HlslByteCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes))
+		{
+			GL_PLATFORM_LOG("Can't conv hlslbytecodes to glsl.");
+			return false;
+		}
 	}
 
-	glShaderSource(_instance, 1, &codes, 0);
+	const char* source = codes.data();
+	glShaderSource(_instance, 1, &source, 0);
 	glCompileShader(_instance);
 
 	GLint result = GL_FALSE;
@@ -330,6 +344,43 @@ GLuint
 OGLShader::getInstanceID() const noexcept
 {
 	return _instance;
+}
+
+bool
+OGLShader::HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out)
+{
+	std::string profile;
+	if (stage == GraphicsShaderStage::GraphicsShaderStageVertex)
+		profile = "vs_4_0";
+	else if (stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+		profile = "ps_4_0";
+
+	ID3DBlob* binary = nullptr;
+	ID3DBlob* error = nullptr;
+
+	D3DCreateBlob(4096, &binary);
+	D3DCreateBlob(4096, &error);
+
+	HRESULT hr = D3DCompile(
+		codes.data(),
+		codes.size(),
+		nullptr,
+		nullptr,
+		nullptr,
+		"main",
+		profile.c_str(),
+		D3DCOMPILE_OPTIMIZATION_LEVEL3,
+		0,
+		&binary,
+		&error
+		);
+
+	if (hr == S_OK)
+	{
+		return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
+	}
+
+	return false;
 }
 
 bool
@@ -505,7 +556,7 @@ OGLProgram::_initActiveAttribute() noexcept
 				semantic = semantic.substr(0, semantic.rend()- it);
 				semanticIndex = std::atoi(semantic.substr(semantic.rend() - it).c_str());
 			}
-
+			
 			auto attrib = std::make_shared<OGLGraphicsAttribute>();
 			attrib->setSemantic(semantic);
 			attrib->setSemanticIndex(semanticIndex);
@@ -642,7 +693,7 @@ OGLProgram::_initActiveUniformBlock() noexcept
 	}
 }
 
-GraphicsFormat
+GraphicsFormat 
 OGLProgram::toGraphicsFormat(GLenum type) noexcept
 {
 	if (type == GL_BOOL)
@@ -687,10 +738,10 @@ OGLProgram::toGraphicsFormat(GLenum type) noexcept
 GraphicsUniformType
 OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 {
-	if (type == GL_SAMPLER_2D ||
+	if (type == GL_SAMPLER_2D || 
 		type == GL_SAMPLER_3D ||
-		type == GL_SAMPLER_2D_ARRAY ||
-		type == GL_SAMPLER_CUBE ||
+		type == GL_SAMPLER_2D_ARRAY || 
+		type == GL_SAMPLER_CUBE || 
 		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
 		return GraphicsUniformType::GraphicsUniformTypeStorageImage;

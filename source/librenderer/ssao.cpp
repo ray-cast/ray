@@ -138,6 +138,15 @@ SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
+SSAO::applySSAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+{
+	_blurSource->uniformTexture(source);
+
+	pipeline.setFramebuffer(dest);
+	pipeline.drawScreenQuad(*_ambientOcclusionApply);
+}
+
+void
 SSAO::createSphereNoise() noexcept
 {
 	std::vector<float2> sphere;
@@ -191,6 +200,7 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeAO");
 	_ambientOcclusionBlurXPass = _ambientOcclusion->getTech("BlurXAO");
 	_ambientOcclusionBlurYPass = _ambientOcclusion->getTech("BlurYAO");
+	_ambientOcclusionApply = _ambientOcclusion->getTech("Apply");
 
 	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
 
@@ -264,6 +274,8 @@ SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 	this->computeRawAO(pipeline, texture, _texAmbientView);
 	this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
 	this->blurVertical(pipeline, _texBlurMap, source);
+	//this->applySSAO(pipeline, _texAmbientMap, source);
+
 	return false;
 }
 

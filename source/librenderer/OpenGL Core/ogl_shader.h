@@ -157,6 +157,7 @@ public:
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
+	static bool HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out);
 	static bool HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out);
 
 private:

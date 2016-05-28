@@ -107,6 +107,8 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	memset(&dynamicStateEnables[0], 0, sizeof(dynamicStateEnables));
 	memset(&shaderStages[0], 0, sizeof(shaderStages));
 
+	std::uint32_t offset = 0;
+
 	const auto& layouts = inputLayoutDesc.getVertexLayouts();
 	for (auto& layout : layouts)
 	{
@@ -119,12 +121,14 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 				VkVertexInputAttributeDescription attr;
 				attr.location = it->downcast<VulkanGraphicsAttribute>()->getBindingPoint();
 				attr.binding = layout.getVertexSlot();
-				attr.offset = layout.getVertexOffset();
+				attr.offset = offset + layout.getVertexOffset();
 				attr.format = VulkanTypes::asGraphicsFormat(layout.getVertexFormat());
 
 				vias.push_back(attr);
 			}
 		}
+
+		offset += layout.getVertexOffset() + layout.getVertexSize();
 	}
 
 	const auto& bindings = inputLayoutDesc.getVertexBindings();
@@ -132,7 +136,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	{
 		VkVertexInputBindingDescription vib;
 		vib.binding = binding.getVertexSlot();
-		vib.stride = inputLayoutDesc.getVertexSize(binding.getVertexSlot());
+		vib.stride = binding.getVertexSize();
 
 		auto divisor = binding.getVertexDivisor();
 		if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorVertex)

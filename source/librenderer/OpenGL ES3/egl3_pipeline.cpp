@@ -101,7 +101,7 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 				GL_CHECK(glEnableVertexAttribArray(attribIndex));
 				GL_CHECK(glVertexAttribBinding(attribIndex, it.getVertexSlot()));
-				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, EGL3Types::isScaledFormat(it.getVertexFormat()), offset));
+				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, EGL3Types::isScaledFormat(it.getVertexFormat()), offset + it.getVertexOffset()));
 
 				break;
 			}

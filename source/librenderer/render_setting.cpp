@@ -42,7 +42,7 @@ RenderSetting::RenderSetting() noexcept
 	: window(nullptr)
 	, width(0)
 	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
 	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
 	, enableSSAO(true)

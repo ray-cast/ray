@@ -77,7 +77,11 @@ MyGuiRenderer::open() except
 	_materialTech = _material->getTech("ui");
 	_materialDecal = _material->getParameter("decal");
 	_materialScaleY = _material->getParameter("scaleY");
-	_materialScaleY->uniform1i(1);
+
+	if (RenderSystem::instance()->getRenderSetting().deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+		_materialScaleY->uniform1i(-1);
+	else
+		_materialScaleY->uniform1i(1);
 
 	_isInitialise = true;
 
@@ -202,8 +206,9 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 			GraphicsIndirect renderable;
 			renderable.numVertices = _count;
 
-			RenderSystem::instance()->setMaterialPass(_materialTech->getPass(0));
 			RenderSystem::instance()->setVertexBuffer(renderBuffer);
+
+			RenderSystem::instance()->setMaterialPass(_materialTech->getPass(0));
 			RenderSystem::instance()->drawMesh(renderable);
 		}
 		else
@@ -259,6 +264,7 @@ void
 MyGuiRenderer::drawOneFrame(float delta) noexcept
 {
 	RenderSystem::instance()->setViewport(Viewport(0, 0, _viewport.width, _viewport.height));
+	RenderSystem::instance()->setScissor(Scissor(0, 0, _viewport.width, _viewport.height));
 
 	onFrameEvent(delta);
 	onRenderToTarget(this, _isUpdate);

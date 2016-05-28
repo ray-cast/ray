@@ -99,7 +99,7 @@ EGL2Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			attrib.count = it.getVertexCount();
 			attrib.slot = it.getVertexSlot();
 			attrib.normalize = EGL2Types::isScaledFormat(it.getVertexFormat());
-			attrib.offset = offset;
+			attrib.offset = offset + it.getVertexOffset();
 
 			_attributes.push_back(attrib);
 		}

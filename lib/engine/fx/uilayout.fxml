@@ -16,8 +16,9 @@
             out float4 oPosition : SV_Position)
         {
             oPosition = Position;
+            oPosition.y *= scaleY;
             oDiffuse = Diffuse;
-            oCoord = float2(Texcoord.x, Texcoord.y * scaleY);
+            oCoord = float2(Texcoord.x, Texcoord.y);
         }
 
         float4 UILayoutPS(

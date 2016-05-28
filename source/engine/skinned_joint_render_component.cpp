@@ -84,18 +84,18 @@ SkinnedJointRenderComponent::_buildJointObject() noexcept
 	return true;
 }
 
-void 
+void
 SkinnedJointRenderComponent::onActivate() except
 {
 	_buildJointObject();
 }
 
-void 
+void
 SkinnedJointRenderComponent::onDeactivate() noexcept
 {
 }
 
-void 
+void
 SkinnedJointRenderComponent::onFrameEnd() noexcept
 {
 	float3* data;
@@ -105,8 +105,8 @@ SkinnedJointRenderComponent::onFrameEnd() noexcept
 		{
 			if (transform->getParent())
 			{
-				(*((float3*&)data)++) = transform->getParent()->getTranslate();
-				(*((float3*&)data)++) = transform->getTranslate();
+				*data++ = transform->getParent()->getTranslate();
+				*data++ = transform->getTranslate();
 			}
 		}
 

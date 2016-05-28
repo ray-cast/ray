@@ -45,17 +45,22 @@ class EXPORT GraphicsVertexBinding final
 {
 public:
 	GraphicsVertexBinding() noexcept;
-	GraphicsVertexBinding(std::uint8_t slot, GraphicsVertexDivisor divisor) noexcept;
+	GraphicsVertexBinding(std::uint8_t slot, std::uint16_t size) noexcept;
+	GraphicsVertexBinding(std::uint8_t slot, std::uint16_t size, GraphicsVertexDivisor divisor) noexcept;
 	~GraphicsVertexBinding() noexcept;
 
 	void setVertexSlot(std::uint8_t slot) noexcept;
 	std::uint8_t getVertexSlot() const noexcept;
+
+	void setVertexSize(std::uint16_t size) noexcept;
+	std::uint16_t getVertexSize() const noexcept;
 
 	void setVertexDivisor(GraphicsVertexDivisor divisor) noexcept;
 	GraphicsVertexDivisor getVertexDivisor() const noexcept;
 
 public:
 	std::uint8_t _slot;
+	std::uint16_t _size;
 	GraphicsVertexDivisor _divisor;
 };
 

@@ -7,7 +7,7 @@
         <component class="Camera">
             <attribute type="ortho"/>
             <attribute order="2D"/>
-            <attribute color="0.2,0.6,1.0,1"/>
+            <attribute color="0.1,0.6,1.0,1"/>
         </component>
         <component class="GuiCamera"/>
     </object>

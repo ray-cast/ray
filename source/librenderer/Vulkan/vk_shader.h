@@ -160,6 +160,7 @@ public:
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
+	bool HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out);
 	bool HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out);
 	bool GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
 
@@ -196,7 +197,7 @@ public:
 	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
 
 private:
-	void _initActiveAttribute(glslang::TProgram& program) noexcept;
+	void _initActiveAttribute(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept;
 	void _initActiveUniform(glslang::TProgram& program) noexcept;
 	void _initActiveUniformBlock(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept;
 

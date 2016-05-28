@@ -133,6 +133,7 @@ RenderPipelineManager::close() noexcept
 	_colorGrading.reset();
 	_deferredLighting.reset();
 	_forward.reset();
+	_postprocess.reset();
 	_pipeline.reset();
 }
 

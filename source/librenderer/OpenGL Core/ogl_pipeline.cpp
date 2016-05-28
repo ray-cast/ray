@@ -99,7 +99,7 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
 			attrib.slot = it.getVertexSlot();
-			attrib.offset = offset;
+			attrib.offset = offset + it.getVertexOffset();
 			attrib.normalize = OGLTypes::isScaledFormat(it.getVertexFormat());
 
 			_attributes.push_back(attrib);

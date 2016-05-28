@@ -69,6 +69,7 @@ private:
 	void computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void applySSAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 	void createSphereNoise() noexcept;
 
@@ -87,6 +88,7 @@ private:
 	MaterialTechPtr _ambientOcclusionPass;
 	MaterialTechPtr _ambientOcclusionBlurXPass;
 	MaterialTechPtr _ambientOcclusionBlurYPass;
+	MaterialTechPtr _ambientOcclusionApply;
 
 	MaterialParamPtr _cameraProjScale;
 

@@ -128,8 +128,10 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material,
 
 			inputLayoutDesc.addVertexLayout(GraphicsVertexLayout(slot, layoutName, index, format, offset));
 		}
+
 	} while (reader.setToNextChild());
 
+	inputLayoutDesc.addVertexBinding(GraphicsVertexBinding(0, inputLayoutDesc.getVertexSize(0)));
 	inputLayout = manager.createInputLayout(inputLayoutName, inputLayoutDesc);
 	if (!inputLayout)
 		throw failure(__TEXT("Can't create input layout") + reader.getCurrentNodeName());

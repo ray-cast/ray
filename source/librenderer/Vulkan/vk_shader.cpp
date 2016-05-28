@@ -38,6 +38,10 @@
 #include "vk_device.h"
 #include "vk_system.h"
 
+#if defined(__WINDOWS__)
+#	include <d3dcompiler.h>
+#endif
+
 _NAME_BEGIN
 
 const TBuiltInResource defaultOptions = 
@@ -377,9 +381,22 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 		return false;
 
 	std::string codes = shaderDesc.getByteCodes();
-	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
+
+	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSL)
 	{
-		HlslByteCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes);
+		if (!HlslCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes))
+		{
+			VK_PLATFORM_LOG("Can't conv hlsl to glsl.");
+			return false;
+		}
+	}
+	else if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
+	{
+		if (!HlslByteCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes))
+		{
+			VK_PLATFORM_LOG("Can't conv hlslbytecodes to glsl.");
+			return false;
+		}
 	}
 
 	std::vector<std::uint32_t> bytecodes;
@@ -452,6 +469,43 @@ const GraphicsShaderDesc&
 VulkanShader::getGraphicsShaderDesc() const noexcept
 {
 	return _shaderDesc;
+}
+
+bool 
+VulkanShader::HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out)
+{
+	std::string profile;
+	if (stage == GraphicsShaderStage::GraphicsShaderStageVertex)
+		profile = "vs_4_0";
+	else if (stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+		profile = "ps_4_0";
+
+	ID3DBlob* binary = nullptr;
+	ID3DBlob* error = nullptr;
+
+	D3DCreateBlob(4096, &binary);
+	D3DCreateBlob(4096, &error);
+
+	HRESULT hr = D3DCompile(
+		codes.data(),
+		codes.size(),
+		nullptr,
+		nullptr,
+		nullptr,
+		"main",
+		profile.c_str(),
+		D3DCOMPILE_OPTIMIZATION_LEVEL3,
+		0,
+		&binary,
+		&error
+		);
+
+	if (hr == S_OK)
+	{
+		return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
+	}
+
+	return false;
 }
 
 bool
@@ -635,7 +689,7 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 
 	program.buildReflection();
 
-	_initActiveAttribute(program);
+	_initActiveAttribute(program, programDesc);
 	_initActiveUniform(program);
 	_initActiveUniformBlock(program, programDesc);
 
@@ -663,8 +717,22 @@ VulkanProgram::getActiveAttributes() const noexcept
 }
 
 void
-VulkanProgram::_initActiveAttribute(glslang::TProgram& program) noexcept
+VulkanProgram::_initActiveAttribute(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept
 {
+	VulkanShader* vert = nullptr;
+
+	auto& shaders = programDesc.getShaders();
+	for (auto& shader : shaders)
+	{
+		if (shader->getGraphicsShaderDesc().getStage() == GraphicsShaderStage::GraphicsShaderStageVertex)
+			vert = shader->downcast<VulkanShader>();
+	}
+
+	if (!vert)
+		return;
+
+	auto& attributes = vert->getAttributes();
+
 	std::size_t numAttributes = program.getNumLiveAttributes();
 	for (std::size_t i = 0; i < numAttributes; i++)
 	{
@@ -685,13 +753,22 @@ VulkanProgram::_initActiveAttribute(glslang::TProgram& program) noexcept
 			semanticIndex = std::atoi(semantic.substr(semantic.rend() - it).c_str());
 		}
 
-		auto attrib = std::make_shared<VulkanGraphicsAttribute>();
-		attrib->setSemantic(semantic);
-		attrib->setSemanticIndex(semanticIndex);
-		attrib->setBindingPoint(i);
-		attrib->setType(toGraphicsFormat(program.getAttributeType(i)));
+		for (auto& attrib : attributes)
+		{
+			if (attrib->getSemantic() == semantic &&
+				attrib->getSemanticIndex() == semanticIndex)
+			{
+				auto activeAttribute = std::make_shared<VulkanGraphicsAttribute>();
+				activeAttribute->setSemantic(semantic);
+				activeAttribute->setSemanticIndex(semanticIndex);
+				activeAttribute->setBindingPoint(attrib->downcast<VulkanGraphicsAttribute>()->getBindingPoint());
+				activeAttribute->setType(toGraphicsFormat(program.getAttributeType(i)));
 
-		_activeAttributes.push_back(attrib);
+				_activeAttributes.push_back(activeAttribute);
+
+				break;
+			}
+		}
 	}
 }
 

@@ -95,6 +95,16 @@ PostRenderPipeline::onActivate(RenderPipeline& pipeline) noexcept
 void 
 PostRenderPipeline::onDeactivate(RenderPipeline& pipeline) noexcept
 {
+	_depthMap.reset();
+	_depthLinearMap.reset();
+	_diffuseMap.reset();
+	_normalMap.reset();
+	_lightMap.reset();
+
+	_swapMap.reset();
+	_swapView.reset();
+
+	_SSSS.reset();
 }
 
 void 

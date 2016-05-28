@@ -96,6 +96,7 @@ RenderPipeline::setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window,
 void
 RenderPipeline::close() noexcept
 {
+	this->destroyPostProcess();
 	this->destroyBaseMeshes();
 	this->destroyMaterialSemantic();
 	this->destroyDataManager();

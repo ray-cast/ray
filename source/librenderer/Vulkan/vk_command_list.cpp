@@ -493,17 +493,21 @@ VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first,
 void
 VulkanCommandList::setIndexBuffer(GraphicsDataPtr data) noexcept
 {
-	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer();
-	vkCmdBindIndexBuffer(_vkCommandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
+	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer(); 
+	auto stride = data->downcast<VulkanGraphicsData>()->getGraphicsDataDesc().getStride();
+	if (stride == 16)
+		vkCmdBindIndexBuffer(_vkCommandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT16);
+	else if (stride == 32)
+		vkCmdBindIndexBuffer(_vkCommandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
 }
 
 void
 VulkanCommandList::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
-	if (renderable.numIndices > 0)
-		vkCmdDrawIndexed(_vkCommandBuffer, renderable.numIndices, renderable.numInstances, renderable.startIndice, renderable.startVertice, renderable.startInstances);
-	else
+	if (renderable.numIndices == 0)
 		vkCmdDraw(_vkCommandBuffer, renderable.numVertices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
+	else
+		vkCmdDrawIndexed(_vkCommandBuffer, renderable.numIndices, renderable.numInstances, renderable.startIndice, renderable.startVertice, renderable.startInstances);
 }
 
 void

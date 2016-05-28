@@ -335,22 +335,22 @@ inline Vector3t<_Tx> operator/(const Vector3t<_Tx>& v, _Ty value)
     return Vector3t<_Tx>(v.x / value, v.y / value, v.z / value);
 }
 
-template<typename ostream, typename T>
+template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const Vector3t<T>& v)
 {
-    os << v.x << ", " << v.y << ", " << v.z;
-    return os;
+	os << v.x << ", " << v.y << ", " << v.z;
+	return os;
 }
 
-template<typename istream, typename T>
+template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, Vector3t<T>& v)
 {
-    is >> v.x;
-    is.ignore(2);
-    is >> v.y;
-    is.ignore(2);
-    is >> v.z;
-    return is;
+	is >> v.x;
+	is.ignore(2);
+	is >> v.y;
+	is.ignore(2);
+	is >> v.z;
+	return is;
 }
 
 namespace math

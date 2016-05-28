@@ -226,20 +226,20 @@ inline Vector2t<T> operator/(unsigned scale, const Vector2t<T>& v) noexcept
     return Vector2t<T>(v.x / scale, v.y / scale);
 }
 
-template<typename ostream, typename T>
+template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const Vector2t<T>& v)
 {
-    os << v.x << ", " << v.y;
-    return os;
+	os << v.x << ", " << v.y;
+	return os;
 }
 
-template<typename istream, typename T>
+template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, Vector2t<T>& v)
 {
-    is >> v.x;
-    is.ignore(2);
-    is >> v.y;
-    return is;
+	is >> v.x;
+	is.ignore(2);
+	is >> v.y;
+	return is;
 }
 
 namespace math

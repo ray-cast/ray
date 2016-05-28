@@ -79,8 +79,11 @@ GameServer::close() noexcept
 
 	_scenes.clear();
 
-	for (auto& it : _features)
-		it->setActive(false);
+	auto it = _features.rbegin();
+	auto end = _features.rend();
+
+	for (; it != end; ++it)
+		(*it)->setActive(false);
 
 	_features.clear();
 }

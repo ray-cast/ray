@@ -65,6 +65,7 @@ GuiSystem::open(GuiSystemBasePtr custom) except
 		_system = std::make_shared<MyGuiSystem>();
 #endif
 	}
+
 	return _system->open();
 }
 

@@ -926,7 +926,7 @@ DeferredLightingPipeline::onRenderPost() noexcept
 			else if (flags & CameraRenderFlagBits::CameraRenderLightingBit)
 				this->copyRenderTexture(*_pipeline, _deferredLightingMap, framebuffer, viewport);
 			else if (flags & CameraRenderFlagBits::CameraRenderShadingBit)
-				this->copyRenderTexture(*_pipeline, _deferredOpaqueShadingMap, framebuffer, viewport);
+				this->copyRenderTexture(*_pipeline, _deferredFinalShadingMap, framebuffer, viewport);
 		}
 	}
 

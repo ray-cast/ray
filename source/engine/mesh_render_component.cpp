@@ -560,11 +560,8 @@ MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, const MeshProp
 	renderObject->setTransform(this->getGameObject()->getWorldTransform());
 
 	auto renderable = std::make_shared<GraphicsIndirect>();
-	renderable->startVertice = 0;
-	renderable->startIndice = 0;
 	renderable->numVertices = mesh.getNumVertices();
 	renderable->numIndices = mesh.getNumIndices();
-	renderable->numInstances = 0;
 	renderable->indexType = GraphicsIndexType::GraphicsIndexTypeUInt32;
 
 	renderObject->setGraphicsIndirect(renderable);

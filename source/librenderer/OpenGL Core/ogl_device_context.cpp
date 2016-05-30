@@ -197,7 +197,7 @@ OGLDeviceContext::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t 
 		if (_stateCaptured.getStencilBackReadMask() != mask)
 		{
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
-			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilFrontRef(), mask);
+			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask);
 			_stateCaptured.setStencilBackReadMask(mask);
 			_needUpdateState = true;
 		}
@@ -233,7 +233,7 @@ OGLDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t re
 		if (_stateCaptured.getStencilBackRef() != reference)
 		{
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
-			glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilFrontReadMask());
+			glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilBackReadMask());
 			_stateCaptured.setStencilBackRef(reference);
 			_needUpdateState = true;
 		}

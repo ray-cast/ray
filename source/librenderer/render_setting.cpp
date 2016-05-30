@@ -42,10 +42,10 @@ RenderSetting::RenderSetting() noexcept
 	: window(nullptr)
 	, width(0)
 	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
-	, pipelineType(RenderPipelineType::RenderPipelineTypeForward)
-	, enableSSAO(false)
+	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
+	, enableSSAO(true)
 	, enableSSGI(false)
 	, enableAtmospheric(false)
 	, enableSSR(false)
@@ -54,9 +54,9 @@ RenderSetting::RenderSetting() noexcept
 	, enableLightShaft(false)
 	, enableDOF(false)
 	, enableMotionBlur(false)
-	, enableFimic(false)
-	, enableColorGrading(false)
-	, enableFXAA(false)
+	, enableFimic(true)
+	, enableColorGrading(true)
+	, enableFXAA(true)
 {
 }
 

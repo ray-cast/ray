@@ -591,11 +591,8 @@ RenderPipeline::setupBaseMeshes() noexcept
 	if (!_screenQuadIbo)
 		return false;
 
-	_screenQuadIndirect.startVertice = 0;
 	_screenQuadIndirect.numVertices = mesh.getNumVertices();
-	_screenQuadIndirect.startIndice = 0;
 	_screenQuadIndirect.numIndices = mesh.getNumIndices();
-	_screenQuadIndirect.numInstances = 0;
 
 	mesh.makeSphere(1, 24, 18);
 
@@ -607,11 +604,8 @@ RenderPipeline::setupBaseMeshes() noexcept
 	if (!_sphereIbo)
 		return false;
 
-	_sphereIndirect.startVertice = 0;
 	_sphereIndirect.numVertices = mesh.getNumVertices();
-	_sphereIndirect.startIndice = 0;
 	_sphereIndirect.numIndices = mesh.getNumIndices();
-	_sphereIndirect.numInstances = 0;
 
 	mesh.makeCone(1, 1, 16);
 
@@ -623,11 +617,8 @@ RenderPipeline::setupBaseMeshes() noexcept
 	if (!_coneIbo)
 		return false;
 
-	_coneIndirect.startVertice = 0;
 	_coneIndirect.numVertices = mesh.getNumVertices();
-	_coneIndirect.startIndice = 0;
 	_coneIndirect.numIndices = mesh.getNumIndices();
-	_coneIndirect.numInstances = 0;
 
 	return true;
 }

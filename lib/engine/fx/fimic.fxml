@@ -152,7 +152,7 @@
                 color += texSource.Sample(PointClamp, coord1.zw).r;
                 color *= 0.25;
 
-                float adaptedLum = texLumAve.Load(int3(0,0,0)).r;
+                float adaptedLum = texLumAve.Sample(PointClamp, float2(0,0)).r;
                 return saturate(CalcAdaptedLum(adaptedLum, exp(color), delta));
             }
 

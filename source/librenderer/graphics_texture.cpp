@@ -52,7 +52,8 @@ GraphicsTextureDesc::GraphicsTextureDesc() noexcept
 	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear)
 	, _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge)
 	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis1)
-	, _textureUsage(GraphicsViewUsageFlagBits::GraphicsViewUsageFlagBitsStorageBit)
+	, _textureUsage(GraphicsViewUsageFlagBits::GraphicsViewUsageFlagBitsSampledBit)
+	, _tiling(GraphicsImageTiling::GraphicsImageTilingOptimal)
 	, _data(nullptr)
 	, _dataSize(0)
 {
@@ -125,6 +126,12 @@ GraphicsTextureDesc::setTexDim(GraphicsTextureDim map) noexcept
 }
 
 void
+GraphicsTextureDesc::setTexTiling(GraphicsImageTiling tiling) noexcept
+{
+	_tiling = tiling;
+}
+
+void
 GraphicsTextureDesc::setTexUsage(std::uint32_t flags) noexcept
 {
 	_textureUsage = flags;
@@ -146,6 +153,12 @@ std::uint32_t
 GraphicsTextureDesc::getTexUsage() const noexcept
 {
 	return _textureUsage;
+}
+
+GraphicsImageTiling
+GraphicsTextureDesc::getTexTiling() const noexcept
+{
+	return _tiling;
 }
 
 void

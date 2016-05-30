@@ -39,7 +39,7 @@
 #include "vk_swapchain.h"
 #include "vk_command_list.h"
 #include "vk_command_queue.h"
-#include "vk_render_pipeline.h"
+#include "vk_pipeline.h"
 #include "vk_descriptor_set.h"
 #include "vk_graphics_data.h"
 #include "vk_system.h"
@@ -108,6 +108,10 @@ void
 VulkanDeviceContext::renderEnd() noexcept
 {
 	_commandList->renderEnd();
+
+	_commandQueue->executeCommandLists(&_commandList, 1);
+	_commandQueue->present(&_swapchain, 1);
+	_commandQueue->wait();
 }
 
 void
@@ -135,36 +139,39 @@ VulkanDeviceContext::getScissor() const noexcept
 }
 
 void
-VulkanDeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept
+VulkanDeviceContext::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
 {
+	_commandList->setStencilCompareMask(face, mask);
 }
 
-GraphicsCompareFunc
-VulkanDeviceContext::getStencilCompare(GraphicsStencilFace face) noexcept
+std::uint32_t
+VulkanDeviceContext::getStencilCompareMask(GraphicsStencilFace face) noexcept
 {
-	return GraphicsCompareFunc::GraphicsCompareFuncNone;
+	return _commandList->getStencilCompareMask(face);
 }
 
 void
 VulkanDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
 {
+	_commandList->setStencilReference(face, reference);
 }
 
 std::uint32_t
 VulkanDeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
 {
-	return 0;
+	return _commandList->getStencilReference(face);
 }
 
 void
 VulkanDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
 {
+	_commandList->setStencilFrontWriteMask(face, mask);
 }
 
 std::uint32_t
 VulkanDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
 {
-	return 0;
+	return _commandList->getStencilFrontWriteMask(face);
 }
 
 void
@@ -218,8 +225,8 @@ VulkanDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) no
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<VulkanDescriptorSet>());
 
-	descriptorSet->downcast_pointer<VulkanDescriptorSet>()->update();
 	_commandList->setDescriptorSet(descriptorSet);
+	descriptorSet->downcast<VulkanDescriptorSet>()->update();
 }
 
 GraphicsDescriptorSetPtr
@@ -277,9 +284,6 @@ VulkanDeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::si
 void
 VulkanDeviceContext::present() noexcept
 {
-	_commandQueue->executeCommandLists(&_commandList, 1);
-	_commandQueue->present(&_swapchain, 1);
-	_commandQueue->wait();
 }
 
 bool

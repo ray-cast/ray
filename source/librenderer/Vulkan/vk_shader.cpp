@@ -788,7 +788,7 @@ VulkanProgram::_initActiveUniform(glslang::TProgram& program) noexcept
 			std::string name = program.getUniformName(i);
 
 			auto uniform = std::make_shared<VulkanGraphicsUniform>();
-			uniform->setType(GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler);
+			uniform->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
 			uniform->setBindingPoint(program.getUniformIndex(name.c_str()));
 			uniform->setOffset(0);
 
@@ -925,7 +925,7 @@ VulkanProgram::toGraphicsUniformType(const std::string& name, int type, bool for
 		type == GL_SAMPLER_CUBE ||
 		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
-		return GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler;
+		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
 	}
 	else
 	{

@@ -1037,36 +1037,36 @@ EGL3Types::getFormatNum(GLenum format, GLenum type) noexcept
 }
 
 GLboolean
-EGL3Types::isScaledFormat(GraphicsFormat format) noexcept
+EGL3Types::isNormFormat(GraphicsFormat format) noexcept
 {
 	switch (format)
 	{
-	case GraphicsFormatR8UScaled:
-	case GraphicsFormatR8SScaled:
-	case GraphicsFormatR8G8UScaled:
-	case GraphicsFormatR8G8SScaled:
-	case GraphicsFormatR8G8B8UScaled:
-	case GraphicsFormatR8G8B8SScaled:
-	case GraphicsFormatB8G8R8UScaled:
-	case GraphicsFormatB8G8R8SScaled:
-	case GraphicsFormatR8G8B8A8UScaled:
-	case GraphicsFormatR8G8B8A8SScaled:
-	case GraphicsFormatB8G8R8A8UScaled:
-	case GraphicsFormatB8G8R8A8SScaled:
-	case GraphicsFormatA8B8G8R8UScaledPack32:
-	case GraphicsFormatA8B8G8R8SScaledPack32:
-	case GraphicsFormatA2R10G10B10UScaledPack32:
-	case GraphicsFormatA2R10G10B10SScaledPack32:
-	case GraphicsFormatA2B10G10R10UScaledPack32:
-	case GraphicsFormatA2B10G10R10SScaledPack32:
-	case GraphicsFormatR16UScaled:
-	case GraphicsFormatR16SScaled:
-	case GraphicsFormatR16G16UScaled:
-	case GraphicsFormatR16G16SScaled:
-	case GraphicsFormatR16G16B16UScaled:
-	case GraphicsFormatR16G16B16SScaled:
-	case GraphicsFormatR16G16B16A16UScaled:
-	case GraphicsFormatR16G16B16A16SScaled:
+	case GraphicsFormatR8UNorm:
+	case GraphicsFormatR8SNorm:
+	case GraphicsFormatR8G8UNorm:
+	case GraphicsFormatR8G8SNorm:
+	case GraphicsFormatR8G8B8UNorm:
+	case GraphicsFormatR8G8B8SNorm:
+	case GraphicsFormatB8G8R8UNorm:
+	case GraphicsFormatB8G8R8SNorm:
+	case GraphicsFormatR8G8B8A8UNorm:
+	case GraphicsFormatR8G8B8A8SNorm:
+	case GraphicsFormatB8G8R8A8UNorm:
+	case GraphicsFormatB8G8R8A8SNorm:
+	case GraphicsFormatA8B8G8R8UNormPack32:
+	case GraphicsFormatA8B8G8R8SNormPack32:
+	case GraphicsFormatA2R10G10B10UNormPack32:
+	case GraphicsFormatA2R10G10B10SNormPack32:
+	case GraphicsFormatA2B10G10R10UNormPack32:
+	case GraphicsFormatA2B10G10R10SNormPack32:
+	case GraphicsFormatR16UNorm:
+	case GraphicsFormatR16SNorm:
+	case GraphicsFormatR16G16UNorm:
+	case GraphicsFormatR16G16SNorm:
+	case GraphicsFormatR16G16B16UNorm:
+	case GraphicsFormatR16G16B16SNorm:
+	case GraphicsFormatR16G16B16A16UNorm:
+	case GraphicsFormatR16G16B16A16SNorm:
 		return GL_TRUE;
 	default:
 		return false;

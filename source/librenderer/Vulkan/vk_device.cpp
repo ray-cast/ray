@@ -46,7 +46,7 @@
 #include "vk_shader.h"
 #include "vk_framebuffer.h"
 #include "vk_input_layout.h"
-#include "vk_render_pipeline.h"
+#include "vk_pipeline.h"
 #include "vk_graphics_data.h"
 #include "vk_render_state.h"
 #include "vk_descriptor_pool.h"
@@ -153,7 +153,7 @@ VulkanDevice::close() noexcept
 {
 	if (_device != VK_NULL_HANDLE)
 	{
-		vkDestroyDevice(_device, 0);
+		vkDestroyDevice(_device, nullptr);
 		_device = VK_NULL_HANDLE;
 	}
 

@@ -56,9 +56,9 @@ public:
 
 	void wait() noexcept;
 
-	void executeCommandLists(GraphicsCommandListPtr commandLists[], std::uint32_t count) noexcept;
+	bool executeCommandLists(GraphicsCommandListPtr commandLists[], std::uint32_t count) noexcept;
 
-	void present(GraphicsSwapchainPtr canvas[], std::uint32_t count) noexcept;
+	bool present(GraphicsSwapchainPtr canvas[], std::uint32_t count) noexcept;
 
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
@@ -67,6 +67,13 @@ public:
 
 private:
 	VkQueue _vkQueue;
+
+	std::vector<VkFence> _fences;
+	std::vector<VkSubmitInfo> _submitInfos;
+	std::vector<VkCommandBuffer> _commandBuffers;
+	std::vector<VkSemaphore> _waitSemaphores;
+	std::vector<VkSwapchainKHR> _swapchains;
+	std::vector<std::uint32_t> _swapchainImage;
 
 	GraphicsCommandQueueDesc _commandQueueDesc;
 	GraphicsDeviceWeakPtr _device;

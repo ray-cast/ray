@@ -121,87 +121,80 @@ VulkanCommandQueue::wait() noexcept
 	vkQueueWaitIdle(_vkQueue);
 }
 
-void
+bool
 VulkanCommandQueue::executeCommandLists(GraphicsCommandListPtr commandLists[], std::uint32_t count) noexcept
 {
-	VkSubmitInfo submit[VK_MAX_SUBMIT_BUFFER];
-	VkCommandBuffer buffers[VK_MAX_SUBMIT_BUFFER];
+	if (count == 0)
+		return false;
 
-	std::uint32_t submitCount = 0;
+	if (_submitInfos.size() < count)
+		_submitInfos.resize(count);
 
-	for (std::uint32_t i = 0; i < count; i++, submitCount++)
+	if (_commandBuffers.size() < count)
+		_commandBuffers.resize(count);
+
+	for (std::uint32_t i = 0; i < count; i++)
 	{
-		submit[submitCount].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submit[submitCount].pNext = 0;
-		submit[submitCount].waitSemaphoreCount = 0;
-		submit[submitCount].pWaitSemaphores = 0;
-		submit[submitCount].pWaitDstStageMask = 0;
-		submit[submitCount].commandBufferCount = 1;
-		submit[submitCount].pCommandBuffers = &buffers[submitCount];
-		submit[submitCount].signalSemaphoreCount = 0;
-		submit[submitCount].pSignalSemaphores = 0;
+		_commandBuffers[i] = commandLists[i]->downcast<VulkanCommandList>()->getInstance();
 
-		buffers[submitCount] = commandLists[i]->downcast<VulkanCommandList>()->getInstance();
-
-		if (submitCount == VK_MAX_SUBMIT_BUFFER)
-		{
-			vkQueueSubmit(_vkQueue, submitCount, submit, VK_NULL_HANDLE);
-			submitCount = 0;
-		}
+		_submitInfos[i].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		_submitInfos[i].pNext = 0;
+		_submitInfos[i].waitSemaphoreCount = 0;
+		_submitInfos[i].pWaitSemaphores = 0;
+		_submitInfos[i].pWaitDstStageMask = 0;
+		_submitInfos[i].commandBufferCount = 1;
+		_submitInfos[i].pCommandBuffers = &_commandBuffers[i];
+		_submitInfos[i].signalSemaphoreCount = 0;
+		_submitInfos[i].pSignalSemaphores = 0;
 	}
 
-	if (submitCount > 0)
-	{
-		vkQueueSubmit(_vkQueue, submitCount, submit, VK_NULL_HANDLE);
-	}
+	return vkQueueSubmit(_vkQueue, count, _submitInfos.data(), VK_NULL_HANDLE) == VK_SUCCESS;
 }
 
-void
+bool
 VulkanCommandQueue::present(GraphicsSwapchainPtr canvas[], std::uint32_t count) noexcept
 {
-	VkSwapchainKHR swapchains[VK_MAX_PRESENT];
-	VkSemaphore waitSemaphores[VK_MAX_PRESENT];
+	if (count == 0)
+		return false;
 
-	std::uint32_t swapchainImage[VK_MAX_PRESENT];
+	if (_waitSemaphores.size() < count)
+		_waitSemaphores.resize(count);
+
+	if (_swapchains.size() < count)
+		_swapchains.resize(count);
+
+	if (_swapchainImage.size() < count)
+		_swapchainImage.resize(count);
 
 	VkPresentInfoKHR present;
 	present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	present.pNext = nullptr;
 	present.waitSemaphoreCount = 0;
-	present.pWaitSemaphores = waitSemaphores;
+	present.pWaitSemaphores = _waitSemaphores.data();
 	present.swapchainCount = 0;
-	present.pSwapchains = swapchains;
-	present.pImageIndices = swapchainImage;
+	present.pSwapchains = _swapchains.data();
+	present.pImageIndices = _swapchainImage.data();
 	present.pResults = nullptr;
 
 	for (std::uint32_t i = 0; i < count; i++)
 	{
-		VkSwapchainKHR swapchain = canvas[i]->downcast<VulkanSwapchain>()->getSwapchain();
-		VkSemaphore semaphore = canvas[i]->downcast<VulkanSwapchain>()->getSemaphore()->downcast<VulkanSemaphore>()->getSemaphore();
+		auto vulkanSwapchain = canvas[i]->downcast<VulkanSwapchain>();
+		auto vulkanSwapchainHandle = vulkanSwapchain->getSwapchain();
+		auto vulkanSemaphoreHandle = vulkanSwapchain->getSemaphore()->downcast<VulkanSemaphore>()->getSemaphore();
 
-		if (swapchain != VK_NULL_HANDLE &&
-			semaphore != VK_NULL_HANDLE)
+		if (vulkanSwapchainHandle != VK_NULL_HANDLE)
 		{
-			swapchains[present.swapchainCount] = swapchain;
-			swapchainImage[present.swapchainCount] = canvas[i]->downcast<VulkanSwapchain>()->getSwapchainImageIndex();
-
-			waitSemaphores[present.waitSemaphoreCount] = semaphore;
-
-			present.swapchainCount++;
-			present.waitSemaphoreCount++;
+			_swapchains[present.swapchainCount] = vulkanSwapchainHandle;
+			_swapchainImage[present.swapchainCount++] = vulkanSwapchain->getSwapchainImageIndex();
 		}
 
-		if (present.swapchainCount == VK_MAX_PRESENT)
+		if (vulkanSemaphoreHandle != VK_NULL_HANDLE)
 		{
-			vkQueuePresentKHR(_vkQueue, &present);
-			present.swapchainCount = 0;
+			_waitSemaphores[present.waitSemaphoreCount++] = vulkanSemaphoreHandle;
 		}
 	}
 
-	if (present.swapchainCount > 0)
-	{
-		vkQueuePresentKHR(_vkQueue, &present);
-	}
+	return vkQueuePresentKHR(_vkQueue, &present) == VK_SUCCESS;
 }
 
 void

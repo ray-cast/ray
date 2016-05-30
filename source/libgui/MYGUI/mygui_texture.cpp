@@ -39,6 +39,7 @@
 #include "mygui_renderer.h"
 #include "mygui_system.h"
 
+#include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 
 _NAME_BEGIN
@@ -96,7 +97,7 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	_numElemBytes = 0;
 	if (_format == MyGUI::PixelFormat::R8G8B8)
 	{
-		pixelFormat = GraphicsFormat::GraphicsFormatR8G8B8UInt;
+		pixelFormat = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
 		_numElemBytes = 3;
 	}
 	else if (_format == MyGUI::PixelFormat::R8G8B8A8)
@@ -122,9 +123,23 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	textureDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	textureDesc.setTexFormat(pixelFormat);
+	textureDesc.setTexTiling(GraphicsImageTiling::GraphicsImageTilingLinear);
 	textureDesc.setStream(_data);
+	textureDesc.setStreamSize(_dataSize);
 
 	_texture = RenderSystem::instance()->createTexture(textureDesc);
+
+	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml");
+	_materialTech = _material->getTech("ui");
+	_materialDecal = _material->getParameter("decal");
+	_materialScaleY = _material->getParameter("scaleY");
+
+	if (RenderSystem::instance()->getRenderSetting().deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+		_materialScaleY->uniform1f(-1.0f);
+	else
+		_materialScaleY->uniform1f(1.0);
+
+	_materialDecal->uniformTexture(_texture);
 }
 
 void
@@ -233,6 +248,13 @@ MyGuiTexture::getTexture() const noexcept
 {
 	assert(_texture);
 	return _texture;
+}
+
+MaterialPassPtr
+MyGuiTexture::getMaterialPass() const noexcept
+{
+	assert(_material);
+	return _material->getTechs().front()->getPass(0);
 }
 
 int

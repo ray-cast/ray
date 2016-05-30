@@ -58,9 +58,11 @@ public:
 
 	void setTexFormat(GraphicsFormat format) noexcept;
 	void setTexDim(GraphicsTextureDim mapping) noexcept;
+	void setTexTiling(GraphicsImageTiling tiling) noexcept;
 	void setTexUsage(std::uint32_t flags) noexcept;
 	GraphicsFormat getTexFormat()  const noexcept;
 	GraphicsTextureDim getTexDim() const noexcept;
+	GraphicsImageTiling getTexTiling() const noexcept;
 	std::uint32_t getTexUsage() const noexcept;
 
 	void setSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
@@ -108,6 +110,7 @@ private:
 	GraphicsSamplerFilter _filter;
 	GraphicsSamplerWrap _wrap;
 	GraphicsSamplerAnis _anis;
+	GraphicsImageTiling _tiling;
 
 	void* _data;
 	std::uint32_t _dataSize;
@@ -115,7 +118,7 @@ private:
 
 class EXPORT GraphicsTexture : public GraphicsResource
 {
-	__DeclareSubInterface(RenderTexture, GraphicsResource)
+	__DeclareSubInterface(GraphicsTexture, GraphicsResource)
 public:
 	GraphicsTexture() noexcept;
 	virtual ~GraphicsTexture() noexcept;

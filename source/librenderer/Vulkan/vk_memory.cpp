@@ -42,8 +42,6 @@ _NAME_BEGIN
 
 VulkanMemory::VulkanMemory() noexcept
 	: _vkMemory(VK_NULL_HANDLE)
-	, _isMapping(false)
-	, _size(0)
 {
 }
 
@@ -53,7 +51,7 @@ VulkanMemory::~VulkanMemory() noexcept
 }
 
 bool
-VulkanMemory::setup(const char* stream, std::uint32_t streamSize, std::uint32_t typeBits, std::uint32_t mask) noexcept
+VulkanMemory::setup(std::uint32_t streamSize, std::uint32_t typeBits, std::uint32_t mask) noexcept
 {
 	assert(streamSize > 0);
 
@@ -64,25 +62,18 @@ VulkanMemory::setup(const char* stream, std::uint32_t streamSize, std::uint32_t 
 	memInfo.memoryTypeIndex = 0;
 
 	VkPhysicalDeviceMemoryProperties memoryProperties;
-	vkGetPhysicalDeviceMemoryProperties(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), &memoryProperties);
+	vkGetPhysicalDeviceMemoryProperties(_device.lock()->getPhysicsDevice(), &memoryProperties);
 
-	memory_type_from_properties(memoryProperties.memoryTypes, typeBits, mask, &memInfo.memoryTypeIndex);
-
-	if (vkAllocateMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &memInfo, nullptr, &_vkMemory) > 0)
+	if (!memory_type_from_properties(memoryProperties.memoryTypes, typeBits, mask, &memInfo.memoryTypeIndex))
 	{
-		VK_PLATFORM_LOG("vkAllocateMemory() fail.");
+		VK_PLATFORM_LOG("memory_type_from_properties() fail.");
 		return false;
 	}
 
-	_size = streamSize;
-	if (stream)
+	if (vkAllocateMemory(_device.lock()->getDevice(), &memInfo, nullptr, &_vkMemory) != VK_SUCCESS)
 	{
-		void* data = this->map(GraphicsAccessFlagBits::GraphicsAccessFlagMapReadBit);
-		if (data)
-		{
-			std::memcpy(data, stream, streamSize);
-			this->unmap();
-		}
+		VK_PLATFORM_LOG("vkAllocateMemory() fail.");
+		return false;
 	}
 
 	return true;
@@ -93,46 +84,23 @@ VulkanMemory::close() noexcept
 {
 	if (_vkMemory != VK_NULL_HANDLE)
 	{
-		vkFreeMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkMemory, nullptr);
-		_size = 0;
+		vkFreeMemory(_device.lock()->getDevice(), _vkMemory, nullptr);
 		_vkMemory = VK_NULL_HANDLE;
 	}
 }
 
-std::uint32_t
-VulkanMemory::size() const noexcept
+bool
+VulkanMemory::map(std::ptrdiff_t offset, std::ptrdiff_t cnt, GraphicsAccessFlags flags, void** data) noexcept
 {
-	return _size;
-}
-
-void*
-VulkanMemory::map(GraphicsAccessFlags flags) noexcept
-{
-	return this->map(0, this->size(), flags);
-}
-
-void*
-VulkanMemory::map(std::uint32_t offset, std::uint32_t cnt, GraphicsAccessFlags flags) noexcept
-{
-	assert(!_isMapping);
 	assert(_vkMemory != VK_NULL_HANDLE);
-
-	void* data = nullptr;
-	if (vkMapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkMemory, offset, cnt, 0, &data) != VK_SUCCESS)
-		return false;
-
-	_isMapping = true;
-	return data;
+	return vkMapMemory(_device.lock()->getDevice(), _vkMemory, offset, cnt, 0, data) == VK_SUCCESS;
 }
 
 void
 VulkanMemory::unmap() noexcept
 {
-	assert(_isMapping);
 	assert(_vkMemory != VK_NULL_HANDLE);
-
-	_isMapping = false;
-	vkUnmapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkMemory);
+	vkUnmapMemory(_device.lock()->getDevice(), _vkMemory);
 }
 
 VkDeviceMemory
@@ -144,7 +112,8 @@ VulkanMemory::getDeviceMemory() const noexcept
 void
 VulkanMemory::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
+	assert(device);
+	_device = device->downcast_pointer<VulkanDevice>();
 }
 
 GraphicsDevicePtr

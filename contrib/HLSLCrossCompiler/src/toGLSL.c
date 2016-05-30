@@ -456,6 +456,7 @@ void TranslateToGLSL(HLSLCrossCompilerContext* psContext, GLLang* planguage,cons
     GLLang language = *planguage;
 	uint32_t ui32InstCount = 0;
 	uint32_t ui32DeclCount = 0;
+	uint32_t ui32TextureUnit = psShader->sInfo.ui32NumConstantBuffers;
 
     psContext->indent = 0;
 
@@ -525,7 +526,7 @@ void TranslateToGLSL(HLSLCrossCompilerContext* psContext, GLLang* planguage,cons
 
 		for(i=0; i < psShader->asPhase[HS_GLOBAL_DECL].pui32DeclCount[0]; ++i)
         {
-			TranslateDeclaration(psContext, psShader->asPhase[HS_GLOBAL_DECL].ppsDecl[0]+i);
+			TranslateDeclaration(psContext, psShader->asPhase[HS_GLOBAL_DECL].ppsDecl[0]+i, &ui32TextureUnit);
         }
 
 		for(ui32Phase=HS_CTRL_POINT_PHASE; ui32Phase<NUM_PHASES; ui32Phase++)
@@ -537,7 +538,7 @@ void TranslateToGLSL(HLSLCrossCompilerContext* psContext, GLLang* planguage,cons
 				bformata(glsl, "//%s declarations\n", asPhaseFuncNames[ui32Phase]);
 				for(i=0; i < psShader->asPhase[ui32Phase].pui32DeclCount[ui32Instance]; ++i)
 				{
-					TranslateDeclaration(psContext, psShader->asPhase[ui32Phase].ppsDecl[ui32Instance]+i);
+					TranslateDeclaration(psContext, psShader->asPhase[ui32Phase].ppsDecl[ui32Instance]+i, &ui32TextureUnit);
 					if(psShader->asPhase[ui32Phase].ppsDecl[ui32Instance][i].eOpcode == OPCODE_DCL_HS_FORK_PHASE_INSTANCE_COUNT)
 					{
 						haveInstancedForkPhase = 1;
@@ -692,7 +693,7 @@ void TranslateToGLSL(HLSLCrossCompilerContext* psContext, GLLang* planguage,cons
 
     for(i=0; i < ui32DeclCount; ++i)
     {
-		TranslateDeclaration(psContext, psShader->asPhase[MAIN_PHASE].ppsDecl[0]+i);
+		TranslateDeclaration(psContext, psShader->asPhase[MAIN_PHASE].ppsDecl[0]+i, &ui32TextureUnit);
     }
 
 	if(psContext->psShader->ui32NumDx9ImmConst)

@@ -511,6 +511,21 @@ VulkanTypes::asTextureSample(GraphicsSamplerAnis anis) noexcept
 	}
 }
 
+VkImageTiling 
+VulkanTypes::asTextureTiling(GraphicsImageTiling tiling) noexcept
+{
+	switch (tiling)
+	{
+	case ray::GraphicsImageTilingOptimal:
+		return VK_IMAGE_TILING_OPTIMAL;
+	case ray::GraphicsImageTilingLinear:
+		return VK_IMAGE_TILING_LINEAR;
+	default:
+		assert(false);
+		return VK_IMAGE_TILING_LINEAR;
+	}
+}
+
 VkImageUsageFlags
 VulkanTypes::asTextureUsage(std::uint32_t usage) noexcept
 {

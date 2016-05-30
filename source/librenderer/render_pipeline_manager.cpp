@@ -469,6 +469,18 @@ RenderPipelineManager::drawMesh(const GraphicsIndirect& renderable) noexcept
 }
 
 void
+RenderPipelineManager::drawArray(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t firstVertex, std::uint32_t firstInstance) noexcept
+{
+	assert(_pipeline);
+	GraphicsIndirect renderable;
+	renderable.startVertice = firstVertex;
+	renderable.startInstances = firstInstance;
+	renderable.numVertices = numVertices;
+	renderable.numInstances = numInstances;
+	_pipeline->drawMesh(renderable);
+}
+
+void
 RenderPipelineManager::setWindowResolution(std::uint32_t width, std::uint32_t height) noexcept
 {
 	if (_setting.width != width || _setting.height != height)

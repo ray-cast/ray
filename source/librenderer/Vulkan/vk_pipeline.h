@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_VK_RENDER_PIPELINE_H_
-#define _H_VK_RENDER_PIPELINE_H_
+#ifndef _H_VK_PIPELINE_H_
+#define _H_VK_PIPELINE_H_
 
 #include "vk_types.h"
 
@@ -53,6 +53,7 @@ public:
 
 	VkPipeline getPipeline() const noexcept;
 	VkPipelineLayout getPipelineLayout() const noexcept;
+	VkPipelineBindPoint getPipelineBindPoint() const noexcept;
 
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;

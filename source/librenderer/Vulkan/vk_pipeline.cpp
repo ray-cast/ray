@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "vk_render_pipeline.h"
+#include "vk_pipeline.h"
 #include "vk_device.h"
 #include "vk_shader.h"
 #include "vk_input_layout.h"
@@ -169,7 +169,33 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	rs.depthBiasClamp = stateDesc.getDepthBiasClamp();
 	rs.depthBiasSlopeFactor = stateDesc.getDepthSlopeScaleBias();
 
+	std::vector<VkPipelineColorBlendAttachmentState> blends;
+	for (auto& blend : stateDesc.getColorBlends())
+	{
+		VkPipelineColorBlendAttachmentState state;
+		state.blendEnable = blend.getBlendEnable();
+		state.srcColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+		state.dstColorBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		state.srcAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+		state.dstAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		state.alphaBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
+		state.colorBlendOp = VkBlendOp::VK_BLEND_OP_ADD;
+		state.colorWriteMask = VkColorComponentFlagBits::VK_COLOR_COMPONENT_FLAG_BITS_MAX_ENUM;
+		
+		blends.push_back(state);
+	}
+
 	cb.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	cb.pNext = 0;
+	cb.flags = 0;
+	cb.blendConstants[0] = 1.0f;
+	cb.blendConstants[1] = 1.0f;
+	cb.blendConstants[2] = 1.0f;
+	cb.blendConstants[3] = 1.0f;
+	cb.logicOpEnable = false;
+	cb.logicOp = VkLogicOp::VK_LOGIC_OP_AND;
+	cb.attachmentCount = blends.size();
+	cb.pAttachments = blends.data();
 
 	ds.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	ds.depthTestEnable = stateDesc.getDepthEnable();
@@ -303,6 +329,12 @@ VkPipelineLayout
 VulkanRenderPipeline::getPipelineLayout() const noexcept
 {
 	return _vkPipelineLayout;
+}
+
+VkPipelineBindPoint
+VulkanRenderPipeline::getPipelineBindPoint() const noexcept
+{
+	return VK_PIPELINE_BIND_POINT_GRAPHICS;
 }
 
 void

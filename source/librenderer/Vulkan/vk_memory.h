@@ -47,21 +47,18 @@ public:
 	VulkanMemory() noexcept;
 	virtual ~VulkanMemory() noexcept;
 
-	bool setup(const char* data, std::uint32_t datasize, std::uint32_t typeBits, std::uint32_t mask) noexcept;
+	bool setup(std::uint32_t datasize, std::uint32_t typeBits, std::uint32_t mask) noexcept;
 	void close() noexcept;
-
-	std::uint32_t size() const noexcept;
-
-	void* map(GraphicsAccessFlags flags) noexcept;
-	void* map(std::uint32_t offset, std::uint32_t cnt, GraphicsAccessFlags flags) noexcept;
-
-	void unmap() noexcept;
-
-	VkDeviceMemory getDeviceMemory() const noexcept;
 
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
 
+	bool map(std::ptrdiff_t offset, std::ptrdiff_t cnt, GraphicsAccessFlags flags, void** data) noexcept;
+	void unmap() noexcept;
+
+	VkDeviceMemory getDeviceMemory() const noexcept;
+
+private:
 	bool memory_type_from_properties(VkMemoryType memoryTypes[], uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
 
 private:
@@ -69,12 +66,8 @@ private:
 	VulkanMemory& operator=(const VulkanMemory&) noexcept = delete;
 
 private:
-	bool _isMapping;
-	std::uint32_t _size;
-
 	VkDeviceMemory _vkMemory;
-
-	GraphicsDeviceWeakPtr _device;
+	VulkanDeviceWeakPtr _device;
 };
 
 _NAME_END

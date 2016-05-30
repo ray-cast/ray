@@ -72,20 +72,9 @@ MyGuiRenderer::open() except
 {
 	MYGUI_PLATFORM_ASSERT(!_isInitialise, getClassTypeName() << " initialised twice");
 	MYGUI_PLATFORM_LOG(Info, "* Initialise: " << getClassTypeName());
-
-	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml");
-	_materialTech = _material->getTech("ui");
-	_materialDecal = _material->getParameter("decal");
-	_materialScaleY = _material->getParameter("scaleY");
-
-	if (RenderSystem::instance()->getRenderSetting().deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
-		_materialScaleY->uniform1i(-1);
-	else
-		_materialScaleY->uniform1i(1);
+	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
 
 	_isInitialise = true;
-
-	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
 }
 
 void
@@ -176,50 +165,48 @@ void
 MyGuiRenderer::destroyAllResources() noexcept
 {
 	_textures.clear();
-	_material.reset();
 }
 
 void
 MyGuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
-	_materialScaleY->uniform1i(-1);
 	doRender(_buffer, _texture, _count);
-	_materialScaleY->uniform1i(1);
 }
 
 void
 MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
-	MyGuiVertexBuffer* buffer = static_cast<MyGuiVertexBuffer*>(_buffer);
-	if (buffer)
-	{
-		MyGuiTexture* texture = static_cast<MyGuiTexture*>(_texture);
-
-		if (texture)
-			_materialDecal->uniformTexture(texture->getTexture());
-		else
-			_materialDecal->uniformTexture(nullptr);
-
-		auto renderBuffer = buffer->getBuffer();
-		if (renderBuffer)
-		{
-			GraphicsIndirect renderable;
-			renderable.numVertices = _count;
-
-			RenderSystem::instance()->setVertexBuffer(renderBuffer);
-
-			RenderSystem::instance()->setMaterialPass(_materialTech->getPass(0));
-			RenderSystem::instance()->drawMesh(renderable);
-		}
-		else
-		{
-			MYGUI_PLATFORM_ASSERT(renderBuffer, "render buffer is not created");
-		}
-	}
-	else
+	MyGuiVertexBuffer* buffer = dynamic_cast<MyGuiVertexBuffer*>(_buffer);
+	if (!buffer)
 	{
 		MYGUI_PLATFORM_ASSERT(buffer, "buffer is not valid");
+		return;
 	}
+
+	MyGuiTexture* texture = dynamic_cast<MyGuiTexture*>(_texture);
+	if (!texture)
+	{
+		MYGUI_PLATFORM_ASSERT(buffer, "texture is not valid");
+		return;
+	}
+
+	auto renderBuffer = buffer->getBuffer();
+	if (!renderBuffer)
+	{
+		MYGUI_PLATFORM_ASSERT(renderBuffer, "render buffer is not created");
+		return;
+	}
+
+	auto materialPass = texture->getMaterialPass();
+	if (!materialPass)
+	{
+		MYGUI_PLATFORM_ASSERT(materialPass, "material is not created");
+		return;
+	}
+
+	RenderSystem::instance()->setMaterialPass(materialPass);
+	RenderSystem::instance()->setVertexBuffer(renderBuffer);
+	RenderSystem::instance()->drawArray(_count, 1, 0, 0);
 }
 
 void

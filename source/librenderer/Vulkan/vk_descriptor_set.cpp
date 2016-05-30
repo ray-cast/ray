@@ -39,6 +39,7 @@
 #include "vk_descriptor_pool.h"
 #include "vk_device.h"
 #include "vk_shader.h"
+#include "vk_texture.h"
 #include "vk_graphics_data.h"
 #include "vk_system.h"
 
@@ -736,7 +737,7 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 	info.pSetLayouts = &layoutHandle;
 	info.descriptorPool = poolHandle;
 
-	if (vkAllocateDescriptorSets(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, &_vkDescriptorSet) != VK_SUCCESS)
+	if (vkAllocateDescriptorSets(_device.lock()->getDevice(), &info, &_vkDescriptorSet) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkAllocateDescriptorSets() fail.");
 		return false;
@@ -746,34 +747,35 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 	auto& params = descriptorSetLayoutDesc.getUniformComponents();
 	for (auto& param : params)
 	{
-		if (param->getType() != GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
-			continue;
-
-		auto uniformBlock = param->downcast<VulkanGraphicsUniformBlock>();
-		auto& name = uniformBlock->getName();
-		if (name == "Globals")
+		if (param->getType() == GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
 		{
-			GraphicsDataDesc uniformBufferDesc;
-			uniformBufferDesc.setType(GraphicsDataType::GraphicsDataTypeUniformBuffer);
-			uniformBufferDesc.setStreamSize(uniformBlock->getBlockSize());
-			uniformBufferDesc.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit | GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
-			auto ubo = this->getDevice()->createGraphicsData(uniformBufferDesc);
-			if (!ubo)
+			auto uniformBlock = param->downcast<VulkanGraphicsUniformBlock>();
+			auto& name = uniformBlock->getName();
+			if (name == "Globals")
 			{
-				VK_PLATFORM_LOG("Can't create uniform buffer for %s", name);
-				return false;
-			}
+				GraphicsDataDesc uniformBufferDesc;
+				uniformBufferDesc.setType(GraphicsDataType::GraphicsDataTypeUniformBuffer);
+				uniformBufferDesc.setStreamSize(uniformBlock->getBlockSize());
+				uniformBufferDesc.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit | GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
+				auto ubo = this->getDevice()->createGraphicsData(uniformBufferDesc);
+				if (!ubo)
+				{
+					VK_PLATFORM_LOG("Can't create uniform buffer for %s", name);
+					return false;
+				}
 
-			auto& uniforms = uniformBlock->getGraphicsUniforms();
-			for (auto& uniform : uniforms)
-			{
-				auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
-				uniformSet->setGraphicsParam(uniform);
-				_activeUniformSets.push_back(uniformSet);
-			}
+				auto& uniforms = uniformBlock->getGraphicsUniforms();
+				for (auto& uniform : uniforms)
+				{
+					auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
+					uniformSet->setGraphicsParam(uniform);
+					_activeUniformSets.push_back(uniformSet);
+					_activeGlobalUniformSets.push_back(uniformSet);
+				}
 
-			_globalUniformBlock = uniformBlock->downcast_pointer<VulkanGraphicsUniformBlock>();
-			_globalData = ubo->downcast_pointer<VulkanGraphicsData>();
+				_globalUniformBlock = uniformBlock->downcast_pointer<VulkanGraphicsUniformBlock>();
+				_globalData = ubo->downcast_pointer<VulkanGraphicsData>();
+			}
 		}
 		else
 		{
@@ -782,6 +784,8 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 			_activeUniformSets.push_back(uniformSet);
 		}
 	}
+
+	std::vector<VkWriteDescriptorSet> descriptorWrites;
 
 	if (_globalUniformBlock)
 	{
@@ -805,7 +809,12 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 		write.pImageInfo = nullptr;
 		write.pTexelBufferView = nullptr;
 
-		vkUpdateDescriptorSets(this->getDevice()->downcast<VulkanDevice>()->getDevice(), 1, &write, 0, nullptr);
+		descriptorWrites.push_back(write);
+	}
+
+	if (!descriptorWrites.empty())
+	{
+		vkUpdateDescriptorSets(_device.lock()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 	}
 
 	_descriptorSetDesc = descriptorSetDesc;
@@ -817,12 +826,7 @@ VulkanDescriptorSet::close() noexcept
 {
 	if (_vkDescriptorSet != VK_NULL_HANDLE)
 	{
-		vkFreeDescriptorSets(
-			this->getDevice()->downcast<VulkanDevice>()->getDevice(),
-			_descriptorSetDesc.getGraphicsDescriptorPool()->downcast<VulkanDescriptorPool>()->getDescriptorPool(),
-			1,
-			&_vkDescriptorSet);
-
+		vkFreeDescriptorSets(_device.lock()->getDevice(), _descriptorSetDesc.getGraphicsDescriptorPool()->downcast<VulkanDescriptorPool>()->getDescriptorPool(), 1, &_vkDescriptorSet);
 		_vkDescriptorSet = VK_NULL_HANDLE;
 	}
 }
@@ -830,132 +834,194 @@ VulkanDescriptorSet::close() noexcept
 void
 VulkanDescriptorSet::update() noexcept
 {
-	if (_globalUniformBlock)
+	std::uint32_t descriptorWriteCount = 0;
+	VkWriteDescriptorSet descriptorWrites[10];
+
+	for (auto& it : _activeUniformSets)
 	{
-		void* buffer = nullptr;
+		auto param = it->getGraphicsParam();
+		auto type = it->getGraphicsParam()->getType();
+		auto bindingPoint = it->getGraphicsParam()->getBindingPoint();
 
-		std::size_t uniformCount = _activeUniformSets.size();
-		for (std::size_t i = 0; i < uniformCount; i++)
+		switch (type)
 		{
-			auto uniformSet = _activeUniformSets[i]->downcast<VulkanGraphicsUniformSet>();
-			if (!uniformSet->needUpdate())
-				continue;
-
-			if (!buffer)
+		case ray::GraphicsUniformTypeSampler:
+			break;
+		case ray::GraphicsUniformTypeSamplerImage:
+			break;
+		case ray::GraphicsUniformTypeCombinedImageSampler:
+			break;
+		case ray::GraphicsUniformTypeStorageImage:
+		{
+			auto texture = it->getTexture();
+			if (texture)
 			{
-				vkMapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _globalData->getDeviceMemory(), 0, _globalData->getGraphicsDataDesc().getStreamSize(), 0, &buffer);
-				if (!buffer)
-					break;
-			}
+				auto vkTexture = texture->downcast<VulkanTexture>();
 
-			auto uniform = _globalUniformBlock->getGraphicsUniforms().at(i);
-			auto uniformType = uniform->getType();
-			switch (uniformType)
-			{
-			case ray::GraphicsUniformTypeBool:
-				(*(int*)((char*)buffer + uniform->getOffset())) = uniformSet->getBool();
-				break;
-			case ray::GraphicsUniformTypeInt:
-				(*(int1*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt();
-				break;
-			case ray::GraphicsUniformTypeInt2:
-				(*(int2*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt2();
-				break;
-			case ray::GraphicsUniformTypeInt3:
-				(*(int3*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt3();
-				break;
-			case ray::GraphicsUniformTypeInt4:
-				(*(int4*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt4();
-				break;
-			case ray::GraphicsUniformTypeUInt:
-				(*(uint1*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt();
-				break;
-			case ray::GraphicsUniformTypeUInt2:
-				(*(uint2*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt2();
-				break;
-			case ray::GraphicsUniformTypeUInt3:
-				(*(uint3*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt3();
-				break;
-			case ray::GraphicsUniformTypeUInt4:
-				(*(uint4*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt4();
-				break;
-			case ray::GraphicsUniformTypeFloat:
-				(*(float1*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat();
-				break;
-			case ray::GraphicsUniformTypeFloat2:
-				(*(float2*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat2();
-				break;
-			case ray::GraphicsUniformTypeFloat3:
-				(*(float3*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat3();
-				break;
-			case ray::GraphicsUniformTypeFloat4:
-				(*(float4*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat4();
-				break;
-			case ray::GraphicsUniformTypeFloat2x2:
-				(*(float2x2*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat2x2();
-				break;
-			case ray::GraphicsUniformTypeFloat3x3:
-				(*(float3x3*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat3x3();
-				break;
-			case ray::GraphicsUniformTypeFloat4x4:
-				(*(float4x4*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat4x4();
-				break;
-			case ray::GraphicsUniformTypeIntArray:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getIntArray().data(), uniformSet->getIntArray().size()* sizeof(int1));
-				break;
-			case ray::GraphicsUniformTypeInt2Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt2Array().data(), uniformSet->getInt2Array().size() * sizeof(int2));
-				break;
-			case ray::GraphicsUniformTypeInt3Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt3Array().data(), uniformSet->getInt3Array().size() * sizeof(int3));
-				break;
-			case ray::GraphicsUniformTypeInt4Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt4Array().data(), uniformSet->getInt4Array().size() * sizeof(int4));
-				break;
-			case ray::GraphicsUniformTypeUIntArray:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUIntArray().data(), uniformSet->getUIntArray().size()* sizeof(uint1));
-				break;
-			case ray::GraphicsUniformTypeUInt2Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt2Array().data(), uniformSet->getUInt2Array().size() * sizeof(uint2));
-				break;
-			case ray::GraphicsUniformTypeUInt3Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt3Array().data(), uniformSet->getUInt3Array().size() * sizeof(uint3));
-				break;
-			case ray::GraphicsUniformTypeUInt4Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt4Array().data(), uniformSet->getUInt4Array().size() * sizeof(uint4));
-				break;
-			case ray::GraphicsUniformTypeFloatArray:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloatArray().data(), uniformSet->getFloatArray().size() * sizeof(float1));
-				break;
-			case ray::GraphicsUniformTypeFloat2Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat2Array().data(), uniformSet->getFloat2Array().size() * sizeof(float2));
-				break;
-			case ray::GraphicsUniformTypeFloat3Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat3Array().data(), uniformSet->getFloat3Array().size() * sizeof(float3));
-				break;
-			case ray::GraphicsUniformTypeFloat4Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float4));
-				break;
-			case ray::GraphicsUniformTypeFloat2x2Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float2x2));
-				break;
-			case ray::GraphicsUniformTypeFloat3x3Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float3x3));
-				break;
-			case ray::GraphicsUniformTypeFloat4x4Array:
-				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float4x4));
-				break;
-			default:
-				break;
-			}
+				VkDescriptorImageInfo info;
+				info.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
+				info.imageView = vkTexture->getImageView();
+				info.sampler = nullptr;
 
-			uniformSet->needUpdate(false);
+				auto& write = descriptorWrites[descriptorWriteCount++];
+				write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				write.pNext = nullptr;
+				write.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+				write.descriptorCount = 1;
+				write.dstSet = _vkDescriptorSet;
+				write.dstArrayElement = 0;
+				write.dstBinding = bindingPoint;
+				write.pBufferInfo = nullptr;
+				write.pImageInfo = &info;
+				write.pTexelBufferView = nullptr;
+			}
+		}
+		break;
+		case ray::GraphicsUniformTypeStorageTexelBuffer:
+			break;
+		case ray::GraphicsUniformTypeStorageBuffer:
+			break;
+		case ray::GraphicsUniformTypeStorageBufferDynamic:
+			break;
+		case ray::GraphicsUniformTypeUniformTexelBuffer:
+			break;
+		case ray::GraphicsUniformTypeUniformBuffer:
+			break;
+		case ray::GraphicsUniformTypeUniformBufferDynamic:
+			break;
+		case ray::GraphicsUniformTypeInputAttachment:
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (descriptorWriteCount > 0)
+	{
+		vkUpdateDescriptorSets(_device.lock()->getDevice(), descriptorWriteCount, descriptorWrites, 0, nullptr);
+	}
+
+	void* buffer = nullptr;
+
+	for (auto& activeUniformSet : _activeGlobalUniformSets)
+	{
+		auto uniformSet = activeUniformSet->downcast<VulkanGraphicsUniformSet>();
+		if (!uniformSet->needUpdate())
+			continue;
+
+		if (!buffer)
+		{
+			if (!_globalData->map(0, _globalData->getGraphicsDataDesc().getStreamSize(), &buffer))
+				break;
+		}			
+
+		auto uniform = uniformSet->getGraphicsParam()->downcast<VulkanGraphicsUniform>();
+		auto uniformType = uniform->getType();
+		switch (uniformType)
+		{
+		case ray::GraphicsUniformTypeBool:
+			(*(int*)((char*)buffer + uniform->getOffset())) = uniformSet->getBool();
+			break;
+		case ray::GraphicsUniformTypeInt:
+			(*(int1*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt();
+			break;
+		case ray::GraphicsUniformTypeInt2:
+			(*(int2*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt2();
+			break;
+		case ray::GraphicsUniformTypeInt3:
+			(*(int3*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt3();
+			break;
+		case ray::GraphicsUniformTypeInt4:
+			(*(int4*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt4();
+			break;
+		case ray::GraphicsUniformTypeUInt:
+			(*(uint1*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt();
+			break;
+		case ray::GraphicsUniformTypeUInt2:
+			(*(uint2*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt2();
+			break;
+		case ray::GraphicsUniformTypeUInt3:
+			(*(uint3*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt3();
+			break;
+		case ray::GraphicsUniformTypeUInt4:
+			(*(uint4*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt4();
+			break;
+		case ray::GraphicsUniformTypeFloat:
+			(*(float1*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat();
+			break;
+		case ray::GraphicsUniformTypeFloat2:
+			(*(float2*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat2();
+			break;
+		case ray::GraphicsUniformTypeFloat3:
+			(*(float3*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat3();
+			break;
+		case ray::GraphicsUniformTypeFloat4:
+			(*(float4*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat4();
+			break;
+		case ray::GraphicsUniformTypeFloat2x2:
+			(*(float2x2*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat2x2();
+			break;
+		case ray::GraphicsUniformTypeFloat3x3:
+			(*(float3x3*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat3x3();
+			break;
+		case ray::GraphicsUniformTypeFloat4x4:
+			(*(float4x4*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat4x4();
+			break;
+		case ray::GraphicsUniformTypeIntArray:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getIntArray().data(), uniformSet->getIntArray().size()* sizeof(int1));
+			break;
+		case ray::GraphicsUniformTypeInt2Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt2Array().data(), uniformSet->getInt2Array().size() * sizeof(int2));
+			break;
+		case ray::GraphicsUniformTypeInt3Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt3Array().data(), uniformSet->getInt3Array().size() * sizeof(int3));
+			break;
+		case ray::GraphicsUniformTypeInt4Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt4Array().data(), uniformSet->getInt4Array().size() * sizeof(int4));
+			break;
+		case ray::GraphicsUniformTypeUIntArray:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUIntArray().data(), uniformSet->getUIntArray().size()* sizeof(uint1));
+			break;
+		case ray::GraphicsUniformTypeUInt2Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt2Array().data(), uniformSet->getUInt2Array().size() * sizeof(uint2));
+			break;
+		case ray::GraphicsUniformTypeUInt3Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt3Array().data(), uniformSet->getUInt3Array().size() * sizeof(uint3));
+			break;
+		case ray::GraphicsUniformTypeUInt4Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt4Array().data(), uniformSet->getUInt4Array().size() * sizeof(uint4));
+			break;
+		case ray::GraphicsUniformTypeFloatArray:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloatArray().data(), uniformSet->getFloatArray().size() * sizeof(float1));
+			break;
+		case ray::GraphicsUniformTypeFloat2Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat2Array().data(), uniformSet->getFloat2Array().size() * sizeof(float2));
+			break;
+		case ray::GraphicsUniformTypeFloat3Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat3Array().data(), uniformSet->getFloat3Array().size() * sizeof(float3));
+			break;
+		case ray::GraphicsUniformTypeFloat4Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float4));
+			break;
+		case ray::GraphicsUniformTypeFloat2x2Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float2x2));
+			break;
+		case ray::GraphicsUniformTypeFloat3x3Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float3x3));
+			break;
+		case ray::GraphicsUniformTypeFloat4x4Array:
+			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float4x4));
+			break;
+		default:
+			break;
 		}
 
-		if (buffer)
-		{
-			vkUnmapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _globalData->getDeviceMemory());
-		}
+		uniformSet->needUpdate(false);
+	}
+
+	if (buffer)
+	{
+		_globalData->unmap();
 	}
 }
 
@@ -980,7 +1046,7 @@ VulkanDescriptorSet::getGraphicsDescriptorSetDesc() const noexcept
 void
 VulkanDescriptorSet::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
+	_device = device->downcast_pointer<VulkanDevice>();
 }
 
 GraphicsDevicePtr

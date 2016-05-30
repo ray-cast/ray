@@ -63,14 +63,30 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 	VkFormat format = VulkanTypes::asGraphicsFormat(textureDesc.getTexFormat());
 	if (format == VK_FORMAT_UNDEFINED || format == VK_FORMAT_MAX_ENUM)
+	{
+		VK_PLATFORM_LOG("Invlid texture format");
 		return false;
+	}
 
+	VkImageType type = VulkanTypes::asImageType(textureDesc.getTexDim());
+	if (type == VK_IMAGE_TYPE_MAX_ENUM)
+	{
+		VK_PLATFORM_LOG("Invlid texture dimension");
+		return false;
+	}
+
+	VkImageViewType viewType = VulkanTypes::asImageViewType(textureDesc.getTexDim());
+	if (viewType == VK_IMAGE_TYPE_MAX_ENUM)
+	{
+		VK_PLATFORM_LOG("Invlid texture dimension");
+		return false;
+	}
+
+	VkFormatProperties props;
+	vkGetPhysicalDeviceFormatProperties(device->getPhysicsDevice(), format, &props);
+	
 	if (!_swapchainImage)
 	{
-		VkImageType type = VulkanTypes::asImageType(textureDesc.getTexDim());
-		if (type == VK_IMAGE_TYPE_MAX_ENUM)
-			return false;
-
 		VkImageCreateInfo image;
 		image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		image.pNext = nullptr;
@@ -82,7 +98,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.mipLevels = textureDesc.getMipLevel();
 		image.arrayLayers = textureDesc.getLayerNums();
 		image.samples = VulkanTypes::asTextureSample(textureDesc.getSamplerAnis());
-		image.tiling = VK_IMAGE_TILING_OPTIMAL;
+		image.tiling = VulkanTypes::asTextureTiling(textureDesc.getTexTiling());
 		image.usage = VulkanTypes::asTextureUsage(textureDesc.getTexUsage());
 		image.flags = 0;
 		image.pQueueFamilyIndices = 0;
@@ -90,7 +106,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		image.queueFamilyIndexCount = 0;
 
-		if (vkCreateImage(device->getDevice(), &image, nullptr, &_vkImage) > 0)
+		if (vkCreateImage(device->getDevice(), &image, nullptr, &_vkImage) != VK_SUCCESS)
 		{
 			VK_PLATFORM_LOG("vkCreateImage() fail");
 			return false;
@@ -98,65 +114,69 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 		if (_vkImage == VK_NULL_HANDLE)
 		{
-			VK_PLATFORM_LOG("vkCreateImage() fail");
+			VK_PLATFORM_LOG("vkCreateImage() fail.");
 			return false;
 		}
 
 		VkMemoryRequirements memReqs;
 		vkGetImageMemoryRequirements(device->getDevice(), _vkImage, &memReqs);
 
-		if (!_vkMemory.setup(nullptr, memReqs.size, memReqs.memoryTypeBits, 0))
+		std::uint32_t mask = textureDesc.getStream() ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT : 0;
+		if (!_vkMemory.setup(memReqs.size, memReqs.memoryTypeBits, mask))
 			return false;
 
-		auto stream = textureDesc.getStream();
-		auto streamSize = textureDesc.getStreamSize();
-		if (stream != nullptr && streamSize > 0)
+		if (vkBindImageMemory(device->getDevice(), _vkImage, _vkMemory.getDeviceMemory(), 0) != VK_SUCCESS)
 		{
-			void* data = _vkMemory.map(GraphicsAccessFlagBits::GraphicsAccessFlagMapReadBit);
-			if (data)
+			VK_PLATFORM_LOG("vkBindImageMemory() fail.");
+			return false;
+		}
+
+		char* stream = (char*)textureDesc.getStream();
+		if (stream)
+		{
+			VkImageSubresource subres;
+			subres.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subres.mipLevel = 0;
+			subres.arrayLayer = 0;
+
+			VkSubresourceLayout layout;
+			vkGetImageSubresourceLayout(device->getDevice(), _vkImage, &subres, &layout);
+
+			void* data = nullptr;
+			if (_vkMemory.map(0, memReqs.size, GraphicsAccessFlagBits::GraphicsAccessFlagMapWriteBit, &data))
 			{
-				std::memcpy(data, stream, streamSize);
+				memcpy(data, stream, memReqs.size);
 				_vkMemory.unmap();
 			}
 		}
-
-		if (vkBindImageMemory(device->getDevice(), _vkImage, _vkMemory.getDeviceMemory(), 0) > 0)
-		{
-			VK_PLATFORM_LOG("vkBindImageMemory() fail");
-			return false;
-		}
 	}
 
-	VkImageViewType viewType = VulkanTypes::asImageViewType(textureDesc.getTexDim());
-	if (viewType == VK_IMAGE_TYPE_MAX_ENUM)
-		return false;
-
-	VkImageAspectFlags flags = VK_IMAGE_ASPECT_COLOR_BIT;
+	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	if (VulkanTypes::isStencilFormat(textureDesc.getTexFormat()))
-		flags = VK_IMAGE_ASPECT_STENCIL_BIT;
+		aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
 	else if (VulkanTypes::isDepthFormat(textureDesc.getTexFormat()))
-		flags = VK_IMAGE_ASPECT_DEPTH_BIT;
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 	else if (VulkanTypes::isDepthStencilFormat(textureDesc.getTexFormat()))
-		flags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 
 	VkImageViewCreateInfo view;
 	view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	view.pNext = nullptr;
+	view.flags = 0;
 	view.image = _vkImage;
 	view.format = format;
-	view.components.r = flags == VK_IMAGE_ASPECT_COLOR_BIT ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_IDENTITY;
-	view.components.g = flags == VK_IMAGE_ASPECT_COLOR_BIT ? VK_COMPONENT_SWIZZLE_G : VK_COMPONENT_SWIZZLE_IDENTITY;
-	view.components.b = flags == VK_IMAGE_ASPECT_COLOR_BIT ? VK_COMPONENT_SWIZZLE_B : VK_COMPONENT_SWIZZLE_IDENTITY;
-	view.components.a = flags == VK_IMAGE_ASPECT_COLOR_BIT ? VK_COMPONENT_SWIZZLE_A : VK_COMPONENT_SWIZZLE_IDENTITY;
-	view.subresourceRange.aspectMask = flags;
+	view.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	view.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	view.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	view.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	view.subresourceRange.aspectMask = aspectMask;
 	view.subresourceRange.baseMipLevel = textureDesc.getMipBase();
-	view.subresourceRange.levelCount = std::max(textureDesc.getMipLevel(), std::uint32_t(1));
+	view.subresourceRange.levelCount = textureDesc.getMipLevel();
 	view.subresourceRange.baseArrayLayer = textureDesc.getLayerBase();
 	view.subresourceRange.layerCount = textureDesc.getLayerNums();
-	view.flags = 0;
 	view.viewType = viewType;
 
-	if (vkCreateImageView(device->getDevice(), &view, nullptr, &_vkImageView) > 0)
+	if (vkCreateImageView(device->getDevice(), &view, nullptr, &_vkImageView) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateImageView() fail");
 		return false;
@@ -232,14 +252,13 @@ VulkanTexture::getGraphicsTextureDesc() const noexcept
 void
 VulkanTexture::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
 	_vkMemory.setDevice(device);
 }
 
 GraphicsDevicePtr
 VulkanTexture::getDevice() noexcept
 {
-	return _device.lock();
+	return _vkMemory.getDevice();
 }
 
 _NAME_END

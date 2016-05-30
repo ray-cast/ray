@@ -180,38 +180,39 @@ OGLCoreDeviceContext::getScissor() const noexcept
 }
 
 void
-OGLCoreDeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept
+OGLCoreDeviceContext::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
 {
 	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
 	{
-		if (_stateCaptured.getStencilFrontFunc() != func)
+		if (_stateCaptured.getStencilFrontReadMask() != mask)
 		{
-			GLenum frontfunc = OGLTypes::asCompareFunction(func);
-			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), _stateCaptured.getStencilFrontReadMask());
-			_stateCaptured.setStencilFrontFunc(func);
+			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
+			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask);
+			_stateCaptured.setStencilFrontReadMask(mask);
 			_needUpdateState = true;
 		}
 	}
 	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
 	{
-		if (_stateCaptured.getStencilBackFunc() != func)
+		if (_stateCaptured.getStencilBackReadMask() != mask)
 		{
-			GLenum backfunc = OGLTypes::asCompareFunction(func);
-			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilFrontRef(), _stateCaptured.getStencilFrontReadMask());
-			_stateCaptured.setStencilBackFunc(func);
+			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
+			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilFrontRef(), mask);
+			_stateCaptured.setStencilBackReadMask(mask);
 			_needUpdateState = true;
 		}
 	}
+	
 }
 
-GraphicsCompareFunc
-OGLCoreDeviceContext::getStencilCompare(GraphicsStencilFace face) noexcept
+std::uint32_t
+OGLCoreDeviceContext::getStencilCompareMask(GraphicsStencilFace face) noexcept
 {
 	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
-		return _stateCaptured.getStencilFrontFunc();
+		return _stateCaptured.getStencilFrontReadMask();
 	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
-		return _stateCaptured.getStencilBackFunc();
-	return GraphicsCompareFunc::GraphicsCompareFuncNone;
+		return _stateCaptured.getStencilBackReadMask();
+	return 0;
 }
 
 void
@@ -246,7 +247,7 @@ OGLCoreDeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
 		return _stateCaptured.getStencilFrontRef();
 	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
 		return _stateCaptured.getStencilBackRef();
-	return std::uint32_t(0);
+	return 0;
 }
 
 void
@@ -256,8 +257,7 @@ OGLCoreDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::ui
 	{
 		if (_stateCaptured.getStencilFrontWriteMask() != mask)
 		{
-			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
-			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask);
+			glStencilMaskSeparate(GL_FRONT, mask);
 			_stateCaptured.setStencilFrontWriteMask(mask);
 			_needUpdateState = true;
 		}
@@ -266,8 +266,7 @@ OGLCoreDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::ui
 	{
 		if (_stateCaptured.getStencilBackWriteMask() != mask)
 		{
-			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
-			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask);
+			glStencilMaskSeparate(GL_BACK, mask);
 			_stateCaptured.setStencilBackWriteMask(mask);
 			_needUpdateState = true;
 		}
@@ -281,7 +280,7 @@ OGLCoreDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcep
 		return _stateCaptured.getStencilFrontWriteMask();
 	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
 		return _stateCaptured.getStencilBackWriteMask();
-	return std::uint32_t(0);
+	return 0;
 }
 
 void
@@ -445,15 +444,13 @@ OGLCoreDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcep
 	{
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
 		GLenum indexType = OGLTypes::asIndexType(renderable.indexType);
-		GLsizei numInstance = std::max(1, renderable.numInstances);
 		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
-		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, numInstance, renderable.startVertice, renderable.startInstances);
+		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
 	}
 	else
 	{
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		GLsizei numInstance = std::max(1, renderable.numInstances);
-		glDrawArraysInstancedBaseInstance(drawType, renderable.startVertice, renderable.numVertices, numInstance, renderable.startInstances);
+		glDrawArraysInstancedBaseInstance(drawType, renderable.startVertice, renderable.numVertices, renderable.numInstances, renderable.startInstances);
 	}
 }
 

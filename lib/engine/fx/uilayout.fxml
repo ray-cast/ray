@@ -2,7 +2,7 @@
 <effect language="hlsl">
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <parameter name="scaleY" type="int" />
+    <parameter name="scaleY" type="float" />
     <parameter name="decal" type="texture2D"/>
     <shader>
         <![CDATA[
@@ -11,21 +11,21 @@
             in float4 Diffuse  : COLOR0,
             in float4 Texcoord : TEXCOORD0,
 
-            out float4 oDiffuse : TEXCOORD0,
-            out float2 oCoord   : TEXCOORD1,
+            out float4 oDiffuse  : TEXCOORD0,
+            out float4 oTexcoord : TEXCOORD1,
             out float4 oPosition : SV_Position)
         {
+            oDiffuse = Diffuse;
+            oTexcoord = Texcoord;
             oPosition = Position;
             oPosition.y *= scaleY;
-            oDiffuse = Diffuse;
-            oCoord = float2(Texcoord.x, Texcoord.y);
         }
 
         float4 UILayoutPS(
-            in float4 Diffuse : TEXCOORD0,
-            in float2 Coord   : TEXCOORD1) : SV_Target
+            in float4 diffuse : TEXCOORD0,
+            in float4 texcoord   : TEXCOORD1) : SV_Target
         {
-            return decal.Sample(LinearClamp, Coord) * Diffuse;
+            return decal.Sample(LinearClamp, texcoord.xy) * diffuse;
         }
         ]]>
     </shader>

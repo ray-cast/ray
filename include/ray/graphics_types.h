@@ -770,6 +770,17 @@ enum GraphicsImageLayout
 	GraphicsImageLayoutMaxEnum = 0x7FFFFFFF
 };
 
+enum GraphicsImageTiling
+{
+	GraphicsImageTilingUndefined = 0,
+	GraphicsImageTilingOptimal = 1,
+	GraphicsImageTilingLinear = 2,
+	GraphicsImageTilingBeginRange = GraphicsImageTilingUndefined,
+	GraphicsImageTilingEndRange = GraphicsImageTilingLinear,
+	GraphicsImageTilingRangeSize = (GraphicsImageTilingEndRange - GraphicsImageTilingBeginRange + 1),
+	GraphicsImageTilingMaxEnum = 0x7FFFFFFF
+};
+
 enum GraphicsAttachmentType
 {
 	GraphicsAttachmentTypeColor0,

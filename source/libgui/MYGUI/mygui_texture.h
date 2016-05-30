@@ -74,6 +74,8 @@ public:
 	virtual MyGUI::IRenderTarget* getRenderTarget();
 
 	GraphicsTexturePtr getTexture() const noexcept;
+	MaterialPassPtr getMaterialPass() const noexcept;
+
 	void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format, void* stream) except;
 
 private:
@@ -90,11 +92,16 @@ private:
 	MyGUI::PixelFormat _originalFormat;
 	MyGUI::TextureUsage _originalUsage;
 
+	MaterialPtr _material;
+	MaterialTechPtr _materialTech;
+	MaterialParamPtr _materialScaleY;
+	MaterialParamPtr _materialDecal;
+
 	MemoryStream _stream;
 
 	GraphicsTexturePtr _texture;
-
 	GuiImageLoaderPtr _imageLoader;
+
 	MyGuiRenderTexture* _renderTarget;
 };
 

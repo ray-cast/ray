@@ -59,10 +59,10 @@ public:
 	const GraphicsDescriptorPoolDesc& getGraphicsDescriptorPoolDesc() const noexcept;
 
 private:
-	VkDescriptorPool _vkDescriptorPool;
+	VkDescriptorPool _descriptorPool;
+	VulkanDeviceWeakPtr _device;
 
 	GraphicsDescriptorPoolDesc _descriptorPoolDesc;
-	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

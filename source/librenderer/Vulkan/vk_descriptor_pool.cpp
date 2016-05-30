@@ -43,7 +43,7 @@ _NAME_BEGIN
 __ImplementSubClass(VulkanDescriptorPool, GraphicsDescriptorPool, "VulkanDescriptorPool")
 
 VulkanDescriptorPool::VulkanDescriptorPool() noexcept
-	: _vkDescriptorPool(VK_NULL_HANDLE)
+	: _descriptorPool(VK_NULL_HANDLE)
 {
 }
 
@@ -73,7 +73,7 @@ VulkanDescriptorPool::setup(const GraphicsDescriptorPoolDesc& descriptorPoolDesc
 	info.poolSizeCount = pool.size();
 	info.pPoolSizes = pool.data();
 
-	if (vkCreateDescriptorPool(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkDescriptorPool) != VK_SUCCESS)
+	if (vkCreateDescriptorPool(_device.lock()->getDevice(), &info, nullptr, &_descriptorPool) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateDescriptorPool() fail.");
 		return false;
@@ -86,23 +86,23 @@ VulkanDescriptorPool::setup(const GraphicsDescriptorPoolDesc& descriptorPoolDesc
 void
 VulkanDescriptorPool::close() noexcept
 {
-	if (_vkDescriptorPool != VK_NULL_HANDLE)
+	if (_descriptorPool != VK_NULL_HANDLE)
 	{
-		vkDestroyDescriptorPool(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkDescriptorPool, nullptr);
-		_vkDescriptorPool = VK_NULL_HANDLE;
+		vkDestroyDescriptorPool(_device.lock()->getDevice(), _descriptorPool, nullptr);
+		_descriptorPool = VK_NULL_HANDLE;
 	}
 }
 
 VkDescriptorPool
 VulkanDescriptorPool::getDescriptorPool() const noexcept
 {
-	return _vkDescriptorPool;
+	return _descriptorPool;
 }
 
 void
 VulkanDescriptorPool::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
+	_device = device->downcast_pointer<VulkanDevice>();
 }
 
 GraphicsDevicePtr

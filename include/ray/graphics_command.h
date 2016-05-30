@@ -130,9 +130,9 @@ public:
 
 	virtual void wait() noexcept = 0;
 
-	virtual void executeCommandLists(GraphicsCommandListPtr commandLists[], std::uint32_t count) noexcept = 0;
+	virtual bool executeCommandLists(GraphicsCommandListPtr commandLists[], std::uint32_t count) noexcept = 0;
 
-	virtual void present(GraphicsSwapchainPtr canvas[], std::uint32_t count) noexcept = 0;
+	virtual bool present(GraphicsSwapchainPtr canvas[], std::uint32_t count) noexcept = 0;
 
 	virtual const GraphicsCommandQueueDesc& getGraphicsCommandQueueDesc() const noexcept = 0;
 
@@ -167,6 +167,15 @@ public:
 
 	virtual void setViewport(const Viewport viewport[], std::uint32_t first, std::uint32_t count) noexcept = 0;
 	virtual void setScissor(const Scissor Scissor[], std::uint32_t first, std::uint32_t count) noexcept = 0;
+
+	virtual void setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept = 0;
+	virtual std::uint32_t getStencilCompareMask(GraphicsStencilFace face) noexcept = 0;
+
+	virtual void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept = 0;
+	virtual std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept = 0;
+
+	virtual void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept = 0;
+	virtual std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept = 0;
 
 	virtual void clearTexture(GraphicsTexturePtr texture, const ClearValue& value) noexcept = 0;
 

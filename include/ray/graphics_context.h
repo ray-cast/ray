@@ -46,12 +46,12 @@ class EXPORT GraphicsIndirect final
 public:
 	GraphicsIndirect() noexcept;
 
-	std::int32_t startVertice;
-	std::int32_t startIndice;
-	std::int32_t startInstances;
-	std::int32_t numVertices;
-	std::int32_t numIndices;
-	std::int32_t numInstances;
+	std::uint32_t startVertice;
+	std::uint32_t startIndice;
+	std::uint32_t startInstances;
+	std::uint32_t numVertices;
+	std::uint32_t numIndices;
+	std::uint32_t numInstances;
 	GraphicsIndexType indexType;
 };
 
@@ -88,8 +88,8 @@ public:
 	virtual void setScissor(const Scissor& scissor) noexcept = 0;
 	virtual const Scissor& getScissor() const noexcept = 0;
 
-	virtual void setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept = 0;
-	virtual GraphicsCompareFunc getStencilCompare(GraphicsStencilFace face) noexcept = 0;
+	virtual void setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept = 0;
+	virtual std::uint32_t getStencilCompareMask(GraphicsStencilFace face) noexcept = 0;
 
 	virtual void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept = 0;
 	virtual std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept = 0;

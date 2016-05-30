@@ -51,18 +51,18 @@ public:
 	bool setup(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	VkDescriptorSetLayout getDescriptorSetLayout() const noexcept;
-
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
+
+	VkDescriptorSetLayout getDescriptorSetLayout() const noexcept;
 
 	const GraphicsDescriptorSetLayoutDesc& getGraphicsDescriptorSetLayoutDesc() const noexcept;
 
 private:
 	VkDescriptorSetLayout _vkDescriptorSetLayout;
+	VulkanDeviceWeakPtr _device;
 
 	GraphicsDescriptorSetLayoutDesc _descriptorSetLayoutDesc;
-	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

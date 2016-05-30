@@ -3,7 +3,7 @@
 
 #include "internal_includes/structs.h"
 
-void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration* psDecl);
+void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration* psDecl, uint32_t* textureUnit);
 
 const char* GetDeclaredInputName(const HLSLCrossCompilerContext* psContext, const SHADER_TYPE eShaderType, const Operand* psOperand);
 const char* GetDeclaredOutputName(const HLSLCrossCompilerContext* psContext, const SHADER_TYPE eShaderType, const Operand* psOperand, int* stream);

@@ -1151,16 +1151,12 @@ void AddUserOutput(HLSLCrossCompilerContext* psContext, const Declaration* psDec
 	}
 }
 
-void DeclareUBOConstants(HLSLCrossCompilerContext* psContext, const uint32_t ui32BindingPoint,
-							ConstantBuffer* psCBuf,
-							bstring glsl)
+void DeclareUBOConstants(HLSLCrossCompilerContext* psContext, const uint32_t ui32BindingPoint, ConstantBuffer* psCBuf, bstring glsl)
 {
     uint32_t i;
 	const char* Name = psCBuf->Name;
-	if(psCBuf->Name[0] == '$') //For $Globals
-	{
+	if (psCBuf->Name[0] == '$') //For $Globals
 		Name++;
-	}
 
 	for(i=0; i < psCBuf->ui32NumVars; ++i)
 	{
@@ -1177,9 +1173,7 @@ void DeclareUBOConstants(HLSLCrossCompilerContext* psContext, const uint32_t ui3
 
     for(i=0; i < psCBuf->ui32NumVars; ++i)
     {
-        DeclareConstBufferShaderVariable(glsl,
-			psCBuf->asVars[i].Name,
-            &psCBuf->asVars[i].sType, 0);
+        DeclareConstBufferShaderVariable(glsl, psCBuf->asVars[i].Name, &psCBuf->asVars[i].sType, 0);
     }
                 
     bcatcstr(glsl, "};\n");
@@ -1244,9 +1238,7 @@ void DeclareBufferVariable(HLSLCrossCompilerContext* psContext, const uint32_t u
 }
 
 
-void DeclareStructConstants(HLSLCrossCompilerContext* psContext, const uint32_t ui32BindingPoint,
-							ConstantBuffer* psCBuf, const Operand* psOperand,
-							bstring glsl)
+void DeclareStructConstants(HLSLCrossCompilerContext* psContext, const uint32_t ui32BindingPoint, ConstantBuffer* psCBuf, const Operand* psOperand, bstring glsl)
 {
     uint32_t i;
 	int useGlobalsStruct = 1;
@@ -1256,12 +1248,12 @@ void DeclareStructConstants(HLSLCrossCompilerContext* psContext, const uint32_t 
 
 	if(useGlobalsStruct)
 	{
-	for(i=0; i < psCBuf->ui32NumVars; ++i)
-	{
-        PreDeclareStructType(glsl,
-			psCBuf->asVars[i].Name,
-            &psCBuf->asVars[i].sType);
-	}
+		for(i=0; i < psCBuf->ui32NumVars; ++i)
+		{
+			PreDeclareStructType(glsl,
+				psCBuf->asVars[i].Name,
+				&psCBuf->asVars[i].sType);
+		}
 	}
 
     /* [layout (location = X)] uniform vec4 HLSLConstantBufferName[numConsts]; */
@@ -1298,9 +1290,7 @@ void DeclareStructConstants(HLSLCrossCompilerContext* psContext, const uint32_t 
 }
 }
 
-char* GetSamplerType(HLSLCrossCompilerContext* psContext,
-					 const RESOURCE_DIMENSION eDimension,
-					 const uint32_t ui32RegisterNumber)
+char* GetSamplerType(HLSLCrossCompilerContext* psContext, const RESOURCE_DIMENSION eDimension, const uint32_t ui32RegisterNumber)
 {
 	ResourceBinding* psBinding = 0;
 	RESOURCE_RETURN_TYPE eType = RETURN_TYPE_UNORM;
@@ -1456,7 +1446,7 @@ char* GetSamplerType(HLSLCrossCompilerContext* psContext,
 	return "sampler2D";
 }
 
-static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const Declaration* psDecl, uint32_t samplerCanDoShadowCmp)
+static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const Declaration* psDecl, uint32_t samplerCanDoShadowCmp, uint32_t* ui32BindingPoint)
 {
     bstring glsl = *psContext->currentGLSLString;
     Shader* psShader = psContext->psShader;
@@ -1472,6 +1462,12 @@ static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const 
         {
             for (i = 0; i < psDecl->ui32SamplerUsedCount; i++)
             {
+				if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
+				{
+					bformata(glsl, "layout(binding = %d) ", *ui32BindingPoint);
+					*ui32BindingPoint++;
+				}
+
                 bcatcstr(glsl, "uniform ");
                 bcatcstr(glsl, samplerTypeName);
                 bcatcstr(glsl, "Shadow ");
@@ -1479,15 +1475,53 @@ static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const 
                 bcatcstr(glsl, ";\n");
             }
         }
-        for (i = 0; i < psDecl->ui32SamplerUsedCount; i++)
-        {
-            bcatcstr(glsl, "uniform ");
-            bcatcstr(glsl, samplerTypeName);
-            bcatcstr(glsl, " ");
-            ConcatTextureSamplerName(glsl, &psShader->sInfo, psDecl->asOperands[0].ui32RegisterNumber, psDecl->ui32SamplerUsed[i], 0);
-            bcatcstr(glsl, ";\n");
-        }
+
+		if (psDecl->ui32SamplerUsedCount > 0)
+		{
+			for (i = 0; i < psDecl->ui32SamplerUsedCount; i++)
+			{
+				if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
+				{
+					bformata(glsl, "layout(binding = %d) ", *ui32BindingPoint + 1);
+					*ui32BindingPoint++;
+				}
+
+				bcatcstr(glsl, "uniform ");
+				bcatcstr(glsl, samplerTypeName);
+				bcatcstr(glsl, " ");
+				ConcatTextureSamplerName(glsl, &psShader->sInfo, psDecl->asOperands[0].ui32RegisterNumber, psDecl->ui32SamplerUsed[i], 0);
+				bcatcstr(glsl, ";\n");
+			}
+		}
+		else
+		{
+			if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
+			{
+				bformata(glsl, "layout(binding = %d) ", *ui32BindingPoint);
+				*ui32BindingPoint++;
+			}
+
+			bcatcstr(glsl, "uniform ");
+			bcatcstr(glsl, samplerTypeName);
+			bcatcstr(glsl, " ");
+			ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 0);
+			bcatcstr(glsl, ";\n");
+		}
     }
+	else
+	{
+		if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
+		{
+			bformata(glsl, "layout(binding = %d) ", *ui32BindingPoint);
+			*ui32BindingPoint++;
+		}
+
+		bcatcstr(glsl, "uniform ");
+		bcatcstr(glsl, samplerTypeName);
+		bcatcstr(glsl, " ");
+		ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 0);
+		bcatcstr(glsl, ";\n");
+	}
 
     if(samplerCanDoShadowCmp && psDecl->ui32IsShadowTex)
     {
@@ -1500,15 +1534,9 @@ static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const 
 		ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 1);
         bcatcstr(glsl, ";\n");
     }
-                        
-    bcatcstr(glsl, "uniform ");
-    bcatcstr(glsl, samplerTypeName);
-    bcatcstr(glsl, " ");
-	ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 0);
-    bcatcstr(glsl, ";\n");
 }
 
-void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration* psDecl)
+void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration* psDecl, uint32_t* textureUnit)
 {
     bstring glsl = *psContext->currentGLSLString;
     Shader* psShader = psContext->psShader;
@@ -2032,8 +2060,7 @@ Would generate a vec2 and a vec3. We discard the second one making .z invalid!
                 if((psContext->flags & HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS) != HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS)
 				{      
 					//Constant buffer locations start at 0. Resource locations start at ui32NumConstantBuffers.
-					bformata(glsl, "layout(location = %d) ", 
-						psContext->psShader->sInfo.ui32NumConstantBuffers + psDecl->asOperands[0].ui32RegisterNumber);
+					bformata(glsl, "layout(location = %d) ", psContext->psShader->sInfo.ui32NumConstantBuffers + psDecl->asOperands[0].ui32RegisterNumber);
 				}
             }
 
@@ -2050,47 +2077,47 @@ Would generate a vec2 and a vec3. We discard the second one making .z invalid!
                 }
                 case RESOURCE_DIMENSION_TEXTURE1D:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 1);
+                    TranslateResourceTexture(psContext, psDecl, 1, textureUnit);
                     break;
                 }
                 case RESOURCE_DIMENSION_TEXTURE2D:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 1);
+                    TranslateResourceTexture(psContext, psDecl, 1, textureUnit);
                     break;
                 }
                 case RESOURCE_DIMENSION_TEXTURE2DMS:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 0);
+                    TranslateResourceTexture(psContext, psDecl, 0, textureUnit);
                     break;
                 }
                 case RESOURCE_DIMENSION_TEXTURE3D:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 0);
+                    TranslateResourceTexture(psContext, psDecl, 0, textureUnit);
                     break;
                 }
                 case RESOURCE_DIMENSION_TEXTURECUBE:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 1);
+                    TranslateResourceTexture(psContext, psDecl, 1, textureUnit);
                     break;
                 }
                 case RESOURCE_DIMENSION_TEXTURE1DARRAY:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 1);
+                    TranslateResourceTexture(psContext, psDecl, 1, textureUnit);
                     break;
                 }
                 case RESOURCE_DIMENSION_TEXTURE2DARRAY:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 1);
+                    TranslateResourceTexture(psContext, psDecl, 1, textureUnit);
                     break;
                 }
                 case RESOURCE_DIMENSION_TEXTURE2DMSARRAY:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 0);
+                    TranslateResourceTexture(psContext, psDecl, 0, textureUnit);
                     break;
                 }
                 case RESOURCE_DIMENSION_TEXTURECUBEARRAY:
                 {
-                    TranslateResourceTexture(psContext, psDecl, 1);
+                    TranslateResourceTexture(psContext, psDecl, 1, textureUnit);
                     break;
                 }
             }

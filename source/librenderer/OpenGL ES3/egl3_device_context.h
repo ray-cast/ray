@@ -60,8 +60,8 @@ public:
 	void setScissor(const Scissor& scissor) noexcept;
 	const Scissor& getScissor() const noexcept;
 
-	void setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept;
-	GraphicsCompareFunc getStencilCompare(GraphicsStencilFace face) noexcept;
+	void setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
+	std::uint32_t getStencilCompareMask(GraphicsStencilFace face) noexcept;
 
 	void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept;
 	std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept;
@@ -142,7 +142,7 @@ private:
 
 	bool _needUpdateLayout;
 	bool _needUpdateState;
-	GLsizei _startVertices;
+	std::uint32_t _startVertices;
 
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;

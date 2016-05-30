@@ -83,6 +83,7 @@ public:
 	void drawSphere(const MaterialTech& tech) noexcept;
 	void drawScreenQuad(const MaterialTech& tech) noexcept;
 	void drawMesh(const GraphicsIndirect& renderable) noexcept;
+	void drawArray(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t firstVertex, std::uint32_t firstInstance) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;

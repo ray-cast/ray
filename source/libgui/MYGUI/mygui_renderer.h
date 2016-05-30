@@ -91,11 +91,6 @@ private:
 	MyGUI::VertexColourType _vertexFormat;
 	MyGUI::RenderTargetInfo _info;
 
-	MaterialPtr _material;
-	MaterialTechPtr _materialTech;
-	MaterialParamPtr _materialScaleY;
-	MaterialParamPtr _materialDecal;
-
 	MapTexture _textures;
 	GuiImageLoaderPtr _imageLoader;
 };

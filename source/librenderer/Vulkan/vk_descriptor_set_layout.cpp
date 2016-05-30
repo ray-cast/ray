@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include "vk_descriptor_set_layout.h"
 #include "vk_device.h"
-#include "vk_shader.h"
 #include "vk_system.h"
 
 _NAME_BEGIN
@@ -86,7 +85,7 @@ VulkanDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descript
 	info.bindingCount = layouts.size();
 	info.pBindings = layouts.data();
 
-	if (vkCreateDescriptorSetLayout(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkDescriptorSetLayout) != VK_SUCCESS)
+	if (vkCreateDescriptorSetLayout(_device.lock()->getDevice(), &info, nullptr, &_vkDescriptorSetLayout) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateDescriptorSetLayout() fail.");
 		return false;
@@ -101,7 +100,7 @@ VulkanDescriptorSetLayout::close() noexcept
 {
 	if (_vkDescriptorSetLayout != VK_NULL_HANDLE)
 	{
-		vkDestroyDescriptorSetLayout(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkDescriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(_device.lock()->getDevice(), _vkDescriptorSetLayout, nullptr);
 		_vkDescriptorSetLayout = VK_NULL_HANDLE;
 	}
 }
@@ -121,7 +120,7 @@ VulkanDescriptorSetLayout::getGraphicsDescriptorSetLayoutDesc() const noexcept
 void
 VulkanDescriptorSetLayout::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
+	_device = device->downcast_pointer<VulkanDevice>();
 }
 
 GraphicsDevicePtr

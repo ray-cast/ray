@@ -438,7 +438,7 @@ public:
 	static GLenum asSamplerMinFilter(GraphicsSamplerFilter filter) noexcept;
 	static GLenum asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept;
 
-	static GLboolean isScaledFormat(GraphicsFormat format) noexcept;
+	static GLboolean isNormFormat(GraphicsFormat format) noexcept;
 	static GLboolean isSupportFeature(EGL2Features features) noexcept;
 	static GLboolean isStencilFormat(GraphicsFormat format) noexcept;
 	static GLboolean isDepthFormat(GraphicsFormat format) noexcept;

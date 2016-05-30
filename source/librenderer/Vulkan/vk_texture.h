@@ -81,7 +81,6 @@ private:
 	VulkanMemory _vkMemory;
 
 	GraphicsTextureDesc _textureDesc;
-	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

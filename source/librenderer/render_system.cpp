@@ -208,6 +208,13 @@ RenderSystem::drawMesh(const GraphicsIndirect& renderable) noexcept
 	_pipelineManager->drawMesh(renderable);
 }
 
+void
+RenderSystem::drawArray(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t firstVertex, std::uint32_t firstInstance) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->drawArray(numVertices, numInstances, firstVertex, firstInstance);
+}
+
 bool
 RenderSystem::isTextureSupport(GraphicsFormat format) noexcept
 {

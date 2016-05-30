@@ -106,7 +106,7 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		{
 			glEnableVertexArrayAttrib(_vao, attribIndex);
 			glVertexArrayAttribBinding(_vao, attribIndex, it.getVertexSlot());
-			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, OGLTypes::isScaledFormat(it.getVertexFormat()), offset + it.getVertexOffset());
+			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, OGLTypes::isNormFormat(it.getVertexFormat()), offset + it.getVertexOffset());
 		}
 
 		offset += it.getVertexOffset() + it.getVertexSize();

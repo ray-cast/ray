@@ -40,7 +40,7 @@
 #include "vk_texture.h"
 #include "vk_framebuffer.h"
 #include "vk_descriptor_set.h"
-#include "vk_render_pipeline.h"
+#include "vk_pipeline.h"
 #include "vk_graphics_data.h"
 #include "vk_system.h"
 
@@ -49,7 +49,7 @@ _NAME_BEGIN
 __ImplementSubClass(VulkanCommandList, GraphicsCommandList, "VulkanCommandList")
 
 VulkanCommandList::VulkanCommandList() noexcept
-	: _vkCommandBuffer(VK_NULL_HANDLE)
+	: _commandBuffer(VK_NULL_HANDLE)
 	, _vkFramebuffer(VK_NULL_HANDLE)
 	, _vkFramebufferLayout(VK_NULL_HANDLE)
 	, _vkVertexBuffers(8)
@@ -74,7 +74,7 @@ VulkanCommandList::setup(const GraphicsCommandListDesc& commandListDesc) noexcep
 	info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	info.commandBufferCount = 1;
 
-	if (vkAllocateCommandBuffers(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, &_vkCommandBuffer) > 0)
+	if (vkAllocateCommandBuffers(_device.lock()->getDevice(), &info, &_commandBuffer) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkAllocateCommandBuffers() fail.");
 		return false;
@@ -87,18 +87,18 @@ VulkanCommandList::setup(const GraphicsCommandListDesc& commandListDesc) noexcep
 void
 VulkanCommandList::close() noexcept
 {
-	if (_vkCommandBuffer != VK_NULL_HANDLE)
+	if (_commandBuffer != VK_NULL_HANDLE)
 	{
-		vkFreeCommandBuffers(
-			this->getDevice()->downcast<VulkanDevice>()->getDevice(),
-			_commandListDesc.getGraphicsCommandPool()->downcast<VulkanCommandPool>()->getInstance(), 1, &_vkCommandBuffer);
-		_vkCommandBuffer = VK_NULL_HANDLE;
+		vkFreeCommandBuffers(_device.lock()->getDevice(), _commandListDesc.getGraphicsCommandPool()->downcast<VulkanCommandPool>()->getInstance(), 1, &_commandBuffer);
+		_commandBuffer = VK_NULL_HANDLE;
 	}
 }
 
 void
 VulkanCommandList::renderBegin() noexcept
 {
+	_pipeline = nullptr;
+
 	VkCommandBufferInheritanceInfo cmd_buf_hinfo;
 	cmd_buf_hinfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
 	cmd_buf_hinfo.pNext = NULL;
@@ -115,7 +115,7 @@ VulkanCommandList::renderBegin() noexcept
 	cmd_buf_info.flags = 0;
 	cmd_buf_info.pInheritanceInfo = &cmd_buf_hinfo;
 
-	vkBeginCommandBuffer(_vkCommandBuffer, &cmd_buf_info);
+	vkBeginCommandBuffer(_commandBuffer, &cmd_buf_info);
 }
 
 void
@@ -123,67 +123,140 @@ VulkanCommandList::renderEnd() noexcept
 {
 	if (_vkFramebufferLayout != VK_NULL_HANDLE)
 	{
-		vkCmdEndRenderPass(_vkCommandBuffer);
+		vkCmdEndRenderPass(_commandBuffer);
 		_vkFramebufferLayout = VK_NULL_HANDLE;
 	}
 
-	vkEndCommandBuffer(_vkCommandBuffer);
+	vkEndCommandBuffer(_commandBuffer);
 }
 
 void
 VulkanCommandList::setViewport(const Viewport viewport[], std::uint32_t first, std::uint32_t count) noexcept
 {
-	std::uint32_t viewportCount = 0;
-	VkViewport cmd[VK_MAX_VIEWPORT_ARRAY];
+	if (_viewports.size() < first + count)
+		_viewports.resize(first + count);
 
-	for (std::size_t i = 0; i < count; i++, viewportCount++)
+	for (std::size_t i = 0; i < count; i++)
 	{
-		cmd[i].x = viewport[i].left;
-		cmd[i].y = viewport[i].top;
-		cmd[i].width = viewport[i].width;
-		cmd[i].height = viewport[i].height;
-		cmd[i].minDepth = viewport[i].minDepth;
-		cmd[i].maxDepth = viewport[i].maxDepth;
-
-		if (viewportCount == VK_MAX_VIEWPORT_ARRAY)
-		{
-			vkCmdSetViewport(_vkCommandBuffer, first, VK_MAX_VIEWPORT_ARRAY, cmd);
-			first += VK_MAX_VIEWPORT_ARRAY;
-			viewportCount = 0;
-		}
+		_viewports[i].x = viewport[i].left;
+		_viewports[i].y = viewport[i].top;
+		_viewports[i].width = viewport[i].width;
+		_viewports[i].height = viewport[i].height;
+		_viewports[i].minDepth = viewport[i].minDepth;
+		_viewports[i].maxDepth = viewport[i].maxDepth;
 	}
 
-	if (viewportCount > 0)
+	if (count > 0)
 	{
-		vkCmdSetViewport(_vkCommandBuffer, first, viewportCount, cmd);
+		vkCmdSetViewport(_commandBuffer, first, count, _viewports.data());
 	}
 }
 
 void
 VulkanCommandList::setScissor(const Scissor scissor[], std::uint32_t first, std::uint32_t count) noexcept
 {
-	std::uint32_t scissorCount = 0;
-	VkRect2D cmd[VK_MAX_VIEWPORT_ARRAY];
+	if (_scissors.size() < first + count)
+		_scissors.resize(first + count);
 
-	for (std::size_t i = 0; i < count; i++, scissorCount++)
+	for (std::size_t i = 0; i < count; i++)
 	{
-		cmd[i].offset.x = scissor[i].left;
-		cmd[i].offset.y = scissor[i].top;
-		cmd[i].extent.width = scissor[i].width;
-		cmd[i].extent.height = scissor[i].height;
-
-		if (scissorCount == VK_MAX_VIEWPORT_ARRAY)
-		{
-			vkCmdSetScissor(_vkCommandBuffer, first, VK_MAX_VIEWPORT_ARRAY, cmd);
-			first += VK_MAX_VIEWPORT_ARRAY;
-			scissorCount = 0;
-		}
+		_scissors[i].offset.x = scissor[i].left;
+		_scissors[i].offset.y = scissor[i].top;
+		_scissors[i].extent.width = scissor[i].width;
+		_scissors[i].extent.height = scissor[i].height;
 	}
 
-	if (scissorCount > 0)
+	if (count > 0)
 	{
-		vkCmdSetScissor(_vkCommandBuffer, first, scissorCount, cmd);
+		vkCmdSetScissor(_commandBuffer, first, count, _scissors.data());
 	}
+}
+
+void 
+VulkanCommandList::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+{
+	VkStencilFaceFlags flags = 0;
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_FRONT_BIT;
+		_pipelineState.setStencilFrontReadMask(mask);
+	}
+		
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_BACK_BIT;
+		_pipelineState.setStencilBackReadMask(mask);
+	}
+		
+	vkCmdSetStencilCompareMask(_commandBuffer, flags, mask);
+}
+
+std::uint32_t
+VulkanCommandList::getStencilCompareMask(GraphicsStencilFace face) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _pipelineState.getStencilFrontReadMask();
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _pipelineState.getStencilBackReadMask();
+	return 0;
+}
+
+void 
+VulkanCommandList::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
+{
+	VkStencilFaceFlags flags = 0;
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_FRONT_BIT;
+		_pipelineState.setStencilFrontRef(reference);
+	}
+
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_BACK_BIT;
+		_pipelineState.setStencilBackRef(reference);
+	}
+
+	vkCmdSetStencilReference(_commandBuffer, flags, reference);
+}
+
+std::uint32_t 
+VulkanCommandList::getStencilReference(GraphicsStencilFace face) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _pipelineState.getStencilFrontRef();
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _pipelineState.getStencilBackRef();
+	return 0;
+}
+
+void 
+VulkanCommandList::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+{
+	VkStencilFaceFlags flags = 0;
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_FRONT_BIT;
+		_pipelineState.setStencilFrontWriteMask(mask);
+	}
+
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_BACK_BIT;
+		_pipelineState.setStencilBackWriteMask(mask);
+	}
+
+	vkCmdSetStencilWriteMask(_commandBuffer, flags, mask);
+}
+
+std::uint32_t 
+VulkanCommandList::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _pipelineState.getStencilFrontWriteMask();
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _pipelineState.getStencilBackWriteMask();
+	return 0;
 }
 
 void
@@ -191,8 +264,7 @@ VulkanCommandList::clearTexture(GraphicsTexturePtr texture, const ClearValue& va
 {
 	auto _vktexture = std::dynamic_pointer_cast<VulkanTexture>(texture);
 
-	const auto& textureDesc = texture->getGraphicsTextureDesc();
-	auto format = textureDesc.getTexFormat();
+	auto format = texture->getGraphicsTextureDesc().getTexFormat();
 	if (format == GraphicsFormat::GraphicsFormatD16UNorm || format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
 		format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
 		format == GraphicsFormat::GraphicsFormatD32_SFLOAT || format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
@@ -209,7 +281,7 @@ VulkanCommandList::clearTexture(GraphicsTexturePtr texture, const ClearValue& va
 		range.layerCount = value.rect->count;
 		range.levelCount = 1;
 
-		vkCmdClearDepthStencilImage(_vkCommandBuffer, _vktexture->getImage(), VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &cmd, 1, &range);
+		vkCmdClearDepthStencilImage(_commandBuffer, _vktexture->getImage(), VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &cmd, 1, &range);
 	}
 	else
 	{
@@ -227,7 +299,7 @@ VulkanCommandList::clearTexture(GraphicsTexturePtr texture, const ClearValue& va
 		range.baseMipLevel = 0;
 		range.levelCount = 1;
 
-		vkCmdClearColorImage(_vkCommandBuffer, _vktexture->getImage(), VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &cmd, 1, &range);
+		vkCmdClearColorImage(_commandBuffer, _vktexture->getImage(), VkImageLayout::VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &cmd, 1, &range);
 	}
 }
 
@@ -239,7 +311,7 @@ VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 
 	if (_vkFramebuffer != VK_NULL_HANDLE)
 	{
-		vkCmdEndRenderPass(_vkCommandBuffer);
+		vkCmdEndRenderPass(_commandBuffer);
 		_vkFramebuffer = VK_NULL_HANDLE;
 	}
 
@@ -268,7 +340,7 @@ VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 	cmd.clearValueCount = 2;
 	cmd.pClearValues = clear;
 
-	vkCmdBeginRenderPass(_vkCommandBuffer, &cmd, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(_commandBuffer, &cmd, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void
@@ -305,7 +377,7 @@ VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr framebuffer, const floa
 
 	if (_vkFramebuffer != VK_NULL_HANDLE)
 	{
-		vkCmdEndRenderPass(_vkCommandBuffer);
+		vkCmdEndRenderPass(_commandBuffer);
 		_vkFramebuffer = VK_NULL_HANDLE;
 	}
 
@@ -321,7 +393,7 @@ VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr framebuffer, const floa
 	cmd.clearValueCount = usageCount;
 	cmd.pClearValues = attachment;
 
-	vkCmdBeginRenderPass(_vkCommandBuffer, &cmd, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(_commandBuffer, &cmd, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void
@@ -386,7 +458,7 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 		}
 	}
 
-	vkCmdClearAttachments(_vkCommandBuffer, usageCount, attachment, usageCount, rects);
+	vkCmdClearAttachments(_commandBuffer, usageCount, attachment, usageCount, rects);
 }
 
 void
@@ -439,10 +511,11 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 			rects[usageCount].rect.extent.width = framebufferDesc.getWidth();
 			rects[usageCount].rect.extent.height = framebufferDesc.getHeight();
 
+			attachment[usageCount].aspectMask = 0;
 			if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
-				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				attachment[usageCount].aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
 			if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
-				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+				attachment[usageCount].aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
 			attachment[usageCount].clearValue.depthStencil.depth = depth;
 			attachment[usageCount].clearValue.depthStencil.stencil = stencil;
@@ -452,7 +525,7 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 		}
 	}
 
-	vkCmdClearAttachments(_vkCommandBuffer, usageCount, attachment, usageCount, rects);
+	vkCmdClearAttachments(_commandBuffer, usageCount, attachment, usageCount, rects);
 }
 
 void
@@ -461,19 +534,28 @@ VulkanCommandList::setPipeline(GraphicsPipelinePtr pipeline) noexcept
 	assert(pipeline);
 	assert(pipeline->isInstanceOf<VulkanRenderPipeline>());
 
-	_pipeline = pipeline->downcast<VulkanRenderPipeline>();
-	vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline->getPipeline());
+	auto vulkanPipeline = pipeline->downcast<VulkanRenderPipeline>();
+	if (_pipeline != vulkanPipeline)
+	{
+		vkCmdBindPipeline(_commandBuffer, vulkanPipeline->getPipelineBindPoint(), vulkanPipeline->getPipeline());
+		_pipeline = vulkanPipeline;
+	}
 }
 
 void
 VulkanCommandList::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
+	assert(_pipeline);
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<VulkanDescriptorSet>());
 
-	VkPipelineLayout pipelineLayout = _pipeline->downcast<VulkanRenderPipeline>()->getPipelineLayout();
-	VkDescriptorSet descriptorSetHandle = descriptorSet->downcast<VulkanDescriptorSet>()->getDescriptorSet();
-	vkCmdBindDescriptorSets(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSetHandle, 0, nullptr);
+	auto vulkanDescripotrSet = descriptorSet->downcast<VulkanDescriptorSet>();
+	if (_descripotrSet != vulkanDescripotrSet)
+	{
+		VkDescriptorSet descriptorSetHandle = vulkanDescripotrSet->getDescriptorSet();
+		vkCmdBindDescriptorSets(_commandBuffer, _pipeline->getPipelineBindPoint(), _pipeline->getPipelineLayout(), 0, 1, &descriptorSetHandle, 0, nullptr);
+		_descripotrSet = vulkanDescripotrSet;
+	}
 }
 
 void
@@ -487,7 +569,7 @@ VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first,
 		_vkVertexOffsets[i] = 0;
 	}
 
-	vkCmdBindVertexBuffers(_vkCommandBuffer, first, count, _vkVertexBuffers.data(), _vkVertexOffsets.data());
+	vkCmdBindVertexBuffers(_commandBuffer, first, count, _vkVertexBuffers.data(), _vkVertexOffsets.data());
 }
 
 void
@@ -496,18 +578,18 @@ VulkanCommandList::setIndexBuffer(GraphicsDataPtr data) noexcept
 	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer(); 
 	auto stride = data->downcast<VulkanGraphicsData>()->getGraphicsDataDesc().getStride();
 	if (stride == 16)
-		vkCmdBindIndexBuffer(_vkCommandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT16);
+		vkCmdBindIndexBuffer(_commandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT16);
 	else if (stride == 32)
-		vkCmdBindIndexBuffer(_vkCommandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(_commandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
 }
 
 void
 VulkanCommandList::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
 	if (renderable.numIndices == 0)
-		vkCmdDraw(_vkCommandBuffer, renderable.numVertices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
+		vkCmdDraw(_commandBuffer, renderable.numVertices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
 	else
-		vkCmdDrawIndexed(_vkCommandBuffer, renderable.numIndices, renderable.numInstances, renderable.startIndice, renderable.startVertice, renderable.startInstances);
+		vkCmdDrawIndexed(_commandBuffer, renderable.numIndices, renderable.numInstances, renderable.startIndice, renderable.startVertice, renderable.startInstances);
 }
 
 void
@@ -521,19 +603,19 @@ void
 VulkanCommandList::execute(const GraphicsCommandListPtr& command) noexcept
 {
 	VkCommandBuffer otherCommand = command->downcast<VulkanCommandList>()->getInstance();
-	vkCmdExecuteCommands(_vkCommandBuffer, 1, &otherCommand);
+	vkCmdExecuteCommands(_commandBuffer, 1, &otherCommand);
 }
 
 VkCommandBuffer
 VulkanCommandList::getInstance() const noexcept
 {
-	return _vkCommandBuffer;
+	return _commandBuffer;
 }
 
 void
 VulkanCommandList::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
+	_device = device->downcast_pointer<VulkanDevice>();;
 }
 
 GraphicsDevicePtr

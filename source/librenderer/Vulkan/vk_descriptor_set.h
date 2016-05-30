@@ -170,17 +170,15 @@ public:
 	bool setup(const GraphicsDescriptorSetDesc& desc) noexcept;
 	void close() noexcept;
 
-	void update() noexcept;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 	VkDescriptorSet getDescriptorSet() const noexcept;
 
 	const GraphicsUniformSets& getGraphicsUniformSets() const noexcept;
 	const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept;
 
-private:
-	friend class VulkanDevice;
-	void setDevice(GraphicsDevicePtr device) noexcept;
-	GraphicsDevicePtr getDevice() noexcept;
+	void update() noexcept;
 
 private:
 	VkDescriptorSet _vkDescriptorSet;
@@ -191,8 +189,9 @@ private:
 	std::vector<VkWriteDescriptorSet> _writes;
 
 	GraphicsUniformSets _activeUniformSets;
+	GraphicsUniformSets _activeGlobalUniformSets;
 	GraphicsDescriptorSetDesc _descriptorSetDesc;
-	GraphicsDeviceWeakPtr _device;
+	VulkanDeviceWeakPtr _device;
 };
 
 _NAME_END

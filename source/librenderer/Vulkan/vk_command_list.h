@@ -57,6 +57,15 @@ public:
 	void setViewport(const Viewport viewport[], std::uint32_t first, std::uint32_t count) noexcept;
 	void setScissor(const Scissor Scissor[], std::uint32_t first, std::uint32_t count) noexcept;
 
+	void setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
+	std::uint32_t getStencilCompareMask(GraphicsStencilFace face) noexcept;
+
+	void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept;
+	std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept;
+
+	void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
+	std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept;
+
 	void clearTexture(GraphicsTexturePtr texture, const ClearValue& value) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
@@ -85,19 +94,26 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	VkCommandBuffer _vkCommandBuffer;
+	std::vector<VkViewport> _viewports;
+	std::vector<VkRect2D> _scissors;
 
+	VkCommandBuffer _commandBuffer;
+
+	VkImage _vkImage;
 	VkFramebuffer _vkFramebuffer;
 	VkRenderPass _vkFramebufferLayout;
 
 	std::vector<VkBuffer> _vkVertexBuffers;
 	std::vector<VkDeviceSize> _vkVertexOffsets;
 
+	GraphicsStateDesc _pipelineState;
+
 	VulkanRenderPipeline* _pipeline;
+	VulkanDescriptorSet* _descripotrSet;
 	VulkanFramebuffer* _framebuffer;
 
 	GraphicsCommandListDesc _commandListDesc;
-	GraphicsDeviceWeakPtr _device;
+	VulkanDeviceWeakPtr _device;
 };
 
 _NAME_END

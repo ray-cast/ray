@@ -149,6 +149,7 @@ public:
 	static VkImageViewType asImageViewType(GraphicsTextureDim type) noexcept;
 	static VkSampleCountFlagBits asTextureSample(GraphicsSampleFlagBits sample) noexcept;
 	static VkSampleCountFlagBits asTextureSample(GraphicsSamplerAnis anis) noexcept;
+	static VkImageTiling asTextureTiling(GraphicsImageTiling tiling) noexcept;
 	static VkImageUsageFlags asTextureUsage(std::uint32_t usage) noexcept;
 	static VkShaderStageFlagBits asShaderStage(GraphicsShaderStage type) noexcept;
 	static VkCullModeFlags asCullMode(GraphicsCullMode mode) noexcept;

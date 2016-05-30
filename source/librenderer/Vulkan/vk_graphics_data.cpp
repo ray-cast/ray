@@ -57,8 +57,8 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 {
 	assert(_vkBuffer == VK_NULL_HANDLE);
 
-	auto type = dataDesc.getType();
-	if (type == GraphicsDataType::GraphicsDataTypeNone)
+	auto usage = VulkanTypes::asBufferUsageFlagBits(dataDesc.getType());
+	if (usage == 0)
 	{
 		VK_PLATFORM_LOG("Unknown data type.");
 		return false;
@@ -75,7 +75,7 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 	info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	info.pNext = nullptr;
 	info.size = streamSize;
-	info.usage = VulkanTypes::asBufferUsageFlagBits(type);
+	info.usage = usage;
 	info.flags = 0;
 	info.sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
 	info.queueFamilyIndexCount = 0;
@@ -90,24 +90,24 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 	VkMemoryRequirements memReq;
 	vkGetBufferMemoryRequirements(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkBuffer, &memReq);
 
-	if (!_memory.setup(nullptr, memReq.size, memReq.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT))
+	if (!_memory.setup(memReq.size, memReq.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT))
 		return false;
-
-	auto stream = dataDesc.getStream();
-	if (stream != nullptr)
-	{
-		void* data = _memory.map(0, streamSize, GraphicsAccessFlagBits::GraphicsAccessFlagMapReadBit);
-		if (data)
-		{
-			std::memcpy(data, stream, streamSize);
-			_memory.unmap();
-		}
-	}
 
 	if (vkBindBufferMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkBuffer, _memory.getDeviceMemory(), 0) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkBindBufferMemory() fail.");
 		return false;
+	}
+
+	auto stream = dataDesc.getStream();
+	if (stream)
+	{
+		void* data = nullptr;
+		if (_memory.map(0, streamSize, GraphicsAccessFlagBits::GraphicsAccessFlagMapWriteBit, &data))
+		{
+			std::memcpy(data, stream, streamSize);
+			_memory.unmap();
+		}
 	}
 
 	_dataDesc = dataDesc;
@@ -139,8 +139,7 @@ VulkanGraphicsData::getDeviceMemory() const noexcept
 bool
 VulkanGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
-	*data = _memory.map(offset, count, GraphicsAccessFlagBits::GraphicsAccessFlagMapWriteBit);
-	return *data ? true : false;
+	return _memory.map(offset, count, GraphicsAccessFlagBits::GraphicsAccessFlagMapWriteBit, data);
 }
 
 void

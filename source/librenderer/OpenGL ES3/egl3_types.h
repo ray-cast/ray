@@ -386,7 +386,7 @@ public:
 	static GLenum asVertexType(GraphicsVertexType type) noexcept;
 	static GLenum asVertexFormat(GraphicsFormat format) noexcept;
 	static GLenum asIndexType(GraphicsIndexType type) noexcept;
-	static GLenum asShaderStage(GraphicsShaderStage type) noexcept;
+	static GLenum asShaderStage(GraphicsShaderStageFlagBits flags) noexcept;
 	static GLenum asTextureTarget(GraphicsTextureDim mapping, bool multisampler) noexcept;
 	static GLenum asTextureFormat(GraphicsFormat format) noexcept;
 	static GLenum asTextureType(GraphicsFormat format) noexcept;

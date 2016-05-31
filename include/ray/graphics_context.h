@@ -119,7 +119,7 @@ public:
 	virtual bool isTextureSupport(GraphicsFormat format) noexcept = 0;
 	virtual bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept = 0;
 	virtual bool isVertexSupport(GraphicsFormat format) noexcept = 0;
-	virtual bool isShaderSupport(GraphicsShaderStage stage) noexcept = 0;
+	virtual bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept = 0;
 
 	virtual void present() noexcept = 0;
 

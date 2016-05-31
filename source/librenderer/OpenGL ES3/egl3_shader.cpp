@@ -116,6 +116,7 @@ EGL3GraphicsUniform::EGL3GraphicsUniform() noexcept
 	: _offset(0)
 	, _bindingPoint(GL_INVALID_INDEX)
 	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+	, _stageFlags(0)
 {
 }
 
@@ -183,10 +184,23 @@ EGL3GraphicsUniform::getBindingPoint() const noexcept
 	return _bindingPoint;
 }
 
+void
+EGL3GraphicsUniform::setShaderStageFlags(GraphicsShaderStageFlags flags) noexcept
+{
+	_stageFlags = flags;
+}
+
+GraphicsShaderStageFlags
+EGL3GraphicsUniform::getShaderStageFlags() const noexcept
+{
+	return _stageFlags;
+}
+
 EGL3GraphicsUniformBlock::EGL3GraphicsUniformBlock() noexcept
 	: _size(0)
 	, _bindingPoint(GL_INVALID_INDEX)
 	, _type(GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
+	, _stageFlags(0)
 {
 }
 
@@ -218,12 +232,6 @@ EGL3GraphicsUniformBlock::getType() const noexcept
 	return _type;
 }
 
-std::uint32_t
-EGL3GraphicsUniformBlock::getOffset() const noexcept
-{
-	return 0;
-}
-
 void
 EGL3GraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
 {
@@ -234,6 +242,18 @@ std::uint32_t
 EGL3GraphicsUniformBlock::getBlockSize() const noexcept
 {
 	return _size;
+}
+
+void
+EGL3GraphicsUniformBlock::setShaderStageFlags(GraphicsShaderStageFlags flags) noexcept
+{
+	_stageFlags = flags;
+}
+
+GraphicsShaderStageFlags
+EGL3GraphicsUniformBlock::getShaderStageFlags() const noexcept
+{
+	return _stageFlags;
 }
 
 void
@@ -349,12 +369,12 @@ EGL3Shader::getInstanceID() const noexcept
 }
 
 bool
-EGL3Shader::HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out)
+EGL3Shader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out)
 {
 	std::string profile;
-	if (stage == GraphicsShaderStage::GraphicsShaderStageVertex)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 		profile = "vs_4_0";
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 		profile = "ps_4_0";
 
 	ID3DBlob* binary = nullptr;
@@ -386,14 +406,14 @@ EGL3Shader::HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, 
 }
 
 bool
-EGL3Shader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out)
+EGL3Shader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes, std::string& out)
 {
 	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT;
-	if (stage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit)
 		flags = HLSLCC_FLAG_GS_ENABLED;
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
 
 	GLSLShader shader;
@@ -404,10 +424,10 @@ EGL3Shader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std
 		return false;
 	}
 
-	if (stage == GraphicsShaderStage::GraphicsShaderStageVertex || stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit || stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 	{
 		glslopt_shader_type glslopt_type = glslopt_shader_type::kGlslOptShaderVertex;
-		if (stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+		if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 			glslopt_type = glslopt_shader_type::kGlslOptShaderFragment;
 
 		auto ctx = glslopt_initialize(glslopt_target::kGlslTargetOpenGLES30);
@@ -620,6 +640,7 @@ EGL3Program::_initActiveUniform() noexcept
 		uniform->setName(nameUniform.substr(0, std::min((std::size_t)length, nameUniform.find('['))));
 		uniform->setBindingPoint(location);
 		uniform->setType(toGraphicsUniformType(nameUniform, type));
+		uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageAll);
 
 		if (type == GL_SAMPLER_2D ||
 			type == GL_SAMPLER_3D ||
@@ -636,6 +657,8 @@ EGL3Program::_initActiveUniform() noexcept
 
 			glProgramUniform1i(_program, location, textureUnit);
 			uniform->setBindingPoint(textureUnit);
+			uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
+
 			textureUnit++;
 		}
 
@@ -690,6 +713,7 @@ EGL3Program::_initActiveUniformBlock() noexcept
 		uniformblock->setBindingPoint(location);
 		uniformblock->setBlockSize(blockSize);
 		uniformblock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+		uniformblock->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageAll);
 
 		for (GLint j = 0; j < count; j++)
 		{

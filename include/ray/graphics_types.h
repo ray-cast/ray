@@ -674,20 +674,23 @@ enum GraphicsIndexType
 	GraphicsIndexTypeMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsShaderStage
+enum GraphicsShaderStageFlagBits
 {
-	GraphicsShaderStageNone = 0,
-	GraphicsShaderStageVertex = 1,
-	GraphicsShaderStageFragment = 2,
-	GraphicsShaderStageGeometry = 3,
-	GraphicsShaderStageCompute = 4,
-	GraphicsShaderStageTessEvaluation = 5,
-	GraphicsShaderStageTessControl = 6,
-	GraphicsShaderStageBeginRange = GraphicsShaderStageNone,
-	GraphicsShaderStageEndRange = GraphicsShaderStageTessControl,
-	GraphicsShaderStageRangeSize = (GraphicsShaderStageEndRange - GraphicsShaderStageBeginRange + 1),
-	GraphicsShaderStageMaxEnum = 0x7FFFFFFF
+	GraphicsShaderStageNoneBit = 0x0,
+	GraphicsShaderStageVertexBit = 0x1,
+	GraphicsShaderStageFragmentBit = 0x2,
+	GraphicsShaderStageGeometryBit = 0x4,
+	GraphicsShaderStageComputeBit = 0x8,
+	GraphicsShaderStageTessEvaluationBit = 0x10,
+	GraphicsShaderStageTessControlBit = 0x20,
+	GraphicsShaderStageAll = 0x7FFFFFFF,
+	GraphicsShaderStageBitCount = 7,
+	GraphicsShaderStageBeginBit = GraphicsShaderStageNoneBit,
+	GraphicsShaderStageEndBit = GraphicsShaderStageTessControlBit,
+	GraphicsShaderStageFlagBitsMaxEnum = 0x7FFFFFFF
 };
+
+typedef std::uint32_t GraphicsShaderStageFlags;
 
 enum GraphicsShaderLang
 {

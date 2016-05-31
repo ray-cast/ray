@@ -558,7 +558,7 @@ EGL2DeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 }
 
 bool
-EGL2DeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
+EGL2DeviceContext::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
 {
 	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
@@ -881,8 +881,8 @@ EGL2DeviceContext::initVertexSupports() noexcept
 bool
 EGL2DeviceContext::initShaderSupports() noexcept
 {
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageFragment);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
 
 	return true;
 }

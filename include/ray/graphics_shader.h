@@ -45,15 +45,15 @@ class EXPORT GraphicsShaderDesc final
 {
 public:
 	GraphicsShaderDesc() noexcept;
-	GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage type, const std::string& code) noexcept;
-	GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage type, const std::vector<char>& code) noexcept;
+	GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStageFlagBits stage, const std::string& code) noexcept;
+	GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStageFlagBits stage, const std::vector<char>& code) noexcept;
 	virtual ~GraphicsShaderDesc() noexcept;
 
 	void setLanguage(GraphicsShaderLang lang) noexcept;
 	GraphicsShaderLang getLanguage() const noexcept;
 
-	void setStage(GraphicsShaderStage type) noexcept;
-	GraphicsShaderStage getStage() const noexcept;
+	void setStage(GraphicsShaderStageFlagBits type) noexcept;
+	GraphicsShaderStageFlagBits getStage() const noexcept;
 
 	void setByteCodes(const std::string& codes) noexcept;
 	void setByteCodes(std::string&& codes) noexcept;
@@ -62,7 +62,7 @@ public:
 private:
 	std::string _bytecodes;
 	GraphicsShaderLang _lang;
-	GraphicsShaderStage _stage;
+	GraphicsShaderStageFlagBits _stage;
 };
 
 class EXPORT GraphicsProgramDesc final
@@ -105,6 +105,7 @@ public:
 
 	virtual const std::string& getName() const noexcept = 0;
 	virtual GraphicsUniformType getType() const noexcept = 0;
+	virtual GraphicsShaderStageFlags getShaderStageFlags() const noexcept = 0;
 	virtual std::uint32_t getBindingPoint() const noexcept = 0;
 
 private:

@@ -93,6 +93,9 @@ public:
 	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
 	std::uint32_t getBindingPoint() const noexcept;
 
+	void setShaderStageFlags(GraphicsShaderStageFlags flags) noexcept;
+	GraphicsShaderStageFlags getShaderStageFlags() const noexcept;
+
 private:
 	VulkanGraphicsUniform(const VulkanGraphicsUniform&) noexcept = delete;
 	VulkanGraphicsUniform& operator=(const VulkanGraphicsUniform&) noexcept = delete;
@@ -103,6 +106,7 @@ private:
 	std::uint32_t _offset;
 	std::uint32_t _bindingPoint;
 	GraphicsUniformType _type;
+	GraphicsShaderStageFlags _stageFlags;
 };
 
 class VulkanGraphicsUniformBlock final : public GraphicsUniformBlock
@@ -118,17 +122,18 @@ public:
 	void setType(GraphicsUniformType type) noexcept;
 	GraphicsUniformType getType() const noexcept;
 
-	std::uint32_t getOffset() const noexcept;
-
 	void setBlockSize(std::uint32_t size) noexcept;
 	std::uint32_t getBlockSize() const noexcept;
+
+	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
+	std::uint32_t getBindingPoint() const noexcept;
+
+	void setShaderStageFlags(GraphicsShaderStageFlags flags) noexcept;
+	GraphicsShaderStageFlags getShaderStageFlags() const noexcept;
 
 	void addGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
 	void removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
 	const GraphicsUniforms& getGraphicsUniforms() const noexcept;
-
-	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
-	std::uint32_t getBindingPoint() const noexcept;
 
 private:
 	VulkanGraphicsUniformBlock(const VulkanGraphicsUniformBlock&) noexcept = delete;
@@ -140,6 +145,7 @@ private:
 	std::uint32_t _bindingPoint;
 	GraphicsUniforms _uniforms;
 	GraphicsUniformType _type;
+	GraphicsShaderStageFlags _stageFlags;
 };
 
 class VulkanShader final : public GraphicsShader
@@ -160,9 +166,9 @@ public:
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
-	bool HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out);
-	bool HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out);
-	bool GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
+	bool HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out);
+	bool HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes, std::string& out);
+	bool GLSLtoSPV(VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
 
 private:
 	friend class VulkanDevice;

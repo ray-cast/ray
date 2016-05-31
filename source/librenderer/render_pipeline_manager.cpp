@@ -550,7 +550,7 @@ RenderPipelineManager::isVertexSupport(GraphicsFormat format) noexcept
 }
 
 bool
-RenderPipelineManager::isShaderSupport(GraphicsShaderStage stage) noexcept
+RenderPipelineManager::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
 {
 	assert(_pipeline);
 	return _pipeline->isShaderSupport(stage);

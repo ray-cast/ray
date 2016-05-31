@@ -70,7 +70,7 @@ private:
 	void instanceShader(MaterialManager& manager, Material& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
 	void instanceInputLayout(MaterialManager& manager, Material& material, iarchive& reader) except;
 
-	static GraphicsShaderStage stringToShaderStage(const std::string& stage) noexcept;
+	static GraphicsShaderStageFlagBits stringToShaderStage(const std::string& stage) noexcept;
 	static GraphicsUniformType stringToUniformType(const std::string& type) noexcept;
 	static GraphicsVertexType stringToPrimitive(const std::string& primitive) noexcept;
 	static GraphicsCullMode stringToCullMode(const std::string& cullmode) noexcept;

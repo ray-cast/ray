@@ -577,7 +577,7 @@ OGLCoreDeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 }
 
 bool
-OGLCoreDeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
+OGLCoreDeviceContext::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
 {
 	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
@@ -1006,19 +1006,19 @@ OGLCoreDeviceContext::initVertexSupports() noexcept
 bool
 OGLCoreDeviceContext::initShaderSupports() noexcept
 {
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageFragment);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
 
 	if (GLEW_ARB_geometry_shader4)
-		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageGeometry);
+		_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit);
 
 	if (GLEW_ARB_compute_shader)
-		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageCompute);
+		_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit);
 
 	if (GLEW_ARB_tessellation_shader)
 	{
-		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageTessControl);
-		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageTessEvaluation);
+		_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit);
+		_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit);
 	}
 
 	return true;

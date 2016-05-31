@@ -101,7 +101,6 @@ private:
 
 	VkImage _vkImage;
 	VkFramebuffer _vkFramebuffer;
-	VkRenderPass _vkFramebufferLayout;
 
 	std::vector<VkBuffer> _vkVertexBuffers;
 	std::vector<VkDeviceSize> _vkVertexOffsets;

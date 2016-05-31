@@ -47,18 +47,18 @@ __ImplementSubInterface(GraphicsProgram, GraphicsChild, "GraphicsProgram")
 
 GraphicsShaderDesc::GraphicsShaderDesc() noexcept
 	: _lang(GraphicsShaderLang::GraphicsShaderLangNone)
-	, _stage(GraphicsShaderStage::GraphicsShaderStageNone)
+	, _stage(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 {
 }
 
-GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage stage, const std::string& code) noexcept
+GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStageFlagBits stage, const std::string& code) noexcept
 	: _bytecodes(code)
 	, _lang(lang)
 	, _stage(stage)
 {
 }
 
-GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage stage, const std::vector<char>& code) noexcept
+GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStageFlagBits stage, const std::vector<char>& code) noexcept
 	: _lang(lang)
 	, _stage(stage)
 {
@@ -82,12 +82,12 @@ GraphicsShaderDesc::getLanguage() const noexcept
 }
 
 void
-GraphicsShaderDesc::setStage(GraphicsShaderStage stage) noexcept
+GraphicsShaderDesc::setStage(GraphicsShaderStageFlagBits stage) noexcept
 {
 	_stage = stage;
 }
 
-GraphicsShaderStage
+GraphicsShaderStageFlagBits
 GraphicsShaderDesc::getStage()const noexcept
 {
 	return _stage;

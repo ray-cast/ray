@@ -84,7 +84,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	VkPipelineMultisampleStateCreateInfo ms;
 	VkPipelineDynamicStateCreateInfo dynamicState;
 	VkDynamicState dynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE];
-	VkPipelineShaderStageCreateInfo shaderStages[GraphicsShaderStage::GraphicsShaderStageRangeSize];
+	VkPipelineShaderStageCreateInfo shaderStages[GraphicsShaderStageFlagBits::GraphicsShaderStageBitCount];
 
 	std::vector<VkVertexInputBindingDescription> vibs;
 	std::vector<VkVertexInputAttributeDescription> vias;

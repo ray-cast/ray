@@ -51,7 +51,6 @@ __ImplementSubClass(VulkanCommandList, GraphicsCommandList, "VulkanCommandList")
 VulkanCommandList::VulkanCommandList() noexcept
 	: _commandBuffer(VK_NULL_HANDLE)
 	, _vkFramebuffer(VK_NULL_HANDLE)
-	, _vkFramebufferLayout(VK_NULL_HANDLE)
 	, _vkVertexBuffers(8)
 	, _vkVertexOffsets(8)
 {
@@ -121,10 +120,10 @@ VulkanCommandList::renderBegin() noexcept
 void
 VulkanCommandList::renderEnd() noexcept
 {
-	if (_vkFramebufferLayout != VK_NULL_HANDLE)
+	if (_vkFramebuffer != VK_NULL_HANDLE)
 	{
 		vkCmdEndRenderPass(_commandBuffer);
-		_vkFramebufferLayout = VK_NULL_HANDLE;
+		_vkFramebuffer = VK_NULL_HANDLE;
 	}
 
 	vkEndCommandBuffer(_commandBuffer);
@@ -331,8 +330,8 @@ VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 	VkRenderPassBeginInfo cmd;
 	cmd.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	cmd.pNext = 0;
-	cmd.renderPass = _vkFramebufferLayout = framebufferLayout->downcast<VulkanFramebufferLayout>()->getRenderPass();
-	cmd.framebuffer = _framebuffer->getFramebuffer();
+	cmd.renderPass = framebufferLayout->downcast<VulkanFramebufferLayout>()->getRenderPass();
+	cmd.framebuffer = _vkFramebuffer = _framebuffer->getFramebuffer();
 	cmd.renderArea.offset.x = 0;
 	cmd.renderArea.offset.y = 0;
 	cmd.renderArea.extent.width = framebufferDesc.getWidth();
@@ -384,8 +383,8 @@ VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr framebuffer, const floa
 	VkRenderPassBeginInfo cmd;
 	cmd.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	cmd.pNext = 0;
-	cmd.renderPass = _vkFramebufferLayout = framebufferLayout->downcast<VulkanFramebufferLayout>()->getRenderPass();
-	cmd.framebuffer = framebuffer->downcast<VulkanFramebuffer>()->getFramebuffer();
+	cmd.renderPass = framebufferLayout->downcast<VulkanFramebufferLayout>()->getRenderPass();
+	cmd.framebuffer = _vkFramebuffer = framebuffer->downcast<VulkanFramebuffer>()->getFramebuffer();
 	cmd.renderArea.offset.x = 0;
 	cmd.renderArea.offset.y = 0;
 	cmd.renderArea.extent.width = framebufferDesc.getWidth();
@@ -568,7 +567,7 @@ VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first,
 		_vkVertexBuffers[i] = data[i]->downcast<VulkanGraphicsData>()->getBuffer();
 		_vkVertexOffsets[i] = 0;
 	}
-
+	
 	vkCmdBindVertexBuffers(_commandBuffer, first, count, _vkVertexBuffers.data(), _vkVertexOffsets.data());
 }
 
@@ -577,10 +576,14 @@ VulkanCommandList::setIndexBuffer(GraphicsDataPtr data) noexcept
 {
 	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer(); 
 	auto stride = data->downcast<VulkanGraphicsData>()->getGraphicsDataDesc().getStride();
-	if (stride == 16)
+	if (stride == 2)
 		vkCmdBindIndexBuffer(_commandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT16);
-	else if (stride == 32)
+	else if (stride == 4)
 		vkCmdBindIndexBuffer(_commandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
+	else
+	{
+		assert(false);
+	}
 }
 
 void

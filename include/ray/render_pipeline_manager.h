@@ -92,7 +92,7 @@ public:
 	bool isTextureSupport(GraphicsFormat format) noexcept;
 	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
 	bool isVertexSupport(GraphicsFormat format) noexcept;
-	bool isShaderSupport(GraphicsShaderStage stage) noexcept;
+	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
 
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;

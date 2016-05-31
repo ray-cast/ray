@@ -150,8 +150,8 @@ public:
 	static VkSampleCountFlagBits asTextureSample(GraphicsSampleFlagBits sample) noexcept;
 	static VkSampleCountFlagBits asTextureSample(GraphicsSamplerAnis anis) noexcept;
 	static VkImageTiling asTextureTiling(GraphicsImageTiling tiling) noexcept;
-	static VkImageUsageFlags asTextureUsage(std::uint32_t usage) noexcept;
-	static VkShaderStageFlagBits asShaderStage(GraphicsShaderStage type) noexcept;
+	static VkImageUsageFlags asTextureUsage(GraphicsViewUsageFlags usage) noexcept;
+	static VkShaderStageFlagBits asShaderStage(GraphicsShaderStageFlagBits type) noexcept;
 	static VkCullModeFlags asCullMode(GraphicsCullMode mode) noexcept;
 	static VkPolygonMode asPolygonMode(GraphicsPolygonMode mode) noexcept;
 	static VkFrontFace asFrontFace(GraphicsFrontFace face) noexcept;

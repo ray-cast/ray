@@ -635,7 +635,7 @@ OGLDeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 }
 
 bool
-OGLDeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
+OGLDeviceContext::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
 {
 	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
@@ -1049,11 +1049,11 @@ OGLDeviceContext::initVertexSupports() noexcept
 bool
 OGLDeviceContext::initShaderSupports() noexcept
 {
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageFragment);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
 
 	if (GLEW_ARB_geometry_shader4)
-		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageGeometry);
+		_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit);
 	return true;
 }
 

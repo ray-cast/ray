@@ -198,16 +198,16 @@ OGLTypes::asIndexType(GraphicsIndexType type) noexcept
 }
 
 GLenum
-OGLTypes::asShaderStage(GraphicsShaderStage stage) noexcept
+OGLTypes::asShaderStage(GraphicsShaderStageFlagBits stage) noexcept
 {
 	switch (stage)
 	{
-	case GraphicsShaderStage::GraphicsShaderStageVertex:         return GL_VERTEX_SHADER;
-	case GraphicsShaderStage::GraphicsShaderStageFragment:       return GL_FRAGMENT_SHADER;
-	case GraphicsShaderStage::GraphicsShaderStageCompute:        return GL_COMPUTE_SHADER;
-	case GraphicsShaderStage::GraphicsShaderStageGeometry:       return GL_GEOMETRY_SHADER;
-	case GraphicsShaderStage::GraphicsShaderStageTessControl:    return GL_TESS_CONTROL_SHADER;
-	case GraphicsShaderStage::GraphicsShaderStageTessEvaluation: return GL_TESS_EVALUATION_SHADER;
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit:         return GL_VERTEX_SHADER;
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit:       return GL_FRAGMENT_SHADER;
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit:        return GL_COMPUTE_SHADER;
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit:       return GL_GEOMETRY_SHADER;
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit:    return GL_TESS_CONTROL_SHADER;
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit: return GL_TESS_EVALUATION_SHADER;
 	default:
 		GL_PLATFORM_LOG("Invalid shader type");
 		return GL_INVALID_ENUM;

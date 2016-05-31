@@ -1482,7 +1482,7 @@ static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const 
 			{
 				if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
 				{
-					bformata(glsl, "layout(binding = %d) ", *ui32BindingPoint + 1);
+					bformata(glsl, "layout(binding = %d) ", *ui32BindingPoint);
 					*ui32BindingPoint++;
 				}
 

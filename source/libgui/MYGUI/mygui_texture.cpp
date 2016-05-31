@@ -126,7 +126,6 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	textureDesc.setTexTiling(GraphicsImageTiling::GraphicsImageTilingLinear);
 	textureDesc.setStream(_data);
 	textureDesc.setStreamSize(_dataSize);
-
 	_texture = RenderSystem::instance()->createTexture(textureDesc);
 
 	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml");

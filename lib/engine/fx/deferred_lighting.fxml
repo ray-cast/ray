@@ -35,11 +35,11 @@
 
             void DeferredScreenQuadVS(
                 in float4 Position : POSITION,
-                out float2 oTexcoord : TEXCOORD0,
+                out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
                 oPosition = Position;
-                oTexcoord = PosToCoord(Position.xy);
+                oTexcoord = PosToCoord(Position);
             }
 
             void DeferredLightingVS(
@@ -76,7 +76,7 @@
                 return linearDepthPerspectiveFovLH(clipInfo, d);
             }
 
-            float4 DeferredCopyOnlyPS(in float2 coord : TEXCOORD0) : SV_Target
+            float4 DeferredCopyOnlyPS(in float4 coord : TEXCOORD0) : SV_Target
             {
                 return texSource.Sample(PointClamp, coord);
             }

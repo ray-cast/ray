@@ -3,13 +3,13 @@
     <attribute name="sound"/>
     <object>
         <attribute name="first_person_camera"/>
-        <attribute position="0,0,-5" />
+        <attribute position="0,5,-5" />
         <attribute lookat="0,0,1" />
         <attribute active="true"/>
         <component class="Camera">
             <attribute aperture="45.0"/>
             <attribute znear="0.1"/>
-            <attribute zfar="65535.0"/>
+            <attribute zfar="1000.0"/>
         </component>
         <component class="FirstPersonCamera">
         </component>
@@ -19,6 +19,7 @@
     <object>
         <attribute name="grass"/>
         <attribute position="0,0,0" />
+        <attribute scale="10,1,10"/>
         <attribute active="true"/>
         <component class="Mesh">
             <attribute name="dlc:sound/models/cube.pmx"/>
@@ -29,10 +30,11 @@
     </object>
     <object>
         <attribute name="light"/>
-        <attribute position="0, 0, 0"/>
+        <attribute position="-1, 5, -5"/>
+        <attribute rotate="45, 10, 0"/>
         <attribute active="true"/>
         <component class="Light">
-            <attribute type="ambient"/>
+            <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="200.0"/>
             <attribute intensity="0.6"/>

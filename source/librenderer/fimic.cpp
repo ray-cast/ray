@@ -44,9 +44,9 @@
 _NAME_BEGIN
 
 FimicToneMapping::Setting::Setting() noexcept
-	: bloomThreshold(0.5f)
+	: bloomThreshold(0.6f)
 	, bloomIntensity(1.0f)
-	, exposure(2.0f)
+	, exposure(1.5f)
 	, middleGray(0.5f)
 {
 }

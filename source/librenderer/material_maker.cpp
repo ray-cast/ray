@@ -167,8 +167,8 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 	if (value.empty())
 		throw failure(__TEXT("Empty shader entrypoint : ") + reader.getCurrentNodePath());
 
-	GraphicsShaderStage shaderStage = stringToShaderStage(type);
-	if (shaderStage == GraphicsShaderStage::GraphicsShaderStageMaxEnum)
+	GraphicsShaderStageFlagBits shaderStage = stringToShaderStage(type);
+	if (shaderStage == GraphicsShaderStageFlagBits::GraphicsShaderStageFlagBitsMaxEnum)
 		throw failure(__TEXT("Unknown shader type : ") + type + reader.getCurrentNodePath());
 
 	GraphicsShaderDesc shaderDesc;
@@ -907,16 +907,16 @@ MaterialMaker::load(MaterialManager& manager, Material& material, iarchive& read
 	return false;
 }
 
-GraphicsShaderStage
+GraphicsShaderStageFlagBits
 MaterialMaker::stringToShaderStage(const std::string& stage) noexcept
 {
-	if (stage == "vertex")   return GraphicsShaderStage::GraphicsShaderStageVertex;
-	if (stage == "fragment") return GraphicsShaderStage::GraphicsShaderStageFragment;
-	if (stage == "geometry") return GraphicsShaderStage::GraphicsShaderStageGeometry;
-	if (stage == "compute")  return GraphicsShaderStage::GraphicsShaderStageCompute;
+	if (stage == "vertex")   return GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit;
+	if (stage == "fragment") return GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit;
+	if (stage == "geometry") return GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit;
+	if (stage == "compute")  return GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit;
 
 	assert(false);
-	return GraphicsShaderStage::GraphicsShaderStageMaxEnum;
+	return GraphicsShaderStageFlagBits::GraphicsShaderStageFlagBitsMaxEnum;
 }
 
 GraphicsUniformType

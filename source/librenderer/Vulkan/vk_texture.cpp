@@ -121,7 +121,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		VkMemoryRequirements memReqs;
 		vkGetImageMemoryRequirements(device->getDevice(), _vkImage, &memReqs);
 
-		std::uint32_t mask = textureDesc.getStream() ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT : 0;
+		std::uint32_t mask = image.tiling == VK_IMAGE_TILING_LINEAR ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT : 0;
 		if (!_vkMemory.setup(memReqs.size, memReqs.memoryTypeBits, mask))
 			return false;
 
@@ -210,12 +210,23 @@ VulkanTexture::close() noexcept
 bool
 VulkanTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
 {
-	return false;
+	VkImageSubresource subres;
+	subres.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subres.mipLevel = 0;
+	subres.arrayLayer = 0;
+
+	VkSubresourceLayout layout;
+	vkGetImageSubresourceLayout(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkImage, &subres, &layout);
+
+	std::ptrdiff_t offset = layout.offset + y * layout.rowPitch + x;
+	std::ptrdiff_t count = layout.rowPitch * h + w;
+	return _vkMemory.map(offset, count, GraphicsAccessFlagBits::GraphicsAccessFlagMapWriteBit, data);
 }
 
 void
 VulkanTexture::unmap() noexcept
 {
+	_vkMemory.unmap();
 }
 
 void

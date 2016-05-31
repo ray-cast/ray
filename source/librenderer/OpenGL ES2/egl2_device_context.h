@@ -91,7 +91,7 @@ public:
 	bool isTextureSupport(GraphicsFormat format) noexcept;
 	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
 	bool isVertexSupport(GraphicsFormat format) noexcept;
-	bool isShaderSupport(GraphicsShaderStage stage) noexcept;
+	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
 
 	void present() noexcept;
 
@@ -125,7 +125,7 @@ private:
 
 	bool _needUpdateState;
 	bool _needUpdateLayout;
-	GLsizei _startVertices;
+	std::uint32_t _startVertices;
 
 	EGL2GraphicsData* _vbo;
 	EGL2GraphicsData* _ibo;
@@ -143,7 +143,7 @@ private:
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;
 	std::vector<GraphicsFormat> _supportAttribute;
-	std::vector<GraphicsShaderStage> _supportShaders;
+	std::vector<GraphicsShaderStageFlagBits> _supportShaders;
 
 	GraphicsDeviceWeakPtr _device;
 };

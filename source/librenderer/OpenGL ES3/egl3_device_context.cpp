@@ -620,7 +620,7 @@ EGL3DeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 }
 
 bool
-EGL3DeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
+EGL3DeviceContext::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
 {
 	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
@@ -952,12 +952,12 @@ EGL3DeviceContext::initVertexSupports() noexcept
 bool
 EGL3DeviceContext::initShaderSupports() noexcept
 {
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageFragment);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageCompute);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit);
 
 	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_EXT_geometry_shader))
-		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageGeometry);
+		_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit);
 
 	return true;
 }

@@ -527,7 +527,7 @@ VulkanTypes::asTextureTiling(GraphicsImageTiling tiling) noexcept
 }
 
 VkImageUsageFlags
-VulkanTypes::asTextureUsage(std::uint32_t usage) noexcept
+VulkanTypes::asTextureUsage(GraphicsViewUsageFlags usage) noexcept
 {
 	std::uint32_t flags = 0;
 	if (usage & GraphicsViewUsageFlagBits::GraphicsViewUsageFlagBitsTransferSrcBit)
@@ -550,21 +550,21 @@ VulkanTypes::asTextureUsage(std::uint32_t usage) noexcept
 }
 
 VkShaderStageFlagBits
-VulkanTypes::asShaderStage(GraphicsShaderStage type) noexcept
+VulkanTypes::asShaderStage(GraphicsShaderStageFlagBits type) noexcept
 {
 	switch (type)
 	{
-	case GraphicsShaderStage::GraphicsShaderStageVertex:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit:
 		return VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
-	case GraphicsShaderStage::GraphicsShaderStageFragment:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit:
 		return VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
-	case GraphicsShaderStage::GraphicsShaderStageGeometry:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit:
 		return VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
-	case GraphicsShaderStage::GraphicsShaderStageCompute:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit:
 		return VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
-	case GraphicsShaderStage::GraphicsShaderStageTessEvaluation:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit:
 		return VkShaderStageFlagBits::VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-	case GraphicsShaderStage::GraphicsShaderStageTessControl:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit:
 		return VkShaderStageFlagBits::VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 	default:
 		assert(false);

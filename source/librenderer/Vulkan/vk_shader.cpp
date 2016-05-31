@@ -210,6 +210,7 @@ VulkanGraphicsUniform::VulkanGraphicsUniform() noexcept
 	: _offset(0)
 	, _bindingPoint(GL_INVALID_INDEX)
 	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+	, _stageFlags(0)
 {
 }
 
@@ -266,21 +267,34 @@ VulkanGraphicsUniform::getOffset() const noexcept
 }
 
 void
-VulkanGraphicsUniform::setBindingPoint(GLuint bindingPoint) noexcept
+VulkanGraphicsUniform::setBindingPoint(std::uint32_t bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
 }
 
-GLuint
+std::uint32_t
 VulkanGraphicsUniform::getBindingPoint() const noexcept
 {
 	return _bindingPoint;
+}
+
+void
+VulkanGraphicsUniform::setShaderStageFlags(GraphicsShaderStageFlags flags) noexcept
+{
+	_stageFlags = flags;
+}
+
+GraphicsShaderStageFlags
+VulkanGraphicsUniform::getShaderStageFlags() const noexcept
+{
+	return _stageFlags;
 }
 
 VulkanGraphicsUniformBlock::VulkanGraphicsUniformBlock() noexcept
 	: _size(0)
 	, _bindingPoint(GL_INVALID_INDEX)
 	, _type(GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
+	, _stageFlags(0)
 {
 }
 
@@ -312,12 +326,6 @@ VulkanGraphicsUniformBlock::getType() const noexcept
 	return _type;
 }
 
-std::uint32_t
-VulkanGraphicsUniformBlock::getOffset() const noexcept
-{
-	return 0;
-}
-
 void
 VulkanGraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
 {
@@ -328,6 +336,18 @@ std::uint32_t
 VulkanGraphicsUniformBlock::getBlockSize() const noexcept
 {
 	return _size;
+}
+
+void
+VulkanGraphicsUniformBlock::setShaderStageFlags(GraphicsShaderStageFlags flags) noexcept
+{
+	_stageFlags = flags;
+}
+
+GraphicsShaderStageFlags
+VulkanGraphicsUniformBlock::getShaderStageFlags() const noexcept
+{
+	return _stageFlags;
 }
 
 void
@@ -472,12 +492,12 @@ VulkanShader::getGraphicsShaderDesc() const noexcept
 }
 
 bool 
-VulkanShader::HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out)
+VulkanShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out)
 {
 	std::string profile;
-	if (stage == GraphicsShaderStage::GraphicsShaderStageVertex)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 		profile = "vs_4_0";
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 		profile = "ps_4_0";
 
 	ID3DBlob* binary = nullptr;
@@ -509,14 +529,14 @@ VulkanShader::HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes
 }
 
 bool
-VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out)
+VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes, std::string& out)
 {
 	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT;
-	if (stage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit)
 		flags = HLSLCC_FLAG_GS_ENABLED;
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
 
 	GLSLShader shader;
@@ -549,7 +569,7 @@ VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, s
 			attrib->setType(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
 		else
 			continue;
-
+		
 		_attributes.push_back(attrib);
 	}
 
@@ -655,17 +675,17 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 		EShLanguage stage = EShLangVertex;
 
 		auto shaderStage = vulkanShaderDesc.getStage();
-		if (shaderStage == GraphicsShaderStage::GraphicsShaderStageVertex)
+		if (shaderStage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 			stage = EShLangVertex;
-		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
+		else if (shaderStage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 			stage = EShLangFragment;
-		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageCompute)
+		else if (shaderStage == GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit)
 			stage = EShLangCompute;
-		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+		else if (shaderStage == GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit)
 			stage = EShLangGeometry;
-		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+		else if (shaderStage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit)
 			stage = EShLangTessControl;
-		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+		else if (shaderStage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit)
 			stage = EShLangTessEvaluation;
 
 		const char *shaderStrings = vulkanShaderDesc.getByteCodes().c_str();
@@ -724,7 +744,7 @@ VulkanProgram::_initActiveAttribute(glslang::TProgram& program, const GraphicsPr
 	auto& shaders = programDesc.getShaders();
 	for (auto& shader : shaders)
 	{
-		if (shader->getGraphicsShaderDesc().getStage() == GraphicsShaderStage::GraphicsShaderStageVertex)
+		if (shader->getGraphicsShaderDesc().getStage() == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 			vert = shader->downcast<VulkanShader>();
 	}
 
@@ -790,7 +810,7 @@ VulkanProgram::_initActiveUniform(glslang::TProgram& program) noexcept
 			auto uniform = std::make_shared<VulkanGraphicsUniform>();
 			uniform->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
 			uniform->setBindingPoint(program.getUniformIndex(name.c_str()));
-			uniform->setOffset(0);
+			uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
 
 			auto pos = name.find("_X_");
 			if (pos != std::string::npos)
@@ -825,6 +845,7 @@ VulkanProgram::_initActiveUniformBlock(glslang::TProgram& program, const Graphic
 		uniformBlock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
 		uniformBlock->setBindingPoint(index);
 		uniformBlock->setBlockSize(program.getUniformBlockSize(i));
+		uniformBlock->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageAll);
 
 		if (name != "Globals")
 			continue;

@@ -305,7 +305,7 @@ VulkanDeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 }
 
 bool
-VulkanDeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
+VulkanDeviceContext::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
 {
 	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
@@ -570,12 +570,12 @@ VulkanDeviceContext::initVertexSupports() noexcept
 bool
 VulkanDeviceContext::initShaderSupports() noexcept
 {
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageFragment);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageGeometry);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageCompute);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageTessControl);
-	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageTessEvaluation);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit);
+	_supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit);
 	return true;
 }
 

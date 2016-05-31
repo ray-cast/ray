@@ -99,7 +99,7 @@ public:
 	bool isTextureSupport(GraphicsFormat format) noexcept;
 	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
 	bool isVertexSupport(GraphicsFormat format) noexcept;
-	bool isShaderSupport(GraphicsShaderStage stage) noexcept;
+	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
 
 	void setTransform(const float4x4& transform) noexcept;
 	void setTransformInverse(const float4x4& transform) noexcept;

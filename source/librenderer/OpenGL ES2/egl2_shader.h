@@ -93,6 +93,9 @@ public:
 	void setBindingPoint(GLuint bindingPoint) noexcept;
 	GLuint getBindingPoint() const noexcept;
 
+	void setShaderStageFlags(GraphicsShaderStageFlags flags) noexcept;
+	GraphicsShaderStageFlags getShaderStageFlags() const noexcept;
+
 private:
 	EGL2GraphicsUniform(const EGL2GraphicsUniform&) noexcept = delete;
 	EGL2GraphicsUniform& operator=(const EGL2GraphicsUniform&) noexcept = delete;
@@ -103,43 +106,7 @@ private:
 	std::uint32_t _offset;
 	GLuint _bindingPoint;
 	GraphicsUniformType _type;
-};
-
-class EGL2GraphicsUniformBlock final : public GraphicsUniformBlock
-{
-	__DeclareSubClass(EGL2GraphicsUniformBlock, GraphicsUniformBlock)
-public:
-	EGL2GraphicsUniformBlock() noexcept;
-	~EGL2GraphicsUniformBlock() noexcept;
-
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
-	void setType(GraphicsUniformType type) noexcept;
-	GraphicsUniformType getType() const noexcept;
-
-	std::uint32_t getOffset() const noexcept;
-
-	void setBlockSize(std::uint32_t size) noexcept;
-	std::uint32_t getBlockSize() const noexcept;
-
-	void addGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
-	void removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
-	const GraphicsUniforms& getGraphicsUniforms() const noexcept;
-
-	void setBindingPoint(GLuint bindingPoint) noexcept;
-	GLuint getBindingPoint() const noexcept;
-
-private:
-	EGL2GraphicsUniformBlock(const EGL2GraphicsUniformBlock&) noexcept = delete;
-	EGL2GraphicsUniformBlock& operator=(const EGL2GraphicsUniformBlock&) noexcept = delete;
-
-private:
-	std::string _name;
-	std::uint32_t _size;
-	GLuint _bindingPoint;
-	GraphicsUniforms _uniforms;
-	GraphicsUniformType _type;
+	GraphicsShaderStageFlags _stageFlags;
 };
 
 class EGL2Shader final : public GraphicsShader
@@ -157,8 +124,8 @@ public:
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
-	static bool HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out);
-	static bool HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out);
+	static bool HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out);
+	static bool HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes, std::string& out);
 
 private:
 	friend class EGL2Device;

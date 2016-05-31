@@ -51,7 +51,6 @@ __ImplementSubClass(EGL2Shader, GraphicsShader, "EGL2Shader")
 __ImplementSubClass(EGL2Program, GraphicsProgram, "EGL2Program")
 __ImplementSubClass(EGL2GraphicsAttribute, GraphicsAttribute, "EGL2GraphicsAttribute")
 __ImplementSubClass(EGL2GraphicsUniform, GraphicsUniform, "EGL2GraphicsUniform")
-__ImplementSubClass(EGL2GraphicsUniformBlock, GraphicsUniformBlock, "EGL2GraphicsUniformBlock")
 
 EGL2GraphicsAttribute::EGL2GraphicsAttribute() noexcept
 	: _semanticIndex(0)
@@ -116,6 +115,7 @@ EGL2GraphicsUniform::EGL2GraphicsUniform() noexcept
 	: _offset(0)
 	, _bindingPoint(GL_INVALID_INDEX)
 	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+	, _stageFlags(0)
 {
 }
 
@@ -183,89 +183,16 @@ EGL2GraphicsUniform::getBindingPoint() const noexcept
 	return _bindingPoint;
 }
 
-EGL2GraphicsUniformBlock::EGL2GraphicsUniformBlock() noexcept
-	: _size(0)
-	, _bindingPoint(GL_INVALID_INDEX)
-	, _type(GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
-{
-}
-
-EGL2GraphicsUniformBlock::~EGL2GraphicsUniformBlock() noexcept
-{
-}
-
 void
-EGL2GraphicsUniformBlock::setName(const std::string& name) noexcept
+EGL2GraphicsUniform::setShaderStageFlags(GraphicsShaderStageFlags flags) noexcept
 {
-	_name = name;
+	_stageFlags = flags;
 }
 
-const std::string&
-EGL2GraphicsUniformBlock::getName() const noexcept
+GraphicsShaderStageFlags
+EGL2GraphicsUniform::getShaderStageFlags() const noexcept
 {
-	return _name;
-}
-
-void
-EGL2GraphicsUniformBlock::setType(GraphicsUniformType type) noexcept
-{
-	_type = type;
-}
-
-GraphicsUniformType
-EGL2GraphicsUniformBlock::getType() const noexcept
-{
-	return _type;
-}
-
-std::uint32_t
-EGL2GraphicsUniformBlock::getOffset() const noexcept
-{
-	return 0;
-}
-
-void
-EGL2GraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
-{
-	_size = size;
-}
-
-std::uint32_t
-EGL2GraphicsUniformBlock::getBlockSize() const noexcept
-{
-	return _size;
-}
-
-void
-EGL2GraphicsUniformBlock::addGraphicsUniform(GraphicsUniformPtr uniform) noexcept
-{
-	_uniforms.push_back(uniform);
-}
-
-void
-EGL2GraphicsUniformBlock::removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept
-{
-	auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
-	if (it != _uniforms.end())
-		_uniforms.erase(it);
-}
-
-const GraphicsUniforms&
-EGL2GraphicsUniformBlock::getGraphicsUniforms() const noexcept
-{
-	return _uniforms;
-}
-
-void
-EGL2GraphicsUniformBlock::setBindingPoint(GLuint bindingPoint) noexcept
-{
-	_bindingPoint = bindingPoint;
-}
-
-GLuint
-EGL2GraphicsUniformBlock::getBindingPoint() const noexcept
-{
-	return _bindingPoint;
+	return _stageFlags;
 }
 
 EGL2Shader::EGL2Shader() noexcept
@@ -349,12 +276,12 @@ EGL2Shader::getInstanceID() const noexcept
 }
 
 bool
-EGL2Shader::HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, std::string& out)
+EGL2Shader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out)
 {
 	std::string profile;
-	if (stage == GraphicsShaderStage::GraphicsShaderStageVertex)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 		profile = "vs_4_0";
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 		profile = "ps_4_0";
 
 	ID3DBlob* binary = nullptr;
@@ -386,14 +313,14 @@ EGL2Shader::HlslCodes2GLSL(GraphicsShaderStage stage, const std::string& codes, 
 }
 
 bool
-EGL2Shader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out)
+EGL2Shader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes, std::string& out)
 {
 	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT;
-	if (stage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit)
 		flags = HLSLCC_FLAG_GS_ENABLED;
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
-	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
 
 	GLSLShader shader;
@@ -404,10 +331,10 @@ EGL2Shader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std
 		return false;
 	}
 
-	if (stage == GraphicsShaderStage::GraphicsShaderStageVertex || stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit || stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 	{
 		glslopt_shader_type glslopt_type = glslopt_shader_type::kGlslOptShaderVertex;
-		if (stage == GraphicsShaderStage::GraphicsShaderStageFragment)
+		if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 			glslopt_type = glslopt_shader_type::kGlslOptShaderFragment;
 
 		auto ctx = glslopt_initialize(glslopt_target::kGlslTargetOpenGLES30);
@@ -616,6 +543,7 @@ EGL2Program::_initActiveUniform() noexcept
 		uniform->setName(nameUniform.substr(0, std::min((std::size_t)length, nameUniform.find('['))));
 		uniform->setBindingPoint(location);
 		uniform->setType(toGraphicsUniformType(nameUniform, type));
+		uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageAll);
 
 		if (type == GL_SAMPLER_2D ||
 			type == GL_SAMPLER_3D_OES ||
@@ -631,6 +559,8 @@ EGL2Program::_initActiveUniform() noexcept
 
 			glUniform1i(location, textureUnit);
 			uniform->setBindingPoint(textureUnit);
+			uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
+
 			textureUnit++;
 		}
 

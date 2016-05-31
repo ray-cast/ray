@@ -265,16 +265,16 @@ EGL2Types::asIndexType(GraphicsIndexType type) noexcept
 }
 
 GLenum
-EGL2Types::asShaderStage(GraphicsShaderStage stage) noexcept
+EGL2Types::asShaderStage(GraphicsShaderStageFlagBits stage) noexcept
 {
 	switch (stage)
 	{
-	case GraphicsShaderStage::GraphicsShaderStageVertex:         return GL_VERTEX_SHADER;
-	case GraphicsShaderStage::GraphicsShaderStageFragment:       return GL_FRAGMENT_SHADER;
-	case GraphicsShaderStage::GraphicsShaderStageCompute:
-	case GraphicsShaderStage::GraphicsShaderStageGeometry:
-	case GraphicsShaderStage::GraphicsShaderStageTessControl:
-	case GraphicsShaderStage::GraphicsShaderStageTessEvaluation:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit:         return GL_VERTEX_SHADER;
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit:       return GL_FRAGMENT_SHADER;
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit:
+	case GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit:
 		GL_PLATFORM_LOG("Can't support shader stage");
 	default:
 		GL_PLATFORM_LOG("Invalid shader type");

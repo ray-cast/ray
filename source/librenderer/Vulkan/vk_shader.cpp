@@ -846,8 +846,8 @@ VulkanProgram::_initActiveUniformBlock(glslang::TProgram& program, const Graphic
 		uniformBlock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
 		uniformBlock->setBindingPoint(index);
 		uniformBlock->setBlockSize(program.getUniformBlockSize(i));
-		uniformBlock->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit);
-
+		uniformBlock->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageAll);
+		
 		if (name != "Globals")
 			continue;
 

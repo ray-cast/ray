@@ -269,7 +269,7 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	break;
 	case DDS_FOURCC_DX10:
 	{
-		if (info.format.flags == 0x65)
+		if (info.format.flags == 65)
 		{
 			if (info.format.blue_mask > info.format.red_mask)
 			{

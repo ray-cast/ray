@@ -572,6 +572,25 @@ VulkanTypes::asShaderStage(GraphicsShaderStageFlagBits type) noexcept
 	}
 }
 
+VkShaderStageFlags 
+VulkanTypes::asShaderStageFlags(GraphicsShaderStageFlags stageFlags) noexcept
+{
+	VkShaderStageFlags flags = 0;
+	if (stageFlags & GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
+		flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+	if (stageFlags & GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
+		flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
+	if (stageFlags & GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit)
+		flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
+	if (stageFlags & GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit)
+		flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
+	if (stageFlags & GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit)
+		flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+	if (stageFlags & GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit)
+		flags |= VkShaderStageFlagBits::VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+	return flags;
+}
+
 VkCullModeFlags
 VulkanTypes::asCullMode(GraphicsCullMode mode) noexcept
 {

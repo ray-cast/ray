@@ -325,7 +325,7 @@ EGL2Shader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes
 
 	GLSLShader shader;
 	GLSLCrossDependencyData dependency;
-	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_ES_300, nullptr, &dependency, &shader))
+	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_ES_300, 0, nullptr, &dependency, &shader))
 	{
 		FreeGLSLShader(&shader);
 		return false;
@@ -609,7 +609,7 @@ EGL2Program::toGraphicsUniformType(const std::string& name, GLenum type) noexcep
 {
 	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE)
 	{
-		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+		return GraphicsUniformType::GraphicsUniformTypeSamplerImage;
 	}
 	else
 	{

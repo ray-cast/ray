@@ -152,6 +152,7 @@ public:
 	static VkImageTiling asTextureTiling(GraphicsImageTiling tiling) noexcept;
 	static VkImageUsageFlags asTextureUsage(GraphicsViewUsageFlags usage) noexcept;
 	static VkShaderStageFlagBits asShaderStage(GraphicsShaderStageFlagBits type) noexcept;
+	static VkShaderStageFlags asShaderStageFlags(GraphicsShaderStageFlags flags) noexcept;
 	static VkCullModeFlags asCullMode(GraphicsCullMode mode) noexcept;
 	static VkPolygonMode asPolygonMode(GraphicsPolygonMode mode) noexcept;
 	static VkFrontFace asFrontFace(GraphicsFrontFace face) noexcept;

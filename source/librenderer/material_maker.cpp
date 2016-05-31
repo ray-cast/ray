@@ -874,7 +874,7 @@ MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, iarchi
 		case GraphicsUniformType::GraphicsUniformTypeFloat4:
 			param->uniform4f(parseFloat4(arg.second));
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
 			param->uniformTexture(RenderSystem::instance()->createTexture(arg.second, GraphicsTextureDim::GraphicsTextureDim2D));
 			break;
 		default:
@@ -953,9 +953,9 @@ MaterialMaker::stringToUniformType(const std::string& type) noexcept
 	if (type == "float2x2[]")  return GraphicsUniformType::GraphicsUniformTypeFloat2x2Array;
 	if (type == "float3x3[]")  return GraphicsUniformType::GraphicsUniformTypeFloat3x3Array;
 	if (type == "float4x4[]")  return GraphicsUniformType::GraphicsUniformTypeFloat4x4Array;
-	if (type == "texture2D")   return GraphicsUniformType::GraphicsUniformTypeStorageImage;
-	if (type == "texture3D")   return GraphicsUniformType::GraphicsUniformTypeStorageImage;
-	if (type == "textureCUBE")   return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+	if (type == "texture2D")   return GraphicsUniformType::GraphicsUniformTypeSamplerImage;
+	if (type == "texture3D")   return GraphicsUniformType::GraphicsUniformTypeSamplerImage;
+	if (type == "textureCUBE")   return GraphicsUniformType::GraphicsUniformTypeSamplerImage;
 	if (type == "buffer") 	   return GraphicsUniformType::GraphicsUniformTypeUniformBuffer;
 
 	assert(false);

@@ -416,7 +416,7 @@ OGLShader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes,
 
 	GLSLShader shader;
 	GLSLCrossDependencyData dependency;
-	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_DEFAULT, nullptr, &dependency, &shader))
+	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_DEFAULT, 0, nullptr, &dependency, &shader))
 	{
 		FreeGLSLShader(&shader);
 		return false;
@@ -766,7 +766,7 @@ OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 		type == GL_SAMPLER_CUBE || 
 		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
-		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+		return GraphicsUniformType::GraphicsUniformTypeSamplerImage;
 	}
 	else
 	{

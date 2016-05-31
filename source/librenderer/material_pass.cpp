@@ -505,7 +505,7 @@ MaterialPass::setup(Material& material) noexcept
 		for (auto& activeUniform : _program->getActiveParams())
 		{
 			auto type = activeUniform->getType();
-			if (type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+			if (type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
 				type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
 				type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler ||
 				type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer)

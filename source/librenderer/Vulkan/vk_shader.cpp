@@ -492,7 +492,7 @@ VulkanShader::getGraphicsShaderDesc() const noexcept
 }
 
 bool 
-VulkanShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out)
+VulkanShader::HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, const std::string& codes, std::string& out)
 {
 	std::string profile;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
@@ -529,7 +529,7 @@ VulkanShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& 
 }
 
 bool
-VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes, std::string& out)
+VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, const char* codes, std::string& out)
 {
 	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit)
@@ -546,7 +546,8 @@ VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* cod
 	extensition.ARB_explicit_attrib_location = true;
 	extensition.ARB_shading_language_420pack = true;
 
-	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_440, &extensition, &dependency, &shader))
+	std::uint32_t startLocation = stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit ? 0 : 1;
+	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_440, startLocation, &extensition, &dependency, &shader))
 	{
 		FreeGLSLShader(&shader);
 		return false;
@@ -808,7 +809,7 @@ VulkanProgram::_initActiveUniform(glslang::TProgram& program) noexcept
 			std::string name = program.getUniformName(i);
 
 			auto uniform = std::make_shared<VulkanGraphicsUniform>();
-			uniform->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
+			uniform->setType(GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 			uniform->setBindingPoint(program.getUniformIndex(name.c_str()));
 			uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
 
@@ -845,7 +846,7 @@ VulkanProgram::_initActiveUniformBlock(glslang::TProgram& program, const Graphic
 		uniformBlock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
 		uniformBlock->setBindingPoint(index);
 		uniformBlock->setBlockSize(program.getUniformBlockSize(i));
-		uniformBlock->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageAll);
+		uniformBlock->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit);
 
 		if (name != "Globals")
 			continue;
@@ -946,7 +947,7 @@ VulkanProgram::toGraphicsUniformType(const std::string& name, int type, bool for
 		type == GL_SAMPLER_CUBE ||
 		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
-		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+		return GraphicsUniformType::GraphicsUniformTypeSamplerImage;
 	}
 	else
 	{

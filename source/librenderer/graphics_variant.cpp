@@ -857,7 +857,7 @@ GraphicsVariant::uniform4fmatv(std::size_t num, const float* mat4) noexcept
 void
 GraphicsVariant::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeStorageImage || _type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler || _type == GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	_value.texture->image = texture;
 	_value.texture->sampler = sampler;
 }

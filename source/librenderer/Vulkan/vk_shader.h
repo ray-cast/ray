@@ -166,8 +166,8 @@ public:
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
-	bool HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out);
-	bool HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes, std::string& out);
+	bool HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, const std::string& codes, std::string& out);
+	bool HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, const char* codes, std::string& out);
 	bool GLSLtoSPV(VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
 
 private:

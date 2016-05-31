@@ -72,7 +72,7 @@ VulkanDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descript
 			layout.descriptorCount = 1;
 			layout.pImmutableSamplers = nullptr;
 			layout.binding = it->getBindingPoint();
-			layout.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
+			layout.stageFlags = VulkanTypes::asShaderStageFlags(it->getShaderStageFlags());
 
 			layouts.push_back(layout);
 		}

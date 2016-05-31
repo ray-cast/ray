@@ -848,7 +848,31 @@ VulkanDescriptorSet::update() noexcept
 		case ray::GraphicsUniformTypeSampler:
 			break;
 		case ray::GraphicsUniformTypeSamplerImage:
-			break;
+		{
+			auto texture = it->getTexture();
+			if (texture)
+			{
+				auto vkTexture = texture->downcast<VulkanTexture>();
+
+				VkDescriptorImageInfo info;
+				info.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
+				info.imageView = vkTexture->getImageView();
+				info.sampler = nullptr;
+
+				auto& write = descriptorWrites[descriptorWriteCount++];
+				write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				write.pNext = nullptr;
+				write.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+				write.descriptorCount = 1;
+				write.dstSet = _vkDescriptorSet;
+				write.dstArrayElement = 0;
+				write.dstBinding = bindingPoint;
+				write.pBufferInfo = nullptr;
+				write.pImageInfo = &info;
+				write.pTexelBufferView = nullptr;
+			}
+		}
+		break;
 		case ray::GraphicsUniformTypeCombinedImageSampler:
 			break;
 		case ray::GraphicsUniformTypeStorageImage:
@@ -866,7 +890,7 @@ VulkanDescriptorSet::update() noexcept
 				auto& write = descriptorWrites[descriptorWriteCount++];
 				write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				write.pNext = nullptr;
-				write.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+				write.descriptorType = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 				write.descriptorCount = 1;
 				write.dstSet = _vkDescriptorSet;
 				write.dstArrayElement = 0;

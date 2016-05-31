@@ -448,7 +448,7 @@ const char* GetVersionString(GLLang language)
     }
 }
 
-void TranslateToGLSL(HLSLCrossCompilerContext* psContext, GLLang* planguage,const GlExtensions *extensions)
+void TranslateToGLSL(HLSLCrossCompilerContext* psContext, GLLang* planguage, uint32_t startBingindPoint, const GlExtensions *extensions)
 {
     bstring glsl;
     uint32_t i;
@@ -456,7 +456,7 @@ void TranslateToGLSL(HLSLCrossCompilerContext* psContext, GLLang* planguage,cons
     GLLang language = *planguage;
 	uint32_t ui32InstCount = 0;
 	uint32_t ui32DeclCount = 0;
-	uint32_t ui32TextureUnit = psShader->sInfo.ui32NumConstantBuffers;
+	uint32_t ui32TextureUnit = startBingindPoint + psShader->sInfo.ui32NumConstantBuffers;
 
     psContext->indent = 0;
 
@@ -756,6 +756,7 @@ static void FreeSubOperands(Instruction* psInst, const uint32_t ui32NumInsts)
 HLSLCC_API int HLSLCC_APIENTRY TranslateHLSLFromMem(const char* shader,
     unsigned int flags,
     GLLang language,
+	uint32_t startBingindPoint,
 	const GlExtensions *extensions,
     GLSLCrossDependencyData* dependencies,
     GLSLShader* result)
@@ -789,7 +790,7 @@ HLSLCC_API int HLSLCC_APIENTRY TranslateHLSLFromMem(const char* shader,
             sContext.havePostShaderCode[i] = 0;
         }
 
-        TranslateToGLSL(&sContext, &language,extensions);
+        TranslateToGLSL(&sContext, &language, startBingindPoint, extensions);
 
         switch(psShader->eShaderType)
         {
@@ -882,6 +883,7 @@ HLSLCC_API int HLSLCC_APIENTRY TranslateHLSLFromMem(const char* shader,
 HLSLCC_API int HLSLCC_APIENTRY TranslateHLSLFromFile(const char* filename,
     unsigned int flags,
     GLLang language,
+	uint32_t startBingindPoint,
 	const GlExtensions *extensions,
     GLSLCrossDependencyData* dependencies,
     GLSLShader* result)
@@ -912,7 +914,7 @@ HLSLCC_API int HLSLCC_APIENTRY TranslateHLSLFromFile(const char* filename,
 
     shader[readLength] = '\0';
 
-    success = TranslateHLSLFromMem(shader, flags, language, extensions, dependencies, result);
+    success = TranslateHLSLFromMem(shader, flags, language, startBingindPoint, extensions, dependencies, result);
 
     hlslcc_free(shader);
 

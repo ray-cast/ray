@@ -458,6 +458,7 @@ HLSLCC_API void HLSLCC_APIENTRY HLSLcc_SetMemoryFunctions(	void* (*malloc_overri
 HLSLCC_API int HLSLCC_APIENTRY TranslateHLSLFromFile(const char* filename,
                                                      unsigned int flags,
                                                      GLLang language,
+													 uint32_t startBingindPoint,
 													 const GlExtensions *extensions,
                                                      GLSLCrossDependencyData* dependencies,
                                                      GLSLShader* result
@@ -466,6 +467,7 @@ HLSLCC_API int HLSLCC_APIENTRY TranslateHLSLFromFile(const char* filename,
 HLSLCC_API int HLSLCC_APIENTRY TranslateHLSLFromMem(const char* shader,
                                                     unsigned int flags,
                                                     GLLang language,
+													uint32_t startBingindPoint,
 													const GlExtensions *extensions,
                                                     GLSLCrossDependencyData* dependencies,
                                                     GLSLShader* result);

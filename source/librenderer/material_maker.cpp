@@ -400,6 +400,11 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 
 	stateDesc.setColorBlends(blends);
 
+	if (manager.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+		stateDesc.setFrontFace(GraphicsFrontFace::GraphicsFrontFaceCCW);
+	else
+		stateDesc.setFrontFace(GraphicsFrontFace::GraphicsFrontFaceCW);
+
 	auto state = manager.createRenderState(stateDesc);
 	if (!state)
 		throw failure(__TEXT("Can't create render state : ") + reader.getCurrentNodePath());

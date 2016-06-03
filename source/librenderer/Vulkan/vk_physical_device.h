@@ -34,35 +34,37 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_VK_DESCRIPTOR_POOL_H_
-#define _H_VK_DESCRIPTOR_POOL_H_
+#ifndef _H_VK_PHYSICAL_DEVICE_H_
+#define _H_VK_PHYSICAL_DEVICE_H_
 
 #include "vk_types.h"
 
 _NAME_BEGIN
 
-class VulkanDescriptorPool final : public GraphicsDescriptorPool
+class VulkanPhysicalDevice final : public GraphicsPhysicalDevice
 {
-	__DeclareSubClass(VulkanDescriptorPool, GraphicsDescriptorPool)
 public:
-	VulkanDescriptorPool() noexcept;
-	virtual ~VulkanDescriptorPool() noexcept;
+	VulkanPhysicalDevice() noexcept;
+	~VulkanPhysicalDevice() noexcept;
 
-	bool setup(const GraphicsDescriptorPoolDesc& desc) noexcept;
+	bool setup(VkPhysicalDevice physicalDevice);
 	void close() noexcept;
 
-	VkDescriptorPool getDescriptorPool() const noexcept;
+	VkPhysicalDevice getPhysicalDevice() const noexcept;
 
-	void setDevice(GraphicsDevicePtr device) noexcept;
-	GraphicsDevicePtr getDevice() noexcept;
-
-	const GraphicsDescriptorPoolDesc& getGraphicsDescriptorPoolDesc() const noexcept;
+	const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept;
 
 private:
-	VkDescriptorPool _descriptorPool;
-	VulkanDeviceWeakPtr _device;
+	bool checkPhysicalDeviceLayer(VkPhysicalDevice physicalDevice, std::size_t deviceEnabledLayerCount, const char* deviceValidationLayerNames[]) noexcept;
+	bool checkPhysicalDeviceExtension(VkPhysicalDevice physicalDevice, std::size_t deviceEnabledExtensitionCount, const char* deviceEnabledExtensitionNames[]) noexcept;
 
-	GraphicsDescriptorPoolDesc _descriptorPoolDesc;
+private:
+	VulkanPhysicalDevice(const VulkanPhysicalDevice&) = delete;
+	VulkanPhysicalDevice& operator=(const VulkanPhysicalDevice&) = delete;
+
+private:
+	VkPhysicalDevice _physicalDevice;
+	GraphicsDeviceProperties _deviceProperties;
 };
 
 _NAME_END

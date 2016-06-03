@@ -176,6 +176,12 @@ RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const no
 	h = _height;
 }
 
+GraphicsDeviceType 
+RenderPipeline::getDeviceType() const noexcept
+{
+	return _pipelineDevice->getDeviceType();
+}
+
 void
 RenderPipeline::renderBegin() noexcept
 {
@@ -221,31 +227,31 @@ RenderPipeline::getCamera() const noexcept
 }
 
 void
-RenderPipeline::setViewport(const Viewport& view) noexcept
+RenderPipeline::setViewport(std::uint32_t i, const Viewport& view) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->setViewport(view);
+	_graphicsContext->setViewport(i, view);
 }
 
 const Viewport&
-RenderPipeline::getViewport() const noexcept
+RenderPipeline::getViewport(std::uint32_t i) const noexcept
 {
 	assert(_graphicsContext);
-	return _graphicsContext->getViewport();
+	return _graphicsContext->getViewport(i);
 }
 
 void
-RenderPipeline::setScissor(const Scissor& scissor) noexcept
+RenderPipeline::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->setScissor(scissor);
+	_graphicsContext->setScissor(i, scissor);
 }
 
 const Scissor&
-RenderPipeline::getScissor() const noexcept
+RenderPipeline::getScissor(std::uint32_t i) const noexcept
 {
 	assert(_graphicsContext);
-	return _graphicsContext->getScissor();
+	return _graphicsContext->getScissor(i);
 }
 
 void

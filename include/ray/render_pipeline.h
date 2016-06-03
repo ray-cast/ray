@@ -58,17 +58,19 @@ public:
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
+	GraphicsDeviceType getDeviceType() const noexcept;
+
 	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
 	GraphicsSwapInterval getSwapInterval() const noexcept;
 
 	void setCamera(CameraPtr camera) noexcept;
 	CameraPtr getCamera() const noexcept;
 
-	void setViewport(const Viewport& view) noexcept;
-	const Viewport& getViewport() const noexcept;
+	void setViewport(std::uint32_t i, const Viewport& view) noexcept;
+	const Viewport& getViewport(std::uint32_t i) const noexcept;
 
-	void setScissor(const Scissor& scissor) noexcept;
-	const Scissor& getScissor() const noexcept;
+	void setScissor(std::uint32_t i, const Scissor& scissor) noexcept;
+	const Scissor& getScissor(std::uint32_t i) const noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;

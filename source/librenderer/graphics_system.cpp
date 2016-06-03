@@ -46,6 +46,7 @@
 #	include "OpenGL ES3/egl3_device.h"
 #endif
 #if defined(_BUILD_VULKAN)
+#   include "Vulkan/vk_system.h"
 #	include "Vulkan/vk_device.h"
 #endif
 
@@ -100,9 +101,16 @@ GraphicsSystem::createDevice(const GraphicsDeviceDesc& desc) noexcept
 #if defined(_BUILD_VULKAN)
 	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
 	{
+		if (!VulkanSystem::instance()->open())
+			return nullptr;
+
+		GraphicsDeviceDesc deviceDesc = desc;
+		deviceDesc.setPhysicalDevice(VulkanSystem::instance()->getPhysicalDevices().front());
+
 		auto device = std::make_shared<VulkanDevice>();
-		if (device->setup(desc))
+		if (device->setup(deviceDesc))
 			return device;
+
 		return nullptr;
 	}
 #endif

@@ -66,7 +66,7 @@ public:
 	const GraphicsCommandQueueDesc& getGraphicsCommandQueueDesc() const noexcept;
 
 private:
-	VkQueue _vkQueue;
+	VkQueue _queue;
 
 	std::vector<VkFence> _fences;
 	std::vector<VkSubmitInfo> _submitInfos;

@@ -39,6 +39,7 @@
 #include "vk_texture.h"
 #include "vk_framebuffer.h"
 #include "vk_system.h"
+#include "vk_physical_device.h"
 
 _NAME_BEGIN
 
@@ -61,6 +62,8 @@ bool
 VulkanSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	_swapchainDesc = swapchainDesc;
+	
+	auto physicalDevice = _device.lock()->getGraphicsDeviceDesc().getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice();
 
 	if (!initSurface())
 		return false;
@@ -68,7 +71,7 @@ VulkanSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	if (!initSemaphore())
 		return false;
 
-	if (!initSwapchain())
+	if (!initSwapchain(physicalDevice))
 		return false;
 
 	if (!initSwapchainColorImageView())
@@ -86,7 +89,7 @@ VulkanSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 void
 VulkanSwapchain::close() noexcept
 {
-	auto device = this->getDevice()->downcast<VulkanDevice>();
+	auto device = _device.lock();
 
 	_swapchainFramebuffers.clear();
 
@@ -102,7 +105,7 @@ VulkanSwapchain::close() noexcept
 
 	if (_surface != VK_NULL_HANDLE)
 	{
-		vkDestroySurfaceKHR(device->getInstance(), _surface, 0);
+		vkDestroySurfaceKHR(VulkanSystem::instance()->getInstance(), _surface, 0);
 		_surface = VK_NULL_HANDLE;
 	}
 }
@@ -135,7 +138,7 @@ VulkanSwapchain::initSurface() noexcept
 		return false;
 	}
 
-	if (vkCreateWin32SurfaceKHR(this->getDevice()->downcast<VulkanDevice>()->getInstance(), &info, 0, &_surface) != VK_SUCCESS)
+	if (vkCreateWin32SurfaceKHR(VulkanSystem::instance()->getInstance(), &info, 0, &_surface) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateWin32SurfaceKHR() fail");
 		return false;
@@ -148,21 +151,21 @@ bool
 VulkanSwapchain::initSemaphore() noexcept
 {
 	GraphicsSemaphoreDesc semaphoreDesc;
-	_swapchainSemaphore = this->getDevice()->downcast<VulkanDevice>()->createSemaphore(semaphoreDesc);
+	_swapchainSemaphore = _device.lock()->createSemaphore(semaphoreDesc);
 	return _swapchainSemaphore ? true : false;
 }
 
 bool
-VulkanSwapchain::initSwapchain() noexcept
+VulkanSwapchain::initSwapchain(VkPhysicalDevice physicalDevice) noexcept
 {
 	std::uint32_t formatCount = 0;
-	if (vkGetPhysicalDeviceSurfaceFormatsKHR(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), _surface, &formatCount, NULL) != VK_SUCCESS)
+	if (vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, _surface, &formatCount, NULL) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkGetPhysicalDeviceSurfaceFormatsKHR() fail.");
 	}
 
 	std::vector<VkSurfaceFormatKHR> surfFormats(formatCount);
-	if (vkGetPhysicalDeviceSurfaceFormatsKHR(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), _surface, &formatCount, &surfFormats[0]) != VK_SUCCESS)
+	if (vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, _surface, &formatCount, &surfFormats[0]) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkGetPhysicalDeviceSurfaceFormatsKHR() fail.");
 	}
@@ -191,7 +194,7 @@ VulkanSwapchain::initSwapchain() noexcept
 	}
 
 	VkSurfaceCapabilitiesKHR surfCapabilities;
-	if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), _surface, &surfCapabilities) != VK_SUCCESS)
+	if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, _surface, &surfCapabilities) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkGetPhysicalDeviceSurfaceCapabilitiesKHR() fail.");
 		return false;
@@ -211,13 +214,13 @@ VulkanSwapchain::initSwapchain() noexcept
 	}
 
 	std::uint32_t queueCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), &queueCount, 0);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, 0);
 
 	std::uint32_t queueFamilyIndexCount = 0;
 	for (std::uint32_t i = 0; i < queueCount; i++)
 	{
 		VkBool32 supportsPresent;
-		if (vkGetPhysicalDeviceSurfaceSupportKHR(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), i, _surface, &supportsPresent) != VK_SUCCESS)
+		if (vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, _surface, &supportsPresent) != VK_SUCCESS)
 		{
 			VK_PLATFORM_LOG("vkGetPhysicalDeviceSurfaceSupportKHR() fail.");
 			return false;
@@ -231,14 +234,14 @@ VulkanSwapchain::initSwapchain() noexcept
 	}
 
 	std::uint32_t presentModeCount = 0;
-	if (vkGetPhysicalDeviceSurfacePresentModesKHR(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), _surface, &presentModeCount, nullptr) != VK_SUCCESS)
+	if (vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, _surface, &presentModeCount, nullptr) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkGetPhysicalDeviceSurfacePresentModesKHR() fail.");
 		return false;
 	}
 
 	std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-	if (vkGetPhysicalDeviceSurfacePresentModesKHR(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), _surface, &presentModeCount, &presentModes[0]) != VK_SUCCESS)
+	if (vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, _surface, &presentModeCount, &presentModes[0]) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkGetPhysicalDeviceSurfacePresentModesKHR() fail.");
 		return false;
@@ -280,7 +283,7 @@ VulkanSwapchain::initSwapchain() noexcept
 	swapchain.oldSwapchain = 0;
 	swapchain.clipped = true;
 
-	if (vkCreateSwapchainKHR(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &swapchain, nullptr, &_vkSwapchain) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR(_device.lock()->getDevice(), &swapchain, nullptr, &_vkSwapchain) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateSwapchainKHR() fail.");
 		return false;
@@ -293,11 +296,11 @@ bool
 VulkanSwapchain::initSwapchainColorImageView() noexcept
 {
 	std::uint32_t swapchainImageCount = 0;
-	if (vkGetSwapchainImagesKHR(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkSwapchain, &swapchainImageCount, nullptr) != VK_SUCCESS)
+	if (vkGetSwapchainImagesKHR(_device.lock()->getDevice(), _vkSwapchain, &swapchainImageCount, nullptr) != VK_SUCCESS)
 		return false;
 
 	std::vector<VkImage> swapchainImages(swapchainImageCount);
-	if (vkGetSwapchainImagesKHR(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkSwapchain, &swapchainImageCount, &swapchainImages[0]) != VK_SUCCESS)
+	if (vkGetSwapchainImagesKHR(_device.lock()->getDevice(), _vkSwapchain, &swapchainImageCount, &swapchainImages[0]) != VK_SUCCESS)
 		return false;
 
 	for (std::uint32_t i = 0; i < swapchainImages.size(); i++)
@@ -342,7 +345,7 @@ VulkanSwapchain::initFramebuffer() noexcept
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
 	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _swapchainDesc.getColorFormat()));
 	framebufferLayoutDesc.addComponent(GraphicsAttachment(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _swapchainDesc.getDepthStencilFormat()));
-	_swapchainFramebufferLayout = this->getDevice()->downcast<VulkanDevice>()->createFramebufferLayout(framebufferLayoutDesc);
+	_swapchainFramebufferLayout = _device.lock()->createFramebufferLayout(framebufferLayoutDesc);
 
 	for (auto& swapchainImageView : _swapchainImageViews)
 	{
@@ -375,7 +378,7 @@ VulkanSwapchain::getSemaphore() const noexcept
 void
 VulkanSwapchain::acquireNextImage() noexcept
 {
-	vkAcquireNextImageKHR(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkSwapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &_swapImageIndex);
+	vkAcquireNextImageKHR(_device.lock()->getDevice(), _vkSwapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &_swapImageIndex);
 }
 
 std::uint32_t
@@ -405,7 +408,7 @@ VulkanSwapchain::getGraphicsSwapchainDesc() const noexcept
 void
 VulkanSwapchain::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
+	_device = device->downcast_pointer<VulkanDevice>();
 }
 
 GraphicsDevicePtr

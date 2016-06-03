@@ -62,7 +62,7 @@ private:
 	VkCommandPool _vkCommandPool;
 
 	GraphicsCommandPoolDesc _commandPoolDesc;
-	GraphicsDeviceWeakPtr _device;
+	VulkanDeviceWeakPtr _device;
 };
 
 _NAME_END

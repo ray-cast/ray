@@ -144,7 +144,7 @@ OGLCoreDeviceContext::renderEnd() noexcept
 }
 
 void
-OGLCoreDeviceContext::setViewport(const Viewport& view) noexcept
+OGLCoreDeviceContext::setViewport(std::uint32_t i, const Viewport& view) noexcept
 {
 	assert(_glcontext->getActive());
 
@@ -156,13 +156,13 @@ OGLCoreDeviceContext::setViewport(const Viewport& view) noexcept
 }
 
 const Viewport&
-OGLCoreDeviceContext::getViewport() const noexcept
+OGLCoreDeviceContext::getViewport(std::uint32_t i) const noexcept
 {
 	return _viewport;
 }
 
 void
-OGLCoreDeviceContext::setScissor(const Scissor& scissor) noexcept
+OGLCoreDeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_glcontext->getActive());
 
@@ -174,7 +174,7 @@ OGLCoreDeviceContext::setScissor(const Scissor& scissor) noexcept
 }
 
 const Scissor&
-OGLCoreDeviceContext::getScissor() const noexcept
+OGLCoreDeviceContext::getScissor(std::uint32_t i) const noexcept
 {
 	return _scissor;
 }
@@ -477,7 +477,7 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
 
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
-			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+			this->setViewport(0, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
 	}
 	else

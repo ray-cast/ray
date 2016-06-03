@@ -69,7 +69,7 @@ public:
 private:
 	bool initSurface() noexcept;
 	bool initSemaphore() noexcept;
-	bool initSwapchain() noexcept;
+	bool initSwapchain(VkPhysicalDevice physicalDevice) noexcept;
 	bool initSwapchainColorImageView() noexcept;
 	bool initSwapchainDepthView() noexcept;
 	bool initFramebuffer() noexcept;
@@ -100,7 +100,7 @@ private:
 	GraphicsFramebufferLayoutPtr _swapchainFramebufferLayout;
 
 	GraphicsSwapchainDesc _swapchainDesc;
-	GraphicsDeviceWeakPtr _device;
+	VulkanDeviceWeakPtr _device;
 };
 
 _NAME_END

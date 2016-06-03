@@ -39,6 +39,7 @@
 #include "vk_swapchain.h"
 #include "vk_device.h"
 #include "vk_semaphore.h"
+#include "vk_physical_device.h"
 #include "vk_system.h"
 
 _NAME_BEGIN
@@ -46,7 +47,7 @@ _NAME_BEGIN
 __ImplementSubClass(VulkanCommandQueue, GraphicsCommandQueue, "VulkanCommandQueue")
 
 VulkanCommandQueue::VulkanCommandQueue() noexcept
-	: _vkQueue(VK_NULL_HANDLE)
+	: _queue(VK_NULL_HANDLE)
 {
 }
 
@@ -57,15 +58,16 @@ VulkanCommandQueue::~VulkanCommandQueue() noexcept
 bool
 VulkanCommandQueue::setup(const GraphicsCommandQueueDesc& commandQueueDesc) noexcept
 {
-	auto device = this->getDevice()->downcast<VulkanDevice>();
+	auto device = this->getDevice()->downcast<VulkanDevice>()->getDevice();
+	auto physicalDevice = this->getDevice()->downcast<VulkanDevice>()->getGraphicsDeviceDesc().getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice();
 
 	std::uint32_t queueCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(device->getPhysicsDevice(), &queueCount, 0);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, 0);
 	if (queueCount == 0)
 		return false;
 
 	std::vector<VkQueueFamilyProperties> props(queueCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(device->getPhysicsDevice(), &queueCount, &props[0]);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, &props[0]);
 
 	std::uint32_t graphicsQueueNodeIndex = UINT32_MAX;
 	for (std::uint32_t i = 0; i < queueCount; i++)
@@ -94,7 +96,7 @@ VulkanCommandQueue::setup(const GraphicsCommandQueueDesc& commandQueueDesc) noex
 		return false;
 	}
 
-	vkGetDeviceQueue(device->getDevice(), graphicsQueueNodeIndex, 0, &_vkQueue);
+	vkGetDeviceQueue(device, graphicsQueueNodeIndex, 0, &_queue);
 
 	_commandQueueDesc = commandQueueDesc;
 	return true;
@@ -118,7 +120,7 @@ VulkanCommandQueue::endEvent() noexcept
 void
 VulkanCommandQueue::wait() noexcept
 {
-	vkQueueWaitIdle(_vkQueue);
+	vkQueueWaitIdle(_queue);
 }
 
 bool
@@ -148,7 +150,7 @@ VulkanCommandQueue::executeCommandLists(GraphicsCommandListPtr commandLists[], s
 		_submitInfos[i].pSignalSemaphores = 0;
 	}
 
-	return vkQueueSubmit(_vkQueue, count, _submitInfos.data(), VK_NULL_HANDLE) == VK_SUCCESS;
+	return vkQueueSubmit(_queue, count, _submitInfos.data(), VK_NULL_HANDLE) == VK_SUCCESS;
 }
 
 bool
@@ -194,7 +196,7 @@ VulkanCommandQueue::present(GraphicsSwapchainPtr canvas[], std::uint32_t count) 
 		}
 	}
 
-	return vkQueuePresentKHR(_vkQueue, &present) == VK_SUCCESS;
+	return vkQueuePresentKHR(_queue, &present) == VK_SUCCESS;
 }
 
 void

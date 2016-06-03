@@ -63,11 +63,11 @@ public:
 	void setCamera(CameraPtr renderer) noexcept;
 	CameraPtr getCamera() const noexcept;
 
-	void setViewport(const Viewport& view) noexcept;
-	const Viewport& getViewport() const noexcept;
+	void setViewport(std::uint32_t i, const Viewport& view) noexcept;
+	const Viewport& getViewport(std::uint32_t i) const noexcept;
 
-	void setScissor(const Scissor& scissor) noexcept;
-	const Scissor& getScissor() const noexcept;
+	void setScissor(std::uint32_t i, const Scissor& scissor) noexcept;
+	const Scissor& getScissor(std::uint32_t i) const noexcept;
 
 	void setTransform(const float4x4& transform) noexcept;
 	void setTransformInverse(const float4x4& transform) noexcept;

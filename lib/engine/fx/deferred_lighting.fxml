@@ -16,6 +16,7 @@
     <parameter name="texOpaque" type="texture2D"/>
     <parameter name="clipInfo" type="float2"/>
     <parameter name="lightColor" type="float3" />
+    <parameter name="scaleY" type="float"/>
     <parameter name="lightEyeDirection" type="float3" />
     <parameter name="lightEyePosition" type="float3" />
     <parameter name="lightAttenuation" type="float3"/>
@@ -39,6 +40,7 @@
                 out float4 oPosition : SV_Position)
             {
                 oPosition = Position;
+                oPosition.y *= scaleY;
                 oTexcoord = PosToCoord(Position);
             }
 
@@ -301,6 +303,16 @@
             }
         ]]>
     </shader>
+    <technique name="DeferredCopyOnly">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="DeferredScreenQuadVS"/>
+            <state name="fragment" value="DeferredCopyOnlyPS"/>
+            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
     <technique name="DeferredDepthOnly">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
@@ -314,19 +326,6 @@
 
             <state name="vertex" value="DeferredScreenQuadVS"/>
             <state name="fragment" value="DeferredDepthLinearPS"/>
-
-            <state name="cullmode" value="none"/>
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-        </pass>
-    </technique>
-    <technique name="DeferredCopyOnly">
-        <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
-
-            <state name="vertex" value="DeferredScreenQuadVS"/>
-            <state name="fragment" value="DeferredCopyOnlyPS"/>
 
             <state name="cullmode" value="none"/>
 

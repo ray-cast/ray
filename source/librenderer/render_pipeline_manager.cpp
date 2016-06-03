@@ -364,31 +364,31 @@ RenderPipelineManager::getCamera() const noexcept
 }
 
 void
-RenderPipelineManager::setViewport(const Viewport& view) noexcept
+RenderPipelineManager::setViewport(std::uint32_t i, const Viewport& view) noexcept
 {
 	assert(_pipeline);
-	_pipeline->setViewport(view);
+	_pipeline->setViewport(i, view);
 }
 
 const Viewport&
-RenderPipelineManager::getViewport() const noexcept
+RenderPipelineManager::getViewport(std::uint32_t i) const noexcept
 {
 	assert(_pipeline);
-	return _pipeline->getViewport();
+	return _pipeline->getViewport(i);
 }
 
 void 
-RenderPipelineManager::setScissor(const Scissor& scissor) noexcept
+RenderPipelineManager::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_pipeline);
-	_pipeline->setScissor(scissor);
+	_pipeline->setScissor(i, scissor);
 }
 
 const Scissor&
-RenderPipelineManager::getScissor() const noexcept
+RenderPipelineManager::getScissor(std::uint32_t i) const noexcept
 {
 	assert(_pipeline);
-	return _pipeline->getScissor();
+	return _pipeline->getScissor(i);
 }
 
 void

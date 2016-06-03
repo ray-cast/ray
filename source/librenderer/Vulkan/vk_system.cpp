@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "vk_system.h"
-#include "vk_device.h"
+#include "vk_physical_device.h"
 
 #pragma warning (push)
 #pragma warning (disable:4458)
@@ -73,7 +73,10 @@ VulkanSystem::open() noexcept
 		if (!this->initInstance())
 			return false;
 
-		_isOpened = true;
+		if (!this->initPhysicalDevices())
+			return false;
+
+		_isOpened = VulkanSystem::instance()->startDebugControl();
 	}
 
 	return true;
@@ -86,6 +89,12 @@ VulkanSystem::close() noexcept
 
 	this->stopDebugControl();
 
+	for (auto& physicalDevice : _physicalDevices)
+	{
+		assert(physicalDevice.unique());
+		physicalDevice.reset();
+	}
+
 	if (_instance != VK_NULL_HANDLE)
 	{
 		vkDestroyInstance(_instance, 0);
@@ -94,17 +103,23 @@ VulkanSystem::close() noexcept
 }
 
 void 
-VulkanSystem::geteInstanceLayerNames(std::vector<char*>& instanceLayerNames) noexcept
+VulkanSystem::getInstanceLayerNames(std::vector<char*>& instanceLayerNames) noexcept
 {
 	for (auto& it : _instanceLayers)
 		instanceLayerNames.push_back(it.layerName);
 }
 
 void 
-VulkanSystem::geteInstanceExtensitionNames(std::vector<char*>& instanceExtensitionNames) noexcept
+VulkanSystem::getInstanceExtensitionNames(std::vector<char*>& instanceExtensitionNames) noexcept
 {
 	for (auto& it : _instanceExtensions)
 		instanceExtensitionNames.push_back(it.extensionName);
+}
+
+const GraphicsPhysicalDevices&
+VulkanSystem::getPhysicalDevices() const noexcept
+{
+	return _physicalDevices;
 }
 
 void
@@ -328,7 +343,7 @@ VulkanSystem::initInstance() noexcept
 	static const char* instanceValidationLayerNames[] = { "VK_LAYER_LUNARG_swapchain" };
 	static const char* instanceExtensionNames[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
 
-	if (!this->checkInstanceLayer(1, instanceValidationLayerNames))
+	if (!this->checkInstanceLayer(0, nullptr))
 		return false;
 
 	if (!this->checkInstanceExtenstion(3, instanceExtensionNames))
@@ -373,6 +388,39 @@ VulkanSystem::initInstance() noexcept
 			"installable client driver (ICD) installed?\nPlease look at "
 			"the Getting Started guide for additional information.");
 		return false;
+	}
+
+	return true;
+}
+
+bool 
+VulkanSystem::initPhysicalDevices() noexcept
+{
+	std::uint32_t deviceCount = 0;
+	if (vkEnumeratePhysicalDevices(VulkanSystem::instance()->getInstance(), &deviceCount, 0) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkEnumeratePhysicalDevices fail");
+		return false;
+	}
+
+	if (deviceCount > 0)
+	{
+		std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
+
+		if (vkEnumeratePhysicalDevices(VulkanSystem::instance()->getInstance(), &deviceCount, &physicalDevices[0]) != VK_SUCCESS)
+		{
+			VK_PLATFORM_LOG("vkEnumeratePhysicalDevices fail");
+			return false;
+		}
+
+		for (auto& it : physicalDevices)
+		{
+			auto physicalDevice = std::make_shared<VulkanPhysicalDevice>();
+			if (physicalDevice->setup(it))
+			{
+				_physicalDevices.push_back(physicalDevice);
+			}
+		}
 	}
 
 	return true;

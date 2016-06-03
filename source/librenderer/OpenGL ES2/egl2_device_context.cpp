@@ -135,7 +135,7 @@ EGL2DeviceContext::renderEnd() noexcept
 }
 
 void
-EGL2DeviceContext::setViewport(const Viewport& view) noexcept
+EGL2DeviceContext::setViewport(std::uint32_t i, const Viewport& view) noexcept
 {
 	if (_viewport.left != view.left ||
 		_viewport.top != view.top ||
@@ -147,8 +147,14 @@ EGL2DeviceContext::setViewport(const Viewport& view) noexcept
 	}
 }
 
+const Viewport&
+EGL2DeviceContext::getViewport(std::uint32_t i) const noexcept
+{
+	return _viewport;
+}
+
 void
-EGL2DeviceContext::setScissor(const Scissor& scissor) noexcept
+EGL2DeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	if (_scissor != scissor)
 	{
@@ -158,7 +164,7 @@ EGL2DeviceContext::setScissor(const Scissor& scissor) noexcept
 }
 
 const Scissor&
-EGL2DeviceContext::getScissor() const noexcept
+EGL2DeviceContext::getScissor(std::uint32_t i) const noexcept
 {
 	return _scissor;
 }
@@ -328,12 +334,6 @@ EGL2DeviceContext::getDescriptorSet() const noexcept
 	return nullptr;
 }
 
-const Viewport&
-EGL2DeviceContext::getViewport() const noexcept
-{
-	return _viewport;
-}
-
 void
 EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
@@ -457,7 +457,7 @@ EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
 
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
-			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+			this->setViewport(0, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
 	}
 	else

@@ -35,8 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "vk_descriptor_set.h"
-#include "vk_descriptor_set_layout.h"
-#include "vk_descriptor_pool.h"
 #include "vk_device.h"
 #include "vk_shader.h"
 #include "vk_texture.h"
@@ -46,7 +44,9 @@
 _NAME_BEGIN
 
 __ImplementSubClass(VulkanGraphicsUniformSet, GraphicsUniformSet, "VulkanGraphicsUniformSet")
+__ImplementSubClass(VulkanDescriptorPool, GraphicsDescriptorPool, "VulkanDescriptorPool")
 __ImplementSubClass(VulkanDescriptorSet, GraphicsDescriptorSet, "VulkanDescriptorSet")
+__ImplementSubClass(VulkanDescriptorSetLayout, GraphicsDescriptorSetLayout, "VulkanDescriptorSetLayout")
 
 VulkanGraphicsUniformSet::VulkanGraphicsUniformSet() noexcept
 	: _needUpdate(true)
@@ -705,6 +705,168 @@ const GraphicsParamPtr&
 VulkanGraphicsUniformSet::getGraphicsParam() const noexcept
 {
 	return _param;
+}
+
+VulkanDescriptorPool::VulkanDescriptorPool() noexcept
+	: _descriptorPool(VK_NULL_HANDLE)
+{
+}
+
+VulkanDescriptorPool::~VulkanDescriptorPool() noexcept
+{
+	this->close();
+}
+
+bool
+VulkanDescriptorPool::setup(const GraphicsDescriptorPoolDesc& descriptorPoolDesc) noexcept
+{
+	std::vector<VkDescriptorPoolSize> pool;
+	for (const auto& it : descriptorPoolDesc.getGraphicsDescriptorPoolComponents())
+	{
+		VkDescriptorPoolSize poolSize;
+		poolSize.type = VulkanTypes::asDescriptorType(it.getDescriptorType());
+		poolSize.descriptorCount = it.getDescriptorNums();
+
+		pool.push_back(poolSize);
+	}
+
+	VkDescriptorPoolCreateInfo info;
+	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	info.maxSets = descriptorPoolDesc.getMaxSets();
+	info.poolSizeCount = pool.size();
+	info.pPoolSizes = pool.data();
+
+	if (vkCreateDescriptorPool(_device.lock()->getDevice(), &info, nullptr, &_descriptorPool) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateDescriptorPool() fail.");
+		return false;
+	}
+
+	_descriptorPoolDesc = descriptorPoolDesc;
+	return true;
+}
+
+void
+VulkanDescriptorPool::close() noexcept
+{
+	if (_descriptorPool != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorPool(_device.lock()->getDevice(), _descriptorPool, nullptr);
+		_descriptorPool = VK_NULL_HANDLE;
+	}
+}
+
+VkDescriptorPool
+VulkanDescriptorPool::getDescriptorPool() const noexcept
+{
+	return _descriptorPool;
+}
+
+void
+VulkanDescriptorPool::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device->downcast_pointer<VulkanDevice>();
+}
+
+GraphicsDevicePtr
+VulkanDescriptorPool::getDevice() noexcept
+{
+	return _device.lock();
+}
+
+const GraphicsDescriptorPoolDesc&
+VulkanDescriptorPool::getGraphicsDescriptorPoolDesc() const noexcept
+{
+	return _descriptorPoolDesc;
+}
+
+VulkanDescriptorSetLayout::VulkanDescriptorSetLayout() noexcept
+	: _vkDescriptorSetLayout(VK_NULL_HANDLE)
+{
+}
+
+VulkanDescriptorSetLayout::~VulkanDescriptorSetLayout() noexcept
+{
+	this->close();
+}
+
+bool
+VulkanDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descriptorSetLayoutDesc) noexcept
+{
+	std::vector<VkDescriptorSetLayoutBinding> layouts;
+
+	const auto& uniforms = descriptorSetLayoutDesc.getUniformComponents();
+	for (const auto& it : uniforms)
+	{
+		auto type = it->getType();
+		if (type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+			type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler ||
+			type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer ||
+			type == GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic)
+		{
+			VkDescriptorSetLayoutBinding layout;
+			layout.descriptorType = VulkanTypes::asDescriptorType(it->getType());
+			layout.descriptorCount = 1;
+			layout.pImmutableSamplers = nullptr;
+			layout.binding = it->getBindingPoint();
+			layout.stageFlags = VulkanTypes::asShaderStageFlags(it->getShaderStageFlags());
+
+			layouts.push_back(layout);
+		}
+	}
+
+	VkDescriptorSetLayoutCreateInfo info;
+	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.bindingCount = layouts.size();
+	info.pBindings = layouts.data();
+
+	if (vkCreateDescriptorSetLayout(_device.lock()->getDevice(), &info, nullptr, &_vkDescriptorSetLayout) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateDescriptorSetLayout() fail.");
+		return false;
+	}
+
+	_descriptorSetLayoutDesc = descriptorSetLayoutDesc;
+	return true;
+}
+
+void
+VulkanDescriptorSetLayout::close() noexcept
+{
+	if (_vkDescriptorSetLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorSetLayout(_device.lock()->getDevice(), _vkDescriptorSetLayout, nullptr);
+		_vkDescriptorSetLayout = VK_NULL_HANDLE;
+	}
+}
+
+VkDescriptorSetLayout
+VulkanDescriptorSetLayout::getDescriptorSetLayout() const noexcept
+{
+	return _vkDescriptorSetLayout;
+}
+
+const GraphicsDescriptorSetLayoutDesc&
+VulkanDescriptorSetLayout::getGraphicsDescriptorSetLayoutDesc() const noexcept
+{
+	return _descriptorSetLayoutDesc;
+}
+
+void
+VulkanDescriptorSetLayout::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device->downcast_pointer<VulkanDevice>();
+}
+
+GraphicsDevicePtr
+VulkanDescriptorSetLayout::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 VulkanDescriptorSet::VulkanDescriptorSet() noexcept

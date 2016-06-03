@@ -65,7 +65,7 @@ private:
 	VulkanFramebufferLayout& operator=(const VulkanFramebufferLayout&) = delete;
 
 private:
-	VkRenderPass _vkFramebufferLayout;
+	VkRenderPass _renderPass;
 
 	GraphicsFramebufferLayoutDesc _renderPassDesc;
 	GraphicsDeviceWeakPtr _device;

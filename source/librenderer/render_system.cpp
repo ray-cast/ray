@@ -118,31 +118,31 @@ RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noex
 }
 
 void
-RenderSystem::setViewport(const Viewport& view) noexcept
+RenderSystem::setViewport(std::uint32_t i, const Viewport& view) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setViewport(view);
+	_pipelineManager->setViewport(i, view);
 }
 
 const Viewport&
-RenderSystem::getViewport() const noexcept
+RenderSystem::getViewport(std::uint32_t i) const noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->getViewport();
+	return _pipelineManager->getViewport(i);
 }
 
 void 
-RenderSystem::setScissor(const Scissor& scissor) noexcept
+RenderSystem::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setScissor(scissor);
+	_pipelineManager->setScissor(i, scissor);
 }
 
 const Scissor&
-RenderSystem::getScissor() const noexcept
+RenderSystem::getScissor(std::uint32_t i) const noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->getScissor();
+	return _pipelineManager->getScissor(i);
 }
 
 void

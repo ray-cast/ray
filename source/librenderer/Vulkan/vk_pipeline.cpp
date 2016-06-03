@@ -39,28 +39,28 @@
 #include "vk_shader.h"
 #include "vk_input_layout.h"
 #include "vk_framebuffer.h"
-#include "vk_descriptor_set_layout.h"
 #include "vk_render_state.h"
+#include "vk_descriptor_set.h"
 #include "vk_system.h"
 
 _NAME_BEGIN
 
-__ImplementSubClass(VulkanRenderPipeline, GraphicsPipeline, "VulkanRenderPipeline")
+__ImplementSubClass(VulkanPipeline, GraphicsPipeline, "VulkanPipeline")
 
-VulkanRenderPipeline::VulkanRenderPipeline() noexcept
+VulkanPipeline::VulkanPipeline() noexcept
 	: _vkPipeline(VK_NULL_HANDLE)
 	, _vkPipelineCache(VK_NULL_HANDLE)
 	, _vkPipelineLayout(VK_NULL_HANDLE)
 {
 }
 
-VulkanRenderPipeline::~VulkanRenderPipeline() noexcept
+VulkanPipeline::~VulkanPipeline() noexcept
 {
 	this->close();
 }
 
 bool
-VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
+VulkanPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 {
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout());
 	//assert(pipelineDesc.getGraphicsFramebufferLayout());
@@ -91,7 +91,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 	const auto& stateDesc = pipelineDesc.getGraphicsState()->getGraphicsStateDesc();
 	const auto& inputLayoutDesc = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc();
-	const auto& programDesc = pipelineDesc.getGraphicsProgram()->getGraphicsProgramDesc();
+	const auto& activeShaders = pipelineDesc.getGraphicsProgram()->downcast<VulkanProgram>()->getActiveShaders();
 
 	memset(&pipeline, 0, sizeof(pipeline));
 	memset(&pipelineCache, 0, sizeof(pipelineCache));
@@ -160,7 +160,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 	rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rs.cullMode = VulkanTypes::asCullMode(stateDesc.getCullMode());
-	rs.frontFace = VulkanTypes::asFrontFace(stateDesc.getFrontFace());
+	rs.frontFace =  VulkanTypes::asFrontFace(stateDesc.getFrontFace());
 	rs.polygonMode = VulkanTypes::asPolygonMode(stateDesc.getPolygonMode());
 	rs.rasterizerDiscardEnable = stateDesc.getRasterizerDiscardEnable();
 	rs.depthBiasEnable = stateDesc.getDepthBiasEnable();
@@ -168,7 +168,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	rs.depthClampEnable = stateDesc.getDepthClampEnable();
 	rs.depthBiasClamp = stateDesc.getDepthBiasClamp();
 	rs.depthBiasSlopeFactor = stateDesc.getDepthSlopeScaleBias();
-
+	
 	std::vector<VkPipelineColorBlendAttachmentState> blends;
 	for (auto& blend : stateDesc.getColorBlends())
 	{
@@ -221,8 +221,8 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	ds.back.writeMask = stateDesc.getStencilBackWriteMask();
 
 	vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	vp.viewportCount = 1;
-	vp.scissorCount = 1;
+	vp.viewportCount = 2;
+	vp.scissorCount = 2;
 
 	ts.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 
@@ -235,13 +235,11 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	dynamicStateEnables[dynamicState.dynamicStateCount++] = VK_DYNAMIC_STATE_VIEWPORT;
 	dynamicStateEnables[dynamicState.dynamicStateCount++] = VK_DYNAMIC_STATE_SCISSOR;
 
-	for (const auto& shader : programDesc.getShaders())
+	for (const auto& shader : activeShaders)
 	{
-		auto module = shader->downcast<VulkanShader>();
-
 		shaderStages[pipeline.stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStages[pipeline.stageCount].module = module->getShaderModule();
-		shaderStages[pipeline.stageCount].stage = VulkanTypes::asShaderStage(module->getGraphicsShaderDesc().getStage());
+		shaderStages[pipeline.stageCount].module = shader->getShaderModule();
+		shaderStages[pipeline.stageCount].stage = shader->getShaderStage();
 		shaderStages[pipeline.stageCount].pName = "main";
 
 		pipeline.stageCount++;
@@ -298,7 +296,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 }
 
 void
-VulkanRenderPipeline::close() noexcept
+VulkanPipeline::close() noexcept
 {
 	if (_vkPipeline != VK_NULL_HANDLE)
 	{
@@ -320,37 +318,37 @@ VulkanRenderPipeline::close() noexcept
 }
 
 VkPipeline
-VulkanRenderPipeline::getPipeline() const noexcept
+VulkanPipeline::getPipeline() const noexcept
 {
 	return _vkPipeline;
 }
 
 VkPipelineLayout
-VulkanRenderPipeline::getPipelineLayout() const noexcept
+VulkanPipeline::getPipelineLayout() const noexcept
 {
 	return _vkPipelineLayout;
 }
 
 VkPipelineBindPoint
-VulkanRenderPipeline::getPipelineBindPoint() const noexcept
+VulkanPipeline::getPipelineBindPoint() const noexcept
 {
 	return VK_PIPELINE_BIND_POINT_GRAPHICS;
 }
 
 void
-VulkanRenderPipeline::setDevice(GraphicsDevicePtr device) noexcept
+VulkanPipeline::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;
 }
 
 GraphicsDevicePtr
-VulkanRenderPipeline::getDevice() noexcept
+VulkanPipeline::getDevice() noexcept
 {
 	return _device.lock();
 }
 
 const GraphicsPipelineDesc&
-VulkanRenderPipeline::getGraphicsPipelineDesc() const noexcept
+VulkanPipeline::getGraphicsPipelineDesc() const noexcept
 {
 	return _pipelineDesc;
 }

@@ -139,7 +139,6 @@ DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 		this->renderLights(*_pipeline, _deferredLightingView);
 		this->renderOpaquesShading(*_pipeline, _deferredFinalShadingView);
 		this->renderOpaquesSpecificShading(*_pipeline, _deferredFinalShadingView);
-		
 	}
 
 	if (_pipeline->drawPostProcess(RenderQueue::RenderQueuePostprocess, _deferredFinalShadingView, _deferredSwapView))
@@ -151,6 +150,8 @@ DeferredLightingPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFrameb
 {
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueBatch);
 }
@@ -186,8 +187,7 @@ void
 DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorStencilBit, float4::Zero, 1.0, 0);
-	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4(1.0,1.0,1.0,0.0), 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
@@ -388,8 +388,10 @@ DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsTe
 {
 	_texSource->uniformTexture(src);
 	pipeline.setFramebuffer(dst);
-	pipeline.setViewport(viewport);
-	pipeline.setScissor(Scissor(0, 0, viewport.width, viewport.height));
+	pipeline.setViewport(0, viewport);
+	pipeline.setViewport(1, viewport);
+	pipeline.setScissor(0, Scissor(0, 0, viewport.width, viewport.height));
+	pipeline.setScissor(1, Scissor(0, 0, viewport.width, viewport.height));
 	pipeline.drawScreenQuad(*_deferredCopyOnly);
 }
 
@@ -431,6 +433,7 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_texSource = _deferredLighting->getParameter("texSource"); if (!_texSource) return false;
 	_texOpaque = _deferredLighting->getParameter("texOpaque"); if (!_texOpaque) return false;
 
+	_scaleY = _deferredLighting->getParameter("scaleY"); if (!_scaleY) return false;
 	_clipInfo = _deferredLighting->getParameter("clipInfo"); if (!_clipInfo) return false;
 
 	_lightColor = _deferredLighting->getParameter("lightColor"); if (!_lightColor) return false;
@@ -443,6 +446,11 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_shadowFactor = _deferredLighting->getParameter("shadowFactor"); if (!_shadowFactor) return false;
 	_shadowView2LightView = _deferredLighting->getParameter("shadowView2LightView"); if (!_shadowView2LightView) return false;
 	_shadowView2LightViewProject = _deferredLighting->getParameter("shadowView2LightViewProject"); if (!_shadowView2LightViewProject) return false;
+
+	if (pipeline.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+		_scaleY->uniform1f(-1.0f);
+	else
+		_scaleY->uniform1f(1.0f);
 
 	return true;
 }

@@ -69,9 +69,7 @@ public:
 	void clearTexture(GraphicsTexturePtr texture, const ClearValue& value) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
-	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 
 	void setPipeline(GraphicsPipelinePtr pipeline) noexcept;
 	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
@@ -107,7 +105,7 @@ private:
 
 	GraphicsStateDesc _pipelineState;
 
-	VulkanRenderPipeline* _pipeline;
+	VulkanPipeline* _pipeline;
 	VulkanDescriptorSet* _descripotrSet;
 	VulkanFramebuffer* _framebuffer;
 

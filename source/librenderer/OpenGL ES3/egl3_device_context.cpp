@@ -133,7 +133,7 @@ EGL3DeviceContext::renderEnd() noexcept
 }
 
 void
-EGL3DeviceContext::setViewport(const Viewport& view) noexcept
+EGL3DeviceContext::setViewport(std::uint32_t i, const Viewport& view) noexcept
 {
 	assert(_glcontext->getActive());
 
@@ -145,13 +145,13 @@ EGL3DeviceContext::setViewport(const Viewport& view) noexcept
 }
 
 const Viewport&
-EGL3DeviceContext::getViewport() const noexcept
+EGL3DeviceContext::getViewport(std::uint32_t i) const noexcept
 {
 	return _viewport;
 }
 
 void
-EGL3DeviceContext::setScissor(const Scissor& scissor) noexcept
+EGL3DeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_glcontext->getActive());
 
@@ -163,7 +163,7 @@ EGL3DeviceContext::setScissor(const Scissor& scissor) noexcept
 }
 
 const Scissor&
-EGL3DeviceContext::getScissor() const noexcept
+EGL3DeviceContext::getScissor(std::uint32_t i) const noexcept
 {
 	return _scissor;
 }
@@ -458,7 +458,7 @@ EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
 
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
-			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+			this->setViewport(0, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
 	}
 	else

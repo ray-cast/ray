@@ -50,8 +50,12 @@ public:
 	void setDeviceType(GraphicsDeviceType type) noexcept;
 	GraphicsDeviceType getDeviceType() const noexcept;
 
+	void setPhysicalDevice(GraphicsPhysicalDevicePtr physicalDevice) noexcept;
+	GraphicsPhysicalDevicePtr getPhysicalDevice() const noexcept;
+
 private:
 	GraphicsDeviceType _deviceType;
+	GraphicsPhysicalDevicePtr _physicalDevice;
 };
 
 class EXPORT GraphicsDevice : public rtti::Interface

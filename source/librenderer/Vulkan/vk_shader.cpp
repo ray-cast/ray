@@ -383,7 +383,6 @@ VulkanGraphicsUniformBlock::getBindingPoint() const noexcept
 }
 
 VulkanShader::VulkanShader() noexcept
-	: _vkShader(VK_NULL_HANDLE)
 {
 }
 
@@ -395,82 +394,13 @@ VulkanShader::~VulkanShader() noexcept
 bool
 VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
-	assert(_vkShader == VK_NULL_HANDLE);
-
-	if (shaderDesc.getByteCodes().empty())
-		return false;
-
-	std::string codes = shaderDesc.getByteCodes();
-
-	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSL)
-	{
-		if (!HlslCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes))
-		{
-			VK_PLATFORM_LOG("Can't conv hlsl to glsl.");
-			return false;
-		}
-	}
-	else if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
-	{
-		if (!HlslByteCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes))
-		{
-			VK_PLATFORM_LOG("Can't conv hlslbytecodes to glsl.");
-			return false;
-		}
-	}
-
-	std::vector<std::uint32_t> bytecodes;
-	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), codes.c_str(), bytecodes))
-	{
-		VK_PLATFORM_LOG("Can't conv glsl to spv.");
-		return false;
-	}
-
-	VkShaderModuleCreateInfo info;
-	info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	info.pNext = nullptr;
-	info.codeSize = bytecodes.size() * sizeof(std::uint32_t);
-	info.pCode = bytecodes.data();
-	info.flags = 0;
-
-	if (vkCreateShaderModule(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkShader) != VK_SUCCESS)
-	{
-		VK_PLATFORM_LOG("vkCreateShaderModule() fail.");
-		return false;
-	}
-
 	_shaderDesc = shaderDesc;
-	_shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
-	_shaderDesc.setByteCodes(std::move(codes));
 	return true;
 }
 
 void
 VulkanShader::close() noexcept
 {
-	if (_vkShader != VK_NULL_HANDLE)
-	{
-		vkDestroyShaderModule(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkShader, nullptr);
-		_vkShader = VK_NULL_HANDLE;
-	}
-}
-
-VkShaderModule
-VulkanShader::getShaderModule() const noexcept
-{
-	return _vkShader;
-}
-
-const GraphicsParams& 
-VulkanShader::getParams() const noexcept
-{
-	return _parameters;
-}
-
-const GraphicsAttributes&
-VulkanShader::getAttributes() const noexcept
-{
-	return _attributes;
 }
 
 void
@@ -491,8 +421,128 @@ VulkanShader::getGraphicsShaderDesc() const noexcept
 	return _shaderDesc;
 }
 
-bool 
-VulkanShader::HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, const std::string& codes, std::string& out)
+VulkanStageShader::VulkanStageShader() noexcept
+	: _shader(VK_NULL_HANDLE)
+{
+}
+
+VulkanStageShader::~VulkanStageShader() noexcept
+{
+}
+
+bool
+VulkanStageShader::setup(const GraphicsShaderDesc& shaderDesc, std::uint32_t startLocation) noexcept
+{
+	assert(_shader == VK_NULL_HANDLE);
+
+	if (shaderDesc.getByteCodes().empty())
+		return false;
+
+	std::string codes = shaderDesc.getByteCodes();
+
+	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSL)
+	{
+		if (!HlslCodes2GLSL(shaderDesc.getStage(), startLocation, shaderDesc.getByteCodes().data(), codes))
+		{
+			VK_PLATFORM_LOG("Can't conv hlsl to glsl.");
+			return false;
+		}
+	}
+	else if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
+	{
+		if (!HlslByteCodes2GLSL(shaderDesc.getStage(), startLocation, shaderDesc.getByteCodes().data(), codes))
+		{
+			VK_PLATFORM_LOG("Can't conv hlslbytecodes to glsl.");
+			return false;
+		}
+	}
+
+	std::vector<std::uint32_t> bytecodes;
+	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), codes.c_str(), bytecodes))
+	{
+		VK_PLATFORM_LOG("Can't conv glsl to spv.");
+		return false;
+	}
+
+	VkShaderModuleCreateInfo info;
+	info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.codeSize = bytecodes.size() * sizeof(std::uint32_t);
+	info.pCode = bytecodes.data();
+	info.flags = 0;
+
+	if (vkCreateShaderModule(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_shader) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateShaderModule() fail.");
+		return false;
+	}
+
+	_shaderDesc = shaderDesc;
+	_shaderDesc.setByteCodes(std::move(codes));
+	_shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
+	return true;
+}
+
+void
+VulkanStageShader::close() noexcept
+{
+	if (_shader != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _shader, nullptr);
+		_shader = VK_NULL_HANDLE;
+	}
+}
+
+VkShaderModule 
+VulkanStageShader::getShaderModule() const noexcept
+{
+	return _shader;
+}
+
+VkShaderStageFlagBits 
+VulkanStageShader::getShaderStage() const noexcept
+{
+	return VulkanTypes::asShaderStage(_shaderDesc.getStage());
+}
+
+const GraphicsParams& 
+VulkanStageShader::getParams() const noexcept
+{
+	return _parameters;
+}
+
+const GraphicsParams&
+VulkanStageShader::getArrayParams() const noexcept
+{
+	return _arrays;
+}
+
+const GraphicsAttributes& 
+VulkanStageShader::getAttributes() const noexcept
+{
+	return _attributes;
+}
+
+const GraphicsShaderDesc& 
+VulkanStageShader::getGraphicsShaderDesc() const noexcept
+{
+	return _shaderDesc;
+}
+
+void
+VulkanStageShader::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device->downcast_pointer<VulkanDevice>();
+}
+
+GraphicsDevicePtr
+VulkanStageShader::getDevice() noexcept
+{
+	return _device.lock();
+}
+
+bool
+VulkanStageShader::HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, std::uint32_t startLocation, const std::string& codes, std::string& out)
 {
 	std::string profile;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
@@ -518,18 +568,18 @@ VulkanShader::HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, const std::strin
 		0,
 		&binary,
 		&error
-		);
+	);
 
 	if (hr == S_OK)
 	{
-		return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
+		return HlslByteCodes2GLSL(stage, startLocation, (char*)binary->GetBufferPointer(), out);
 	}
 
 	return false;
 }
 
 bool
-VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, const char* codes, std::string& out)
+VulkanStageShader::HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, std::uint32_t startLocation, const char* codes, std::string& out)
 {
 	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit)
@@ -546,7 +596,6 @@ VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, const char* 
 	extensition.ARB_explicit_attrib_location = true;
 	extensition.ARB_shading_language_420pack = true;
 
-	std::uint32_t startLocation = stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit ? 0 : 1;
 	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_440, startLocation, &extensition, &dependency, &shader))
 	{
 		FreeGLSLShader(&shader);
@@ -570,8 +619,22 @@ VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, const char* 
 			attrib->setType(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
 		else
 			continue;
-		
+
 		_attributes.push_back(attrib);
+	}
+
+	for (std::uint32_t i = 0; i < shader.reflection.ui32NumResourceBindings; i++)
+	{
+		auto resourceType = shader.reflection.psResourceBindings[i].eType;
+
+		if (resourceType != ResourceType::RTYPE_SAMPLER)
+		{
+			auto param = std::make_shared<VulkanGraphicsUniform>();
+			param->setName(shader.reflection.psResourceBindings[i].Name);
+			param->setType(HlslResTypeToUniformType(resourceType));
+
+			_parameters.push_back(param);
+		}
 	}
 
 	for (std::uint32_t i = 0; i < shader.reflection.ui32NumConstantBuffers; i++)
@@ -584,8 +647,7 @@ VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, const char* 
 				auto param = std::make_shared<VulkanGraphicsUniform>();
 				param->setName(shader.reflection.psConstantBuffers[i].asVars[j].Name);
 
-
-				_parameters.push_back(param);
+				_arrays.push_back(param);
 			}
 		}
 	}
@@ -595,9 +657,31 @@ VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, const char* 
 	return true;
 }
 
+GraphicsUniformType
+VulkanStageShader::HlslResTypeToUniformType(ResourceType type) noexcept
+{
+	switch (type)
+	{
+	case RTYPE_CBUFFER:
+		return GraphicsUniformType::GraphicsUniformTypeUniformBuffer;
+	case RTYPE_TBUFFER:
+		return GraphicsUniformType::GraphicsUniformTypeUniformTexelBuffer;
+	case RTYPE_TEXTURE:
+		return GraphicsUniformType::GraphicsUniformTypeSamplerImage;
+	case RTYPE_SAMPLER:
+		return GraphicsUniformType::GraphicsUniformTypeSampler;
+	case RTYPE_STRUCTURED:
+		return GraphicsUniformType::GraphicsUniformTypeUniformBuffer;
+	case RTYPE_UAV_RWSTRUCTURED:
+		return GraphicsUniformType::GraphicsUniformTypeUniformBuffer;
+	default:
+		assert(false);
+		return GraphicsUniformType::GraphicsUniformTypeMaxEnum;
+	}
+}
 
 bool
-VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv)
+VulkanStageShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv)
 {
 	EShLanguage stage = EShLangVertex;
 	if (shader_type == VK_SHADER_STAGE_VERTEX_BIT)
@@ -659,6 +743,7 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 	glslang::TShader tessControl(EShLangTessControl);
 	glslang::TShader tessEvaluation(EShLangTessEvaluation);
 	glslang::TShader* shaders[EShLangCount];
+	const char* shaderStrings[EShLangCount];
 
 	shaders[EShLangVertex] = &vs;
 	shaders[EShLangFragment] = &fs;
@@ -669,9 +754,23 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 
 	glslang::TProgram program;
 
+	std::uint32_t startLocation = 0;
 	for (auto& it : programDesc.getShaders())
 	{
-		const auto& vulkanShaderDesc = it->downcast<VulkanShader>()->getGraphicsShaderDesc();
+		auto vulkanShader = std::make_unique<VulkanStageShader>();
+		vulkanShader->setDevice(this->getDevice());
+
+		if (!vulkanShader->setup(it->getGraphicsShaderDesc(), startLocation))
+			return false;
+
+		startLocation += vulkanShader->getParams().size();
+
+		_activeShaders.push_back(std::move(vulkanShader));
+	}
+
+	for (auto& it : _activeShaders)
+	{
+		const auto& vulkanShaderDesc = it->getGraphicsShaderDesc();
 
 		EShLanguage stage = EShLangVertex;
 
@@ -689,8 +788,8 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 		else if (shaderStage == GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit)
 			stage = EShLangTessEvaluation;
 
-		const char *shaderStrings = vulkanShaderDesc.getByteCodes().c_str();
-		shaders[stage]->setStrings(&shaderStrings, 1);
+		shaderStrings[stage] = vulkanShaderDesc.getByteCodes().c_str();
+		shaders[stage]->setStrings(&shaderStrings[stage], 1);
 		if (!shaders[stage]->parse(&defaultOptions, 440, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules)))
 		{
 			VK_PLATFORM_LOG(shaders[stage]->getInfoLog());
@@ -711,8 +810,8 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 	program.buildReflection();
 
 	_initActiveAttribute(program, programDesc);
-	_initActiveUniform(program);
 	_initActiveUniformBlock(program, programDesc);
+	_initActiveUniform(program);
 
 	_programDesc = programDesc;
 	return true;
@@ -723,6 +822,12 @@ VulkanProgram::close() noexcept
 {
 	_activeAttributes.clear();
 	_activeParams.clear();
+}
+
+const VulkanProgram::ShaderStages&
+VulkanProgram::getActiveShaders() const noexcept
+{
+	return _activeShaders;
 }
 
 const GraphicsParams&
@@ -740,13 +845,12 @@ VulkanProgram::getActiveAttributes() const noexcept
 void
 VulkanProgram::_initActiveAttribute(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept
 {
-	VulkanShader* vert = nullptr;
+	VulkanStageShader* vert = nullptr;
 
-	auto& shaders = programDesc.getShaders();
-	for (auto& shader : shaders)
+	for (auto& shader : _activeShaders)
 	{
-		if (shader->getGraphicsShaderDesc().getStage() == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
-			vert = shader->downcast<VulkanShader>();
+		if (shader->getShaderStage() == VK_SHADER_STAGE_VERTEX_BIT)
+			vert = shader.get();
 	}
 
 	if (!vert)
@@ -865,10 +969,9 @@ VulkanProgram::_initActiveUniformBlock(glslang::TProgram& program, const Graphic
 
 				bool isArray = false;
 
-				auto& shaders = programDesc.getShaders();
-				for (auto& shader : shaders)
+				for (auto& shader : _activeShaders)
 				{
-					auto& params = shader->downcast<VulkanShader>()->getParams();
+					auto& params = shader->getArrayParams();
 					for (auto& param : params)
 					{
 						if (param->getName() == uniformName)

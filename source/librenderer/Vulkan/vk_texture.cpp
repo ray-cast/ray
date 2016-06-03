@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "vk_texture.h"
 #include "vk_device.h"
+#include "vk_physical_device.h"
 #include "vk_system.h"
 
 _NAME_BEGIN
@@ -60,6 +61,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	assert(_vkImageView == VK_NULL_HANDLE);
 
 	auto device = this->getDevice()->downcast<VulkanDevice>();
+	auto physicalDevice = device->getGraphicsDeviceDesc().getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice();
 
 	VkFormat format = VulkanTypes::asGraphicsFormat(textureDesc.getTexFormat());
 	if (format == VK_FORMAT_UNDEFINED || format == VK_FORMAT_MAX_ENUM)
@@ -83,7 +85,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	}
 
 	VkFormatProperties props;
-	vkGetPhysicalDeviceFormatProperties(device->getPhysicsDevice(), format, &props);
+	vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
 	
 	if (!_swapchainImage)
 	{

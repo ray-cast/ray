@@ -38,6 +38,7 @@
 #define _H_VK_TYPES_H_
 
 #include <ray/graphics_device.h>
+#include <ray/graphics_physical_device.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_context.h>
 #include <ray/graphics_data.h>
@@ -100,6 +101,7 @@ _NAME_BEGIN
 #endif
 
 typedef std::shared_ptr<class VulkanDevice> VulkanDevicePtr;
+typedef std::shared_ptr<class VulkanPhysicalDevice> VulkanPhysicalDevicePtr;
 typedef std::shared_ptr<class VulkanSurface> VulkanSurfacePtr;
 typedef std::shared_ptr<class VulkanSwapchain> VulkanSwapchainPtr;
 typedef std::shared_ptr<class VulkanDeviceContext> VulkanDeviceContextPtr;
@@ -112,7 +114,7 @@ typedef std::shared_ptr<class VulkanInputLayout> VulkanInputLayoutPtr;
 typedef std::shared_ptr<class VulkanRenderState> VulkanRenderStatePtr;
 typedef std::shared_ptr<class VulkanTexture> VulkanTexturePtr;
 typedef std::shared_ptr<class VulkanSampler> VulkanSamplerPtr;
-typedef std::shared_ptr<class VulkanRenderPipeline> VulkanRenderPipelinePtr;
+typedef std::shared_ptr<class VulkanPipeline> VulkanPipelinePtr;
 typedef std::shared_ptr<class VulkanDescriptorSetPool> VulkanDescriptorSetPoolPtr;
 typedef std::shared_ptr<class VulkanDescriptorSet> VulkanDescriptorSetPtr;
 typedef std::shared_ptr<class VulkanDescriptorSetLayout> VulkanDescriptorSetLayoutPtr;
@@ -121,6 +123,7 @@ typedef std::shared_ptr<class VulkanGraphicsUniform> VulkanGraphicsUniformPtr;
 typedef std::shared_ptr<class VulkanGraphicsUniformBlock> VulkanGraphicsUniformBlockPtr;
 
 typedef std::weak_ptr<class VulkanDevice> VulkanDeviceWeakPtr;
+typedef std::weak_ptr<class VulkanPhysicalDevice> VulkanPhysicalDeviceWeakPtr;
 typedef std::weak_ptr<class VulkanSurface> VulkanSurfaceWeakPtr;
 typedef std::weak_ptr<class VulkanSwapchain> VulkanSwapchainWeakPtr;
 typedef std::weak_ptr<class VulkanDeviceContext> VulkanDeviceContextWeakPtr;
@@ -133,7 +136,7 @@ typedef std::weak_ptr<class VulkanInputLayout> VulkanInputLayoutWeakPtr;
 typedef std::weak_ptr<class VulkanRenderState> VulkanRenderStateWeakPtr;
 typedef std::weak_ptr<class VulkanTexture> VulkanTextureWeakPtr;
 typedef std::weak_ptr<class VulkanSampler> VulkanSamplerWeakPtr;
-typedef std::weak_ptr<class VulkanRenderPipeline> VulkanRenderPipelineWeakPtr;
+typedef std::weak_ptr<class VulkanPipeline> VulkanPipelineWeakPtr;
 typedef std::weak_ptr<class VulkanDescriptorSetPool> VulkanDescriptorSetPoolWeakPtr;
 typedef std::weak_ptr<class VulkanDescriptorSet> VulkanDescriptorSetWeakPtr;
 typedef std::weak_ptr<class VulkanDescriptorSetLayout> VulkanDescriptorSetLayoutWeakPtr;

@@ -45,7 +45,7 @@ __ImplementSubClass(VulkanFramebufferLayout, GraphicsFramebufferLayout, "VulkanF
 __ImplementSubClass(VulkanFramebuffer, GraphicsFramebuffer, "VulkanFramebuffer")
 
 VulkanFramebufferLayout::VulkanFramebufferLayout() noexcept
-	: _vkFramebufferLayout(VK_NULL_HANDLE)
+	: _renderPass(VK_NULL_HANDLE)
 {
 }
 
@@ -118,7 +118,7 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 	pass.dependencyCount = 0;
 	pass.pDependencies = nullptr;
 
-	if (vkCreateRenderPass(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &pass, nullptr, &_vkFramebufferLayout) != VK_SUCCESS)
+	if (vkCreateRenderPass(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &pass, nullptr, &_renderPass) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateRenderPass() fail.");
 		return false;
@@ -131,17 +131,17 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 void
 VulkanFramebufferLayout::close() noexcept
 {
-	if (_vkFramebufferLayout != VK_NULL_HANDLE)
+	if (_renderPass != VK_NULL_HANDLE)
 	{
-		vkDestroyRenderPass(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkFramebufferLayout, nullptr);
-		_vkFramebufferLayout = VK_NULL_HANDLE;
+		vkDestroyRenderPass(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _renderPass, nullptr);
+		_renderPass = VK_NULL_HANDLE;
 	}
 }
 
 VkRenderPass
 VulkanFramebufferLayout::getRenderPass() const noexcept
 {
-	return _vkFramebufferLayout;
+	return _renderPass;
 }
 
 void

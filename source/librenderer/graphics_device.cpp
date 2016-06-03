@@ -62,6 +62,18 @@ GraphicsDeviceDesc::getDeviceType() const noexcept
 	return _deviceType;
 }
 
+void
+GraphicsDeviceDesc::setPhysicalDevice(GraphicsPhysicalDevicePtr physicalDevice) noexcept
+{
+	_physicalDevice = physicalDevice;
+}
+
+GraphicsPhysicalDevicePtr 
+GraphicsDeviceDesc::getPhysicalDevice() const noexcept
+{
+	return _physicalDevice;
+}
+
 GraphicsDevice::GraphicsDevice() noexcept
 {
 }

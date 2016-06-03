@@ -158,17 +158,7 @@ public:
 	bool setup(const GraphicsShaderDesc& desc) noexcept;
 	void close() noexcept;
 
-	VkShaderModule getShaderModule() const noexcept;
-
-	const GraphicsParams& getParams() const noexcept;
-	const GraphicsAttributes& getAttributes() const noexcept;
-
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
-
-private:
-	bool HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, const std::string& codes, std::string& out);
-	bool HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, const char* codes, std::string& out);
-	bool GLSLtoSPV(VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
 
 private:
 	friend class VulkanDevice;
@@ -180,22 +170,60 @@ private:
 	VulkanShader& operator=(const VulkanShader&) noexcept = delete;
 
 private:
-	VkShaderModule _vkShader;
 	GraphicsShaderDesc _shaderDesc;
-	GraphicsParams _parameters;
-	GraphicsAttributes _attributes;
 	GraphicsDeviceWeakPtr _device;
+};
+
+class VulkanStageShader final
+{
+public:
+	VulkanStageShader() noexcept;
+	~VulkanStageShader() noexcept;
+
+	bool setup(const GraphicsShaderDesc& desc, std::uint32_t startLocation) noexcept;
+	void close() noexcept;
+
+	VkShaderModule getShaderModule() const noexcept;
+	VkShaderStageFlagBits getShaderStage() const noexcept;
+
+	const GraphicsParams& getParams() const noexcept;
+	const GraphicsParams& getArrayParams() const noexcept;
+	const GraphicsAttributes& getAttributes() const noexcept;
+	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
+
+private:
+	friend class VulkanProgram;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	GraphicsUniformType HlslResTypeToUniformType(ResourceType type) noexcept;
+	bool HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, std::uint32_t startLocation, const std::string& codes, std::string& out);
+	bool HlslByteCodes2GLSL(GraphicsShaderStageFlagBits stage, std::uint32_t startLocation, const char* codes, std::string& out);
+	bool GLSLtoSPV(VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
+
+private:
+	VkShaderModule _shader;
+	GraphicsParams _parameters;
+	GraphicsParams _arrays;
+	GraphicsAttributes _attributes;
+	GraphicsShaderDesc _shaderDesc;
+	VulkanDeviceWeakPtr _device;
 };
 
 class VulkanProgram final : public GraphicsProgram
 {
 	__DeclareSubClass(VulkanProgram, GraphicsProgram)
+
+	typedef std::vector<std::unique_ptr<VulkanStageShader>> ShaderStages;
 public:
 	VulkanProgram() noexcept;
 	virtual ~VulkanProgram() noexcept;
 
 	bool setup(const GraphicsProgramDesc& desc) noexcept;
 	void close() noexcept;
+
+	const ShaderStages& getActiveShaders() const noexcept;
 
 	const GraphicsParams& getActiveParams() const noexcept;
 	const GraphicsAttributes& getActiveAttributes() const noexcept;
@@ -221,6 +249,7 @@ private:
 	VulkanProgram& operator=(const VulkanProgram&) noexcept = delete;
 
 private:
+	ShaderStages _activeShaders;
 	GraphicsParams    _activeParams;
 	GraphicsAttributes  _activeAttributes;
 

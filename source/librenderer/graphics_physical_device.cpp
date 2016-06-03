@@ -34,87 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "vk_descriptor_pool.h"
-#include "vk_device.h"
-#include "vk_system.h"
+#include <ray/graphics_physical_device.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(VulkanDescriptorPool, GraphicsDescriptorPool, "VulkanDescriptorPool")
+__ImplementSubInterface(GraphicsPhysicalDevice, rtti::Interface, "GraphicsPhysicalDevice")
 
-VulkanDescriptorPool::VulkanDescriptorPool() noexcept
-	: _descriptorPool(VK_NULL_HANDLE)
+GraphicsPhysicalDevice::GraphicsPhysicalDevice() noexcept
 {
 }
 
-VulkanDescriptorPool::~VulkanDescriptorPool() noexcept
+GraphicsPhysicalDevice::~GraphicsPhysicalDevice() noexcept
 {
-	this->close();
-}
-
-bool
-VulkanDescriptorPool::setup(const GraphicsDescriptorPoolDesc& descriptorPoolDesc) noexcept
-{
-	std::vector<VkDescriptorPoolSize> pool;
-	for (const auto& it : descriptorPoolDesc.getGraphicsDescriptorPoolComponents())
-	{
-		VkDescriptorPoolSize poolSize;
-		poolSize.type = VulkanTypes::asDescriptorType(it.getDescriptorType());
-		poolSize.descriptorCount = it.getDescriptorNums();
-
-		pool.push_back(poolSize);
-	}
-
-	VkDescriptorPoolCreateInfo info;
-	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	info.pNext = nullptr;
-	info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	info.maxSets = descriptorPoolDesc.getMaxSets();
-	info.poolSizeCount = pool.size();
-	info.pPoolSizes = pool.data();
-
-	if (vkCreateDescriptorPool(_device.lock()->getDevice(), &info, nullptr, &_descriptorPool) != VK_SUCCESS)
-	{
-		VK_PLATFORM_LOG("vkCreateDescriptorPool() fail.");
-		return false;
-	}
-
-	_descriptorPoolDesc = descriptorPoolDesc;
-	return true;
-}
-
-void
-VulkanDescriptorPool::close() noexcept
-{
-	if (_descriptorPool != VK_NULL_HANDLE)
-	{
-		vkDestroyDescriptorPool(_device.lock()->getDevice(), _descriptorPool, nullptr);
-		_descriptorPool = VK_NULL_HANDLE;
-	}
-}
-
-VkDescriptorPool
-VulkanDescriptorPool::getDescriptorPool() const noexcept
-{
-	return _descriptorPool;
-}
-
-void
-VulkanDescriptorPool::setDevice(GraphicsDevicePtr device) noexcept
-{
-	_device = device->downcast_pointer<VulkanDevice>();
-}
-
-GraphicsDevicePtr
-VulkanDescriptorPool::getDevice() noexcept
-{
-	return _device.lock();
-}
-
-const GraphicsDescriptorPoolDesc&
-VulkanDescriptorPool::getGraphicsDescriptorPoolDesc() const noexcept
-{
-	return _descriptorPoolDesc;
 }
 
 _NAME_END

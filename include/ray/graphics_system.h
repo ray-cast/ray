@@ -47,9 +47,9 @@ class EXPORT GraphicsSystem final : public rtti::Interface
 	__DeclareSingleton(GraphicsSystem)
 public:
 	GraphicsSystem() noexcept;
-	virtual ~GraphicsSystem() noexcept;
+	~GraphicsSystem() noexcept;
 
-	virtual GraphicsDevicePtr createDevice(const GraphicsDeviceDesc& desc) noexcept;
+	GraphicsDevicePtr createDevice(const GraphicsDeviceDesc& desc) noexcept;
 
 private:
 	GraphicsSystem(const GraphicsSystem&) = delete;

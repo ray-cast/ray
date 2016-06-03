@@ -122,6 +122,7 @@ private:
 
 	MaterialParamPtr _eyePosition;
 	MaterialParamPtr _clipInfo;
+	MaterialParamPtr _scaleY;
 
 	MaterialParamPtr _shadowDecal;
 	MaterialParamPtr _shadowMap;

@@ -160,6 +160,54 @@ private:
 	GraphicsParamPtr _param;
 };
 
+class VulkanDescriptorPool final : public GraphicsDescriptorPool
+{
+	__DeclareSubClass(VulkanDescriptorPool, GraphicsDescriptorPool)
+public:
+	VulkanDescriptorPool() noexcept;
+	virtual ~VulkanDescriptorPool() noexcept;
+
+	bool setup(const GraphicsDescriptorPoolDesc& desc) noexcept;
+	void close() noexcept;
+
+	VkDescriptorPool getDescriptorPool() const noexcept;
+
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+	const GraphicsDescriptorPoolDesc& getGraphicsDescriptorPoolDesc() const noexcept;
+
+private:
+	VkDescriptorPool _descriptorPool;
+	VulkanDeviceWeakPtr _device;
+
+	GraphicsDescriptorPoolDesc _descriptorPoolDesc;
+};
+
+class VulkanDescriptorSetLayout final : public GraphicsDescriptorSetLayout
+{
+	__DeclareSubClass(VulkanDescriptorSetLayout, GraphicsDescriptorSetLayout)
+public:
+	VulkanDescriptorSetLayout() noexcept;
+	virtual ~VulkanDescriptorSetLayout() noexcept;
+
+	bool setup(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
+	void close() noexcept;
+
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+	VkDescriptorSetLayout getDescriptorSetLayout() const noexcept;
+
+	const GraphicsDescriptorSetLayoutDesc& getGraphicsDescriptorSetLayoutDesc() const noexcept;
+
+private:
+	VkDescriptorSetLayout _vkDescriptorSetLayout;
+	VulkanDeviceWeakPtr _device;
+
+	GraphicsDescriptorSetLayoutDesc _descriptorSetLayoutDesc;
+};
+
 class VulkanDescriptorSet final : public GraphicsDescriptorSet
 {
 	__DeclareSubClass(VulkanDescriptorSet, GraphicsDescriptorSet)

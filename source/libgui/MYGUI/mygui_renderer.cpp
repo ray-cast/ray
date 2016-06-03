@@ -250,8 +250,8 @@ MyGuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage
 void
 MyGuiRenderer::drawOneFrame(float delta) noexcept
 {
-	RenderSystem::instance()->setViewport(Viewport(0, 0, _viewport.width, _viewport.height));
-	RenderSystem::instance()->setScissor(Scissor(0, 0, _viewport.width, _viewport.height));
+	RenderSystem::instance()->setViewport(0, Viewport(0, 0, _viewport.width, _viewport.height));
+	RenderSystem::instance()->setScissor(0, Scissor(0, 0, _viewport.width, _viewport.height));
 
 	onFrameEvent(delta);
 	onRenderToTarget(this, _isUpdate);

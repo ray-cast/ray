@@ -40,6 +40,7 @@
 #include "vk_command_pool.h"
 #include "vk_command_queue.h"
 #include "vk_swapchain.h"
+#include "vk_physical_device.h"
 #include "vk_system.h"
 #include "vk_texture.h"
 #include "vk_sampler.h"
@@ -49,9 +50,7 @@
 #include "vk_pipeline.h"
 #include "vk_graphics_data.h"
 #include "vk_render_state.h"
-#include "vk_descriptor_pool.h"
 #include "vk_descriptor_set.h"
-#include "vk_descriptor_set_layout.h"
 #include "vk_semaphore.h"
 
 _NAME_BEGIN
@@ -68,7 +67,6 @@ char* deviceValidationLayers[] = {
 
 VulkanDevice::VulkanDevice() noexcept
 	: _device(VK_NULL_HANDLE)
-	, _physicalDevice(VK_NULL_HANDLE)
 {
 }
 
@@ -80,25 +78,18 @@ VulkanDevice::~VulkanDevice() noexcept
 bool
 VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 {
+	assert(deviceDesc.getPhysicalDevice());
+	assert(deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeVulkan);
+
 	static const char* extensionNames[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-	if (!initInstance())
-		return false;
-
-	if (!initPhysicalDevice())
-		return false;
-
-	if (!checkPhysicalDeviceLayer(0, nullptr))
-		return false;
-
-	if (!checkPhysicalDeviceExtension(1, extensionNames))
-		return false;
+	VkPhysicalDevice physicalDevice = deviceDesc.getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice();
 
 	std::uint32_t queueCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueCount, 0);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, 0);
 
 	std::vector<VkQueueFamilyProperties> props(queueCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueCount, &props[0]);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, &props[0]);
 
 	std::uint32_t graphicsQueueNodeIndex = UINT32_MAX;
 	for (std::uint32_t i = 0; i < queueCount; i++)
@@ -132,13 +123,13 @@ VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 	info.ppEnabledExtensionNames = extensionNames;
 	info.pEnabledFeatures = 0;
 
-	if (!vkGetPhysicalDeviceWin32PresentationSupportKHR(_physicalDevice, graphicsQueueNodeIndex))
+	if (!vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice, graphicsQueueNodeIndex))
 	{
 		VK_PLATFORM_LOG("vkGetPhysicalDeviceWin32PresentationSupportKHR fail.");
 		return false;
 	}
 
-	if (vkCreateDevice(_physicalDevice, &info, 0, &_device) != VK_SUCCESS)
+	if (vkCreateDevice(physicalDevice, &info, 0, &_device) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateDevice fail.\n");
 		return false;
@@ -243,7 +234,7 @@ VulkanDevice::createProgram(const GraphicsProgramDesc& desc) noexcept
 GraphicsPipelinePtr
 VulkanDevice::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
-	auto pipeline = std::make_shared<VulkanRenderPipeline>();
+	auto pipeline = std::make_shared<VulkanPipeline>();
 	pipeline->setDevice(this->downcast_pointer<VulkanDevice>());
 	if (pipeline->setup(desc))
 		return pipeline;
@@ -350,7 +341,7 @@ VulkanDevice::createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept
 	return nullptr;
 }
 
-void 
+void
 VulkanDevice::copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept
 {
 }
@@ -361,175 +352,10 @@ VulkanDevice::getGraphicsDeviceDesc() const noexcept
 	return _deviceDesc;
 }
 
-bool
-VulkanDevice::getDeviceName(std::string& deviceName) const noexcept
-{
-	VkPhysicalDeviceProperties prop;
-	vkGetPhysicalDeviceProperties(_physicalDevice, &prop);
-	deviceName = prop.deviceName;
-	return true;
-}
-
-VkInstance
-VulkanDevice::getInstance() const noexcept
-{
-	return VulkanSystem::instance()->getInstance();
-}
-
 VkDevice
 VulkanDevice::getDevice() const noexcept
 {
 	return _device;
-}
-
-VkPhysicalDevice
-VulkanDevice::getPhysicsDevice() const noexcept
-{
-	return _physicalDevice;
-}
-
-bool
-VulkanDevice::initInstance() noexcept
-{
-	if (!VulkanSystem::instance()->open())
-		return false;
-	return VulkanSystem::instance()->startDebugControl();
-}
-
-bool
-VulkanDevice::initPhysicalDevice() noexcept
-{
-	std::uint32_t deviceCount = 0;
-	if (vkEnumeratePhysicalDevices(VulkanSystem::instance()->getInstance(), &deviceCount, 0) != VK_SUCCESS)
-	{
-		VK_PLATFORM_LOG("vkEnumeratePhysicalDevices fail");
-		return false;
-	}
-
-	if (deviceCount > 0)
-	{
-		std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
-
-		if (vkEnumeratePhysicalDevices(VulkanSystem::instance()->getInstance(), &deviceCount, &physicalDevices[0]) != VK_SUCCESS)
-		{
-			VK_PLATFORM_LOG("vkEnumeratePhysicalDevices fail");
-			return false;
-		}
-
-		_physicalDevice = physicalDevices.front();
-	}
-
-	return true;
-}
-
-bool
-VulkanDevice::checkPhysicalDeviceLayer(std::size_t deviceEnabledLayerCount, const char* deviceValidationLayerNames[]) noexcept
-{
-	std::uint32_t deviceLayerCount = 0;
-	if (vkEnumerateDeviceLayerProperties(_physicalDevice, &deviceLayerCount, 0) != VK_SUCCESS)
-	{
-		VK_PLATFORM_LOG("vkEnumerateDeviceLayerProperties fail.");
-		return false;
-	}
-
-	bool validationFound = deviceEnabledLayerCount <= deviceLayerCount ? true : false;
-	if (deviceLayerCount > 0)
-	{
-		std::vector<VkLayerProperties> deviceLayers(deviceLayerCount);
-		if (vkEnumerateDeviceLayerProperties(_physicalDevice, &deviceLayerCount, &deviceLayers[0]) != VK_SUCCESS)
-		{
-			VK_PLATFORM_LOG("vkEnumerateDeviceLayerProperties fail.");
-			return false;
-		}
-
-		for (std::uint32_t i = 0; i < deviceEnabledLayerCount; i++)
-		{
-			bool found = false;
-			for (uint32_t j = 0; j < deviceLayerCount; j++)
-			{
-				if (!strcmp(deviceValidationLayerNames[i], deviceLayers[j].layerName))
-				{
-					found = true;
-					break;
-				}
-			}
-
-			if (!found)
-			{
-				VK_PLATFORM_LOG("Cannot find layer: %s.", deviceValidationLayerNames[i]);
-				validationFound = false;
-				break;
-			}
-		}
-	}
-
-	if (!validationFound)
-	{
-		VK_PLATFORM_LOG("vkEnumerateInstanceLayerProperties failed to find"
-			"required validation layer.\n\n"
-			"Please look at the Getting Started guide for additional"
-			"information.");
-
-		return false;
-	}
-
-	return true;
-}
-
-bool
-VulkanDevice::checkPhysicalDeviceExtension(std::size_t deviceEnabledExtensitionCount, const char* deviceEnabledExtensitionNames[]) noexcept
-{
-	std::uint32_t deviceExtensionCount = 0;
-	if (vkEnumerateDeviceExtensionProperties(_physicalDevice, 0, &deviceExtensionCount, 0) != VK_SUCCESS)
-	{
-		VK_PLATFORM_LOG("vkEnumerateDeviceExtensionProperties fail.");
-		return false;
-	}
-
-	bool validationFound = deviceEnabledExtensitionCount < deviceExtensionCount ? true : false;
-	if (deviceExtensionCount > 0)
-	{
-		std::vector<VkExtensionProperties> deviceExtensions(deviceExtensionCount);
-
-		if (vkEnumerateDeviceExtensionProperties(_physicalDevice, NULL, &deviceExtensionCount, &deviceExtensions[0]) != VK_SUCCESS)
-		{
-			VK_PLATFORM_LOG("vkEnumerateDeviceExtensionProperties fail.");
-			return false;
-		}
-
-		for (uint32_t i = 0; i < deviceEnabledExtensitionCount; i++)
-		{
-			bool found = false;
-			for (uint32_t j = 0; j < deviceExtensionCount; j++)
-			{
-				if (!strcmp(deviceEnabledExtensitionNames[i], deviceExtensions[j].extensionName))
-				{
-					found = true;
-					break;
-				}
-			}
-
-			if (!found)
-			{
-				VK_PLATFORM_LOG("Cannot find extensition: %s.", deviceEnabledExtensitionNames[i]);
-				validationFound = false;
-				break;
-			}
-		}
-	}
-
-	if (!validationFound)
-	{
-		VK_PLATFORM_LOG("vkEnumerateDeviceExtensionProperties failed to find "
-			"required extension.\n\n"
-			"Do you have a compatible "
-			"Vulkan installable client driver (ICD) installed?\nPlease "
-			"look at the Getting Started guide for additional "
-			"information.");
-		return false;
-	}
-
-	return true;
 }
 
 _NAME_END

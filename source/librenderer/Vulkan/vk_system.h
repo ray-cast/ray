@@ -51,22 +51,24 @@ public:
 	bool open() noexcept;
 	void close() noexcept;
 
-	void geteInstanceLayerNames(std::vector<char*>& instanceLayerNames) noexcept;
-	void geteInstanceExtensitionNames(std::vector<char*>& instanceLayerNames) noexcept;
+	VkInstance getInstance() const noexcept;
 
-	void print(const char* message, ...) noexcept;
+	void getInstanceLayerNames(std::vector<char*>& instanceLayerNames) noexcept;
+	void getInstanceExtensitionNames(std::vector<char*>& instanceLayerNames) noexcept;
+
+	const GraphicsPhysicalDevices& getPhysicalDevices() const noexcept;
 
 	bool startDebugControl() noexcept;
 	void stopDebugControl() noexcept;
 
-	VkInstance getInstance() const noexcept;
+	void print(const char* message, ...) noexcept;
 
 private:
+	bool initInstance() noexcept;
+	bool initPhysicalDevices() noexcept;
 
 	bool checkInstanceLayer(std::size_t instanceEnabledLayerCount, const char* instanceValidationLayerNames[]) noexcept;
 	bool checkInstanceExtenstion(std::size_t instanceEnabledExtensition, const char* instanceValidationExtensitionName[]) noexcept;
-
-	bool initInstance() noexcept;
 
 private:
 	static VKAPI_ATTR VkBool32 VKAPI_CALL dbgFunc(VkFlags msgFlags, VkDebugReportObjectTypeEXT objType, uint64_t srcObject, size_t location, int32_t msgCode, const char *pLayerPrefix, const char *pMsg, void *pUserData);
@@ -83,8 +85,7 @@ private:
 
 	std::vector<VkLayerProperties> _instanceLayers;
 	std::vector<VkExtensionProperties> _instanceExtensions;
-
-	std::vector<GraphicsDevicePtr> _devices;
+	GraphicsPhysicalDevices _physicalDevices;
 };
 
 _NAME_END

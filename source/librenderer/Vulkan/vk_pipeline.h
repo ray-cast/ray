@@ -41,12 +41,12 @@
 
 _NAME_BEGIN
 
-class VulkanRenderPipeline final : public GraphicsPipeline
+class VulkanPipeline final : public GraphicsPipeline
 {
-	__DeclareSubClass(VulkanRenderPipeline, GraphicsPipeline)
+	__DeclareSubClass(VulkanPipeline, GraphicsPipeline)
 public:
-	VulkanRenderPipeline() noexcept;
-	virtual ~VulkanRenderPipeline() noexcept;
+	VulkanPipeline() noexcept;
+	virtual ~VulkanPipeline() noexcept;
 
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
@@ -61,8 +61,8 @@ public:
 	const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept;
 
 private:
-	VulkanRenderPipeline(const VulkanRenderPipeline&) noexcept = delete;
-	VulkanRenderPipeline& operator=(const VulkanRenderPipeline&) noexcept = delete;
+	VulkanPipeline(const VulkanPipeline&) noexcept = delete;
+	VulkanPipeline& operator=(const VulkanPipeline&) noexcept = delete;
 
 private:
 

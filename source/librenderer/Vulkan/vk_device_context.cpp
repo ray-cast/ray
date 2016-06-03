@@ -111,29 +111,28 @@ VulkanDeviceContext::renderEnd() noexcept
 
 	_commandQueue->executeCommandLists(&_commandList, 1);
 	_commandQueue->present(&_swapchain, 1);
-	_commandQueue->wait();
 }
 
 void
-VulkanDeviceContext::setViewport(const Viewport& viewport) noexcept
+VulkanDeviceContext::setViewport(std::uint32_t i, const Viewport& viewport) noexcept
 {
-	_commandList->setViewport(&viewport, 0, 1);
+	_commandList->setViewport(&viewport, i, 1);
 }
 
 const Viewport&
-VulkanDeviceContext::getViewport() const noexcept
+VulkanDeviceContext::getViewport(std::uint32_t i) const noexcept
 {
 	return _viewports[0];
 }
 
 void
-VulkanDeviceContext::setScissor(const Scissor& scissor) noexcept
+VulkanDeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
-	_commandList->setScissor(&scissor, 0, 1);
+	_commandList->setScissor(&scissor, i, 1);
 }
 
 const Scissor&
-VulkanDeviceContext::getScissor() const noexcept
+VulkanDeviceContext::getScissor(std::uint32_t i) const noexcept
 {
 	return _scissor[0];
 }
@@ -195,7 +194,7 @@ VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 void
 VulkanDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
-	_commandList->clearFramebuffer(flags, color, depth, stencil, i);
+	_commandList->clearFramebuffer(i, flags, color, depth, stencil);
 }
 
 GraphicsFramebufferPtr
@@ -208,7 +207,7 @@ void
 VulkanDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
-	assert(pipeline->isInstanceOf<VulkanRenderPipeline>());
+	assert(pipeline->isInstanceOf<VulkanPipeline>());
 
 	_commandList->setPipeline(pipeline);
 }
@@ -582,7 +581,7 @@ VulkanDeviceContext::initShaderSupports() noexcept
 void
 VulkanDeviceContext::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
+	_device = device->downcast_pointer<VulkanDevice>();
 }
 
 GraphicsDevicePtr

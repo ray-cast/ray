@@ -19,6 +19,11 @@
         <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm"/>
         <layout name="BLENDINDICES" format="R8G8B8A8UScaled"/>
     </inputlayout>
+    <inputlayout name="POS3F_T4F_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat"/>
+        <layout name="TANGENT" format="R8G8B8A8UNorm"/>
+        <layout name="TEXCOORD" format="R32G32SFloat"/>
+    </inputlayout>
     <inputlayout name="POS3F_T4F_W4F_B4UI">
         <layout name="POSITION" format="R32G32B32SFloat"/>
         <layout name="TANGENT" format="R8G8B8A8UNorm"/>

@@ -82,11 +82,11 @@ public:
 	virtual void renderBegin() noexcept = 0;
 	virtual void renderEnd() noexcept = 0;
 
-	virtual void setViewport(const Viewport& viewport) noexcept = 0;
-	virtual const Viewport& getViewport() const noexcept = 0;
+	virtual void setViewport(std::uint32_t i, const Viewport& viewport) noexcept = 0;
+	virtual const Viewport& getViewport(std::uint32_t i) const noexcept = 0;
 
-	virtual void setScissor(const Scissor& scissor) noexcept = 0;
-	virtual const Scissor& getScissor() const noexcept = 0;
+	virtual void setScissor(std::uint32_t i, const Scissor& scissor) noexcept = 0;
+	virtual const Scissor& getScissor(std::uint32_t i) const noexcept = 0;
 
 	virtual void setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept = 0;
 	virtual std::uint32_t getStencilCompareMask(GraphicsStencilFace face) noexcept = 0;

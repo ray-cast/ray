@@ -98,7 +98,7 @@ TerrainLod::isVisible(const Quadnode& node, std::uint8_t depth) const
 	assert(node.x < _size);
 	assert(node.y < _size);
 
-	std::intptr_t size = 1 << depth;
+	std::uint32_t size = 1 << depth;
 
 	float R = size * _scale * 1.414f; //Ð±±ß
 

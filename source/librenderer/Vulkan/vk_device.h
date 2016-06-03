@@ -51,11 +51,7 @@ public:
 	bool setup(const GraphicsDeviceDesc& desc) noexcept;
 	void close() noexcept;
 
-	bool getDeviceName(std::string& deviceName) const noexcept;
-
-	VkInstance getInstance() const noexcept;
 	VkDevice getDevice() const noexcept;
-	VkPhysicalDevice getPhysicsDevice() const noexcept;
 
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
@@ -82,21 +78,11 @@ public:
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
 private:
-	bool initInstance() noexcept;
-	bool initPhysicalDevice() noexcept;
-
-	bool checkPhysicalDeviceLayer(std::size_t deviceEnabledLayerCount, const char* deviceValidationLayerNames[]) noexcept;
-	bool checkPhysicalDeviceExtension(std::size_t deviceEnabledExtensitionCount, const char* deviceEnabledExtensitionNames[]) noexcept;
-
-private:
 	VulkanDevice(const VulkanDevice&) noexcept = delete;
 	VulkanDevice& operator=(const VulkanDevice&) noexcept = delete;
 
 private:
-
 	VkDevice _device;
-	VkPhysicalDevice _physicalDevice;
-
 	GraphicsDeviceDesc _deviceDesc;
 };
 

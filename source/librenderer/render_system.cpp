@@ -251,17 +251,17 @@ RenderSystem::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter) noexcept
+RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createTexture(w, h, dim, format, filter);
+	return _pipelineManager->createTexture(w, h, dim, format, filter, wrap);
 }
 
 GraphicsTexturePtr
-RenderSystem::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
+RenderSystem::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createTexture(name, dim, filter);
+	return _pipelineManager->createTexture(name, dim, filter, wrap);
 }
 
 MaterialPtr

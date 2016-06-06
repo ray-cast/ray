@@ -44,9 +44,9 @@
 _NAME_BEGIN
 
 SSAO::Setting::Setting() noexcept
-	: radius(5.0f)
+	: radius(10.0f)
 	, bias(0.002f)
-	, intensity(5)
+	, intensity(1)
 	, blur(true)
 	, blurRadius(6)
 	, blurScale(1.0f)
@@ -172,8 +172,8 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	width *= 0.5;
-	height *= 0.5;
+	//width *= 0.5;
+	//height *= 0.5;
 
 	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
 	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
@@ -266,15 +266,15 @@ SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
 bool
 SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
-	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
+	if (queue != RenderQueue::RenderQueueAmbientLighting)
 		return false;
 
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
 	this->computeRawAO(pipeline, texture, _texAmbientView);
-	this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
-	this->blurVertical(pipeline, _texBlurMap, source);
-	//this->applySSAO(pipeline, _texAmbientMap, source);
+	//this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
+	//this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
+	this->applySSAO(pipeline, _texAmbientMap, source);
 
 	return false;
 }

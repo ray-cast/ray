@@ -509,17 +509,17 @@ RenderPipeline::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderPipeline::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
+RenderPipeline::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(name, dim, filter);
+	return _pipelineDevice->createTexture(name, dim, filter, wrap);
 }
 
 GraphicsTexturePtr
-RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter) noexcept
+RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(w, h, dim, format, filter);
+	return _pipelineDevice->createTexture(w, h, dim, format, filter, wrap);
 }
 
 MaterialPtr

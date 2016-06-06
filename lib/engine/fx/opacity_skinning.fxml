@@ -152,6 +152,8 @@
             <state name="vertex" value="OpaqueVS"/>
             <state name="fragment" value="OpaquePS"/>
             <state name="primitive" value="triangle" />
+            <state name="colormask0" value="rgba" />
+            <state name="colormask1" value="rgba" />
             <state name="stencilTest" value="true"/>
             <state name="stencilPass" value="replace"/>
             <state name="stencilTwoPass" value="replace"/>

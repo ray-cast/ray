@@ -99,8 +99,8 @@ public:
 	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
 	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept;
+	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	void destroyMaterial(MaterialPtr material) noexcept;

@@ -250,7 +250,8 @@ SkyboxComponent::_loadSkyDiffuse(const std::string& texture) noexcept
 {
 	auto skyDiffTexture = RenderSystem::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
-		GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+		GraphicsSamplerFilter::GraphicsSamplerFilterLinear,
+		GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 
 	if (!skyDiffTexture)
 		return false;
@@ -264,7 +265,8 @@ SkyboxComponent::_loadSkySpecular(const std::string& texture) noexcept
 {
 	auto skySpecTexture = RenderSystem::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
-		GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);
+		GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear,
+		GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 
 	if (!skySpecTexture)
 		return false;

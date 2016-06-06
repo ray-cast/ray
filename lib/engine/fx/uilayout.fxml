@@ -36,6 +36,7 @@
             <state name="fragment" value="UILayoutPS"/>
             <state name="primitive" value="triangle" />
             <state name="cullmode" value="none"/>
+            <state name="colormask0" value="rgba" />
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
             <state name="blend" value="true"/>

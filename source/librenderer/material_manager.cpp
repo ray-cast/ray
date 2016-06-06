@@ -144,7 +144,7 @@ MaterialManager::getSampler(const std::string& name) noexcept
 }
 
 GraphicsTexturePtr
-MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
+MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
 {
 	if (name.empty())
 		return nullptr;
@@ -220,11 +220,9 @@ MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, 
 		format = GraphicsFormat::GraphicsFormatR32G32B32SFloat;
 	else if (imageFormat == ImageFormat::ImageFormatR32G32B32A32F)
 		format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
-	else
-	{
-		assert(false);
+
+	if (format == GraphicsFormat::GraphicsFormatUndefined)
 		return nullptr;
-	}
 
 	GraphicsTextureDesc textureDesc;
 	textureDesc.setSize(image.width(), image.height(), image.depth());
@@ -234,6 +232,7 @@ MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, 
 	textureDesc.setStreamSize(image.size());
 	textureDesc.setMipLevel(std::max(image.getMipLevel(), (std::uint8_t)1));
 	textureDesc.setSamplerFilter(filter);
+	textureDesc.setSamplerWrap(warp);
 
 	texture = _graphicsDevice->createTexture(textureDesc);
 	if (!texture)

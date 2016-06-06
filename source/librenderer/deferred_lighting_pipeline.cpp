@@ -270,7 +270,7 @@ DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& 
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
-	
+
 	auto& shadowMap = light.getShadowMap();
 	if (shadowMap)
 	{
@@ -375,7 +375,7 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 	pipeline.drawScreenQuadLayer(*_deferredAmbientLight, light.getLayer());
 }
 
-void 
+void
 DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept
 {
 	_texSource->uniformTexture(src);
@@ -389,9 +389,7 @@ DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsTe
 	_texSource->uniformTexture(src);
 	pipeline.setFramebuffer(dst);
 	pipeline.setViewport(0, viewport);
-	pipeline.setViewport(1, viewport);
-	pipeline.setScissor(0, Scissor(0, 0, viewport.width, viewport.height));
-	pipeline.setScissor(1, Scissor(0, 0, viewport.width, viewport.height));
+	pipeline.setScissor(0, Scissor(viewport.left, viewport.top, viewport.width, viewport.height));
 	pipeline.drawScreenQuad(*_deferredCopyOnly);
 }
 
@@ -499,7 +497,9 @@ DeferredLightingPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 	else
 		return false;
 
-	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat))
+		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
+	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
 		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm;
 	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
 		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
@@ -515,25 +515,12 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	std::vector<std::uint8_t> data(64 * 64 * 4, 125);
-
-	GraphicsTextureDesc testDesc;
-	testDesc.setWidth(64);
-	testDesc.setHeight(64);
-	testDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	testDesc.setTexFormat(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
-	testDesc.setTexTiling(GraphicsImageTiling::GraphicsImageTilingLinear);
-	testDesc.setStream(data.data());
-	testDesc.setStreamSize(data.size());
-	_deferredTestMap = pipeline.createTexture(testDesc);
-	if (!_deferredTestMap)
-		return false;
-
 	GraphicsTextureDesc _deferredDepthDesc;
 	_deferredDepthDesc.setWidth(width);
 	_deferredDepthDesc.setHeight(height);
 	_deferredDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthDesc.setTexFormat(_deferredDepthFormat);
+	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredDepthMap = pipeline.createTexture(_deferredDepthDesc);
 	if (!_deferredDepthMap)
 		return false;
@@ -543,6 +530,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredDepthLinearDesc.setHeight(height);
 	_deferredDepthLinearDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthLinearDesc.setTexFormat(_deferredDepthLinearFormat);
+	_deferredDepthLinearDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredDepthLinearMap = pipeline.createTexture(_deferredDepthLinearDesc);
 	if (!_deferredDepthLinearMap)
 		return false;
@@ -592,7 +580,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredLightDesc.setHeight(height);
 	_deferredLightDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredLightDesc.setTexFormat(_deferredLightFormat);
-	_deferredLightDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	_deferredLightDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredLightingMap = pipeline.createTexture(_deferredLightDesc);
 	if (!_deferredLightingMap)
 		return false;
@@ -875,7 +863,6 @@ DeferredLightingPipeline::destroyDeferredTextures() noexcept
 	_deferredOpaqueShadingMap.reset();
 	_deferredFinalShadingMap.reset();
 	_deferredSwapMap.reset();
-	_deferredTestMap.reset();
 }
 
 void
@@ -919,7 +906,13 @@ DeferredLightingPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 	assert(camera);
 	assert(camera->getCameraOrder() == CameraOrder::CameraOrder3D);
 
+	std::uint32_t width, height;
+	_pipeline->getWindowResolution(width, height);
+
 	_pipeline->setCamera(camera);
+	_pipeline->setViewport(0, Viewport(0, 0, width, height));
+	_pipeline->setScissor(0, Scissor(0, 0, width, height));
+
 	this->render3DEnvMap(camera);
 }
 

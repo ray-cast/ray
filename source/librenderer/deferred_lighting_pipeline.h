@@ -164,7 +164,6 @@ private:
 	GraphicsTexturePtr _deferredOpaqueShadingMap;
 	GraphicsTexturePtr _deferredFinalShadingMap;
 	GraphicsTexturePtr _deferredSwapMap;
-	GraphicsTexturePtr _deferredTestMap;
 
 	GraphicsFramebufferLayoutPtr _deferredDepthImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredDepthLinearImageLayout;

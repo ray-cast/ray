@@ -134,7 +134,7 @@ RenderPipelineDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter) noexcept
+RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
 {
 	assert(_graphicsDevice);
 	GraphicsTextureDesc textureDesc;
@@ -143,13 +143,14 @@ RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTe
 	textureDesc.setTexDim(dim);
 	textureDesc.setTexFormat(format);
 	textureDesc.setSamplerFilter(filter);
+	textureDesc.setSamplerWrap(warp);
 	return _graphicsDevice->createTexture(textureDesc);
 }
 
 GraphicsTexturePtr
-RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
+RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
 {
-	return _materialManager->createTexture(name, dim, filter);
+	return _materialManager->createTexture(name, dim, filter, warp);
 }
 
 GraphicsSwapchainPtr

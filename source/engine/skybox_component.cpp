@@ -486,7 +486,7 @@ SkyboxComponent::_updateMaterial() noexcept
 			texEnvSpecular->uniformTexture(_skySpecTexture);
 
 		auto texEnvFactor = _skyLightingMaterial->getParameter("texEnvFactor");
-		if (texEnvFactor)
+		if (texEnvFactor && _skySpecTexture)
 		{
 			float3 factor;
 			factor.x = _skySpecTexture->getGraphicsTextureDesc().getMipLevel();

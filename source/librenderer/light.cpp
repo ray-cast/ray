@@ -312,7 +312,6 @@ Light::_updateBoundingBox() noexcept
 	auto lightRange = this->getRange();
 	if (_lightType == LightType::LightTypeSun ||
 		_lightType == LightType::LightTypeDirectional ||
-		_lightType == LightType::LightTypeAmbient ||
 		_lightType == LightType::LightTypeSpot)
 	{
 		float znear = _shadowCamera[0]->getNear();
@@ -329,7 +328,7 @@ Light::_updateBoundingBox() noexcept
 		corners[7] = float3(+zfar, -zfar, zfar);
 		bound.encapsulate(corners, 8);
 
-		if (_lightType == LightType::LightTypeSun || _lightType == LightType::LightTypeDirectional || _lightType == LightType::LightTypeAmbient)
+		if (_lightType == LightType::LightTypeSun || _lightType == LightType::LightTypeDirectional)
 		{
 			float w = bound.size().x * 0.5;
 			float h = bound.size().y * 0.5;
@@ -345,7 +344,7 @@ Light::_updateBoundingBox() noexcept
 			_shadowCamera[0]->setCameraType(CameraType::CameraTypePerspective);
 		}
 	}
-	else if (_lightType == LightType::LightTypePoint)
+	else if (_lightType == LightType::LightTypePoint || _lightType == LightType::LightTypeAmbient)
 	{
 		Vector3 min(-lightRange, -lightRange, -lightRange);
 		Vector3 max(lightRange, lightRange, lightRange);
@@ -356,7 +355,7 @@ Light::_updateBoundingBox() noexcept
 		bound.encapsulate(min);
 		bound.encapsulate(max);
 
-		auto loopCount = this->getLightType() == LightType::LightTypePoint ? 6 : 1;
+		auto loopCount = _lightType == LightType::LightTypePoint ? 6 : 1;
 		for (auto i = 0; i < loopCount; i++)
 		{
 			if (!_shadowCamera[i])

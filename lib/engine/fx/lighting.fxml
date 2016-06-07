@@ -58,9 +58,9 @@
             {
                 float3 H = normalize(L + V);
 
-                float nh = max(0.0f, dot(H, N));
-                float lh = max(0.0f, dot(L, H));
-                float vh = max(0.0f, dot(V, H));
+                float nh = dot(H, N);
+                float lh = dot(L, H);
+                float vh = dot(V, H);
 
                 float D = distributionTermBloackOpsII(nh, gloss);
                 float F = fresnelSchlick(lh, specular);

@@ -570,7 +570,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		material->set(MATKEY_COLOR_AMBIENT, it.Ambient);
 		material->set(MATKEY_COLOR_SPECULAR, it.Specular);
 		material->set(MATKEY_OPACITY, it.Opacity);
-		material->set(MATKEY_SHININESS, it.Shininess / 255.0f);
+		material->set(MATKEY_SHININESS, it.Shininess / 256.0f);
 
 		std::string name = it.TextureName;
 		std::string::size_type substr = name.find_first_of("*");

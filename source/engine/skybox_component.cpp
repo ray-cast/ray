@@ -55,6 +55,8 @@ SkyboxComponent::SkyboxComponent() noexcept
 	, _skyboxSize(1000.0f)
 	, _skyLightingIntensity(1.0f, 1.0f)
 {
+	this->setCastShadow(false);
+	this->setReceiveShadow(false);
 }
 
 SkyboxComponent::SkyboxComponent(MaterialPtr material) noexcept

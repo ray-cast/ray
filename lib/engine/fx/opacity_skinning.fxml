@@ -26,7 +26,7 @@
 
             float3 GetDiffuse(Texture2D diffuseMap, float3 diffuse, float2 coord)
             {
-                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb) * diffuse;
+                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb);
             }
 
             float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)

@@ -429,12 +429,14 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 	float shininess = 0.0;
 	float opacity = 1.0;
 	std::string diffuseTexture;
+	std::string normalTexture;
 
 	material.get(MATKEY_OPACITY, opacity);
 	material.get(MATKEY_SHININESS, shininess);
 	material.get(MATKEY_COLOR_DIFFUSE, diffuseColor);
 	material.get(MATKEY_COLOR_SPECULAR, specular);
 	material.get(MATKEY_TEXTURE_DIFFUSE(0), diffuseTexture);
+	material.get(MATKEY_TEXTURE_NORMALS(0), normalTexture);
 
 	MaterialPtr effect;
 	effect = RenderSystem::instance()->createMaterial(file);
@@ -447,12 +449,24 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 		return math::dot(rgb, lumfact);
 	};
 
-	auto texture = RenderSystem::instance()->createTexture(directory + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D);
-	if (texture)
+	if (!diffuseTexture.empty())
 	{
-		quality.x = 1.0f;
-		diffuseColor = float3::One;
-		effect->getParameter("texDiffuse")->uniformTexture(texture);
+		auto texture = RenderSystem::instance()->createTexture(directory + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+		if (texture)
+		{
+			quality.x = 1.0f;
+			effect->getParameter("texDiffuse")->uniformTexture(texture);
+		}
+	}
+
+	if (!normalTexture.empty())
+	{
+		auto texture = RenderSystem::instance()->createTexture(directory + normalTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+		if (texture)
+		{
+			quality.y = 1.0f;
+			effect->getParameter("texNormal")->uniformTexture(texture);
+		}
 	}
 
 	effect->getParameter("quality")->uniform4f(quality);

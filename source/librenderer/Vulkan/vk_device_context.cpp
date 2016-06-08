@@ -224,8 +224,8 @@ VulkanDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) no
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<VulkanDescriptorSet>());
 
-	_commandList->setDescriptorSet(descriptorSet);
 	descriptorSet->downcast<VulkanDescriptorSet>()->update();
+	_commandList->setDescriptorSet(descriptorSet);
 }
 
 GraphicsDescriptorSetPtr

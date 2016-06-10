@@ -245,7 +245,7 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32SFloat);
 	if (!mesh.getWeightArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitWeight)
 	{
-		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UScaled);
 	}		
 

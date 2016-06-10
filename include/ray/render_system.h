@@ -70,14 +70,18 @@ public:
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
-	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
-	void setIndexBuffer(GraphicsDataPtr ibo) noexcept;
+	void setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept;
+	void setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 
 	void drawCone(const MaterialTech& tech) noexcept;
 	void drawSphere(const MaterialTech& tech) noexcept;
 	void drawScreenQuad(const MaterialTech& tech) noexcept;
-	void drawMesh(const GraphicsIndirect& renderable) noexcept;
-	void drawArray(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t firstVertex, std::uint32_t firstInstance) noexcept;
+
+	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
+	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
+
+	void drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept;
+	void drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept;
 
 	bool isTextureSupport(GraphicsFormat format) noexcept;
 	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;

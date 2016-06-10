@@ -51,9 +51,7 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const OGLGraphicsData& vbo, GLuint slot) noexcept;
-	void bindIbo(const OGLGraphicsData& ibo) noexcept;
-
+	void bindVertexBuffers(OGLVertexBuffers& vbos, bool forceUpdate) noexcept;
 	void apply() noexcept;
 
 	const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept;
@@ -73,9 +71,9 @@ private:
 		GLenum type;
 		GLuint index;
 		GLuint count;
-		GLuint slot;
+		GLuint stride;
 		GLboolean normalize;
-		GLsizei offset;
+		GLintptr offset;
 	};
 
 	struct VertexBinding
@@ -85,7 +83,7 @@ private:
 		GLuint divisor;
 	};
 
-	std::vector<VertexAttrib> _attributes;
+	std::vector<std::vector<VertexAttrib>> _attributes;
 	std::vector<VertexBinding> _bindings;
 
 	GraphicsPipelineDesc _pipelineDesc;

@@ -337,16 +337,14 @@ enum GraphicsStencilOp
 	GraphicsStencilOpMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsStencilFace
+enum GraphicsStencilFaceFlagBits
 {
-	GraphicsStencilFaceFront = 1,
-	GraphicsStencilFaceBack = 2,
-	GraphicsStencilFaceFrontBack = 3,
-	GraphicsStencilFaceBeginRange = GraphicsStencilFaceFront,
-	GraphicsStencilFaceEndRange = GraphicsStencilFaceBack,
-	GraphicsStencilFaceRangeSize = (GraphicsStencilFaceEndRange - GraphicsStencilFaceBeginRange + 1),
-	GraphicsStencilFaceMaxEnum = 0x7FFFFFFF
+	GraphicsStencilFaceFrontBit = 1,
+	GraphicsStencilFaceBackBit = 2,
+	GraphicsStencilFaceAllBit = 0x7FFFFFFF
 };
+
+typedef std::uint32_t GraphicsStencilFaceFlags;
 
 enum GraphicsClearFlagBits
 {

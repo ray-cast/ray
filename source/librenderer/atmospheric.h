@@ -38,7 +38,7 @@
 #define _H_ATMOSPHERE_H_
 
 #include <ray/render_post_process.h>
-#include <ray/graphics_context.h>
+#include <ray/geometry.h>
 
 _NAME_BEGIN
 

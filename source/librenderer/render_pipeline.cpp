@@ -282,24 +282,24 @@ RenderPipeline::setMaterialPass(const MaterialPassPtr& pass) noexcept
 }
 
 void 
-RenderPipeline::setVertexBuffer(GraphicsDataPtr vbo) noexcept
+RenderPipeline::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->setVertexBufferData(vbo);
+	_graphicsContext->setVertexBufferData(i, vbo, offset);
 }
 
 void 
-RenderPipeline::setIndexBuffer(GraphicsDataPtr ibo) noexcept
+RenderPipeline::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->setIndexBufferData(ibo);
+	_graphicsContext->setIndexBufferData(ibo, offset, indexType);
 }
 
 void
 RenderPipeline::drawSphere(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
-	this->setVertexBuffer(_sphereVbo);
-	this->setIndexBuffer(_sphereIbo);
+	this->setVertexBuffer(0, _sphereVbo, 0);
+	this->setIndexBuffer(_sphereIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -307,15 +307,15 @@ RenderPipeline::drawSphere(const MaterialTech& tech, std::uint32_t layer) noexce
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawMesh(_sphereIndirect);
+		this->drawIndexedLayer(_numSphereFace, 1, 0, 0, 0, layer);
 	}
 }
 
 void
 RenderPipeline::drawCone(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
-	this->setVertexBuffer(_coneVbo);
-	this->setIndexBuffer(_coneIbo);
+	this->setVertexBuffer(0, _coneVbo, 0);
+	this->setIndexBuffer(_coneIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -323,15 +323,15 @@ RenderPipeline::drawCone(const MaterialTech& tech, std::uint32_t layer) noexcept
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawMeshLayer(_sphereIndirect, layer);
+		this->drawIndexedLayer(_numConeFace, 1, 0, 0, 0, layer);
 	}
 }
 
 void
 RenderPipeline::drawScreenQuad(const MaterialTech& tech) noexcept
 {
-	this->setVertexBuffer(_screenQuadVbo);
-	this->setIndexBuffer(_screenQuadIbo);
+	this->setVertexBuffer(0, _screenQuadVbo, 0);
+	this->setIndexBuffer(_screenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -339,15 +339,15 @@ RenderPipeline::drawScreenQuad(const MaterialTech& tech) noexcept
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawMesh(_screenQuadIndirect);
+		this->drawIndexed(_numScreenQuadFace, 1, 0, 0, 0);
 	}
 }
 
 void
 RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
-	this->setVertexBuffer(_screenQuadVbo);
-	this->setIndexBuffer(_screenQuadIbo);
+	this->setVertexBuffer(0, _screenQuadVbo, 0);
+	this->setIndexBuffer(_screenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 	
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -355,21 +355,34 @@ RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t laye
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawMeshLayer(_screenQuadIndirect, layer);
+		this->drawIndexedLayer(_numScreenQuadFace, 1, 0, 0, 0, layer);
 	}
 }
 
-void
-RenderPipeline::drawMesh(const GraphicsIndirect& renderable) noexcept
+void 
+RenderPipeline::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
-	_graphicsContext->drawRenderMesh(renderable);
+	_graphicsContext->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
-void
-RenderPipeline::drawMeshLayer(const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
+void 
+RenderPipeline::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
-	_graphicsContext->setStencilReference(GraphicsStencilFace::GraphicsStencilFaceFrontBack, 1 << layer);
-	_graphicsContext->drawRenderMesh(renderable);
+	_graphicsContext->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
+}
+
+void 
+RenderPipeline::drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
+{
+	_graphicsContext->setStencilReference(GraphicsStencilFaceFlagBits::GraphicsStencilFaceAllBit, 1 << layer);
+	_graphicsContext->draw(numVertices, numInstances, startVertice, startInstances);
+}
+
+void 
+RenderPipeline::drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
+{
+	_graphicsContext->setStencilReference(GraphicsStencilFaceFlagBits::GraphicsStencilFaceAllBit, 1 << layer);
+	_graphicsContext->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
 }
 
 void 
@@ -597,8 +610,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 	if (!_screenQuadIbo)
 		return false;
 
-	_screenQuadIndirect.numVertices = mesh.getNumVertices();
-	_screenQuadIndirect.numIndices = mesh.getNumIndices();
+	_numScreenQuadFace = mesh.getNumIndices();
 
 	mesh.makeSphere(1, 24, 18);
 
@@ -610,8 +622,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 	if (!_sphereIbo)
 		return false;
 
-	_sphereIndirect.numVertices = mesh.getNumVertices();
-	_sphereIndirect.numIndices = mesh.getNumIndices();
+	_numSphereFace = mesh.getNumIndices();
 
 	mesh.makeCone(1, 1, 16);
 
@@ -623,8 +634,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 	if (!_coneIbo)
 		return false;
 
-	_coneIndirect.numVertices = mesh.getNumVertices();
-	_coneIndirect.numIndices = mesh.getNumIndices();
+	_numConeFace = mesh.getNumIndices();
 
 	return true;
 }

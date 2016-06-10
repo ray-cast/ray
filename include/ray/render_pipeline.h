@@ -38,7 +38,6 @@
 #define _H_RENDER_PIPELINE_H_
 
 #include <ray/render_types.h>
-#include <ray/graphics_context.h>
 
 _NAME_BEGIN
 
@@ -77,16 +76,19 @@ public:
 	void discradRenderTexture(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept;
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
-	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
-	void setIndexBuffer(GraphicsDataPtr ibo) noexcept;
+	void setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept;
+	void setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 
 	void drawCone(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
 	void drawSphere(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
 	void drawScreenQuad(const MaterialTech& tech) noexcept;
 	void drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer) noexcept;
+	
+	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
+	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 
-	void drawMesh(const GraphicsIndirect& renderable) noexcept;
-	void drawMeshLayer(const GraphicsIndirect& renderable, std::uint32_t layer) noexcept;
+	void drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept;
+	void drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept;
 
 	void drawRenderQueue(RenderQueue queue) noexcept;
 	void drawRenderQueue(RenderQueue queue, const MaterialTechPtr& tech) noexcept;
@@ -150,15 +152,15 @@ private:
 
 	GraphicsDataPtr _screenQuadVbo;
 	GraphicsDataPtr _screenQuadIbo;
-	GraphicsIndirect _screenQuadIndirect;
+	std::uint32_t _numScreenQuadFace;
 
 	GraphicsDataPtr _sphereVbo;
 	GraphicsDataPtr _sphereIbo;
-	GraphicsIndirect _sphereIndirect;
+	std::uint32_t _numSphereFace;
 
 	GraphicsDataPtr _coneVbo;
 	GraphicsDataPtr _coneIbo;
-	GraphicsIndirect _coneIndirect;	
+	std::uint32_t _numConeFace;	
 
 	MaterialSemanticManagerPtr _semanticsManager;
 

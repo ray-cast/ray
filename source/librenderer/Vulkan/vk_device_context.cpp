@@ -138,39 +138,39 @@ VulkanDeviceContext::getScissor(std::uint32_t i) const noexcept
 }
 
 void
-VulkanDeviceContext::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+VulkanDeviceContext::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
 	_commandList->setStencilCompareMask(face, mask);
 }
 
 std::uint32_t
-VulkanDeviceContext::getStencilCompareMask(GraphicsStencilFace face) noexcept
+VulkanDeviceContext::getStencilCompareMask(GraphicsStencilFaceFlagBits face) noexcept
 {
 	return _commandList->getStencilCompareMask(face);
 }
 
 void
-VulkanDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
+VulkanDeviceContext::setStencilReference(GraphicsStencilFaceFlags face, std::uint32_t reference) noexcept
 {
 	_commandList->setStencilReference(face, reference);
 }
 
 std::uint32_t
-VulkanDeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
+VulkanDeviceContext::getStencilReference(GraphicsStencilFaceFlagBits face) noexcept
 {
 	return _commandList->getStencilReference(face);
 }
 
 void
-VulkanDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+VulkanDeviceContext::setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
-	_commandList->setStencilFrontWriteMask(face, mask);
+	_commandList->setStencilWriteMask(face, mask);
 }
 
 std::uint32_t
-VulkanDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
+VulkanDeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept
 {
-	return _commandList->getStencilFrontWriteMask(face);
+	return _commandList->getStencilWriteMask(face);
 }
 
 void
@@ -189,6 +189,11 @@ VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 
 		_framebuffer = framebuffer;
 	}
+}
+
+void 
+VulkanDeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+{
 }
 
 void
@@ -235,31 +240,32 @@ VulkanDeviceContext::getDescriptorSet() const noexcept
 }
 
 void
-VulkanDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
+VulkanDeviceContext::setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<VulkanGraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 
 	_vertexBuffer = data;
-	_commandList->setVertexBuffers(&data, 0, 1);
+	_commandList->setVertexBuffers(&data, i, 1);
 }
 
 GraphicsDataPtr
-VulkanDeviceContext::getVertexBufferData() const noexcept
+VulkanDeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 {
 	return _vertexBuffer;
 }
 
 void
-VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<VulkanGraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	_indexBuffer = data;
-	_commandList->setIndexBuffer(data);
+	_commandList->setIndexBuffer(data, offset, indexType);
 }
 
 GraphicsDataPtr
@@ -268,16 +274,16 @@ VulkanDeviceContext::getIndexBufferData() const noexcept
 	return _indexBuffer;
 }
 
-void
-VulkanDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
+void 
+VulkanDeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
-	_commandList->drawRenderMesh(renderable);
+	_commandList->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
-void
-VulkanDeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
+void 
+VulkanDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
-	_commandList->drawRenderMesh(renderable + first, count);
+	_commandList->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
 }
 
 void

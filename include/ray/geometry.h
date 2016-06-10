@@ -41,6 +41,19 @@
 
 _NAME_BEGIN
 
+class EXPORT GraphicsIndirect final
+{
+public:
+	GraphicsIndirect() noexcept;
+
+	std::uint32_t startVertice;
+	std::uint32_t startIndice;
+	std::uint32_t startInstances;
+	std::uint32_t numVertices;
+	std::uint32_t numIndices;
+	std::uint32_t numInstances;
+};
+
 class EXPORT Geometry final : public RenderObject
 {
 	__DeclareSubClass(Geometry, RenderObject)
@@ -57,10 +70,10 @@ public:
 	void setMaterial(MaterialPtr material) noexcept;
 	MaterialPtr getMaterial() noexcept;
 
-	void setVertexBuffer(GraphicsDataPtr data) noexcept;
+	void setVertexBuffer(GraphicsDataPtr data, std::intptr_t offset) noexcept;
 	const GraphicsDataPtr& getVertexBuffer() const noexcept;
 
-	void setIndexBuffer(GraphicsDataPtr data) noexcept;
+	void setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 	const GraphicsDataPtr& getIndexBuffer() const noexcept;
 
 	void setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept;
@@ -80,8 +93,13 @@ private:
 	MaterialPtr _material;
 	RenderPipelineStagePtr _pipelineStages[RenderQueue::RenderQueueRangeSize];
 	MaterialTechPtr _techniques[RenderQueue::RenderQueueRangeSize];
+
+	std::intptr_t _vertexOffset;
+	std::intptr_t _indexOffset;
+
 	GraphicsDataPtr _vbo;
 	GraphicsDataPtr _ibo;
+	GraphicsIndexType _indexType;
 	GraphicsIndirectPtr _renderable;
 	GraphicsInputLayoutPtr _inputLayout;
 };

@@ -42,11 +42,24 @@
 
 _NAME_BEGIN
 
+GraphicsIndirect::GraphicsIndirect() noexcept
+	: startVertice(0)
+	, startIndice(0)
+	, startInstances(0)
+	, numVertices(0)
+	, numIndices(0)
+	, numInstances(1)
+{
+}
+
 __ImplementSubClass(Geometry, RenderObject, "Geometry")
 
 Geometry::Geometry() noexcept
 	: _isCastShadow(true)
 	, _isReceiveShadow(true)
+	, _indexType(GraphicsIndexType::GraphicsIndexTypeUInt32)
+	, _vertexOffset(0)
+	, _indexOffset(0)
 {
 }
 
@@ -112,10 +125,11 @@ Geometry::getMaterial() noexcept
 }
 
 void 
-Geometry::setVertexBuffer(GraphicsDataPtr data) noexcept
+Geometry::setVertexBuffer(GraphicsDataPtr data, std::intptr_t offset) noexcept
 {
 	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer));
 	_vbo = data;
+	_vertexOffset = offset;
 }
 
 const GraphicsDataPtr& 
@@ -125,10 +139,13 @@ Geometry::getVertexBuffer() const noexcept
 }
 
 void 
-Geometry::setIndexBuffer(GraphicsDataPtr data) noexcept
+Geometry::setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer));
+	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 	_ibo = data;
+	_indexType = indexType;
+	_indexOffset = offset;
 }
 
 const GraphicsDataPtr&
@@ -173,8 +190,11 @@ Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTe
 		pipeline.setTransform(this->getTransform());
 		pipeline.setTransformInverse(this->getTransformInverse());
 
-		pipeline.setVertexBuffer(_vbo);
-		pipeline.setIndexBuffer(_ibo);
+		if (_vbo)
+			pipeline.setVertexBuffer(0, _vbo, _vertexOffset);
+
+		if (_ibo)
+			pipeline.setIndexBuffer(_ibo, _indexOffset, _indexType);
 
 		if (_techniques[queue])
 		{
@@ -182,7 +202,7 @@ Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTe
 			for (auto& pass : passList)
 			{
 				pipeline.setMaterialPass(pass);
-				pipeline.drawMeshLayer(*_renderable, this->getLayer());
+				pipeline.drawIndexedLayer(_renderable->numIndices, _renderable->numInstances, _renderable->startIndice, _renderable->startVertice, _renderable->startInstances, this->getLayer());
 			}
 		}
 		else if (tech)
@@ -191,7 +211,7 @@ Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTe
 			for (auto& pass : passList)
 			{
 				pipeline.setMaterialPass(pass);
-				pipeline.drawMeshLayer(*_renderable, this->getLayer());
+				pipeline.drawIndexedLayer(_renderable->numIndices, _renderable->numInstances, _renderable->startIndice, _renderable->startVertice, _renderable->startInstances, this->getLayer());
 			}
 		}
 	}

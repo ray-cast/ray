@@ -359,7 +359,7 @@ bool
 WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	int index = 0;
-	int mask = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+	int mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
 	int flags = 0;
 
 #if _DEBUG
@@ -374,7 +374,6 @@ WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	{
 		major = 4;
 		minor = 5;
-		mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
 	}
 	else
 	{

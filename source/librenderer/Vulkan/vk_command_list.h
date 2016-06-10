@@ -57,14 +57,14 @@ public:
 	void setViewport(const Viewport viewport[], std::uint32_t first, std::uint32_t count) noexcept;
 	void setScissor(const Scissor Scissor[], std::uint32_t first, std::uint32_t count) noexcept;
 
-	void setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
-	std::uint32_t getStencilCompareMask(GraphicsStencilFace face) noexcept;
+	void setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept;
+	std::uint32_t getStencilCompareMask(GraphicsStencilFaceFlagBits face) noexcept;
 
-	void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept;
-	std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept;
+	void setStencilReference(GraphicsStencilFaceFlags face, std::uint32_t reference) noexcept;
+	std::uint32_t getStencilReference(GraphicsStencilFaceFlagBits face) noexcept;
 
-	void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
-	std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept;
+	void setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept;
+	std::uint32_t getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept;
 
 	void clearTexture(GraphicsTexturePtr texture, const ClearValue& value) noexcept;
 
@@ -75,10 +75,10 @@ public:
 	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
 
 	void setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first, std::uint32_t count) noexcept;
-	void setIndexBuffer(GraphicsDataPtr data) noexcept;
+	void setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 
-	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;
-	void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t count) noexcept;
+	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
+	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 
 	void execute(const GraphicsCommandListPtr& command) noexcept;
 
@@ -100,8 +100,8 @@ private:
 	VkImage _vkImage;
 	VkFramebuffer _vkFramebuffer;
 
-	std::vector<VkBuffer> _vkVertexBuffers;
-	std::vector<VkDeviceSize> _vkVertexOffsets;
+	std::vector<VkBuffer> _vertexBuffers;
+	std::vector<VkDeviceSize> _vertexOffsets;
 
 	GraphicsStateDesc _pipelineState;
 

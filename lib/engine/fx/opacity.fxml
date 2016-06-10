@@ -97,7 +97,7 @@
     </shader>
     <technique name="shadow">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
+            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
             <state name="vertex" value="DepthVS"/>
             <state name="fragment" value="DepthPS"/>
             <state name="primitive" value="triangle" />

@@ -53,11 +53,6 @@ public:
 
 	bool is_open() const noexcept;
 
-	GLsizeiptr size() const noexcept;
-
-	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
-	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
-
 	bool map(std::ptrdiff_t begin, std::ptrdiff_t count, void** data) noexcept;
 	void unmap() noexcept;
 
@@ -78,9 +73,6 @@ private:
 	GLuint _buffer;
 	GLenum _target;
 	GLvoid* _data;
-	GLsizeiptr _dataSize;
-	GLintptr _dataOffset;
-	std::uint32_t _usage;
 	GraphicsDataDesc _desc;
 	GraphicsDeviceWeakPtr _device;
 };

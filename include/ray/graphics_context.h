@@ -41,20 +41,6 @@
 
 _NAME_BEGIN
 
-class EXPORT GraphicsIndirect final
-{
-public:
-	GraphicsIndirect() noexcept;
-
-	std::uint32_t startVertice;
-	std::uint32_t startIndice;
-	std::uint32_t startInstances;
-	std::uint32_t numVertices;
-	std::uint32_t numIndices;
-	std::uint32_t numInstances;
-	GraphicsIndexType indexType;
-};
-
 class EXPORT GraphicsContextDesc final
 {
 public:
@@ -88,14 +74,14 @@ public:
 	virtual void setScissor(std::uint32_t i, const Scissor& scissor) noexcept = 0;
 	virtual const Scissor& getScissor(std::uint32_t i) const noexcept = 0;
 
-	virtual void setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept = 0;
-	virtual std::uint32_t getStencilCompareMask(GraphicsStencilFace face) noexcept = 0;
+	virtual void setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept = 0;
+	virtual std::uint32_t getStencilCompareMask(GraphicsStencilFaceFlagBits face) noexcept = 0;
 
-	virtual void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept = 0;
-	virtual std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept = 0;
+	virtual void setStencilReference(GraphicsStencilFaceFlags face, std::uint32_t reference) noexcept = 0;
+	virtual std::uint32_t getStencilReference(GraphicsStencilFaceFlagBits face) noexcept = 0;
 
-	virtual void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept = 0;
-	virtual std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept = 0;
+	virtual void setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept = 0;
+	virtual std::uint32_t getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept = 0;
 
 	virtual void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept = 0;
 	virtual GraphicsPipelinePtr getRenderPipeline() const noexcept = 0;
@@ -103,18 +89,19 @@ public:
 	virtual void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept = 0;
 	virtual GraphicsDescriptorSetPtr getDescriptorSet() const noexcept = 0;
 
-	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept = 0;
-	virtual GraphicsDataPtr getVertexBufferData() const noexcept = 0;
+	virtual void setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept = 0;
+	virtual GraphicsDataPtr getVertexBufferData(std::uint32_t i) const noexcept = 0;
 
-	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept = 0;
+	virtual void setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept = 0;
 	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
 
 	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
+	virtual void setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual GraphicsFramebufferPtr getFramebuffer() const noexcept = 0;
 
-	virtual void drawRenderMesh(const GraphicsIndirect& renderable) noexcept = 0;
-	virtual void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;
+	virtual void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept = 0;
+	virtual void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept = 0;
 
 	virtual bool isTextureSupport(GraphicsFormat format) noexcept = 0;
 	virtual bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept = 0;

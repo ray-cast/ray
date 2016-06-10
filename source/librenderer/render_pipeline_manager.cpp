@@ -427,17 +427,17 @@ RenderPipelineManager::setMaterialPass(const MaterialPassPtr& pass) noexcept
 }
 
 void 
-RenderPipelineManager::setVertexBuffer(GraphicsDataPtr vbo) noexcept
+RenderPipelineManager::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
 {
 	assert(_pipeline);
-	_pipeline->setVertexBuffer(vbo);
+	_pipeline->setVertexBuffer(i, vbo, offset);
 }
 
 void 
-RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo) noexcept
+RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_pipeline);
-	_pipeline->setIndexBuffer(ibo);
+	_pipeline->setIndexBuffer(ibo, offset, indexType);
 }
 
 void
@@ -461,23 +461,32 @@ RenderPipelineManager::drawScreenQuad(const MaterialTech& tech) noexcept
 	_pipeline->drawScreenQuad(tech);
 }
 
-void
-RenderPipelineManager::drawMesh(const GraphicsIndirect& renderable) noexcept
+void 
+RenderPipelineManager::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipeline);
-	_pipeline->drawMesh(renderable);
+	_pipeline->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
-void
-RenderPipelineManager::drawArray(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t firstVertex, std::uint32_t firstInstance) noexcept
+void 
+RenderPipelineManager::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipeline);
-	GraphicsIndirect renderable;
-	renderable.startVertice = firstVertex;
-	renderable.startInstances = firstInstance;
-	renderable.numVertices = numVertices;
-	renderable.numInstances = numInstances;
-	_pipeline->drawMesh(renderable);
+	_pipeline->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
+}
+
+void 
+RenderPipelineManager::drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
+{
+	assert(_pipeline);
+	_pipeline->drawLayer(numVertices, numInstances, startVertice, startInstances, layer);
+}
+
+void 
+RenderPipelineManager::drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
+{
+	assert(_pipeline);
+	_pipeline->drawIndexedLayer(numIndices, numInstances, startIndice, startVertice, startInstances, layer);
 }
 
 void

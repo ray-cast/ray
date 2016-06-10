@@ -26,7 +26,7 @@
 
             float3 GetDiffuse(Texture2D diffuseMap, float3 diffuse, float2 coord)
             {
-                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb);
+                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb) * diffuse;
             }
 
             float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
@@ -53,13 +53,10 @@
 
             void DepthVS(
                 in float4 Position : POSITION,
-#if SKINNING > 0
                 in float4 BlendWeight : BLENDWEIGHT,
                 in float4 BlendIndice : BLENDINDICES,
-#endif
                 out float4 oPosition : SV_Position)
             {
-#if SKINNING > 0
                 int4 blendIndices = (int4)BlendIndice;
 
                 oPosition = mul(bindpose[blendIndices.x], Position) * BlendWeight.x;
@@ -67,9 +64,6 @@
                 oPosition += mul(bindpose[blendIndices.z], Position) * BlendWeight.z;
                 oPosition += mul(bindpose[blendIndices.w], Position) * BlendWeight.w;
                 oPosition = mul(matModelViewProject, oPosition);
-#else
-                oPosition = mul(matModelViewProject, Position);
-#endif
             }
 
             void DepthPS()
@@ -80,10 +74,8 @@
                 in float4 Position : POSITION,
                 in float4 TangentQuat : TANGENT,
                 in float2 Texcoord : TEXCOORD,
-#if SKINNING > 0
                 in float4 BlendWeight : BLENDWEIGHT,
                 in float4 BlendIndice : BLENDINDICES,
-#endif
                 out float3 oNormal : TEXCOORD0,
                 out float3 oTangent : TEXCOORD1,
                 out float2 oTexcoord : TEXCOORD2,
@@ -94,7 +86,6 @@
                 float3 Normal = GetRight(TangentQuat);
                 float3 Tangent = GetForward(TangentQuat);
 
-#if SKINNING > 0
                 int4 blendIndices = (int4)BlendIndice;
 
                 oPosition = mul(bindpose[blendIndices.x], Position) * BlendWeight.x;
@@ -108,12 +99,6 @@
                 oNormal += mul((float3x3)bindpose[blendIndices.w], Normal) * BlendWeight.w;
 
                 oNormal = mul(oNormal, (float3x3)matModelViewInverse);
-#else
-                oNormal = mul(Normal, (float3x3)matModelViewInverse);
-                oTangent = mul(Tangent, (float3x3)matModelViewInverse);
-
-                oPosition = Position;
-#endif
 
                 oTexcoord = Texcoord;
                 oPosition = mul(matModelViewProject, oPosition);
@@ -137,7 +122,7 @@
     </shader>
     <technique name="shadow">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F_W4F_B4UI"/>
+            <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
             <state name="vertex" value="DepthVS"/>
             <state name="fragment" value="DepthPS"/>
             <state name="primitive" value="triangle" />

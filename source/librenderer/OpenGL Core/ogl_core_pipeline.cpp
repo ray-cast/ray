@@ -47,9 +47,6 @@ _NAME_BEGIN
 __ImplementSubClass(OGLCorePipeline, GraphicsPipeline, "OGLCorePipeline")
 
 OGLCorePipeline::OGLCorePipeline() noexcept
-	: _vao(GL_NONE)
-	, _vbo(GL_NONE)
-	, _ibo(GL_NONE)
 {
 }
 
@@ -61,7 +58,6 @@ OGLCorePipeline::~OGLCorePipeline() noexcept
 bool
 OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 {
-	assert(_vao == GL_NONE);
 	assert(pipelineDesc.getGraphicsState());
 	assert(pipelineDesc.getGraphicsProgram());
 	assert(pipelineDesc.getGraphicsInputLayout());
@@ -71,25 +67,12 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLInputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<OGLDescriptorSetLayout>());
 
-	glCreateVertexArrays(1, &_vao);
-	if (_vao == GL_NONE)
-	{
-		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
-		return false;
-	}
-
 	std::uint16_t offset = 0;
 
 	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
 	for (auto& it : layouts)
 	{
 		GLuint attribIndex = GL_INVALID_INDEX;
-		GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
-		if (type == GL_INVALID_ENUM)
-		{
-			GL_PLATFORM_LOG("Undefined vertex format.");
-			return false;
-		}
 
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
@@ -104,9 +87,22 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 		if (attribIndex != GL_INVALID_INDEX)
 		{
-			glEnableVertexArrayAttrib(_vao, attribIndex);
-			glVertexArrayAttribBinding(_vao, attribIndex, it.getVertexSlot());
-			glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, OGLTypes::isNormFormat(it.getVertexFormat()), offset + it.getVertexOffset());
+			GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
+			if (type == GL_INVALID_ENUM)
+			{
+				GL_PLATFORM_LOG("Undefined vertex format.");
+				return false;
+			}
+
+			VertexAttrib attrib;
+			attrib.type = type;
+			attrib.index = attribIndex;
+			attrib.slot = it.getVertexSlot();
+			attrib.count = it.getVertexCount();
+			attrib.offset = offset + it.getVertexOffset();
+			attrib.normalize = OGLTypes::isNormFormat(it.getVertexFormat());
+
+			_attributes.push_back(attrib);
 		}
 
 		offset += it.getVertexOffset() + it.getVertexSize();
@@ -115,11 +111,12 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();
 	for (auto& it : bindings)
 	{
-		auto divisor = it.getVertexDivisor();
-		if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
-			glVertexArrayBindingDivisor(_vao, it.getVertexSlot(), 0);
-		else if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
-			glVertexArrayBindingDivisor(_vao, it.getVertexSlot(), 1);
+		VertexBinding binding;
+		binding.slot = it.getVertexSlot();
+		binding.divisor = it.getVertexDivisor();
+		binding.stride = it.getVertexSize();
+
+		_bindings.push_back(binding);
 	}
 
 	_pipelineDesc = pipelineDesc;
@@ -129,11 +126,6 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 void
 OGLCorePipeline::close() noexcept
 {
-	if (_vao != GL_NONE)
-	{
-		glDeleteVertexArrays(1, &_vao);
-		_vao = GL_NONE;
-	}
 }
 
 const GraphicsPipelineDesc&
@@ -145,20 +137,63 @@ OGLCorePipeline::getGraphicsPipelineDesc() const noexcept
 void
 OGLCorePipeline::apply() noexcept
 {
-	glBindVertexArray(_vao);
+	for (auto& it : _attributes)
+	{
+		glEnableVertexAttribArray(it.index);
+		glVertexAttribBinding(it.index, it.slot);
+		glVertexAttribFormat(it.index, it.count, it.type, it.normalize, it.offset);
+	}
+
+	if (GLEW_NV_vertex_buffer_unified_memory)
+	{
+		for (auto& it : _bindings)
+		{
+			glVertexAttribDivisor(it.slot, it.divisor);
+			glBindVertexBuffer(it.slot, 0, 0, _bindings[it.slot].stride);
+		}
+	}
+	else
+	{
+		for (auto& it : _bindings)
+		{
+			glVertexAttribDivisor(it.slot, it.divisor);
+		}
+	}
 }
 
 void
-OGLCorePipeline::bindVbo(const OGLCoreGraphicsData& vbo, GLuint slot) noexcept
+OGLCorePipeline::bindVertexBuffers(OGLCoreVertexBuffers& vbos, bool forceUpdate) noexcept
 {
-	GLuint stride = vbo.getGraphicsDataDesc().getStride();
-	glVertexArrayVertexBuffer(_vao, slot, vbo.getInstanceID(), 0, stride);
-}
+	if (GLEW_NV_vertex_buffer_unified_memory)
+	{
+		for (auto& it : _bindings)
+		{
+			if (!vbos[it.slot].vbo)
+				continue;
 
-void
-OGLCorePipeline::bindIbo(const OGLCoreGraphicsData& ibo) noexcept
-{
-	glVertexArrayElementBuffer(_vao, ibo.getInstanceID());
+			if (vbos[it.slot].needUpdate)
+			{
+				GLuint64 addr = vbos[it.slot].vbo->getInstanceAddr() + vbos[it.slot].offset;
+				GLsizeiptr size = vbos[it.slot].vbo->getGraphicsDataDesc().getStreamSize() - vbos[it.slot].offset;
+				glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.slot, addr, size);
+				vbos[it.slot].needUpdate = false;
+			}
+		}
+	}
+	else
+	{
+		for (auto& it : _bindings)
+		{
+			if (!vbos[it.slot].vbo)
+				continue;
+
+			if (vbos[it.slot].needUpdate || forceUpdate)
+			{
+				glBindVertexBuffer(it.slot, vbos[it.slot].vbo->getInstanceID(), vbos[it.slot].offset, _bindings[it.slot].stride);
+				vbos[it.slot].needUpdate = false;
+			}
+		}
+	}
 }
 
 void

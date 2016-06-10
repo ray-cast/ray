@@ -51,20 +51,14 @@ public:
 	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
-	bool is_open() const noexcept;
-
-	GLsizeiptr size() const noexcept;
-
 	int flush() noexcept;
 	int flush(GLintptr offset, GLsizeiptr cnt) noexcept;
-
-	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
-	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
 
 	bool map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept;
 	void unmap() noexcept;
 
 	GLuint getInstanceID() const noexcept;
+	GLuint64 getInstanceAddr() const noexcept;
 
 	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 
@@ -79,10 +73,7 @@ private:
 
 private:
 	GLuint _buffer;
-	GLenum _target;
-	GLsizeiptr _dataSize;
-	GLintptr _dataOffset;
-	std::uint32_t _usage;
+	GLuint64 _bufferAddr;
 	GraphicsDataDesc _desc;
 	GraphicsDeviceWeakPtr _device;
 };

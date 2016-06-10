@@ -38,6 +38,7 @@
 #include <ray/light.h>
 #include <ray/camera.h>
 #include <ray/material.h>
+#include <ray/geometry.h>
 #include <ray/render_pipeline.h>
 #include <ray/render_object_manager.h>
 
@@ -139,15 +140,15 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFrame
 
 		_lightDirection->uniform3f(-it->downcast<Light>()->getForward());
 
-		pipeline.setVertexBuffer(_sphereVbo);
-		pipeline.setIndexBuffer(_sphereIbo);
+		pipeline.setVertexBuffer(0, _sphereVbo, 0);
+		pipeline.setIndexBuffer(_sphereIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 		pipeline.setFramebuffer(source);
 		pipeline.setMaterialPass(_ground->getPass(0));
-		pipeline.drawMesh(_renderable);
+		pipeline.drawIndexed(_renderable.numIndices, _renderable.numInstances, _renderable.startIndice, _renderable.startVertice, _renderable.startInstances);
 
 		pipeline.setMaterialPass(_sky->getPass(0));
-		pipeline.drawMesh(_renderable);
+		pipeline.drawIndexed(_renderable.numIndices, _renderable.numInstances, _renderable.startIndice, _renderable.startVertice, _renderable.startInstances);
 	}
 
 	return false;

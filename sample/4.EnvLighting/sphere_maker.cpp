@@ -269,7 +269,7 @@ SphereMakerComponent::onActivate() except
 	if (!normalMap)
 		return;
 
-	auto materialTemp = ray::ResManager::instance()->createMaterial("sys:fx/opacity_skinning0.fxml");
+	auto materialTemp = ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml");
 	if (!materialTemp)
 		return;
 

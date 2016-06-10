@@ -54,12 +54,9 @@ OGLGraphicsData::~OGLGraphicsData() noexcept
 bool
 OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 {
-	assert(!_buffer);
-	assert(desc.getStride() > 0);
+	assert(_buffer == GL_NONE);
+	assert(desc.getStreamSize() > 0);
 
-	_dataOffset = 0;
-	_dataSize = desc.getStreamSize();
-	_usage = desc.getUsage();
 	_desc = desc;
 	_data = nullptr;
 
@@ -93,7 +90,7 @@ OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 
 	glGenBuffers(1, &_buffer);
 	glBindBuffer(_target, _buffer);
-	glBufferData(_target, _dataSize, desc.getStream(), flags);
+	glBufferData(_target, desc.getStreamSize(), desc.getStream(), flags);
 
 	return true;
 }
@@ -119,60 +116,6 @@ OGLGraphicsData::close() noexcept
 		glDeleteBuffers(1, &_buffer);
 		_buffer = 0;
 	}
-}
-
-GLsizeiptr
-OGLGraphicsData::size() const noexcept
-{
-	return _dataSize;
-}
-
-GLsizeiptr
-OGLGraphicsData::read(char* str, GLsizeiptr cnt) noexcept
-{
-	if (_dataSize < _dataOffset + cnt)
-	{
-		cnt = _dataSize - _dataOffset;
-		if (cnt == 0)
-			return 0;
-	}
-
-	void* data;
-
-	this->map(_dataOffset, cnt, &data);
-	if (data)
-	{
-		std::memcpy(str, data, cnt);
-		_dataOffset += cnt;
-	}
-
-	this->unmap();
-	return cnt;
-}
-
-GLsizeiptr
-OGLGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
-{
-	if (_dataSize >= _dataOffset + cnt)
-	{
-		cnt = _dataSize - _dataOffset;
-		if (cnt == 0)
-			return 0;
-	}
-
-	void* data;
-
-	this->map(_dataOffset, cnt, &data);
-	if (data)
-	{
-		std::memcpy(data, str, cnt);
-		_dataOffset += cnt;
-		this->unmap();
-		return cnt;
-	}
-
-	this->unmap();
-	return 0;
 }
 
 bool 

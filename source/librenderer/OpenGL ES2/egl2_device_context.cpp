@@ -57,7 +57,8 @@ EGL2DeviceContext::EGL2DeviceContext() noexcept
 	, _viewport(0, 0, 0, 0)
 	, _state(GL_NONE)
 	, _framebuffer(GL_NONE)
-	, _needUpdateState(false)
+	, _indexOffset(0)
+	, _indexType(GL_UNSIGNED_INT)
 	, _needUpdateLayout(false)
 	, _startVertices(0)
 {
@@ -110,12 +111,12 @@ void
 EGL2DeviceContext::close() noexcept
 {
 	_framebuffer = nullptr;
-	_shaderObject = nullptr;
+	_program = nullptr;
 	_pipeline = nullptr;
 	_descriptorSet = nullptr;
 	_state = nullptr;
 	_vbo = nullptr;
-	_ibo = nullptr;
+	_indexBuffer = nullptr;
 	_inputLayout = nullptr;
 	_glcontext = nullptr;
 	_supportTextures.clear();
@@ -170,107 +171,103 @@ EGL2DeviceContext::getScissor(std::uint32_t i) const noexcept
 }
 
 void
-EGL2DeviceContext::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+EGL2DeviceContext::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		if (_stateCaptured.getStencilFrontReadMask() != mask)
 		{
 			GLenum frontfunc = EGL2Types::asCompareFunction(_stateCaptured.getStencilFrontFunc());
-			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask);
+			GL_CHECK(glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask));
 			_stateCaptured.setStencilFrontReadMask(mask);
-			_needUpdateState = true;
 		}
 	}
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		if (_stateCaptured.getStencilBackReadMask() != mask)
 		{
 			GLenum backfunc = EGL2Types::asCompareFunction(_stateCaptured.getStencilBackFunc());
-			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilFrontRef(), mask);
+			GL_CHECK(glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask));
 			_stateCaptured.setStencilBackReadMask(mask);
-			_needUpdateState = true;
 		}
 	}
-
 }
 
 std::uint32_t
-EGL2DeviceContext::getStencilCompareMask(GraphicsStencilFace face) noexcept
+EGL2DeviceContext::getStencilCompareMask(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _stateCaptured.getStencilFrontReadMask();
-	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _stateCaptured.getStencilBackReadMask();
-	return 0;
 }
 
 void
-EGL2DeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
+EGL2DeviceContext::setStencilReference(GraphicsStencilFaceFlags face, std::uint32_t reference) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		if (_stateCaptured.getStencilFrontRef() != reference)
 		{
 			GLenum frontfunc = EGL2Types::asCompareFunction(_stateCaptured.getStencilFrontFunc());
-			glStencilFuncSeparate(GL_FRONT, frontfunc, reference, _stateCaptured.getStencilFrontReadMask());
+			GL_CHECK(glStencilFuncSeparate(GL_FRONT, frontfunc, reference, _stateCaptured.getStencilFrontReadMask()));
 			_stateCaptured.setStencilFrontRef(reference);
-			_needUpdateState = true;
 		}
 	}
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		if (_stateCaptured.getStencilBackRef() != reference)
 		{
 			GLenum backfunc = EGL2Types::asCompareFunction(_stateCaptured.getStencilBackFunc());
-			glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilFrontReadMask());
+			GL_CHECK(glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilBackReadMask()));
 			_stateCaptured.setStencilBackRef(reference);
-			_needUpdateState = true;
 		}
 	}
 }
 
 std::uint32_t
-EGL2DeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
+EGL2DeviceContext::getStencilReference(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _stateCaptured.getStencilFrontRef();
-	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _stateCaptured.getStencilBackRef();
-	return 0;
 }
 
 void
-EGL2DeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+EGL2DeviceContext::setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		if (_stateCaptured.getStencilFrontWriteMask() != mask)
 		{
-			glStencilMaskSeparate(GL_FRONT, mask);
+			GL_CHECK(glStencilMaskSeparate(GL_FRONT, mask));
 			_stateCaptured.setStencilFrontWriteMask(mask);
-			_needUpdateState = true;
 		}
 	}
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		if (_stateCaptured.getStencilBackWriteMask() != mask)
 		{
-			glStencilMaskSeparate(GL_BACK, mask);
+			GL_CHECK(glStencilMaskSeparate(GL_BACK, mask));
 			_stateCaptured.setStencilBackWriteMask(mask);
-			_needUpdateState = true;
 		}
 	}
 }
 
 std::uint32_t
-EGL2DeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
+EGL2DeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _stateCaptured.getStencilFrontWriteMask();
-	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _stateCaptured.getStencilBackWriteMask();
-	return 0;
 }
 
 void
@@ -284,20 +281,17 @@ EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
 		auto glstate = pipelineDesc.getGraphicsState()->downcast<EGL2GraphicsState>();
-		if (_state != glstate || _needUpdateState)
+		if (_state != glstate)
 		{
 			glstate->apply(_stateCaptured);
-
 			_state = glstate;
-
-			_needUpdateState = false;
 		}
 
 		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<EGL2Program>();
-		if (_shaderObject != glshader)
+		if (_program != glshader)
 		{
-			_shaderObject = glshader;
-			_shaderObject->apply();
+			_program = glshader;
+			_program->apply();
 		}
 
 		_pipeline = glpipeline;
@@ -323,7 +317,7 @@ EGL2DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noex
 	assert(_glcontext->getActive());
 
 	_descriptorSet = descriptorSet->downcast<EGL2DescriptorSet>();
-	_descriptorSet->apply(*_shaderObject);
+	_descriptorSet->apply(*_program);
 }
 
 GraphicsDescriptorSetPtr
@@ -335,7 +329,7 @@ EGL2DeviceContext::getDescriptorSet() const noexcept
 }
 
 void
-EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
+EGL2DeviceContext::setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<EGL2GraphicsData>());
@@ -362,7 +356,7 @@ EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 }
 
 GraphicsDataPtr
-EGL2DeviceContext::getVertexBufferData() const noexcept
+EGL2DeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 {
 	if (_vbo)
 		return _vbo->upcast_pointer<GraphicsData>();
@@ -370,77 +364,100 @@ EGL2DeviceContext::getVertexBufferData() const noexcept
 }
 
 void
-EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
-	assert(!data || data->isInstanceOf<EGL2GraphicsData>());
-	assert(!data || data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	assert(data);
+	assert(data->isInstanceOf<EGL2GraphicsData>());
+	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 	assert(_glcontext->getActive());
 
-	if (data)
+	auto ibo = data->downcast_pointer<EGL2GraphicsData>();
+	if (_indexBuffer != ibo)
 	{
-		auto ibo = data->downcast<EGL2GraphicsData>();
-		if (_ibo != ibo)
-		{
-			_ibo = ibo;
-			_needUpdateLayout = true;
-		}
+		::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
+		_indexBuffer = ibo;
 	}
-	else
-	{
-		if (_ibo)
-		{
-			_ibo = nullptr;
-			_needUpdateLayout = true;
-		}
-	}
+
+	_indexOffset = offset;
+	_indexType = EGL2Types::asIndexType(indexType);
 }
 
 GraphicsDataPtr
 EGL2DeviceContext::getIndexBufferData() const noexcept
 {
-	if (_ibo)
-		return _ibo->upcast_pointer<GraphicsData>();
+	if (_indexBuffer)
+		return _indexBuffer->upcast_pointer<GraphicsData>();
 	return nullptr;
 }
 
 void
-EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
+EGL2DeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
+	assert(_pipeline);
+	assert(_glcontext->getActive());
+	assert(_indexBuffer);
+	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
+	assert(numInstances <= 1 && startInstances == 0);
+
 	if (!_inputLayout || !_vbo)
 		return;
 
-	if (_needUpdateLayout || _startVertices != renderable.startVertice)
+	if (_needUpdateLayout || _startVertices != startVertice)
 	{
 		if (_vbo)
-			_pipeline->bindVbo(*_vbo, renderable.startVertice, 0);
+			_pipeline->bindVbo(*_vbo, startVertice, 0);
 
-		if (_ibo)
-			_pipeline->bindIbo(*_ibo);
+		if (_indexBuffer)
+			_pipeline->bindIbo(*_indexBuffer);
 
-		_startVertices = renderable.startVertice;
+		_startVertices = startVertice;
 		_needUpdateLayout = false;
 	}
 
 	auto primitiveType = _stateCaptured.getPrimitiveType();
-	if (_ibo)
+	if (numVertices > 0)
 	{
 		GLenum drawType = EGL2Types::asVertexType(primitiveType);
-		GLenum indexType = EGL2Types::asIndexType(renderable.indexType);
-		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
-		GL_CHECK(glDrawElements(drawType, renderable.numIndices, indexType, offsetIndices));
-	}
-	else
-	{
-		GLenum drawType = EGL2Types::asVertexType(primitiveType);
-		GL_CHECK(glDrawArrays(drawType, 0, renderable.numVertices));
+		GL_CHECK(glDrawArrays(drawType, 0, numVertices));
 	}
 }
 
 void
-EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
+EGL2DeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
-	for (std::size_t i = first; i < first + count; i++)
-		this->drawRenderMesh(renderable[i]);
+	assert(_pipeline);
+	assert(_glcontext->getActive());
+	assert(_indexBuffer);
+	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
+	assert(numInstances <= 1 && startInstances == 0);
+
+	if (!_inputLayout || !_vbo)
+		return;
+
+	if (_needUpdateLayout || _startVertices != startVertice)
+	{
+		if (_vbo)
+			_pipeline->bindVbo(*_vbo, startVertice, 0);
+
+		if (_indexBuffer)
+			_pipeline->bindIbo(*_indexBuffer);
+
+		_startVertices = startVertice;
+		_needUpdateLayout = false;
+	}
+
+	if (numIndices > 0)
+	{
+		GLbyte* offsetIndices = (GLbyte*)nullptr + _indexOffset;
+		if (_indexType == GL_UNSIGNED_INT)
+			offsetIndices = offsetIndices + sizeof(std::uint32_t) * startIndice;
+		else
+			offsetIndices = offsetIndices + sizeof(std::uint16_t) * startIndice;
+
+		GLenum drawType = EGL2Types::asVertexType(_stateCaptured.getPrimitiveType());
+		glDrawElements(drawType, numIndices, _indexType, offsetIndices);
+	}
 }
 
 void
@@ -473,6 +490,11 @@ EGL2DeviceContext::getFramebuffer() const noexcept
 	if (_framebuffer)
 		return _framebuffer->upcast_pointer<GraphicsFramebuffer>();
 	return nullptr;
+}
+
+void 
+EGL2DeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+{
 }
 
 void

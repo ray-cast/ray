@@ -42,6 +42,7 @@ __ImplementSubInterface(OGLCoreGraphicsData, GraphicsData, "OGLCoreGraphicsData"
 
 OGLCoreGraphicsData::OGLCoreGraphicsData() noexcept
 	: _buffer(GL_NONE)
+	, _bufferAddr(GL_NONE)
 {
 }
 
@@ -53,34 +54,33 @@ OGLCoreGraphicsData::~OGLCoreGraphicsData() noexcept
 bool
 OGLCoreGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 {
-	assert(!_buffer);
-	assert(desc.getStride() > 0);
+	assert(_buffer == GL_NONE);
 
-	_dataOffset = 0;
-	_dataSize = desc.getStreamSize();
-	_usage = desc.getUsage();
-	_desc = desc;
+	GLenum target;
 
 	auto type = desc.getType();
 	if (type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
-		_target = GL_ARRAY_BUFFER;
+		target = GL_ARRAY_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
-		_target = GL_ELEMENT_ARRAY_BUFFER;
+		target = GL_ELEMENT_ARRAY_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeUniformBuffer)
-		_target = GL_UNIFORM_BUFFER;
+		target = GL_UNIFORM_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageTexelBuffer)
-		_target = GL_TEXTURE_BUFFER;
+		target = GL_TEXTURE_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
-		_target = GL_SHADER_STORAGE_BUFFER;
+		target = GL_SHADER_STORAGE_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
-		_target = GL_DRAW_INDIRECT_BUFFER;
+		target = GL_DRAW_INDIRECT_BUFFER;
 	else
+	{
+		GL_PLATFORM_LOG("Unknown data type.");
 		return false;
+	}
 
 	glCreateBuffers(1, &_buffer);
 	if (_buffer == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateBuffers() fail");
+		GL_PLATFORM_LOG("glCreateBuffers() fail.");
 		return false;
 	}
 
@@ -102,15 +102,16 @@ OGLCoreGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagClientStorageBit)
 		flags |= GL_CLIENT_STORAGE_BIT;
 
-	glNamedBufferStorage(_buffer, _dataSize, desc.getStream(), flags);
+	glNamedBufferStorage(_buffer, desc.getStreamSize(), desc.getStream(), flags);
 
+	if (GLEW_NV_vertex_buffer_unified_memory && type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
+	{
+		glGetNamedBufferParameterui64vNV(_buffer, GL_BUFFER_GPU_ADDRESS_NV, &_bufferAddr);
+		glMakeNamedBufferResidentNV(_buffer, GL_READ_ONLY);
+	}
+
+	_desc = desc;
 	return true;
-}
-
-bool
-OGLCoreGraphicsData::is_open() const noexcept
-{
-	return _buffer == GL_NONE ? false : true;
 }
 
 void
@@ -123,16 +124,10 @@ OGLCoreGraphicsData::close() noexcept
 	}
 }
 
-GLsizeiptr
-OGLCoreGraphicsData::size() const noexcept
-{
-	return _dataSize;
-}
-
 int
 OGLCoreGraphicsData::flush() noexcept
 {
-	return this->flush(0, _dataSize);
+	return this->flush(0, _desc.getStreamSize());
 }
 
 int
@@ -140,52 +135,6 @@ OGLCoreGraphicsData::flush(GLintptr offset, GLsizeiptr cnt) noexcept
 {
 	glFlushMappedNamedBufferRange(_buffer, offset, cnt);
 	return cnt;
-}
-
-GLsizeiptr
-OGLCoreGraphicsData::read(char* str, GLsizeiptr cnt) noexcept
-{
-	if (_dataSize < _dataOffset + cnt)
-	{
-		cnt = _dataSize - _dataOffset;
-		if (cnt == 0)
-			return 0;
-	}
-
-	void* data;
-	this->map(_dataOffset, cnt, &data);
-	if (data)
-	{
-		std::memcpy(str, data, cnt);
-		_dataOffset += cnt;
-	}
-
-	this->unmap();
-	return cnt;
-}
-
-GLsizeiptr
-OGLCoreGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
-{
-	if (_dataSize >= _dataOffset + cnt)
-	{
-		cnt = _dataSize - _dataOffset;
-		if (cnt == 0)
-			return 0;
-	}
-
-	void* data;
-	this->map(_dataOffset, cnt, &data);
-	if (data)
-	{
-		std::memcpy(data, str, cnt);
-		_dataOffset += cnt;
-		this->unmap();
-		return cnt;
-	}
-
-	this->unmap();
-	return 0;
 }
 
 bool
@@ -206,6 +155,12 @@ GLuint
 OGLCoreGraphicsData::getInstanceID() const noexcept
 {
 	return _buffer;
+}
+
+GLuint64
+OGLCoreGraphicsData::getInstanceAddr() const noexcept
+{
+	return _bufferAddr;
 }
 
 const GraphicsDataDesc&

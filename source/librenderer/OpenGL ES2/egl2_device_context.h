@@ -60,14 +60,14 @@ public:
 	void setScissor(std::uint32_t i, const Scissor& scissor) noexcept;
 	const Scissor& getScissor(std::uint32_t i) const noexcept;
 
-	void setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
-	std::uint32_t getStencilCompareMask(GraphicsStencilFace face) noexcept;
+	void setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept;
+	std::uint32_t getStencilCompareMask(GraphicsStencilFaceFlagBits face) noexcept;
 
-	void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept;
-	std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept;
+	void setStencilReference(GraphicsStencilFaceFlags face, std::uint32_t reference) noexcept;
+	std::uint32_t getStencilReference(GraphicsStencilFaceFlagBits face) noexcept;
 
-	void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
-	std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept;
+	void setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept;
+	std::uint32_t getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept;
 
 	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
 	GraphicsPipelinePtr getRenderPipeline() const noexcept;
@@ -75,18 +75,19 @@ public:
 	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
 	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
 
-	void setVertexBufferData(GraphicsDataPtr data) noexcept;
-	GraphicsDataPtr getVertexBufferData() const noexcept;
+	void setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept;
+	GraphicsDataPtr getVertexBufferData(std::uint32_t i) const noexcept;
 
-	void setIndexBufferData(GraphicsDataPtr data) noexcept;
+	void setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
-	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;
-	void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
+	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
+	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 
 	bool isTextureSupport(GraphicsFormat format) noexcept;
 	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
@@ -123,14 +124,16 @@ private:
 	Viewport _viewport;
 	Scissor _scissor;
 
-	bool _needUpdateState;
+	GLenum  _indexType;
+	GLintptr _indexOffset;
+
 	bool _needUpdateLayout;
 	std::uint32_t _startVertices;
 
 	EGL2GraphicsData* _vbo;
-	EGL2GraphicsData* _ibo;
+	EGL2GraphicsDataPtr _indexBuffer;
 	EGL2InputLayout* _inputLayout;
-	EGL2Program* _shaderObject;
+	EGL2Program* _program;
 	EGL2DescriptorSet* _descriptorSet;
 	EGL2Pipeline* _pipeline;
 	EGL2Framebuffer* _framebuffer;

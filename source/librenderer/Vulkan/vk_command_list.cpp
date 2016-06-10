@@ -51,8 +51,8 @@ __ImplementSubClass(VulkanCommandList, GraphicsCommandList, "VulkanCommandList")
 VulkanCommandList::VulkanCommandList() noexcept
 	: _commandBuffer(VK_NULL_HANDLE)
 	, _vkFramebuffer(VK_NULL_HANDLE)
-	, _vkVertexBuffers(8)
-	, _vkVertexOffsets(8)
+	, _vertexBuffers(8)
+	, _vertexOffsets(8)
 {
 }
 
@@ -173,16 +173,16 @@ VulkanCommandList::setScissor(const Scissor scissor[], std::uint32_t first, std:
 }
 
 void 
-VulkanCommandList::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+VulkanCommandList::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
 	VkStencilFaceFlags flags = 0;
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_FRONT_BIT;
 		_pipelineState.setStencilFrontReadMask(mask);
 	}
 		
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_BACK_BIT;
 		_pipelineState.setStencilBackReadMask(mask);
@@ -192,26 +192,27 @@ VulkanCommandList::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t
 }
 
 std::uint32_t
-VulkanCommandList::getStencilCompareMask(GraphicsStencilFace face) noexcept
+VulkanCommandList::getStencilCompareMask(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _pipelineState.getStencilFrontReadMask();
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _pipelineState.getStencilBackReadMask();
-	return 0;
 }
 
 void 
-VulkanCommandList::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
+VulkanCommandList::setStencilReference(GraphicsStencilFaceFlags face, std::uint32_t reference) noexcept
 {
 	VkStencilFaceFlags flags = 0;
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_FRONT_BIT;
 		_pipelineState.setStencilFrontRef(reference);
 	}
 
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_BACK_BIT;
 		_pipelineState.setStencilBackRef(reference);
@@ -221,26 +222,27 @@ VulkanCommandList::setStencilReference(GraphicsStencilFace face, std::uint32_t r
 }
 
 std::uint32_t 
-VulkanCommandList::getStencilReference(GraphicsStencilFace face) noexcept
+VulkanCommandList::getStencilReference(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _pipelineState.getStencilFrontRef();
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _pipelineState.getStencilBackRef();
-	return 0;
 }
 
 void 
-VulkanCommandList::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+VulkanCommandList::setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
 	VkStencilFaceFlags flags = 0;
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_FRONT_BIT;
 		_pipelineState.setStencilFrontWriteMask(mask);
 	}
 
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_BACK_BIT;
 		_pipelineState.setStencilBackWriteMask(mask);
@@ -250,13 +252,14 @@ VulkanCommandList::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint3
 }
 
 std::uint32_t 
-VulkanCommandList::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
+VulkanCommandList::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _pipelineState.getStencilFrontWriteMask();
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _pipelineState.getStencilBackWriteMask();
-	return 0;
 }
 
 void
@@ -445,42 +448,35 @@ VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first,
 
 	for (std::uint32_t i = 0; i < count; i++)
 	{
-		_vkVertexBuffers[i] = data[i]->downcast<VulkanGraphicsData>()->getBuffer();
-		_vkVertexOffsets[i] = 0;
+		_vertexBuffers[i] = data[i]->downcast<VulkanGraphicsData>()->getBuffer();
+		_vertexOffsets[i] = 0;
 	}
 	
-	vkCmdBindVertexBuffers(_commandBuffer, first, count, _vkVertexBuffers.data(), _vkVertexOffsets.data());
+	vkCmdBindVertexBuffers(_commandBuffer, first, count, _vertexBuffers.data(), _vertexOffsets.data());
 }
 
 void
-VulkanCommandList::setIndexBuffer(GraphicsDataPtr data) noexcept
+VulkanCommandList::setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
+	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
+	
 	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer(); 
-	auto stride = data->downcast<VulkanGraphicsData>()->getGraphicsDataDesc().getStride();
-	if (stride == 2)
-		vkCmdBindIndexBuffer(_commandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT16);
-	else if (stride == 4)
-		vkCmdBindIndexBuffer(_commandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
-	else
-	{
-		assert(false);
-	}
+	if (indexType == GraphicsIndexType::GraphicsIndexTypeUInt16)
+		vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, VkIndexType::VK_INDEX_TYPE_UINT16);
+	else if (indexType == GraphicsIndexType::GraphicsIndexTypeUInt32)
+		vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
 }
 
-void
-VulkanCommandList::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
+void 
+VulkanCommandList::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
-	if (renderable.numIndices == 0)
-		vkCmdDraw(_commandBuffer, renderable.numVertices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
-	else
-		vkCmdDrawIndexed(_commandBuffer, renderable.numIndices, renderable.numInstances, renderable.startIndice, renderable.startVertice, renderable.startInstances);
+	vkCmdDraw(_commandBuffer, numVertices, numInstances, startVertice, startInstances);
 }
 
-void
-VulkanCommandList::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t count) noexcept
+void 
+VulkanCommandList::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
-	for (std::size_t i = 0; i < count; i++)
-		this->drawRenderMesh(renderable[i]);
+	vkCmdDrawIndexed(_commandBuffer, numIndices, numInstances, startIndice, startVertice, startInstances);
 }
 
 void

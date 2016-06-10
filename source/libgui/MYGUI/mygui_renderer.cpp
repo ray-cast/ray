@@ -205,8 +205,8 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 	}
 
 	RenderSystem::instance()->setMaterialPass(materialPass);
-	RenderSystem::instance()->setVertexBuffer(renderBuffer);
-	RenderSystem::instance()->drawArray(_count, 1, 0, 0);
+	RenderSystem::instance()->setVertexBuffer(0, renderBuffer, 0);
+	RenderSystem::instance()->draw(_count, 1, 0, 0);
 }
 
 void

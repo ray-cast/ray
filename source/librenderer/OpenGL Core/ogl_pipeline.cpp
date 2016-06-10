@@ -98,11 +98,14 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			attrib.type = type;
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
-			attrib.slot = it.getVertexSlot();
+			attrib.stride = 0;
 			attrib.offset = offset + it.getVertexOffset();
 			attrib.normalize = OGLTypes::isNormFormat(it.getVertexFormat());
 
-			_attributes.push_back(attrib);
+			if (it.getVertexSlot() <= _attributes.size())
+				_attributes.resize(it.getVertexSlot() + 1);
+
+			_attributes[it.getVertexSlot()].push_back(attrib);
 		}
 
 		offset += it.getVertexOffset() + it.getVertexSize();
@@ -111,14 +114,13 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();
 	for (auto& it : bindings)
 	{
-		for (auto& attrib : _attributes)
+		for (auto& attrib : _attributes[it.getVertexSlot()])
 		{
-			if (attrib.slot != it.getVertexSlot())
-				continue;
+			attrib.stride = it.getVertexSize();
 
 			VertexBinding binding;
-			binding.slot = attrib.slot;
 			binding.index = attrib.index;
+			binding.slot = it.getVertexSlot();
 			binding.divisor = it.getVertexDivisor();
 
 			_bindings.push_back(binding);
@@ -141,39 +143,36 @@ OGLPipeline::getGraphicsPipelineDesc() const noexcept
 	return _pipelineDesc;
 }
 
-void
+void 
 OGLPipeline::apply() noexcept
 {
-}
-
-void
-OGLPipeline::bindVbo(const OGLGraphicsData& vbo, GLuint slot) noexcept
-{
-	glBindBuffer(GL_ARRAY_BUFFER, vbo.getInstanceID());
-
-	GLuint stride = vbo.getGraphicsDataDesc().getStride();
-	for (auto& it : _attributes)
-	{
-		if (it.slot != slot)
-			continue;
-
-		glEnableVertexAttribArray(it.index);
-		glVertexAttribPointer(it.index, it.count, it.type, it.normalize, stride, (GLbyte*)nullptr + it.offset);
-	}
-
 	for (auto& it : _bindings)
 	{
-		if (it.slot != slot)
-			continue;
-
 		glVertexAttribDivisor(it.index, it.divisor);
 	}
 }
 
 void
-OGLPipeline::bindIbo(const OGLGraphicsData& ibo) noexcept
+OGLPipeline::bindVertexBuffers(OGLVertexBuffers& vbos, bool forceUpdate) noexcept
 {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getInstanceID());
+	for (std::size_t slot = 0; slot < _attributes.size(); slot++)
+	{
+		if (!vbos[slot].vbo)
+			continue;
+	
+		if (vbos[slot].needUpdate || forceUpdate)
+		{	
+			glBindBuffer(GL_ARRAY_BUFFER, vbos[slot].vbo->getInstanceID());
+			
+			for (auto& it : _attributes[slot])
+			{
+				glEnableVertexAttribArray(it.index);				
+				glVertexAttribPointer(it.index, it.count, it.type, it.normalize, it.stride, (GLbyte*)nullptr + vbos[slot].offset + it.offset);
+			}
+
+			vbos[slot].needUpdate = false;
+		}
+	}
 }
 
 void

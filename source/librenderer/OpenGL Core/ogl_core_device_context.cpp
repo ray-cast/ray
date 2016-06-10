@@ -51,26 +51,15 @@ _NAME_BEGIN
 __ImplementSubClass(OGLCoreDeviceContext, GraphicsContext, "OGLCoreDeviceContext")
 
 OGLCoreDeviceContext::OGLCoreDeviceContext() noexcept
-	: _clearColor(0.0f, 0.0f, 0.0f, 0.0f)
-	, _clearDepth(1.0f)
+	: _clearDepth(1.0f)
 	, _clearStencil(0)
-	, _framebuffer(nullptr)
-	, _shaderObject(nullptr)
-	, _pipeline(nullptr)
-	, _descriptorSet(nullptr)
-	, _state(nullptr)
-	, _vbo(nullptr)
-	, _ibo(nullptr)
-	, _glcontext(nullptr)
-	, _needUpdateState(true)
-	, _needUpdateLayout(true)
+	, _inputLayout(GL_NONE)
+	, _indexOffset(0)
+	, _indexType(GL_UNSIGNED_INT)
+	, _needUpdatePipeline(true)
 	, _needUpdateDescriptor(true)
+	, _needUpdateVertexBuffers(true)
 {
-	std::memset(&_viewport, 0, sizeof(_viewport));
-	std::memset(&_scissor, 0, sizeof(_scissor));
-
-	GraphicsColorBlends blends(4);
-	_stateCaptured.setColorBlends(blends);
 }
 
 OGLCoreDeviceContext::~OGLCoreDeviceContext() noexcept
@@ -84,7 +73,7 @@ OGLCoreDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	assert(desc.getSwapchain());
 	assert(desc.getSwapchain()->isInstanceOf<OGLSwapchain>());
 
-	_glcontext = desc.getSwapchain()->downcast<OGLSwapchain>();
+	_glcontext = desc.getSwapchain()->downcast_pointer<OGLSwapchain>();
 	_glcontext->setActive(true);
 
 	if (_glcontext->getActive())
@@ -119,16 +108,22 @@ OGLCoreDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 void
 OGLCoreDeviceContext::close() noexcept
 {
-	_framebuffer = nullptr;
-	_shaderObject = nullptr;
-	_pipeline = nullptr;
-	_descriptorSet = nullptr;
-	_state = nullptr;
-	_vbo = nullptr;
-	_ibo = nullptr;
-	_glcontext = nullptr;
+	_framebuffer.reset();
+	_program.reset();
+	_pipeline.reset();
+	_descriptorSet.reset();
+	_state.reset();
+	_indexBuffer.reset();
+	_glcontext.reset();
+	_vertexBuffers.clear();
 	_supportTextures.clear();
 	_supportAttribute.clear();
+
+	if (_inputLayout != GL_NONE)
+	{
+		glDeleteVertexArrays(1, &_inputLayout);
+		_inputLayout = GL_NONE;
+	}
 }
 
 void
@@ -148,17 +143,17 @@ OGLCoreDeviceContext::setViewport(std::uint32_t i, const Viewport& view) noexcep
 {
 	assert(_glcontext->getActive());
 
-	if (_viewport != view)
+	if (_viewports[i] != view)
 	{
-		glViewport(view.left, view.top, view.width, view.height);
-		_viewport = view;
+		glViewportIndexedf(i, view.left, view.top, view.width, view.height);
+		_viewports[i] = view;
 	}
 }
 
 const Viewport&
 OGLCoreDeviceContext::getViewport(std::uint32_t i) const noexcept
 {
-	return _viewport;
+	return _viewports[i];
 }
 
 void
@@ -166,121 +161,117 @@ OGLCoreDeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexce
 {
 	assert(_glcontext->getActive());
 
-	if (_scissor != scissor)
+	if (_scissors[i] != scissor)
 	{
-		glScissor(scissor.left, scissor.top, scissor.width, scissor.height);
-		_scissor = scissor;
+		glScissorIndexed(i, scissor.left, scissor.top, scissor.width, scissor.height);
+		_scissors[i] = scissor;
 	}
 }
 
 const Scissor&
 OGLCoreDeviceContext::getScissor(std::uint32_t i) const noexcept
 {
-	return _scissor;
+	return _scissors[i];
 }
 
 void
-OGLCoreDeviceContext::setStencilCompareMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+OGLCoreDeviceContext::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		if (_stateCaptured.getStencilFrontReadMask() != mask)
 		{
 			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
 			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask);
 			_stateCaptured.setStencilFrontReadMask(mask);
-			_needUpdateState = true;
 		}
 	}
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		if (_stateCaptured.getStencilBackReadMask() != mask)
 		{
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
 			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask);
 			_stateCaptured.setStencilBackReadMask(mask);
-			_needUpdateState = true;
 		}
-	}
-	
+	}	
 }
 
 std::uint32_t
-OGLCoreDeviceContext::getStencilCompareMask(GraphicsStencilFace face) noexcept
+OGLCoreDeviceContext::getStencilCompareMask(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _stateCaptured.getStencilFrontReadMask();
-	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _stateCaptured.getStencilBackReadMask();
-	return 0;
 }
 
 void
-OGLCoreDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
+OGLCoreDeviceContext::setStencilReference(GraphicsStencilFaceFlags face, std::uint32_t reference) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		if (_stateCaptured.getStencilFrontRef() != reference)
 		{
 			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
 			glStencilFuncSeparate(GL_FRONT, frontfunc, reference, _stateCaptured.getStencilFrontReadMask());
 			_stateCaptured.setStencilFrontRef(reference);
-			_needUpdateState = true;
 		}
 	}
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		if (_stateCaptured.getStencilBackRef() != reference)
 		{
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
 			glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilBackReadMask());
 			_stateCaptured.setStencilBackRef(reference);
-			_needUpdateState = true;
 		}
 	}
 }
 
 std::uint32_t
-OGLCoreDeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
+OGLCoreDeviceContext::getStencilReference(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _stateCaptured.getStencilFrontRef();
-	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _stateCaptured.getStencilBackRef();
-	return 0;
 }
 
 void
-OGLCoreDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+OGLCoreDeviceContext::setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
-	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 	{
 		if (_stateCaptured.getStencilFrontWriteMask() != mask)
 		{
 			glStencilMaskSeparate(GL_FRONT, mask);
 			_stateCaptured.setStencilFrontWriteMask(mask);
-			_needUpdateState = true;
 		}
 	}
-	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		if (_stateCaptured.getStencilBackWriteMask() != mask)
 		{
 			glStencilMaskSeparate(GL_BACK, mask);
 			_stateCaptured.setStencilBackWriteMask(mask);
-			_needUpdateState = true;
 		}
 	}
 }
 
 std::uint32_t
-OGLCoreDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
+OGLCoreDeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept
 {
-	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
+
+	if (face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit)
 		return _stateCaptured.getStencilFrontWriteMask();
-	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+	else
 		return _stateCaptured.getStencilBackWriteMask();
-	return 0;
 }
 
 void
@@ -290,32 +281,30 @@ OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 	assert(pipeline->isInstanceOf<OGLCorePipeline>());
 	assert(_glcontext->getActive());
 
-	auto glpipeline = pipeline->downcast<OGLCorePipeline>();
-	if (_pipeline != glpipeline || _needUpdateState)
+	auto glpipeline = pipeline->downcast_pointer<OGLCorePipeline>();
+	if (_pipeline != glpipeline)
 	{
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
-		auto glstate = pipelineDesc.getGraphicsState()->downcast<OGLGraphicsState>();
-		if (_state != glstate || _needUpdateState)
+		auto glstate = pipelineDesc.getGraphicsState()->downcast_pointer<OGLGraphicsState>();
+		if (_state != glstate)
 		{
 			glstate->apply(_stateCaptured);
 			_state = glstate;
-			_needUpdateState = false;
 		}
 
-		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<OGLProgram>();
-		if (_shaderObject != glshader)
+		auto glprogram = pipelineDesc.getGraphicsProgram()->downcast_pointer<OGLProgram>();
+		if (_program != glprogram)
 		{
-			_shaderObject = glshader;
-			_shaderObject->apply();
+			_program = glprogram;
+			_program->apply();
 		}
 
 		if (_pipeline != glpipeline)
 		{
 			_pipeline = glpipeline;
 			_pipeline->apply();
-
-			_needUpdateLayout = true;
+			_needUpdatePipeline = true;
 		}
 	}
 }
@@ -323,9 +312,7 @@ OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 GraphicsPipelinePtr
 OGLCoreDeviceContext::getRenderPipeline() const noexcept
 {
-	if (_pipeline)
-		return _pipeline->upcast_pointer<GraphicsPipeline>();
-	return nullptr;
+	return _pipeline;
 }
 
 void
@@ -334,133 +321,133 @@ OGLCoreDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) n
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<OGLCoreDescriptorSet>());
 	assert(_glcontext->getActive());
-	assert(_shaderObject);
 
-	_descriptorSet = descriptorSet->downcast<OGLCoreDescriptorSet>();
-	_needUpdateDescriptor = true;
+	auto glDescriptorSet = descriptorSet->downcast_pointer<OGLCoreDescriptorSet>();
+	if (_descriptorSet != glDescriptorSet)
+	{
+		_descriptorSet = glDescriptorSet;
+		_needUpdateDescriptor = true;
+	}
 }
 
 GraphicsDescriptorSetPtr
 OGLCoreDeviceContext::getDescriptorSet() const noexcept
 {
-	if (_descriptorSet)
-		return _descriptorSet->upcast_pointer<GraphicsDescriptorSet>();
-	return nullptr;
+	return _descriptorSet;
 }
 
 void
-OGLCoreDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
+OGLCoreDeviceContext::setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLCoreGraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	assert(_vertexBuffers.size() > i);
 	assert(_glcontext->getActive());
 
-	if (data)
+	auto vbo = data->downcast_pointer<OGLCoreGraphicsData>();
+	if (_vertexBuffers[i].vbo != vbo || _vertexBuffers[i].offset != offset)
 	{
-		auto vbo = data->downcast<OGLCoreGraphicsData>();
-		if (_vbo != vbo)
-		{
-			_vbo = vbo;
-			_needUpdateLayout = true;
-		}
-	}
-	else
-	{
-		if (_vbo)
-		{
-			_vbo = nullptr;
-			_needUpdateLayout = true;
-		}
+		_vertexBuffers[i].vbo = vbo;
+		_vertexBuffers[i].offset = offset;
+		_vertexBuffers[i].needUpdate = true;
+		_needUpdateVertexBuffers = true;
 	}
 }
 
 GraphicsDataPtr
-OGLCoreDeviceContext::getVertexBufferData() const noexcept
+OGLCoreDeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 {
-	if (_vbo)
-		return _vbo->upcast_pointer<GraphicsData>();
-	return nullptr;
+	assert(_vertexBuffers.size() > i);
+	return _vertexBuffers[i].vbo;
 }
 
 void
-OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
-	assert(!data || data->isInstanceOf<OGLCoreGraphicsData>());
-	assert(!data || data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	assert(data);
+	assert(data->isInstanceOf<OGLCoreGraphicsData>());
+	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 	assert(_glcontext->getActive());
 
-	if (data)
+	auto ibo = data->downcast_pointer<OGLCoreGraphicsData>();
+	if (_indexBuffer != ibo)
 	{
-		auto ibo = data->downcast<OGLCoreGraphicsData>();
-		if (_ibo != ibo)
-		{
-			_ibo = ibo;
-			_needUpdateLayout = true;
-		}
+		::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
+		_indexBuffer = ibo;
 	}
-	else
-	{
-		if (_ibo)
-		{
-			_ibo = nullptr;
-			_needUpdateLayout = true;
-		}
-	}
+
+	_indexOffset = offset;
+	_indexType = OGLTypes::asIndexType(indexType);
 }
 
 GraphicsDataPtr
 OGLCoreDeviceContext::getIndexBufferData() const noexcept
 {
-	if (_ibo)
-		return _ibo->upcast_pointer<GraphicsData>();
-	return nullptr;
+	return _indexBuffer;
 }
 
 void
-OGLCoreDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
+OGLCoreDeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
-	assert(_vbo && _pipeline);
+	assert(_pipeline);
 	assert(_glcontext->getActive());
+	assert(startInstances == 0);
 
-	if (_needUpdateLayout)
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
 	{
-		if (_vbo)
-			_pipeline->bindVbo(*_vbo, 0);
-
-		if (_ibo)
-			_pipeline->bindIbo(*_ibo);
-
-		_needUpdateLayout = false;
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
 	}
 
 	if (_needUpdateDescriptor)
 	{
-		_descriptorSet->apply(*_shaderObject);
+		_descriptorSet->apply(*_program);
 		_needUpdateDescriptor = false;
 	}
 
-	if (_ibo)
+	if (numVertices > 0)
 	{
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		GLenum indexType = OGLTypes::asIndexType(renderable.indexType);
-		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
-		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
-	}
-	else
-	{
-		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawArraysInstancedBaseInstance(drawType, renderable.startVertice, renderable.numVertices, renderable.numInstances, renderable.startInstances);
+		glDrawArraysInstancedBaseInstance(drawType, startVertice, numVertices, numInstances, startInstances);
 	}
 }
 
 void
-OGLCoreDeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
+OGLCoreDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
+	assert(_pipeline);
 	assert(_glcontext->getActive());
+	assert(_indexBuffer);
+	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
+	assert(startInstances == 0);
 
-	for (std::size_t i = first; i < first + count; i++)
-		this->drawRenderMesh(renderable[i]);
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
+	{
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
+
+	if (_needUpdateDescriptor)
+	{
+		_descriptorSet->apply(*_program);
+		_needUpdateDescriptor = false;
+	}
+	
+	if (numIndices > 0)
+	{
+		GLbyte* offsetIndices = (GLbyte*)_indexOffset;
+		if (_indexType == GL_UNSIGNED_INT)
+			offsetIndices = offsetIndices + sizeof(std::uint32_t) * startIndice;
+		else
+			offsetIndices = offsetIndices + sizeof(std::uint16_t) * startIndice;
+
+		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
+		glDrawElementsInstancedBaseVertexBaseInstance(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice, startInstances);
+	}
 }
 
 void
@@ -470,7 +457,7 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 
 	if (target)
 	{
-		auto framebuffer = target->downcast<OGLCoreFramebuffer>();
+		auto framebuffer = target->downcast_pointer<OGLCoreFramebuffer>();
 		if (_framebuffer != framebuffer)
 		{
 			_framebuffer = framebuffer;
@@ -488,6 +475,11 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 }
 
 void
+OGLCoreDeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+{
+}
+
+void
 OGLCoreDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
@@ -495,8 +487,8 @@ OGLCoreDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport
 	assert(!dest || (dest && dest->isInstanceOf<OGLCoreFramebuffer>()));
 	assert(_glcontext->getActive());
 
-	auto readFramebuffer = src->downcast<OGLCoreFramebuffer>()->getInstanceID();
-	auto drawFramebuffer = dest ? dest->downcast<OGLCoreFramebuffer>()->getInstanceID() : GL_NONE;
+	auto readFramebuffer = src->downcast_pointer<OGLCoreFramebuffer>()->getInstanceID();
+	auto drawFramebuffer = dest ? dest->downcast_pointer<OGLCoreFramebuffer>()->getInstanceID() : GL_NONE;
 
 	glBlitNamedFramebuffer(readFramebuffer, drawFramebuffer, v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
@@ -1089,6 +1081,22 @@ OGLCoreDeviceContext::initStateSystem() noexcept
 	glDisable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glGenVertexArrays(1, &_inputLayout);
+	glBindVertexArray(_inputLayout);
+
+	if (GLEW_NV_vertex_buffer_unified_memory)
+	{
+		glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
+	}
+
+	_vertexBuffers.resize(8);
+	_viewports.resize(8, Viewport(0, 0, 0, 0));
+	_scissors.resize(8, Scissor(0, 0, 0, 0));
+	_clearColor.resize(4, float4(0.0f, 0.0f, 0.0f, 0.0f));
+
+	GraphicsColorBlends blends(4);
+	_stateCaptured.setColorBlends(blends);
 
 	return true;
 }

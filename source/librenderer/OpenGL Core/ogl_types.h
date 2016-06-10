@@ -147,6 +147,24 @@ typedef std::weak_ptr<class OGLGraphicsUniform> OGLGraphicsUniformWeakPtr;
 typedef std::weak_ptr<class OGLGraphicsUniformBlock> OGLGraphicsUniformBlockWeakPtr;
 
 typedef std::vector<OGLShaderPtr> OGLShaders;
+typedef std::vector<OGLGraphicsDataPtr> OGLGraphicsDatas;
+
+struct OGLVertexBuffer
+{
+	bool needUpdate;
+	std::intptr_t offset;
+	OGLGraphicsDataPtr vbo;
+};
+
+struct OGLCoreVertexBuffer
+{
+	bool needUpdate;
+	std::intptr_t offset;
+	OGLCoreGraphicsDataPtr vbo;
+};
+
+typedef std::vector<OGLVertexBuffer> OGLVertexBuffers;
+typedef std::vector<OGLCoreVertexBuffer> OGLCoreVertexBuffers;
 
 class OGLTypes
 {

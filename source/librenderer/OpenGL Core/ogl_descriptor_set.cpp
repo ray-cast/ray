@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_descriptor_set.h"
-#include "ogl_core_descriptor.h"
 #include "ogl_texture.h"
 #include "ogl_shader.h"
 #include "ogl_sampler.h"

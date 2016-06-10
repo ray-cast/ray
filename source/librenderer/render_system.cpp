@@ -167,17 +167,17 @@ RenderSystem::setMaterialPass(const MaterialPassPtr& pass) noexcept
 }
 
 void
-RenderSystem::setVertexBuffer(GraphicsDataPtr vbo) noexcept
+RenderSystem::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setVertexBuffer(vbo);
+	_pipelineManager->setVertexBuffer(i, vbo, offset);
 }
 
 void
-RenderSystem::setIndexBuffer(GraphicsDataPtr ibo) noexcept
+RenderSystem::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setIndexBuffer(ibo);
+	_pipelineManager->setIndexBuffer(ibo, offset, indexType);
 }
 
 void
@@ -202,17 +202,31 @@ RenderSystem::drawScreenQuad(const MaterialTech& tech) noexcept
 }
 
 void
-RenderSystem::drawMesh(const GraphicsIndirect& renderable) noexcept
+RenderSystem::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawMesh(renderable);
+	_pipelineManager->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
 void
-RenderSystem::drawArray(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t firstVertex, std::uint32_t firstInstance) noexcept
+RenderSystem::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawArray(numVertices, numInstances, firstVertex, firstInstance);
+	_pipelineManager->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
+}
+
+void
+RenderSystem::drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->drawLayer(numVertices, numInstances, startVertice, startInstances, layer);
+}
+
+void
+RenderSystem::drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->drawIndexedLayer(numIndices, numInstances, startIndice, startVertice, startInstances, layer);
 }
 
 bool

@@ -32,21 +32,9 @@
                 return restorePosition(texDepth, uv, viewdir);
             }
 
-            float3 GetPosition(int2 pt, float3 viewdir)
-            {
-                float depth = texDepth.Load(int3(pt, 0.0));
-                return viewdir * depth / viewdir.z;
-            }
-
             float3 GetNormal(float2 uv)
             {
                 float4 MRT1 = texNormal.Sample(PointClamp, uv);
-                return restoreNormal(MRT1);
-            }
-
-            float3 GetNormal(int2 pt)
-            {
-                float4 MRT1 = texNormal.Load(int3(pt,0.0));
                 return restoreNormal(MRT1);
             }
 

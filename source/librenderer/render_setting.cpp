@@ -42,7 +42,7 @@ RenderSetting::RenderSetting() noexcept
 	: window(nullptr)
 	, width(0)
 	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
 	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
 	, enableSSAO(true)

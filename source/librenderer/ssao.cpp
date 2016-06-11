@@ -92,7 +92,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	pipeline.getWindowResolution(width, height);
 
 	_occlusionSourceInv->uniform2f(1.0 / width, 1.0 / height);
-	_cameraProjScale->uniform1f(((float)width / height) * _setting.radius);
+	_cameraProjScale->uniform1f(_setting.radius * _setting.radius);
 
 	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 

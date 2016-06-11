@@ -184,7 +184,7 @@
     </technique>
     <technique name="transparent">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
+            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
 
             <state name="vertex" value="TransparentVS"/>
             <state name="fragment" value="TransparentPS"/>
@@ -215,7 +215,7 @@
     </technique>
    <technique name="transparentbatch">
         <pass name="p1">
-            <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
+            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
 
             <state name="vertex" value="TransparentVS"/>
             <state name="fragment" value="Transparent2PS"/>

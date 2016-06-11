@@ -322,12 +322,8 @@ OGLCoreDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) n
 	assert(descriptorSet->isInstanceOf<OGLCoreDescriptorSet>());
 	assert(_glcontext->getActive());
 
-	auto glDescriptorSet = descriptorSet->downcast_pointer<OGLCoreDescriptorSet>();
-	if (_descriptorSet != glDescriptorSet)
-	{
-		_descriptorSet = glDescriptorSet;
-		_needUpdateDescriptor = true;
-	}
+	_descriptorSet = descriptorSet->downcast_pointer<OGLCoreDescriptorSet>();
+	_needUpdateDescriptor = true;
 }
 
 GraphicsDescriptorSetPtr

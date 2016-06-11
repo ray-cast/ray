@@ -98,8 +98,8 @@ void
 DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 {
 	auto& dataManager = _pipeline->getCamera()->getRenderDataManager();
-	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() ||
-		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() ||
+	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() &&
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() &&
 		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecific).empty())
 	{
 		_texMRT0->uniformTexture(_deferredOpaqueMap);
@@ -187,7 +187,7 @@ void
 DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorStencilBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4(1.0,1.0,1.0,0.0), 1.0, 0);
 
@@ -498,9 +498,7 @@ DeferredLightingPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 	else
 		return false;
 
-	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat))
-		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
-	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
 		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm;
 	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
 		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
@@ -522,6 +520,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthDesc.setTexFormat(_deferredDepthFormat);
 	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredDepthDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredDepthMap = pipeline.createTexture(_deferredDepthDesc);
 	if (!_deferredDepthMap)
 		return false;
@@ -532,6 +531,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredDepthLinearDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthLinearDesc.setTexFormat(_deferredDepthLinearFormat);
 	_deferredDepthLinearDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredDepthLinearDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredDepthLinearMap = pipeline.createTexture(_deferredDepthLinearDesc);
 	if (!_deferredDepthLinearMap)
 		return false;
@@ -592,6 +592,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredShadingDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredShadingDesc.setTexFormat(_deferredShadingFormat);
 	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	_deferredShadingDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredOpaqueShadingMap = pipeline.createTexture(_deferredShadingDesc);
 	if (!_deferredOpaqueShadingMap)
 		return false;
@@ -912,7 +913,9 @@ DeferredLightingPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 
 	_pipeline->setCamera(camera);
 	_pipeline->setViewport(0, Viewport(0, 0, width, height));
+	_pipeline->setViewport(1, Viewport(0, 0, width, height));
 	_pipeline->setScissor(0, Scissor(0, 0, width, height));
+	_pipeline->setScissor(1, Scissor(0, 0, width, height));
 
 	this->render3DEnvMap(camera);
 }

@@ -45,22 +45,36 @@ _NAME_BEGIN
 
 SSR::SSR() noexcept
 {
-	//_ssr = MaterialMaker("sys:fx/ssr.glsl");
-	//_ssrPass = _ssr->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ssr");
-
-	//_projInfo = _ssr->getParameter("projInfo");
-	//_clipInfo = _ssr->getParameter("clipInfo");
 }
 
 SSR::~SSR() noexcept
 {
 }
 
+void 
+SSR::onActivate(RenderPipeline& pipeline) noexcept
+{
+	_ssr = pipeline.createMaterial("sys:fx/ssr.fxml");
+	_ssrPass = _ssr->getTech("ssr");
+
+	_texSource = _ssr->getParameter("texSource");
+}
+
+void 
+SSR::onDeactivate(RenderPipeline& pipeline) noexcept
+{
+	_texSource.reset();
+	_ssrPass.reset();
+	_ssr.reset();
+}
+
 bool
 SSR::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
-	//_projInfo->assign(pipeline.camera->getProjConstant());
-	//_clipInfo->assign(pipeline.camera->getClipConstant());
+	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
+		return false;
+
+	_texSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());
 
 	pipeline.setFramebuffer(swap);
 	pipeline.drawScreenQuad(*_ssrPass);

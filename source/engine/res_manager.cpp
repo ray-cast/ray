@@ -247,17 +247,36 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 
 	for (auto& materialProp : model.getMaterialsList())
 	{
+		float opacity = 1.0;
+		materialProp->get(MATKEY_OPACITY, opacity);
+
 		std::string defaultMaterial;
-		if (numBones == 0)
-			defaultMaterial = "sys:fx/opacity_skinning0.fxml";
-		else if (numBones <= 64)
-			defaultMaterial = "sys:fx/opacity_skinning64.fxml";
-		else if (numBones <= 128)
-			defaultMaterial = "sys:fx/opacity_skinning128.fxml";
-		else if (numBones <= 256)
-			defaultMaterial = "sys:fx/opacity_skinning256.fxml";
+		if (opacity == 1.0)
+		{
+			if (numBones == 0)
+				defaultMaterial = "sys:fx/opacity_skinning0.fxml";
+			else if (numBones <= 64)
+				defaultMaterial = "sys:fx/opacity_skinning64.fxml";
+			else if (numBones <= 128)
+				defaultMaterial = "sys:fx/opacity_skinning128.fxml";
+			else if (numBones <= 256)
+				defaultMaterial = "sys:fx/opacity_skinning256.fxml";
+			else
+				defaultMaterial = "sys:fx/opacity_skinning0.fxml";
+		}
 		else
-			defaultMaterial = "sys:fx/opacity_skinning0.fxml";
+		{
+			if (numBones == 0)
+				defaultMaterial = "sys:fx/transparent_skinning0.fxml";
+			else if (numBones <= 64)
+				defaultMaterial = "sys:fx/transparent_skinning64.fxml";
+			else if (numBones <= 128)
+				defaultMaterial = "sys:fx/transparent_skinning128.fxml";
+			else if (numBones <= 256)
+				defaultMaterial = "sys:fx/transparent_skinning256.fxml";
+			else
+				defaultMaterial = "sys:fx/transparent_skinning0.fxml";
+		}
 
 		MaterialPtr material;
 		material = _buildDefaultMaterials(*materialProp, defaultMaterial, model.getDirectory());
@@ -470,7 +489,11 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 	}
 
 	effect->getParameter("quality")->uniform4f(quality);
-	effect->getParameter("diffuse")->uniform3f(diffuseColor);
+	if (opacity < 1.0f)
+		effect->getParameter("diffuse")->uniform4f(float4(diffuseColor, opacity));
+	else
+		effect->getParameter("diffuse")->uniform3f(diffuseColor);
+
 	effect->getParameter("specular")->uniform1f(luminance(specular));
 	effect->getParameter("shininess")->uniform1f(shininess);
 

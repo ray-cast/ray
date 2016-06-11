@@ -86,4 +86,27 @@
             <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
+    <technique name="transparentshading">
+        <pass name="SkyLighting">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="SkyboxEnvLightingVS"/>
+            <state name="fragment" value="SkyboxEnvLightingPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="zero"/>
+            <state name="blendalphadst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
+        </pass>
+    </technique>
 </effect>

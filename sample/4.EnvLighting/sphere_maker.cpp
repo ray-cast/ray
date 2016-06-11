@@ -288,7 +288,7 @@ SphereMakerComponent::onActivate() except
 			gameObject->setTranslate(ray::float3(-10.0f + i * 2.0f, 0, j * 2.0f));
 
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
-			material->getParameter("quality")->uniform4f(ray::float4(1., 1., 0.0,0.0));
+			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0,0.0));
 			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
 			material->getParameter("specular")->uniform1f(diff_spec_parametes[i * 10 + j].w);
 			material->getParameter("shininess")->uniform1f(shininess_parametes[i * 10 + j]);

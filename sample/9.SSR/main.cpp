@@ -40,7 +40,7 @@
 int main(int argc, const char* argv[])
 {
 	rayInit(argv[0], "dlc:ssr/scene/scene.map");
-	rayOpenWindow("Scene Space Reflect", 1376, 768);
+	rayOpenWindow("Screen Space Reflect", 1376, 768);
 	
 	while (!rayIsQuitRequest())
 	{

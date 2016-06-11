@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<effect version="1270" language="hlsl">
+    <include name="sys:fx/gbuffer.fxml"/>
+    <include name="sys:fx/lighting.fxml"/>
+    <parameter name="texSource" type="texture2D"/>
+    <parameter name="texDepthLinear" type="texture2D" semantic="DepthLinearMap"/>
+    <parameter name="texMRT0" type="texture2D" semantic="DiffuseMap" />
+    <parameter name="texMRT1" type="texture2D" semantic="NormalMap" />
+    <parameter name="matView" type="float4x4" semantic="matView"/>
+    <parameter name="matProject" type="float4x4" semantic="matProject" />
+    <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
+    <parameter name="eyePosition" type="float3" semantic="CameraPosition" />
+    <shader>
+        <![CDATA[
+            static const float rayStep = 0.25;
+            static const float minRayStep = 0.1;
+            static const float maxSteps = 200;
+            static const int numBinarySearchSteps = 5;
+
+            void PostProcessVS(
+                in float4 Position : POSITION0,
+                out float4 oTexcoord : TEXCOORD0,
+                out float3 oViewDir : TEXCOORD1,
+                out float4 oPosition : SV_Position
+                )
+            {
+                oPosition = Position;
+                oViewDir  = -mul(matProjectInverse, Position).xyz;
+                oTexcoord = PosToCoord(Position);
+            }
+
+            float3 GetPosition(float3 viewdir, float depth)
+            {
+                return viewdir * depth / viewdir.z;
+            }
+
+            float3 binarySearch(float3 dir, float3 viewdir, inout float3 hitCoord, out float dDepth)
+            {
+                float depth = 0;
+
+                for (int i = 0; i < numBinarySearchSteps; i++)
+                {
+                    float4 projected = mul(matProject, float4(hitCoord, 1.0));
+                    projected.xy /= projected.w;
+                    projected.xy = projected.xy * 0.5 + 0.5;
+
+                    depth = texDepthLinear.Sample(PointClamp, projected.xy).r;
+                    float3 P = GetPosition(viewdir, depth);
+
+                    dDepth = hitCoord.z - P.z;
+                    if (dDepth > 0.0)
+                        hitCoord += dir;
+
+                    dir *= 0.5;
+                    hitCoord -= dir;
+                }
+
+                float4 projected = mul(matProject, float4(hitCoord, 1.0));
+                projected.xy = projected.xy / projected.w;
+                projected.xy = projected.xy * 0.5 + 0.5;
+
+                return float3(projected.xy, depth);
+            }
+
+            bool traceScreenSpaceRay(float2 coord, float3 dir, float3 viewdir, inout float3 viewPosition)
+            {
+                float4 proj = mul(matProject, float4(viewPosition + dir, 1.0));
+                proj /= proj.w;
+                proj.xy = PosToCoord(proj.xy);
+
+                float2 offset = proj.xy - coord;
+
+                [branch]
+                if (!any(offset.xy))
+                {
+                    return 0;
+                }
+                else
+                {
+                    for (int i = 0; i < maxSteps; i++)
+                    {
+                        coord += offset;
+
+                        float d = texDepthLinear.Sample(PointClamp, coord).r;
+                        float3 P = GetPosition(viewdir, d);
+
+                        float depth = viewPosition.z - P.z;
+                        if (depth > 0.1)
+                        {
+                            viewPosition.xy = coord;
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+            }
+
+            float4 ssrPS(
+                in float4 coord : TEXCOORD0,
+                in float3 viewdir : TEXCOORD1) : SV_Target0
+            {
+                viewdir = normalize(viewdir);
+
+                float4 MRT0 = texMRT0.Sample(PointClamp, coord.xy);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord.xy);
+
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT0);
+
+                float depth = texDepthLinear.Sample(PointClamp, coord.xy).r;
+
+                float3 viewNormal = restoreNormal(MRT1);
+                float3 viewPosition = GetPosition(viewdir, depth);
+
+                float3 R = normalize(reflect(viewPosition, viewNormal));
+
+                float3 dir = R * rayStep * 0.5;
+
+                if (traceScreenSpaceRay(coord.xy, dir, viewdir, viewPosition))
+                {
+                    float3 colors = texSource.Sample(PointClamp, viewPosition.xy).xyz;
+                    float fresnel = fresnelSchlick(viewdir, viewNormal, specular);
+                    //colors = brdfEnvironmentSpecular(colors, viewNormal, viewdir, shininess, specular);
+                    return float4(colors, fresnel);
+                }
+
+                return 0;
+            }
+        ]]>
+    </shader>
+    <technique name="ssr">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="ssrPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="srcalpha"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="zero" />
+            <state name="blendalphadst" value="one" />
+        </pass>
+    </technique>
+</effect>

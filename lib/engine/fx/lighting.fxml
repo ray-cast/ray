@@ -18,7 +18,7 @@
             return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
         }
 
-        float3 fresnelSchlick(float3 L, float3 H, float specular)
+        float fresnelSchlick(float3 L, float3 H, float specular)
         {
             return fresnelSchlick(dot(L, H), specular);
         }
@@ -94,7 +94,7 @@
             return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
         }
 
-        float3 brdfEnvironmentSpecular(float3 prefilteredColor, float3 N, float3 V, float gloss, float specular)
+        float3 brdfEnvironmentSpecular(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
         {
             float NdotV = max(0, dot(N, V));
             gloss = max(0.5f / 16.0f, gloss);

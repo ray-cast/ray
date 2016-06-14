@@ -46,7 +46,6 @@ _NAME_BEGIN
 __ImplementSubClass(EGL3Pipeline, GraphicsPipeline, "EGL3Pipeline")
 
 EGL3Pipeline::EGL3Pipeline() noexcept
-	: _vao(GL_NONE)
 {
 }
 
@@ -58,7 +57,6 @@ EGL3Pipeline::~EGL3Pipeline() noexcept
 bool
 EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 {
-	assert(_vao == GL_NONE);
 	assert(pipelineDesc.getGraphicsState());
 	assert(pipelineDesc.getGraphicsProgram());
 	assert(pipelineDesc.getGraphicsInputLayout());
@@ -68,27 +66,11 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<EGL3InputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<EGL3DescriptorSetLayout>());
 
-	GL_CHECK(glGenVertexArrays(1, &_vao));
-	if (_vao == GL_NONE)
-	{
-		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
-		return false;
-	}
-
-	GL_CHECK(glBindVertexArray(_vao));
-
-	std::uint32_t offset = 0;
+	std::uint16_t offset = 0;
 
 	auto& layouts = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexLayouts();
 	for (auto& it : layouts)
 	{
-		GLenum type = EGL3Types::asVertexFormat(it.getVertexFormat());
-		if (type == GL_INVALID_ENUM)
-		{
-			GL_PLATFORM_LOG("Undefined vertex format.");
-			return false;
-		}
-
 		GLuint attribIndex = GL_INVALID_INDEX;
 
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
@@ -98,13 +80,28 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 				attrib->getSemanticIndex() == it.getSemanticIndex())
 			{
 				attribIndex = attrib->downcast<EGL3GraphicsAttribute>()->getBindingPoint();
-
-				GL_CHECK(glEnableVertexAttribArray(attribIndex));
-				GL_CHECK(glVertexAttribBinding(attribIndex, it.getVertexSlot()));
-				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, EGL3Types::isNormFormat(it.getVertexFormat()), offset + it.getVertexOffset()));
-
 				break;
 			}
+		}
+
+		if (attribIndex != GL_INVALID_INDEX)
+		{
+			GLenum type = EGL3Types::asVertexFormat(it.getVertexFormat());
+			if (type == GL_INVALID_ENUM)
+			{
+				GL_PLATFORM_LOG("Undefined vertex format.");
+				return false;
+			}
+
+			VertexAttrib attrib;
+			attrib.type = type;
+			attrib.index = attribIndex;
+			attrib.slot = it.getVertexSlot();
+			attrib.count = it.getVertexCount();
+			attrib.offset = offset + it.getVertexOffset();
+			attrib.normalize = EGL3Types::isNormFormat(it.getVertexFormat());
+
+			_attributes.push_back(attrib);
 		}
 
 		offset += it.getVertexOffset() + it.getVertexSize();
@@ -113,30 +110,13 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();
 	for (auto& it : bindings)
 	{
-		for (auto& layout : layouts)
-		{
-			if (layout.getVertexSlot() != it.getVertexSlot())
-				continue;
+		VertexBinding binding;
+		binding.slot = it.getVertexSlot();
+		binding.divisor = it.getVertexDivisor();
+		binding.stride = it.getVertexSize();
 
-			auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
-			for (auto& attrib : attributes)
-			{
-				if (attrib->getSemantic() == layout.getSemantic() &&
-					attrib->getSemanticIndex() == layout.getSemanticIndex())
-				{
-					GLuint index = attrib->downcast<EGL3GraphicsAttribute>()->getBindingPoint();
-
-					auto divisor = it.getVertexDivisor();
-					if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
-						GL_CHECK(glVertexAttribDivisor(index, 0));
-					else if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
-						GL_CHECK(glVertexAttribDivisor(index, 1));
-				}
-			}
-		}
+		_bindings.push_back(binding);
 	}
-
-	GL_CHECK(glBindVertexArray(GL_NONE));
 
 	_pipelineDesc = pipelineDesc;
 	return true;
@@ -145,30 +125,38 @@ EGL3Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 void
 EGL3Pipeline::close() noexcept
 {
-	if (_vao != GL_NONE)
-	{
-		glDeleteVertexArrays(1, &_vao);
-		_vao = GL_NONE;
-	}
 }
 
 void
 EGL3Pipeline::apply() noexcept
 {
-	GL_CHECK(glBindVertexArray(_vao));
+	for (auto& it : _attributes)
+	{
+		glEnableVertexAttribArray(it.index);
+		glVertexAttribBinding(it.index, it.slot);
+		glVertexAttribFormat(it.index, it.count, it.type, it.normalize, it.offset);
+	}
+
+	for (auto& it : _bindings)
+	{
+		glVertexBindingDivisor(it.slot, it.divisor);
+	}
 }
 
 void
-EGL3Pipeline::bindVbo(const EGL3GraphicsData& vbo, GLsizei startVertices) noexcept
+EGL3Pipeline::bindVertexBuffers(EGL3VertexBuffers& vbos, bool forceUpdate) noexcept
 {
-	GLuint stride = vbo.getGraphicsDataDesc().getStride();
-	GL_CHECK(glBindVertexBuffer(0, vbo.getInstanceID(), startVertices * stride, stride));
-}
+	for (auto& it : _bindings)
+	{
+		if (!vbos[it.slot].vbo)
+			continue;
 
-void
-EGL3Pipeline::bindIbo(const EGL3GraphicsData& ibo) noexcept
-{
-	GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getInstanceID()));
+		if (vbos[it.slot].needUpdate || forceUpdate)
+		{
+			glBindVertexBuffer(it.slot, vbos[it.slot].vbo->getInstanceID(), vbos[it.slot].offset, _bindings[it.slot].stride);
+			vbos[it.slot].needUpdate = false;
+		}
+	}
 }
 
 const GraphicsPipelineDesc&

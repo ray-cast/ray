@@ -97,14 +97,39 @@ EGL2Pipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			attrib.type = type;
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
-			attrib.slot = it.getVertexSlot();
-			attrib.normalize = EGL2Types::isNormFormat(it.getVertexFormat());
+			attrib.stride = 0;
 			attrib.offset = offset + it.getVertexOffset();
+			attrib.normalize = EGL2Types::isNormFormat(it.getVertexFormat());
 
-			_attributes.push_back(attrib);
+			if (it.getVertexSlot() <= _attributes.size())
+				_attributes.resize(it.getVertexSlot() + 1);
+
+			_attributes[it.getVertexSlot()].push_back(attrib);
 		}
 
 		offset += it.getVertexOffset() + it.getVertexSize();
+	}
+
+	auto& bindings = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getVertexBindings();
+	for (auto& it : bindings)
+	{
+		if (it.getVertexDivisor() != GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+		{
+			GL_PLATFORM_LOG("Only support vertex divisor.");
+			return false;
+		}
+
+		for (auto& attrib : _attributes[it.getVertexSlot()])
+		{
+			attrib.stride = it.getVertexSize();
+
+			VertexBinding binding;
+			binding.index = attrib.index;
+			binding.slot = it.getVertexSlot();
+			binding.divisor = it.getVertexDivisor();
+
+			_bindings.push_back(binding);
+		}
 	}
 
 	_pipelineDesc = pipelineDesc;
@@ -123,25 +148,26 @@ EGL2Pipeline::apply() noexcept
 }
 
 void
-EGL2Pipeline::bindVbo(const EGL2GraphicsData& vbo, GLsizei startVertices, GLuint slot) noexcept
+EGL2Pipeline::bindVertexBuffers(EGL2VertexBuffers& vbos, bool forceUpdate) noexcept
 {
-	GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, vbo.getInstanceID()));
-
-	GLuint stride = vbo.getGraphicsDataDesc().getStride();
-	for (auto& attrib : _attributes)
+	for (std::size_t slot = 0; slot < _attributes.size(); slot++)
 	{
-		if (attrib.slot != slot)
+		if (!vbos[slot].vbo)
 			continue;
 
-		GL_CHECK(glEnableVertexAttribArray(attrib.index));
-		GL_CHECK(glVertexAttribPointer(attrib.index, attrib.count, attrib.type, attrib.normalize, stride, (GLbyte*)nullptr + startVertices * stride + attrib.offset));
-	}
-}
+		if (vbos[slot].needUpdate || forceUpdate)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, vbos[slot].vbo->getInstanceID());
 
-void
-EGL2Pipeline::bindIbo(const EGL2GraphicsData& ibo) noexcept
-{
-	GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getInstanceID()));
+			for (auto& it : _attributes[slot])
+			{
+				glEnableVertexAttribArray(it.index);
+				glVertexAttribPointer(it.index, it.count, it.type, it.normalize, it.stride, (GLbyte*)nullptr + vbos[slot].offset + it.offset);
+			}
+
+			vbos[slot].needUpdate = false;
+		}
+	}
 }
 
 const GraphicsPipelineDesc&

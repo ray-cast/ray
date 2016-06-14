@@ -331,7 +331,7 @@ EGL2Shader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes
 		return false;
 	}
 
-	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit || stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 	{
 		glslopt_shader_type glslopt_type = glslopt_shader_type::kGlslOptShaderVertex;
 		if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
@@ -342,18 +342,23 @@ EGL2Shader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes
 		{
 			glslopt_shader* glslopt_shader = glslopt_optimize(ctx, glslopt_type, shader.sourceCode, 0);
 			bool optimizeOk = glslopt_get_status(glslopt_shader);
-			if (optimizeOk)
+			if (!optimizeOk)
 			{
-				out = glslopt_get_output(glslopt_shader);
+				glslopt_cleanup(ctx);
+				FreeGLSLShader(&shader);
+				return false;
 			}
 
-			glslopt_cleanup(ctx);
+			out = glslopt_get_output(glslopt_shader);
+			glslopt_cleanup(ctx);			
 		}
 	}
 	else
 	{
 		out = shader.sourceCode;
 	}
+
+	out = shader.sourceCode;
 	
 	FreeGLSLShader(&shader);
 	return true;
@@ -419,8 +424,12 @@ EGL2Program::setup(const GraphicsProgramDesc& programDesc) noexcept
 		return false;
 	}
 
+	glUseProgram(_program);
+
 	_initActiveAttribute();
 	_initActiveUniform();
+
+	glUseProgram(GL_NONE);
 
 	_programDesc = programDesc;
 	return true;
@@ -559,7 +568,7 @@ EGL2Program::_initActiveUniform() noexcept
 
 			glUniform1i(location, textureUnit);
 			uniform->setBindingPoint(textureUnit);
-			uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
+			uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageAll);
 
 			textureUnit++;
 		}

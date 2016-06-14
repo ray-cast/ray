@@ -746,7 +746,6 @@ EGL3DescriptorSet::close() noexcept
 void
 EGL3DescriptorSet::apply(const EGL3Program& shaderObject) noexcept
 {
-	GLuint textureUnit = 0;
 	GLuint program = shaderObject.getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
@@ -857,10 +856,8 @@ EGL3DescriptorSet::apply(const EGL3Program& shaderObject) noexcept
 			if (texture)
 			{
 				auto gltexture = texture->downcast<EGL3Texture>();
-				GL_CHECK(glProgramUniform1i(program, location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+				GL_CHECK(glActiveTexture(GL_TEXTURE0 + location));
 				GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
-				textureUnit++;
 			}
 		}
 		break;
@@ -870,10 +867,8 @@ EGL3DescriptorSet::apply(const EGL3Program& shaderObject) noexcept
 			if (texture)
 			{
 				auto gltexture = texture->downcast<EGL3Texture>();
-				GL_CHECK(glProgramUniform1i(program, location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+				GL_CHECK(glActiveTexture(GL_TEXTURE0 + location));
 				GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
-				textureUnit++;
 			}
 		}
 		break;
@@ -883,10 +878,8 @@ EGL3DescriptorSet::apply(const EGL3Program& shaderObject) noexcept
 			if (texture)
 			{
 				auto gltexture = texture->downcast<EGL3Texture>();
-				GL_CHECK(glProgramUniform1i(program, location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+				GL_CHECK(glActiveTexture(GL_TEXTURE0 + location));
 				GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
-				textureUnit++;
 			}
 		}
 		break;

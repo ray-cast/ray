@@ -116,13 +116,15 @@ GraphicsTextureDesc::getSize() const noexcept
 void
 GraphicsTextureDesc::setTexFormat(GraphicsFormat format) noexcept
 {
+	assert(format >= GraphicsFormat::GraphicsFormatBeginRange && format <= GraphicsFormat::GraphicsFormatEndRange);
 	_format = format;
 }
 
 void
-GraphicsTextureDesc::setTexDim(GraphicsTextureDim map) noexcept
+GraphicsTextureDesc::setTexDim(GraphicsTextureDim dim) noexcept
 {
-	_dim = map;
+	assert(dim >= GraphicsTextureDim::GraphicsTextureDimBeginRange && dim <= GraphicsTextureDim::GraphicsTextureDimEndRange);
+	_dim = dim;
 }
 
 void

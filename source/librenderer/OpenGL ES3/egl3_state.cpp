@@ -126,6 +126,20 @@ EGL3GraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 				destBlend.setBlendEnable(false);
 			}
 		}
+
+		if (destBlend.getColorWriteMask() != srcBlend.getColorWriteMask())
+		{
+			auto flags = srcBlend.getColorWriteMask();
+
+			GLboolean r = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit ? GL_TRUE : GL_FALSE;
+			GLboolean g = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit ? GL_TRUE : GL_FALSE;
+			GLboolean b = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE : GL_FALSE;
+			GLboolean a = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE : GL_FALSE;
+
+			glColorMaskiEXT(i, r, g, b, a);
+
+			destBlend.setColorWriteMask(srcBlend.getColorWriteMask());
+		}
 	}
 
 	if (lastStateDesc.getCullMode() != _stateDesc.getCullMode())

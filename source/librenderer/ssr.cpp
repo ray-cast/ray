@@ -76,10 +76,10 @@ SSR::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPt
 
 	_texSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());
 
-	pipeline.setFramebuffer(swap);
+	pipeline.setFramebuffer(source);
 	pipeline.drawScreenQuad(*_ssrPass);
 
-	return true;
+	return false;
 }
 
 _NAME_END

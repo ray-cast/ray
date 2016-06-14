@@ -51,16 +51,17 @@ _NAME_BEGIN
 __ImplementSubClass(EGL2DeviceContext, GraphicsContext, "EGL2DeviceContext")
 
 EGL2DeviceContext::EGL2DeviceContext() noexcept
-	: _clearColor(0.0f, 0.0f, 0.0f, 0.0f)
-	, _clearDepth(0.0)
-	, _clearStencil(0xFFFFFFFF)
+	: _clearDepth(1.0)
+	, _clearStencil(0)
+	, _clearColor(0.0, 0.0, 0.0, 0.0)
 	, _viewport(0, 0, 0, 0)
-	, _state(GL_NONE)
-	, _framebuffer(GL_NONE)
+	, _scissor(0, 0, 0, 0)
+	, _inputLayout(GL_NONE)
 	, _indexOffset(0)
 	, _indexType(GL_UNSIGNED_INT)
-	, _needUpdateLayout(false)
-	, _startVertices(0)
+	, _needUpdatePipeline(true)
+	, _needUpdateDescriptor(true)
+	, _needUpdateVertexBuffers(true)
 {
 }
 
@@ -75,7 +76,7 @@ EGL2DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	assert(desc.getSwapchain());
 	assert(desc.getSwapchain()->isInstanceOf<EGL2Swapchain>());
 
-	_glcontext = desc.getSwapchain()->downcast<EGL2Swapchain>();
+	_glcontext = desc.getSwapchain()->downcast_pointer<EGL2Swapchain>();
 	_glcontext->setActive(true);
 
 	if (_glcontext->getActive())
@@ -110,15 +111,14 @@ EGL2DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 void
 EGL2DeviceContext::close() noexcept
 {
-	_framebuffer = nullptr;
-	_program = nullptr;
-	_pipeline = nullptr;
-	_descriptorSet = nullptr;
-	_state = nullptr;
-	_vbo = nullptr;
-	_indexBuffer = nullptr;
-	_inputLayout = nullptr;
-	_glcontext = nullptr;
+	_framebuffer.reset();
+	_program.reset();
+	_pipeline.reset();
+	_descriptorSet.reset();
+	_state.reset();
+	_indexBuffer.reset();
+	_glcontext.reset();
+	_vertexBuffers.clear();
 	_supportTextures.clear();
 	_supportAttribute.clear();
 }
@@ -274,39 +274,41 @@ void
 EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
+	assert(pipeline->isInstanceOf<EGL2Pipeline>());
+	assert(_glcontext->getActive());
 
-	auto glpipeline = pipeline->downcast<EGL2Pipeline>();
+	auto glpipeline = pipeline->downcast_pointer<EGL2Pipeline>();
 	if (_pipeline != glpipeline)
 	{
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
-		auto glstate = pipelineDesc.getGraphicsState()->downcast<EGL2GraphicsState>();
+		auto glstate = pipelineDesc.getGraphicsState()->downcast_pointer<EGL2GraphicsState>();
 		if (_state != glstate)
 		{
 			glstate->apply(_stateCaptured);
 			_state = glstate;
 		}
 
-		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<EGL2Program>();
+		auto glshader = pipelineDesc.getGraphicsProgram()->downcast_pointer<EGL2Program>();
 		if (_program != glshader)
 		{
 			_program = glshader;
 			_program->apply();
 		}
 
-		_pipeline = glpipeline;
-		_pipeline->apply();
-
-		_needUpdateLayout = true;
+		if (_pipeline != glpipeline)
+		{
+			_pipeline = glpipeline;
+			_pipeline->apply();
+			_needUpdatePipeline = true;
+		}
 	}
 }
 
 GraphicsPipelinePtr
 EGL2DeviceContext::getRenderPipeline() const noexcept
 {
-	if (_pipeline)
-		return _pipeline->upcast_pointer<GraphicsPipeline>();
-	return nullptr;
+	return _pipeline;
 }
 
 void
@@ -316,16 +318,14 @@ EGL2DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noex
 	assert(descriptorSet->isInstanceOf<EGL2DescriptorSet>());
 	assert(_glcontext->getActive());
 
-	_descriptorSet = descriptorSet->downcast<EGL2DescriptorSet>();
-	_descriptorSet->apply(*_program);
+	_descriptorSet = descriptorSet->downcast_pointer<EGL2DescriptorSet>();
+	_needUpdateDescriptor = true;
 }
 
 GraphicsDescriptorSetPtr
 EGL2DeviceContext::getDescriptorSet() const noexcept
 {
-	if (_descriptorSet)
-		return _descriptorSet->upcast_pointer<GraphicsDescriptorSet>();
-	return nullptr;
+	return _descriptorSet;
 }
 
 void
@@ -334,33 +334,23 @@ EGL2DeviceContext::setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, st
 	assert(data);
 	assert(data->isInstanceOf<EGL2GraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	assert(_vertexBuffers.size() > i);
 	assert(_glcontext->getActive());
 
-	if (data)
+	auto vbo = data->downcast_pointer<EGL2GraphicsData>();
+	if (_vertexBuffers[i].vbo != vbo || _vertexBuffers[i].offset != offset)
 	{
-		auto vbo = data->downcast<EGL2GraphicsData>();
-		if (_vbo != vbo)
-		{
-			_vbo = vbo;
-			_needUpdateLayout = true;
-		}
-	}
-	else
-	{
-		if (_vbo)
-		{
-			_vbo = nullptr;
-			_needUpdateLayout = true;
-		}
+		_vertexBuffers[i].vbo = vbo;
+		_vertexBuffers[i].offset = offset;
+		_vertexBuffers[i].needUpdate = true;
+		_needUpdateVertexBuffers = true;
 	}
 }
 
 GraphicsDataPtr
 EGL2DeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 {
-	if (_vbo)
-		return _vbo->upcast_pointer<GraphicsData>();
-	return nullptr;
+	return _vertexBuffers[i].vbo;
 }
 
 void
@@ -396,23 +386,19 @@ EGL2DeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, s
 {
 	assert(_pipeline);
 	assert(_glcontext->getActive());
-	assert(_indexBuffer);
-	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
 	assert(numInstances <= 1 && startInstances == 0);
 
-	if (!_inputLayout || !_vbo)
-		return;
-
-	if (_needUpdateLayout || _startVertices != startVertice)
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
 	{
-		if (_vbo)
-			_pipeline->bindVbo(*_vbo, startVertice, 0);
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
 
-		if (_indexBuffer)
-			_pipeline->bindIbo(*_indexBuffer);
-
-		_startVertices = startVertice;
-		_needUpdateLayout = false;
+	if (_needUpdateDescriptor)
+	{
+		_descriptorSet->apply(*_program);
+		_needUpdateDescriptor = false;
 	}
 
 	auto primitiveType = _stateCaptured.getPrimitiveType();
@@ -432,19 +418,17 @@ EGL2DeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstan
 	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
 	assert(numInstances <= 1 && startInstances == 0);
 
-	if (!_inputLayout || !_vbo)
-		return;
-
-	if (_needUpdateLayout || _startVertices != startVertice)
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
 	{
-		if (_vbo)
-			_pipeline->bindVbo(*_vbo, startVertice, 0);
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
 
-		if (_indexBuffer)
-			_pipeline->bindIbo(*_indexBuffer);
-
-		_startVertices = startVertice;
-		_needUpdateLayout = false;
+	if (_needUpdateDescriptor)
+	{
+		_descriptorSet->apply(*_program);
+		_needUpdateDescriptor = false;
 	}
 
 	if (numIndices > 0)
@@ -467,7 +451,7 @@ EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 
 	if (target)
 	{
-		auto framebuffer = target->downcast<EGL2Framebuffer>();
+		auto framebuffer = target->downcast_pointer<EGL2Framebuffer>();
 		if (_framebuffer != framebuffer)
 		{
 			_framebuffer = framebuffer;
@@ -658,6 +642,11 @@ EGL2DeviceContext::initStateSystem() noexcept
 	GL_CHECK(glDisable(GL_BLEND));
 	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
 	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+	GraphicsColorBlends blends(1);
+	_stateCaptured.setColorBlends(blends);
+
+	_vertexBuffers.resize(4);
 
 	return true;
 }
@@ -912,6 +901,15 @@ EGL2DeviceContext::initShaderSupports() noexcept
 void
 EGL2DeviceContext::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept
 {
+	/*if (severity == GL_DEBUG_SEVERITY_LOW)
+		return;
+
+	if (severity == GL_DEBUG_SEVERITY_MEDIUM)
+		return;*/
+
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
+
 	std::cerr << "source : ";
 	switch (source)
 	{

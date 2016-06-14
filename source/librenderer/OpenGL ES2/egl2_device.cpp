@@ -42,10 +42,10 @@
 #include "egl2_texture.h"
 #include "egl2_framebuffer.h"
 #include "egl2_input_layout.h"
-#include "egl2_graphics_data.h"
 #include "egl2_sampler.h"
 #include "egl2_pipeline.h"
 #include "egl2_descriptor.h"
+#include "egl2_graphics_data.h"
 
 _NAME_BEGIN
 
@@ -57,6 +57,7 @@ EGL2Device::EGL2Device() noexcept
 
 EGL2Device::~EGL2Device() noexcept
 {
+	this->close();
 }
 
 bool

@@ -148,7 +148,7 @@ OGLCorePipeline::apply() noexcept
 	{
 		for (auto& it : _bindings)
 		{
-			glVertexAttribDivisor(it.slot, it.divisor);
+			glVertexBindingDivisor(it.slot, it.divisor);
 			glBindVertexBuffer(it.slot, 0, 0, _bindings[it.slot].stride);
 		}
 	}
@@ -156,7 +156,7 @@ OGLCorePipeline::apply() noexcept
 	{
 		for (auto& it : _bindings)
 		{
-			glVertexAttribDivisor(it.slot, it.divisor);
+			glVertexBindingDivisor(it.slot, it.divisor);
 		}
 	}
 }

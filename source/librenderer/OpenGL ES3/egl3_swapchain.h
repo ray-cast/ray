@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_EGL_SWAPCHAIN_H_
-#define _H_EGL_SWAPCHAIN_H_
+#ifndef _H_EGL3_SWAPCHAIN_H_
+#define _H_EGL3_SWAPCHAIN_H_
 
 #include "egl3_types.h"
 

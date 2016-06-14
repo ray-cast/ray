@@ -284,7 +284,7 @@
                 float4 lighting = texLight.Sample(PointClamp, coord);
 
                 float3 diffuse = restoreDiffuse(MRT0);
-                float3 shading = diffuse = shadingLight(diffuse, lighting.rgb, lighting.a);
+                float3 shading = shadingLight(diffuse, lighting.rgb, lighting.a);
 
                 return float4(shading, 1.0);
             }

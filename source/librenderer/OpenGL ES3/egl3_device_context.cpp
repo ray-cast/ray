@@ -51,15 +51,15 @@ _NAME_BEGIN
 __ImplementSubClass(EGL3DeviceContext, GraphicsContext, "EGL3DeviceContext")
 
 EGL3DeviceContext::EGL3DeviceContext() noexcept
-	: _clearColor(0.0, 0.0, 0.0, 0.0)
-	, _clearDepth(1.0)
+	: _clearDepth(1.0)
 	, _clearStencil(0)
 	, _viewport(0, 0, 0, 0)
-	, _startVertices(0)
+	, _inputLayout(GL_NONE)
 	, _indexOffset(0)
 	, _indexType(GL_UNSIGNED_INT)
-	, _needUpdateLayout(true)
-	, _needUpdateState(true)
+	, _needUpdatePipeline(true)
+	, _needUpdateDescriptor(true)
+	, _needUpdateVertexBuffers(true)
 {
 }
 
@@ -74,7 +74,7 @@ EGL3DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	assert(desc.getSwapchain());
 	assert(desc.getSwapchain()->isInstanceOf<EGL3Swapchain>());
 
-	_glcontext = desc.getSwapchain()->downcast<EGL3Swapchain>();
+	_glcontext = desc.getSwapchain()->downcast_pointer<EGL3Swapchain>();
 	_glcontext->setActive(true);
 
 	if (_glcontext->getActive())
@@ -109,15 +109,14 @@ EGL3DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 void
 EGL3DeviceContext::close() noexcept
 {
-	_framebuffer = nullptr;
-	_program = nullptr;
-	_pipeline = nullptr;
-	_descriptorSet = nullptr;
-	_state = nullptr;
-	_vbo = nullptr;
-	_indexBuffer = nullptr;
-	_inputLayout = nullptr;
-	_glcontext = nullptr;
+	_framebuffer.reset();
+	_program.reset();
+	_pipeline.reset();
+	_descriptorSet.reset();
+	_state.reset();
+	_indexBuffer.reset();
+	_glcontext.reset();
+	_vertexBuffers.clear();
 	_supportTextures.clear();
 	_supportAttribute.clear();
 }
@@ -271,7 +270,6 @@ EGL3DeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcep
 		return _stateCaptured.getStencilBackWriteMask();
 }
 
-
 void
 EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
@@ -279,40 +277,38 @@ EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 	assert(pipeline->isInstanceOf<EGL3Pipeline>());
 	assert(_glcontext->getActive());
 
-	auto glpipeline = pipeline->downcast<EGL3Pipeline>();
+	auto glpipeline = pipeline->downcast_pointer<EGL3Pipeline>();
 	if (_pipeline != glpipeline)
 	{
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
-		auto glstate = pipelineDesc.getGraphicsState()->downcast<EGL3GraphicsState>();
-		if (_state != glstate || _needUpdateState)
+		auto glstate = pipelineDesc.getGraphicsState()->downcast_pointer<EGL3GraphicsState>();
+		if (_state != glstate)
 		{
 			glstate->apply(_stateCaptured);
-
 			_state = glstate;
-			_needUpdateState = false;
 		}
 
-		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<EGL3Program>();
+		auto glshader = pipelineDesc.getGraphicsProgram()->downcast_pointer<EGL3Program>();
 		if (_program != glshader)
 		{
 			_program = glshader;
 			_program->apply();
 		}
 
-		_pipeline = glpipeline;
-		_pipeline->apply();
-
-		_needUpdateLayout = true;
+		if (_pipeline != glpipeline)
+		{
+			_pipeline = glpipeline;
+			_pipeline->apply();
+			_needUpdatePipeline = true;
+		}
 	}
 }
 
 GraphicsPipelinePtr
 EGL3DeviceContext::getRenderPipeline() const noexcept
 {
-	if (_pipeline)
-		return _pipeline->upcast_pointer<GraphicsPipeline>();
-	return nullptr;
+	return _pipeline;
 }
 
 void
@@ -338,33 +334,24 @@ EGL3DeviceContext::setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, st
 	assert(data);
 	assert(data->isInstanceOf<EGL3GraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	assert(_vertexBuffers.size() > i);
 	assert(_glcontext->getActive());
 
-	if (data)
+	auto vbo = data->downcast_pointer<EGL3GraphicsData>();
+	if (_vertexBuffers[i].vbo != vbo || _vertexBuffers[i].offset != offset)
 	{
-		auto vbo = data->downcast<EGL3GraphicsData>();
-		if (_vbo != vbo)
-		{
-			_vbo = vbo;
-			_needUpdateLayout = true;
-		}
-	}
-	else
-	{
-		if (_vbo)
-		{
-			_vbo = nullptr;
-			_needUpdateLayout = true;
-		}
+		_vertexBuffers[i].vbo = vbo;
+		_vertexBuffers[i].offset = offset;
+		_vertexBuffers[i].needUpdate = true;
+		_needUpdateVertexBuffers = true;
 	}
 }
 
 GraphicsDataPtr
 EGL3DeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 {
-	if (_vbo)
-		return _vbo->upcast_pointer<GraphicsData>();
-	return nullptr;
+	assert(i < _vertexBuffers.size());
+	return _vertexBuffers[i].vbo;
 }
 
 void
@@ -379,10 +366,10 @@ EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset
 	auto ibo = data->downcast_pointer<EGL3GraphicsData>();
 	if (_indexBuffer != ibo)
 	{
-		::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
+		GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID()));
 		_indexBuffer = ibo;
 	}
-
+	
 	_indexOffset = offset;
 	_indexType = EGL3Types::asIndexType(indexType);
 }
@@ -400,6 +387,13 @@ EGL3DeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, s
 	assert(_glcontext->getActive());
 	assert(startInstances == 0);
 
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
+	{
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
+
 	if (_needUpdateDescriptor)
 	{
 		_descriptorSet->apply(*_program);
@@ -409,7 +403,7 @@ EGL3DeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, s
 	if (numVertices > 0)
 	{
 		GLenum drawType = EGL3Types::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawArraysInstanced(drawType, startVertice, numVertices, numInstances);
+		GL_CHECK(glDrawArraysInstanced(drawType, startVertice, numVertices, numInstances));
 	}
 }
 
@@ -421,6 +415,13 @@ EGL3DeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstan
 	assert(_indexBuffer);
 	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
 	assert(startInstances == 0);
+
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
+	{
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
 
 	if (_needUpdateDescriptor)
 	{
@@ -437,7 +438,7 @@ EGL3DeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstan
 			offsetIndices = offsetIndices + sizeof(std::uint16_t) * startIndice;
 
 		GLenum drawType = EGL3Types::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawElementsInstanced(drawType, numIndices, _indexType, offsetIndices, numInstances);
+		GL_CHECK(glDrawElementsInstanced(drawType, numIndices, _indexType, offsetIndices, numInstances));
 	}
 }
 
@@ -448,7 +449,7 @@ EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 
 	if (target)
 	{
-		auto framebuffer = target->downcast<EGL3Framebuffer>();
+		auto framebuffer = target->downcast_pointer<EGL3Framebuffer>();
 		if (_framebuffer != framebuffer)
 		{
 			_framebuffer = framebuffer;
@@ -489,9 +490,7 @@ EGL3DeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v
 GraphicsFramebufferPtr
 EGL3DeviceContext::getFramebuffer() const noexcept
 {
-	if (_framebuffer)
-		return _framebuffer->upcast_pointer<GraphicsFramebuffer>();
-	return nullptr;
+	return _framebuffer;
 }
 
 void
@@ -644,6 +643,15 @@ EGL3DeviceContext::initStateSystem() noexcept
 	GL_CHECK(glDisable(GL_BLEND));
 	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
 	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+	GL_CHECK(glGenVertexArrays(1, &_inputLayout));
+	GL_CHECK(glBindVertexArray(_inputLayout));
+
+	_vertexBuffers.resize(8);
+	_clearColor.resize(4, float4(0.0f, 0.0f, 0.0f, 0.0f));
+
+	GraphicsColorBlends blends(4);
+	_stateCaptured.setColorBlends(blends);
 
 	return true;
 }

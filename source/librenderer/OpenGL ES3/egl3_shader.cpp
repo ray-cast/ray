@@ -424,7 +424,7 @@ EGL3Shader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes
 		return false;
 	}
 
-	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit || stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
+	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 	{
 		glslopt_shader_type glslopt_type = glslopt_shader_type::kGlslOptShaderVertex;
 		if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)

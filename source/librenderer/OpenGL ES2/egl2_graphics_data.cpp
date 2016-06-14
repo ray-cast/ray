@@ -86,12 +86,6 @@ EGL2GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	return true;
 }
 
-bool
-EGL2GraphicsData::is_open() const noexcept
-{
-	return _buffer == GL_NONE ? false : true;
-}
-
 void
 EGL2GraphicsData::close() noexcept
 {
@@ -107,12 +101,6 @@ EGL2GraphicsData::close() noexcept
 		glDeleteBuffers(1, &_buffer);
 		_buffer = 0;
 	}
-}
-
-GLsizeiptr
-EGL2GraphicsData::size() const noexcept
-{
-	return _dataSize;
 }
 
 int
@@ -133,62 +121,23 @@ EGL2GraphicsData::flush(GLintptr offset, GLsizeiptr cnt) noexcept
 #endif
 }
 
-GLsizeiptr
-EGL2GraphicsData::read(char* str, GLsizeiptr cnt) noexcept
-{
-	if (_dataSize < _dataOffset + cnt)
-	{
-		cnt = _dataSize - _dataOffset;
-		if (cnt == 0)
-			return 0;
-	}
-
-	void* data;
-	this->map(_dataOffset, cnt, &data);
-	if (data)
-	{
-		std::memcpy(str, data, cnt);
-		_dataOffset += cnt;
-	}
-
-	this->unmap();
-	return cnt;
-}
-
-GLsizeiptr
-EGL2GraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
-{
-	if (_dataSize >= _dataOffset + cnt)
-	{
-		cnt = _dataSize - _dataOffset;
-		if (cnt == 0)
-			return 0;
-	}
-
-	void* data;
-	this->map(_dataOffset, cnt, &data);
-	if (data)
-	{
-		std::memcpy(data, str, cnt);
-		_dataOffset += cnt;
-		this->unmap();
-		return cnt;
-	}
-
-	this->unmap();
-	return 0;
-}
-
 bool
-EGL2GraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
+EGL2GraphicsData::map(std::intptr_t offset, std::intptr_t count, void** data) noexcept
 {
-	return false;
+	assert(data);
+	GL_CHECK(glBindBuffer(_target, _buffer));
+	*data = (char*)glMapBufferOES(_target, GL_WRITE_ONLY_OES) + offset;
+	if (!*data)
+		return false;
+	*(char**)data += offset;
+	return true;
 }
 
 void
 EGL2GraphicsData::unmap() noexcept
 {
-	return;
+	GL_CHECK(glBindBuffer(_target, _buffer));
+	GL_CHECK(glUnmapBufferOES(_target));
 }
 
 GLuint

@@ -98,8 +98,8 @@ void
 DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 {
 	auto& dataManager = _pipeline->getCamera()->getRenderDataManager();
-	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() &&
-		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() &&
+	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() ||
 		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecific).empty())
 	{
 		_texMRT0->uniformTexture(_deferredOpaqueMap);
@@ -495,6 +495,8 @@ DeferredLightingPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 		_deferredTransparentFormat = _deferredAbufferFormat = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
 	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
 		_deferredTransparentFormat = _deferredAbufferFormat = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm;
+	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
+		_deferredTransparentFormat = _deferredAbufferFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
 	else
 		return false;
 

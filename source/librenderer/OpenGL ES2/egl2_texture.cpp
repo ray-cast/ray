@@ -89,7 +89,6 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		return false;
 
 	const char* stream = (const char*)textureDesc.getStream();
-
 	if (EGL2Types::isCompressedTexture(textureDesc.getTexFormat()))
 	{
 		std::size_t offset = 0;
@@ -118,38 +117,72 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		GLenum format = EGL2Types::asTextureFormat(textureDesc.getTexFormat());
 		GLenum type = EGL2Types::asTextureType(textureDesc.getTexFormat());
 
-		switch (target)
+		GLsizei offset = 0;
+		GLsizei pixelSize = EGL2Types::getFormatNum(format, type);
+
+		GLenum cubeFace[] =
 		{
-		case GL_TEXTURE_2D:
-		case GL_TEXTURE_2D_MULTISAMPLE:
-			GL_CHECK(glTexImage2D(target, mipLevel, internalFormat, w, h, 0, format, type, stream));
-			break;
-		case GL_TEXTURE_CUBE_MAP:
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, 0, format, type, stream));
-			break;
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+		};
+
+		GLint oldPackStore = 1;
+		glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
+
+		if (pixelSize == 1)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		else if (pixelSize == 2)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+		else if (pixelSize == 4 || pixelSize == 12)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		else if (pixelSize == 8 || pixelSize == 16)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+		else
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+		for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
+		{
+			GLsizei mipSize = w * h * pixelSize;
+			GLsizei layerBase = textureDesc.getLayerBase() + 1;
+			GLsizei layerLevel = textureDesc.getLayerNums();
+
+			for (GLsizei layer = layerBase; layer < layerBase + layerLevel; layer++)
+			{
+				if (target == GL_TEXTURE_2D || target == GL_TEXTURE_2D_MULTISAMPLE)
+				{
+					GL_CHECK(glTexImage2D(target, mip, internalFormat, w, h, 0, format, type, (char*)stream + offset));
+					offset += mipSize;
+				}
+				else
+				{
+					if (target == GL_TEXTURE_CUBE_MAP || target == GL_TEXTURE_CUBE_MAP_ARRAY_EXT)
+					{
+						for (std::size_t i = 0; i < 6; i++)
+						{
+							if (target == GL_TEXTURE_CUBE_MAP)
+								GL_CHECK(glTexImage2D(cubeFace[i], mip, internalFormat, w, h, 0, format, type, (char*)stream + offset));
+							else
+							{
 #ifndef __AMD__
-		case GL_TEXTURE_CUBE_MAP_ARRAY_EXT:
-		{
-			GLsizei depth = (GLsizei)textureDesc.getDepth();
-			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-		}
-		break;
+								GL_CHECK(glTexImage3DOES(cubeFace[i], mip, internalFormat, w, h, layer, 0, format, type, (char*)stream + offset));
+#else
+								GL_PLATFORM_LOG("Can't support cubemap array");
+								return false;
 #endif
-		default:
-			assert(false);
-			return false;
-			break;
+							}
+
+							offset += mipSize;
+						}
+					}
+				}
+
+				w = std::max(w >> 1, 1);
+				h = std::max(h >> 1, 1);
+			}
 		}
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, oldPackStore);
 	}
 
 	GL_CHECK(glBindTexture(target, GL_NONE));

@@ -51,17 +51,10 @@ public:
 	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
-	bool is_open() const noexcept;
-
-	GLsizeiptr size() const noexcept;
-
 	int flush() noexcept;
 	int flush(GLintptr offset, GLsizeiptr cnt) noexcept;
 
-	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
-	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
-
-	bool map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept;
+	bool map(std::intptr_t offset, std::intptr_t count, void** data) noexcept;
 	void unmap() noexcept;
 
 	GLuint getInstanceID() const noexcept;

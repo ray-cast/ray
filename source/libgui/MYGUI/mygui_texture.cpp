@@ -127,6 +127,10 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	textureDesc.setStream(_data);
 	textureDesc.setStreamSize(_dataSize);
 	_texture = RenderSystem::instance()->createTexture(textureDesc);
+	if (!_texture)
+	{
+		assert(false);
+	}
 
 	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml");
 	_materialTech = _material->getTech("ui");

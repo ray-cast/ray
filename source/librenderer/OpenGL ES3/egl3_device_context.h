@@ -120,33 +120,31 @@ private:
 
 private:
 
-	float4 _clearColor;
 	GLfloat _clearDepth;
 	GLint   _clearStencil;
+	std::vector<float4> _clearColor;
 
 	Viewport _viewport;
 	Scissor _scissor;
 
-	GLuint _maxViewports;
+	GLuint _inputLayout;
 
 	GLenum  _indexType;
 	GLintptr _indexOffset;
 
-	EGL3Pipeline* _pipeline;
+	EGL3PipelinePtr _pipeline;
 	EGL3DescriptorSetPtr _descriptorSet;
-	EGL3Framebuffer* _framebuffer;
-	EGL3GraphicsData* _vbo;
+	EGL3FramebufferPtr _framebuffer;
+	EGL3VertexBuffers _vertexBuffers;
 	EGL3GraphicsDataPtr _indexBuffer;
-	EGL3InputLayout* _inputLayout;
-	EGL3Program* _program;
-	EGL3Swapchain* _glcontext;
-	EGL3GraphicsState* _state;
+	EGL3ProgramPtr _program;
+	EGL3SwapchainPtr _glcontext;
+	EGL3GraphicsStatePtr _state;
 	GraphicsStateDesc _stateCaptured;
 
-	bool _needUpdateLayout;
-	bool _needUpdateState;
+	bool _needUpdatePipeline;
 	bool _needUpdateDescriptor;
-	std::uint32_t _startVertices;
+	bool _needUpdateVertexBuffers;
 
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;

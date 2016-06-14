@@ -378,6 +378,15 @@ typedef std::weak_ptr<class EGL3GraphicsUniformBlock> EGL3GraphicsUniformBlockWe
 
 typedef std::vector<EGL3ShaderPtr> EGL3Shaders;
 
+struct EGL3VertexBuffer
+{
+	bool needUpdate;
+	std::intptr_t offset;
+	EGL3GraphicsDataPtr vbo;
+};
+
+typedef std::vector<EGL3VertexBuffer> EGL3VertexBuffers;
+
 class EGL3Types
 {
 public:

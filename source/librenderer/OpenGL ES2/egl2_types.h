@@ -414,6 +414,15 @@ typedef std::weak_ptr<class EGL2GraphicsUniformBlock> EGL2GraphicsUniformBlockWe
 
 typedef std::vector<EGL2ShaderPtr> EGL2Shaders;
 
+struct EGL2VertexBuffer
+{
+	bool needUpdate;
+	std::intptr_t offset;
+	EGL2GraphicsDataPtr vbo;
+};
+
+typedef std::vector<EGL2VertexBuffer> EGL2VertexBuffers;
+
 class EGL2Types
 {
 public:
@@ -437,6 +446,8 @@ public:
 	static GLenum asSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
 	static GLenum asSamplerMinFilter(GraphicsSamplerFilter filter) noexcept;
 	static GLenum asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept;
+
+	static GLsizei getFormatNum(GLenum format, GLenum type) noexcept;
 
 	static GLboolean isNormFormat(GraphicsFormat format) noexcept;
 	static GLboolean isSupportFeature(EGL2Features features) noexcept;

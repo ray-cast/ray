@@ -55,10 +55,8 @@ EGL3GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(!_buffer);
 	assert(desc.getStride() > 0);
+	assert(desc.getStreamSize() > 0);
 
-	_dataOffset = 0;
-	_dataSize = desc.getStreamSize();
-	_usage = desc.getUsage();
 	_desc = desc;
 
 	auto type = desc.getType();
@@ -87,37 +85,25 @@ EGL3GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 
 	GL_CHECK(glGenBuffers(1, &_buffer));
 	GL_CHECK(glBindBuffer(_target, _buffer));
-	GL_CHECK(glBufferData(_target, _dataSize, desc.getStream(), flags));
-
+	GL_CHECK(glBufferData(_target, desc.getStreamSize(), desc.getStream(), flags));
+	
 	return true;
-}
-
-bool
-EGL3GraphicsData::is_open() const noexcept
-{
-	return _buffer == GL_NONE ? false : true;
 }
 
 void
 EGL3GraphicsData::close() noexcept
 {
-	if (_buffer)
+	if (_buffer != GL_NONE)
 	{
 		glDeleteBuffers(1, &_buffer);
-		_buffer = 0;
+		_buffer = GL_NONE;
 	}
-}
-
-GLsizeiptr
-EGL3GraphicsData::size() const noexcept
-{
-	return _dataSize;
 }
 
 int
 EGL3GraphicsData::flush() noexcept
 {
-	return this->flush(0, _dataSize);
+	return this->flush(0, _desc.getStreamSize());
 }
 
 int
@@ -128,58 +114,12 @@ EGL3GraphicsData::flush(GLintptr offset, GLsizeiptr cnt) noexcept
 	return cnt;
 }
 
-GLsizeiptr
-EGL3GraphicsData::read(char* str, GLsizeiptr cnt) noexcept
-{
-	if (_dataSize < _dataOffset + cnt)
-	{
-		cnt = _dataSize - _dataOffset;
-		if (cnt == 0)
-			return 0;
-	}
-
-	void* data;
-	this->map(_dataOffset, cnt, &data);
-	if (data)
-	{
-		std::memcpy(str, data, cnt);
-		_dataOffset += cnt;
-	}
-
-	this->unmap();
-	return cnt;
-}
-
-GLsizeiptr
-EGL3GraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
-{
-	if (_dataSize >= _dataOffset + cnt)
-	{
-		cnt = _dataSize - _dataOffset;
-		if (cnt == 0)
-			return 0;
-	}
-
-	void* data;
-	this->map(_dataOffset, cnt, &data);
-	if (data)
-	{
-		std::memcpy(data, str, cnt);
-		_dataOffset += cnt;
-		this->unmap();
-		return cnt;
-	}
-
-	this->unmap();
-	return 0;
-}
-
 bool
 EGL3GraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
 	assert(data);
 	GL_CHECK(glBindBuffer(_target, _buffer));
-	*data = glMapBufferRange(_target, offset, count, GL_MAP_READ_BIT);
+	*data = glMapBufferRange(_target, offset, count, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
 	return *data ? true : false;
 }
 
@@ -200,12 +140,6 @@ const GraphicsDataDesc&
 EGL3GraphicsData::getGraphicsDataDesc() const noexcept
 {
 	return _desc;
-}
-
-void
-EGL3GraphicsData::bind() noexcept
-{
-	GL_CHECK(glBindBuffer(_target, _buffer));
 }
 
 void

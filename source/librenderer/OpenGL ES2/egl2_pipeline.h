@@ -51,8 +51,7 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const EGL2GraphicsData& vbo, GLsizei startVertices, GLuint slot) noexcept;
-	void bindIbo(const EGL2GraphicsData& ibo) noexcept;
+	void bindVertexBuffers(EGL2VertexBuffers& vbos, bool forceUpdate) noexcept;
 
 	void apply() noexcept;
 
@@ -73,12 +72,20 @@ private:
 		GLenum type;
 		GLuint index;
 		GLuint count;
-		GLuint slot;
+		GLuint stride;
 		GLboolean normalize;
-		GLsizei offset;
+		GLintptr offset;
 	};
 
-	std::vector<VertexAttrib> _attributes;
+	struct VertexBinding
+	{
+		GLuint slot;
+		GLuint index;
+		GLuint divisor;
+	};
+
+	std::vector<std::vector<VertexAttrib>> _attributes;
+	std::vector<VertexBinding> _bindings;
 
 	GraphicsProgramPtr _program;
 	GraphicsPipelineDesc _pipelineDesc;

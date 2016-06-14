@@ -745,7 +745,6 @@ EGL2DescriptorSet::close() noexcept
 void
 EGL2DescriptorSet::apply(const EGL2Program& shaderObject) noexcept
 {
-	std::uint32_t textureUnit = 0;
 	for (auto& it : _activeUniformSets)
 	{
 		auto type = it->getGraphicsParam()->getType();
@@ -820,37 +819,34 @@ EGL2DescriptorSet::apply(const EGL2Program& shaderObject) noexcept
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
 			{
-				auto texture = it->getTexture();
+				auto& texture = it->getTexture();
 				if (texture)
 				{
-					GL_CHECK(glUniform1i(location, textureUnit));
-					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
-					GL_CHECK(glBindTexture(texture->downcast<EGL2Texture>()->getTarget(), texture->downcast<EGL2Texture>()->getInstanceID()));
-					textureUnit++;
+					auto gltexture = texture->downcast<EGL2Texture>();
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + location));
+					GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
 				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
 			{
-				auto texture = it->getTexture();
+				auto& texture = it->getTexture();
 				if (texture)
 				{
-					GL_CHECK(glUniform1i(location, textureUnit));
-					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
-					GL_CHECK(glBindTexture(texture->downcast<EGL2Texture>()->getTarget(), texture->downcast<EGL2Texture>()->getInstanceID()));
-					textureUnit++;
+					auto gltexture = texture->downcast<EGL2Texture>();
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + location));
+					GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
 				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
 			{
-				auto texture = it->getTexture();
+				auto& texture = it->getTexture();
 				if (texture)
 				{
-					GL_CHECK(glUniform1i(location, textureUnit));
-					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
-					GL_CHECK(glBindTexture(texture->downcast<EGL2Texture>()->getTarget(), texture->downcast<EGL2Texture>()->getInstanceID()));
-					textureUnit++;
+					auto gltexture = texture->downcast<EGL2Texture>();
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + location));
+					GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
 				}
 			}
 			break;

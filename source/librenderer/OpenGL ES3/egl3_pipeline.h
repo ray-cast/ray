@@ -51,8 +51,7 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const EGL3GraphicsData& vbo, GLsizei startVertices) noexcept;
-	void bindIbo(const EGL3GraphicsData& ibo) noexcept;
+	void bindVertexBuffers(EGL3VertexBuffers& vbos, bool forceUpdate) noexcept;
 
 	void apply() noexcept;
 
@@ -68,7 +67,26 @@ private:
 	EGL3Pipeline& operator=(const EGL3Pipeline&) noexcept = delete;
 
 private:
-	GLuint _vao;
+	struct VertexAttrib
+	{
+		GLenum type;
+		GLuint index;
+		GLuint slot;
+		GLuint count;
+		GLboolean normalize;
+		GLintptr offset;
+	};
+
+	struct VertexBinding
+	{
+		GLuint slot;
+		GLuint divisor;
+		GLuint stride;
+	};
+
+	std::vector<VertexAttrib> _attributes;
+	std::vector<VertexBinding> _bindings;
+
 	GraphicsPipelineDesc _pipelineDesc;
 	GraphicsDeviceWeakPtr _device;
 };

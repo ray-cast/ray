@@ -1012,6 +1012,37 @@ EGL2Types::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
 	}
 }
 
+GLsizei
+EGL2Types::getFormatNum(GLenum format, GLenum type) noexcept
+{
+	GLsizei typeSize = 0;
+	if (type == GL_UNSIGNED_BYTE || type == GL_BYTE)
+		typeSize = 1;
+	else if (type == GL_UNSIGNED_SHORT || type == GL_SHORT)
+		typeSize = 2;
+	else if (type == GL_UNSIGNED_INT || type == GL_INT || type == GL_FLOAT)
+		typeSize = 4;
+	else
+	{
+		assert(false);
+		return 1;
+	}
+
+	if (format == GL_RED_EXT)
+		return 1 * typeSize;
+	else if (format == GL_RG_EXT)
+		return 2 * typeSize;
+	else if (format == GL_RGB || format == GL_SRGB_EXT)
+		return 3 * typeSize;
+	else if (format == GL_RGBA || format == GL_BGRA_EXT || format == GL_SRGB_ALPHA_EXT)
+		return 4 * typeSize;
+	else
+	{
+		assert(false);
+		return 0;
+	}
+}
+
 GLboolean
 EGL2Types::isNormFormat(GraphicsFormat format) noexcept
 {

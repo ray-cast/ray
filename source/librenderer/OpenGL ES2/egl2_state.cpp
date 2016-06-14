@@ -70,7 +70,7 @@ EGL2GraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		auto& destBlend = destBlends[i];
 		if (destBlend.getBlendEnable())
 		{
-			glDisableiEXT(GL_BLEND, i);
+			glDisable(GL_BLEND);
 			destBlend.setBlendEnable(false);
 		}
 	}
@@ -84,7 +84,7 @@ EGL2GraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		{
 			if (!destBlend.getBlendEnable())
 			{
-				glEnableiEXT(GL_BLEND, i);
+				glEnable(GL_BLEND);
 				destBlend.setBlendEnable(true);
 			}
 
@@ -98,7 +98,7 @@ EGL2GraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 				GLenum sfactorAlpha = EGL2Types::asBlendFactor(srcBlend.getBlendAlphaSrc());
 				GLenum dfactorAlpha = EGL2Types::asBlendFactor(srcBlend.getBlendAlphaDest());
 
-				glBlendFuncSeparateiEXT(i, sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+				glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 
 				destBlend.setBlendSrc(srcBlend.getBlendSrc());
 				destBlend.setBlendDest(srcBlend.getBlendDest());
@@ -112,7 +112,7 @@ EGL2GraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 				GLenum modeRGB = EGL2Types::asBlendOperation(srcBlend.getBlendOp());
 				GLenum modeAlpha = EGL2Types::asBlendOperation(srcBlend.getBlendAlphaOp());
 
-				glBlendEquationSeparateiEXT(i, modeRGB, modeAlpha);
+				glBlendEquationSeparate(modeRGB, modeAlpha);
 
 				destBlend.setBlendOp(srcBlend.getBlendOp());
 				destBlend.setBlendAlphaOp(srcBlend.getBlendAlphaOp());
@@ -122,9 +122,23 @@ EGL2GraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		{
 			if (destBlend.getBlendEnable())
 			{
-				glDisableiEXT(GL_BLEND, i);
+				glDisable(GL_BLEND);
 				destBlend.setBlendEnable(false);
 			}
+		}
+
+		if (destBlend.getColorWriteMask() != srcBlend.getColorWriteMask())
+		{
+			auto flags = srcBlend.getColorWriteMask();
+
+			GLboolean r = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit ? GL_TRUE : GL_FALSE;
+			GLboolean g = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit ? GL_TRUE : GL_FALSE;
+			GLboolean b = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE : GL_FALSE;
+			GLboolean a = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE : GL_FALSE;
+
+			glColorMask(r, g, b, a);
+
+			destBlend.setColorWriteMask(srcBlend.getColorWriteMask());
 		}
 	}
 

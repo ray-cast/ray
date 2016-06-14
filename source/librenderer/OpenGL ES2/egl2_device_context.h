@@ -117,31 +117,31 @@ private:
 	EGL2DeviceContext& operator=(const EGL2DeviceContext&) noexcept = delete;
 
 private:
-	float4 _clearColor;
 	GLfloat _clearDepth;
 	GLint   _clearStencil;
+	float4 _clearColor;
 
 	Viewport _viewport;
 	Scissor _scissor;
 
+	GLuint _inputLayout;
+
 	GLenum  _indexType;
 	GLintptr _indexOffset;
 
-	bool _needUpdateLayout;
-	std::uint32_t _startVertices;
-
-	EGL2GraphicsData* _vbo;
+	EGL2PipelinePtr _pipeline;
+	EGL2DescriptorSetPtr _descriptorSet;
+	EGL2FramebufferPtr _framebuffer;
+	EGL2VertexBuffers _vertexBuffers;
 	EGL2GraphicsDataPtr _indexBuffer;
-	EGL2InputLayout* _inputLayout;
-	EGL2Program* _program;
-	EGL2DescriptorSet* _descriptorSet;
-	EGL2Pipeline* _pipeline;
-	EGL2Framebuffer* _framebuffer;
-
-	EGL2Swapchain* _glcontext;
-
-	EGL2GraphicsState* _state;
+	EGL2ProgramPtr _program;
+	EGL2SwapchainPtr _glcontext;
+	EGL2GraphicsStatePtr _state;
 	GraphicsStateDesc _stateCaptured;
+
+	bool _needUpdatePipeline;
+	bool _needUpdateDescriptor;
+	bool _needUpdateVertexBuffers;
 
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;

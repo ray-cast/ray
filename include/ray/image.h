@@ -39,7 +39,6 @@
 
 #include <ray/imagtypes.h>
 #include <ray/imaghandler.h>
-#include <ray/imagpal.h>
 
 _NAME_BEGIN
 
@@ -50,65 +49,35 @@ public:
 	~Image() noexcept;
 
 	bool create(std::uint32_t width, std::uint32_t height, ImageFormat format, bool clear = false) noexcept;
-	bool create(std::uint32_t width, std::uint32_t height, ImageFormat format, std::size_t dataSize, std::uint8_t* data, bool staticData = false, bool clear = false) noexcept;
-	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, std::size_t dataSize, std::uint8_t* data, bool staticData = false, bool clear = false) noexcept;
+	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, bool clear = false) noexcept;
+	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, std::uint32_t mipLevel, std::uint32_t layerLevel, std::uint32_t mipBase = 0, std::uint32_t layerBase = 0, bool clear = false) noexcept;
 	bool create(const Image& src) noexcept;
 
 	void destroy() noexcept;
-	void clear(std::uint8_t value = 0) noexcept { std::memset(_data, value, (std::size_t)this->size()); }
+	bool empty() const noexcept;
 
-	std::uint32_t width()  const noexcept { return _width; }
-	std::uint32_t height() const noexcept { return _height; }
-	std::uint32_t depth()  const noexcept { return _depth; }
-	std::uint32_t size()   const noexcept { return _size; }
-	std::uint8_t* data()   const noexcept { return _data; }
-	std::uint8_t* bits()   const noexcept { return _data; }
-	std::uint16_t  bpp()    const noexcept { return _bpp; }
-	bool      empty()  const noexcept { return _data == nullptr; }
-
-	void setImageType(ImageType type) noexcept;
-	ImageType getImageType() const noexcept;
-
-	void setImageFormat(ImageFormat format) noexcept;
 	ImageFormat getImageFormat() const noexcept;
 
+	std::uint32_t width() const noexcept;
+	std::uint32_t height() const noexcept;
+	std::uint32_t depth() const noexcept;
+
+	std::uint32_t size() const noexcept;
+
 	// for dds
-	void setMipLevel(std::uint8_t level) noexcept;
-	std::uint8_t getMipLevel() const noexcept;
+	std::uint32_t getMipBase() const noexcept;
+	std::uint32_t getMipLevel() const noexcept;
 
-	// for gif
-	std::uint32_t getFrameDelay() const noexcept;
-	void setFrameDelay(std::uint32_t delay) const noexcept;
+	std::uint32_t getLayerBase() const noexcept;
+	std::uint32_t getLayerLevel() const noexcept;
 
-	// palette
-	void setPalette(PaletteData* pal) noexcept;
-	void setPalette(std::size_t n, RGB* pal) noexcept;
-	void setPalette(std::size_t n, RGBA* pal) noexcept;
-	void setPalette(std::size_t n, std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 0) noexcept;
-
-	PaletteData* getPalette() noexcept;
-	const PaletteData* getPalette() const noexcept;
-	void getPalette(std::size_t n, RGB* rgb) noexcept;
-	void getPalette(std::size_t n, RGBA* rgba) noexcept;
-	void getPalette(std::size_t n, std::uint8_t* r = nullptr, std::uint8_t* g = nullptr, std::uint8_t* b = nullptr, std::uint8_t* a = nullptr) noexcept;
-
-	// color
-	void setColor(std::size_t n, const RGB& col)  noexcept { ((RGB&) this->rddata(n)) = col; }
-	void setColor(std::size_t n, const RGBA& col) noexcept { ((RGBA&)this->rddata(n)) = col; }
-	void setColor(std::size_t n, const BGR& col)  noexcept { ((BGR&) this->rddata(n)) = col; }
-	void setColor(std::size_t n, const BGRA& col) noexcept { ((BGRA&)this->rddata(n)) = col; }
-	void setColor(std::size_t n, std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 0) noexcept { this->setColor(n, RGBA(r, g, b, a)); }
-
-	void getColor(std::size_t n, RGB& col)  noexcept { col = (RGB&) this->rddata(n); }
-	void getColor(std::size_t n, RGBA& col) noexcept { col = (RGBA&)this->rddata(n); }
-	void getColor(std::size_t n, BGR& col)  noexcept { col = (BGR&) this->rddata(n); }
-	void getColor(std::size_t n, BGRA& col) noexcept { col = (BGRA&)this->rddata(n); }
-
-	std::uint8_t& rddata(std::size_t n) noexcept { return _data[(_bpp * n) >> 3]; }
+	const char* data() const noexcept;
 
 public:
 	bool load(const std::string& filename, ImageType type = ImageType::ImageTypeUnknown) noexcept;
 	bool load(StreamReader& stream, ImageType type = ImageType::ImageTypeUnknown) noexcept;
+
+	bool save(const std::string& filename, ImageType type = ImageType::ImageTypePNG) noexcept;
 	bool save(StreamWrite& stream, ImageType type = ImageType::ImageTypePNG) noexcept;
 
 	bool emptyHandler() const noexcept;
@@ -117,18 +86,7 @@ public:
 	bool find(StreamReader& stream, ImageHandlerPtr& handler) const noexcept;
 	bool find(StreamReader& stream, ImageType type, ImageHandlerPtr& handler) const noexcept;
 	bool find(ImageType type, ImageHandlerPtr& handler) const noexcept;
-
-public:
-	static void cmyk_to_rgb(std::uint8_t* rgb, const std::uint8_t* cmyk) noexcept;
-	static void cmyk_to_rgba(std::uint8_t* rgba, const std::uint8_t* cmyk) noexcept;
-	static void cmyk_to_rgb(RGB* texel, const std::uint8_t* cmyk) noexcept;
-	static void cmyk_to_rgba(RGBA* texel, const std::uint8_t* cmyk) noexcept;
-
-	static void hsv_to_rgb(RGB& rgb, float h, float s, float v) noexcept;
-	static void hsv_to_rgba(RGBA& rgb, float h, float s, float v) noexcept;
-
-	static void flipImageVertical(char* data, std::size_t width, std::size_t height, std::size_t component) noexcept;
-
+	
 private:
 	void _init() noexcept;
 
@@ -140,18 +98,19 @@ private:
 	ImageType _imageType;
 	ImageFormat _imageFormat;
 
-	bool _isStatic;
-
 	std::uint32_t _width;
 	std::uint32_t _height;
 	std::uint32_t _depth;
 
-	std::uint16_t _bpp;
+	std::uint32_t _mipBase;
+	std::uint32_t _mipLevel;
+
+	std::uint32_t _layerBase;
+	std::uint32_t _layerLevel;
 
 	std::size_t _size;
 
 	std::uint8_t* _data;
-	std::uint8_t _mipLevel;
 
 	std::vector<ImageHandlerPtr> _handlers;
 };

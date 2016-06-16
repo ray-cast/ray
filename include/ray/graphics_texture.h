@@ -54,7 +54,6 @@ public:
 	std::uint32_t getWidth() const noexcept;
 	std::uint32_t getHeight() const noexcept;
 	std::uint32_t getDepth()  const noexcept;
-	const uint3& getSize() const noexcept;
 
 	void setTexFormat(GraphicsFormat format) noexcept;
 	void setTexDim(GraphicsTextureDim mapping) noexcept;
@@ -85,17 +84,17 @@ public:
 	std::uint32_t getMipLevel() const noexcept;
 	std::uint32_t getMipBase() const noexcept;
 
-	void setStream(void* data) noexcept;
+	void setStream(const void* data) noexcept;
 	void setStreamSize(std::uint32_t size) noexcept;
-	void* getStream() const noexcept;
+	const void* getStream() const noexcept;
 	std::uint32_t getStreamSize() const noexcept;
 
 private:
-	std::string _name;
-
 	bool _multisample;
 
-	uint3 _size;
+	std::uint32_t _width;
+	std::uint32_t _height;
+	std::uint32_t _depth;
 
 	std::uint32_t _layerBase;
 	std::uint32_t _layer;
@@ -112,7 +111,7 @@ private:
 	GraphicsSamplerAnis _anis;
 	GraphicsImageTiling _tiling;
 
-	void* _data;
+	const void* _data;
 	std::uint32_t _dataSize;
 };
 

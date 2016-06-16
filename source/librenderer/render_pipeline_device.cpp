@@ -218,7 +218,6 @@ RenderPipelineDevice::createIndexBuffer(const MeshProperty& mesh) noexcept
 	_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 	_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
 	_ib.setStream((std::uint8_t*)faces.data());
-	_ib.setStride(sizeof(std::uint32_t));
 	_ib.setStreamSize(faces.size());
 
 	return this->createGraphicsData(_ib);
@@ -354,7 +353,6 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 	_vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
 	_vb.setStream((std::uint8_t*)_data.data());
 	_vb.setStreamSize(_data.size());
-	_vb.setStride(inputSize);
 
 	return this->createGraphicsData(_vb);
 }

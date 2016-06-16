@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include "ogl_shader.h"
 
+#include <sstream>
+
 #define EXCLUDE_PSTDINT
 #include <hlslcc.hpp>
 
@@ -395,12 +397,24 @@ OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& cod
 		&error
 		);
 
-	if (hr == S_OK)
+	if (hr != S_OK)
 	{
-		return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
+		std::string line;
+		std::size_t index = 1;
+		std::ostringstream ostream;
+		std::istringstream istream(codes);
+
+		ostream << (const char*)error->GetBufferPointer() << std::endl;
+		while (std::getline(istream, line))
+		{
+			ostream << index << '\t' << line << std::endl;
+			index++;
+		}
+
+		GL_PLATFORM_LOG(ostream.str().c_str());
 	}
 
-	return false;
+	return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
 }
 
 bool

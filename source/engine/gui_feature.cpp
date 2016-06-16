@@ -306,15 +306,16 @@ public:
 
 	bool loadImage(int& _width, int& _height, PixelFormat& _format, const std::string& _filename, MemoryStream& stream)
 	{
-		ray::Image image;
+		Image image;
 		if (image.load(_filename))
 		{
 			_width = image.width();
 			_height = image.height();
 
-			if (image.bpp() == 32)
+			ImageFormat format = image.getImageFormat();
+			if (format == ImageFormat::ImageFormatR8G8B8A8UNorm)
 				_format = PixelFormat::R8G8B8A8;
-			else if (image.bpp() == 24)
+			else if (format == ImageFormat::ImageFormatR8G8B8UNorm)
 				_format = PixelFormat::R8G8B8;
 			else
 			{

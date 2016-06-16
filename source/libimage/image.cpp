@@ -53,46 +53,124 @@ Image::~Image() noexcept
 bool
 Image::create(std::uint32_t width, std::uint32_t height, ImageFormat format, bool clear) noexcept
 {
-	this->destroy();
-
-	this->setImageFormat(format);
-
-	std::size_t destLength = (width * height * _bpp) >> 3;
-	_width = width;
-	_height = height;
-	_depth = 1;
-	_size = destLength;
-	_isStatic = false;
-	_data = new std::uint8_t[destLength];
-
-	if (clear) this->clear();
-
-	return true;
+	return this->create(width, height, 1, format, clear);
 }
 
 bool
-Image::create(std::uint32_t width, std::uint32_t height, ImageFormat format, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
+Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, bool clear) noexcept
 {
-	return this->create(width, height, 0, format, dataSize, data, staticData, clear);
+	return this->create(width, height, depth, format, 1, 1, 0, 0, clear);
 }
 
-bool
-Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
+bool 
+Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, std::uint32_t mipLevel, std::uint32_t layerLevel, std::uint32_t mipBase, std::uint32_t layerBase, bool clear) noexcept
 {
-	assert(data);
+	assert(mipLevel >= 1);
+	assert(layerLevel >= 1);
+	assert(width >= 1 && height >= 1 && depth >= 1);
+	assert(format >= ImageFormat::ImageFormatBeginRange && format <= ImageFormat::ImageFormatEndRange);
 
 	this->destroy();
+
+	std::uint32_t w = width;
+	std::uint32_t h = height;
+	std::size_t destLength = 0;
+
+	if (format == ImageFormat::ImageFormatBC1RGBUNormBlock ||
+		format == ImageFormat::ImageFormatBC1RGBSRGBBlock ||
+		format == ImageFormat::ImageFormatBC1RGBAUNormBlock ||
+		format == ImageFormat::ImageFormatBC1RGBASRGBBlock ||
+		format == ImageFormat::ImageFormatBC2UNormBlock ||
+		format == ImageFormat::ImageFormatBC2SRGBBlock ||
+		format == ImageFormat::ImageFormatBC3UNormBlock ||
+		format == ImageFormat::ImageFormatBC3SRGBBlock ||
+		format == ImageFormat::ImageFormatBC4UNormBlock ||
+		format == ImageFormat::ImageFormatBC4SNormBlock ||
+		format == ImageFormat::ImageFormatBC5UNormBlock ||
+		format == ImageFormat::ImageFormatBC5SNormBlock ||
+		format == ImageFormat::ImageFormatBC6HUFloatBlock ||
+		format == ImageFormat::ImageFormatBC6HSFloatBlock ||
+		format == ImageFormat::ImageFormatBC7UNormBlock ||
+		format == ImageFormat::ImageFormatBC7SRGBBlock)
+	{
+		std::uint32_t blockSize = 16;
+		if (format == ImageFormat::ImageFormatBC1RGBUNormBlock ||
+			format == ImageFormat::ImageFormatBC1RGBSRGBBlock ||
+			format == ImageFormat::ImageFormatBC1RGBAUNormBlock ||
+			format == ImageFormat::ImageFormatBC1RGBASRGBBlock)
+		{
+			blockSize = 8;
+		}
+
+		for (std::uint32_t mip = mipBase; mip < mipBase + mipLevel; mip++)
+		{
+			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * depth * blockSize;
+
+			destLength += mipSize * layerLevel;
+
+			w = std::max(w >> 1, (std::uint32_t)1);
+			h = std::max(h >> 1, (std::uint32_t)1);
+		}
+	}
+	else
+	{
+		std::uint32_t bpp;
+		if (format == ImageFormat::ImageFormatR8UNorm)
+			bpp = 8;
+		else if (format == ImageFormat::ImageFormatR8G8UNorm)
+			bpp = 16;
+		else if (format == ImageFormat::ImageFormatR8G8B8UNorm || format == ImageFormat::ImageFormatB8G8R8UNorm)
+			bpp = 24;
+		else if (format == ImageFormat::ImageFormatR8G8B8A8UNorm || format == ImageFormat::ImageFormatB8G8R8A8UNorm)
+			bpp = 32;
+		else if (format == ImageFormat::ImageFormatR16SFloat)
+			bpp = 16;
+		else if (format == ImageFormat::ImageFormatR16G16SFloat)
+			bpp = 32;
+		else if (format == ImageFormat::ImageFormatR16G16B16SFloat)
+			bpp = 48;
+		else if (format == ImageFormat::ImageFormatR16G16B16A16SFloat)
+			bpp = 64;
+		else if (format == ImageFormat::ImageFormatR32SFloat)
+			bpp = 32;
+		else if (format == ImageFormat::ImageFormatR32G32SFloat)
+			bpp = 64;
+		else if (format == ImageFormat::ImageFormatR32G32B32SFloat)
+			bpp = 96;
+		else if (format == ImageFormat::ImageFormatR32G32B32A32SFloat)
+			bpp = 128;
+		else
+			return false;
+
+		std::uint32_t pixelSize = (bpp >> 3);
+
+		for (std::uint32_t mip = mipBase; mip < mipBase + mipLevel; mip++)
+		{
+			std::size_t mipSize = w * h * depth * pixelSize;
+
+			destLength += mipSize * layerLevel;
+
+			w = std::max(w >> 1, (std::uint32_t)1);
+			h = std::max(h >> 1, (std::uint32_t)1);
+		}
+	}
+
+	_imageFormat = format;
 
 	_width = width;
 	_height = height;
 	_depth = depth;
-	_data = data;
-	_size = dataSize;
-	_isStatic = staticData;
+	_size = destLength;
+	_mipBase = mipBase;
+	_mipLevel = mipLevel;
+	_layerBase = layerBase;
+	_layerLevel = layerLevel;
+	_data = new std::uint8_t[destLength];
 
-	this->setImageFormat(format);
-
-	if (clear) this->clear();
+	if (clear)
+	{
+		std::memset(_data, 0, (std::size_t)this->size());
+	}
 
 	return true;
 }
@@ -106,75 +184,61 @@ Image::create(const Image& copy) noexcept
 void
 Image::_init() noexcept
 {
-	_isStatic = false;
-
 	_width = 0;
 	_height = 0;
 	_depth = 0;
-
-	_bpp = 0;
-
 	_size = 0;
-
-	_imageFormat = ImageFormat::ImageFormatUnknow;
-	_imageType = ImageType::ImageTypeUnknown;
+	_mipBase = 0;
+	_mipLevel = 0;
+	_layerBase = 0;
+	_layerLevel = 0;
 	_data = nullptr;
-	_mipLevel = 1;
+
+	_imageType = ImageType::ImageTypeUnknown;
+	_imageFormat = ImageFormat::ImageFormatMaxEnum;
+
 }
 
 void
 Image::destroy() noexcept
 {
-	if (_data && !_isStatic)
+	if (_data)
 	{
 		delete[] _data;
 		_data = nullptr;
 	}
+
+	this->_init();
 }
 
-void
-Image::setImageType(ImageType type) noexcept
+bool 
+Image::empty() const noexcept 
 {
-	_imageType = type;
+	return _data == nullptr; 
 }
 
-ImageType
-Image::getImageType() const noexcept
+std::uint32_t 
+Image::width() const noexcept
 {
-	return _imageType;
+	return _width; 
 }
 
-void
-Image::setImageFormat(ImageFormat format) noexcept
+std::uint32_t 
+Image::height() const noexcept 
 {
-	_imageFormat = format;
+	return _height; 
+}
 
-	if (format == ImageFormat::ImageFormatR8)
-		_bpp = 8;
-	else if (format == ImageFormat::ImageFormatR8G8)
-		_bpp = 16;
-	else if (format == ImageFormat::ImageFormatR8G8B8 || format == ImageFormat::ImageFormatB8G8R8)
-		_bpp = 24;
-	else if (format == ImageFormat::ImageFormatR8G8B8A8 || format == ImageFormat::ImageFormatB8G8R8A8)
-		_bpp = 32;
-	else if (format == ImageFormat::ImageFormatR16F)
-		_bpp = 16;
-	else if (format == ImageFormat::ImageFormatR16G16F)
-		_bpp = 32;
-	else if (format == ImageFormat::ImageFormatR16G16B16F)
-		_bpp = 48;
-	else if (format == ImageFormat::ImageFormatR16G16B16A16F)
-		_bpp = 64;
-	else if (format == ImageFormat::ImageFormatR32F)
-		_bpp = 32;
-	else if (format == ImageFormat::ImageFormatR32G32F)
-		_bpp = 64;
-	else if (format == ImageFormat::ImageFormatR32G32B32F)
-		_bpp = 96;
-	else if (format == ImageFormat::ImageFormatR32G32B32A32F)
-		_bpp = 128;
-	else
-		_bpp = 8;
+std::uint32_t 
+Image::depth() const noexcept 
+{
+	return _depth; 
+}
+
+std::uint32_t 
+Image::size() const noexcept 
+{
+	return _size; 
 }
 
 ImageFormat
@@ -183,33 +247,34 @@ Image::getImageFormat() const noexcept
 	return _imageFormat;
 }
 
-void
-Image::setMipLevel(std::uint8_t level) noexcept
+std::uint32_t
+Image::getMipBase() const noexcept
 {
-	_mipLevel = level;
+	return _mipBase;
 }
 
-std::uint8_t
+std::uint32_t
 Image::getMipLevel() const noexcept
 {
 	return _mipLevel;
 }
 
-std::uint32_t
-Image::getFrameDelay() const noexcept
+std::uint32_t 
+Image::getLayerBase() const noexcept
 {
-	return 0;
+	return _layerBase;
 }
 
-void
-Image::setFrameDelay(std::uint32_t /*delay*/) const noexcept
+std::uint32_t 
+Image::getLayerLevel() const noexcept
 {
+	return _layerLevel;
 }
 
-void
-Image::setPalette(PaletteData* pal) noexcept
+const char*
+Image::data() const noexcept
 {
-	assert(pal);
+	return (char*)_data;
 }
 
 bool
@@ -219,8 +284,6 @@ Image::load(StreamReader& stream, ImageType type) noexcept
 		GetImageInstanceList(*this);
 
 	ImageHandlerPtr impl;
-
-	this->setImageType(type);
 
 	if (this->find(stream, type, impl))
 	{
@@ -239,6 +302,15 @@ Image::load(const std::string& filename, ImageType type) noexcept
 	StreamReaderPtr stream;
 	if (IoServer::instance()->openFile(stream, filename))
 		return this->load(*stream, type);
+	return false;
+}
+
+bool
+Image::save(const std::string& filename, ImageType type) noexcept
+{
+	StreamWritePtr stream;
+	if (IoServer::instance()->openFile(stream, filename))
+		return this->save(*stream, type);
 	return false;
 }
 
@@ -341,200 +413,6 @@ Image::find(StreamReader& stream, ImageType type, ImageHandlerPtr& out) const no
 	}
 
 	return this->find(stream, out);
-}
-
-void
-Image::cmyk_to_rgb(std::uint8_t* rgb, const std::uint8_t* cmyk) noexcept
-{
-	int k = 255 - cmyk[3];
-	int k2 = cmyk[3];
-	int c;
-
-	c = k + k2 * (255 - cmyk[0]) / 255;
-	rgb[0] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	c = k + k2 * (255 - cmyk[1]) / 255;
-	rgb[1] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	c = k + k2 * (255 - cmyk[2]) / 255;
-	rgb[2] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-}
-
-void
-Image::cmyk_to_rgba(std::uint8_t* rgba, const std::uint8_t* cmyk) noexcept
-{
-	int k = 255 - cmyk[3];
-	int k2 = cmyk[3];
-	int c;
-
-	c = k + k2 * (255 - cmyk[0]) / 255;
-	rgba[0] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	c = k + k2 * (255 - cmyk[1]) / 255;
-	rgba[1] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	c = k + k2 * (255 - cmyk[2]) / 255;
-	rgba[2] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	rgba[3] = 255;
-}
-
-void
-Image::cmyk_to_rgb(RGB* texel, const std::uint8_t* cmyk) noexcept
-{
-	int k = 255 - cmyk[3];
-	int k2 = cmyk[3];
-	int c;
-
-	c = k + k2 * (255 - cmyk[0]) / 255;
-	texel->r = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	c = k + k2 * (255 - cmyk[1]) / 255;
-	texel->g = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	c = k + k2 * (255 - cmyk[2]) / 255;
-	texel->b = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-}
-
-void
-Image::cmyk_to_rgba(RGBA* texel, const std::uint8_t* cmyk) noexcept
-{
-	int k = 255 - cmyk[3];
-	int k2 = cmyk[3];
-	int c;
-
-	c = k + k2 * (255 - cmyk[0]) / 255;
-	texel->r = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	c = k + k2 * (255 - cmyk[1]) / 255;
-	texel->g = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	c = k + k2 * (255 - cmyk[2]) / 255;
-	texel->b = (std::uint8_t)((c > 255) ? 0 : (255 - c));
-
-	texel->a = 255;
-}
-
-void
-Image::hsv_to_rgb(RGB& rgb, float h, float s, float v) noexcept
-{
-	int i;
-	float f;
-	float p, q, t;
-
-	h *= 5;
-
-	i = (int)floor(h);
-	f = h - i;
-
-	p = v * (1 - s);
-	q = v * (1 - s * f);
-	t = v * (1 - s * (1 - f));
-
-	switch (i)
-	{
-	case 0:
-		rgb.r = (std::uint8_t)(255 * v);
-		rgb.g = (std::uint8_t)(255 * t);
-		rgb.b = (std::uint8_t)(255 * p);
-		break;
-	case 1:
-		rgb.r = (std::uint8_t)(255 * q);
-		rgb.g = (std::uint8_t)(255 * v);
-		rgb.b = (std::uint8_t)(255 * p);
-		break;
-	case 2:
-		rgb.r = (std::uint8_t)(255 * p);
-		rgb.g = (std::uint8_t)(255 * v);
-		rgb.b = (std::uint8_t)(255 * t);
-		break;
-	case 3:
-		rgb.r = (std::uint8_t)(255 * p);
-		rgb.g = (std::uint8_t)(255 * q);
-		rgb.b = (std::uint8_t)(255 * v);
-		break;
-	case 4:
-		rgb.r = (std::uint8_t)(255 * t);
-		rgb.g = (std::uint8_t)(255 * p);
-		rgb.b = (std::uint8_t)(255 * v);
-		break;
-	case 5:
-		rgb.r = (std::uint8_t)(255 * v);
-		rgb.g = (std::uint8_t)(255 * p);
-		rgb.b = (std::uint8_t)(255 * q);
-		break;
-	}
-}
-
-void
-Image::hsv_to_rgba(RGBA& rgb, float h, float s, float v) noexcept
-{
-	float f;
-	float p, q, t;
-
-	h *= 5;
-
-	int i = (int)floor(h);
-	f = h - i;
-
-	p = v * (1 - s);
-	q = v * (1 - s * f);
-	t = v * (1 - s * (1 - f));
-
-	switch (i)
-	{
-	case 0:
-		rgb.r = (std::uint8_t)(255 * v);
-		rgb.g = (std::uint8_t)(255 * t);
-		rgb.b = (std::uint8_t)(255 * p);
-		break;
-	case 1:
-		rgb.r = (std::uint8_t)(255 * q);
-		rgb.g = (std::uint8_t)(255 * v);
-		rgb.b = (std::uint8_t)(255 * p);
-		break;
-	case 2:
-		rgb.r = (std::uint8_t)(255 * p);
-		rgb.g = (std::uint8_t)(255 * v);
-		rgb.b = (std::uint8_t)(255 * t);
-		break;
-	case 3:
-		rgb.r = (std::uint8_t)(255 * p);
-		rgb.g = (std::uint8_t)(255 * q);
-		rgb.b = (std::uint8_t)(255 * v);
-		break;
-	case 4:
-		rgb.r = (std::uint8_t)(255 * t);
-		rgb.g = (std::uint8_t)(255 * p);
-		rgb.b = (std::uint8_t)(255 * v);
-		break;
-	case 5:
-		rgb.r = (std::uint8_t)(255 * v);
-		rgb.g = (std::uint8_t)(255 * p);
-		rgb.b = (std::uint8_t)(255 * q);
-		break;
-	}
-
-	rgb.a = 255;
-}
-
-void
-Image::flipImageVertical(char* data, std::size_t width, std::size_t height, std::size_t component) noexcept
-{
-	std::size_t size = width * height * component;
-	std::size_t stride = sizeof(char)* width * component;
-
-	char* _data = new char[sizeof(char)* size];
-
-	for (std::size_t i = 0; i < height; i++)
-	{
-		std::size_t j = height - i - 1;
-		memcpy(_data + j * stride, data + i * stride, stride);
-	}
-
-	memcpy(data, _data, size);
-
-	delete[] _data;
 }
 
 _NAME_END

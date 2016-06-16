@@ -121,6 +121,22 @@ extern "C" void jpeg_term_source(j_decompress_ptr)
 	// nothing to see here
 }
 
+void cmyk_to_rgb(std::uint8_t* rgb, const std::uint8_t* cmyk) noexcept
+{
+	int k = 255 - cmyk[3];
+	int k2 = cmyk[3];
+	int c;
+
+	c = k + k2 * (255 - cmyk[0]) / 255;
+	rgb[0] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
+
+	c = k + k2 * (255 - cmyk[1]) / 255;
+	rgb[1] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
+
+	c = k + k2 * (255 - cmyk[2]) / 255;
+	rgb[2] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
+}
+
 JPEGHandler::JPEGHandler() noexcept
 {
 }
@@ -184,10 +200,8 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	// read jpeg handle parameters*/
 	::jpeg_read_header(&cinfo, TRUE);
 
-	if (!image.create(cinfo.image_width, cinfo.image_height, ImageFormat::ImageFormatR8G8B8))
+	if (!image.create(cinfo.image_width, cinfo.image_height, ImageFormat::ImageFormatR8G8B8UNorm))
 		return false;
-
-	image.setImageType(ImageType::ImageTypeJPEG);
 
 	RGB* data = (RGB*)image.data();
 	JDIMENSION stride = cinfo.image_width * cinfo.num_components;
@@ -211,6 +225,7 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		while (cinfo.output_scanline < cinfo.image_height)
 		{
 			::jpeg_read_scanlines(&cinfo, row_pointer, 1);
+
 			switch (cinfo.out_color_space)
 			{
 			case JCS_RGB:
@@ -224,7 +239,7 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 				std::uint8_t* inptr = (std::uint8_t*)row_pointer[0];
 				for (size_t i = 0; i < cinfo.output_width; i++)
 				{
-					Image::cmyk_to_rgb(data, inptr);
+					cmyk_to_rgb((std::uint8_t*)data, inptr);
 					data += 3;
 					inptr += 4;
 				}

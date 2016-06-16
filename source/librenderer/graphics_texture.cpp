@@ -41,7 +41,9 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsTexture, GraphicsResource, "GraphicsTexture")
 
 GraphicsTextureDesc::GraphicsTextureDesc() noexcept
-	: _size(0, 0, 0)
+	: _width(0)
+	, _height(0)
+	, _depth(0)
 	, _multisample(false)
 	, _layerBase(0)
 	, _layer(1)
@@ -66,51 +68,45 @@ GraphicsTextureDesc::~GraphicsTextureDesc() noexcept
 void
 GraphicsTextureDesc::setWidth(std::uint32_t w) noexcept
 {
-	_size.x = w;
+	_width = w;
 }
 
 void
 GraphicsTextureDesc::setHeight(std::uint32_t h) noexcept
 {
-	_size.y = h;
+	_height = h;
 }
 
 void
 GraphicsTextureDesc::setDepth(std::uint32_t d) noexcept
 {
-	_size.z = d;
+	_depth = d;
 }
 
 void
 GraphicsTextureDesc::setSize(std::uint32_t w, std::uint32_t h, std::uint32_t depth) noexcept
 {
-	_size.x = w;
-	_size.y = h;
-	_size.z = depth;
+	_width = w;
+	_height = h;
+	_depth = depth;
 }
 
 std::uint32_t
 GraphicsTextureDesc::getWidth() const noexcept
 {
-	return _size.x;
+	return _width;
 }
 
 std::uint32_t
 GraphicsTextureDesc::getHeight() const noexcept
 {
-	return _size.y;
+	return _height;
 }
 
 std::uint32_t
 GraphicsTextureDesc::getDepth() const noexcept
 {
-	return _size.z;
-}
-
-const uint3&
-GraphicsTextureDesc::getSize() const noexcept
-{
-	return _size;
+	return _depth;
 }
 
 void
@@ -260,7 +256,7 @@ GraphicsTextureDesc::getMipBase() const noexcept
 }
 
 void
-GraphicsTextureDesc::setStream(void* data) noexcept
+GraphicsTextureDesc::setStream(const void* data) noexcept
 {
 	_data = data;
 }
@@ -271,7 +267,7 @@ GraphicsTextureDesc::setStreamSize(std::uint32_t size) noexcept
 	_dataSize = size;
 }
 
-void*
+const void*
 GraphicsTextureDesc::getStream() const noexcept
 {
 	return _data;

@@ -123,7 +123,12 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	else
 	{
 		GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
+		if (format == GL_INVALID_ENUM)
+			return false;
+
 		GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
+		if (type == GL_INVALID_ENUM)
+			return false;
 
 		GLsizei offset = 0;
 		GLsizei pixelSize = stream ? OGLTypes::getFormatNum(format, type) : 1;

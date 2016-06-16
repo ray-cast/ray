@@ -193,7 +193,7 @@ BMPHandler::doLoad(Image& image, StreamReader& stream) except
 			info.info.comp == BI_RLE8 && info.info.bpp != 8 ||
 			info.info.comp == BI_BITFIELDS && info.info.bpp != 16 && info.info.bpp != 32)
 		{
-			throw failure("Encoding doesn't match bitdepth.");
+			return false;
 		}
 
 		return this->decode(image, stream, info);
@@ -235,24 +235,18 @@ BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 
 	if (info.info.bpp == BMP_32BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8A8))
+		if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8A8UNorm))
 			return false;
-
-		image.setImageType(ImageType::ImageTypeBMP);
 	}
 	else if (info.info.bpp == BMP_24BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8))
+		if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8UNorm))
 			return false;
-
-		image.setImageType(ImageType::ImageTypeBMP);
 	}
 	else if (info.info.bpp == BMP_16BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::ImageFormatR8G8B8))
+		if (!image.create(columns, rows, ImageFormat::ImageFormatR8G8B8UNorm))
 			return false;
-
-		image.setImageType(ImageType::ImageTypeBMP);
 	}
 	else
 	{
@@ -271,7 +265,7 @@ BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 	}
 	else if (info.info.bpp == BMP_16BPP)
 	{
-		std::uint8_t* data = image.data();
+		char* data = (char*)image.data();
 		switch (info.info.comp)
 		{
 		case BI_RGB:

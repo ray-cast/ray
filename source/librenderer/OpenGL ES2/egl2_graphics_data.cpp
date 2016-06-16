@@ -55,7 +55,7 @@ bool
 EGL2GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(!_buffer);
-	assert(desc.getStride() > 0);
+	assert(desc.getStreamSize() > 0);
 
 	_dataOffset = 0;
 	_dataSize = desc.getStreamSize();

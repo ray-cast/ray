@@ -54,7 +54,6 @@ bool
 EGL3GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(!_buffer);
-	assert(desc.getStride() > 0);
 	assert(desc.getStreamSize() > 0);
 
 	_desc = desc;

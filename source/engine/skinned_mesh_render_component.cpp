@@ -124,7 +124,6 @@ SkinnedMeshRenderComponent::onActivate() except
 			return;
 
 		GraphicsDataDesc jointDesc;
-		jointDesc.setStride(sizeof(float4x4));
 		jointDesc.setStreamSize(sizeof(float4x4) * jointNums);
 		jointDesc.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
 		jointDesc.setType(GraphicsDataType::GraphicsDataTypeUniformBuffer);

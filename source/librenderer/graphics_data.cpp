@@ -43,16 +43,14 @@ __ImplementSubInterface(GraphicsData, GraphicsResource, "GraphicsData")
 GraphicsDataDesc::GraphicsDataDesc() noexcept
 	: _data(nullptr)
 	, _dataSize(0)
-	, _stride(0)
 	, _usage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
 	, _type(GraphicsDataType::GraphicsDataTypeNone)
 {
 }
 
-GraphicsDataDesc::GraphicsDataDesc(GraphicsDataType type, GraphicsUsageFlags usage, const void* data, std::uint32_t size, std::uint32_t stride) noexcept
+GraphicsDataDesc::GraphicsDataDesc(GraphicsDataType type, GraphicsUsageFlags usage, const void* data, std::uint32_t size) noexcept
 	: _data((std::uint8_t*)data)
 	, _dataSize(size)
-	, _stride(stride)
 	, _usage(usage)
 	, _type(type)
 {
@@ -84,18 +82,6 @@ GraphicsDataType
 GraphicsDataDesc::getType() const noexcept
 {
 	return _type;
-}
-
-void
-GraphicsDataDesc::setStride(std::uint32_t stride) noexcept
-{
-	_stride = stride;
-}
-
-std::uint32_t
-GraphicsDataDesc::getStride() const noexcept
-{
-	return _stride;
 }
 
 void

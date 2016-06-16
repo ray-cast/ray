@@ -38,7 +38,7 @@
 #define _H_IMAGDEF_H_
 
 #include <ray/iostream.h>
-#include <ray/except.h>
+#include <ray/dccmn.h>
 
 _NAME_BEGIN
 

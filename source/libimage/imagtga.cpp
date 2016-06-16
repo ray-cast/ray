@@ -117,19 +117,18 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	{
 	case 2:
 	{
-		ImageFormat format = ImageFormat::ImageFormatUnknow;
+		ImageFormat format = ImageFormat::ImageFormatMaxEnum;
 		if (hdr.pixel_size == 8)
-			format = ImageFormat::ImageFormatR8;
+			format = ImageFormat::ImageFormatR8UNorm;
 		else if (hdr.pixel_size == 24)
-			format = ImageFormat::ImageFormatB8G8R8;
+			format = ImageFormat::ImageFormatB8G8R8UNorm;
 		else if (hdr.pixel_size == 32)
-			format = ImageFormat::ImageFormatB8G8R8A8;
+			format = ImageFormat::ImageFormatB8G8R8A8UNorm;
 		else
 			return false;
 
 		if (!image.create(columns, rows, format))
 			return false;
-		image.setImageType(ImageType::ImageTypeTGA);
 
 		if (!stream.read((char*)image.data(), length))
 			return false;
@@ -137,8 +136,6 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	break;
 	case 10:
 	{
-		image.setImageType(ImageType::ImageTypeTGA);
-
 		std::vector<std::uint8_t> buffers(stream.size() - sizeof(TGAHeader));
 		std::uint8_t* buf = (std::uint8_t*)buffers.data();
 
@@ -154,7 +151,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 		case 24:
 		{
-			if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8))
+			if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8UNorm))
 				return false;
 
 			RGB* rgb = (RGB*)image.data();
@@ -197,7 +194,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		break;
 		case 32:
 		{
-			if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8A8))
+			if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8A8UNorm))
 				return false;
 
 			std::uint32_t* rgba = (std::uint32_t*)image.data();

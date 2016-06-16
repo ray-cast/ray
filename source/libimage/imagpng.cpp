@@ -146,19 +146,17 @@ PNGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		ImageFormat format;
 		if (color_type & PNG_COLOR_TYPE_RGBA)
 		{
-			format = ImageFormat::ImageFormatR8G8B8A8;
+			format = ImageFormat::ImageFormatR8G8B8A8UNorm;
 			pixelSize = 4;
 		}
 		else if (color_type & PNG_COLOR_TYPE_RGB)
 		{
-			format = ImageFormat::ImageFormatR8G8B8;
+			format = ImageFormat::ImageFormatR8G8B8UNorm;
 			pixelSize = 3;
 		}
 
 		if (!image.create(width, height, format))
 			return false;
-
-		image.setImageType(ImageType::ImageTypePNG);
 
 		std::size_t columnLength = width * pixelSize;
 		std::uint8_t* pixel = (std::uint8_t*)image.data();

@@ -75,7 +75,6 @@ MyGuiVertexBuffer::lock() noexcept
 
 		GraphicsDataDesc vb;
 		vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit | GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
-		vb.setStride(inputSize);
 		vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 		vb.setStreamSize(inputSize * _needVertexCount);
 

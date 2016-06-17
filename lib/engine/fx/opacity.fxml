@@ -30,7 +30,7 @@
             {
                 float3 tangentNormal;
                 if (quality > 0.55)
-                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb;
+                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb * 2 - 1;
                 else
                     tangentNormal = DecodeNormalMap(normalMap, coord);
 
@@ -40,7 +40,7 @@
 
                 float3x3 tbn = float3x3(T, B, N);
                 float3 highNormal = mul(tangentNormal, tbn);
-                return highNormal;
+                return normalize(highNormal);
             }
 
             float2 GetSpecular(Texture2D specularMap, float2 coord)

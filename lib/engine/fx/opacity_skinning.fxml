@@ -33,7 +33,7 @@
             {
                 float3 tangentNormal;
                 if (quality > 0.55)
-                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb;
+                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb * 2 - 1;
                 else
                     tangentNormal = DecodeNormalMap(normalMap, coord);
 

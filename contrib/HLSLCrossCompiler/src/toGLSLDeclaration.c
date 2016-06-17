@@ -1582,7 +1582,7 @@ void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration
                         Suggests no implicit conversion for bool<->int.
                     */
 
-                    AddBuiltinInput(psContext, psDecl, "int(gl_FrontFacing)");
+                    AddBuiltinInput(psContext, psDecl, "uint(gl_FrontFacing)");
                     break;
                 }
                 case NAME_SAMPLE_INDEX:

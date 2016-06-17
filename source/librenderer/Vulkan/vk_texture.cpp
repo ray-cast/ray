@@ -105,7 +105,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.flags = 0;
 		image.pQueueFamilyIndices = 0;
 		image.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		image.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 		image.queueFamilyIndexCount = 0;
 
 		if (vkCreateImage(device->getDevice(), &image, nullptr, &_vkImage) != VK_SUCCESS)
@@ -145,11 +145,11 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			vkGetImageSubresourceLayout(device->getDevice(), _vkImage, &subres, &layout);
 
 			void* data = nullptr;
-			if (_vkMemory.map(0, memReqs.size, GraphicsAccessFlagBits::GraphicsAccessFlagMapWriteBit, &data))
-			{
-				memcpy(data, stream, memReqs.size);
-				_vkMemory.unmap();
-			}
+			if (!_vkMemory.map(0, memReqs.size, GraphicsAccessFlagBits::GraphicsAccessFlagMapWriteBit, &data))
+				return false;
+
+			memcpy(data, stream, memReqs.size);
+			_vkMemory.unmap();
 		}
 	}
 

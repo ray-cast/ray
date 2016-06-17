@@ -998,6 +998,7 @@ VulkanDescriptorSet::update() noexcept
 {
 	std::uint32_t descriptorWriteCount = 0;
 	VkWriteDescriptorSet descriptorWrites[10];
+	VkDescriptorImageInfo descriptorImageInfos[10];
 
 	for (auto& it : _activeUniformSets)
 	{
@@ -1016,7 +1017,7 @@ VulkanDescriptorSet::update() noexcept
 			{
 				auto vkTexture = texture->downcast<VulkanTexture>();
 
-				VkDescriptorImageInfo info;
+				auto& info = descriptorImageInfos[descriptorWriteCount];
 				info.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
 				info.imageView = vkTexture->getImageView();
 				info.sampler = nullptr;

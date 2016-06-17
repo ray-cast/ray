@@ -232,7 +232,7 @@ public:
 
 private:
 	void _initActiveAttribute(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept;
-	void _initActiveUniform(glslang::TProgram& program) noexcept;
+	void _initActiveUniform(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept;
 	void _initActiveUniformBlock(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept;
 
 private:

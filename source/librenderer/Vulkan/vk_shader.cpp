@@ -42,6 +42,8 @@
 #	include <d3dcompiler.h>
 #endif
 
+#include <sstream>
+
 _NAME_BEGIN
 
 const TBuiltInResource defaultOptions = 
@@ -570,12 +572,25 @@ VulkanStageShader::HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, std::uint32
 		&error
 	);
 
-	if (hr == S_OK)
+	if (hr != S_OK)
 	{
-		return HlslByteCodes2GLSL(stage, startLocation, (char*)binary->GetBufferPointer(), out);
+		std::string line;
+		std::size_t index = 1;
+		std::ostringstream ostream;
+		std::istringstream istream(codes);
+
+		ostream << (const char*)error->GetBufferPointer() << std::endl;
+		while (std::getline(istream, line))
+		{
+			ostream << index << '\t' << line << std::endl;
+			index++;
+		}
+
+		VK_PLATFORM_LOG(ostream.str().c_str());
+		return false;
 	}
 
-	return false;
+	return HlslByteCodes2GLSL(stage, startLocation, (char*)binary->GetBufferPointer(), out);
 }
 
 bool
@@ -811,7 +826,7 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 
 	_initActiveAttribute(program, programDesc);
 	_initActiveUniformBlock(program, programDesc);
-	_initActiveUniform(program);
+	_initActiveUniform(program, programDesc);
 
 	_programDesc = programDesc;
 	return true;
@@ -898,7 +913,7 @@ VulkanProgram::_initActiveAttribute(glslang::TProgram& program, const GraphicsPr
 }
 
 void 
-VulkanProgram::_initActiveUniform(glslang::TProgram& program) noexcept
+VulkanProgram::_initActiveUniform(glslang::TProgram& program, const GraphicsProgramDesc& programDesc) noexcept
 {
 	std::size_t numUniforms = program.getNumLiveUniformVariables();
 	for (std::size_t i = 0; i < numUniforms; i++)
@@ -914,7 +929,6 @@ VulkanProgram::_initActiveUniform(glslang::TProgram& program) noexcept
 
 			auto uniform = std::make_shared<VulkanGraphicsUniform>();
 			uniform->setType(GraphicsUniformType::GraphicsUniformTypeSamplerImage);
-			uniform->setBindingPoint(program.getUniformIndex(name.c_str()));
 			uniform->setShaderStageFlags(GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit);
 
 			auto pos = name.find("_X_");
@@ -927,6 +941,19 @@ VulkanProgram::_initActiveUniform(glslang::TProgram& program) noexcept
 			{
 				uniform->setName(std::move(name));
 			}
+
+			std::uint32_t bindingPoint = 0;
+			for (auto& it : _activeShaders)
+			{
+				for (auto& param : it->getParams())
+				{
+					if (param->getName() == uniform->getName())
+						break;
+					bindingPoint++;
+				}
+			}
+
+			uniform->setBindingPoint(bindingPoint);
 
 			_activeParams.push_back(uniform);
 		}

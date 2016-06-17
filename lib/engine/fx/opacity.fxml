@@ -40,7 +40,7 @@
 
                 float3x3 tbn = float3x3(T, B, N);
                 float3 highNormal = mul(tangentNormal, tbn);
-                return normalize(highNormal);
+                return highNormal;
             }
 
             float2 GetSpecular(Texture2D specularMap, float2 coord)

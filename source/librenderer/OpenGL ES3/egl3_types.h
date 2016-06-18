@@ -39,6 +39,7 @@
 
 #include <ray/graphics_system.h>
 #include <ray/graphics_device.h>
+#include <ray/graphics_device_property.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_context.h>
 #include <ray/graphics_data.h>

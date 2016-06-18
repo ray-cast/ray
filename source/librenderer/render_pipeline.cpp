@@ -39,6 +39,8 @@
 
 #include <ray/render_post_process.h>
 
+#include <ray/graphics_device.h>
+#include <ray/graphics_device_property.h>
 #include <ray/graphics_context.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_texture.h>
@@ -465,25 +467,25 @@ RenderPipeline::present() noexcept
 bool
 RenderPipeline::isTextureSupport(GraphicsFormat format) noexcept
 {
-	return _graphicsContext->isTextureSupport(format);
+	return _graphicsContext->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties().isTextureSupport(format);
 }
 
 bool
 RenderPipeline::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
 {
-	return _graphicsContext->isTextureDimSupport(dimension);
+	return _graphicsContext->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties().isTextureDimSupport(dimension);
 }
 
 bool
 RenderPipeline::isVertexSupport(GraphicsFormat format) noexcept
 {
-	return _graphicsContext->isVertexSupport(format);
+	return _graphicsContext->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties().isVertexSupport(format);
 }
 
 bool
 RenderPipeline::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
 {
-	return _graphicsContext->isShaderSupport(stage);
+	return _graphicsContext->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties().isShaderSupport(stage);
 }
 
 GraphicsDataPtr

@@ -36,10 +36,10 @@
 // +----------------------------------------------------------------------
 #include "vk_swapchain.h"
 #include "vk_device.h"
+#include "vk_device_property.h"
 #include "vk_texture.h"
 #include "vk_framebuffer.h"
 #include "vk_system.h"
-#include "vk_physical_device.h"
 
 _NAME_BEGIN
 
@@ -63,7 +63,7 @@ VulkanSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	_swapchainDesc = swapchainDesc;
 	
-	auto physicalDevice = _device.lock()->getGraphicsDeviceDesc().getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice();
+	auto physicalDevice = _device.lock()->getPhysicalDevice();
 
 	if (!initSurface())
 		return false;

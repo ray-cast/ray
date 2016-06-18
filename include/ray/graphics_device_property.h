@@ -44,6 +44,14 @@ _NAME_BEGIN
 class GraphicsDeviceProperties final
 {
 public:
+	GraphicsDeviceProperties() noexcept;
+	~GraphicsDeviceProperties() noexcept;
+
+	bool isTextureSupport(GraphicsFormat format) const noexcept;
+	bool isTextureDimSupport(GraphicsTextureDim dimension) const noexcept;
+	bool isVertexSupport(GraphicsFormat format) const noexcept;
+	bool isShaderSupport(GraphicsShaderStageFlagBits stage) const noexcept;
+
 	std::uint32_t         maxImageDimension1D;
 	std::uint32_t         maxImageDimension2D;
 	std::uint32_t         maxImageDimension3D;
@@ -107,8 +115,10 @@ public:
 	float                 maxSamplerLodBias;
 	float                 maxSamplerAnisotropy;
 	std::uint32_t         maxViewports;
-	std::uint32_t         maxViewportDimensions[2];
-	float                 viewportBoundsRange[2];
+	std::uint32_t         maxViewportDimensionsW;
+	std::uint32_t         maxViewportDimensionsH;
+	float                 minViewportBoundsRange;
+	float                 maxViewportBoundsRange;
 	std::uint32_t         viewportSubPixelBits;
 	std::size_t           minMemoryMapAlignment;
 	std::uint64_t         minTexelBufferOffsetAlignment;
@@ -152,20 +162,24 @@ public:
 	std::uint64_t         optimalBufferCopyOffsetAlignment;
 	std::uint64_t         optimalBufferCopyRowPitchAlignment;
 	std::uint64_t         nonCoherentAtomSize;
+	std::vector<GraphicsFormat> supportTextures;
+	std::vector<GraphicsTextureDim> supportTextureDims;
+	std::vector<GraphicsFormat> supportAttribute;
+	std::vector<GraphicsShaderStageFlagBits> supportShaders;
 };
 
-class GraphicsPhysicalDevice : public rtti::Interface
+class GraphicsDeviceProperty : public rtti::Interface
 {
-	__DeclareSubInterface(GraphicsPhysicalDevice, rtti::Interface)
+	__DeclareSubInterface(GraphicsDeviceProperty, rtti::Interface)
 public:
-	GraphicsPhysicalDevice() noexcept;
-	virtual ~GraphicsPhysicalDevice() noexcept;
+	GraphicsDeviceProperty() noexcept;
+	virtual ~GraphicsDeviceProperty() noexcept;
 	
 	virtual const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept = 0;
 
 private:
-	GraphicsPhysicalDevice(const GraphicsPhysicalDevice&) = delete;
-	GraphicsPhysicalDevice& operator=(const GraphicsPhysicalDevice&) = delete;
+	GraphicsDeviceProperty(const GraphicsDeviceProperty&) = delete;
+	GraphicsDeviceProperty& operator=(const GraphicsDeviceProperty&) = delete;
 };
 
 _NAME_END

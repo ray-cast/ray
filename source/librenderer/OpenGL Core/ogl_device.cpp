@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "ogl_device.h"
 #include "ogl_device_context.h"
+#include "ogl_device_property.h"
 #include "ogl_swapchain.h"
 #include "ogl_shader.h"
 #include "ogl_texture.h"
@@ -70,6 +71,11 @@ OGLDevice::~OGLDevice() noexcept
 bool
 OGLDevice::setup(const GraphicsDeviceDesc& desc) noexcept
 {
+	auto deviceProperty = std::make_shared<OGLDeviceProperty>();
+	if (!deviceProperty->setup())
+		return false;
+
+	_deviceProperty = deviceProperty;
 	_deviceDesc = desc;
 	return true;
 }
@@ -77,6 +83,7 @@ OGLDevice::setup(const GraphicsDeviceDesc& desc) noexcept
 void
 OGLDevice::close() noexcept
 {
+	_deviceProperty.reset();
 }
 
 GraphicsSwapchainPtr
@@ -329,6 +336,12 @@ OGLDevice::copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t de
 		source->downcast<OGLDescriptorSet>()->copy(descriptorCopyCount, descriptorCopies);
 	else
 		source->downcast<OGLCoreDescriptorSet>()->copy(descriptorCopyCount, descriptorCopies);
+}
+
+const GraphicsDeviceProperty&
+OGLDevice::getGraphicsDeviceProperty() const noexcept
+{
+	return *_deviceProperty;
 }
 
 const GraphicsDeviceDesc&

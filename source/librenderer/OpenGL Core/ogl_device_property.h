@@ -34,58 +34,45 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_VK_SYSTEM_H_
-#define _H_VK_SYSTEM_H_
+#ifndef _H_OGL_DEVICE_PROPERTY_H_
+#define _H_OGL_DEVICE_PROPERTY_H_
 
-#include "vk_types.h"
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-class VulkanSystem final
+class OGLDeviceProperty final : public GraphicsDeviceProperty
 {
-	__DeclareSingleton(VulkanSystem)
 public:
-	VulkanSystem() noexcept;
-	~VulkanSystem() noexcept;
+	OGLDeviceProperty() noexcept;
+	~OGLDeviceProperty() noexcept;
 
-	bool open() noexcept;
+	bool setup() noexcept;
 	void close() noexcept;
 
-	VkInstance getInstance() const noexcept;
-
-	void getInstanceLayerNames(std::vector<char*>& instanceLayerNames) noexcept;
-	void getInstanceExtensitionNames(std::vector<char*>& instanceLayerNames) noexcept;
-
-	const GraphicsDevicePropertys& getPhysicalDevices() const noexcept;
-
-	void startDebugControl() noexcept;
-	void stopDebugControl() noexcept;
-
-	void print(const char* message, ...) noexcept;
+	const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept;
 
 private:
-	bool initInstance() noexcept;
-	bool initPhysicalDevices() noexcept;
+#if defined(_WIN32)
+	bool setupWGLEnvironment(HWND& hwnd, HDC& hdc, HINSTANCE& hinstance) noexcept;
+	bool setupWGLPixelFormat(HDC hdc) noexcept;
+	bool setupWGLExtensions(HDC hdc) noexcept;
+	void closeWGLEnvironment(HWND hwnd, HDC hdc, HINSTANCE hinstance) noexcept;
+#endif
 
-	bool checkInstanceLayer(std::size_t instanceEnabledLayerCount, const char* instanceValidationLayerNames[]) noexcept;
-	bool checkInstanceExtenstion(std::size_t instanceEnabledExtensition, const char* instanceValidationExtensitionName[]) noexcept;
+	bool initDeviceProperties() noexcept;
+
+	bool initTextureSupports() noexcept;
+	bool initTextureDimSupports() noexcept;
+	bool initVertexSupports() noexcept;
+	bool initShaderSupports() noexcept;
 
 private:
-	static VKAPI_ATTR VkBool32 VKAPI_CALL dbgFunc(VkFlags msgFlags, VkDebugReportObjectTypeEXT objType, uint64_t srcObject, size_t location, int32_t msgCode, const char *pLayerPrefix, const char *pMsg, void *pUserData);
+	OGLDeviceProperty(const OGLDeviceProperty&) = delete;
+	OGLDeviceProperty& operator=(const OGLDeviceProperty&) = delete;
 
 private:
-	VulkanSystem(const VulkanSystem&) noexcept = delete;
-	VulkanSystem& operator=(const VulkanSystem&) noexcept = delete;
-
-private:
-	bool _isOpened;
-
-	VkInstance _instance;
-	VkDebugReportCallbackEXT _debugHandle;
-
-	std::vector<VkLayerProperties> _instanceLayers;
-	std::vector<VkExtensionProperties> _instanceExtensions;
-	GraphicsDevicePropertys _physicalDevices;
+	GraphicsDeviceProperties _deviceProperties;
 };
 
 _NAME_END

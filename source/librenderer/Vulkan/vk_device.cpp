@@ -36,11 +36,11 @@
 // +----------------------------------------------------------------------
 #include "vk_device.h"
 #include "vk_device_context.h"
+#include "vk_device_property.h"
 #include "vk_command_list.h"
 #include "vk_command_pool.h"
 #include "vk_command_queue.h"
 #include "vk_swapchain.h"
-#include "vk_physical_device.h"
 #include "vk_system.h"
 #include "vk_texture.h"
 #include "vk_sampler.h"
@@ -70,12 +70,13 @@ VulkanDevice::~VulkanDevice() noexcept
 bool
 VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 {
-	assert(deviceDesc.getPhysicalDevice());
 	assert(deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeVulkan);
 
 	static const char* extensionNames[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-	VkPhysicalDevice physicalDevice = deviceDesc.getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice();
+	_physicalDevice = VulkanSystem::instance()->getPhysicalDevices().front()->downcast_pointer<VulkanDeviceProperty>();
+
+	VkPhysicalDevice physicalDevice = _physicalDevice->downcast<VulkanDeviceProperty>()->getPhysicalDevice();
 
 	std::uint32_t queueCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, 0);
@@ -338,6 +339,12 @@ VulkanDevice::copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t
 {
 }
 
+const GraphicsDeviceProperty&
+VulkanDevice::getGraphicsDeviceProperty() const noexcept
+{
+	return *_physicalDevice;
+}
+
 const GraphicsDeviceDesc&
 VulkanDevice::getGraphicsDeviceDesc() const noexcept
 {
@@ -348,6 +355,12 @@ VkDevice
 VulkanDevice::getDevice() const noexcept
 {
 	return _device;
+}
+
+VkPhysicalDevice 
+VulkanDevice::getPhysicalDevice() const noexcept
+{
+	return _physicalDevice->getPhysicalDevice();
 }
 
 _NAME_END

@@ -34,20 +34,20 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_VK_PHYSICAL_DEVICE_H_
-#define _H_VK_PHYSICAL_DEVICE_H_
+#ifndef _H_VK_DEVICE_PROPERTY_H_
+#define _H_VK_DEVICE_PROPERTY_H_
 
 #include "vk_types.h"
 
 _NAME_BEGIN
 
-class VulkanPhysicalDevice final : public GraphicsPhysicalDevice
+class VulkanDeviceProperty final : public GraphicsDeviceProperty
 {
 public:
-	VulkanPhysicalDevice() noexcept;
-	~VulkanPhysicalDevice() noexcept;
+	VulkanDeviceProperty() noexcept;
+	~VulkanDeviceProperty() noexcept;
 
-	bool setup(VkPhysicalDevice physicalDevice);
+	bool setup(VkPhysicalDevice physicalDevice) noexcept;
 	void close() noexcept;
 
 	VkPhysicalDevice getPhysicalDevice() const noexcept;
@@ -59,8 +59,14 @@ private:
 	bool checkPhysicalDeviceExtension(VkPhysicalDevice physicalDevice, std::size_t deviceEnabledExtensitionCount, const char* deviceEnabledExtensitionNames[]) noexcept;
 
 private:
-	VulkanPhysicalDevice(const VulkanPhysicalDevice&) = delete;
-	VulkanPhysicalDevice& operator=(const VulkanPhysicalDevice&) = delete;
+	bool initTextureSupports() noexcept;
+	bool initTextureDimSupports() noexcept;
+	bool initVertexSupports() noexcept;
+	bool initShaderSupports() noexcept;
+
+private:
+	VulkanDeviceProperty(const VulkanDeviceProperty&) = delete;
+	VulkanDeviceProperty& operator=(const VulkanDeviceProperty&) = delete;
 
 private:
 	VkPhysicalDevice _physicalDevice;

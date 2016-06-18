@@ -93,8 +93,8 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/graphics_descriptor.cpp
     ${HEADER_PATH}/graphics_device.h
     ${SOURCE_PATH}/graphics_device.cpp
-    ${HEADER_PATH}/graphics_physical_device.h
-    ${SOURCE_PATH}/graphics_physical_device.cpp
+    ${HEADER_PATH}/graphics_device_property.h
+    ${SOURCE_PATH}/graphics_device_property.cpp
     ${HEADER_PATH}/graphics_input_layout.h
     ${SOURCE_PATH}/graphics_input_layout.cpp
     ${HEADER_PATH}/graphics_pipeline.h

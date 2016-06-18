@@ -37,7 +37,7 @@
 #include "vk_command_pool.h"
 #include "vk_command_list.h"
 #include "vk_device.h"
-#include "vk_physical_device.h"
+#include "vk_device_property.h"
 #include "vk_system.h"
 
 _NAME_BEGIN
@@ -58,12 +58,12 @@ bool
 VulkanCommandPool::setup(const GraphicsCommandPoolDesc& commandPooldesc) noexcept
 {
 	std::uint32_t queueCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(_device.lock()->getGraphicsDeviceDesc().getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice(), &queueCount, 0);
+	vkGetPhysicalDeviceQueueFamilyProperties(_device.lock()->getPhysicalDevice(), &queueCount, 0);
 	if (queueCount == 0)
 		return false;
 
 	std::vector<VkQueueFamilyProperties> props(queueCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(_device.lock()->getGraphicsDeviceDesc().getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice(), &queueCount, &props[0]);
+	vkGetPhysicalDeviceQueueFamilyProperties(_device.lock()->getPhysicalDevice(), &queueCount, &props[0]);
 
 	std::uint32_t graphicsQueueNodeIndex = UINT32_MAX;
 	for (std::uint32_t i = 0; i < queueCount; i++)

@@ -34,58 +34,40 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_VK_SYSTEM_H_
-#define _H_VK_SYSTEM_H_
+#ifndef _H_EGL3_DEVICE_PROPERTY_H_
+#define _H_EGL3_DEVICE_PROPERTY_H_
 
-#include "vk_types.h"
+#include "egl3_types.h"
 
 _NAME_BEGIN
 
-class VulkanSystem final
+class EGL3DeviceProperty final : public GraphicsDeviceProperty
 {
-	__DeclareSingleton(VulkanSystem)
 public:
-	VulkanSystem() noexcept;
-	~VulkanSystem() noexcept;
+	EGL3DeviceProperty() noexcept;
+	~EGL3DeviceProperty() noexcept;
 
-	bool open() noexcept;
+	bool setup(const GraphicsDeviceDesc& deviceDesc) noexcept;
 	void close() noexcept;
 
-	VkInstance getInstance() const noexcept;
-
-	void getInstanceLayerNames(std::vector<char*>& instanceLayerNames) noexcept;
-	void getInstanceExtensitionNames(std::vector<char*>& instanceLayerNames) noexcept;
-
-	const GraphicsDevicePropertys& getPhysicalDevices() const noexcept;
-
-	void startDebugControl() noexcept;
-	void stopDebugControl() noexcept;
-
-	void print(const char* message, ...) noexcept;
+	const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept;
 
 private:
-	bool initInstance() noexcept;
-	bool initPhysicalDevices() noexcept;
+	bool initPixelFormat(const GraphicsDeviceDesc& deviceDesc, EGLConfig& config) noexcept;
+	bool initContext(const GraphicsDeviceDesc& deviceDesc, EGLConfig config) noexcept;
+	bool initDeviceProperties() noexcept;
 
-	bool checkInstanceLayer(std::size_t instanceEnabledLayerCount, const char* instanceValidationLayerNames[]) noexcept;
-	bool checkInstanceExtenstion(std::size_t instanceEnabledExtensition, const char* instanceValidationExtensitionName[]) noexcept;
-
-private:
-	static VKAPI_ATTR VkBool32 VKAPI_CALL dbgFunc(VkFlags msgFlags, VkDebugReportObjectTypeEXT objType, uint64_t srcObject, size_t location, int32_t msgCode, const char *pLayerPrefix, const char *pMsg, void *pUserData);
-
-private:
-	VulkanSystem(const VulkanSystem&) noexcept = delete;
-	VulkanSystem& operator=(const VulkanSystem&) noexcept = delete;
+	bool initTextureSupports() noexcept;
+	bool initTextureDimSupports() noexcept;
+	bool initVertexSupports() noexcept;
+	bool initShaderSupports() noexcept;
 
 private:
-	bool _isOpened;
+	EGL3DeviceProperty(const EGL3DeviceProperty&) = delete;
+	EGL3DeviceProperty& operator=(const EGL3DeviceProperty&) = delete;
 
-	VkInstance _instance;
-	VkDebugReportCallbackEXT _debugHandle;
-
-	std::vector<VkLayerProperties> _instanceLayers;
-	std::vector<VkExtensionProperties> _instanceExtensions;
-	GraphicsDevicePropertys _physicalDevices;
+private:
+	GraphicsDeviceProperties _deviceProperties;
 };
 
 _NAME_END

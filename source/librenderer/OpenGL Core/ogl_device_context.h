@@ -91,11 +91,6 @@ public:
 	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 
-	bool isTextureSupport(GraphicsFormat format) noexcept;
-	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
-	bool isVertexSupport(GraphicsFormat format) noexcept;
-	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
-
 	void present() noexcept;
 
 	void enableDebugControl(bool enable) noexcept;
@@ -105,10 +100,6 @@ public:
 private:
 	bool checkSupport() noexcept;
 	bool initStateSystem() noexcept;
-	bool initTextureSupports() noexcept;
-	bool initTextureDimSupports() noexcept;
-	bool initVertexSupports() noexcept;
-	bool initShaderSupports() noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
@@ -149,11 +140,6 @@ private:
 	bool _needUpdateVertexBuffers;
 	bool _needEnableDebugControl;
 	bool _needDisableDebugControl;
-
-	std::vector<GraphicsFormat> _supportTextures;
-	std::vector<GraphicsTextureDim> _supportTextureDims;
-	std::vector<GraphicsFormat> _supportAttribute;
-	std::vector<GraphicsShaderStageFlagBits> _supportShaders;
 
 	GraphicsDeviceWeakPtr _device;
 };

@@ -34,18 +34,49 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/graphics_physical_device.h>
+#ifndef _H_EGL2_DEVICE_PROPERTY_H_
+#define _H_EGL2_DEVICE_PROPERTY_H_
+
+#include "egl2_types.h"
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GraphicsPhysicalDevice, rtti::Interface, "GraphicsPhysicalDevice")
-
-GraphicsPhysicalDevice::GraphicsPhysicalDevice() noexcept
+class EGL2DeviceProperty final : public GraphicsDeviceProperty
 {
-}
+public:
+	EGL2DeviceProperty() noexcept;
+	~EGL2DeviceProperty() noexcept;
 
-GraphicsPhysicalDevice::~GraphicsPhysicalDevice() noexcept
-{
-}
+	bool setup(const GraphicsDeviceDesc& deviceDesc) noexcept;
+	void close() noexcept;
+
+	const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept;
+
+private:
+#if defined(_WIN32)
+	bool setupWGLEnvironment(HWND& hwnd, HDC& hdc, HINSTANCE& hinstance) noexcept;
+	bool setupWGLPixelFormat(HDC hdc) noexcept;
+	bool setupWGLExtensions(HDC hdc) noexcept;
+	void closeWGLEnvironment(HWND hwnd, HDC hdc, HINSTANCE hinstance) noexcept;
+#endif
+
+	bool initPixelFormat(const GraphicsDeviceDesc& deviceDesc, EGLConfig& config) noexcept;
+	bool initContext(const GraphicsDeviceDesc& deviceDesc, EGLConfig config) noexcept;
+	bool initDeviceProperties() noexcept;
+
+	bool initTextureSupports() noexcept;
+	bool initTextureDimSupports() noexcept;
+	bool initVertexSupports() noexcept;
+	bool initShaderSupports() noexcept;
+
+private:
+	EGL2DeviceProperty(const EGL2DeviceProperty&) = delete;
+	EGL2DeviceProperty& operator=(const EGL2DeviceProperty&) = delete;
+
+private:
+	GraphicsDeviceProperties _deviceProperties;
+};
 
 _NAME_END
+
+#endif

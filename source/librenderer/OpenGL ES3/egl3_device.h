@@ -71,6 +71,7 @@ public:
 
 	void copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept;
 
+	const GraphicsDeviceProperty& getGraphicsDeviceProperty() const noexcept;
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
 private:
@@ -80,6 +81,7 @@ private:
 private:
 	GraphicsDeviceDesc _deviceDesc;
 	GraphicsContextWeaks _deviceContexts;
+	GraphicsDevicePropertyPtr _deviceProperty;
 };
 
 _NAME_END

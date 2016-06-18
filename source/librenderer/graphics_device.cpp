@@ -42,7 +42,8 @@ __ImplementSubInterface(GraphicsDevice, rtti::Interface, "GraphicsDevice")
 __ImplementSubInterface(GraphicsDevice2, GraphicsDevice, "GraphicsDevice2")
 
 GraphicsDeviceDesc::GraphicsDeviceDesc() noexcept
-	: _deviceType(GraphicsDeviceType::GraphicsDeviceTypeMaxEnum)
+	: _hwnd(nullptr)
+	, _deviceType(GraphicsDeviceType::GraphicsDeviceTypeMaxEnum)
 {
 }
 
@@ -50,28 +51,28 @@ GraphicsDeviceDesc::~GraphicsDeviceDesc() noexcept
 {
 }
 
-void
-GraphicsDeviceDesc::setDeviceType(GraphicsDeviceType type) noexcept
+void 
+GraphicsDeviceDesc::setWindHandle(WindHandle hwnd) noexcept
 {
-	_deviceType = type;
+	_hwnd = hwnd;
+}
+
+WindHandle 
+GraphicsDeviceDesc::getWindHandle() const noexcept
+{
+	return _hwnd;
+}
+
+void
+GraphicsDeviceDesc::setDeviceType(GraphicsDeviceType deviceType) noexcept
+{
+	_deviceType = deviceType;
 }
 
 GraphicsDeviceType
 GraphicsDeviceDesc::getDeviceType() const noexcept
 {
 	return _deviceType;
-}
-
-void
-GraphicsDeviceDesc::setPhysicalDevice(GraphicsPhysicalDevicePtr physicalDevice) noexcept
-{
-	_physicalDevice = physicalDevice;
-}
-
-GraphicsPhysicalDevicePtr 
-GraphicsDeviceDesc::getPhysicalDevice() const noexcept
-{
-	return _physicalDevice;
 }
 
 GraphicsDevice::GraphicsDevice() noexcept

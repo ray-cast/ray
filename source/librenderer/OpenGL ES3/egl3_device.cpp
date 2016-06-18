@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "egl3_device.h"
 #include "egl3_device_context.h"
+#include "egl3_device_property.h"
 #include "egl3_swapchain.h"
 #include "egl3_state.h"
 #include "egl3_shader.h"
@@ -63,6 +64,11 @@ EGL3Device::~EGL3Device() noexcept
 bool
 EGL3Device::setup(const GraphicsDeviceDesc& desc) noexcept
 {
+	auto deviceProperty = std::make_shared<EGL3DeviceProperty>();
+	if (!deviceProperty->setup(desc))
+		return false;
+
+	_deviceProperty = deviceProperty;
 	_deviceDesc = desc;
 	return true;
 }
@@ -70,6 +76,7 @@ EGL3Device::setup(const GraphicsDeviceDesc& desc) noexcept
 void
 EGL3Device::close() noexcept
 {
+	_deviceProperty.reset();
 }
 
 GraphicsSwapchainPtr
@@ -242,6 +249,12 @@ EGL3Device::copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t d
 {
 	assert(source);
 	source->downcast<EGL3DescriptorSet>()->copy(descriptorCopyCount, descriptorCopies);
+}
+
+const GraphicsDeviceProperty&
+EGL3Device::getGraphicsDeviceProperty() const noexcept
+{
+	return *_deviceProperty;
 }
 
 const GraphicsDeviceDesc&

@@ -99,11 +99,6 @@ public:
 	virtual void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept = 0;
 	virtual void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept = 0;
 
-	virtual bool isTextureSupport(GraphicsFormat format) noexcept = 0;
-	virtual bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept = 0;
-	virtual bool isVertexSupport(GraphicsFormat format) noexcept = 0;
-	virtual bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept = 0;
-
 	virtual void present() noexcept = 0;
 
 private:

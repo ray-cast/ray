@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "vk_system.h"
-#include "vk_physical_device.h"
+#include "vk_device_property.h"
 
 #pragma warning (push)
 #pragma warning (disable:4458)
@@ -118,7 +118,7 @@ VulkanSystem::getInstanceExtensitionNames(std::vector<char*>& instanceExtensitio
 		instanceExtensitionNames.push_back(it.extensionName);
 }
 
-const GraphicsPhysicalDevices&
+const GraphicsDevicePropertys&
 VulkanSystem::getPhysicalDevices() const noexcept
 {
 	return _physicalDevices;
@@ -415,7 +415,7 @@ VulkanSystem::initPhysicalDevices() noexcept
 
 		for (auto& it : physicalDevices)
 		{
-			auto physicalDevice = std::make_shared<VulkanPhysicalDevice>();
+			auto physicalDevice = std::make_shared<VulkanDeviceProperty>();
 			if (physicalDevice->setup(it))
 			{
 				_physicalDevices.push_back(physicalDevice);

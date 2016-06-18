@@ -65,7 +65,6 @@ public:
 private:
 	bool initSurface(const GraphicsSwapchainDesc& swapchainDesc);
 	bool initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
-	bool initWGLExtensions() noexcept;
 	bool initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
 
 private:

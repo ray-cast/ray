@@ -140,38 +140,6 @@ SET(PHYSIC_FEATURES_LIST
 )
 SOURCE_GROUP("system\\physic" FILES ${PHYSIC_FEATURES_LIST})
 
-SET(SCRIGPU_SYSTEM_LIST
-    ${SOURCE_PATH}/script_binder.cpp
-    ${HEADER_PATH}/script_binder.h
-    ${SOURCE_PATH}/script_bind_actor.cpp
-    ${HEADER_PATH}/script_bind_actor.h
-    ${SOURCE_PATH}/script_bind_array.cpp
-    ${HEADER_PATH}/script_bind_array.h
-    ${SOURCE_PATH}/script_bind_display.cpp
-    ${HEADER_PATH}/script_bind_display.h
-    ${SOURCE_PATH}/script_bind_file.cpp
-    ${HEADER_PATH}/script_bind_file.h
-    ${SOURCE_PATH}/script_bind_filesystem.cpp
-    ${HEADER_PATH}/script_bind_filesystem.h
-    ${SOURCE_PATH}/script_bind_input.cpp
-    ${HEADER_PATH}/script_bind_input.h
-    ${SOURCE_PATH}/script_bind_math.cpp
-    ${HEADER_PATH}/script_bind_math.h
-    ${SOURCE_PATH}/script_bind_string.cpp
-    ${HEADER_PATH}/script_bind_string.h
-    ${SOURCE_PATH}/script_bind_timer.cpp
-    ${HEADER_PATH}/script_bind_timer.h
-    ${SOURCE_PATH}/script_system.cpp
-    ${HEADER_PATH}/script_system.h
-    ${SOURCE_PATH}/script_object.cpp
-    ${HEADER_PATH}/script_object.h
-    ${SOURCE_PATH}/script_features.cpp
-    ${HEADER_PATH}/script_features.h
-    ${SOURCE_PATH}/script_component.cpp
-    ${HEADER_PATH}/script_component.h
-)
-SOURCE_GROUP("system\\script" FILES ${SCRIGPU_SYSTEM_LIST})
-
 SET(RESOURCE_LIST
     ${HEADER_PATH}/res_manager.h
     ${SOURCE_PATH}/res_manager.cpp
@@ -187,15 +155,10 @@ ADD_LIBRARY(ray SHARED
     ${INPUT_FEATURES_LIST}
     ${PHYSIC_FEATURES_LIST}
     ${NETWORK_FEATURES_LIST}
-    ${SCRIGPU_SYSTEM_LIST}
     ${RESOURCE_LIST}
 )
 
 TARGET_LINK_LIBRARIES(ray libplatform libimage libinput libmodel)
-
-IF(BUILD_SCRIPT)
-    TARGET_LINK_LIBRARIES(ray angelscript pthread)
-ENDIF()
 
 IF(BUILD_PHYSIC)
     TARGET_LINK_LIBRARIES(ray libphysic)

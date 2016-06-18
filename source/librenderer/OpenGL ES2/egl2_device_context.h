@@ -101,12 +101,7 @@ public:
 	void present() noexcept;
 
 private:
-	bool checkSupport() noexcept;
 	bool initStateSystem() noexcept;
-	bool initTextureSupports() noexcept;
-	bool initTextureDimSupports() noexcept;
-	bool initVertexSupports() noexcept;
-	bool initShaderSupports() noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
@@ -147,11 +142,6 @@ private:
 	bool _needUpdateVertexBuffers;
 	bool _needEnableDebugControl;
 	bool _needDisableDebugControl;
-
-	std::vector<GraphicsFormat> _supportTextures;
-	std::vector<GraphicsTextureDim> _supportTextureDims;
-	std::vector<GraphicsFormat> _supportAttribute;
-	std::vector<GraphicsShaderStageFlagBits> _supportShaders;
 
 	GraphicsDeviceWeakPtr _device;
 };

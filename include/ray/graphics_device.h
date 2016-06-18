@@ -47,15 +47,15 @@ public:
 	GraphicsDeviceDesc() noexcept;
 	~GraphicsDeviceDesc() noexcept;
 
+	void setWindHandle(WindHandle hwnd) noexcept;
+	WindHandle getWindHandle() const noexcept;
+
 	void setDeviceType(GraphicsDeviceType type) noexcept;
 	GraphicsDeviceType getDeviceType() const noexcept;
 
-	void setPhysicalDevice(GraphicsPhysicalDevicePtr physicalDevice) noexcept;
-	GraphicsPhysicalDevicePtr getPhysicalDevice() const noexcept;
-
 private:
+	WindHandle _hwnd;
 	GraphicsDeviceType _deviceType;
-	GraphicsPhysicalDevicePtr _physicalDevice;
 };
 
 class EXPORT GraphicsDevice : public rtti::Interface
@@ -83,6 +83,7 @@ public:
 
 	virtual void copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept = 0;
 
+	virtual const GraphicsDeviceProperty& getGraphicsDeviceProperty() const noexcept = 0;
 	virtual const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept = 0;
 
 private:

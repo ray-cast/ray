@@ -39,9 +39,9 @@
 _NAME_BEGIN
 
 GraphicsSwapchainDesc::GraphicsSwapchainDesc() noexcept
-	: _format(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
-	, _depthStencilFormat(GraphicsFormat::GraphicsFormatX8_D24UNormPack32)
-	, _interval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
+	: _format(GraphicsFormat::GraphicsFormatUndefined)
+	, _depthStencilFormat(GraphicsFormat::GraphicsFormatUndefined)
+	, _interval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
 	, _imageNums(2)
 	, _window(0)
 	, _width(0)

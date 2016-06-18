@@ -44,7 +44,7 @@
 _NAME_BEGIN
 
 typedef std::shared_ptr<class GraphicsDevice> GraphicsDevicePtr;
-typedef std::shared_ptr<class GraphicsPhysicalDevice> GraphicsPhysicalDevicePtr;
+typedef std::shared_ptr<class GraphicsDeviceProperty> GraphicsDevicePropertyPtr;
 typedef std::shared_ptr<class GraphicsSwapchain> GraphicsSwapchainPtr;
 typedef std::shared_ptr<class GraphicsResource> GraphicsResourcePtr;
 typedef std::shared_ptr<class GraphicsContext> GraphicsContextPtr;
@@ -100,7 +100,7 @@ typedef std::shared_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescripto
 typedef std::shared_ptr<class GraphicsAttachment> GraphicsAttachmentPtr;
 
 typedef std::weak_ptr<class GraphicsDevice> GraphicsDeviceWeakPtr;
-typedef std::weak_ptr<class GraphicsPhysicalDevice> GraphicsPhysicalDeviceWeakPtr;
+typedef std::weak_ptr<class GraphicsDeviceProperty> GraphicsDevicePropertyWeakPtr;
 typedef std::weak_ptr<class GraphicsSwapchain> GraphicsSwapchainWeakPtr;
 typedef std::weak_ptr<class GraphicsResource> GraphicsResourceWeakPtr;
 typedef std::weak_ptr<class GraphicsContext> GraphicsContextWeakPtr;
@@ -151,7 +151,7 @@ typedef std::weak_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescriptorP
 typedef std::weak_ptr<class GraphicsAttachment> GraphicsAttachmentWeakPtr;
 
 typedef std::vector<GraphicsDevicePtr> GraphicsDevices;
-typedef std::vector<GraphicsPhysicalDevicePtr> GraphicsPhysicalDevices;
+typedef std::vector<GraphicsDevicePropertyPtr> GraphicsDevicePropertys;
 typedef std::vector<GraphicsShaderPtr> GraphicsShaders;
 typedef std::vector<GraphicsVariantPtr> GraphicsVariants;
 typedef std::vector<GraphicsFramebufferPtr> GraphicsFramebuffers;

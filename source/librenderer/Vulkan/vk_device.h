@@ -52,6 +52,7 @@ public:
 	void close() noexcept;
 
 	VkDevice getDevice() const noexcept;
+	VkPhysicalDevice getPhysicalDevice() const noexcept;
 
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
@@ -75,6 +76,7 @@ public:
 
 	void copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept;
 
+	const GraphicsDeviceProperty& getGraphicsDeviceProperty() const noexcept;
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
 private:
@@ -84,6 +86,7 @@ private:
 private:
 	VkDevice _device;
 	GraphicsDeviceDesc _deviceDesc;
+	VulkanDevicePropertyPtr _physicalDevice;
 };
 
 _NAME_END

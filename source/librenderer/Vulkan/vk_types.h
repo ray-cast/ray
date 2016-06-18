@@ -38,7 +38,7 @@
 #define _H_VK_TYPES_H_
 
 #include <ray/graphics_device.h>
-#include <ray/graphics_physical_device.h>
+#include <ray/graphics_device_property.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_context.h>
 #include <ray/graphics_data.h>
@@ -101,7 +101,7 @@ _NAME_BEGIN
 #endif
 
 typedef std::shared_ptr<class VulkanDevice> VulkanDevicePtr;
-typedef std::shared_ptr<class VulkanPhysicalDevice> VulkanPhysicalDevicePtr;
+typedef std::shared_ptr<class VulkanDeviceProperty> VulkanDevicePropertyPtr;
 typedef std::shared_ptr<class VulkanSurface> VulkanSurfacePtr;
 typedef std::shared_ptr<class VulkanSwapchain> VulkanSwapchainPtr;
 typedef std::shared_ptr<class VulkanDeviceContext> VulkanDeviceContextPtr;
@@ -123,7 +123,7 @@ typedef std::shared_ptr<class VulkanGraphicsUniform> VulkanGraphicsUniformPtr;
 typedef std::shared_ptr<class VulkanGraphicsUniformBlock> VulkanGraphicsUniformBlockPtr;
 
 typedef std::weak_ptr<class VulkanDevice> VulkanDeviceWeakPtr;
-typedef std::weak_ptr<class VulkanPhysicalDevice> VulkanPhysicalDeviceWeakPtr;
+typedef std::weak_ptr<class VulkanDeviceProperty> VulkanDevicePropertyWeakPtr;
 typedef std::weak_ptr<class VulkanSurface> VulkanSurfaceWeakPtr;
 typedef std::weak_ptr<class VulkanSwapchain> VulkanSwapchainWeakPtr;
 typedef std::weak_ptr<class VulkanDeviceContext> VulkanDeviceContextWeakPtr;

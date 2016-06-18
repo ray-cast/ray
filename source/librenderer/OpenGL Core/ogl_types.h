@@ -39,6 +39,7 @@
 
 #include <ray/graphics_system.h>
 #include <ray/graphics_device.h>
+#include <ray/graphics_device_property.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_context.h>
 #include <ray/graphics_data.h>
@@ -99,6 +100,7 @@ extern GLEWContext _glewctx;
 #endif
 
 typedef std::shared_ptr<class OGLDevice> OGLDevicePtr;
+typedef std::shared_ptr<class OGLDeviceProperty> OGLDevicePropertyPtr;
 typedef std::shared_ptr<class OGLSurface> OGLSurfacePtr;
 typedef std::shared_ptr<class OGLSwapchain> OGLSwapchainPtr;
 typedef std::shared_ptr<class OGLDeviceContext> OGLDeviceContextPtr;

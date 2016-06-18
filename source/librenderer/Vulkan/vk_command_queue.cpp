@@ -36,10 +36,10 @@
 // +----------------------------------------------------------------------
 #include "vk_command_queue.h"
 #include "vk_command_list.h"
-#include "vk_swapchain.h"
 #include "vk_device.h"
+#include "vk_device_property.h"
 #include "vk_semaphore.h"
-#include "vk_physical_device.h"
+#include "vk_swapchain.h"
 #include "vk_system.h"
 
 _NAME_BEGIN
@@ -59,7 +59,7 @@ bool
 VulkanCommandQueue::setup(const GraphicsCommandQueueDesc& commandQueueDesc) noexcept
 {
 	auto device = this->getDevice()->downcast<VulkanDevice>()->getDevice();
-	auto physicalDevice = this->getDevice()->downcast<VulkanDevice>()->getGraphicsDeviceDesc().getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice();
+	auto physicalDevice = this->getDevice()->downcast<VulkanDevice>()->getPhysicalDevice();
 
 	std::uint32_t queueCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, 0);

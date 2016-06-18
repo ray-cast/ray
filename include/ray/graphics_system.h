@@ -48,13 +48,13 @@ public:
 	GraphicsSystem() noexcept;
 	~GraphicsSystem() noexcept;
 
-	bool open(GraphicsDeviceType type, bool debugControl = false) noexcept;
+	bool open(bool debugControl = false) noexcept;
 	void close() noexcept;
 
 	void enableDebugControl(bool enable) noexcept;
 	bool enableDebugControl() const noexcept;
 
-	GraphicsDevicePtr createDevice() noexcept;
+	GraphicsDevicePtr createDevice(const GraphicsDeviceDesc& desc) noexcept;
 
 private:
 	GraphicsSystem(const GraphicsSystem&) = delete;
@@ -62,7 +62,6 @@ private:
 
 private:
 	bool _debugMode;
-	GraphicsDeviceType _deviceType;
 	GraphicsDeviceWeaks _devices;
 };
 

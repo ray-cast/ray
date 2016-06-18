@@ -77,9 +77,6 @@ WGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	if (!initPixelFormat(swapchainDesc))
 		return false;
 
-	if (!initWGLExtensions())
-		return false;
-
 	if (!initSwapchain(swapchainDesc))
 		return false;
 
@@ -324,34 +321,6 @@ WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexce
 		return false;
 	}
 
-	return true;
-}
-
-bool
-WGLSwapchain::initWGLExtensions() noexcept
-{
-	HGLRC context = ::wglCreateContext(_hdc);
-	if (!context)
-	{
-		GL_PLATFORM_LOG("wglCreateContext fail");
-		return false;
-	}
-
-	if (!::wglMakeCurrent(_hdc, context))
-	{
-		GL_PLATFORM_LOG("wglMakeCurrent fail");
-		::wglDeleteContext(context);
-		return false;
-	}
-
-	if (!::initWGLExtenstion())
-	{
-		GL_PLATFORM_LOG("initWGLExtenstion fail");
-		::wglDeleteContext(context);
-		return false;
-	}
-
-	::wglDeleteContext(context);
 	return true;
 }
 

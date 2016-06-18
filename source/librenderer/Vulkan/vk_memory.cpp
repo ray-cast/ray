@@ -36,8 +36,8 @@
 // +----------------------------------------------------------------------
 #include "vk_memory.h"
 #include "vk_device.h"
+#include "vk_device_property.h"
 #include "vk_system.h"
-#include "vk_physical_device.h"
 
 _NAME_BEGIN
 
@@ -63,7 +63,7 @@ VulkanMemory::setup(std::uint32_t streamSize, std::uint32_t typeBits, std::uint3
 	memInfo.memoryTypeIndex = 0;
 
 	VkPhysicalDeviceMemoryProperties memoryProperties;
-	vkGetPhysicalDeviceMemoryProperties(_device.lock()->getGraphicsDeviceDesc().getPhysicalDevice()->downcast<VulkanPhysicalDevice>()->getPhysicalDevice(), &memoryProperties);
+	vkGetPhysicalDeviceMemoryProperties(_device.lock()->getPhysicalDevice(), &memoryProperties);
 
 	if (!memory_type_from_properties(memoryProperties.memoryTypes, typeBits, mask, &memInfo.memoryTypeIndex))
 	{

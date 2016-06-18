@@ -89,19 +89,10 @@ public:
 	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 
-	bool isTextureSupport(GraphicsFormat format) noexcept;
-	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
-	bool isVertexSupport(GraphicsFormat format) noexcept;
-	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
-
 	void present() noexcept;
 
 private:
 	bool initCommandList() noexcept;
-	bool initTextureSupports() noexcept;
-	bool initTextureDimSupports() noexcept;
-	bool initVertexSupports() noexcept;
-	bool initShaderSupports() noexcept;
 
 private:
 	friend class VulkanDevice;
@@ -130,11 +121,6 @@ private:
 	GraphicsDescriptorSetPtr _descriptorSet;
 	GraphicsFramebufferPtr _framebuffer;
 	GraphicsInputLayoutPtr _inputLayout;
-
-	std::vector<GraphicsFormat> _supportTextures;
-	std::vector<GraphicsTextureDim> _supportTextureDims;
-	std::vector<GraphicsFormat> _supportAttribute;
-	std::vector<GraphicsShaderStageFlagBits> _supportShaders;
 
 	VulkanDeviceWeakPtr _device;
 };

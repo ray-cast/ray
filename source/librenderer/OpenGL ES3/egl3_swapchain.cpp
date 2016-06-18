@@ -142,19 +142,19 @@ EGL3Swapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 	switch (interval)
 	{
 	case GraphicsSwapInterval::GraphicsSwapIntervalFree:
-		if (eglSwapInterval(_display, 0) == GL_FALSE)
+		if (eglSwapInterval(_display, 0) == EGL_FALSE)
 			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Free) fail : %d", eglGetError());
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalVsync:
-		if (eglSwapInterval(_display, 1) == GL_FALSE)
+		if (eglSwapInterval(_display, 1) == EGL_FALSE)
 			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Vsync) fail : %d", eglGetError());
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalFps30:
-		if (eglSwapInterval(_display, 2) == GL_FALSE)
+		if (eglSwapInterval(_display, 2) == EGL_FALSE)
 			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps30) fail : %d", eglGetError());
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalFps15:
-		if (eglSwapInterval(_display, 3) == GL_FALSE)
+		if (eglSwapInterval(_display, 3) == EGL_FALSE)
 			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps15) fail : %d", eglGetError());
 		break;
 	default:

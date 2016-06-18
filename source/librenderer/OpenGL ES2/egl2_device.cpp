@@ -88,7 +88,10 @@ EGL2Device::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 	auto context = std::make_shared<EGL2DeviceContext>();
 	context->setDevice(this->downcast_pointer<EGL2Device>());
 	if (context->setup(desc))
+	{
+		_deviceContexts.push_back(context);
 		return context;
+	}
 	return false;
 }
 
@@ -220,6 +223,17 @@ EGL2Device::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcep
 	if (descriptorPool->setup(desc))
 		return descriptorPool;
 	return nullptr;
+}
+
+void
+EGL2Device::enableDebugControl(bool enable) noexcept
+{
+	for (auto& it : _deviceContexts)
+	{
+		auto deviceContext = it.lock();
+		if (deviceContext)
+			deviceContext->downcast<EGL2DeviceContext>()->enableDebugControl(enable);
+	}
 }
 
 void

@@ -96,12 +96,14 @@ public:
 	bool isVertexSupport(GraphicsFormat format) noexcept;
 	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
 
+	void enableDebugControl(bool enable) noexcept;
+	void startDebugControl() noexcept;
+	void stopDebugControl() noexcept;
+
 	void present() noexcept;
 
 private:
 	bool checkSupport() noexcept;
-
-	bool initDebugControl(const GraphicsContextDesc& desc) noexcept;
 	bool initTextureSupports() noexcept;
 	bool initTextureDimSupports() noexcept;
 	bool initVertexSupports() noexcept;
@@ -134,6 +136,8 @@ private:
 	bool _needUpdatePipeline;
 	bool _needUpdateDescriptor;
 	bool _needUpdateVertexBuffers;
+	bool _needEnableDebugControl;
+	bool _needDisableDebugControl;
 
 	GLfloat _clearDepth;
 	GLint   _clearStencil;

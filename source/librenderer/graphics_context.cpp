@@ -41,24 +41,11 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsContext, GraphicsChild, "GraphicsContext")
 
 GraphicsContextDesc::GraphicsContextDesc() noexcept
-	: _debugMode(false)
 {
 }
 
 GraphicsContextDesc::~GraphicsContextDesc() noexcept
 {
-}
-
-void
-GraphicsContextDesc::setDebugMode(bool mode) noexcept
-{
-	_debugMode = mode;
-}
-
-bool
-GraphicsContextDesc::getDebugMode() const noexcept
-{
-	return _debugMode;
 }
 
 void

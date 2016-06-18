@@ -115,12 +115,7 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	else
 	{
 		GLenum format = EGL2Types::asTextureFormat(textureDesc.getTexFormat());
-		if (format == GL_INVALID_ENUM)
-			return false;
-
 		GLenum type = EGL2Types::asTextureType(textureDesc.getTexFormat());
-		if (type == GL_INVALID_ENUM)
-			return false;
 
 		GLsizei offset = 0;
 		GLsizei pixelSize = EGL2Types::getFormatNum(format, type);

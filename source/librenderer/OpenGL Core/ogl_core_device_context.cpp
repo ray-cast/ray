@@ -56,9 +56,11 @@ OGLCoreDeviceContext::OGLCoreDeviceContext() noexcept
 	, _inputLayout(GL_NONE)
 	, _indexOffset(0)
 	, _indexType(GL_UNSIGNED_INT)
-	, _needUpdatePipeline(true)
-	, _needUpdateDescriptor(true)
-	, _needUpdateVertexBuffers(true)
+	, _needUpdatePipeline(false)
+	, _needUpdateDescriptor(false)
+	, _needUpdateVertexBuffers(false)
+	, _needEnableDebugControl(false)
+	, _needDisableDebugControl(false)
 {
 }
 
@@ -76,33 +78,31 @@ OGLCoreDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	_glcontext = desc.getSwapchain()->downcast_pointer<OGLSwapchain>();
 	_glcontext->setActive(true);
 
-	if (_glcontext->getActive())
-	{
-		if (!this->checkSupport())
-			return false;
+	if (!_glcontext->getActive())
+		return false;
 
-		if (!this->initDebugControl(desc))
-			return false;
+	if (!this->checkSupport())
+		return false;
 
-		if (!this->initStateSystem())
-			return false;
+	if (GraphicsSystem::instance()->enableDebugControl())
+		this->startDebugControl();
 
-		if (!this->initTextureSupports())
-			return false;
+	if (!this->initStateSystem())
+		return false;
 
-		if (!this->initTextureDimSupports())
-			return false;
+	if (!this->initTextureSupports())
+		return false;
 
-		if (!this->initVertexSupports())
-			return false;
+	if (!this->initTextureDimSupports())
+		return false;
 
-		if (!this->initShaderSupports())
-			return false;
+	if (!this->initVertexSupports())
+		return false;
 
-		return true;
-	}
+	if (!this->initShaderSupports())
+		return false;
 
-	return false;
+	return true;
 }
 
 void
@@ -131,6 +131,18 @@ OGLCoreDeviceContext::renderBegin() noexcept
 {
 	assert(_glcontext);
 	_glcontext->setActive(true);
+
+	if (_needEnableDebugControl)
+	{
+		this->startDebugControl();
+		_needEnableDebugControl = false;
+	}
+		
+	if (_needDisableDebugControl)
+	{
+		this->stopDebugControl();
+		_needDisableDebugControl = false;
+	}
 }
 
 void
@@ -1012,16 +1024,28 @@ OGLCoreDeviceContext::initShaderSupports() noexcept
 	return true;
 }
 
-bool
-OGLCoreDeviceContext::initDebugControl(const GraphicsContextDesc& desc) noexcept
+void 
+OGLCoreDeviceContext::enableDebugControl(bool enable) noexcept
 {
-	if (!desc.getDebugMode())
-		return true;
+	if (enable)
+	{
+		_needEnableDebugControl = true;
+		_needDisableDebugControl = false;
+	}
+	else
+	{
+		_needEnableDebugControl = false;
+		_needDisableDebugControl = true;
+	}
+}
 
+void
+OGLCoreDeviceContext::startDebugControl() noexcept
+{
 	if (!GLEW_KHR_debug)
 	{
 		GL_PLATFORM_LOG("Can't support GL_KHR_debug.");
-		return false;
+		return;
 	}
 
 	// 131184 memory info
@@ -1045,8 +1069,17 @@ OGLCoreDeviceContext::initDebugControl(const GraphicsContextDesc& desc) noexcept
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 	// disable ids
 	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
+}
 
-	return true;
+void
+OGLCoreDeviceContext::stopDebugControl() noexcept
+{
+	if (GLEW_KHR_debug)
+	{
+		glDisable(GL_DEBUG_OUTPUT);
+
+		glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	}
 }
 
 bool

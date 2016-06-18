@@ -136,12 +136,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		else
 		{
 			GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
-			if (format == GL_INVALID_ENUM)
-				return false;
-
 			GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
-			if (type == GL_INVALID_ENUM)
-				return false;
 
 			GLsizei offset = 0;
 			GLsizei pixelSize = OGLTypes::getFormatNum(format, type);
@@ -245,7 +240,7 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 	}
 
 	glBindTexture(_target, _texture);
-	glGetTextureSubImage(_texture, 0, x, y, 0, w, h, 0, format, type, mapSize, 0);
+	glReadPixels(x, y, w, h, format, type, 0);
 
 	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 	return *data ? true : false;

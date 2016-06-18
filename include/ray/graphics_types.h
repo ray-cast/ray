@@ -68,7 +68,6 @@ typedef std::shared_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetPtr;
 typedef std::shared_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutPtr;
 typedef std::shared_ptr<class GraphicsUniformSet> GraphicsUniformSetPtr;
 typedef std::shared_ptr<class GraphicsVariant> GraphicsVariantPtr;
-typedef std::shared_ptr<class GraphicsSystem> GraphicsSystemPtr;
 typedef std::shared_ptr<class GraphicsCommandPool> GraphicsCommandPoolPtr;
 typedef std::shared_ptr<class GraphicsCommandQueue> GraphicsCommandQueuePtr;
 typedef std::shared_ptr<class GraphicsCommandList> GraphicsCommandListPtr;
@@ -121,7 +120,6 @@ typedef std::weak_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutWeakPtr;
 typedef std::weak_ptr<class GraphicsUniformSet> GraphicsUniformWeakPtr;
 typedef std::weak_ptr<class GraphicsVariant> GraphicsVariantWeakPtr;
-typedef std::weak_ptr<class GraphicsSystem> GraphicsSystemWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandPool> GraphicsCommandPoolWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandQueue> GraphicsCommandQueueWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandList> GraphicsCommandPoolListWeakPtr;
@@ -152,6 +150,7 @@ typedef std::weak_ptr<class GraphicsVertexBinding> GraphicsVertexBindingWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponentWeakPtr;
 typedef std::weak_ptr<class GraphicsAttachment> GraphicsAttachmentWeakPtr;
 
+typedef std::vector<GraphicsDevicePtr> GraphicsDevices;
 typedef std::vector<GraphicsPhysicalDevicePtr> GraphicsPhysicalDevices;
 typedef std::vector<GraphicsShaderPtr> GraphicsShaders;
 typedef std::vector<GraphicsVariantPtr> GraphicsVariants;
@@ -193,6 +192,9 @@ typedef std::vector<GraphicsVertexBinding> GraphicsVertexBindings;
 typedef std::vector<GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
 typedef std::vector<GraphicsAttachment> GraphicsAttachments;
 typedef std::vector<class GraphicsColorBlend> GraphicsColorBlends;
+
+typedef std::vector<GraphicsDeviceWeakPtr> GraphicsDeviceWeaks;
+typedef std::vector<GraphicsContextWeakPtr> GraphicsContextWeaks;
 
 typedef void* WindHandle;
 

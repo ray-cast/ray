@@ -42,7 +42,7 @@ __ImplementSubInterface(GraphicsDevice, rtti::Interface, "GraphicsDevice")
 __ImplementSubInterface(GraphicsDevice2, GraphicsDevice, "GraphicsDevice2")
 
 GraphicsDeviceDesc::GraphicsDeviceDesc() noexcept
-	: _deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+	: _deviceType(GraphicsDeviceType::GraphicsDeviceTypeMaxEnum)
 {
 }
 

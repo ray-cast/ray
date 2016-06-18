@@ -58,7 +58,7 @@ public:
 
 	const GraphicsPhysicalDevices& getPhysicalDevices() const noexcept;
 
-	bool startDebugControl() noexcept;
+	void startDebugControl() noexcept;
 	void stopDebugControl() noexcept;
 
 	void print(const char* message, ...) noexcept;

@@ -93,12 +93,15 @@ public:
 	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
 	bool isVertexSupport(GraphicsFormat format) noexcept;
 	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
+	
+	void enableDebugControl(bool enable) noexcept;
+	void startDebugControl() noexcept;
+	void stopDebugControl() noexcept;
 
 	void present() noexcept;
 
 private:
 	bool checkSupport() noexcept;
-	bool initDebugControl(const GraphicsContextDesc& desc) noexcept;
 	bool initStateSystem() noexcept;
 	bool initTextureSupports() noexcept;
 	bool initTextureDimSupports() noexcept;
@@ -142,6 +145,8 @@ private:
 	bool _needUpdatePipeline;
 	bool _needUpdateDescriptor;
 	bool _needUpdateVertexBuffers;
+	bool _needEnableDebugControl;
+	bool _needDisableDebugControl;
 
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;

@@ -579,7 +579,6 @@ RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint
 		return false;
 
 	GraphicsContextDesc contextDesc;
-	contextDesc.setDebugMode(true);
 	contextDesc.setSwapchain(_graphicsSwapchain);
 	_graphicsContext = _pipelineDevice->createDeviceContext(contextDesc)->downcast_pointer<GraphicsContext>();
 	if (!_graphicsContext)

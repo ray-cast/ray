@@ -52,64 +52,164 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GraphicsSystem, rtti::Interface, "GraphicsSystem")
 __ImplementSingleton(GraphicsSystem)
 
 GraphicsSystem::GraphicsSystem() noexcept
+	: _deviceType(GraphicsDeviceType::GraphicsDeviceTypeMaxEnum)
+	, _debugMode(false)
 {
 }
 
 GraphicsSystem::~GraphicsSystem() noexcept
 {
+	this->close();
+}
+
+bool 
+GraphicsSystem::open(GraphicsDeviceType type, bool debugControl) noexcept
+{
+	assert(_deviceType == GraphicsDeviceType::GraphicsDeviceTypeMaxEnum);
+	assert(type >= GraphicsDeviceType::GraphicsDeviceTypeBeginRange && type <= GraphicsDeviceType::GraphicsDeviceTypeEndRange);
+
+	_debugMode = debugControl;
+
+	if (type == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+	{
+#if defined(_BUILD_VULKAN)
+		if (!VulkanSystem::instance()->open())
+			return false;
+#endif
+	}
+
+	_deviceType = type;
+
+	return true;
+}
+
+void 
+GraphicsSystem::close() noexcept
+{
+	if (_deviceType != GraphicsDeviceType::GraphicsDeviceTypeMaxEnum)
+	{
+		if (_debugMode)
+		{
+			this->enableDebugControl(false);
+			_debugMode = false;
+		}
+
+		for (auto& it : _devices)
+		{
+			it.reset();
+		}
+
+		if (_deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+		{
+			VulkanSystem::instance()->close();
+		}
+
+		_deviceType = GraphicsDeviceType::GraphicsDeviceTypeMaxEnum;
+	}
+}
+
+void
+GraphicsSystem::enableDebugControl(bool enable) noexcept
+{
+	assert(_deviceType >= GraphicsDeviceType::GraphicsDeviceTypeBeginRange && _deviceType <= GraphicsDeviceType::GraphicsDeviceTypeEndRange);
+
+	if (_deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+	{
+		if (enable)
+			VulkanSystem::instance()->startDebugControl();
+		else
+			VulkanSystem::instance()->stopDebugControl();		
+	}
+	else if (_deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+	{
+		for (auto& it : _devices)
+		{
+			auto device = it.lock();
+			if (device)
+			{
+				if (device->isInstanceOf<OGLDevice>())
+					device->downcast<OGLDevice>()->enableDebugControl(enable);
+				else if (device->isInstanceOf<EGL2Device>())
+					device->downcast<EGL2Device>()->enableDebugControl(enable);
+				else if (device->isInstanceOf<EGL3Device>())
+					device->downcast<EGL3Device>()->enableDebugControl(enable);
+			}
+		}
+	}
+
+	_debugMode = true;
+}
+
+bool
+GraphicsSystem::enableDebugControl() const noexcept
+{
+	return _debugMode;
 }
 
 GraphicsDevicePtr
-GraphicsSystem::createDevice(const GraphicsDeviceDesc& desc) noexcept
+GraphicsSystem::createDevice() noexcept
 {
-	auto deviceType = desc.getDeviceType();
+	assert(_deviceType >= GraphicsDeviceType::GraphicsDeviceTypeBeginRange && _deviceType <= GraphicsDeviceType::GraphicsDeviceTypeEndRange);
+
+	GraphicsDeviceDesc deviceDesc;
+	deviceDesc.setDeviceType(_deviceType);
 
 #if defined(_BUILD_OPENGL_CORE)
-	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
-		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+	if (_deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
+		_deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	{
 		auto device = std::make_shared<OGLDevice>();
-		if (device->setup(desc))
+		if (device->setup(deviceDesc))
+		{
+			_devices.push_back(device);
 			return device;
+		}
+
 		return nullptr;
 	}
 
 #endif
 #if defined(_BUILD_OPENGL_ES2)
-	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2)
+	if (_deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2)
 	{
 		auto device = std::make_shared<EGL2Device>();
-		if (device->setup(desc))
+		if (device->setup(deviceDesc))
+		{
+			_devices.push_back(device);
 			return device;
+		}
+
 		return nullptr;
 	}
 #endif
 #if defined(_BUILD_OPENGL_ES3)
-	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
-		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31)
+	if (_deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
+		_deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31)
 	{
 		auto device = std::make_shared<EGL3Device>();
-		if (device->setup(desc))
+		if (device->setup(deviceDesc))
+		{
+			_devices.push_back(device);
 			return device;
+		}
+
 		return nullptr;
 	}
 #endif
 #if defined(_BUILD_VULKAN)
-	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+	if (_deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
 	{
-		if (!VulkanSystem::instance()->open())
-			return nullptr;
-
-		GraphicsDeviceDesc deviceDesc = desc;
 		deviceDesc.setPhysicalDevice(VulkanSystem::instance()->getPhysicalDevices().front());
 
 		auto device = std::make_shared<VulkanDevice>();
 		if (device->setup(deviceDesc))
+		{
+			_devices.push_back(device);
 			return device;
+		}
 
 		return nullptr;
 	}

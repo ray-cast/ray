@@ -67,6 +67,8 @@ public:
 	GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
 	GraphicsDescriptorPoolPtr createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept;
 
+	void enableDebugControl(bool enable) noexcept;
+
 	void copyDescriptorSets(GraphicsDescriptorSetPtr& source, std::uint32_t descriptorCopyCount, const GraphicsDescriptorSetPtr descriptorCopies[]) noexcept;
 
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
@@ -77,6 +79,7 @@ private:
 
 private:
 	GraphicsDeviceDesc _deviceDesc;
+	GraphicsContextWeaks _deviceContexts;
 };
 
 _NAME_END

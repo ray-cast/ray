@@ -37,6 +37,7 @@
 #ifndef _H_EGL2_TYPES_H_
 #define _H_EGL2_TYPES_H_
 
+#include <ray/graphics_system.h>
 #include <ray/graphics_device.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_context.h>

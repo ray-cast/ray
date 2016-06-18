@@ -76,7 +76,7 @@ VulkanSystem::open() noexcept
 		if (!this->initPhysicalDevices())
 			return false;
 
-		_isOpened = VulkanSystem::instance()->startDebugControl();
+		_isOpened = true;
 	}
 
 	return true;
@@ -94,6 +94,8 @@ VulkanSystem::close() noexcept
 		assert(physicalDevice.unique());
 		physicalDevice.reset();
 	}
+
+	_physicalDevices.clear();
 
 	if (_instance != VK_NULL_HANDLE)
 	{
@@ -132,18 +134,18 @@ VulkanSystem::print(const char* message, ...) noexcept
 	va_end(va);
 }
 
-bool
+void
 VulkanSystem::startDebugControl() noexcept
 {
 	if (_debugHandle != VK_NULL_HANDLE)
-		return true;
+		return;
 
 	PFN_vkCreateDebugReportCallbackEXT fpCreateDebugReportCallbackEXT = nullptr;
 	fpCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(_instance, "vkCreateDebugReportCallbackEXT");
 	if (!fpCreateDebugReportCallbackEXT)
 	{
 		this->print("vkGetInstanceProcAddr('vkCreateDebugReportCallbackEXT') fail.");
-		return false;
+		return;
 	}
 
 	VkDebugReportCallbackCreateInfoEXT info;
@@ -160,13 +162,11 @@ VulkanSystem::startDebugControl() noexcept
 		break;
 	case VK_ERROR_OUT_OF_HOST_MEMORY:
 		this->print("CreateDebugReportCallback: out of host memory\n CreateDebugReportCallback Failure.");
-		return false;
+		return;
 	default:
 		this->print("CreateDebugReportCallback: unknown failure\n CreateDebugReportCallback Failure.");
-		return false;
+		return;
 	}
-
-	return true;
 }
 
 void

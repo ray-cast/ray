@@ -221,8 +221,8 @@ VulkanPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	ds.back.writeMask = stateDesc.getStencilBackWriteMask();
 
 	vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	vp.viewportCount = 2;
-	vp.scissorCount = 2;
+	vp.viewportCount = 1;
+	vp.scissorCount = 1;
 
 	ts.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 

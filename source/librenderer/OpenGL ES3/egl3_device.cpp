@@ -88,7 +88,11 @@ EGL3Device::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 	auto context = std::make_shared<EGL3DeviceContext>();
 	context->setDevice(this->downcast_pointer<EGL3Device>());
 	if (context->setup(desc))
+	{
+		_deviceContexts.push_back(context);
 		return context;
+	}
+
 	return false;
 }
 
@@ -220,6 +224,17 @@ EGL3Device::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcep
 	if (descriptorPool->setup(desc))
 		return descriptorPool;
 	return nullptr;
+}
+
+void
+EGL3Device::enableDebugControl(bool enable) noexcept
+{
+	for (auto& it : _deviceContexts)
+	{
+		auto deviceContext = it.lock();
+		if (deviceContext)
+			deviceContext->downcast<EGL3DeviceContext>()->enableDebugControl(enable);
+	}
 }
 
 void

@@ -47,14 +47,10 @@ public:
 	GraphicsContextDesc() noexcept;
 	~GraphicsContextDesc() noexcept;
 
-	void setDebugMode(bool mode) noexcept;
-	bool getDebugMode() const noexcept;
-
 	void setSwapchain(GraphicsSwapchainPtr swapchain) noexcept;
 	GraphicsSwapchainPtr getSwapchain() const noexcept;
 
 private:
-	bool _debugMode;
 	GraphicsSwapchainPtr _swapchain;
 };
 

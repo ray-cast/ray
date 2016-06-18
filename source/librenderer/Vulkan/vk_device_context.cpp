@@ -97,20 +97,27 @@ VulkanDeviceContext::close() noexcept
 void
 VulkanDeviceContext::renderBegin() noexcept
 {
-	auto swapchaic = _swapchain->downcast_pointer<VulkanSwapchain>();
-	swapchaic->acquireNextImage();
-
 	_commandList->renderBegin();
-	_commandList->setFramebuffer(swapchaic->getSwapchainFramebuffers()[swapchaic->getSwapchainImageIndex()]);
+
+	if (_swapchain)
+	{
+		auto swapchaic = _swapchain->downcast_pointer<VulkanSwapchain>();
+		swapchaic->acquireNextImage();
+
+		_commandList->setFramebuffer(swapchaic->getSwapchainFramebuffers()[swapchaic->getSwapchainImageIndex()]);
+	}
 }
 
 void
 VulkanDeviceContext::renderEnd() noexcept
 {
 	_commandList->renderEnd();
-
 	_commandQueue->executeCommandLists(&_commandList, 1);
-	_commandQueue->present(&_swapchain, 1);
+
+	if (_swapchain)
+		_commandQueue->present(&_swapchain, 1);
+
+	_commandQueue->wait();
 }
 
 void

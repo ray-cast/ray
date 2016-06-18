@@ -57,9 +57,11 @@ EGL3DeviceContext::EGL3DeviceContext() noexcept
 	, _inputLayout(GL_NONE)
 	, _indexOffset(0)
 	, _indexType(GL_UNSIGNED_INT)
-	, _needUpdatePipeline(true)
-	, _needUpdateDescriptor(true)
-	, _needUpdateVertexBuffers(true)
+	, _needUpdatePipeline(false)
+	, _needUpdateDescriptor(false)
+	, _needUpdateVertexBuffers(false)
+	, _needEnableDebugControl(false)
+	, _needDisableDebugControl(false)
 {
 }
 
@@ -77,33 +79,31 @@ EGL3DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	_glcontext = desc.getSwapchain()->downcast_pointer<EGL3Swapchain>();
 	_glcontext->setActive(true);
 
-	if (_glcontext->getActive())
-	{
-		if (!this->checkSupport())
-			return false;
+	if (!_glcontext->getActive())
+		return false;
 
-		if (!this->initDebugControl(desc))
-			return false;
+	if (!this->checkSupport())
+		return false;
 
-		if (!this->initStateSystem())
-			return false;
+	if (GraphicsSystem::instance()->enableDebugControl())
+		this->startDebugControl();
 
-		if (!this->initTextureSupports())
-			return false;
+	if (!this->initStateSystem())
+		return false;
 
-		if (!this->initTextureDimSupports())
-			return false;
+	if (!this->initTextureSupports())
+		return false;
 
-		if (!this->initVertexSupports())
-			return false;
+	if (!this->initTextureDimSupports())
+		return false;
 
-		if (!this->initShaderSupports())
-			return false;
+	if (!this->initVertexSupports())
+		return false;
 
-		return true;
-	}
+	if (!this->initShaderSupports())
+		return false;
 
-	return false;
+	return true;
 }
 
 void
@@ -126,6 +126,18 @@ EGL3DeviceContext::renderBegin() noexcept
 {
 	assert(_glcontext);
 	_glcontext->setActive(true);
+
+	if (_needEnableDebugControl)
+	{
+		this->startDebugControl();
+		_needEnableDebugControl = false;
+	}
+
+	if (_needDisableDebugControl)
+	{
+		this->stopDebugControl();
+		_needDisableDebugControl = false;
+	}
 }
 
 void
@@ -578,17 +590,14 @@ EGL3DeviceContext::checkSupport() noexcept
 	return true;
 }
 
-bool
-EGL3DeviceContext::initDebugControl(const GraphicsContextDesc& desc) noexcept
+void
+EGL3DeviceContext::startDebugControl() noexcept
 {
 #if !defined(__ANDROID__) && !defined(__AMD__)
-	if (!desc.getDebugMode())
-		return true;
-
 	if (!EGL3Types::isSupportFeature(EGL3Features::EGL3_KHR_debug))
 	{
 		GL_PLATFORM_LOG("Can't support GL_KHR_debug.");
-		return false;
+		return;
 	}
 
 	// 131184 memory info
@@ -608,10 +617,36 @@ EGL3DeviceContext::initDebugControl(const GraphicsContextDesc& desc) noexcept
 	GL_CHECK(glDebugMessageCallback(debugCallBack, this));
 	// enable all
 	GL_CHECK(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
+#endif
+}
 
-	return true;
-#else
-	return true;
+void 
+EGL3DeviceContext::enableDebugControl(bool enable) noexcept
+{
+	if (enable)
+	{
+		_needEnableDebugControl = true;
+		_needDisableDebugControl = false;
+	}
+	else
+	{
+		_needEnableDebugControl = false;
+		_needDisableDebugControl = true;
+	}
+}
+
+void
+EGL3DeviceContext::stopDebugControl() noexcept
+{
+#if !defined(__ANDROID__) && !defined(__AMD__)
+	if (!EGL3Types::isSupportFeature(EGL3Features::EGL3_KHR_debug))
+	{
+		GL_CHECK(glDisable(GL_DEBUG_OUTPUT));
+	}
+	else
+	{
+		GL_PLATFORM_LOG("Can't support GL_KHR_debug.");
+	}
 #endif
 }
 

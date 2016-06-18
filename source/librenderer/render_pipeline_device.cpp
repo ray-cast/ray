@@ -76,10 +76,10 @@ RenderPipelineDevice::~RenderPipelineDevice() noexcept
 bool
 RenderPipelineDevice::open(GraphicsDeviceType type) noexcept
 {
-	GraphicsDeviceDesc deviceDesc;
-	deviceDesc.setDeviceType(type);
+	if (!GraphicsSystem::instance()->open(type, true))
+		return false;
 
-	_graphicsDevice = GraphicsSystem::instance()->createDevice(deviceDesc);
+	_graphicsDevice = GraphicsSystem::instance()->createDevice();
 	if (!_graphicsDevice)
 		return false;
 

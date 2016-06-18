@@ -97,14 +97,20 @@ OGLDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 		auto context = std::make_shared<OGLDeviceContext>();
 		context->setDevice(this->downcast_pointer<OGLDevice>());
 		if (context->setup(desc))
+		{
+			_deviceContexts.push_back(context);
 			return context;
+		}
 	}
 	else
 	{
 		auto context = std::make_shared<OGLCoreDeviceContext>();
 		context->setDevice(this->downcast_pointer<OGLDevice>());
 		if (context->setup(desc))
+		{
+			_deviceContexts.push_back(context);
 			return context;
+		}
 	}
 
 	return false;
@@ -289,6 +295,29 @@ OGLDevice::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
 	if (descriptorPool->setup(desc))
 		return descriptorPool;
 	return nullptr;
+}
+
+void 
+OGLDevice::enableDebugControl(bool enable) noexcept
+{
+	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+	{
+		for (auto& it : _deviceContexts)
+		{
+			auto deviceContext = it.lock();
+			if (deviceContext)
+				deviceContext->downcast<OGLDeviceContext>()->enableDebugControl(enable);
+		}
+	}
+	else if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+	{
+		for (auto& it : _deviceContexts)
+		{
+			auto deviceContext = it.lock();
+			if (deviceContext)
+				deviceContext->downcast<OGLCoreDeviceContext>()->enableDebugControl(enable);
+		}
+	}
 }
 
 void

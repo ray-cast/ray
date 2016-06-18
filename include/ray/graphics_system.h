@@ -41,19 +41,29 @@
 
 _NAME_BEGIN
 
-class EXPORT GraphicsSystem final : public rtti::Interface
+class EXPORT GraphicsSystem final
 {
-	__DeclareSubClass(GraphicsSystem, rtti::Interface)
 	__DeclareSingleton(GraphicsSystem)
 public:
 	GraphicsSystem() noexcept;
 	~GraphicsSystem() noexcept;
 
-	GraphicsDevicePtr createDevice(const GraphicsDeviceDesc& desc) noexcept;
+	bool open(GraphicsDeviceType type, bool debugControl = false) noexcept;
+	void close() noexcept;
+
+	void enableDebugControl(bool enable) noexcept;
+	bool enableDebugControl() const noexcept;
+
+	GraphicsDevicePtr createDevice() noexcept;
 
 private:
 	GraphicsSystem(const GraphicsSystem&) = delete;
 	GraphicsSystem& operator=(const GraphicsSystem&) = delete;
+
+private:
+	bool _debugMode;
+	GraphicsDeviceType _deviceType;
+	GraphicsDeviceWeaks _devices;
 };
 
 _NAME_END

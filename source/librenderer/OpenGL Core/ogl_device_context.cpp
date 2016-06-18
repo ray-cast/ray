@@ -63,17 +63,12 @@ OGLDeviceContext::OGLDeviceContext() noexcept
 	, _indexType(GL_UNSIGNED_INT)
 	, _state(nullptr)
 	, _glcontext(nullptr)
-	, _needUpdatePipeline(true)
-	, _needUpdateDescriptor(true)
-	, _needUpdateVertexBuffers(true)
+	, _needUpdatePipeline(false)
+	, _needUpdateDescriptor(false)
+	, _needUpdateVertexBuffers(false)
+	, _needEnableDebugControl(false)
+	, _needDisableDebugControl(false)
 {
-	_vertexBuffers.resize(8);
-
-	std::memset(&_viewport, 0, sizeof(_viewport));
-	std::memset(&_scissor, 0, sizeof(_scissor));
-
-	GraphicsColorBlends blends(4);
-	_stateCaptured.setColorBlends(blends);
 }
 
 OGLDeviceContext::~OGLDeviceContext() noexcept
@@ -90,33 +85,31 @@ OGLDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	_glcontext = desc.getSwapchain()->downcast_pointer<OGLSwapchain>();
 	_glcontext->setActive(true);
 
-	if (_glcontext->getActive())
-	{
-		if (!this->checkSupport())
-			return false;
+	if (!_glcontext->getActive())
+		return false;
 
-		if (!this->initDebugControl(desc))
-			return false;
+	if (!this->checkSupport())
+		return false;
 
-		if (!this->initStateSystem())
-			return false;
+	if (GraphicsSystem::instance()->enableDebugControl())
+		this->startDebugControl();
 
-		if (!this->initTextureSupports())
-			return false;
+	if (!this->initStateSystem())
+		return false;
 
-		if (!this->initVertexSupports())
-			return false;
+	if (!this->initTextureSupports())
+		return false;
 
-		if (!this->initTextureDimSupports())
-			return false;
+	if (!this->initVertexSupports())
+		return false;
 
-		if (!this->initShaderSupports())
-			return false;
+	if (!this->initTextureDimSupports())
+		return false;
 
-		return true;
-	}
+	if (!this->initShaderSupports())
+		return false;
 
-	return false;
+	return true;
 }
 
 void
@@ -145,6 +138,18 @@ OGLDeviceContext::renderBegin() noexcept
 {
 	assert(_glcontext);
 	_glcontext->setActive(true);
+
+	if (_needEnableDebugControl)
+	{
+		this->startDebugControl();
+		_needEnableDebugControl = false;
+	}
+
+	if (_needDisableDebugControl)
+	{
+		this->stopDebugControl();
+		_needDisableDebugControl = false;
+	}
 }
 
 void
@@ -1003,13 +1008,25 @@ OGLDeviceContext::initShaderSupports() noexcept
 	return true;
 }
 
-bool
-OGLDeviceContext::initDebugControl(const GraphicsContextDesc& desc) noexcept
+void
+OGLDeviceContext::enableDebugControl(bool enable) noexcept
 {
-	if (!desc.getDebugMode())
-		return true;
+	if (enable)
+	{
+		_needEnableDebugControl = true;
+		_needDisableDebugControl = false;
+	}
+	else
+	{
+		_needEnableDebugControl = false;
+		_needDisableDebugControl = true;
+	}
+}
 
-	if (GLEW_ARB_debug_output)
+void
+OGLDeviceContext::startDebugControl() noexcept
+{
+	if (GLEW_KHR_debug)
 	{
 		// 131184 memory info
 		// 131185 memory allocation info
@@ -1032,11 +1049,17 @@ OGLDeviceContext::initDebugControl(const GraphicsContextDesc& desc) noexcept
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 		// disable ids
 		glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
-
-		return true;
 	}
+}
 
-	return false;
+void
+OGLDeviceContext::stopDebugControl() noexcept
+{
+	if (GLEW_KHR_debug)
+	{
+		glDisable(GL_DEBUG_OUTPUT);
+		glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	}
 }
 
 bool
@@ -1070,6 +1093,14 @@ OGLDeviceContext::initStateSystem() noexcept
 
 	glGenVertexArrays(1, &_globalVao);
 	glBindVertexArray(_globalVao);
+
+	_vertexBuffers.resize(8);
+
+	std::memset(&_viewport, 0, sizeof(_viewport));
+	std::memset(&_scissor, 0, sizeof(_scissor));
+
+	GraphicsColorBlends blends(4);
+	_stateCaptured.setColorBlends(blends);
 
 	return true;
 }

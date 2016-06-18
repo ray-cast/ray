@@ -57,14 +57,6 @@ _NAME_BEGIN
 
 __ImplementSubClass(VulkanDevice, GraphicsDevice2, "VulkanDevice")
 
-char* deviceValidationLayers[] = {
-	"VK_LAYER_LUNARG_threading",      "VK_LAYER_LUNARG_mem_tracker",
-	"VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_draw_state",
-	"VK_LAYER_LUNARG_param_checker",  "VK_LAYER_LUNARG_swapchain",
-	"VK_LAYER_LUNARG_device_limits",  "VK_LAYER_LUNARG_image",
-	"VK_LAYER_GOOGLE_unique_objects",
-};
-
 VulkanDevice::VulkanDevice() noexcept
 	: _device(VK_NULL_HANDLE)
 {

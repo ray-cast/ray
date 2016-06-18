@@ -136,13 +136,13 @@ OGLGraphicsUniform::getName() const noexcept
 	return _name;
 }
 
-void
+void 
 OGLGraphicsUniform::setSamplerName(const std::string& name) noexcept
 {
 	_samplerName = name;
 }
 
-const std::string&
+const std::string& 
 OGLGraphicsUniform::getSamplerName() const noexcept
 {
 	return _samplerName;
@@ -412,7 +412,6 @@ OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& cod
 		}
 
 		GL_PLATFORM_LOG(ostream.str().c_str());
-		return false;
 	}
 
 	return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
@@ -591,7 +590,7 @@ OGLProgram::_initActiveAttribute() noexcept
 				semantic = semantic.substr(0, semantic.rend()- it);
 				semanticIndex = std::atoi(semantic.substr(semantic.rend() - it).c_str());
 			}
-
+			
 			auto attrib = std::make_shared<OGLGraphicsAttribute>();
 			attrib->setSemantic(semantic);
 			attrib->setSemanticIndex(semanticIndex);
@@ -730,7 +729,7 @@ OGLProgram::_initActiveUniformBlock() noexcept
 	}
 }
 
-GraphicsFormat
+GraphicsFormat 
 OGLProgram::toGraphicsFormat(GLenum type) noexcept
 {
 	if (type == GL_BOOL)
@@ -775,10 +774,10 @@ OGLProgram::toGraphicsFormat(GLenum type) noexcept
 GraphicsUniformType
 OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 {
-	if (type == GL_SAMPLER_2D ||
+	if (type == GL_SAMPLER_2D || 
 		type == GL_SAMPLER_3D ||
-		type == GL_SAMPLER_2D_ARRAY ||
-		type == GL_SAMPLER_CUBE ||
+		type == GL_SAMPLER_2D_ARRAY || 
+		type == GL_SAMPLER_CUBE || 
 		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
 		return GraphicsUniformType::GraphicsUniformTypeSamplerImage;

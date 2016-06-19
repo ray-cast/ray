@@ -383,6 +383,114 @@ OGLCoreDeviceContext::getIndexBufferData() const noexcept
 }
 
 void
+OGLCoreDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
+{
+	assert(texture);
+	assert(texture->isInstanceOf<OGLCoreTexture>());
+
+	auto gltexture = texture->downcast<OGLCoreTexture>();
+	auto textureID = gltexture->getInstanceID();
+	glGenerateTextureMipmap(textureID);
+}
+
+void
+OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
+{
+	assert(_glcontext->getActive());
+
+	if (target)
+	{
+		auto framebuffer = target->downcast_pointer<OGLCoreFramebuffer>();
+		if (_framebuffer != framebuffer)
+		{
+			_framebuffer = framebuffer;
+			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
+
+			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
+			auto& colorAttachment = framebufferDesc.getTextures();
+
+			std::size_t viewportCount = std::max<std::size_t>(1, colorAttachment.size());
+			for (std::size_t i = 0; i < viewportCount; i++)
+			{
+				this->setViewport(i, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+			}
+		}
+	}
+	else
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+		_framebuffer = nullptr;
+	}
+}
+
+void
+OGLCoreDeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+{
+}
+
+void
+OGLCoreDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+{
+	assert(_glcontext->getActive());
+
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+	{
+		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+		{
+			glDepthMask(GL_TRUE);
+		}
+
+		GLfloat f = depth;
+		glClearBufferfv(GL_DEPTH, 0, &f);
+
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+		{
+			glDepthMask(GL_FALSE);
+		}
+	}
+
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
+	{
+		GLint s = stencil;
+		glClearBufferiv(GL_STENCIL, 0, &s);
+	}
+
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
+	{
+		glClearBufferfv(GL_COLOR, i, color.ptr());
+	}
+}
+
+void
+OGLCoreDeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept
+{
+	assert(_glcontext->getActive());
+	assert(_framebuffer);
+	_framebuffer->discard(attachments, i);
+}
+
+void
+OGLCoreDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+{
+	assert(src);
+	assert(src->isInstanceOf<OGLCoreFramebuffer>());
+	assert(!dest || (dest && dest->isInstanceOf<OGLCoreFramebuffer>()));
+	assert(_glcontext->getActive());
+
+	auto readFramebuffer = src->downcast_pointer<OGLCoreFramebuffer>()->getInstanceID();
+	auto drawFramebuffer = dest ? dest->downcast_pointer<OGLCoreFramebuffer>()->getInstanceID() : GL_NONE;
+
+	glBlitNamedFramebuffer(readFramebuffer, drawFramebuffer, v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+GraphicsFramebufferPtr
+OGLCoreDeviceContext::getFramebuffer() const noexcept
+{
+	return _framebuffer;
+}
+
+void
 OGLCoreDeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipeline);
@@ -430,7 +538,7 @@ OGLCoreDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numIns
 		_descriptorSet->apply(*_program);
 		_needUpdateDescriptor = false;
 	}
-	
+
 	if (numIndices > 0)
 	{
 		GLbyte* offsetIndices = (GLbyte*)_indexOffset;
@@ -442,115 +550,6 @@ OGLCoreDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numIns
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
 		glDrawElementsInstancedBaseVertexBaseInstance(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice, startInstances);
 	}
-}
-
-void
-OGLCoreDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
-{
-	assert(texture);
-	assert(texture->isInstanceOf<OGLCoreTexture>());
-
-	auto gltexture = texture->downcast<OGLCoreTexture>();
-	auto textureID = gltexture->getInstanceID();
-	glGenerateTextureMipmap(textureID);
-}
-
-void
-OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
-{
-	assert(_glcontext->getActive());
-
-	if (target)
-	{
-		auto framebuffer = target->downcast_pointer<OGLCoreFramebuffer>();
-		if (_framebuffer != framebuffer)
-		{
-			_framebuffer = framebuffer;
-			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
-
-			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
-			auto& colorAttachment = framebufferDesc.getTextures();
-
-			for (std::size_t i = 0; i < colorAttachment.size(); i++)
-			{
-				this->setViewport(i, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
-			}
-		}
-	}
-	else
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-		_framebuffer = nullptr;
-	}
-}
-
-void
-OGLCoreDeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-}
-
-void
-OGLCoreDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
-{
-	assert(src);
-	assert(src->isInstanceOf<OGLCoreFramebuffer>());
-	assert(!dest || (dest && dest->isInstanceOf<OGLCoreFramebuffer>()));
-	assert(_glcontext->getActive());
-
-	auto readFramebuffer = src->downcast_pointer<OGLCoreFramebuffer>()->getInstanceID();
-	auto drawFramebuffer = dest ? dest->downcast_pointer<OGLCoreFramebuffer>()->getInstanceID() : GL_NONE;
-
-	glBlitNamedFramebuffer(readFramebuffer, drawFramebuffer, v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-}
-
-GraphicsFramebufferPtr
-OGLCoreDeviceContext::getFramebuffer() const noexcept
-{
-	if (_framebuffer)
-		return _framebuffer->upcast_pointer<GraphicsFramebuffer>();
-	return nullptr;
-}
-
-void
-OGLCoreDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	assert(_glcontext->getActive());
-
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
-	{
-		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
-		{
-			glDepthMask(GL_TRUE);
-		}
-
-		GLfloat f = depth;
-		glClearBufferfv(GL_DEPTH, 0, &f);
-
-		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
-		{
-			glDepthMask(GL_FALSE);
-		}
-	}
-
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
-	{
-		GLint s = stencil;
-		glClearBufferiv(GL_STENCIL, 0, &s);
-	}
-
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
-	{
-		glClearBufferfv(GL_COLOR, i, color.ptr());
-	}
-}
-
-void
-OGLCoreDeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept
-{
-	assert(_glcontext->getActive());
-	assert(_framebuffer);
-	_framebuffer->discard(attachments, i);
 }
 
 void

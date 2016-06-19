@@ -389,68 +389,6 @@ OGLDeviceContext::getIndexBufferData() const noexcept
 }
 
 void 
-OGLDeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
-{
-	assert(_pipeline);
-	assert(_glcontext->getActive());
-	assert(startInstances == 0);
-
-	if (_needUpdatePipeline || _needUpdateVertexBuffers)
-	{
-		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
-		_needUpdatePipeline = false;
-		_needUpdateVertexBuffers = false;
-	}
-
-	if (_needUpdateDescriptor)
-	{
-		_descriptorSet->apply(*_program);
-		_needUpdateDescriptor = false;
-	}
-
-	if (numVertices > 0)
-	{
-		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawArraysInstanced(drawType, startVertice, numVertices, numInstances);
-	}
-}
-
-void 
-OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
-{
-	assert(_pipeline);
-	assert(_glcontext->getActive());
-	assert(_indexBuffer);
-	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
-	assert(startInstances == 0);
-
-	if (_needUpdatePipeline || _needUpdateVertexBuffers)
-	{
-		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
-		_needUpdatePipeline = false;
-		_needUpdateVertexBuffers = false;
-	}
-
-	if (_needUpdateDescriptor)
-	{
-		_descriptorSet->apply(*_program);
-		_needUpdateDescriptor = false;
-	}
-
-	if (numIndices > 0)
-	{
-		GLbyte* offsetIndices = nullptr;
-		if (_indexType == GL_UNSIGNED_INT)
-			offsetIndices = offsetIndices + _indexOffset + sizeof(std::uint32_t) * startIndice;
-		else
-			offsetIndices = offsetIndices + _indexOffset + sizeof(std::uint16_t) * startIndice;
-
-		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawElementsInstancedBaseVertex(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice);
-	}
-}
-
-void 
 OGLDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
 {
 	assert(texture);
@@ -480,7 +418,8 @@ OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			auto& framebufferDesc = framebuffer->getGraphicsFramebufferDesc();
 			auto& colorAttachment = framebufferDesc.getTextures();
 
-			for (std::size_t i = 0; i < colorAttachment.size(); i++)
+			std::size_t viewportCount = std::max<std::size_t>(1, colorAttachment.size());
+			for (std::size_t i = 0; i < viewportCount; i++)
 			{
 				this->setViewport(i, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 			}
@@ -561,9 +500,69 @@ OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1
 GraphicsFramebufferPtr
 OGLDeviceContext::getFramebuffer() const noexcept
 {
-	if (_framebuffer)
-		return _framebuffer->upcast_pointer<GraphicsFramebuffer>();
-	return nullptr;
+	return _framebuffer;
+}
+
+void
+OGLDeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
+{
+	assert(_pipeline);
+	assert(_glcontext->getActive());
+	assert(startInstances == 0);
+
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
+	{
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
+
+	if (_needUpdateDescriptor)
+	{
+		_descriptorSet->apply(*_program);
+		_needUpdateDescriptor = false;
+	}
+
+	if (numVertices > 0)
+	{
+		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
+		glDrawArraysInstanced(drawType, startVertice, numVertices, numInstances);
+	}
+}
+
+void
+OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
+{
+	assert(_pipeline);
+	assert(_glcontext->getActive());
+	assert(_indexBuffer);
+	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
+	assert(startInstances == 0);
+
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
+	{
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
+
+	if (_needUpdateDescriptor)
+	{
+		_descriptorSet->apply(*_program);
+		_needUpdateDescriptor = false;
+	}
+
+	if (numIndices > 0)
+	{
+		GLbyte* offsetIndices = nullptr;
+		if (_indexType == GL_UNSIGNED_INT)
+			offsetIndices = offsetIndices + _indexOffset + sizeof(std::uint32_t) * startIndice;
+		else
+			offsetIndices = offsetIndices + _indexOffset + sizeof(std::uint16_t) * startIndice;
+
+		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
+		glDrawElementsInstancedBaseVertex(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice);
+	}
 }
 
 void

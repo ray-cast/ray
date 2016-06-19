@@ -81,6 +81,8 @@ public:
 	void setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
+	void generateMipmap(const GraphicsTexturePtr& texture) noexcept;
+
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;

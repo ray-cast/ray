@@ -376,65 +376,18 @@ EGL3DeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-EGL3DeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
+EGL3DeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
 {
-	assert(_pipeline);
-	assert(_glcontext->getActive());
-	assert(startInstances == 0);
+	assert(texture);
+	assert(texture->isInstanceOf<EGL3Texture>());
 
-	if (_needUpdatePipeline || _needUpdateVertexBuffers)
-	{
-		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
-		_needUpdatePipeline = false;
-		_needUpdateVertexBuffers = false;
-	}
+	auto gltexture = texture->downcast<EGL3Texture>();
+	auto textureID = gltexture->getInstanceID();
+	auto textureTarget = gltexture->getTarget();
 
-	if (_needUpdateDescriptor)
-	{
-		_descriptorSet->apply(*_program);
-		_needUpdateDescriptor = false;
-	}
-
-	if (numVertices > 0)
-	{
-		GLenum drawType = EGL3Types::asVertexType(_stateCaptured.getPrimitiveType());
-		GL_CHECK(glDrawArraysInstanced(drawType, startVertice, numVertices, numInstances));
-	}
-}
-
-void
-EGL3DeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
-{
-	assert(_pipeline);
-	assert(_glcontext->getActive());
-	assert(_indexBuffer);
-	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
-	assert(startInstances == 0);
-
-	if (_needUpdatePipeline || _needUpdateVertexBuffers)
-	{
-		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
-		_needUpdatePipeline = false;
-		_needUpdateVertexBuffers = false;
-	}
-
-	if (_needUpdateDescriptor)
-	{
-		_descriptorSet->apply(*_program);
-		_needUpdateDescriptor = false;
-	}
-
-	if (numIndices > 0)
-	{
-		GLbyte* offsetIndices = (GLbyte*)nullptr + _indexOffset;
-		if (_indexType == GL_UNSIGNED_INT)
-			offsetIndices = offsetIndices + sizeof(std::uint32_t) * startIndice;
-		else
-			offsetIndices = offsetIndices + sizeof(std::uint16_t) * startIndice;
-
-		GLenum drawType = EGL3Types::asVertexType(_stateCaptured.getPrimitiveType());
-		GL_CHECK(glDrawElementsInstanced(drawType, numIndices, _indexType, offsetIndices, numInstances));
-	}
+	GL_CHECK(glActiveTexture(GL_TEXTURE0));
+	GL_CHECK(glBindTexture(textureTarget, textureID));
+	GL_CHECK(glGenerateMipmap(textureTarget));
 }
 
 void
@@ -448,7 +401,7 @@ EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 		if (_framebuffer != framebuffer)
 		{
 			_framebuffer = framebuffer;
-			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
+			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID()));
 
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
 			this->setViewport(0, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
@@ -456,7 +409,7 @@ EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 	}
 	else
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+		GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
 		_framebuffer = nullptr;
 	}
 }
@@ -531,6 +484,68 @@ void
 EGL3DeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept
 {
 	assert(_glcontext->getActive());
+}
+
+void
+EGL3DeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
+{
+	assert(_pipeline);
+	assert(_glcontext->getActive());
+	assert(startInstances == 0);
+
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
+	{
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
+
+	if (_needUpdateDescriptor)
+	{
+		_descriptorSet->apply(*_program);
+		_needUpdateDescriptor = false;
+	}
+
+	if (numVertices > 0)
+	{
+		GLenum drawType = EGL3Types::asVertexType(_stateCaptured.getPrimitiveType());
+		GL_CHECK(glDrawArraysInstanced(drawType, startVertice, numVertices, numInstances));
+	}
+}
+
+void
+EGL3DeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
+{
+	assert(_pipeline);
+	assert(_glcontext->getActive());
+	assert(_indexBuffer);
+	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
+	assert(startInstances == 0);
+
+	if (_needUpdatePipeline || _needUpdateVertexBuffers)
+	{
+		_pipeline->bindVertexBuffers(_vertexBuffers, _needUpdatePipeline);
+		_needUpdatePipeline = false;
+		_needUpdateVertexBuffers = false;
+	}
+
+	if (_needUpdateDescriptor)
+	{
+		_descriptorSet->apply(*_program);
+		_needUpdateDescriptor = false;
+	}
+
+	if (numIndices > 0)
+	{
+		GLbyte* offsetIndices = (GLbyte*)nullptr + _indexOffset;
+		if (_indexType == GL_UNSIGNED_INT)
+			offsetIndices = offsetIndices + sizeof(std::uint32_t) * startIndice;
+		else
+			offsetIndices = offsetIndices + sizeof(std::uint16_t) * startIndice;
+
+		GLenum drawType = EGL3Types::asVertexType(_stateCaptured.getPrimitiveType());
+		GL_CHECK(glDrawElementsInstanced(drawType, numIndices, _indexType, offsetIndices, numInstances));
+	}
 }
 
 void

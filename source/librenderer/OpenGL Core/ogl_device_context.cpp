@@ -450,6 +450,21 @@ OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstanc
 	}
 }
 
+void 
+OGLDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
+{
+	assert(texture);
+	assert(texture->isInstanceOf<OGLTexture>());
+
+	auto gltexture = texture->downcast<OGLTexture>();
+	auto textureID = gltexture->getInstanceID();
+	auto textureTarget = gltexture->getTarget();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(textureTarget, textureID);
+	glGenerateMipmap(textureTarget);
+}
+
 void
 OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {

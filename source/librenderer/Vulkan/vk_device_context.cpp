@@ -168,6 +168,11 @@ VulkanDeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexc
 	return _commandList->getStencilWriteMask(face);
 }
 
+void 
+VulkanDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
+{
+}
+
 void
 VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 {

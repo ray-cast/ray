@@ -171,7 +171,7 @@ OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum a
 			GL_PLATFORM_LOG("Invalid texture target");
 			return false;
 		}
-
+		
 		glNamedFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer - 1);
 	}
 	else

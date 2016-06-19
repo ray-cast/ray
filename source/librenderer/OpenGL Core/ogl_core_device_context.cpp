@@ -445,6 +445,17 @@ OGLCoreDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numIns
 }
 
 void
+OGLCoreDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
+{
+	assert(texture);
+	assert(texture->isInstanceOf<OGLCoreTexture>());
+
+	auto gltexture = texture->downcast<OGLCoreTexture>();
+	auto textureID = gltexture->getInstanceID();
+	glGenerateTextureMipmap(textureID);
+}
+
+void
 OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	assert(_glcontext->getActive());

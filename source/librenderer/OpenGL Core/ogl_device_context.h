@@ -118,8 +118,8 @@ private:
 	GLint   _clearStencil;
 	GLuint _globalVao;
 
-	Viewport _viewport;
-	Scissor _scissor;
+	std::vector<Viewport> _viewports;
+	std::vector<Scissor> _scissors;
 
 	GLenum  _indexType;
 	GLintptr _indexOffset;

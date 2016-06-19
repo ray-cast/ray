@@ -458,7 +458,12 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
 
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
-			this->setViewport(0, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+			auto& colorAttachment = framebufferDesc.getTextures();
+
+			for (std::size_t i = 0; i < colorAttachment.size(); i++)
+			{
+				this->setViewport(i, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+			}
 		}
 	}
 	else
@@ -711,12 +716,13 @@ OGLCoreDeviceContext::initStateSystem() noexcept
 		glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
 	}
 
-	_vertexBuffers.resize(8);
-	_viewports.resize(8, Viewport(0, 0, 0, 0));
-	_scissors.resize(8, Scissor(0, 0, 0, 0));
-	_clearColor.resize(4, float4(0.0f, 0.0f, 0.0f, 0.0f));
+	auto& deviceProperties = this->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties();
+	_vertexBuffers.resize(deviceProperties.maxVertexInputBindings);
+	_viewports.resize(deviceProperties.maxViewports, Viewport(0, 0, 0, 0));
+	_scissors.resize(deviceProperties.maxViewports, Scissor(0, 0, 0, 0));
+	_clearColor.resize(deviceProperties.maxFramebufferColorAttachments, float4(0.0f, 0.0f, 0.0f, 0.0f));
 
-	GraphicsColorBlends blends(4);
+	GraphicsColorBlends blends(deviceProperties.maxFramebufferColorAttachments);
 	_stateCaptured.setColorBlends(blends);
 
 	return true;

@@ -632,12 +632,12 @@ EGL3DeviceContext::initStateSystem() noexcept
 	GL_CHECK(glGenVertexArrays(1, &_inputLayout));
 	GL_CHECK(glBindVertexArray(_inputLayout));
 
-	_vertexBuffers.resize(8);
-	_clearColor.resize(4, float4(0.0f, 0.0f, 0.0f, 0.0f));
+	auto& deviceProperties = this->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties();
+	_vertexBuffers.resize(deviceProperties.maxVertexInputBindings);
+	_clearColor.resize(deviceProperties.maxFramebufferColorAttachments, float4(0.0f, 0.0f, 0.0f, 0.0f));
 
-	GraphicsColorBlends blends(4);
+	GraphicsColorBlends blends(deviceProperties.maxFramebufferColorAttachments);
 	_stateCaptured.setColorBlends(blends);
-
 	return true;
 }
 

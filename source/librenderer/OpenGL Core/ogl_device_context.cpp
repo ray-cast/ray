@@ -148,17 +148,17 @@ OGLDeviceContext::setViewport(std::uint32_t i, const Viewport& view) noexcept
 {
 	assert(_glcontext->getActive());
 
-	if (_viewport != view)
+	if (_viewports[i] != view)
 	{
-		glViewport(view.left, view.top, view.width, view.height);
-		_viewport = view;
+		glViewportIndexedf(i, view.left, view.top, view.width, view.height);
+		_viewports[i] = view;
 	}
 }
 
 const Viewport&
 OGLDeviceContext::getViewport(std::uint32_t i) const noexcept
 {
-	return _viewport;
+	return _viewports[i];
 }
 
 void
@@ -166,17 +166,17 @@ OGLDeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_glcontext->getActive());
 
-	if (_scissor != scissor)
+	if (_scissors[i] != scissor)
 	{
-		glScissor(scissor.left, scissor.top, scissor.width, scissor.height);
-		_scissor = scissor;
+		glScissorIndexed(i, scissor.left, scissor.top, scissor.width, scissor.height);
+		_scissors[i] = scissor;
 	}
 }
 
 const Scissor&
 OGLDeviceContext::getScissor(std::uint32_t i) const noexcept
 {
-	return _scissor;
+	return _scissors[i];
 }
 void
 OGLDeviceContext::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
@@ -463,7 +463,12 @@ OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->getInstanceID());
 
 			auto& framebufferDesc = framebuffer->getGraphicsFramebufferDesc();
-			this->setViewport(0, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+			auto& colorAttachment = framebufferDesc.getTextures();
+
+			for (std::size_t i = 0; i < colorAttachment.size(); i++)
+			{
+				this->setViewport(i, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+			}
 
 			_framebuffer = framebuffer;
 		}
@@ -698,13 +703,13 @@ OGLDeviceContext::initStateSystem() noexcept
 
 	glGenVertexArrays(1, &_globalVao);
 	glBindVertexArray(_globalVao);
+	
+	auto& deviceProperties = this->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties();
+	_vertexBuffers.resize(deviceProperties.maxVertexInputBindings);
+	_viewports.resize(deviceProperties.maxViewports, Viewport(0, 0, 0, 0));
+	_scissors.resize(deviceProperties.maxViewports, Scissor(0, 0, 0, 0));
 
-	_vertexBuffers.resize(8);
-
-	std::memset(&_viewport, 0, sizeof(_viewport));
-	std::memset(&_scissor, 0, sizeof(_scissor));
-
-	GraphicsColorBlends blends(4);
+	GraphicsColorBlends blends(deviceProperties.maxFramebufferColorAttachments);
 	_stateCaptured.setColorBlends(blends);
 
 	return true;

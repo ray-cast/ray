@@ -114,17 +114,17 @@ EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 		auto format = sharedDepthStnecilTarget->getGraphicsTextureDesc().getTexFormat();
 		if (EGL3Types::isDepthStencilFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_STENCIL_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_STENCIL_ATTACHMENT, framebufferDesc.getLayer()))
 				return false;
 		}
 		else if (EGL3Types::isDepthFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_ATTACHMENT, framebufferDesc.getLayer()))
 				return false;
 		}
 		else if (EGL3Types::isStencilFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_STENCIL_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_STENCIL_ATTACHMENT, framebufferDesc.getLayer()))
 				return false;
 		}
 		else
@@ -146,7 +146,7 @@ EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 
 	for (auto& texture : textures)
 	{
-		if (!this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0 + attachment))
+		if (!this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0 + attachment, framebufferDesc.getLayer()))
 			return false;
 
 		draw[attachment] = GL_COLOR_ATTACHMENT0 + attachment;
@@ -169,37 +169,6 @@ EGL3Framebuffer::close() noexcept
 		glDeleteFramebuffers(1, &_fbo);
 		_fbo = GL_NONE;
 	}
-}
-
-void
-EGL3Framebuffer::setLayer(GraphicsTexturePtr renderTexture, GLuint layer) noexcept
-{
-	auto texture = renderTexture->downcast<EGL3Texture>();
-	auto textureID = texture->getInstanceID();
-	auto& textureDesc = renderTexture->getGraphicsTextureDesc();
-	if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
-		textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
-		textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
-	{
-		return;
-	}
-
-	GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-	for (auto& it : _framebufferDesc.getTextures())
-	{
-		if (it == renderTexture)
-			break;
-		attachment++;
-	}
-
-	glFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer);
-}
-
-GLuint
-EGL3Framebuffer::getLayer() const noexcept
-{
-	return 0;
 }
 
 void
@@ -227,21 +196,31 @@ EGL3Framebuffer::getInstanceID() noexcept
 }
 
 bool
-EGL3Framebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
+EGL3Framebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attachment, GLuint layer) noexcept
 {
-	assert(texture);
+	assert(renderTexture);
 
-	auto gltexture = texture->downcast<EGL3Texture>();
-	auto handle = gltexture->getInstanceID();
-	auto target = gltexture->getTarget();
+	auto texture = renderTexture->downcast<EGL3Texture>();
+	auto textureID = texture->getInstanceID();
+	auto textureTarget = texture->getTarget();
+	auto& textureDesc = renderTexture->getGraphicsTextureDesc();
 
-	if (target != GL_TEXTURE_2D && target != GL_TEXTURE_2D_MULTISAMPLE && target != GL_TEXTURE_2D_ARRAY && target != GL_TEXTURE_CUBE_MAP)
+	if (layer > 1)
 	{
-		GL_PLATFORM_LOG("Invalid texture target");
-		return false;
+		if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
+			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
+			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
+		{
+			GL_PLATFORM_LOG("Invalid texture target");
+			return false;
+		}
+		
+		GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer - 1));
 	}
-
-	GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target, handle, 0));
+	else
+	{
+		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textureTarget, textureID, 0));
+	}
 
 	return EGL3Check::checkError();
 }

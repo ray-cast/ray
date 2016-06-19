@@ -89,7 +89,7 @@ EGL2DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 
 	if (!this->initStateSystem())
 		return false;
-
+	
 	return true;
 }
 
@@ -629,10 +629,11 @@ EGL2DeviceContext::initStateSystem() noexcept
 	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
 	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-	GraphicsColorBlends blends(1);
-	_stateCaptured.setColorBlends(blends);
+	auto& deviceProperties = this->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties();
+	_vertexBuffers.resize(deviceProperties.maxVertexInputBindings);
 
-	_vertexBuffers.resize(4);
+	GraphicsColorBlends blends(deviceProperties.maxFramebufferColorAttachments);
+	_stateCaptured.setColorBlends(blends);
 
 	return true;
 }

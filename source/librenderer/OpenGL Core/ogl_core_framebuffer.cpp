@@ -73,17 +73,17 @@ OGLCoreFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexce
 		auto format = sharedDepthStnecilTarget->getGraphicsTextureDesc().getTexFormat();
 		if (OGLTypes::isDepthStencilFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_STENCIL_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_STENCIL_ATTACHMENT, framebufferDesc.getLayer()))
 				return false;
 		}
 		else if (OGLTypes::isDepthFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_ATTACHMENT, framebufferDesc.getLayer()))
 				return false;
 		}
 		else if (OGLTypes::isStencilFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_STENCIL_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_STENCIL_ATTACHMENT, framebufferDesc.getLayer()))
 				return false;
 		}
 		else
@@ -105,7 +105,7 @@ OGLCoreFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexce
 
 	for (auto& texture : textures)
 	{
-		if (!this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0 + attachment))
+		if (!this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0 + attachment, framebufferDesc.getLayer()))
 			return false;
 
 		draw[attachment] = GL_COLOR_ATTACHMENT0 + attachment;
@@ -154,22 +154,30 @@ OGLCoreFramebuffer::getInstanceID() noexcept
 }
 
 bool
-OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
+OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attachment, GLint layer) noexcept
 {
-	assert(texture);
-	assert(texture->isInstanceOf<OGLCoreTexture>());
+	assert(renderTexture);
 
-	auto gltexture = texture->downcast<OGLCoreTexture>();
-	auto handle = gltexture->getInstanceID();
-	auto target = gltexture->getTarget();
+	auto texture = renderTexture->downcast<OGLCoreTexture>();
+	auto textureID = texture->getInstanceID();
+	auto& textureDesc = renderTexture->getGraphicsTextureDesc();
 
-	if (target != GL_TEXTURE_2D && target != GL_TEXTURE_2D_MULTISAMPLE && target != GL_TEXTURE_2D_ARRAY && target != GL_TEXTURE_CUBE_MAP)
+	if (layer > 1)
 	{
-		GL_PLATFORM_LOG("Invalid texture target");
-		return false;
-	}
+		if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
+			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
+			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
+		{
+			GL_PLATFORM_LOG("Invalid texture target");
+			return false;
+		}
 
-	glNamedFramebufferTexture(_fbo, attachment, handle, 0);
+		glNamedFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer - 1);
+	}
+	else
+	{
+		glNamedFramebufferTexture(_fbo, attachment, textureID, 0);
+	}
 
 	return OGLCheck::checkError();
 }

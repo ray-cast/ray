@@ -86,9 +86,11 @@ public:
 
 	void setWidth(std::uint32_t w) noexcept;
 	void setHeight(std::uint32_t h) noexcept;
+	void setLayer(std::uint32_t layer) noexcept;
 
 	std::uint32_t getWidth() const noexcept;
 	std::uint32_t getHeight() const noexcept;
+	std::uint32_t getLayer() const noexcept;
 
 	void attach(GraphicsTexturePtr texture) noexcept;
 	void detach(GraphicsTexturePtr texture) noexcept;
@@ -105,6 +107,7 @@ public:
 private:
 	std::uint32_t _width;
 	std::uint32_t _height;
+	std::uint32_t _layer;
 
 	GraphicsTextures _textures;
 	GraphicsTexturePtr _sharedDepthStencilTexture;

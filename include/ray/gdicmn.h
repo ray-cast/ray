@@ -487,16 +487,6 @@ public:
 		, maxDepth(_maxDepth)
 	{}
 
-	bool operator==(const _Myt& v) noexcept
-	{
-		return left == v.left && top == v.top && width == v.width && height == v.height;
-	}
-
-	bool operator!=(const _Myt& v) noexcept
-	{
-		return left != v.left || top != v.top || width != v.width || height != v.height;
-	}
-
 	size_type& operator[](int n) noexcept { return ((size_type*)this)[n]; }
 	const size_type& operator[](int n) const noexcept { return ((size_type*)this)[n]; }
 
@@ -510,6 +500,18 @@ public:
 		return &left;
 	}
 };
+
+template<typename T>
+bool operator==(const Viewportt<T>& v1, const Viewportt<T>& v2) noexcept
+{
+	return v1.left == v2.left && v1.top == v2.top && v1.width == v2.width && v1.height == v2.height && v1.minDepth == v2.minDepth && v1.maxDepth == v2.maxDepth;
+}
+
+template<typename T>
+bool operator!=(const Viewportt<T>& v1, const Viewportt<T>& v2) noexcept
+{
+	return !(v1 == v2);
+}
 
 template<typename T>
 class Scissort
@@ -537,16 +539,6 @@ public:
 		, height(_height)
 	{}
 
-	bool operator==(const _Myt& v) noexcept
-	{
-		return left == v.left && top == v.top && width == v.width && height == v.height;
-	}
-
-	bool operator!=(const _Myt& v) noexcept
-	{
-		return left != v.left || top != v.top || width != v.width || height != v.height;
-	}
-
 	size_type& operator[](int n) noexcept { return ((size_type*)this)[n]; }
 	const size_type& operator[](int n) const noexcept { return ((size_type*)this)[n]; }
 
@@ -560,6 +552,18 @@ public:
 		return &left;
 	}
 };
+
+template<typename T>
+bool operator==(const Scissort<T>& v1, const Scissort<T>& v2) noexcept
+{
+	return v1.left == v2.left && v1.top == v2.top && v1.width == v2.width && v1.height == v2.height;
+}
+
+template<typename T>
+bool operator!=(const Scissort<T>& v1, const Scissort<T>& v2) noexcept
+{
+	return !(v1 == v2);
+}
 
 _NAME_END
 

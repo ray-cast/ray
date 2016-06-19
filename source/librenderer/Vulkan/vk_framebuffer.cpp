@@ -252,7 +252,7 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 	framebuffer.pAttachments = imageViews.data();
 	framebuffer.width = framebufferDesc.getWidth();
 	framebuffer.height = framebufferDesc.getHeight();
-	framebuffer.layers = 1;
+	framebuffer.layers = framebufferDesc.getLayer();
 
 	if (vkCreateFramebuffer(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &framebuffer, nullptr, &_vkFramebuffer) != VK_SUCCESS)
 	{

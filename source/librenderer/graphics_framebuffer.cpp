@@ -126,6 +126,7 @@ GraphicsFramebufferLayoutDesc::getComponents() const noexcept
 GraphicsFramebufferDesc::GraphicsFramebufferDesc() noexcept
 	: _width(0)
 	, _height(0)
+	, _layer(1)
 {
 }
 
@@ -145,6 +146,12 @@ GraphicsFramebufferDesc::setHeight(std::uint32_t h) noexcept
 	_height = h;
 }
 
+void 
+GraphicsFramebufferDesc::setLayer(std::uint32_t layer) noexcept
+{
+	_layer = layer;
+}
+
 std::uint32_t
 GraphicsFramebufferDesc::getWidth() const noexcept
 {
@@ -155,6 +162,12 @@ std::uint32_t
 GraphicsFramebufferDesc::getHeight() const noexcept
 {
 	return _height;
+}
+
+std::uint32_t
+GraphicsFramebufferDesc::getLayer() const noexcept
+{
+	return _layer;
 }
 
 void

@@ -208,7 +208,7 @@ OGLCoreTexture::close() noexcept
 }
 
 bool
-OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
+OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
 {
 	assert(data);
 
@@ -239,8 +239,7 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 		_pboSize = mapSize;
 	}
 
-	glBindTexture(_target, _texture);
-	glReadPixels(x, y, w, h, format, type, 0);
+	glGetTextureSubImage(_texture, mipLevel, x, y, 0, w, h, 0, format, type, mapSize, 0);
 
 	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 	return *data ? true : false;

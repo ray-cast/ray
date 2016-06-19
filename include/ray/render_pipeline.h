@@ -79,6 +79,8 @@ public:
 	void setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept;
 	void setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 
+	void generateMipmap(GraphicsTexturePtr texture);
+
 	void drawCone(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
 	void drawSphere(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
 	void drawScreenQuad(const MaterialTech& tech) noexcept;

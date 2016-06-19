@@ -209,11 +209,11 @@ VulkanTexture::close() noexcept
 }
 
 bool
-VulkanTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
+VulkanTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
 {
 	VkImageSubresource subres;
 	subres.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subres.mipLevel = 0;
+	subres.mipLevel = mipLevel;
 	subres.arrayLayer = 0;
 
 	VkSubresourceLayout layout;

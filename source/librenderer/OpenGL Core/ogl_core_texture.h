@@ -51,7 +51,7 @@ public:
 	bool setup(const GraphicsTextureDesc& textureDesc) noexcept;
 	void close() noexcept;
 
-	bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept;
+	bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept;
 	void unmap() noexcept;
 
 	GLenum getTarget() const noexcept;

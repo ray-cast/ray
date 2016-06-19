@@ -233,7 +233,7 @@ EGL3Texture::getInstanceID() const noexcept
 }
 
 bool
-EGL3Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
+EGL3Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
 {
 	assert(data);
 
@@ -263,7 +263,7 @@ EGL3Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_
 
 	GL_CHECK(glBindTexture(_target, _texture));
 	GL_CHECK(glReadPixels(x, y, w, h, format, type, 0));
-
+	
 	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 	return *data != nullptr;
 }

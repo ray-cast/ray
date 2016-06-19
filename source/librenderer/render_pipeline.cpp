@@ -298,6 +298,13 @@ RenderPipeline::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, Graphi
 }
 
 void
+RenderPipeline::generateMipmap(GraphicsTexturePtr texture)
+{
+	assert(_graphicsContext);
+	_graphicsContext->generateMipmap(texture);
+}
+
+void
 RenderPipeline::drawSphere(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
 	this->setVertexBuffer(0, _sphereVbo, 0);

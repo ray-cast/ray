@@ -123,7 +123,7 @@ public:
 	GraphicsTexture() noexcept;
 	virtual ~GraphicsTexture() noexcept;
 
-	virtual bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept = 0;
+	virtual bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept = 0;
 	virtual void unmap() noexcept = 0;
 
 	virtual const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept = 0;

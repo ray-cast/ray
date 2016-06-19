@@ -223,7 +223,7 @@ OGLTexture::close() noexcept
 }
 
 bool
-OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, void** data) noexcept
+OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
 {
 	assert(data);
 
@@ -255,7 +255,7 @@ OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t
 	}
 
 	glBindTexture(_target, _texture);
-	glGetTexImage(_target, 0, format, type, 0);
+	glGetTexImage(_target, mipLevel, format, type, 0);
 
 	*data = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 	data += (y * _textureDesc.getWidth() * num) * x;

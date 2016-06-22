@@ -17,12 +17,13 @@
     <object>
         <attribute name="spot"/>
         <attribute position="0.78, 4, -2.795"/>
-        <attribute rotate="60,-45,0"/>
+        <attribute rotate="50,-45,0"/>
         <attribute active="true"/>
         <component class="Light">
             <attribute type="spot"/>
             <attribute color="1.0,0.85,0.43"/>
             <attribute range="30.0"/>
+            <attribute spot="5.0,30.0f"/>
             <attribute intensity="1.0"/>
             <attribute shadow="medium"/>
             <attribute soft="true"/>

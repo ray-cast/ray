@@ -1571,7 +1571,7 @@ void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration
                 }
                 case NAME_INSTANCE_ID:
                 {
-                    AddBuiltinInput(psContext, psDecl, "gl_InstanceID");
+                    AddBuiltinInput(psContext, psDecl, "uint(gl_InstanceID)");
                     break;
                 }
                 case NAME_IS_FRONT_FACE:

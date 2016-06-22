@@ -338,7 +338,7 @@ RenderPipeline::drawCone(const MaterialTech& tech, std::uint32_t layer) noexcept
 }
 
 void
-RenderPipeline::drawScreenQuad(const MaterialTech& tech) noexcept
+RenderPipeline::drawScreenQuad(const MaterialTech& tech, std::uint32_t instanceCount) noexcept
 {
 	this->setVertexBuffer(0, _screenQuadVbo, 0);
 	this->setIndexBuffer(_screenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
@@ -349,12 +349,12 @@ RenderPipeline::drawScreenQuad(const MaterialTech& tech) noexcept
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawIndexed(_numScreenQuadFace, 1, 0, 0, 0);
+		this->drawIndexed(_numScreenQuadFace, instanceCount, 0, 0, 0);
 	}
 }
 
 void
-RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer) noexcept
+RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer, std::uint32_t instanceCount) noexcept
 {
 	this->setVertexBuffer(0, _screenQuadVbo, 0);
 	this->setIndexBuffer(_screenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
@@ -365,7 +365,7 @@ RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t laye
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawIndexedLayer(_numScreenQuadFace, 1, 0, 0, 0, layer);
+		this->drawIndexedLayer(_numScreenQuadFace, instanceCount, 0, 0, 0, layer);
 	}
 }
 

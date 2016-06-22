@@ -432,11 +432,11 @@ DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, cons
 	_vplsDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
 
 	pipeline.setFramebuffer(_deferredLightingView);
-	pipeline.drawScreenQuad(*_mrsiiGatherIndirect);
+	pipeline.drawScreenQuad(*_mrsiiGatherIndirect, 256);
 }
 
 void
-DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept
+DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept
 {
 	_texSource->uniformTexture(src);
 	pipeline.setFramebuffer(dst);
@@ -444,7 +444,7 @@ DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsTe
 }
 
 void
-DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& viewport) noexcept
+DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& viewport) noexcept
 {
 	_texSource->uniformTexture(src);
 	pipeline.setFramebuffer(dst);

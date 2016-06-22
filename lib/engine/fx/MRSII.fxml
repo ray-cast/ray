@@ -56,7 +56,7 @@
                         if (nl > 0)
                         {
                             float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * spot * nl;
-                            lighting = float4(albedo * atten, specular);
+                            lighting = float4(albedo * atten * shininess, atten);
                         }
                     }
 
@@ -71,44 +71,53 @@
                 {
                     float4 viewPosition = mul(shadowView2EyeView, float4(P, 1));
                     viewPosition /= viewPosition.w;
-                    return float4(viewPosition.xyz, length(P));
+                    return float4(viewPosition.xyz, specular);
                 }
             }
 
-            float4 GatherIndirectPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
+           void GatherIndirectVS(
+                in float4 Position : POSITION,
+                in uint instanceID : SV_InstanceID,
+                out float4 oTexcoord0 : TEXCOORD0,
+                out float4 oTexcoord1 : TEXCOORD1,
+                out float3 oViewdir : TEXCOORD2,
+                out float4 oPosition : SV_Position)
             {
-                float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float index = instanceID.x / VPLCountGridOffsetDelta.x;
+                oPosition = Position;
+                oTexcoord0 = float4(PosToCoord(Position.xy), index, 0.0);
+                oTexcoord1 = float4(index, 0.5, index, 1.0);
+                oViewdir  = -mul(matProjectInverse, Position).xyz;
+            }
+
+            float4 GatherIndirectPS(
+                in float4 coord0 : TEXCOORD0,
+                in float4 coord1 : TEXCOORD1,
+                in float3 viewdir : TEXCOORD2) : SV_Target
+            {
+                float4 MRT0 = texMRT0.Sample(PointClamp, coord0.xy);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord0.xy);
 
                 float specular = restoreSpecular(MRT0);
                 float shininess = restoreShininess(MRT1);
 
-                float3 N = restoreNormal(MRT1);
                 float3 V = normalize(viewdir);
-                float3 P = restorePosition(texDepthLinear, coord, V);
+                float3 viewNormal = restoreNormal(MRT1);
+                float3 viewPosition = restorePosition(texDepthLinear, coord0.xy, V);
+
+                float4 lightColor = texVPLBuffer.Sample(PointClamp, coord0.zw);
+                float4 lightNormal = texVPLBuffer.Sample(PointClamp, coord1.xy);
+                float4 lightPosition = texVPLBuffer.Sample(PointClamp, coord1.zw);
+                float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
 
                 float4 lighting = 0;
 
-                float offset = 1.0f / VPLCountGridOffsetDelta.x;
-
-                for (float i = 0; i < 1.0; i+= offset)
+                float nl = max(0.0, dot(viewNormal, lightDirection));
+                if (nl > 0.0f)
                 {
-                    float4 flux = texVPLBuffer.Sample(PointClamp, float2(i, 0.0));
-                    float4 normal = texVPLBuffer.Sample(PointClamp, float2(i, 0.5));
-                    float4 position = texVPLBuffer.Sample(PointClamp, float2(i, 1.0));
-
-                    float3 L = P - position.xyz;
-                    L = normalize(L);
-
-                    float length = distance(P, position.xyz);
-
-                    float dstNL = max(0.0, dot(N, -L));
-                    float srcNL = max(0.0, dot(normal.xyz, L));
-
-                    float number = position.a * dstNL * srcNL;
-                    float denom = VPLCountGridOffsetDelta.x * length + position.a;
-
-                    lighting += flux * (number / denom);
+                    lighting.rgb = brdfLambert(viewNormal, lightDirection, lightColor.xyz);
+                    //lighting.a = brdfSpecular(viewNormal, lightDirection, V, shininess, specular);
+                    lighting *= attenuationTerm(viewPosition, lightPosition.xyz, float3(1, 0, 1));
                 }
 
                 return lighting;
@@ -130,7 +139,7 @@
     <technique name="GatherIndirect">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="PostProcessVS"/>
+            <state name="vertex" value="GatherIndirectVS"/>
             <state name="fragment" value="GatherIndirectPS"/>
 
             <state name="cullmode" value="none"/>

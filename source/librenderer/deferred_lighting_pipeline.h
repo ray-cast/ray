@@ -71,8 +71,8 @@ public:
 	void renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
 
-	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept;
-	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
+	void copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept;
+	void copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
 
 private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;

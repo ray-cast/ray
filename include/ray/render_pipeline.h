@@ -83,8 +83,8 @@ public:
 
 	void drawCone(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
 	void drawSphere(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
-	void drawScreenQuad(const MaterialTech& tech) noexcept;
-	void drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer) noexcept;
+	void drawScreenQuad(const MaterialTech& tech, std::uint32_t instanceCount = 1) noexcept;
+	void drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer, std::uint32_t instanceCount = 1) noexcept;
 	
 	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;

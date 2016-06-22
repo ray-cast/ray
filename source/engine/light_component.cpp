@@ -191,6 +191,7 @@ LightComponent::load(iarchive& reader) noexcept
 {
 	std::string lightType;
 	std::string shadowType;
+	float2 spot(5.0f, 40.0f);
 	float3 lightColor(1, 1, 1);
 	float lightIntensity = 1.0f;
 	float lightRange = 1.0f;
@@ -210,6 +211,7 @@ LightComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(subsurfaceScattering, "sss");
 	reader >> make_archive(enableGI, "GI");
 	reader >> make_archive(shadowBias, "bias");
+	reader >> make_archive(spot, "spot");
 
 	if (lightType == "sun")
 		this->setLightType(LightType::LightTypeSun);
@@ -238,6 +240,8 @@ LightComponent::load(iarchive& reader) noexcept
 	this->setLightColor(lightColor);
 	this->setRange(lightRange);
 	this->setIntensity(lightIntensity);
+	this->setSpotInnerCone(spot.x);
+	this->setSpotOuterCone(spot.y);
 	this->setShadowBias(shadowBias);
 	this->setSoftShadow(softShadow);
 	this->setSubsurfaceScattering(subsurfaceScattering);

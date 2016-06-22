@@ -94,7 +94,7 @@ public:
 	virtual void onRenderPost(const Camera& camera) noexcept;
 	virtual void onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTech* tech) noexcept;
 
-private:
+protected:
 	std::uint8_t _layer;
 
 	Bound _boundingBox;

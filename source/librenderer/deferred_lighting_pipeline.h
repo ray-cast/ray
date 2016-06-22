@@ -66,9 +66,10 @@ public:
 	void renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 	void renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderDirectionalLight(RenderPipeline& pipeline, const Light& light) noexcept;
-	void renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderPointLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
 
 	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept;
 	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
@@ -82,6 +83,9 @@ private:
 	bool setupDeferredRenderTextures(RenderPipeline& pipeline) noexcept;
 	bool setupDeferredRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
 
+	bool setupMRSIIMaterials(RenderPipeline& pipeline) noexcept;
+	bool setupMRSIITexture(RenderPipeline& pipeline) noexcept;
+
 	void destroySemantic() noexcept;
 	void destroyDeferredMaterials() noexcept;
 	void destroyDeferredTextures() noexcept;
@@ -94,7 +98,30 @@ private:
 	virtual void onRenderPost() noexcept;
 
 	virtual void onResolutionChange() noexcept;
+
 private:
+
+	MaterialPtr _mrsii;
+	MaterialTechPtr _mrsiiRsm2VPLsSpot;
+	MaterialTechPtr _mrsiiGatherIndirect;
+	MaterialParamPtr _vplsColorMap;
+	MaterialParamPtr _vplsNormalMap;
+	MaterialParamPtr _vplsDepthLinearMap;
+	MaterialParamPtr _vplsSpotOuterInner;
+	MaterialParamPtr _vplsLightAttenuation;
+	MaterialParamPtr _vplsCountGridOffsetDelta;
+	MaterialParamPtr _vplsLightView2EyeView;
+	MaterialParamPtr _siiMRT0;
+	MaterialParamPtr _siiMRT1;
+	MaterialParamPtr _siiVPLsBuffer;
+
+	GraphicsTexturePtr _mrsiiVPLsBufferMap;
+
+	GraphicsFramebufferPtr _mrsiiVPLsView;
+	GraphicsFramebufferLayoutPtr _mrsiiVPLsViewLayout;
+
+	std::uint32_t _deepGbufferMipBase;
+	std::uint32_t _deepGbufferMipCount;
 
 	MaterialPtr _deferredLighting;
 	MaterialTechPtr _deferredDepthOnly;

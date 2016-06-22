@@ -44,7 +44,7 @@
 _NAME_BEGIN
 
 SSAO::Setting::Setting() noexcept
-	: radius(10.0f)
+	: radius(20.0f)
 	, bias(0.002f)
 	, intensity(1)
 	, blur(true)

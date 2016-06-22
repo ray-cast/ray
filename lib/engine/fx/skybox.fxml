@@ -22,7 +22,7 @@
             }
         ]]>
     </shader>
-    <technique name="opaquespecific">
+    <technique name="OpaqueSpecific">
         <pass name="SkyboxRender">
             <state name="inputlayout" value="POS3F_T4F"/>
             <state name="vertex" value="SkyVS"/>

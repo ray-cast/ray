@@ -149,7 +149,7 @@ PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphi
 			auto light = it->downcast<Light>();
 			if (light->getShadowType() != LightShadowType::LightShadowTypeNone && light->getSubsurfaceScattering())
 			{
-				_SSSS->applyTranslucency(pipeline, source, _diffuseMap, _normalMap, *light, _depthLinearMap, light->getShadowMap());
+				_SSSS->applyTranslucency(pipeline, source, _diffuseMap, _normalMap, *light, _depthLinearMap, light->getDepthLinearTexture());
 			}
 
 			if (light->getSoftShadow())

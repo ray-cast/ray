@@ -59,9 +59,11 @@ public:
 	void setShadowType(LightShadowType shadowType) noexcept;
 	void setSoftShadow(bool enable) noexcept;
 	void setSubsurfaceScattering(bool enable) noexcept;
+	void setGlobalIllumination(bool enable) noexcept;
 
 	bool getSoftShadow() const noexcept;
 	bool getSubsurfaceScattering() const noexcept;
+	bool getGlobalIllumination() const noexcept;
 
 	float getRange() const noexcept;
 	float getIntensity() const noexcept;
@@ -75,18 +77,28 @@ public:
 	const float3& getLightColor() const noexcept;
 	const float3& getLightAttenuation() const noexcept;
 
-	void setShadowMap(GraphicsTexturePtr texture) noexcept;
-	const GraphicsTexturePtr& getShadowMap() const noexcept;
+	void setColorTexture(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getColorTexture() const noexcept;
 
-	CameraPtr getShadowCamera(std::uint8_t i = 0) const noexcept;
+	void setNormalTexture(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getNormalTexture() const noexcept;
+
+	void setDepthLinearTexture(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getDepthLinearTexture() const noexcept;
+
+	const Cameras& getCameras() const noexcept;
+	const CameraPtr& getCamera(std::size_t i) const noexcept;
 
 	RenderObjectPtr clone() const noexcept;
 
 private:
-	bool setupShadowMap(LightShadowType type) noexcept;
-	void destroyShadowMap() noexcept;
+	bool setupShadowMap() noexcept;
+	bool setupReflectiveShadowMap() noexcept;
 
-	void _updateShadow() noexcept;
+	void destroyShadowMap() noexcept;
+	void destroyReflectiveShadowMap() noexcept;
+
+	void _updateTransform() noexcept;
 	void _updateBoundingBox() noexcept;
 
 private:
@@ -117,14 +129,24 @@ private:
 	float2 _spotInnerCone;
 	float2 _spotOuterCone;
 
-	bool _shadowSoftEnable;
-	bool _subsurfaceScattering;
+	bool _enableSoftShadow;
+	bool _enableSubsurfaceScattering;
+	bool _enableGlobalIllumination;
+
 	float _shadowBias;
-	GraphicsFormat _shadowFormat;
-	CameraPtr _shadowCamera[6];
-	GraphicsTexturePtr _shadowMap;
-	GraphicsFramebufferPtr _shadowView;
-	GraphicsFramebufferLayoutPtr _shadowImageLayout;
+	Cameras _shadowCameras;
+
+	GraphicsTexturePtr _shadowDepthMap;
+	GraphicsTexturePtr _shadowColorMap;
+	GraphicsTexturePtr _shadowNormalMap;
+	GraphicsTexturePtr _shadowDepthLinearMap;
+
+	GraphicsFramebufferPtr _shadowRSMView;
+	GraphicsFramebufferPtr _shadowDepthLinearView;
+
+	GraphicsFramebufferLayoutPtr _shadowRSMViewLayout;
+	GraphicsFramebufferLayoutPtr _shadowDepthLinearViewLayout;
+
 	RenderSceneWeakPtr _renderScene;
 };
 

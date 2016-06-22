@@ -42,6 +42,7 @@
 _NAME_BEGIN
 
 DefaultRenderDataManager::DefaultRenderDataManager() noexcept
+	: _needUpdateVisiable(false)
 {
 }
 
@@ -64,49 +65,29 @@ DefaultRenderDataManager::getRenderData(RenderQueue queue) const noexcept
 	return _renderQueue[queue];
 }
 
-void
-DefaultRenderDataManager::assginVisiableLight(const Camera& camera) noexcept
+void 
+DefaultRenderDataManager::needUpdateVisiable(bool update) noexcept
 {
-	_visiable.clear();
-
-	_renderQueue[RenderQueue::RenderQueueShadow].clear();
-	_renderQueue[RenderQueue::RenderQueueLighting].clear();
-
-	auto scene = camera.getRenderScene();
-	scene->computVisiableLight(camera.getViewProject(), _visiable);
-
-	this->sortDistance(_visiable);
-
-	for (auto& it : _visiable.iter())
-	{
-		auto object = it.getOcclusionCullNode();
-		object->onAddRenderData(*this);
-	}
+	_needUpdateVisiable = update;
 }
 
-void
-DefaultRenderDataManager::assginVisiableObject(const Camera& camera) noexcept
+bool 
+DefaultRenderDataManager::needUpdateVisiable() const noexcept
 {
-	_visiable.clear();
-
-	auto scene = camera.getRenderScene();
-	scene->computVisiableObject(camera.getViewProject(), _visiable);
-
-	this->sortDistance(_visiable);
-
-	for (auto& it : _visiable.iter())
-	{
-		auto object = it.getOcclusionCullNode();
-		object->onAddRenderData(*this);
-	}
+	return _needUpdateVisiable;
 }
 
 void
 DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 {
+	if (!_needUpdateVisiable)
+		return;
+
+	_needUpdateVisiable = false;
+
 	_visiable.clear();
 
-	for (std::size_t i = 0; i < RenderQueue::RenderQueueEndRange; i++)
+	for (std::size_t i = RenderQueue::RenderQueueBeginRange; i < RenderQueue::RenderQueueEndRange; i++)
 		_renderQueue[i].clear();
 
 	auto cameraOrder = camera.getCameraOrder();

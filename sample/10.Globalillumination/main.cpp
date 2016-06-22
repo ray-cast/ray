@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,28 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_PIPELINE_MANAGER_BASE_H_
-#define _H_RENDER_PIPELINE_MANAGER_BASE_H_
+#include <ray/ray.h>
+#include <ray/ray_main.h>
 
-#include <ray/render_types.h>
-
-_NAME_BEGIN
-
-class RenderDataManager
+int main(int argc, const char* argv[])
 {
-public:
-	RenderDataManager() noexcept;
-	virtual ~RenderDataManager() noexcept;
+	rayInit(argv[0], "dlc:GI/scene/scene.map");
+	rayOpenWindow("Global illumination", 1376, 768);
+	
+	while (!rayIsQuitRequest())
+	{
+		rayUpdate();
+	}
 
-	virtual void addRenderData(RenderQueue queue, RenderObject* object) noexcept = 0;
-	virtual const RenderObjectRaws& getRenderData(RenderQueue queue) const noexcept = 0;
-
-	virtual void needUpdateVisiable(bool update) noexcept = 0;
-	virtual bool needUpdateVisiable() const noexcept = 0;
-
-	virtual void assginVisiable(const Camera& camera) noexcept = 0;
-};
-
-_NAME_END
-
-#endif
+	rayTerminate();
+	return 0;
+}

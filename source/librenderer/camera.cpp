@@ -55,12 +55,11 @@ Camera::Camera() noexcept
 	, _zfar(100.0f)
 	, _viewport(0.0f, 0.0f, 1.0f, 1.0f)
 	, _clearFlags(GraphicsClearFlagBits::GraphicsClearFlagAllBit)
-	, _clearColor(float4(0.1f, 0.1f, 0.1f, 1.0f))
+	, _clearColor(float4(0.0f, 0.0f, 0.0f, 1.0f))
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)
 	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
 	, _needUpdateViewProject(true)
-	, _needUpdateVisiable(true)
 {
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
 }
@@ -364,13 +363,25 @@ Camera::getSwapchain() const noexcept
 void
 Camera::setFramebuffer(GraphicsFramebufferPtr texture) noexcept
 {
-	_renderTexture = texture;
+	_framebuffer = texture;
 }
 
 const GraphicsFramebufferPtr&
 Camera::getFramebuffer() const noexcept
 {
-	return _renderTexture;
+	return _framebuffer;
+}
+
+void
+Camera::setDepthLinearFramebuffer(GraphicsFramebufferPtr texture) noexcept
+{
+	_depthLinearFramebuffer = texture;
+}
+
+const GraphicsFramebufferPtr&
+Camera::getDepthLinearFramebuffer() const noexcept
+{
+	return _depthLinearFramebuffer;
 }
 
 void
@@ -384,16 +395,6 @@ const RenderDataManagerPtr&
 Camera::getRenderDataManager() const noexcept
 {
 	return _dataManager;
-}
-
-void 
-Camera::assignVisiable() noexcept
-{
-	if (_needUpdateVisiable)
-	{
-		_dataManager->assginVisiable(*this);
-		_needUpdateVisiable = false;
-	}
 }
 
 void
@@ -458,7 +459,8 @@ Camera::onRenderPre(const Camera& camera) noexcept
 {
 	RenderObject::onRenderPre(camera);
 
-	_needUpdateVisiable = true;
+	if (_dataManager)
+		_dataManager->needUpdateVisiable(true);
 }
 
 void 

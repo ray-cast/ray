@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,28 +34,30 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_PIPELINE_MANAGER_BASE_H_
-#define _H_RENDER_PIPELINE_MANAGER_BASE_H_
+#ifndef _H_MODELLOADER_H_
+#define _H_MODELLOADER_H_
 
-#include <ray/render_types.h>
+#include <ray/game_component.h>
 
-_NAME_BEGIN
-
-class RenderDataManager
+class ModelComponent final : public ray::GameComponent
 {
+	__DeclareSubClass(ModelComponent, ray::GameComponent)
 public:
-	RenderDataManager() noexcept;
-	virtual ~RenderDataManager() noexcept;
+	ModelComponent() noexcept;
+	~ModelComponent() noexcept;
 
-	virtual void addRenderData(RenderQueue queue, RenderObject* object) noexcept = 0;
-	virtual const RenderObjectRaws& getRenderData(RenderQueue queue) const noexcept = 0;
+	ray::GameComponentPtr clone() const noexcept;
 
-	virtual void needUpdateVisiable(bool update) noexcept = 0;
-	virtual bool needUpdateVisiable() const noexcept = 0;
+private:
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
 
-	virtual void assginVisiable(const Camera& camera) noexcept = 0;
+private:
+	ModelComponent(const ModelComponent&) = delete;
+	ModelComponent& operator=(const ModelComponent&) = delete;
+
+private:
+	ray::GameObjects _objects;
 };
-
-_NAME_END
 
 #endif

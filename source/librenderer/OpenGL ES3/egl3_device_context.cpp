@@ -376,7 +376,7 @@ EGL3DeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-EGL3DeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
+EGL3DeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
 {
 	assert(texture);
 	assert(texture->isInstanceOf<EGL3Texture>());

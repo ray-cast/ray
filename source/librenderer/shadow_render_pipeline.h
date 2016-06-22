@@ -54,13 +54,16 @@ public:
 	void renderShadowMaps(const CameraPtr& camera) noexcept;
 
 private:
+	void renderShadowMap(const Light& light, RenderQueue queue) noexcept;
+
+private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
 
 	bool setupShadowMaterial(RenderPipeline& pipeline) noexcept;
-	bool setupShadowMap(RenderPipeline& pipeline) noexcept;
+	bool setupShadowMaps(RenderPipeline& pipeline) noexcept;
 
 	void destroyShadowMaterial() noexcept;
-	void destroyShadowMap() noexcept;
+	void destroyShadowMaps() noexcept;
 
 private:
 	virtual void onResolutionChangeBefore() noexcept;
@@ -75,33 +78,31 @@ private:
 	ShadowRenderPipeline& operator=(const ShadowRenderPipeline&) = delete;
 
 private:
-	MaterialPtr _softBlur;
-	MaterialTechPtr _softGenShadowMap;
-	MaterialTechPtr _softBlurOrthoShadowX;
-	MaterialTechPtr _softBlurPerspectiveFovShadowX;
-	MaterialTechPtr _softBlurShadowY;
-	MaterialTechPtr _softLogBlurShadowX;
-	MaterialTechPtr _softLogBlurShadowY;
-	MaterialTechPtr _softConvOrthoLinearDepth;
-	MaterialTechPtr _softConvPerspectiveFovLinearDepth;
-	MaterialParamPtr _softShadowSource;
-	MaterialParamPtr _softShadowSourceInv;
-	MaterialParamPtr _softClipConstant;
-	MaterialParamPtr _softOffset;
-	MaterialParamPtr _softWeight;
+	MaterialPtr _shadowRender;
+	MaterialTechPtr _shadowBlurOrthoShadowX;
+	MaterialTechPtr _shadowBlurPerspectiveFovShadowX;
+	MaterialTechPtr _shadowBlurShadowY;
+	MaterialTechPtr _shadowLogBlurShadowX;
+	MaterialTechPtr _shadowLogBlurShadowY;
+	MaterialTechPtr _shadowConvOrthoLinearDepth;
+	MaterialTechPtr _shadowConvPerspectiveFovLinearDepth;
+	MaterialParamPtr _shadowShadowSource;
+	MaterialParamPtr _shadowShadowSourceInv;
+	MaterialParamPtr _shadowClipConstant;
+	MaterialParamPtr _shadowOffset;
+	MaterialParamPtr _shadowWeight;
 
-	float _shadowMapSize[LightShadowType::LightShadowTypeRangeSize];
-	float _shadowMapSizeInv[LightShadowType::LightShadowTypeRangeSize];
+	GraphicsTextures _shadowShadowDepthMapTemps;
+	GraphicsTextures _shadowShadowDepthLinearMapTemps;
+	
+	GraphicsFramebuffers _shadowShadowDepthViewTemps;
+	GraphicsFramebuffers _shadowShadowDepthLinearViewTemps;
 
-	GraphicsTexturePtr _softShadowMapTemp[LightShadowType::LightShadowTypeRangeSize];
-	GraphicsTexturePtr _softShadowDepthMapTemp[LightShadowType::LightShadowTypeRangeSize];
-	GraphicsFramebufferPtr _softShadowViewTemp[LightShadowType::LightShadowTypeRangeSize];
-	GraphicsFramebufferPtr _softShadowDepthViewTemp[LightShadowType::LightShadowTypeRangeSize];
-	GraphicsFramebufferLayoutPtr _softShadowImageLayout;
-	GraphicsFramebufferLayoutPtr _softShadowDepthImageLayout;
+	GraphicsFramebufferLayoutPtr _shadowShadowDepthImageLayout;
+	GraphicsFramebufferLayoutPtr _shadowShadowDepthLinearImageLayout;
 
-	GraphicsFormat _shadowFormat;
 	GraphicsFormat _shadowDepthFormat;
+	GraphicsFormat _shadowDepthLinearFormat;
 
 	RenderPipelinePtr _pipeline;
 };

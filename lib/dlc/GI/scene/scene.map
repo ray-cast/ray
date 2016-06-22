@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="SSR"/>
+    <object>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,0,-10"/>
+        <attribute rotate="0,0,0"/>
+        <attribute active="true"/>
+        <component class="Camera">
+            <attribute aperture="45.0"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="100.0"/>
+        </component>
+        <component class="FirstPersonCamera">
+        </component>
+    </object>
+    <object>
+        <attribute name="spot"/>
+        <attribute position="0.78, 4, -2.795"/>
+        <attribute rotate="60,-45,0"/>
+        <attribute active="true"/>
+        <component class="Light">
+            <attribute type="spot"/>
+            <attribute color="1.0,0.85,0.43"/>
+            <attribute range="30.0"/>
+            <attribute intensity="1.0"/>
+            <attribute shadow="medium"/>
+            <attribute soft="true"/>
+            <attribute GI="true"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="model_loader"/>
+        <attribute active="true"/>
+        <component class="Model">
+        </component>
+    </object>
+</scene>

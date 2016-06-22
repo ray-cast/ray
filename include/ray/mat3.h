@@ -142,12 +142,12 @@ public:
 
 	T& operator[] (std::size_t n) noexcept
 	{
-		return *(&a1)[n];
+		return *((&a1) + n);
 	}
 
 	const T& operator[] (std::size_t n) const noexcept
 	{
-		return *(&a1)[n];
+		return *((&a1) + n);
 	}
 
 	explicit operator T*() noexcept

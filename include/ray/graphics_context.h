@@ -91,7 +91,7 @@ public:
 	virtual void setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept = 0;
 	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
 
-	virtual void generateMipmap(const GraphicsTexturePtr& texture) noexcept = 0;
+	virtual void generateMipmap(GraphicsTexturePtr texture) noexcept = 0;
 
 	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
 	virtual void setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;

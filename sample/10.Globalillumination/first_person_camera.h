@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,28 +34,41 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_PIPELINE_MANAGER_BASE_H_
-#define _H_RENDER_PIPELINE_MANAGER_BASE_H_
+#ifndef _H_FIRST_PERSON_CAMERA_H_
+#define _H_FIRST_PERSON_CAMERA_H_
 
-#include <ray/render_types.h>
+#include <ray/game_component.h>
 
-_NAME_BEGIN
-
-class RenderDataManager
+class FirstPersonCameraComponent : public ray::GameComponent
 {
+	__DeclareSubClass(FirstPersonCameraComponent, ray::GameComponent)
 public:
-	RenderDataManager() noexcept;
-	virtual ~RenderDataManager() noexcept;
+	FirstPersonCameraComponent() noexcept;
+	~FirstPersonCameraComponent() noexcept;
 
-	virtual void addRenderData(RenderQueue queue, RenderObject* object) noexcept = 0;
-	virtual const RenderObjectRaws& getRenderData(RenderQueue queue) const noexcept = 0;
+private:
 
-	virtual void needUpdateVisiable(bool update) noexcept = 0;
-	virtual bool needUpdateVisiable() const noexcept = 0;
+	void onActivate() noexcept;
+	void onDectivate() noexcept;
 
-	virtual void assginVisiable(const Camera& camera) noexcept = 0;
+	void onFrame() noexcept;
+
+	void yawCamera(float speed) noexcept;
+	void moveCamera(float speed) noexcept;
+	void rotateCamera(float angle, const ray::float3& axis) noexcept;
+	void rotateCamera(float axisX, float axisY) noexcept;
+
+	ray::GameComponentPtr clone() const noexcept;
+
+private:
+
+	float _speed;
+	float _gravity;
+	float _maxVelocityChange;
+	float _jumpHeight;
+
+	float _sensitivityX;
+	float _sensitivityY;
 };
-
-_NAME_END
 
 #endif

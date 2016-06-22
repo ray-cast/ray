@@ -86,23 +86,25 @@ public:
 	GraphicsClearFlags getClearFlags() const noexcept;
 
 	void setCameraType(CameraType type) noexcept;
-	void setCameraOrder(CameraOrder order) noexcept;
-	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
-
 	CameraType getCameraType() const noexcept;
+
+	void setCameraOrder(CameraOrder order) noexcept;
 	CameraOrder getCameraOrder() const noexcept;
+
+	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
 
 	void setSwapchain(GraphicsSwapchainPtr swapchin) noexcept;
-	void setFramebuffer(GraphicsFramebufferPtr texture) noexcept;
-
 	const GraphicsSwapchainPtr& getSwapchain() const noexcept;
+
+	void setFramebuffer(GraphicsFramebufferPtr texture) noexcept;
 	const GraphicsFramebufferPtr& getFramebuffer() const noexcept;
+
+	void setDepthLinearFramebuffer(GraphicsFramebufferPtr texture) noexcept;
+	const GraphicsFramebufferPtr& getDepthLinearFramebuffer() const noexcept;
 
 	void setRenderDataManager(RenderDataManagerPtr manager) noexcept;
 	const RenderDataManagerPtr& getRenderDataManager() const noexcept;
-
-	void assignVisiable() noexcept;
 
 private:
 	void _updateOrtho() const noexcept;
@@ -138,12 +140,12 @@ private:
 	CameraRenderFlags _cameraRenderFlags;
 
 	GraphicsSwapchainPtr _swapchain;
-	GraphicsFramebufferPtr _renderTexture;
+	GraphicsFramebufferPtr _framebuffer;
+	GraphicsFramebufferPtr _depthLinearFramebuffer;
 
 	RenderDataManagerPtr _dataManager;
 
 	mutable bool _needUpdateViewProject;
-	mutable bool _needUpdateVisiable;
 
 	mutable float4 _clipConstant;
 

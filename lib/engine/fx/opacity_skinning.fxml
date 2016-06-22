@@ -120,7 +120,7 @@
             }
         ]]>
     </shader>
-    <technique name="shadow">
+    <technique name="Shadow">
         <pass name="p0">
             <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
             <state name="vertex" value="DepthVS"/>
@@ -131,7 +131,7 @@
             <state name="stencilTwoPass" value="replace"/>
         </pass>
     </technique>
-    <technique name="opaque">
+    <technique name="Opaque">
         <pass name="p0">
             <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
             <state name="vertex" value="OpaqueVS"/>

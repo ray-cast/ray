@@ -76,6 +76,9 @@ public:
 	void setSubsurfaceScattering(bool enable) noexcept;
 	bool getSubsurfaceScattering() const noexcept;
 
+	void setGlobalIllumination(bool enable) noexcept;
+	bool getGlobalIllumination() const noexcept;
+
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 

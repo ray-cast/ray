@@ -226,8 +226,8 @@
             {
                 float2 texcoord = coord.xy / coord.z;
 
-                float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
 
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);

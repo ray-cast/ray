@@ -51,15 +51,17 @@ public:
 	void addRenderData(RenderQueue queue, RenderObject* object) noexcept;
 	const RenderObjectRaws& getRenderData(RenderQueue queue) const noexcept;
 
+	void needUpdateVisiable(bool update) noexcept;
+	bool needUpdateVisiable() const noexcept;
+
 	void assginVisiable(const Camera& camera) noexcept;
-	void assginVisiableLight(const Camera& camera) noexcept;
-	void assginVisiableObject(const Camera& camera) noexcept;
 
 private:
 	void sortMaterial(RenderObjectRaws& list) noexcept;
 	void sortDistance(OcclusionCullList& list) noexcept;
 
 private:
+	bool _needUpdateVisiable;
 	OcclusionCullList _visiable;
 	RenderObjectRaws _renderQueue[RenderQueue::RenderQueueRangeSize];
 };

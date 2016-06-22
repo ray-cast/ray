@@ -63,7 +63,7 @@
             }
         ]]>
     </shader>
-    <technique name="opaqueshading">
+    <technique name="OpaqueShading">
         <pass name="SkyLighting">
             <state name="inputlayout" value="POS3F"/>
 
@@ -86,7 +86,7 @@
             <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
-    <technique name="transparentshading">
+    <technique name="TransparentShading">
         <pass name="SkyLighting">
             <state name="inputlayout" value="POS3F"/>
 

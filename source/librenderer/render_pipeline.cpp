@@ -181,6 +181,7 @@ RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const no
 GraphicsDeviceType 
 RenderPipeline::getDeviceType() const noexcept
 {
+	assert(_pipelineDevice);
 	return _pipelineDevice->getDeviceType();
 }
 
@@ -216,8 +217,8 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProject)->uniform4fmat(adjustProject * camera->getViewProject());
 	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProjectInverse)->uniform4fmat(camera->getViewProjectInverse());
 
-	camera->assignVisiable();
 	_dataManager = camera->getRenderDataManager();
+	_dataManager->assginVisiable(*camera);
 
 	_camera = camera;
 }

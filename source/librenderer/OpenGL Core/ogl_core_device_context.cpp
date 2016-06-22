@@ -383,7 +383,7 @@ OGLCoreDeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-OGLCoreDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
+OGLCoreDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
 {
 	assert(texture);
 	assert(texture->isInstanceOf<OGLCoreTexture>());

@@ -50,6 +50,7 @@
 
             void DepthVS(
                 in float4 Position : POSITION,
+                in float4 Normal : NORMAL,
                 out float4 oPosition : SV_Position)
             {
                 oPosition = mul(matModelViewProject, Position);
@@ -57,6 +58,32 @@
 
             void DepthPS()
             {
+            }
+
+            void ReflectiveShadowVS(
+                in float4 Position : POSITION,
+                in float4 TangentQuat : TANGENT,
+                in float2 Texcoord : TEXCOORD,
+                out float3 oNormal : TEXCOORD0,
+                out float2 oTexcoord : TEXCOORD1,
+                out float4 oPosition : SV_Position)
+            {
+                oTexcoord = Texcoord;
+                oNormal = mul(GetRight(TangentQuat * 2 - 1), (float3x3)matModelViewInverse);
+                oPosition = mul(matModelViewProject, Position);
+            }
+
+            void ReflectiveShadowPS(
+                in float3 normal : TEXCOORD0,
+                in float2 coord : TEXCOORD1,
+                out float4 fragData0 : SV_Target0,
+                out float4 fragData1 : SV_Target1)
+            {
+                float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : diffuse.rgb;
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord) : float2(specular, shininess);
+
+                fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
+                fragData1 = StoreGBufferRT1(normal, brdfParm.g);
             }
 
             void OpaqueVS(
@@ -87,7 +114,7 @@
                 out float4 fragData1 : SV_Target1)
             {
                 float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse.rgb;
-                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
+                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : normalize(iNormal);
                 float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord) : float2(specular, shininess);
 
                 fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
@@ -95,18 +122,25 @@
             }
         ]]>
     </shader>
-    <technique name="shadow">
+    <technique name="Shadow">
         <pass name="p0">
             <state name="inputlayout" value="POS3F_T4F_UV2F"/>
             <state name="vertex" value="DepthVS"/>
             <state name="fragment" value="DepthPS"/>
             <state name="primitive" value="triangle" />
-            <state name="stencilTest" value="true"/>
-            <state name="stencilPass" value="replace"/>
-            <state name="stencilTwoPass" value="replace"/>
         </pass>
     </technique>
-    <technique name="opaque">
+    <technique name="ReflectiveShadow">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
+            <state name="vertex" value="ReflectiveShadowVS"/>
+            <state name="fragment" value="ReflectiveShadowPS"/>
+            <state name="primitive" value="triangle" />
+            <state name="colormask0" value="rgba" />
+            <state name="colormask1" value="rgba" />
+        </pass>
+    </technique>
+    <technique name="Opaque">
         <pass name="p0">
             <state name="inputlayout" value="POS3F_T4F_UV2F"/>
             <state name="vertex" value="OpaqueVS"/>

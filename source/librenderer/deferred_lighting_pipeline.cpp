@@ -48,7 +48,9 @@
 _NAME_BEGIN
 
 DeferredLightingPipeline::DeferredLightingPipeline() noexcept
-	: _shadowEsmFactor(300.0f)
+	: _deepGbufferMipBase(0)
+	, _deepGbufferMipCount(3)
+	, _shadowEsmFactor(300.0f)
 {
 }
 
@@ -78,6 +80,12 @@ DeferredLightingPipeline::setup(RenderPipelinePtr pipeline) noexcept
 		return false;
 
 	if (!this->setupDeferredRenderTextures(*pipeline))
+		return false;
+
+	if (!this->setupMRSIIMaterials(*pipeline))
+		return false;
+
+	if (!this->setupMRSIITexture(*pipeline))
 		return false;
 
 	_pipeline = pipeline;
@@ -262,6 +270,25 @@ DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebu
 		}
 	}
 
+	for (auto& it : lights)
+	{
+		auto light = it->downcast<Light>();
+		if (light->getLightType() == LightType::LightTypeAmbient)
+			continue;
+
+		if (!light->getGlobalIllumination())
+			continue;
+
+		switch (light->getLightType())
+		{
+		case LightType::LightTypeSpot:
+			this->renderIndirectSpotLight(pipeline, *light);
+			break;
+		default:
+			break;
+		}
+	}
+
 	pipeline.drawPostProcess(RenderQueue::RenderQueueLighting, target, target);
 }
 
@@ -272,16 +299,16 @@ DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& 
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
-	auto& shadowMap = light.getShadowMap();
+	auto& shadowMap = light.getDepthLinearTexture();
 	if (shadowMap)
 	{
-		float shadowFactor = _shadowEsmFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
+		float shadowFactor = _shadowEsmFactor / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f((light.getShadowCamera()->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
-		_shadowView2LightViewProject->uniform4fmat(light.getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightView->uniform4f((light.getCamera(0)->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawScreenQuadLayer(*_deferredSunLightShadow, light.getLayer());
 	}
@@ -298,16 +325,16 @@ DeferredLightingPipeline::renderDirectionalLight(RenderPipeline& pipeline, const
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
-	auto& shadowMap = light.getShadowMap();
+	auto& shadowMap = light.getDepthLinearTexture();
 	if (shadowMap)
 	{
-		float shadowFactor = _shadowEsmFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
+		float shadowFactor = _shadowEsmFactor / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f((light.getShadowCamera()->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
-		_shadowView2LightViewProject->uniform4fmat(light.getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightView->uniform4f((light.getCamera(0)->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawScreenQuadLayer(*_deferredDirectionalLightShadow, light.getLayer());
 	}
@@ -346,16 +373,16 @@ DeferredLightingPipeline::renderSpotLight(RenderPipeline& pipeline, const Light&
 
 	pipeline.setTransform(transform);
 
-	auto& shadowMap = light.getShadowMap();
+	auto& shadowMap = light.getDepthLinearTexture();
 	if (shadowMap)
 	{
-		float shadowFactor = _shadowEsmFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
+		float shadowFactor = _shadowEsmFactor / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f(light.getShadowCamera()->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
-		_shadowView2LightViewProject->uniform4fmat(light.getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightView->uniform4f(light.getCamera(0)->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawCone(*_deferredSpotLightShadow, light.getLayer());
 	}
@@ -374,6 +401,38 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	pipeline.drawScreenQuadLayer(*_deferredAmbientLight, light.getLayer());
+}
+
+void 
+DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept
+{
+	float gridCount = 256;
+	float gridSize = 16;
+	float gridOffset = 0.5f / 16.0f;
+	float gridDelta = 1.0f / 16.0f;
+
+	_vplsCountGridOffsetDelta->uniform4f(gridCount, gridSize, gridOffset, gridDelta);
+	_vplsColorMap->uniformTexture(light.getColorTexture());
+	_vplsNormalMap->uniformTexture(light.getNormalTexture());
+	_vplsDepthLinearMap->uniformTexture(light.getDepthLinearTexture());
+	_vplsLightAttenuation->uniform3f(light.getLightAttenuation());
+	_vplsSpotOuterInner->uniform2f(light.getSpotOuterCone().y, light.getSpotInnerCone().y);
+	_vplsLightView2EyeView->uniform4fmat(pipeline.getCamera()->getView() * light.getCamera(0)->getViewInverse());
+
+	auto camera = pipeline.getCamera();
+	pipeline.setCamera(light.getCamera(0));
+	pipeline.setFramebuffer(_mrsiiVPLsView);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0f, 0);
+	pipeline.drawScreenQuad(*_mrsiiRsm2VPLsSpot);
+	pipeline.setCamera(camera);
+
+	_siiMRT0->uniformTexture(_deferredOpaqueMap);
+	_siiMRT1->uniformTexture(_deferredNormalMap);
+	_siiVPLsBuffer->uniformTexture(_mrsiiVPLsBufferMap);
+	_vplsDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
+
+	pipeline.setFramebuffer(_deferredLightingView);
+	pipeline.drawScreenQuad(*_mrsiiGatherIndirect);
 }
 
 void
@@ -521,7 +580,9 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredDepthDesc.setHeight(height);
 	_deferredDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthDesc.setTexFormat(_deferredDepthFormat);
-	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredDepthDesc.setMipBase(_deepGbufferMipBase);
+	_deferredDepthDesc.setMipLevel(_deepGbufferMipCount);
+	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredDepthDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredDepthMap = pipeline.createTexture(_deferredDepthDesc);
 	if (!_deferredDepthMap)
@@ -553,7 +614,9 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredNormalDesc.setHeight(height);
 	_deferredNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredNormalDesc.setTexFormat(_deferredNormalFormat);
-	_deferredNormalDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredNormalDesc.setMipBase(_deepGbufferMipBase);
+	_deferredNormalDesc.setMipLevel(_deepGbufferMipCount);
+	_deferredNormalDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredNormalMap = pipeline.createTexture(_deferredNormalDesc);
 	if (!_deferredNormalMap)
 		return false;
@@ -591,9 +654,11 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	GraphicsTextureDesc _deferredShadingDesc;
 	_deferredShadingDesc.setWidth(width);
 	_deferredShadingDesc.setHeight(height);
-	_deferredShadingDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredShadingDesc.setTexFormat(_deferredShadingFormat);
-	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	_deferredShadingDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredShadingDesc.setMipBase(_deepGbufferMipBase);
+	_deferredShadingDesc.setMipLevel(_deepGbufferMipCount);
+	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
 	_deferredShadingDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredOpaqueShadingMap = pipeline.createTexture(_deferredShadingDesc);
 	if (!_deferredOpaqueShadingMap)
@@ -790,6 +855,53 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 	_deferredSwapView = pipeline.createFramebuffer(deferredSwapDesc);
 	if (!_deferredSwapView)
 		return false;
+
+	return true;
+}
+
+bool 
+DeferredLightingPipeline::setupMRSIIMaterials(RenderPipeline& pipeline) noexcept
+{
+	_mrsii = pipeline.createMaterial("sys:fx/MRSII.fxml"); if (!_mrsii) return false;
+	_mrsiiRsm2VPLsSpot = _mrsii->getTech("RSM2VPLsSpot"); if (!_mrsiiRsm2VPLsSpot) return false;
+	_mrsiiGatherIndirect = _mrsii->getTech("GatherIndirect"); if (!_mrsiiGatherIndirect) return false;
+
+	_vplsColorMap = _mrsii->getParameter("texColor");
+	_vplsNormalMap = _mrsii->getParameter("texNormal");
+	_vplsDepthLinearMap = _mrsii->getParameter("texDepthLinear");
+	_vplsLightAttenuation = _mrsii->getParameter("lightAttenuation");
+	_vplsSpotOuterInner = _mrsii->getParameter("lightOuterInner");
+	_vplsLightView2EyeView = _mrsii->getParameter("shadowView2EyeView");
+	_vplsCountGridOffsetDelta = _mrsii->getParameter("VPLCountGridOffsetDelta");
+
+	_siiMRT0 = _mrsii->getParameter("texMRT0");
+	_siiMRT1 = _mrsii->getParameter("texMRT1");
+	_siiVPLsBuffer = _mrsii->getParameter("texVPLBuffer");
+
+	return true;
+}
+
+bool 
+DeferredLightingPipeline::setupMRSIITexture(RenderPipeline& pipeline) noexcept
+{
+	GraphicsTextureDesc VPLsBufferDesc;
+	VPLsBufferDesc.setWidth(256);
+	VPLsBufferDesc.setHeight(3);
+	VPLsBufferDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+	VPLsBufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	VPLsBufferDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_mrsiiVPLsBufferMap = pipeline.createTexture(VPLsBufferDesc);
+
+	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat));
+	_mrsiiVPLsViewLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
+
+	GraphicsFramebufferDesc framebufferDesc;
+	framebufferDesc.setWidth(256);
+	framebufferDesc.setHeight(3);
+	framebufferDesc.attach(_mrsiiVPLsBufferMap);
+	framebufferDesc.setGraphicsFramebufferLayout(_mrsiiVPLsViewLayout);
+	_mrsiiVPLsView = pipeline.createFramebuffer(framebufferDesc);
 
 	return true;
 }

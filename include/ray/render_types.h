@@ -139,9 +139,9 @@ enum CameraRenderFlagBits
 	CameraRenderGbufferNormalBit = 0x0000008,
 	CameraRenderLightingBit = 0x00000010,
 	CameraRenderShadingBit = 0x00000020,
-	CameraOrderBeginBit = CameraRenderScreenBit,
-	CameraOrderEndBit = CameraRenderShadingBit,
-	CameraOrderMaxBit = 0x7FFFFFFF
+	CameraRenderBeginBit = CameraRenderScreenBit,
+	CameraRenderEndBit = CameraRenderShadingBit,
+	CameraRenderMaxBit = 0x7FFFFFFF
 };
 
 typedef std::uint32_t CameraRenderFlags;
@@ -196,7 +196,7 @@ enum RenderQueue
 {
 	RenderQueueCustom,
 	RenderQueueShadow,
-	RenderQueueShadowBatch,
+	RenderQueueReflectiveShadow,
 	RenderQueueOpaque,
 	RenderQueueOpaqueBatch,
 	RenderQueueOpaqueSpecific,

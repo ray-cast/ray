@@ -210,14 +210,14 @@ AnimationProperty::setBoneArray(const Bones& bones) noexcept
 	this->updateBones(bones);
 }
 
-void 
+void
 AnimationProperty::setBoneArray(Bones&& bones) noexcept
 {
 	_bones = std::move(bones);
 	this->updateBones(_bones);
 }
 
-const Bones& 
+const Bones&
 AnimationProperty::getBoneArray() const noexcept
 {
 	return _bones;
@@ -252,7 +252,7 @@ AnimationProperty::clone() noexcept
 	return anim;
 }
 
-void 
+void
 AnimationProperty::updateFrame(float delta) noexcept
 {
 	_delta += delta;
@@ -398,7 +398,7 @@ AnimationProperty::updateIK(Bones& bones, const IKAttr& ik) noexcept
 	auto& effector = bones.at(ik.boneIndex);
 	auto& target = bones.at(ik.targetBoneIndex);
 
-	Vector3 targetPos = target.getTransform().getTranslate();
+	Vector3 effectPos = effector.getTransform().getTranslate();
 
 	for (std::uint32_t i = 0; i < ik.iterations; i++)
 	{
@@ -406,11 +406,11 @@ AnimationProperty::updateIK(Bones& bones, const IKAttr& ik) noexcept
 		{
 			auto& bone = bones[ik.child[j].boneIndex];
 
-			Vector3 effectPos = effector.getTransform().getTranslate();
+			Vector3 targetPos = target.getTransform().getTranslate();
 			if (math::distance(effectPos, targetPos) < EPSILON)
 				return;
 
-			Vector3 dstLocal = math::invTranslateVector3(bone.getTransform(), target.getTransform().getTranslate());
+			Vector3 dstLocal = math::invTranslateVector3(bone.getTransform(), targetPos);
 			Vector3 srcLocal = math::invTranslateVector3(bone.getTransform(), effectPos);
 
 			srcLocal = math::normalize(srcLocal);
@@ -418,7 +418,7 @@ AnimationProperty::updateIK(Bones& bones, const IKAttr& ik) noexcept
 
 			float rotationDotProduct = math::dot(dstLocal, srcLocal);
 			float rotationAngle = math::safeAcos(rotationDotProduct) * ik.child[j].angleWeight;
-			
+
 			if (rotationAngle > EPSILON_E5)
 			{
 				Vector3 rotationAxis = math::cross(dstLocal, srcLocal);

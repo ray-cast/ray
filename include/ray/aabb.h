@@ -308,6 +308,39 @@ public:
 		return *this;
 	}
 
+	void applyMatrix(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
+	{
+		assert(!empty());
+
+		AABBt<T> aabb;
+		aabb.min.x = aabb.max.x = translate.x;
+		aabb.min.y = aabb.max.y = translate.y;
+		aabb.min.z = aabb.max.z = translate.z;
+
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				float e = m[j * 3 + i] * min[j];
+				float f = m[j * 3 + i] * max[j];
+
+				if (e < f)
+				{
+					aabb.min[i] += e;
+					aabb.max[i] += f;
+				}
+				else
+				{
+					aabb.min[i] += f;
+					aabb.max[i] += e;
+				}
+			}
+		}
+
+		min = aabb.min;
+		max = aabb.max;
+	}
+
 	void applyMatrix(const Matrix4x4t<T>& m) noexcept
 	{
 		assert(!empty());

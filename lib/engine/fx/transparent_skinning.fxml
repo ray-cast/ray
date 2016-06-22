@@ -171,7 +171,7 @@
             }
         ]]>
     </shader>
-    <technique name="shadow">
+    <technique name="Shadow">
         <pass name="p0">
             <state name="inputlayout" value="POS3F_W4F_B4UI"/>
             <state name="vertex" value="DepthVS"/>
@@ -182,7 +182,7 @@
             <state name="stencilTwoPass" value="replace"/>
         </pass>
     </technique>
-    <technique name="transparent">
+    <technique name="Transparent">
         <pass name="p0">
             <state name="inputlayout" value="POS3F_T4F_UV2F"/>
 
@@ -213,7 +213,7 @@
             <state name="blendalphadst2" value="one"/>
         </pass>
     </technique>
-   <technique name="transparentbatch">
+   <technique name="TransparentBatch">
         <pass name="p1">
             <state name="inputlayout" value="POS3F_T4F_UV2F"/>
 

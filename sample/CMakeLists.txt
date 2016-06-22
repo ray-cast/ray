@@ -4,15 +4,16 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
 FOREACH(mySamples
-    "1.HelloWorld"
-    "2.UI"
-    "3.Sound"
-    "4.EnvLighting"
-    "5.SSSSS"
-    "6.CubeWorld"
-    "7.Skinning"
-    "8.OIT"
-    "9.SSR"
+    "01.HelloWorld"
+    "02.UI"
+    "03.Sound"
+    "04.EnvLighting"
+    "05.SSSSS"
+    "06.CubeWorld"
+    "07.Skinning"
+    "08.OIT"
+    "09.SSR"
+	"10.Globalillumination"
 )
 ADD_SUBDIRECTORY(${mySamples})
 

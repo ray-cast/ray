@@ -163,6 +163,11 @@ public:
 		return _sp.intersects(ray);
 	}
 
+	void applyMatrix(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
+	{
+		_sp.applyMatrix(m, translate);
+	}
+
 	void applyMatrix(const Matrix4x4t<T>& m) noexcept
 	{
 		_sp.applyMatrix(m);

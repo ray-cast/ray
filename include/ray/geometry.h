@@ -62,9 +62,9 @@ public:
 	~Geometry() noexcept;
 
 	void setCastShadow(bool enable) noexcept;
-	void setReceiveShadow(bool enable) noexcept;
-
 	bool getCastShadow() const noexcept;
+
+	void setReceiveShadow(bool enable) noexcept;
 	bool getReceiveShadow() const noexcept;
 
 	void setMaterial(MaterialPtr material) noexcept;

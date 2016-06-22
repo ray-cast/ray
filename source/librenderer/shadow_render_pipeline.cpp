@@ -51,19 +51,9 @@ _NAME_BEGIN
 __ImplementSubClass(ShadowRenderPipeline, RenderPipelineController, "ShadowRenderPipeline")
 
 ShadowRenderPipeline::ShadowRenderPipeline() noexcept
-	: _shadowFormat(GraphicsFormat::GraphicsFormatR32SFloat)
-	, _shadowDepthFormat(GraphicsFormat::GraphicsFormatD16UNorm)
+	: _shadowDepthFormat(GraphicsFormat::GraphicsFormatD16UNorm)
+	, _shadowDepthLinearFormat(GraphicsFormat::GraphicsFormatR32SFloat)
 {
-	_shadowMapSize[LightShadowType::LightShadowTypeNone] = 0;
-	_shadowMapSize[LightShadowType::LightShadowTypeLow] = LightShadowSize::LightShadowSizeLow;
-	_shadowMapSize[LightShadowType::LightShadowTypeMedium] = LightShadowSize::LightShadowSizeMedium;
-	_shadowMapSize[LightShadowType::LightShadowTypeHigh] = LightShadowSize::LightShadowSizeHigh;
-	_shadowMapSize[LightShadowType::LightShadowTypeVeryHigh] = LightShadowSize::LightShadowSizeVeryHigh;
-	_shadowMapSizeInv[LightShadowType::LightShadowTypeNone] = 0;
-	_shadowMapSizeInv[LightShadowType::LightShadowTypeLow] = 1.0f / LightShadowSize::LightShadowSizeLow;
-	_shadowMapSizeInv[LightShadowType::LightShadowTypeMedium] = 1.0f / LightShadowSize::LightShadowSizeMedium;
-	_shadowMapSizeInv[LightShadowType::LightShadowTypeHigh] = 1.0f / LightShadowSize::LightShadowSizeHigh;
-	_shadowMapSizeInv[LightShadowType::LightShadowTypeVeryHigh] = 1.0f / LightShadowSize::LightShadowSizeVeryHigh;
 }
 
 ShadowRenderPipeline::~ShadowRenderPipeline() noexcept
@@ -80,7 +70,7 @@ ShadowRenderPipeline::setup(RenderPipelinePtr pipeline) noexcept
 	if (!setupShadowMaterial(*pipeline))
 		return false;
 
-	if (!setupShadowMap(*pipeline))
+	if (!setupShadowMaps(*pipeline))
 		return false;
 
 	_pipeline = pipeline;
@@ -90,16 +80,15 @@ ShadowRenderPipeline::setup(RenderPipelinePtr pipeline) noexcept
 void
 ShadowRenderPipeline::close() noexcept
 {
-	_pipeline.reset();
-
-	this->destroyShadowMap();
+	this->destroyShadowMaps();
 	this->destroyShadowMaterial();
+	_pipeline.reset();
 }
 
 void
-ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
+ShadowRenderPipeline::renderShadowMaps(const CameraPtr& mainCamera) noexcept
 {
-	_pipeline->setCamera(camera);
+	_pipeline->setCamera(mainCamera);
 
 	const auto& lights = _pipeline->getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
@@ -108,53 +97,78 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
 		if (light->getShadowType() == LightShadowType::LightShadowTypeNone)
 			continue;
 
-		auto lightType = light->getLightType();
-		auto lightShadowType = light->getShadowType();
-		auto& lightShadowView = light->getShadowCamera()->getFramebuffer();
+		if (!light->getGlobalIllumination())
+			this->renderShadowMap(*light, RenderQueue::RenderQueueShadow);
+		else
+			this->renderShadowMap(*light, RenderQueue::RenderQueueReflectiveShadow);
+	}
+}
 
-		_pipeline->setCamera(light->getShadowCamera());
-		_pipeline->setFramebuffer(_softShadowDepthViewTemp[lightShadowType]);
+void
+ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noexcept
+{
+	auto lightType = light.getLightType();
+	auto lightShadowType = light.getShadowType();
+
+	auto& cameras = light.getCameras();
+	for (auto& camera : cameras)
+	{
+		auto& depthFrambuffer = camera->getFramebuffer();
+		auto& depthLienarFrambuffer = camera->getDepthLinearFramebuffer();
+
+		auto shadowFrambuffer = depthFrambuffer ? depthFrambuffer : _shadowShadowDepthViewTemps[lightShadowType];
+		auto shadowTexture = shadowFrambuffer->getGraphicsFramebufferDesc().getSharedDepthStencilTexture();
+		auto shadowTextureSizeInv = float2(1.0f / shadowTexture->getGraphicsTextureDesc().getWidth(), 1.0f / shadowTexture->getGraphicsTextureDesc().getHeight());
+
+		_pipeline->setCamera(camera);
+		_pipeline->setFramebuffer(shadowFrambuffer);
 		_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
-		_pipeline->drawRenderQueue(RenderQueue::RenderQueueShadow, _softGenShadowMap);
-
-		if (light->getSoftShadow())
+		if (queue == RenderQueue::RenderQueueReflectiveShadow)
 		{
-			_softShadowSource->uniformTexture(_softShadowDepthMapTemp[lightShadowType]);
-			_softShadowSourceInv->uniform1f(_shadowMapSizeInv[lightShadowType]);
-			_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0, 1.0));
-			_pipeline->setFramebuffer(_softShadowViewTemp[lightShadowType]);
+			_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+			_pipeline->clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+		}
+
+		_pipeline->drawRenderQueue(queue, nullptr);
+
+		if (light.getSoftShadow())
+		{
+			_shadowShadowSource->uniformTexture(shadowTexture);
+			_shadowShadowSourceInv->uniform2f(shadowTextureSizeInv);
+			_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0, 1.0));
+			_pipeline->setFramebuffer(_shadowShadowDepthLinearViewTemps[lightShadowType]);
 
 			if (lightType == LightType::LightTypeSun ||
 				lightType == LightType::LightTypeDirectional)
 			{
-				_pipeline->drawScreenQuad(*_softBlurOrthoShadowX);
+				_pipeline->drawScreenQuad(*_shadowBlurOrthoShadowX);
 			}
 			else
 			{
-				_pipeline->drawScreenQuad(*_softBlurPerspectiveFovShadowX);
+				_pipeline->drawScreenQuad(*_shadowBlurPerspectiveFovShadowX);
 			}
 
-			_softShadowSource->uniformTexture(_softShadowMapTemp[lightShadowType]);
-			_softShadowSourceInv->uniform1f(_shadowMapSizeInv[lightShadowType]);
-			_pipeline->setFramebuffer(lightShadowView);
-			_pipeline->drawScreenQuad(*_softBlurShadowY);
+			_shadowShadowSource->uniformTexture(_shadowShadowDepthLinearMapTemps[lightShadowType]);
+			_shadowShadowSourceInv->uniform2f(shadowTextureSizeInv);
+			_pipeline->setFramebuffer(depthLienarFrambuffer);
+			_pipeline->drawScreenQuad(*_shadowBlurShadowY);
 		}
 		else
 		{
 			if (lightType == LightType::LightTypeSun ||
 				lightType == LightType::LightTypeDirectional)
 			{
-				_softShadowSource->uniformTexture(_softShadowDepthMapTemp[lightShadowType]);
-				_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0f, 1.0f));
-				_pipeline->setFramebuffer(lightShadowView);
-				_pipeline->drawScreenQuad(*_softConvOrthoLinearDepth);
+				_shadowShadowSource->uniformTexture(shadowTexture);
+				_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0f, 1.0f));
+				_pipeline->setFramebuffer(depthLienarFrambuffer);
+				_pipeline->drawScreenQuad(*_shadowConvOrthoLinearDepth);
 			}
 			else
 			{
-				_softShadowSource->uniformTexture(_softShadowDepthMapTemp[lightShadowType]);
-				_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0f, 1.0f));
-				_pipeline->setFramebuffer(lightShadowView);
-				_pipeline->drawScreenQuad(*_softConvPerspectiveFovLinearDepth);
+				_shadowShadowSource->uniformTexture(shadowTexture);
+				_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0f, 1.0f));
+				_pipeline->setFramebuffer(depthLienarFrambuffer);
+				_pipeline->drawScreenQuad(*_shadowConvPerspectiveFovLinearDepth);
 			}
 		}
 	}
@@ -164,11 +178,11 @@ bool
 ShadowRenderPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 {
 	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR32SFloat))
-		_shadowFormat = GraphicsFormat::GraphicsFormatR32SFloat;
+		_shadowDepthLinearFormat = GraphicsFormat::GraphicsFormatR32SFloat;
 	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16SFloat))
-		_shadowFormat = GraphicsFormat::GraphicsFormatR16SFloat;
+		_shadowDepthLinearFormat = GraphicsFormat::GraphicsFormatR16SFloat;
 	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
-		_shadowFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+		_shadowDepthLinearFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
 	else
 		return false;
 
@@ -185,71 +199,83 @@ ShadowRenderPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 bool
 ShadowRenderPipeline::setupShadowMaterial(RenderPipeline& pipeline) noexcept
 {
-	_softBlur = pipeline.createMaterial("sys:fx/shadowmap.fxml");
-	_softGenShadowMap = _softBlur->getTech("GenShadowMap");
-	_softConvOrthoLinearDepth = _softBlur->getTech("ConvOrthoLinearDepth");
-	_softConvPerspectiveFovLinearDepth = _softBlur->getTech("ConvPerspectiveFovLinearDepth");
-	_softBlurOrthoShadowX = _softBlur->getTech("ConvOrthoLinearDepthBlurX");
-	_softBlurPerspectiveFovShadowX = _softBlur->getTech("ConvPerspectiveFovLinearDepthBlurX");
-	_softBlurShadowY = _softBlur->getTech("BlurY");
-	_softLogBlurShadowX = _softBlur->getTech("LogBlurX");
-	_softLogBlurShadowY = _softBlur->getTech("LogBlurY");
-	_softShadowSource = _softBlur->getParameter("texSource");
-	_softShadowSourceInv = _softBlur->getParameter("texSourceSizeInv");
-	_softClipConstant = _softBlur->getParameter("clipConstant");
-	_softOffset = _softBlur->getParameter("offset");
-	_softWeight = _softBlur->getParameter("weight");
+	_shadowRender = pipeline.createMaterial("sys:fx/shadowmap.fxml");
+	_shadowConvOrthoLinearDepth = _shadowRender->getTech("ConvOrthoLinearDepth");
+	_shadowConvPerspectiveFovLinearDepth = _shadowRender->getTech("ConvPerspectiveFovLinearDepth");
+	_shadowBlurOrthoShadowX = _shadowRender->getTech("ConvOrthoLinearDepthBlurX");
+	_shadowBlurPerspectiveFovShadowX = _shadowRender->getTech("ConvPerspectiveFovLinearDepthBlurX");
+	_shadowBlurShadowY = _shadowRender->getTech("BlurY");
+	_shadowLogBlurShadowX = _shadowRender->getTech("LogBlurX");
+	_shadowLogBlurShadowY = _shadowRender->getTech("LogBlurY");
+	_shadowShadowSource = _shadowRender->getParameter("texSource");
+	_shadowShadowSourceInv = _shadowRender->getParameter("texSourceSizeInv");
+	_shadowClipConstant = _shadowRender->getParameter("clipConstant");
+	_shadowOffset = _shadowRender->getParameter("offset");
+	_shadowWeight = _shadowRender->getParameter("weight");
 
 	const float offsets[4] = { 1.3846153846f, 3.2307692308f, -1.3846153846f, -3.2307692308f };
 	const float weights[3] = { 0.2270270270f,  0.3162162162f, 0.0702702703f };
 
-	_softOffset->uniform1fv(4, offsets);
-	_softWeight->uniform1fv(3, weights);
+	_shadowOffset->uniform1fv(4, offsets);
+	_shadowWeight->uniform1fv(3, weights);
 
 	return true;
 }
 
 bool
-ShadowRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
+ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 {
-	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
-	shaodwMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _shadowFormat));
-	_softShadowImageLayout = pipeline.createFramebufferLayout(shaodwMapLayoutDesc);
-	if (!_softShadowImageLayout)
-		return false;
+	std::uint32_t shadowMapSize[LightShadowType::LightShadowTypeRangeSize];
+	shadowMapSize[LightShadowType::LightShadowTypeNone] = 0;
+	shadowMapSize[LightShadowType::LightShadowTypeLow] = LightShadowSize::LightShadowSizeLow;
+	shadowMapSize[LightShadowType::LightShadowTypeMedium] = LightShadowSize::LightShadowSizeMedium;
+	shadowMapSize[LightShadowType::LightShadowTypeHigh] = LightShadowSize::LightShadowSizeHigh;
+	shadowMapSize[LightShadowType::LightShadowTypeVeryHigh] = LightShadowSize::LightShadowSizeVeryHigh;
+
+	_shadowShadowDepthMapTemps.resize(LightShadowType::LightShadowTypeRangeSize);
+	_shadowShadowDepthLinearMapTemps.resize(LightShadowType::LightShadowTypeRangeSize);
+
+	_shadowShadowDepthViewTemps.resize(LightShadowType::LightShadowTypeRangeSize);
+	_shadowShadowDepthLinearViewTemps.resize(LightShadowType::LightShadowTypeRangeSize);
 
 	GraphicsFramebufferLayoutDesc shadowDephLayoutDesc;
 	shadowDephLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _shadowDepthFormat));
-	_softShadowDepthImageLayout = pipeline.createFramebufferLayout(shadowDephLayoutDesc);
-	if (!_softShadowDepthImageLayout)
+	_shadowShadowDepthImageLayout = pipeline.createFramebufferLayout(shadowDephLayoutDesc);
+	if (!_shadowShadowDepthImageLayout)
+		return false;
+
+	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
+	shaodwMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _shadowDepthLinearFormat));
+	_shadowShadowDepthLinearImageLayout = pipeline.createFramebufferLayout(shaodwMapLayoutDesc);
+	if (!_shadowShadowDepthLinearImageLayout)
 		return false;
 
 	for (std::size_t i = LightShadowType::LightShadowTypeLow; i <= LightShadowType::LightShadowTypeVeryHigh; i++)
 	{
-		_softShadowMapTemp[i] = pipeline.createTexture(_shadowMapSize[i], _shadowMapSize[i], GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
-		if (!_softShadowMapTemp[i])
+		_shadowShadowDepthMapTemps[i] = pipeline.createTexture(shadowMapSize[i], shadowMapSize[i], GraphicsTextureDim::GraphicsTextureDim2D, _shadowDepthFormat);
+		if (!_shadowShadowDepthMapTemps[i])
 			return false;
 
-		_softShadowDepthMapTemp[i] = pipeline.createTexture(_shadowMapSize[i], _shadowMapSize[i], GraphicsTextureDim::GraphicsTextureDim2D, _shadowDepthFormat);
-		if (!_softShadowDepthMapTemp[i])
-			return false;
-
-		GraphicsFramebufferDesc shadowViewDesc;
-		shadowViewDesc.setWidth(_shadowMapSize[i]);
-		shadowViewDesc.setHeight(_shadowMapSize[i]);
-		shadowViewDesc.attach(_softShadowMapTemp[i]);
-		shadowViewDesc.setGraphicsFramebufferLayout(_softShadowImageLayout);
-		_softShadowViewTemp[i] = pipeline.createFramebuffer(shadowViewDesc);
-		if (!_softShadowViewTemp[i])
+		_shadowShadowDepthLinearMapTemps[i] = pipeline.createTexture(shadowMapSize[i], shadowMapSize[i], GraphicsTextureDim::GraphicsTextureDim2D, _shadowDepthLinearFormat);
+		if (!_shadowShadowDepthLinearMapTemps[i])
 			return false;
 
 		GraphicsFramebufferDesc shadowDepthViewDesc;
-		shadowDepthViewDesc.setWidth(_shadowMapSize[i]);
-		shadowDepthViewDesc.setHeight(_shadowMapSize[i]);
-		shadowDepthViewDesc.setSharedDepthStencilTexture(_softShadowDepthMapTemp[i]);
-		shadowDepthViewDesc.setGraphicsFramebufferLayout(_softShadowDepthImageLayout);
-		_softShadowDepthViewTemp[i] = pipeline.createFramebuffer(shadowDepthViewDesc);
-		if (!_softShadowDepthViewTemp[i])
+		shadowDepthViewDesc.setWidth(shadowMapSize[i]);
+		shadowDepthViewDesc.setHeight(shadowMapSize[i]);
+		shadowDepthViewDesc.setSharedDepthStencilTexture(_shadowShadowDepthMapTemps[i]);
+		shadowDepthViewDesc.setGraphicsFramebufferLayout(_shadowShadowDepthImageLayout);
+		_shadowShadowDepthViewTemps[i] = pipeline.createFramebuffer(shadowDepthViewDesc);
+		if (!_shadowShadowDepthViewTemps[i])
+			return false;
+
+		GraphicsFramebufferDesc shadowDepthLinearViewDesc;
+		shadowDepthLinearViewDesc.setWidth(shadowMapSize[i]);
+		shadowDepthLinearViewDesc.setHeight(shadowMapSize[i]);
+		shadowDepthLinearViewDesc.attach(_shadowShadowDepthLinearMapTemps[i]);
+		shadowDepthLinearViewDesc.setGraphicsFramebufferLayout(_shadowShadowDepthLinearImageLayout);
+		_shadowShadowDepthLinearViewTemps[i] = pipeline.createFramebuffer(shadowDepthLinearViewDesc);
+		if (!_shadowShadowDepthLinearViewTemps[i])
 			return false;
 	}
 
@@ -259,23 +285,33 @@ ShadowRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
 void
 ShadowRenderPipeline::destroyShadowMaterial() noexcept
 {
-	_softBlur.reset();
-	_softConvOrthoLinearDepth.reset();
-	_softConvPerspectiveFovLinearDepth.reset();
-	_softShadowSource.reset();
-	_softShadowSourceInv.reset();
+	_shadowShadowSource.reset();
+	_shadowShadowSourceInv.reset();
+	_shadowClipConstant.reset();
+	_shadowOffset.reset();
+	_shadowWeight.reset();
+
+	_shadowBlurOrthoShadowX.reset();
+	_shadowBlurPerspectiveFovShadowX.reset();
+	_shadowBlurShadowY.reset();
+	_shadowLogBlurShadowX.reset();
+	_shadowLogBlurShadowY.reset();
+	_shadowConvOrthoLinearDepth.reset();
+	_shadowConvPerspectiveFovLinearDepth.reset();
+
+	_shadowRender.reset();
 }
 
 void
-ShadowRenderPipeline::destroyShadowMap() noexcept
+ShadowRenderPipeline::destroyShadowMaps() noexcept
 {
-	for (std::size_t i = 0; i < LightShadowType::LightShadowTypeRangeSize; i++)
-		_softShadowMapTemp[i].reset();
+	_shadowShadowDepthMapTemps.clear();
+	_shadowShadowDepthViewTemps.clear();
+	_shadowShadowDepthImageLayout.reset();
 
-	for (std::size_t i = 0; i < LightShadowType::LightShadowTypeRangeSize; i++)
-		_softShadowViewTemp[i].reset();
-
-	_softShadowImageLayout.reset();
+	_shadowShadowDepthLinearMapTemps.clear();
+	_shadowShadowDepthLinearViewTemps.clear();
+	_shadowShadowDepthLinearImageLayout.reset();
 }
 
 void

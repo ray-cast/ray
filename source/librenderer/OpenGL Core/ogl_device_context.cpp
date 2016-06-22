@@ -389,7 +389,7 @@ OGLDeviceContext::getIndexBufferData() const noexcept
 }
 
 void 
-OGLDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
+OGLDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
 {
 	assert(texture);
 	assert(texture->isInstanceOf<OGLTexture>());
@@ -551,7 +551,7 @@ OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstanc
 		_descriptorSet->apply(*_program);
 		_needUpdateDescriptor = false;
 	}
-
+	
 	if (numIndices > 0)
 	{
 		GLbyte* offsetIndices = nullptr;

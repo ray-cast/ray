@@ -220,18 +220,19 @@ Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTe
 RenderQueue
 Geometry::stringToRenderQueue(const std::string& techName) noexcept
 {
-	if (techName == "custom")				return RenderQueue::RenderQueueCustom;
-	if (techName == "shadow")				return RenderQueue::RenderQueueShadow;
-	if (techName == "opaque")				return RenderQueue::RenderQueueOpaque;
-	if (techName == "opaquebatch")			return RenderQueue::RenderQueueOpaqueBatch;
-	if (techName == "opaquespecific")		return RenderQueue::RenderQueueOpaqueSpecific;
-	if (techName == "opaqueshading")		return RenderQueue::RenderQueueOpaqueShading;
-	if (techName == "transparent")			return RenderQueue::RenderQueueTransparent;
-	if (techName == "transparentbatch")     return RenderQueue::RenderQueueTransparentBatch;	
-	if (techName == "transparentshading")	return RenderQueue::RenderQueueTransparentShading;
-	if (techName == "transparentspecific")	return RenderQueue::RenderQueueTransparentSpecific;
-	if (techName == "lighting")				return RenderQueue::RenderQueueLighting;
-	if (techName == "postprocess")			return RenderQueue::RenderQueuePostprocess;
+	if (techName == "Custom")				return RenderQueue::RenderQueueCustom;
+	if (techName == "Shadow")				return RenderQueue::RenderQueueShadow;
+	if (techName == "ReflectiveShadow")		return RenderQueue::RenderQueueReflectiveShadow;
+	if (techName == "Opaque")				return RenderQueue::RenderQueueOpaque;
+	if (techName == "OpaqueBatch")			return RenderQueue::RenderQueueOpaqueBatch;
+	if (techName == "OpaqueSpecific")		return RenderQueue::RenderQueueOpaqueSpecific;
+	if (techName == "OpaqueShading")		return RenderQueue::RenderQueueOpaqueShading;
+	if (techName == "Transparent")			return RenderQueue::RenderQueueTransparent;
+	if (techName == "TransparentBatch")     return RenderQueue::RenderQueueTransparentBatch;	
+	if (techName == "TransparentShading")	return RenderQueue::RenderQueueTransparentShading;
+	if (techName == "TransparentSpecific")	return RenderQueue::RenderQueueTransparentSpecific;
+	if (techName == "Lighting")				return RenderQueue::RenderQueueLighting;
+	if (techName == "Postprocess")			return RenderQueue::RenderQueuePostprocess;
 
 	return RenderQueue::RenderQueueMaxEnum;
 }

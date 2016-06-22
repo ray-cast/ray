@@ -143,8 +143,8 @@ SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source,
 
 	_shadowMap->uniformTexture(shaodwMap);
 	_shadowFactor->uniform1f(_sssScale);
-	_shadowEye2LightView->uniform4fmat(light.getShadowCamera()->getView() * pipeline.getCamera()->getViewInverse());
-	_shadowEye2LightViewProject->uniform4fmat(light.getShadowCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
+	_shadowEye2LightView->uniform4fmat(light.getCamera(0)->getView() * pipeline.getCamera()->getViewInverse());
+	_shadowEye2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 	pipeline.setFramebuffer(source);
 	pipeline.drawScreenQuad(*_sssTranslucency);

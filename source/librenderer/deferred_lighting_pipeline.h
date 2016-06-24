@@ -101,6 +101,9 @@ private:
 
 private:
 
+	std::uint32_t _mrsiiDerivMipBase;
+	std::uint32_t _mrsiiDerivMipCount;
+
 	MaterialPtr _mrsii;
 	MaterialTechPtr _mrsiiRsm2VPLsSpot;
 	MaterialTechPtr _mrsiiGatherIndirect;
@@ -119,9 +122,6 @@ private:
 
 	GraphicsFramebufferPtr _mrsiiVPLsView;
 	GraphicsFramebufferLayoutPtr _mrsiiVPLsViewLayout;
-
-	std::uint32_t _deepGbufferMipBase;
-	std::uint32_t _deepGbufferMipCount;
 
 	MaterialPtr _deferredLighting;
 	MaterialTechPtr _deferredDepthOnly;

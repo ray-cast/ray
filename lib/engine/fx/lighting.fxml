@@ -129,13 +129,6 @@
             return smoothstep(cosOuterInner.x, cosOuterInner.y, spotFactor);
         }
 
-        float pointLighting(float3 lightPosition, float3 world, float3 atten)
-        {
-            float distance = length(lightPosition - world);
-            float attenuation = max(1.0f - (distance / atten.y), 0.0f);
-            return attenuation;
-        }
-
         float rimLighting(float3 lightColor, float LdotN, float NdotV, float LdotH)
         {
             float rim = saturate(1 - NdotV * 1.5);

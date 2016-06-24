@@ -48,8 +48,8 @@
 _NAME_BEGIN
 
 DeferredLightingPipeline::DeferredLightingPipeline() noexcept
-	: _deepGbufferMipBase(0)
-	, _deepGbufferMipCount(3)
+	: _mrsiiDerivMipBase(0)
+	, _mrsiiDerivMipCount(3)
 	, _shadowEsmFactor(300.0f)
 {
 }
@@ -397,7 +397,7 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
 	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTranslate()));
-	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
+	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), -light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	pipeline.drawScreenQuadLayer(*_deferredAmbientLight, light.getLayer());
@@ -406,7 +406,7 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 void 
 DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
-	float gridCount = 256;
+	float gridCount = 255;
 	float gridSize = 16;
 	float gridOffset = 0.5f / 16.0f;
 	float gridDelta = 1.0f / 16.0f;
@@ -432,7 +432,7 @@ DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, cons
 	_vplsDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
 
 	pipeline.setFramebuffer(_deferredLightingView);
-	pipeline.drawScreenQuad(*_mrsiiGatherIndirect, 256);
+	pipeline.drawScreenQuad(*_mrsiiGatherIndirect, gridCount);
 }
 
 void
@@ -580,8 +580,6 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredDepthDesc.setHeight(height);
 	_deferredDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthDesc.setTexFormat(_deferredDepthFormat);
-	_deferredDepthDesc.setMipBase(_deepGbufferMipBase);
-	_deferredDepthDesc.setMipLevel(_deepGbufferMipCount);
 	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredDepthDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredDepthMap = pipeline.createTexture(_deferredDepthDesc);
@@ -614,8 +612,6 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredNormalDesc.setHeight(height);
 	_deferredNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredNormalDesc.setTexFormat(_deferredNormalFormat);
-	_deferredNormalDesc.setMipBase(_deepGbufferMipBase);
-	_deferredNormalDesc.setMipLevel(_deepGbufferMipCount);
 	_deferredNormalDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredNormalMap = pipeline.createTexture(_deferredNormalDesc);
 	if (!_deferredNormalMap)
@@ -656,8 +652,6 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredShadingDesc.setHeight(height);
 	_deferredShadingDesc.setTexFormat(_deferredShadingFormat);
 	_deferredShadingDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	_deferredShadingDesc.setMipBase(_deepGbufferMipBase);
-	_deferredShadingDesc.setMipLevel(_deepGbufferMipCount);
 	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
 	_deferredShadingDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredOpaqueShadingMap = pipeline.createTexture(_deferredShadingDesc);

@@ -83,16 +83,18 @@
                 return texSource.Sample(PointClamp, coord);
             }
 
-            float4 DeferredAmbientLightPS(in float2 coord : TEXCOORD0) : SV_Target
+            float4 DeferredAmbientLightPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
             {
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
 
+                float3 V = normalize(viewdir);
                 float3 N = restoreNormal(MRT1);
-                float3 L = -lightEyeDirection;
+                float3 P = restorePosition(texDepthLinear, coord, V);
+                float3 L = normalize(lightEyeDirection);
 
-                float4 lighting;
+                float4 lighting = 0;
                 lighting.rgb = saturate(dot(N, L) * 0.5 + 0.5) * lightColor;
-                lighting.a = 0.0f;
+                lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
                 return lighting;
             }
 

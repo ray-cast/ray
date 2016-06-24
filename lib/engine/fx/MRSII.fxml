@@ -116,7 +116,7 @@
                 if (nl > 0.0f)
                 {
                     lighting.rgb = brdfLambert(viewNormal, lightDirection, lightColor.xyz);
-                    //lighting.a = brdfSpecular(viewNormal, lightDirection, V, shininess, specular);
+                    //lighting.a = brdfSpecular(viewNormal, lightDirection, V, shininess, specular * lightPosition.a);
                     lighting *= attenuationTerm(viewPosition, lightPosition.xyz, float3(1, 0, 1));
                 }
 

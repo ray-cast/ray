@@ -116,11 +116,7 @@ private:
 	GraphicsTexturePtr _texBloom1Map;
 	GraphicsTexturePtr _texBloom2Map;
 
-	GraphicsTexturePtr _texSampleLog256Map;
-	GraphicsTexturePtr _texSampleLog64Map;
-	GraphicsTexturePtr _texSampleLog16Map;
-	GraphicsTexturePtr _texSampleLog4Map;
-	GraphicsTexturePtr _texSampleLog2Map;
+	GraphicsTexturePtr _texSampleLogMap;
 	GraphicsTexturePtr _texSampleLumMap;
 
 	GraphicsFramebufferLayoutPtr _sampleBloomImageLayout;
@@ -129,11 +125,7 @@ private:
 	GraphicsFramebufferPtr _texBloom1View;
 	GraphicsFramebufferPtr _texBloom2View;
 
-	GraphicsFramebufferPtr _texSampleLog256View;
-	GraphicsFramebufferPtr _texSampleLog64View;
-	GraphicsFramebufferPtr _texSampleLog16View;
-	GraphicsFramebufferPtr _texSampleLog4View;
-	GraphicsFramebufferPtr _texSampleLog2View;
+	GraphicsFramebufferPtr _texSampleLogView;
 	GraphicsFramebufferPtr _texSampleLumView;
 };
 

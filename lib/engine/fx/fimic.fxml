@@ -146,12 +146,7 @@
 
             float AvgLuminancePS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
             {
-                float color = texSource.Sample(PointClamp, coord0.xy).r;
-                color += texSource.Sample(PointClamp, coord0.zw).r;
-                color += texSource.Sample(PointClamp, coord1.xy).r;
-                color += texSource.Sample(PointClamp, coord1.zw).r;
-                color *= 0.25;
-
+                float color = texSource.SampleLevel(PointClamp, coord0.xy, 8).r;
                 float adaptedLum = texLumAve.Sample(PointClamp, float2(0,0)).r;
                 return saturate(CalcAdaptedLum(adaptedLum, exp(color), delta));
             }

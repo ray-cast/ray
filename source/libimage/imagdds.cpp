@@ -123,7 +123,7 @@ enum D3DFORMAT
 	D3DFMT_R8G8_B8G8 = DDS_MAKE_FOURCC('R', 'G', 'B', 'G'),
 	D3DFMT_YUY2 = DDS_MAKE_FOURCC('Y', 'U', 'Y', '2'),
 	D3DFMT_G8R8_G8B8 = DDS_MAKE_FOURCC('G', 'R', 'G', 'B'),
-	
+
 	D3DFMT_DXT1 = DDS_MAKE_FOURCC('D', 'X', 'T', '1'),
 	D3DFMT_DXT2 = DDS_MAKE_FOURCC('D', 'X', 'T', '2'),
 	D3DFMT_DXT3 = DDS_MAKE_FOURCC('D', 'X', 'T', '3'),
@@ -603,7 +603,7 @@ struct DDS_HEADER
 	dds_uint    reserved2[3];
 };
 
-struct DDS_HEADER_DXT10 
+struct DDS_HEADER_DXT10
 {
 	DXGI_FORMAT format;
 	D3D10_RESOURCE_DIMENSION dimension;
@@ -974,7 +974,7 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		case 24:
 		{
 			if (DDS_MaskCmp(info.format.mask, DDS_Format::FORMAT_RGB8_UNORM))
-				format = ImageFormat::ImageFormatR8G8B8A8UNorm;
+				format = ImageFormat::ImageFormatR8G8B8UNorm;
 			break;
 		}
 		case 32:
@@ -995,7 +995,7 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		break;
 		}
 	}
-	
+
 	if (format == ImageFormat::ImageFormatMaxEnum)
 		return false;
 
@@ -1038,6 +1038,8 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	}
 	else
 	{
+		std::size_t length = stream.size() - offset;
+
 		if (!image.create(info.width, info.height, info.depth * faceCount, format, info.mip_level, info10.arraySize))
 			return false;
 

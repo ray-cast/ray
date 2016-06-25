@@ -201,38 +201,38 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	_texSampleLumMap = pipeline.createTexture(samplerLumDesc);
 
 	GraphicsFramebufferLayoutDesc framebufferBloomLayoutDesc;
-	framebufferBloomLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8UNorm));
+	framebufferBloomLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8UNorm));
 	_sampleBloomImageLayout = pipeline.createFramebufferLayout(framebufferBloomLayoutDesc);
 
 	GraphicsFramebufferLayoutDesc framebufferLogLayoutDesc;
-	framebufferLogLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat));
+	framebufferLogLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat));
 	_sampleLogImageLayout = pipeline.createFramebufferLayout(framebufferLogLayoutDesc);
 
 	GraphicsFramebufferDesc bloom1ViewDesc;
 	bloom1ViewDesc.setWidth(width / 4.0f);
 	bloom1ViewDesc.setHeight(height / 4.0f);
-	bloom1ViewDesc.addColorAttachment(GraphicsTextureBinding(_texBloom1Map, 0, 0));
+	bloom1ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texBloom1Map, 0, 0));
 	bloom1ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
 	_texBloom1View = pipeline.createFramebuffer(bloom1ViewDesc);
 
 	GraphicsFramebufferDesc bloom2ViewDesc;
 	bloom2ViewDesc.setWidth(width / 4.0f);
 	bloom2ViewDesc.setHeight(height / 4.0f);
-	bloom2ViewDesc.addColorAttachment(GraphicsTextureBinding(_texBloom2Map, 0, 0));
+	bloom2ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texBloom2Map, 0, 0));
 	bloom2ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
 	_texBloom2View = pipeline.createFramebuffer(bloom2ViewDesc);
 
 	GraphicsFramebufferDesc sampleLogViewDesc;
 	sampleLogViewDesc.setWidth(256);
 	sampleLogViewDesc.setHeight(256);
-	sampleLogViewDesc.addColorAttachment(GraphicsTextureBinding(_texSampleLogMap, 0, 0));
+	sampleLogViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texSampleLogMap, 0, 0));
 	sampleLogViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
 	_texSampleLogView = pipeline.createFramebuffer(sampleLogViewDesc);
 
 	GraphicsFramebufferDesc sampleLog1ViewDesc;
 	sampleLog1ViewDesc.setWidth(1);
 	sampleLog1ViewDesc.setHeight(1);
-	sampleLog1ViewDesc.addColorAttachment(GraphicsTextureBinding(_texSampleLumMap, 0, 0));
+	sampleLog1ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texSampleLumMap, 0, 0));
 	sampleLog1ViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
 	_texSampleLumView = pipeline.createFramebuffer(sampleLog1ViewDesc);
 

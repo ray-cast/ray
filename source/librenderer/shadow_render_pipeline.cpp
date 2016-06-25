@@ -237,13 +237,13 @@ ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 	_shadowShadowDepthLinearViewTemps.resize(LightShadowType::LightShadowTypeRangeSize);
 
 	GraphicsFramebufferLayoutDesc shadowDephLayoutDesc;
-	shadowDephLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _shadowDepthFormat));
+	shadowDephLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _shadowDepthFormat));
 	_shadowShadowDepthImageLayout = pipeline.createFramebufferLayout(shadowDephLayoutDesc);
 	if (!_shadowShadowDepthImageLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
-	shaodwMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _shadowDepthLinearFormat));
+	shaodwMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _shadowDepthLinearFormat));
 	_shadowShadowDepthLinearImageLayout = pipeline.createFramebufferLayout(shaodwMapLayoutDesc);
 	if (!_shadowShadowDepthLinearImageLayout)
 		return false;
@@ -261,7 +261,7 @@ ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 		GraphicsFramebufferDesc shadowDepthViewDesc;
 		shadowDepthViewDesc.setWidth(shadowMapSize[i]);
 		shadowDepthViewDesc.setHeight(shadowMapSize[i]);
-		shadowDepthViewDesc.setDepthStencilAttachment(GraphicsTextureBinding(_shadowShadowDepthMapTemps[i], 0, 0));
+		shadowDepthViewDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_shadowShadowDepthMapTemps[i], 0, 0));
 		shadowDepthViewDesc.setGraphicsFramebufferLayout(_shadowShadowDepthImageLayout);
 		_shadowShadowDepthViewTemps[i] = pipeline.createFramebuffer(shadowDepthViewDesc);
 		if (!_shadowShadowDepthViewTemps[i])
@@ -270,7 +270,7 @@ ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 		GraphicsFramebufferDesc shadowDepthLinearViewDesc;
 		shadowDepthLinearViewDesc.setWidth(shadowMapSize[i]);
 		shadowDepthLinearViewDesc.setHeight(shadowMapSize[i]);
-		shadowDepthLinearViewDesc.addColorAttachment(GraphicsTextureBinding(_shadowShadowDepthLinearMapTemps[i], 0, 0));
+		shadowDepthLinearViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowShadowDepthLinearMapTemps[i], 0, 0));
 		shadowDepthLinearViewDesc.setGraphicsFramebufferLayout(_shadowShadowDepthLinearImageLayout);
 		_shadowShadowDepthLinearViewTemps[i] = pipeline.createFramebuffer(shadowDepthLinearViewDesc);
 		if (!_shadowShadowDepthLinearViewTemps[i])

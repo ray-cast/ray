@@ -343,8 +343,8 @@ bool
 VulkanSwapchain::initFramebuffer() noexcept
 {
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _swapchainDesc.getColorFormat()));
-	framebufferLayoutDesc.addComponent(GraphicsAttachment(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _swapchainDesc.getDepthStencilFormat()));
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _swapchainDesc.getColorFormat()));
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _swapchainDesc.getDepthStencilFormat()));
 	_swapchainFramebufferLayout = _device.lock()->createFramebufferLayout(framebufferLayoutDesc);
 
 	for (auto& swapchainImageView : _swapchainImageViews)
@@ -352,8 +352,8 @@ VulkanSwapchain::initFramebuffer() noexcept
 		GraphicsFramebufferDesc framebufferDesc;
 		framebufferDesc.setWidth(_swapchainDesc.getWidth());
 		framebufferDesc.setHeight(_swapchainDesc.getHeight());
-		framebufferDesc.addColorAttachment(GraphicsTextureBinding(swapchainImageView, 0, 0));
-		framebufferDesc.setDepthStencilAttachment(GraphicsTextureBinding(_swapchainDepthImageView, 0, 0));
+		framebufferDesc.addColorAttachment(GraphicsAttachmentBinding(swapchainImageView, 0, 0));
+		framebufferDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_swapchainDepthImageView, 0, 0));
 		framebufferDesc.setGraphicsFramebufferLayout(_swapchainFramebufferLayout);
 
 		auto framebuffer = this->getDevice()->createFramebuffer(framebufferDesc);

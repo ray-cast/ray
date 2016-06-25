@@ -328,7 +328,7 @@ Light::setupShadowMap() noexcept
 		return false;
 
 	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
-	shaodwMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, depthLinearFormat));
+	shaodwMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, depthLinearFormat));
 	_shadowDepthLinearViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwMapLayoutDesc);
 	if (!_shadowDepthLinearViewLayout)
 		return false;
@@ -336,7 +336,7 @@ Light::setupShadowMap() noexcept
 	GraphicsFramebufferDesc shadowViewDesc;
 	shadowViewDesc.setWidth(shadowMapSize);
 	shadowViewDesc.setHeight(shadowMapSize);
-	shadowViewDesc.addColorAttachment(GraphicsTextureBinding(_shadowDepthLinearMap, 0, 0));
+	shadowViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowDepthLinearMap, 0, 0));
 	shadowViewDesc.setGraphicsFramebufferLayout(_shadowDepthLinearViewLayout);
 	_shadowDepthLinearView = RenderSystem::instance()->createFramebuffer(shadowViewDesc);
 	if (!_shadowDepthLinearView)
@@ -410,9 +410,9 @@ Light::setupReflectiveShadowMap() noexcept
 		return false;
 
 	GraphicsFramebufferLayoutDesc shaodwRSMMapLayoutDesc;
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, shadowColorFormat));
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachment(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, shadowNormalFormat));
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachment(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, shadowDepthFormat));
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, shadowColorFormat));
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, shadowNormalFormat));
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, shadowDepthFormat));
 	_shadowRSMViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwRSMMapLayoutDesc);
 	if (!_shadowRSMViewLayout)
 		return false;
@@ -420,9 +420,9 @@ Light::setupReflectiveShadowMap() noexcept
 	GraphicsFramebufferDesc shadowRSMViewDesc;
 	shadowRSMViewDesc.setWidth(shadowMapSize);
 	shadowRSMViewDesc.setHeight(shadowMapSize);
-	shadowRSMViewDesc.addColorAttachment(GraphicsTextureBinding(_shadowColorMap, 0, 0));
-	shadowRSMViewDesc.addColorAttachment(GraphicsTextureBinding(_shadowNormalMap, 0, 0));
-	shadowRSMViewDesc.setDepthStencilAttachment(GraphicsTextureBinding(_shadowDepthMap, 0, 0));
+	shadowRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowColorMap, 0, 0));
+	shadowRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowNormalMap, 0, 0));
+	shadowRSMViewDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_shadowDepthMap, 0, 0));
 	shadowRSMViewDesc.setGraphicsFramebufferLayout(_shadowRSMViewLayout);
 	_shadowRSMView = RenderSystem::instance()->createFramebuffer(shadowRSMViewDesc);
 	if (!_shadowRSMView)

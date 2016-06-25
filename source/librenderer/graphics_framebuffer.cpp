@@ -41,109 +41,109 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsFramebuffer, GraphicsChild, "GraphicsFramebuffer")
 __ImplementSubInterface(GraphicsFramebufferLayout, GraphicsChild, "GraphicsFramebufferLayout")
 
-GraphicsAttachment::GraphicsAttachment() noexcept
+GraphicsAttachmentLayout::GraphicsAttachmentLayout() noexcept
 	: _type(GraphicsImageLayout::GraphicsImageLayoutUndefined)
 	, _slot(0)
 	, _format(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
-GraphicsAttachment::GraphicsAttachment(std::uint32_t slot, GraphicsImageLayout type, GraphicsFormat format) noexcept
+GraphicsAttachmentLayout::GraphicsAttachmentLayout(std::uint32_t slot, GraphicsImageLayout type, GraphicsFormat format) noexcept
 	: _type(type)
 	, _slot(slot)
 	, _format(format)
 {
 }
 
-GraphicsAttachment::~GraphicsAttachment() noexcept
+GraphicsAttachmentLayout::~GraphicsAttachmentLayout() noexcept
 {
 }
 
 void
-GraphicsAttachment::setAttachSlot(std::uint32_t slot) noexcept
+GraphicsAttachmentLayout::setAttachSlot(std::uint32_t slot) noexcept
 {
 	_slot = slot;
 }
 
 std::uint32_t
-GraphicsAttachment::getAttachSlot() const noexcept
+GraphicsAttachmentLayout::getAttachSlot() const noexcept
 {
 	return _slot;
 }
 
 void
-GraphicsAttachment::setAttachType(GraphicsImageLayout type) noexcept
+GraphicsAttachmentLayout::setAttachType(GraphicsImageLayout type) noexcept
 {
 	_type = type;
 }
 
 GraphicsImageLayout
-GraphicsAttachment::getAttachType() const noexcept
+GraphicsAttachmentLayout::getAttachType() const noexcept
 {
 	return _type;
 }
 
 void
-GraphicsAttachment::setAttachFormat(GraphicsFormat format) noexcept
+GraphicsAttachmentLayout::setAttachFormat(GraphicsFormat format) noexcept
 {
 	_format = format;
 }
 
 GraphicsFormat
-GraphicsAttachment::getAttachFormat() const noexcept
+GraphicsAttachmentLayout::getAttachFormat() const noexcept
 {
 	return _format;
 }
 
-GraphicsTextureBinding::GraphicsTextureBinding() noexcept
+GraphicsAttachmentBinding::GraphicsAttachmentBinding() noexcept
 	: _mipLevel(0)
 	, _layer(0)
 {
 }
 
-GraphicsTextureBinding::GraphicsTextureBinding(GraphicsTexturePtr texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept
+GraphicsAttachmentBinding::GraphicsAttachmentBinding(GraphicsTexturePtr texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept
 	: _mipLevel(mipLevel)
 	, _layer(layer)
 	, _texture(texture)
 {
 }
 
-GraphicsTextureBinding::~GraphicsTextureBinding() noexcept
+GraphicsAttachmentBinding::~GraphicsAttachmentBinding() noexcept
 {
 }
 
 void
-GraphicsTextureBinding::setBindingLevel(std::uint32_t mipLevel) noexcept
+GraphicsAttachmentBinding::setBindingLevel(std::uint32_t mipLevel) noexcept
 {
 	_mipLevel = mipLevel;
 }
 
 std::uint32_t 
-GraphicsTextureBinding::getBindingLevel() const noexcept
+GraphicsAttachmentBinding::getBindingLevel() const noexcept
 {
 	return _mipLevel;
 }
 
 void
-GraphicsTextureBinding::setBindingLayer(std::uint32_t layer) noexcept
+GraphicsAttachmentBinding::setBindingLayer(std::uint32_t layer) noexcept
 {
 	_layer = layer;
 }
 
 std::uint32_t 
-GraphicsTextureBinding::getBindingLayer() const noexcept
+GraphicsAttachmentBinding::getBindingLayer() const noexcept
 {
 	return _layer;
 }
 
 void
-GraphicsTextureBinding::setBindingTexture(GraphicsTexturePtr texture) noexcept
+GraphicsAttachmentBinding::setBindingTexture(GraphicsTexturePtr texture) noexcept
 {
 	_texture = texture;
 }
 
 GraphicsTexturePtr 
-GraphicsTextureBinding::getBindingTexture() const noexcept
+GraphicsAttachmentBinding::getBindingTexture() const noexcept
 {
 	return _texture;
 }
@@ -157,20 +157,20 @@ GraphicsFramebufferLayoutDesc::~GraphicsFramebufferLayoutDesc() noexcept
 }
 
 void
-GraphicsFramebufferLayoutDesc::addComponent(const GraphicsAttachment& component) noexcept
+GraphicsFramebufferLayoutDesc::addComponent(const GraphicsAttachmentLayout& component) noexcept
 {
 	assert(component.getAttachFormat() != GraphicsFormat::GraphicsFormatUndefined);
-	assert(std::find_if(_components.begin(), _components.end(), [&](const GraphicsAttachment& it) { return  it.getAttachSlot() == component.getAttachSlot(); }) == _components.end());
+	assert(std::find_if(_components.begin(), _components.end(), [&](const GraphicsAttachmentLayout& it) { return  it.getAttachSlot() == component.getAttachSlot(); }) == _components.end());
 	_components.push_back(component);
 }
 
 void 
-GraphicsFramebufferLayoutDesc::setComponents(const GraphicsAttachments& components) noexcept
+GraphicsFramebufferLayoutDesc::setComponents(const GraphicsAttachmentLayouts& components) noexcept
 {
 	_components = components;
 }
 
-const GraphicsAttachments&
+const GraphicsAttachmentLayouts&
 GraphicsFramebufferLayoutDesc::getComponents() const noexcept
 {
 	return _components;
@@ -224,38 +224,38 @@ GraphicsFramebufferDesc::getLayer() const noexcept
 }
 
 void 
-GraphicsFramebufferDesc::addColorAttachment(const GraphicsTextureBinding& texture) noexcept
+GraphicsFramebufferDesc::addColorAttachment(const GraphicsAttachmentBinding& texture) noexcept
 {
 	assert(texture.getBindingTexture());
 	_colorAttachments.push_back(texture);
 }
 
 void 
-GraphicsFramebufferDesc::setColorAttachments(const GraphicsTextureBindings& bindings) noexcept
+GraphicsFramebufferDesc::setColorAttachments(const GraphicsAttachmentBindings& bindings) noexcept
 {
 	_colorAttachments = bindings;
 }
 
-const GraphicsTextureBinding& 
+const GraphicsAttachmentBinding& 
 GraphicsFramebufferDesc::getColorAttachment(std::uint32_t n) const noexcept
 {
 	assert(n < _colorAttachments.size());
 	return _colorAttachments[n];
 }
 
-const GraphicsTextureBindings&
+const GraphicsAttachmentBindings&
 GraphicsFramebufferDesc::getColorAttachments() const noexcept
 {
 	return _colorAttachments;
 }
 
 void
-GraphicsFramebufferDesc::setDepthStencilAttachment(const GraphicsTextureBinding& attachment) noexcept
+GraphicsFramebufferDesc::setDepthStencilAttachment(const GraphicsAttachmentBinding& attachment) noexcept
 {
 	_depthDepthAttachment = attachment;
 }
 
-const GraphicsTextureBinding&
+const GraphicsAttachmentBinding&
 GraphicsFramebufferDesc::getDepthStencilAttachment() const noexcept
 {
 	return _depthDepthAttachment;

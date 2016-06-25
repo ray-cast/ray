@@ -179,20 +179,20 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
 
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachment(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8UNorm));
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8UNorm));
 	_framebufferLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
 
 	GraphicsFramebufferDesc ambientViewDesc;
 	ambientViewDesc.setWidth(width);
 	ambientViewDesc.setHeight(height);
-	ambientViewDesc.addColorAttachment(GraphicsTextureBinding(_texAmbientMap, 0, 0));
+	ambientViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texAmbientMap, 0, 0));
 	ambientViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texAmbientView = pipeline.createFramebuffer(ambientViewDesc);
 
 	GraphicsFramebufferDesc blurViewDesc;
 	blurViewDesc.setWidth(width);
 	blurViewDesc.setHeight(height);
-	blurViewDesc.addColorAttachment(GraphicsTextureBinding(_texBlurMap, 0, 0));
+	blurViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texBlurMap, 0, 0));
 	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
 

@@ -83,7 +83,7 @@ LightShaft::onActivate(RenderPipeline& pipeline) noexcept
 	_sampleMap = pipeline.createTexture(width / 2, height / 2, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
 
 	GraphicsFramebufferDesc sampleViewDesc;
-	sampleViewDesc.addColorAttachment(GraphicsTextureBinding(_sampleMap, 0, 0));
+	sampleViewDesc.addColorAttachment(GraphicsAttachmentBinding(_sampleMap, 0, 0));
 	_sampleView = pipeline.createFramebuffer(sampleViewDesc);
 }
 

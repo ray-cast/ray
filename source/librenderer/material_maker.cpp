@@ -186,9 +186,9 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 	{
 		std::string profile;
 		if (type == "vertex")
-			profile = "vs_4_0";
+			profile = "vs_5_0";
 		else if (type == "fragment")
-			profile = "ps_4_0";
+			profile = "ps_5_0";
 
 		ID3DBlob* binary = nullptr;
 		ID3DBlob* error = nullptr;

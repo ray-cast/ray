@@ -96,7 +96,7 @@
                 color += bloom;
                 color += ToneBlueShift(color, luminance(color));
                 color = FilmicTonemap(color, exposure * ToneExposure(aveLum));
-                return saturate(color);
+                return color;
             }
 
             void PostProcessVS(

@@ -11,13 +11,11 @@
             <attribute znear="0.1"/>
             <attribute zfar="100.0"/>
         </component>
-        <component class="FirstPersonCamera">
-        </component>
     </object>
     <object>
         <attribute name="spot"/>
-        <attribute position="0.78, 4, -2.795"/>
-        <attribute rotate="50,-45,0"/>
+        <attribute position="1.0, 2, -2.795"/>
+        <attribute rotate="30,-45,0"/>
         <attribute active="true"/>
         <component class="Light">
             <attribute type="spot"/>
@@ -28,6 +26,8 @@
             <attribute shadow="medium"/>
             <attribute soft="true"/>
             <attribute GI="true"/>
+        </component>
+        <component class="FirstPersonCamera">
         </component>
     </object>
     <object>

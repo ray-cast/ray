@@ -232,6 +232,13 @@ DeferredLightingPipeline::renderTransparentSpecificShading(RenderPipeline& pipel
 void
 DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
+	this->renderDirectLights(pipeline, target);
+	this->renderIndirectLights(pipeline, target);
+}
+
+void 
+DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+{
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 
@@ -264,25 +271,6 @@ DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebu
 			break;
 		case LightType::LightTypeSpot:
 			this->renderSpotLight(pipeline, *light);
-			break;
-		default:
-			break;
-		}
-	}
-
-	for (auto& it : lights)
-	{
-		auto light = it->downcast<Light>();
-		if (light->getLightType() == LightType::LightTypeAmbient)
-			continue;
-
-		if (!light->getGlobalIllumination())
-			continue;
-
-		switch (light->getLightType())
-		{
-		case LightType::LightTypeSpot:
-			this->renderIndirectSpotLight(pipeline, *light);
 			break;
 		default:
 			break;
@@ -406,10 +394,49 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 void 
 DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
+	_siiMRT0->uniformTexture(_deferredOpaqueMap);
+	_siiMRT1->uniformTexture(_deferredNormalMap);
+	_siiVPLsBuffer->uniformTexture(_mrsiiVPLsBufferMap);
+	_vplsDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
+
+	pipeline.setFramebuffer(_deferredLightingView);
+	pipeline.drawScreenQuad(*_mrsiiGatherIndirect, 255);
+}
+
+void
+DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+{
+	pipeline.setFramebuffer(target);
+
+	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
+	for (auto& it : lights)
+	{
+		auto light = it->downcast<Light>();
+		if (light->getLightType() == LightType::LightTypeAmbient)
+			continue;
+
+		if (!light->getGlobalIllumination())
+			continue;
+
+		switch (light->getLightType())
+		{
+		case LightType::LightTypeSpot:
+			this->computeSpotVPLBuffers(pipeline, *light);
+			this->renderIndirectSpotLight(pipeline, *light);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void 
+DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const Light& light) noexcept
+{
 	float gridCount = 255;
 	float gridSize = 16;
-	float gridOffset = 0.5f / 16.0f;
-	float gridDelta = 1.0f / 16.0f;
+	float gridOffset = 1.0f / 16.0f;
+	float gridDelta =  (15.0f / 16.0f) / 16.0f;
 
 	_vplsCountGridOffsetDelta->uniform4f(gridCount, gridSize, gridOffset, gridDelta);
 	_vplsColorMap->uniformTexture(light.getColorTexture());
@@ -425,14 +452,18 @@ DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, cons
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0f, 0);
 	pipeline.drawScreenQuad(*_mrsiiRsm2VPLsSpot);
 	pipeline.setCamera(camera);
+}
 
-	_siiMRT0->uniformTexture(_deferredOpaqueMap);
-	_siiMRT1->uniformTexture(_deferredNormalMap);
-	_siiVPLsBuffer->uniformTexture(_mrsiiVPLsBufferMap);
-	_vplsDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
+void 
+DeferredLightingPipeline::computeDepthDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst)
+{
+	pipeline.setFramebuffer(dst);
+}
 
-	pipeline.setFramebuffer(_deferredLightingView);
-	pipeline.drawScreenQuad(*_mrsiiGatherIndirect, gridCount);
+void 
+DeferredLightingPipeline::computeNormalDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst)
+{
+	pipeline.setFramebuffer(dst);
 }
 
 void
@@ -591,7 +622,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredDepthLinearDesc.setHeight(height);
 	_deferredDepthLinearDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthLinearDesc.setTexFormat(_deferredDepthLinearFormat);
-	_deferredDepthLinearDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredDepthLinearDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredDepthLinearDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredDepthLinearMap = pipeline.createTexture(_deferredDepthLinearDesc);
 	if (!_deferredDepthLinearMap)
@@ -602,7 +633,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredOpaqueDesc.setHeight(height);
 	_deferredOpaqueDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredOpaqueDesc.setTexFormat(_deferredOpaqueFormat);
-	_deferredOpaqueDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredOpaqueDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredOpaqueMap = pipeline.createTexture(_deferredOpaqueDesc);
 	if (!_deferredOpaqueMap)
 		return false;
@@ -622,7 +653,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredTransparentDesc.setHeight(height);
 	_deferredTransparentDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredTransparentDesc.setTexFormat(_deferredTransparentFormat);
-	_deferredTransparentDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredTransparentDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredTransparentMap = pipeline.createTexture(_deferredTransparentDesc);
 	if (!_deferredTransparentMap)
 		return false;
@@ -632,7 +663,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredAbufferDesc.setHeight(height);
 	_deferredAbufferDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredAbufferDesc.setTexFormat(_deferredAbufferFormat);
-	_deferredAbufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredAbufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredAbufferMap = pipeline.createTexture(_deferredAbufferDesc);
 	if (!_deferredAbufferMap)
 		return false;
@@ -642,7 +673,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredLightDesc.setHeight(height);
 	_deferredLightDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredLightDesc.setTexFormat(_deferredLightFormat);
-	_deferredLightDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredLightDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredLightingMap = pipeline.createTexture(_deferredLightDesc);
 	if (!_deferredLightingMap)
 		return false;
@@ -652,7 +683,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredShadingDesc.setHeight(height);
 	_deferredShadingDesc.setTexFormat(_deferredShadingFormat);
 	_deferredShadingDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
+	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_deferredShadingDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredOpaqueShadingMap = pipeline.createTexture(_deferredShadingDesc);
 	if (!_deferredOpaqueShadingMap)
@@ -859,6 +890,7 @@ DeferredLightingPipeline::setupMRSIIMaterials(RenderPipeline& pipeline) noexcept
 	_mrsii = pipeline.createMaterial("sys:fx/MRSII.fxml"); if (!_mrsii) return false;
 	_mrsiiRsm2VPLsSpot = _mrsii->getTech("RSM2VPLsSpot"); if (!_mrsiiRsm2VPLsSpot) return false;
 	_mrsiiGatherIndirect = _mrsii->getTech("GatherIndirect"); if (!_mrsiiGatherIndirect) return false;
+	_mrsiiGatherIndirectDebug = _mrsii->getTech("GatherIndirectDebug"); if (!_mrsiiGatherIndirectDebug) return false;
 
 	_vplsColorMap = _mrsii->getParameter("texColor");
 	_vplsNormalMap = _mrsii->getParameter("texNormal");

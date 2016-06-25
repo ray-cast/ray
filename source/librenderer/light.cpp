@@ -383,6 +383,7 @@ Light::setupReflectiveShadowMap() noexcept
 	shadowDepthDesc.setHeight(shadowMapSize);
 	shadowDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	shadowDepthDesc.setTexFormat(shadowDepthFormat);
+	shadowDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_shadowDepthMap = RenderSystem::instance()->createTexture(shadowDepthDesc);
 	if (!_shadowDepthMap)
 		return false;
@@ -392,6 +393,7 @@ Light::setupReflectiveShadowMap() noexcept
 	shadowColorDesc.setHeight(shadowMapSize);
 	shadowColorDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	shadowColorDesc.setTexFormat(shadowColorFormat);
+	shadowColorDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_shadowColorMap = RenderSystem::instance()->createTexture(shadowColorDesc);
 	if (!_shadowColorMap)
 		return false;
@@ -401,6 +403,7 @@ Light::setupReflectiveShadowMap() noexcept
 	shadowNormalDesc.setHeight(shadowMapSize);
 	shadowNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	shadowNormalDesc.setTexFormat(shadowNormalFormat);
+	shadowNormalDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_shadowNormalMap = RenderSystem::instance()->createTexture(shadowNormalDesc);
 	if (!_shadowNormalMap)
 		return false;

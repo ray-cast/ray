@@ -64,15 +64,22 @@ public:
 	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
 	void renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderDirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 	void renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderDirectionalLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderPointLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderIndirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
 	void copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept;
 	void copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
+
+private:
+	void computeSpotVPLBuffers(RenderPipeline& pipeline, const Light& light) noexcept;
+	void computeDepthDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst);
+	void computeNormalDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst);
 
 private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
@@ -107,6 +114,7 @@ private:
 	MaterialPtr _mrsii;
 	MaterialTechPtr _mrsiiRsm2VPLsSpot;
 	MaterialTechPtr _mrsiiGatherIndirect;
+	MaterialTechPtr _mrsiiGatherIndirectDebug;
 	MaterialParamPtr _vplsColorMap;
 	MaterialParamPtr _vplsNormalMap;
 	MaterialParamPtr _vplsDepthLinearMap;
@@ -119,6 +127,8 @@ private:
 	MaterialParamPtr _siiVPLsBuffer;
 
 	GraphicsTexturePtr _mrsiiVPLsBufferMap;
+	GraphicsTexturePtr _mrsiiDepthDerivBufferMaps[3];
+	GraphicsTexturePtr _mrsiiNormalDerivBufferMaps[3];
 
 	GraphicsFramebufferPtr _mrsiiVPLsView;
 	GraphicsFramebufferLayoutPtr _mrsiiVPLsViewLayout;

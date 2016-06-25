@@ -78,8 +78,7 @@ static int HaveUniformBindingsAndLocations(const GLLang eLang,const struct GlExt
 	if (flags & HLSLCC_FLAG_DISABLE_EXPLICIT_LOCATIONS)
 		return 0;
 
-	if (eLang >= LANG_430 || eLang == LANG_ES_310 ||
-		(extensions && ((GlExtensions*)extensions)->ARB_explicit_uniform_location && ((GlExtensions*)extensions)->ARB_shading_language_420pack))
+	if ((extensions && ((GlExtensions*)extensions)->ARB_explicit_uniform_location && ((GlExtensions*)extensions)->ARB_shading_language_420pack))
     {
         return 1;
     }

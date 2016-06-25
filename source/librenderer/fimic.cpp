@@ -210,7 +210,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 
 	GraphicsFramebufferDesc bloom1ViewDesc;
 	bloom1ViewDesc.setWidth(width / 4.0f);
-	bloom1ViewDesc.setHeight(width / 4.0f);
+	bloom1ViewDesc.setHeight(height / 4.0f);
 	bloom1ViewDesc.attach(_texBloom1Map);
 	bloom1ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
 	_texBloom1View = pipeline.createFramebuffer(bloom1ViewDesc);

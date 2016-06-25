@@ -92,6 +92,8 @@ private:
 
 	bool setupMRSIIMaterials(RenderPipeline& pipeline) noexcept;
 	bool setupMRSIITexture(RenderPipeline& pipeline) noexcept;
+	bool setupMRSIIRenderTextures(RenderPipeline& pipeline) noexcept;
+	bool setupMRSIIRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
 
 	void destroySemantic() noexcept;
 	void destroyDeferredMaterials() noexcept;
@@ -127,11 +129,18 @@ private:
 	MaterialParamPtr _siiVPLsBuffer;
 
 	GraphicsTexturePtr _mrsiiVPLsBufferMap;
-	GraphicsTexturePtr _mrsiiDepthDerivBufferMaps[3];
-	GraphicsTexturePtr _mrsiiNormalDerivBufferMaps[3];
+	GraphicsTexturePtr _mrsiiDepthDerivMap;
+	GraphicsTexturePtr _mrsiiNormalDerivMap;
+	GraphicsTexturePtr _mrsiiSubsplatStencilMap;
 
+	GraphicsFramebuffers _mrsiiDepthDerivViews;
+	GraphicsFramebuffers _mrsiiNormalDerivViews;
+	GraphicsFramebuffers _mrsiiSubsplatStencilViews;
 	GraphicsFramebufferPtr _mrsiiVPLsView;
 	GraphicsFramebufferLayoutPtr _mrsiiVPLsViewLayout;
+	GraphicsFramebufferLayoutPtr _mrsiiDepthDerivViewLayout;
+	GraphicsFramebufferLayoutPtr _mrsiiNormalDerivViewLayout;
+	GraphicsFramebufferLayoutPtr _mrsiiSubsplatStencilViewLayout;
 
 	MaterialPtr _deferredLighting;
 	MaterialTechPtr _deferredDepthOnly;

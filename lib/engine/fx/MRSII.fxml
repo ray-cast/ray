@@ -105,6 +105,7 @@
                 float3 viewPosition = restorePosition(texDepthLinear, coord.xy, V);
 
                 float4 lightColor = texVPLBuffer.Sample(PointClamp, float2(coord.z, 0.0f));
+                float4 lightNormal = texVPLBuffer.Sample(PointClamp, float2(coord.z, 0.5f));
                 float4 lightPosition = texVPLBuffer.Sample(PointClamp, float2(coord.z, 1.0f));
                 float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
 
@@ -120,6 +121,7 @@
                 {
                     lighting.rgb = brdfLambert(viewNormal, lightDirection, lightColor.xyz) * lightColor.w;
                     lighting *= attenuationTerm(viewPosition, lightPosition.xyz, float3(1, 0, 1));
+                    //lighting *= max(0, dot(lightNormal, -lightDirection));
                 }
 
                 return lighting;
@@ -233,7 +235,7 @@
                     float depthDeriv = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.y).x;
                     float4 normal = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.y);
                     float normDeriv = max(normal.z - normal.x, normal.w - normal.y);
-                    if (any(float2(depthDeriv, normDeriv) > threshold))
+                    if (any(float2(depthDeriv, normDeriv) <= threshold))
                     {
                         discard;
                     }

@@ -312,7 +312,7 @@ MyGuiRenderTexture::MyGuiRenderTexture(GraphicsTexturePtr texture) noexcept
 	_framebufferLayout = RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
 
 	GraphicsFramebufferDesc framebufferDesc;
-	framebufferDesc.attach(texture);
+	framebufferDesc.addColorAttachment(GraphicsTextureBinding(texture, 0, 0));
 	framebufferDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_framebuffer = RenderSystem::instance()->createFramebuffer(framebufferDesc);
 }

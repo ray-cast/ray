@@ -67,53 +67,88 @@ OGLCoreFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexce
 		return false;
 	}
 
-	auto sharedDepthStnecilTarget = framebufferDesc.getSharedDepthStencilTexture();
-	if (sharedDepthStnecilTarget)
-	{
-		auto format = sharedDepthStnecilTarget->getGraphicsTextureDesc().getTexFormat();
-		if (OGLTypes::isDepthStencilFormat(format))
-		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_STENCIL_ATTACHMENT, framebufferDesc.getLayer()))
-				return false;
-		}
-		else if (OGLTypes::isDepthFormat(format))
-		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_ATTACHMENT, framebufferDesc.getLayer()))
-				return false;
-		}
-		else if (OGLTypes::isStencilFormat(format))
-		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_STENCIL_ATTACHMENT, framebufferDesc.getLayer()))
-				return false;
-		}
-		else
-		{
-			GL_PLATFORM_LOG("Invalid texture format");
-			return false;
-		}
-	}
+	GLenum drawCount = 0;
+	GLenum drawBuffers[GL_COLOR_ATTACHMENT15 - GL_COLOR_ATTACHMENT0];
 
-	GLenum draw[GL_COLOR_ATTACHMENT15 - GL_COLOR_ATTACHMENT0];
-	GLenum attachment = 0;
-
-	auto& textures = framebufferDesc.getTextures();
-	if (framebufferDesc.getTextures().size() > (sizeof(draw) / sizeof(draw[0])))
+	const auto& textureComponents = framebufferDesc.getGraphicsFramebufferLayout()->getGraphicsFramebufferLayoutDesc().getComponents();
+	const auto& colorAttachments = framebufferDesc.getColorAttachments();
+	if (colorAttachments.size() > (sizeof(drawBuffers) / sizeof(drawBuffers[0])))
 	{
-		GL_PLATFORM_LOG("The color attachment in framebuffer is out of range");
+		GL_PLATFORM_LOG("The color attachment in framebuffer is out of range.");
 		return false;
 	}
 
-	for (auto& texture : textures)
+	for (std::size_t i = 0; i < textureComponents.size(); i++)
 	{
-		if (!this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0 + attachment, framebufferDesc.getLayer()))
-			return false;
+		auto type = textureComponents[i].getAttachType();
+		switch (type)
+		{
+		case GraphicsImageLayout::GraphicsImageLayoutGeneral:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal:
+		{
+			GLint slot = GL_COLOR_ATTACHMENT0 + textureComponents[i].getAttachSlot();
+			GLint mipLevel = colorAttachments[drawCount].getBindingLevel();
+			GLint layer = colorAttachments[drawCount].getBindingLayer();
 
-		draw[attachment] = GL_COLOR_ATTACHMENT0 + attachment;
+			if (!this->bindRenderTexture(colorAttachments[drawCount].getBindingTexture(), slot, mipLevel, layer))
+				return false;
 
-		attachment++;
+			drawBuffers[drawCount++] = slot;
+		}
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal:
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal:
+		{
+			const auto& depthStencilAttachment = framebufferDesc.getDepthStencilAttachment();
+			if (!depthStencilAttachment.getBindingTexture())
+			{
+				GL_PLATFORM_LOG("Need depth or stencil texture.");
+				return false;
+			}
+
+			auto texture = depthStencilAttachment.getBindingTexture();
+			auto format = texture->getGraphicsTextureDesc().getTexFormat();
+			auto level = depthStencilAttachment.getBindingLevel();
+			auto layer = depthStencilAttachment.getBindingLayer();
+
+			if (OGLTypes::isDepthStencilFormat(format))
+			{
+				if (!this->bindRenderTexture(texture, GL_DEPTH_STENCIL_ATTACHMENT, level, layer))
+					return false;
+			}
+			else if (OGLTypes::isDepthFormat(format))
+			{
+				if (!this->bindRenderTexture(texture, GL_DEPTH_ATTACHMENT, level, layer))
+					return false;
+			}
+			else if (OGLTypes::isStencilFormat(format))
+			{
+				if (!this->bindRenderTexture(texture, GL_STENCIL_ATTACHMENT, level, layer))
+					return false;
+			}
+			else
+			{
+				GL_PLATFORM_LOG("Invalid texture format");
+				return false;
+			}
+		}
+		case GraphicsImageLayout::GraphicsImageLayoutShaderReadOnlyOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutTransferSrcOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutTransferDstOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutPreinitialized:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutPresentSrcKhr:
+			break;
+		default:
+			break;
+		}
 	}
 
-	glNamedFramebufferDrawBuffers(_fbo, attachment, draw);
+	glNamedFramebufferDrawBuffers(_fbo, drawCount, drawBuffers);
 
 	_framebufferDesc = framebufferDesc;
 	return OGLCheck::checkError();
@@ -154,7 +189,7 @@ OGLCoreFramebuffer::getInstanceID() noexcept
 }
 
 bool
-OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attachment, GLint layer) noexcept
+OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attachment, GLint level, GLint layer) noexcept
 {
 	assert(renderTexture);
 
@@ -162,7 +197,7 @@ OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum a
 	auto textureID = texture->getInstanceID();
 	auto& textureDesc = renderTexture->getGraphicsTextureDesc();
 
-	if (layer > 1)
+	if (layer > 0)
 	{
 		if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
 			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
@@ -172,11 +207,11 @@ OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum a
 			return false;
 		}
 		
-		glNamedFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer - 1);
+		glNamedFramebufferTextureLayer(_fbo, attachment, textureID, level, layer);
 	}
 	else
 	{
-		glNamedFramebufferTexture(_fbo, attachment, textureID, 0);
+		glNamedFramebufferTexture(_fbo, attachment, textureID, level);
 	}
 
 	return OGLCheck::checkError();

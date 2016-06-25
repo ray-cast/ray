@@ -98,6 +98,7 @@ typedef std::shared_ptr<class GraphicsVertexLayout> GraphicsVertexLayoutPtr;
 typedef std::shared_ptr<class GraphicsVertexBinding> GraphicsVertexBindingPtr;
 typedef std::shared_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponentPtr;
 typedef std::shared_ptr<class GraphicsAttachment> GraphicsAttachmentPtr;
+typedef std::shared_ptr<class GraphicsTextureBinding> GraphicsTextureBindingPtr;
 
 typedef std::weak_ptr<class GraphicsDevice> GraphicsDeviceWeakPtr;
 typedef std::weak_ptr<class GraphicsDeviceProperty> GraphicsDevicePropertyWeakPtr;
@@ -149,6 +150,7 @@ typedef std::weak_ptr<class GraphicsVertexLayout> GraphicsVertexLayoutWeakPtr;
 typedef std::weak_ptr<class GraphicsVertexBinding> GraphicsVertexBindingWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponentWeakPtr;
 typedef std::weak_ptr<class GraphicsAttachment> GraphicsAttachmentWeakPtr;
+typedef std::weak_ptr<class GraphicsTextureBinding> GraphicsTextureBindingWeakPtr;
 
 typedef std::vector<GraphicsDevicePtr> GraphicsDevices;
 typedef std::vector<GraphicsDevicePropertyPtr> GraphicsDevicePropertys;
@@ -191,6 +193,7 @@ typedef std::vector<GraphicsVertexLayout> GraphicsVertexLayouts;
 typedef std::vector<GraphicsVertexBinding> GraphicsVertexBindings;
 typedef std::vector<GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
 typedef std::vector<GraphicsAttachment> GraphicsAttachments;
+typedef std::vector<GraphicsTextureBinding> GraphicsTextureBindings;
 typedef std::vector<class GraphicsColorBlend> GraphicsColorBlends;
 
 typedef std::vector<GraphicsDeviceWeakPtr> GraphicsDeviceWeaks;

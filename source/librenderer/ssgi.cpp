@@ -176,14 +176,14 @@ SSGI::onActivate(RenderPipeline& pipeline) noexcept
 	GraphicsFramebufferDesc ambientViewDesc;
 	ambientViewDesc.setWidth(width);
 	ambientViewDesc.setHeight(height);
-	ambientViewDesc.attach(_texAmbientMap);
+	ambientViewDesc.addColorAttachment(GraphicsTextureBinding(_texAmbientMap, 0, 0));
 	ambientViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texAmbientView = pipeline.createFramebuffer(ambientViewDesc);
 
 	GraphicsFramebufferDesc blurViewDesc;
 	blurViewDesc.setWidth(width);
 	blurViewDesc.setHeight(height);
-	blurViewDesc.attach(_texBlurMap);
+	blurViewDesc.addColorAttachment(GraphicsTextureBinding(_texBlurMap, 0, 0));
 	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
 
@@ -259,7 +259,7 @@ SSGI::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;
 
-	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
+	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 
 	this->computeRawGI(pipeline, texture, _texAmbientView);
 	this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);

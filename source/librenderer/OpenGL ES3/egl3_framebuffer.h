@@ -77,14 +77,12 @@ public:
 	bool setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept;
 	void close() noexcept;
 
-	void discard() noexcept;
-
 	GLuint getInstanceID() noexcept;
 
 	const GraphicsFramebufferDesc& getGraphicsFramebufferDesc() const noexcept;
 
 private:
-	bool bindRenderTexture(GraphicsTexturePtr target, GLenum attachment, GLuint layer) noexcept;
+	bool bindRenderTexture(GraphicsTexturePtr target, GLenum attachment, GLint level, GLint layer) noexcept;
 
 private:
 	friend class EGL3Device;

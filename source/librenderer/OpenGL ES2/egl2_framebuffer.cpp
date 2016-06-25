@@ -98,7 +98,7 @@ EGL2Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 	assert(framebufferDesc.getGraphicsFramebufferLayout());
 	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
-	std::uint32_t numAttachment = framebufferDesc.getTextures().size();
+	std::uint32_t numAttachment = framebufferDesc.getColorAttachments().size();
 	if (numAttachment > 1)
 	{
 		GL_PLATFORM_LOG("Can't support multi framebuffer");
@@ -114,37 +114,73 @@ EGL2Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 
 	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
 
-	auto sharedDepthTarget = framebufferDesc.getSharedDepthStencilTexture();
-	if (sharedDepthTarget)
+	const auto& textureComponents = framebufferDesc.getGraphicsFramebufferLayout()->getGraphicsFramebufferLayoutDesc().getComponents();
+	const auto& colorAttachments = framebufferDesc.getColorAttachments();
+
+	for (std::size_t i = 0; i < textureComponents.size(); i++)
 	{
-		auto format = sharedDepthTarget->getGraphicsTextureDesc().getTexFormat();
-		if (EGL2Types::isDepthStencilFormat(format))
+		auto type = textureComponents[i].getAttachType();
+		switch (type)
 		{
-			GL_PLATFORM_LOG("Can't support DepthStencil attachment");
-			return false;
-		}
-		else if (EGL2Types::isDepthFormat(format))
+		case GraphicsImageLayout::GraphicsImageLayoutGeneral:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal:
 		{
-			if (!this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_ATTACHMENT))
+			GLint slot = GL_COLOR_ATTACHMENT0 + textureComponents[i].getAttachSlot();
+			GLint mipLevel = colorAttachments[0].getBindingLevel();
+			GLint layer = colorAttachments[0].getBindingLayer();
+
+			if (!this->bindRenderTexture(colorAttachments[0].getBindingTexture(), slot, mipLevel, layer))
 				return false;
 		}
-		else if (EGL2Types::isStencilFormat(format))
+		break;
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal:
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal:
 		{
-			if (!this->bindRenderTexture(sharedDepthTarget, GL_STENCIL_ATTACHMENT))
+			const auto& depthStencilAttachment = framebufferDesc.getDepthStencilAttachment();
+			if (!depthStencilAttachment.getBindingTexture())
+			{
+				GL_PLATFORM_LOG("Need depth or stencil texture.");
 				return false;
+			}
+
+			auto texture = depthStencilAttachment.getBindingTexture();
+			auto format = texture->getGraphicsTextureDesc().getTexFormat();
+			auto level = depthStencilAttachment.getBindingLevel();
+			auto layer = depthStencilAttachment.getBindingLayer();
+
+			if (EGL2Types::isDepthFormat(format))
+			{
+				if (!this->bindRenderTexture(texture, GL_DEPTH_ATTACHMENT, level, layer))
+					return false;
+			}
+			else if (EGL2Types::isStencilFormat(format))
+			{
+				if (!this->bindRenderTexture(texture, GL_STENCIL_ATTACHMENT, level, layer))
+					return false;
+			}
+			else
+			{
+				GL_PLATFORM_LOG("Invalid texture format");
+				return false;
+			}
 		}
-		else
-		{
-			GL_PLATFORM_LOG("Invalid texture format");
-			return false;
+		case GraphicsImageLayout::GraphicsImageLayoutShaderReadOnlyOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutTransferSrcOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutTransferDstOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutPreinitialized:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutPresentSrcKhr:
+			break;
+		default:
+			break;
 		}
 	}
 
-	if (numAttachment != 0)
-	{
-		if (!this->bindRenderTexture(framebufferDesc.getTextures().front(), GL_COLOR_ATTACHMENT0))
-			return false;
-	}
+	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
 
 	_framebufferDesc = framebufferDesc;
 
@@ -168,7 +204,7 @@ EGL2Framebuffer::getInstanceID() noexcept
 }
 
 bool
-EGL2Framebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
+EGL2Framebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment, GLint level, GLint layer) noexcept
 {
 	assert(texture);
 

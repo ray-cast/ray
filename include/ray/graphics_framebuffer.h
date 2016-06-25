@@ -63,6 +63,28 @@ private:
 	GraphicsImageLayout _type;
 };
 
+class EXPORT GraphicsTextureBinding final
+{
+public:
+	GraphicsTextureBinding() noexcept;
+	GraphicsTextureBinding(GraphicsTexturePtr texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept;
+	~GraphicsTextureBinding() noexcept;
+
+	void setBindingLevel(std::uint32_t mipLevel) noexcept;
+	std::uint32_t getBindingLevel() const noexcept;
+
+	void setBindingLayer(std::uint32_t layer) noexcept;
+	std::uint32_t getBindingLayer() const noexcept;
+
+	void setBindingTexture(GraphicsTexturePtr texture) noexcept;
+	GraphicsTexturePtr getBindingTexture() const noexcept;
+
+private:
+	std::uint32_t _mipLevel;
+	std::uint32_t _layer;
+	GraphicsTexturePtr _texture;
+};
+
 class EXPORT GraphicsFramebufferLayoutDesc final
 {
 public:
@@ -92,14 +114,13 @@ public:
 	std::uint32_t getHeight() const noexcept;
 	std::uint32_t getLayer() const noexcept;
 
-	void attach(GraphicsTexturePtr texture) noexcept;
-	void detach(GraphicsTexturePtr texture) noexcept;
+	void addColorAttachment(const GraphicsTextureBinding& texture) noexcept;
+	void setColorAttachments(const GraphicsTextureBindings& bindings) noexcept;
+	const GraphicsTextureBinding& getColorAttachment(std::uint32_t n) const noexcept;
+	const GraphicsTextureBindings& getColorAttachments() const noexcept;
 
-	GraphicsTextures& getTextures() noexcept;
-	const GraphicsTextures& getTextures() const noexcept;
-
-	void setSharedDepthStencilTexture(GraphicsTexturePtr target) noexcept;
-	GraphicsTexturePtr getSharedDepthStencilTexture() const noexcept;
+	void setDepthStencilAttachment(const GraphicsTextureBinding& target) noexcept;
+	const GraphicsTextureBinding& getDepthStencilAttachment() const noexcept;
 
 	void setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr layout) noexcept;
 	GraphicsFramebufferLayoutPtr getGraphicsFramebufferLayout() const noexcept;
@@ -109,8 +130,8 @@ private:
 	std::uint32_t _height;
 	std::uint32_t _layer;
 
-	GraphicsTextures _textures;
-	GraphicsTexturePtr _sharedDepthStencilTexture;
+	GraphicsTextureBindings _colorAttachments;
+	GraphicsTextureBinding _depthDepthAttachment;
 	GraphicsFramebufferLayoutPtr _framebufferLayout;
 };
 

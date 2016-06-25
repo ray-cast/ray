@@ -105,7 +105,7 @@ ColorGrading::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFram
 		return false;
 
 	_gammGrading->uniform2i(int2(_enableGammaGrading, _enableColorGrading));
-	_texSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());
+	_texSource->uniformTexture(source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 
 	GraphicsAttachmentType attachment[] = { GraphicsAttachmentType::GraphicsAttachmentTypeColor0 };
 

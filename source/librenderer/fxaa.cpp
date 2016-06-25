@@ -79,7 +79,7 @@ FXAA::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;
 
-	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
+	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 
 	auto& textureDesc = texture->getGraphicsTextureDesc();
 	_texelStep->uniform2f(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));

@@ -80,7 +80,9 @@ private:
 	void computeSpotVPLBuffers(RenderPipeline& pipeline, const Light& light) noexcept;
 	void computeDepthDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst);
 	void computeNormalDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst);
-
+	void computeSubsplatStencil(RenderPipeline& pipeline, const GraphicsTexturePtr& depth, const GraphicsTexturePtr& normal, GraphicsFramebufferPtr dst);
+	void computeUpsamplingMultiresBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst);
+	
 private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
 
@@ -117,6 +119,12 @@ private:
 	MaterialTechPtr _mrsiiRsm2VPLsSpot;
 	MaterialTechPtr _mrsiiGatherIndirect;
 	MaterialTechPtr _mrsiiGatherIndirectDebug;
+	MaterialTechPtr	_mrsiiDepthDerivate;
+	MaterialTechPtr _mrsiiDepthDerivateMipmap;
+	MaterialTechPtr _mrsiiNormalDerivate;
+	MaterialTechPtr	_mrsiiNormalDerivateMipmap;
+	MaterialTechPtr _mrsiiComputeSubsplatStencil;
+	MaterialTechPtr _mrsiiUpsampling;
 	MaterialParamPtr _vplsColorMap;
 	MaterialParamPtr _vplsNormalMap;
 	MaterialParamPtr _vplsDepthLinearMap;

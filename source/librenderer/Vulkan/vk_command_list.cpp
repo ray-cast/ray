@@ -357,10 +357,10 @@ VulkanCommandList::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 	auto& framebufferDesc = _framebuffer->downcast<VulkanFramebuffer>()->getGraphicsFramebufferDesc();
 	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
 	{
-		auto& textures = framebufferDesc.getTextures();
+		auto& textures = framebufferDesc.getColorAttachments();
 		if (i < textures.size())
 		{
-			auto& textureDesc = textures[i]->getGraphicsTextureDesc();
+			auto& textureDesc = textures[i].getBindingTexture()->getGraphicsTextureDesc();
 			attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			attachment[usageCount].colorAttachment = i;
 			attachment[usageCount].clearValue.color.float32[0] = color.x;
@@ -382,8 +382,8 @@ VulkanCommandList::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit ||
 		flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
 	{
-		auto depthStencil = framebufferDesc.getSharedDepthStencilTexture();
-		if (depthStencil)
+		auto depthStencil = framebufferDesc.getDepthStencilAttachment();
+		if (depthStencil.getBindingTexture())
 		{
 			VkImageAspectFlags aspectMask = 0;
 			if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
@@ -396,7 +396,7 @@ VulkanCommandList::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 			attachment[usageCount].clearValue.depthStencil.stencil = stencil;
 			attachment[usageCount].colorAttachment = 0;
 
-			auto& textureDesc = depthStencil->getGraphicsTextureDesc();
+			auto& textureDesc = depthStencil.getBindingTexture()->getGraphicsTextureDesc();
 			rects[usageCount].baseArrayLayer = textureDesc.getLayerBase();
 			rects[usageCount].layerCount = textureDesc.getLayerNums();
 			rects[usageCount].rect.offset.x = 0;

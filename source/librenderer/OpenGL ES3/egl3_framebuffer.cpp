@@ -108,53 +108,88 @@ EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
-	auto sharedDepthStnecilTarget = framebufferDesc.getSharedDepthStencilTexture();
-	if (sharedDepthStnecilTarget)
-	{
-		auto format = sharedDepthStnecilTarget->getGraphicsTextureDesc().getTexFormat();
-		if (EGL3Types::isDepthStencilFormat(format))
-		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_STENCIL_ATTACHMENT, framebufferDesc.getLayer()))
-				return false;
-		}
-		else if (EGL3Types::isDepthFormat(format))
-		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_ATTACHMENT, framebufferDesc.getLayer()))
-				return false;
-		}
-		else if (EGL3Types::isStencilFormat(format))
-		{
-			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_STENCIL_ATTACHMENT, framebufferDesc.getLayer()))
-				return false;
-		}
-		else
-		{
-			GL_PLATFORM_LOG("Invalid texture format.");
-			return false;
-		}
-	}
+	GLenum drawCount = 0;
+	GLenum drawBuffers[GL_COLOR_ATTACHMENT15 - GL_COLOR_ATTACHMENT0];
 
-	GLenum draw[GL_COLOR_ATTACHMENT15 - GL_COLOR_ATTACHMENT0];
-	GLenum attachment = 0;
-
-	auto& textures = framebufferDesc.getTextures();
-	if (framebufferDesc.getTextures().size() > (sizeof(draw) / sizeof(draw[0])))
+	const auto& textureComponents = framebufferDesc.getGraphicsFramebufferLayout()->getGraphicsFramebufferLayoutDesc().getComponents();
+	const auto& colorAttachments = framebufferDesc.getColorAttachments();
+	if (colorAttachments.size() > (sizeof(drawBuffers) / sizeof(drawBuffers[0])))
 	{
 		GL_PLATFORM_LOG("The color attachment in framebuffer is out of range.");
 		return false;
 	}
 
-	for (auto& texture : textures)
+	for (std::size_t i = 0; i < textureComponents.size(); i++)
 	{
-		if (!this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0 + attachment, framebufferDesc.getLayer()))
-			return false;
+		auto type = textureComponents[i].getAttachType();
+		switch (type)
+		{
+		case GraphicsImageLayout::GraphicsImageLayoutGeneral:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal:
+		{
+			GLint slot = GL_COLOR_ATTACHMENT0 + textureComponents[i].getAttachSlot();
+			GLint mipLevel = colorAttachments[drawCount].getBindingLevel();
+			GLint layer = colorAttachments[drawCount].getBindingLayer();
 
-		draw[attachment] = GL_COLOR_ATTACHMENT0 + attachment;
+			if (!this->bindRenderTexture(colorAttachments[drawCount].getBindingTexture(), slot, mipLevel, layer))
+				return false;
 
-		attachment++;
+			drawBuffers[drawCount++] = slot;
+		}
+		break;
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal:
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal:
+		{
+			const auto& depthStencilAttachment = framebufferDesc.getDepthStencilAttachment();
+			if (!depthStencilAttachment.getBindingTexture())
+			{
+				GL_PLATFORM_LOG("Need depth or stencil texture.");
+				return false;
+			}
+
+			auto texture = depthStencilAttachment.getBindingTexture();
+			auto format = texture->getGraphicsTextureDesc().getTexFormat();
+			auto level = depthStencilAttachment.getBindingLevel();
+			auto layer = depthStencilAttachment.getBindingLayer();
+
+			if (EGL3Types::isDepthStencilFormat(format))
+			{
+				if (!this->bindRenderTexture(texture, GL_DEPTH_STENCIL_ATTACHMENT, level, layer))
+					return false;
+			}
+			else if (EGL3Types::isDepthFormat(format))
+			{
+				if (!this->bindRenderTexture(texture, GL_DEPTH_ATTACHMENT, level, layer))
+					return false;
+			}
+			else if (EGL3Types::isStencilFormat(format))
+			{
+				if (!this->bindRenderTexture(texture, GL_STENCIL_ATTACHMENT, level, layer))
+					return false;
+			}
+			else
+			{
+				GL_PLATFORM_LOG("Invalid texture format");
+				return false;
+			}
+		}
+		case GraphicsImageLayout::GraphicsImageLayoutShaderReadOnlyOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutTransferSrcOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutTransferDstOptimal:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutPreinitialized:
+			break;
+		case GraphicsImageLayout::GraphicsImageLayoutPresentSrcKhr:
+			break;
+		default:
+			break;
+		}
 	}
 
-	GL_CHECK(glDrawBuffers(attachment, draw));
+	GL_CHECK(glDrawBuffers(drawCount, drawBuffers));
 	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
 
 	_framebufferDesc = framebufferDesc;
@@ -171,24 +206,6 @@ EGL3Framebuffer::close() noexcept
 	}
 }
 
-void
-EGL3Framebuffer::discard() noexcept
-{
-	GLenum attachments[24];
-	GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-	auto& targets = _framebufferDesc.getTextures();
-	auto size = targets.size();
-
-	for (std::size_t i = 0; i < size; i++)
-	{
-		attachments[i] = attachment;
-		attachment++;
-	}
-
-	glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
-}
-
 GLuint
 EGL3Framebuffer::getInstanceID() noexcept
 {
@@ -196,7 +213,7 @@ EGL3Framebuffer::getInstanceID() noexcept
 }
 
 bool
-EGL3Framebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attachment, GLuint layer) noexcept
+EGL3Framebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attachment, GLint level, GLint layer) noexcept
 {
 	assert(renderTexture);
 
@@ -205,7 +222,7 @@ EGL3Framebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum atta
 	auto textureTarget = texture->getTarget();
 	auto& textureDesc = renderTexture->getGraphicsTextureDesc();
 
-	if (layer > 1)
+	if (layer > 0)
 	{
 		if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
 			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
@@ -215,11 +232,11 @@ EGL3Framebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum atta
 			return false;
 		}
 		
-		GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer - 1));
+		GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, level, layer));
 	}
 	else
 	{
-		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textureTarget, textureID, 0));
+		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textureTarget, textureID, level));
 	}
 
 	return EGL3Check::checkError();

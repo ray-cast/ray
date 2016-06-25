@@ -117,7 +117,7 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 		auto& depthLienarFrambuffer = camera->getDepthLinearFramebuffer();
 
 		auto shadowFrambuffer = depthFrambuffer ? depthFrambuffer : _shadowShadowDepthViewTemps[lightShadowType];
-		auto shadowTexture = shadowFrambuffer->getGraphicsFramebufferDesc().getSharedDepthStencilTexture();
+		auto shadowTexture = shadowFrambuffer->getGraphicsFramebufferDesc().getDepthStencilAttachment().getBindingTexture();
 		auto shadowTextureSizeInv = float2(1.0f / shadowTexture->getGraphicsTextureDesc().getWidth(), 1.0f / shadowTexture->getGraphicsTextureDesc().getHeight());
 
 		_pipeline->setCamera(camera);
@@ -261,7 +261,7 @@ ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 		GraphicsFramebufferDesc shadowDepthViewDesc;
 		shadowDepthViewDesc.setWidth(shadowMapSize[i]);
 		shadowDepthViewDesc.setHeight(shadowMapSize[i]);
-		shadowDepthViewDesc.setSharedDepthStencilTexture(_shadowShadowDepthMapTemps[i]);
+		shadowDepthViewDesc.setDepthStencilAttachment(GraphicsTextureBinding(_shadowShadowDepthMapTemps[i], 0, 0));
 		shadowDepthViewDesc.setGraphicsFramebufferLayout(_shadowShadowDepthImageLayout);
 		_shadowShadowDepthViewTemps[i] = pipeline.createFramebuffer(shadowDepthViewDesc);
 		if (!_shadowShadowDepthViewTemps[i])
@@ -270,7 +270,7 @@ ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 		GraphicsFramebufferDesc shadowDepthLinearViewDesc;
 		shadowDepthLinearViewDesc.setWidth(shadowMapSize[i]);
 		shadowDepthLinearViewDesc.setHeight(shadowMapSize[i]);
-		shadowDepthLinearViewDesc.attach(_shadowShadowDepthLinearMapTemps[i]);
+		shadowDepthLinearViewDesc.addColorAttachment(GraphicsTextureBinding(_shadowShadowDepthLinearMapTemps[i], 0, 0));
 		shadowDepthLinearViewDesc.setGraphicsFramebufferLayout(_shadowShadowDepthLinearImageLayout);
 		_shadowShadowDepthLinearViewTemps[i] = pipeline.createFramebuffer(shadowDepthLinearViewDesc);
 		if (!_shadowShadowDepthLinearViewTemps[i])

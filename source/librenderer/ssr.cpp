@@ -74,7 +74,7 @@ SSR::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPt
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;
 
-	_texSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());
+	_texSource->uniformTexture(source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 
 	pipeline.setFramebuffer(source);
 	pipeline.drawScreenQuad(*_ssrPass);

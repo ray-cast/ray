@@ -158,7 +158,7 @@ SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 
 	_texDepthLinear->uniformTexture(linearDepth);
 
-	_sssSource->uniformTexture(source->getGraphicsFramebufferDesc().getTextures().front());
+	_sssSource->uniformTexture(source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 	_sssFactor->uniform3f(_sssStrength / widght, 0.0f, _sssCorrection);
 
 	pipeline.setFramebuffer(swap);

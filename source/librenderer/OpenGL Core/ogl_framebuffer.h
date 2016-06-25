@@ -84,7 +84,7 @@ public:
 	const GraphicsFramebufferDesc& getGraphicsFramebufferDesc() const noexcept;
 
 private:
-	bool bindRenderTexture(GraphicsTexturePtr target, GLenum attachment, GLint layer) noexcept;
+	bool bindRenderTexture(GraphicsTexturePtr target, GLenum attachment, GLint level, GLint layer) noexcept;
 
 private:
 	friend class OGLDevice;

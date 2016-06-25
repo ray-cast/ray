@@ -157,15 +157,15 @@ EnvironmentIrradiance::setup(RenderPipeline& pipeline) noexcept
 		return false;
 
 	GraphicsFramebufferDesc paraboloidDualDesc;
-	paraboloidDualDesc.attach(_paraboloidFrontMap);
-	paraboloidDualDesc.attach(_paraboloidBackMap);
+	paraboloidDualDesc.addColorAttachment(GraphicsTextureBinding(_paraboloidFrontMap, 0, 0));
+	paraboloidDualDesc.addColorAttachment(GraphicsTextureBinding(_paraboloidBackMap, 0, 0));
 	_paraboloidDualViews = pipeline.createFramebuffer(paraboloidDualDesc);
 	if (!_paraboloidDualViews)
 		return false;
 
 	GraphicsFramebufferDesc irradianceSHCoefficientsDesc;
-	irradianceSHCoefficientsDesc.attach(_paraboloidFrontMap);
-	irradianceSHCoefficientsDesc.attach(_paraboloidBackMap);
+	irradianceSHCoefficientsDesc.addColorAttachment(GraphicsTextureBinding(_paraboloidFrontMap, 0, 0));
+	irradianceSHCoefficientsDesc.addColorAttachment(GraphicsTextureBinding(_paraboloidBackMap, 0, 0));
 	_irradianceSHCoefficientsView = pipeline.createFramebuffer(irradianceSHCoefficientsDesc);
 	if (!_irradianceSHCoefficientsView)
 		return false;

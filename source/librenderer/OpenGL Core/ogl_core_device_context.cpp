@@ -407,7 +407,7 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->getInstanceID());
 
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
-			auto& colorAttachment = framebufferDesc.getTextures();
+			auto& colorAttachment = framebufferDesc.getColorAttachments();
 
 			std::size_t viewportCount = std::max<std::size_t>(1, colorAttachment.size());
 			for (std::size_t i = 0; i < viewportCount; i++)

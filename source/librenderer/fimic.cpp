@@ -211,28 +211,28 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	GraphicsFramebufferDesc bloom1ViewDesc;
 	bloom1ViewDesc.setWidth(width / 4.0f);
 	bloom1ViewDesc.setHeight(height / 4.0f);
-	bloom1ViewDesc.attach(_texBloom1Map);
+	bloom1ViewDesc.addColorAttachment(GraphicsTextureBinding(_texBloom1Map, 0, 0));
 	bloom1ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
 	_texBloom1View = pipeline.createFramebuffer(bloom1ViewDesc);
 
 	GraphicsFramebufferDesc bloom2ViewDesc;
 	bloom2ViewDesc.setWidth(width / 4.0f);
 	bloom2ViewDesc.setHeight(height / 4.0f);
-	bloom2ViewDesc.attach(_texBloom2Map);
+	bloom2ViewDesc.addColorAttachment(GraphicsTextureBinding(_texBloom2Map, 0, 0));
 	bloom2ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
 	_texBloom2View = pipeline.createFramebuffer(bloom2ViewDesc);
 
 	GraphicsFramebufferDesc sampleLogViewDesc;
 	sampleLogViewDesc.setWidth(256);
 	sampleLogViewDesc.setHeight(256);
-	sampleLogViewDesc.attach(_texSampleLogMap);
+	sampleLogViewDesc.addColorAttachment(GraphicsTextureBinding(_texSampleLogMap, 0, 0));
 	sampleLogViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
 	_texSampleLogView = pipeline.createFramebuffer(sampleLogViewDesc);
 
 	GraphicsFramebufferDesc sampleLog1ViewDesc;
 	sampleLog1ViewDesc.setWidth(1);
 	sampleLog1ViewDesc.setHeight(1);
-	sampleLog1ViewDesc.attach(_texSampleLumMap);
+	sampleLog1ViewDesc.addColorAttachment(GraphicsTextureBinding(_texSampleLumMap, 0, 0));
 	sampleLog1ViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
 	_texSampleLumView = pipeline.createFramebuffer(sampleLog1ViewDesc);
 
@@ -334,7 +334,7 @@ FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphics
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;
 
-	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
+	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 
 	this->sunLum(pipeline, texture, _texBloom1View);
 	this->sunLumLog(pipeline, _texBloom1Map, _texSampleLogView);

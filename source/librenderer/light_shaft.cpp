@@ -83,7 +83,7 @@ LightShaft::onActivate(RenderPipeline& pipeline) noexcept
 	_sampleMap = pipeline.createTexture(width / 2, height / 2, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
 
 	GraphicsFramebufferDesc sampleViewDesc;
-	sampleViewDesc.attach(_sampleMap);
+	sampleViewDesc.addColorAttachment(GraphicsTextureBinding(_sampleMap, 0, 0));
 	_sampleView = pipeline.createFramebuffer(sampleViewDesc);
 }
 
@@ -104,7 +104,7 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) noexcept
 bool
 LightShaft::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
-	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
+	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 
 	pipeline.setFramebuffer(_sampleView);
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);

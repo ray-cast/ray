@@ -352,8 +352,8 @@ VulkanSwapchain::initFramebuffer() noexcept
 		GraphicsFramebufferDesc framebufferDesc;
 		framebufferDesc.setWidth(_swapchainDesc.getWidth());
 		framebufferDesc.setHeight(_swapchainDesc.getHeight());
-		framebufferDesc.attach(swapchainImageView);
-		framebufferDesc.setSharedDepthStencilTexture(_swapchainDepthImageView);
+		framebufferDesc.addColorAttachment(GraphicsTextureBinding(swapchainImageView, 0, 0));
+		framebufferDesc.setDepthStencilAttachment(GraphicsTextureBinding(_swapchainDepthImageView, 0, 0));
 		framebufferDesc.setGraphicsFramebufferLayout(_swapchainFramebufferLayout);
 
 		auto framebuffer = this->getDevice()->createFramebuffer(framebufferDesc);

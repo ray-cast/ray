@@ -82,7 +82,7 @@ public:
 	const GraphicsFramebufferDesc& getGraphicsFramebufferDesc() const noexcept;
 
 private:
-	bool bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
+	bool bindRenderTexture(GraphicsTexturePtr target, GLenum attachment, GLint level, GLint layer) noexcept;
 
 private:
 	friend class EGL2Device;

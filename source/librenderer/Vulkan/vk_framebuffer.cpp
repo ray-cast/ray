@@ -179,7 +179,7 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 	assert(framebufferDesc.getGraphicsFramebufferLayout()->isInstanceOf<VulkanFramebufferLayout>());
 	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
-	const auto& renderTextures = framebufferDesc.getTextures();
+	const auto& colorAttachment = framebufferDesc.getColorAttachments();
 	const auto& framebufferLayoutDesc = framebufferDesc.getGraphicsFramebufferLayout()->getGraphicsFramebufferLayoutDesc();
 	const auto& framebufferAttachments = framebufferLayoutDesc.getComponents();
 
@@ -188,13 +188,13 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 		auto format = attachment.getAttachFormat();
 		if (VulkanTypes::isDepthStencilFormat(format))
 		{
-			if (!framebufferDesc.getSharedDepthStencilTexture())
+			if (!framebufferDesc.getDepthStencilAttachment().getBindingTexture())
 			{
 				VK_PLATFORM_LOG("Empty depth stencil texture");
 				return false;
 			}
 
-			if (format != framebufferDesc.getSharedDepthStencilTexture()->getGraphicsTextureDesc().getTexFormat())
+			if (format != framebufferDesc.getDepthStencilAttachment().getBindingTexture()->getGraphicsTextureDesc().getTexFormat())
 			{
 				VK_PLATFORM_LOG("Invlid depth stencil texture");
 				return false;
@@ -202,13 +202,13 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 		}
 		else if (VulkanTypes::isDepthFormat(format))
 		{
-			if (!framebufferDesc.getSharedDepthStencilTexture())
+			if (!framebufferDesc.getDepthStencilAttachment().getBindingTexture())
 			{
 				VK_PLATFORM_LOG("Empty depth texture");
 				return false;
 			}
 
-			if (format != framebufferDesc.getSharedDepthStencilTexture()->getGraphicsTextureDesc().getTexFormat())
+			if (format != framebufferDesc.getDepthStencilAttachment().getBindingTexture()->getGraphicsTextureDesc().getTexFormat())
 			{
 				VK_PLATFORM_LOG("Invlid depth texture");
 				return false;
@@ -221,10 +221,10 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 		}
 	}
 
-	std::vector<VkImageView> imageViews(renderTextures.size());
-	for (std::size_t i = 0; i < renderTextures.size(); i++)
+	std::vector<VkImageView> imageViews(colorAttachment.size());
+	for (std::size_t i = 0; i < colorAttachment.size(); i++)
 	{
-		const auto texture = renderTextures[i]->downcast<VulkanTexture>();
+		const auto texture = colorAttachment[i].getBindingTexture()->downcast<VulkanTexture>();
 		const auto& textureDesc = texture->getGraphicsTextureDesc();
 
 		if (textureDesc.getWidth() < framebufferDesc.getWidth() &&
@@ -237,9 +237,9 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 		imageViews[i] = texture->getImageView();
 	}
 
-	if (framebufferDesc.getSharedDepthStencilTexture())
+	if (framebufferDesc.getDepthStencilAttachment().getBindingTexture())
 	{
-		const auto texture = framebufferDesc.getSharedDepthStencilTexture()->downcast<VulkanTexture>();
+		const auto texture = framebufferDesc.getDepthStencilAttachment().getBindingTexture()->downcast<VulkanTexture>();
 		imageViews.push_back(texture->getImageView());
 	}
 

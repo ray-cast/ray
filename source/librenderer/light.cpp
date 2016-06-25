@@ -322,6 +322,7 @@ Light::setupShadowMap() noexcept
 	depthLinearDesc.setHeight(shadowMapSize);
 	depthLinearDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	depthLinearDesc.setTexFormat(depthLinearFormat);
+	depthLinearDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_shadowDepthLinearMap = RenderSystem::instance()->createTexture(depthLinearDesc);
 	if (!_shadowDepthLinearMap)
 		return false;

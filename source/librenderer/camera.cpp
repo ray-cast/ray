@@ -427,7 +427,7 @@ Camera::_updatePerspective() const noexcept
 
 	_clipConstant.x = _znear * (_zfar / (_zfar - _znear));
 	_clipConstant.y = _zfar / (_zfar - _znear);
-	_clipConstant.z = 1.0;
+	_clipConstant.z = _znear;
 	_clipConstant.w = _zfar;
 }
 

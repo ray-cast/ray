@@ -108,7 +108,7 @@
                 float4 lightPosition = texVPLBuffer.Sample(PointClamp, float2(coord.z, 1.0f));
                 float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
 
-                if (lightColor.w < 0.01)
+                if (lightColor.w < 0.001)
                 {
                     discard;
                 }
@@ -139,7 +139,13 @@
 
             float4 GatherIndirectDebugPS(in float4 coord0 : TEXCOORD0) : SV_Target
             {
-                return texVPLBuffer.Sample(PointClamp, coord0.xy);
+                float4 lightColor = texVPLBuffer.Sample(PointClamp, coord0.xy);
+                if (lightColor.w < 0.001)
+                {
+                    discard;
+                }
+
+                return lightColor;
             }
 
             float DepthDerivatePS(in float2 coord : TEXCOORD0) : SV_Target

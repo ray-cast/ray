@@ -295,7 +295,7 @@ DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& 
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f((light.getCamera(0)->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightView->uniform4f(light.getCamera(0)->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
 		_shadowView2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawScreenQuadLayer(*_deferredSunLightShadow, light.getLayer());
@@ -321,7 +321,7 @@ DeferredLightingPipeline::renderDirectionalLight(RenderPipeline& pipeline, const
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f((light.getCamera(0)->getView()).getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightView->uniform4f(light.getCamera(0)->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
 		_shadowView2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawScreenQuadLayer(*_deferredDirectionalLightShadow, light.getLayer());

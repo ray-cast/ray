@@ -73,8 +73,8 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 	GL_CHECK(glBindTexture(target, _texture));
 
-	GLsizei w = (GLsizei)textureDesc.getWidth();
-	GLsizei h = (GLsizei)textureDesc.getHeight();
+	GLsizei width = (GLsizei)textureDesc.getWidth();
+	GLsizei height = (GLsizei)textureDesc.getHeight();
 
 	GLsizei mipBase = textureDesc.getMipBase();
 	GLsizei mipLevel = textureDesc.getMipLevel();
@@ -100,12 +100,11 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 		for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 		{
-			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
+			GLsizei w = std::max(width / (1 << mip), 1);
+			GLsizei h = std::max(height / (1 << mip), 1);
+			GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
 			GL_CHECK(glCompressedTexImage2D(GL_TEXTURE_2D, mip, internalFormat, w, h, 0, mipSize, (char*)stream + offset));
-
-			w = std::max(w >> 1, 1);
-			h = std::max(h >> 1, 1);
 
 			offset += stream ? mipSize : 0;
 		}
@@ -143,6 +142,8 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 		for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 		{
+			GLsizei w = std::max(width / (1 << mip), 1);
+			GLsizei h = std::max(height / (1 << mip), 1);
 			GLsizei mipSize = w * h * pixelSize;
 			GLsizei layerBase = textureDesc.getLayerBase() + 1;
 			GLsizei layerLevel = textureDesc.getLayerNums();

@@ -75,8 +75,8 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 	GL_CHECK(glBindTexture(target, _texture));
 
-	GLsizei w = (GLsizei)textureDesc.getWidth();
-	GLsizei h = (GLsizei)textureDesc.getHeight();
+	GLsizei width = (GLsizei)textureDesc.getWidth();
+	GLsizei height = (GLsizei)textureDesc.getHeight();
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
 	GLsizei mipBase = textureDesc.getMipBase();
@@ -95,15 +95,15 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		return false;
 
 	if (target == GL_TEXTURE_2D)
-		GL_CHECK(glTexStorage2D(target, mipLevel, internalFormat, w, h));
+		GL_CHECK(glTexStorage2D(target, mipLevel, internalFormat, width, height));
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		GL_CHECK(glTexStorage2DMultisample(target, mipLevel, internalFormat, w, h, GL_FALSE));
+		GL_CHECK(glTexStorage2DMultisample(target, mipLevel, internalFormat, width, height, GL_FALSE));
 	else if (target == GL_TEXTURE_2D_ARRAY)
-		GL_CHECK(glTexStorage3D(target, mipLevel, internalFormat, w, h, depth));
+		GL_CHECK(glTexStorage3D(target, mipLevel, internalFormat, width, height, depth));
 	else if (target == GL_TEXTURE_3D)
-		GL_CHECK(glTexStorage3D(target, mipLevel, internalFormat, w, h, depth));
+		GL_CHECK(glTexStorage3D(target, mipLevel, internalFormat, width, height, depth));
 	else if (target == GL_TEXTURE_CUBE_MAP)
-		GL_CHECK(glTexStorage2D(target, mipLevel, internalFormat, w, h));
+		GL_CHECK(glTexStorage2D(target, mipLevel, internalFormat, width, height));
 
 	auto stream = textureDesc.getStream();
 	if (stream)
@@ -119,12 +119,11 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
+				GLsizei w = std::max(width / (1 << mip), 1);
+				GLsizei h = std::max(height / (1 << mip), 1);
 				GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
 				glCompressedTexSubImage2D(target, mip, 0, 0, w, h, internalFormat, mipSize, (char*)stream + offset);
-
-				w = std::max(w >> 1, 1);
-				h = std::max(h >> 1, 1);
 
 				offset += mipSize;
 			}
@@ -162,6 +161,8 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
+				GLsizei w = std::max(width / (1 << mip), 1);
+				GLsizei h = std::max(height / (1 << mip), 1);
 				GLsizei mipSize = w * h * pixelSize;
 				GLsizei layerBase = textureDesc.getLayerBase() + 1;
 				GLsizei layerLevel = textureDesc.getLayerNums();
@@ -192,9 +193,6 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 							offset += mipSize * depth;
 						}
 					}
-
-					w = std::max(w >> 1, 1);
-					h = std::max(h >> 1, 1);
 				}
 			}
 

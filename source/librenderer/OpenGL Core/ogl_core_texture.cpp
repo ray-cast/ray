@@ -73,8 +73,8 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		return false;
 	}
 
-	GLsizei w = (GLsizei)textureDesc.getWidth();
-	GLsizei h = (GLsizei)textureDesc.getHeight();
+	GLsizei width = (GLsizei)textureDesc.getWidth();
+	GLsizei height = (GLsizei)textureDesc.getHeight();
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
 	GLsizei mipBase = textureDesc.getMipBase();
@@ -93,19 +93,19 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		return false;
 
 	if (target == GL_TEXTURE_2D)
-		glTextureStorage2D(_texture, mipLevel, internalFormat, w, h);
+		glTextureStorage2D(_texture, mipLevel, internalFormat, width, height);
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		glTextureStorage2DMultisample(_texture, mipLevel, internalFormat, w, h, GL_FALSE);
+		glTextureStorage2DMultisample(_texture, mipLevel, internalFormat, width, height, GL_FALSE);
 	else if (target == GL_TEXTURE_2D_ARRAY)
-		glTextureStorage3D(_texture, mipLevel, internalFormat, w, h, depth);
+		glTextureStorage3D(_texture, mipLevel, internalFormat, width, height, depth);
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-		glTextureStorage3DMultisample(_texture, mipLevel, internalFormat, w, h, depth, GL_FALSE);
+		glTextureStorage3DMultisample(_texture, mipLevel, internalFormat, width, height, depth, GL_FALSE);
 	else if (target == GL_TEXTURE_3D)
-		glTextureStorage3D(_texture, mipLevel, internalFormat, w, h, depth);
+		glTextureStorage3D(_texture, mipLevel, internalFormat, width, height, depth);
 	else if (target == GL_TEXTURE_CUBE_MAP)
-		glTextureStorage2D(_texture, mipLevel, internalFormat, w, h);
+		glTextureStorage2D(_texture, mipLevel, internalFormat, width, height);
 	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
-		glTextureStorage3D(_texture, mipLevel, internalFormat, w, h, depth);
+		glTextureStorage3D(_texture, mipLevel, internalFormat, width, height, depth);
 
 	auto stream = textureDesc.getStream();
 	if (stream)
@@ -121,12 +121,11 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
+				GLsizei w = std::max(width / (1 << mip), 1);
+				GLsizei h = std::max(height / (1 << mip), 1);
 				GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
 				glCompressedTextureSubImage2D(_texture, mip, 0, 0, w, h, internalFormat, mipSize, (char*)stream + offset);
-
-				w = std::max(w >> 1, 1);
-				h = std::max(h >> 1, 1);
 
 				offset += mipSize;
 			}
@@ -157,6 +156,8 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
+				GLsizei w = std::max(width / (1 << mip), 1);
+				GLsizei h = std::max(height / (1 << mip), 1);
 				GLsizei mipSize = w * h * pixelSize;
 				GLsizei layerBase = textureDesc.getLayerBase() + 1;
 				GLsizei layerLevel = textureDesc.getLayerNums();
@@ -181,9 +182,6 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 							offset += mipSize * depth;
 						}
 					}
-
-					w = std::max(w >> 1, 1);
-					h = std::max(h >> 1, 1);
 				}
 			}
 

@@ -520,7 +520,7 @@ GraphicsVariant::uniform4ui(const uint4& value) noexcept
 void
 GraphicsVariant::uniform4ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3, std::uint32_t ui4) noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUInt4);
 	_value.ui[0] = ui1;
 	_value.ui[1] = ui2;
 	_value.ui[2] = ui3;

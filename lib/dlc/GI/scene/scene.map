@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <scene>
-    <attribute name="SSR"/>
+    <attribute name="GI"/>
     <object>
         <attribute name="first_person_camera"/>
         <attribute position="0,0,-10"/>

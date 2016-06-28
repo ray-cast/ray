@@ -559,12 +559,9 @@ DeferredLightingPipeline::computeSubsplatStencil(RenderPipeline& pipeline, const
 
 	for (std::uint32_t i = _mrsiiDerivMipBase; i < _mrsiiDerivMipBase + _mrsiiDerivMipCount; i++)
 	{
-		if (i == _mrsiiDerivMipBase)
-			_mrsiiMipmapLevel->uniform4i(i, i + 1, 0, 1);
-		else if (i == _mrsiiDerivMipBase + _mrsiiDerivMipCount - 1)
-			_mrsiiMipmapLevel->uniform4i(i, i + 1, 1, 0);
-		else
-			_mrsiiMipmapLevel->uniform4i(i, i + 1, 1, 1);
+		int isNotFinestLevel = (i == _mrsiiDerivMipBase) ? 0 : 1;
+		int isNotCoarsestLevel = (i == _mrsiiDerivMipBase + _mrsiiDerivMipCount - 1) ? 0 : 1;
+		_mrsiiMipmapLevel->uniform4i(i, i + 1, isNotFinestLevel, isNotCoarsestLevel);
 
 		pipeline.setFramebuffer(dst[i]);
 		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);

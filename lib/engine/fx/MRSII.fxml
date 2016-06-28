@@ -7,7 +7,6 @@
     <parameter name="texNormal" type="texture2D"/>
     <parameter name="texDepthLinear" type="texture2D"/>
     <parameter name="texVPLBuffer" type="texture2D"/>
-    <parameter name="texSource" type="texture2D"/>
     <parameter name="texMRT0" type="texture2D"/>
     <parameter name="texMRT1" type="texture2D"/>
     <parameter name="lightOuterInner" type="float2"/>
@@ -158,8 +157,8 @@
 
                 for (int i = 1; i < 9; ++i)
                 {
-                    float2 step = w[i] * offset;
-                    float depth = texDepthLinear.Sample(PointClamp, coord + offset).x;
+                    float2 step = coord + w[i] * offset;
+                    float depth = texDepthLinear.Sample(PointClamp, step).x;
                     maxDepth = max(maxDepth, depth);
                     minDepth = min(minDepth, depth);
                 }
@@ -167,15 +166,15 @@
                 return maxDepth - minDepth;
             }
 
-            float DepthDerivateMipmapPS(in float2 coord :TEXCOORD) : SV_Target
+            float DepthDerivateMipmapPS(in float2 coord : TEXCOORD) : SV_Target
             {
                 float2 w[9] = { float2(0, 0), float2(-1,  0), float2(-1,  1), float2(0, 1), float2( 1,  1), float2( 1,  0), float2(1,-1), float2( 0, -1), float2(-1, -1) };
-                float maxDepth = texDepthLinear.Sample(PointClamp, coord).x;
+                float maxDepth = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.x).x;
 
                 for (int i = 1; i < 9; ++i)
                 {
-                    float2 step = w[i] * offset;
-                    float depth = texDepthLinear.Sample(PointClamp, coord + offset).x;
+                    float2 step = coord + w[i] * offset;
+                    float depth = texDepthLinear.SampleLevel(PointClamp, step, mipmapLevel.x).x;
                     maxDepth = max(maxDepth, depth);
                 }
 
@@ -191,25 +190,25 @@
 
                 for (int i = 1; i < 9; ++i)
                 {
-                    float2 step = w[i] * offset;
-                    float2 normal = restoreNormal(texNormal.Sample(PointClamp, coord + offset)).xy;
+                    float2 step = coord + w[i] * offset;
+                    float2 normal = restoreNormal(texNormal.Sample(PointClamp, step)).xy;
                     maxNormal = max(maxNormal, normal);
                     minNormal = min(minNormal, normal);
                 }
 
-                return float4(minNormal, maxNormal);
+                return float4(minNormal, maxNormal) * 0.5 + 0.5;
             }
 
             float4 NormalDerivateMipmapPS(in float2 coord : TEXCOORD0) : SV_Target
             {
                 float2 w[9] = { float2(0, 0), float2(-1,  0), float2(-1,  1), float2(0, 1), float2( 1,  1), float2( 1,  0), float2(1,-1), float2( 0, -1), float2(-1, -1) };
 
-                float4 minmax = texNormal.Sample(PointClamp, coord);
+                float4 minmax = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.x);
 
                 for (int i = 1; i < 9; ++i)
                 {
-                    float2 step = w[i] * offset;
-                    float4 normal = texNormal.Sample(PointClamp, coord + offset);
+                    float2 step = coord + w[i] * offset;
+                    float4 normal = texNormal.SampleLevel(PointClamp, step, mipmapLevel.x);
                     minmax.xy = min(minmax.xy, normal.xy);
                     minmax.zw = max(minmax.zw, normal.zw);
                 }
@@ -217,39 +216,45 @@
                 return minmax;
             }
 
-            float ComputeSubsplatStencilPS(in float2 coord : TEXCOORD0) : SV_Target
+            float4 ComputeSubsplatStencilPS(in float2 coord : TEXCOORD0) : SV_Target
             {
-                if (mipmapPass.x)
-                {
-                    float depth = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.x).x;
-                    float4 normal = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.x);
-                    float normDeriv = max(normal.z - normal.x, normal.w - normal.y);
-                    if (any(float2(depth, normDeriv) > threshold))
-                    {
-                        discard;
-                    }
-                }
+                float depthThresh0 = threshold.x * (3.0 / mipmapLevel.x);
+                float depthThresh1 = threshold.x * (3.0 / mipmapLevel.y);
 
-                if (mipmapPass.y)
-                {
-                    float depthDeriv = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.y).x;
-                    float4 normal = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.y);
-                    float normDeriv = max(normal.z - normal.x, normal.w - normal.y);
-                    if (any(float2(depthDeriv, normDeriv) <= threshold))
-                    {
-                        discard;
-                    }
-                }
+                float depthDeriv0 = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.x).r;
+                float depthDeriv1 = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.y).r;
+
+                float4 minMaxNorm0 = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.x);
+                float4 minMaxNorm1 = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.y);
+                float normDeriv0 = max(minMaxNorm0.z - minMaxNorm0.x, minMaxNorm0.w - minMaxNorm0.y);
+                float normDeriv1 = max(minMaxNorm1.z - minMaxNorm1.x, minMaxNorm1.w - minMaxNorm1.y);
+
+                bool invalid0 = (normDeriv0 < -1) ? true : false;
+                bool invalid1 = (normDeriv1 < -1) ? true : false;
+
+                bool atCoarsestLevel = ( mipmapLevel.y > 2 ) ? true : false;
+                bool atFinestLevel   = ( mipmapLevel.x <= 0.5 ) ? true : false;
+                bool needRefinment = (depthDeriv0 > depthThresh0) || (normDeriv0 > threshold.y);
+                bool coarseLevelSufficient = (depthDeriv1 <= depthThresh1) && (normDeriv1 <= threshold.y) && !invalid1;
+
+                if (needRefinment && !atFinestLevel)
+                    discard;
+
+                if (coarseLevelSufficient && !atCoarsestLevel)
+                    discard;
+
+                if (invalid0)
+                    discard;
 
                 return 1;
             }
 
             float4 UpsamplingPS(float2 coord : TEXCOORD0) : SV_Target
             {
-                float3 color0 = texSource.SampleLevel(PointClamp, coord, mipmapLevel.x).xyz;
-                float3 color1 = texSource.SampleLevel(PointClamp, coord, mipmapLevel.y).xyz;
+                float3 color0 = texColor.SampleLevel(PointClamp, coord, mipmapLevel.x).xyz;
+                float3 color1 = texColor.SampleLevel(PointClamp, coord, mipmapLevel.y).xyz;
 
-                return float4(color0 + color1, 1);
+                return float4(color0 + color1, 0);
             }
         ]]>
     </shader>
@@ -281,6 +286,12 @@
             <state name="blenddst" value="one"/>
             <state name="blendalphasrc" value="one"/>
             <state name="blendalphadst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
         </pass>
     </technique>
     <technique name="GatherIndirectDebug">
@@ -350,6 +361,7 @@
             <state name="fragment" value="ComputeSubsplatStencilPS"/>
 
             <state name="cullmode" value="none"/>
+            <state name="colormask" value="none"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -357,6 +369,8 @@
             <state name="stencilTest" value="true"/>
             <state name="stencilPass" value="replace"/>
             <state name="stencilTwoPass" value="replace"/>
+            <state name="stencilRef" value="1"/>
+            <state name="stencilTwoRef" value="1"/>
         </pass>
     </technique>
     <technique name="Upsampling">
@@ -366,9 +380,29 @@
             <state name="fragment" value="UpsamplingPS"/>
 
             <state name="cullmode" value="none"/>
+            <state name="colormask" value="rgb"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="UpsamplingWithBlend">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="UpsamplingPS"/>
+
+            <state name="cullmode" value="none"/>
+            <state name="colormask" value="rgb"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
         </pass>
     </technique>
 </effect>

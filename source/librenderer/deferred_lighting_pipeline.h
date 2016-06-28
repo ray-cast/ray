@@ -78,11 +78,11 @@ public:
 
 private:
 	void computeSpotVPLBuffers(RenderPipeline& pipeline, const Light& light) noexcept;
-	void computeDepthDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst);
-	void computeNormalDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst);
-	void computeSubsplatStencil(RenderPipeline& pipeline, const GraphicsTexturePtr& depth, const GraphicsTexturePtr& normal, GraphicsFramebufferPtr dst);
-	void computeUpsamplingMultiresBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst);
-	
+	void computeDepthDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, const GraphicsFramebuffers& dst);
+	void computeNormalDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, const GraphicsFramebuffers& dst);
+	void computeSubsplatStencil(RenderPipeline& pipeline, const GraphicsTexturePtr& depth, const GraphicsTexturePtr& normal, const GraphicsFramebuffers& dst);
+	void computeUpsamplingMultiresBuffer(RenderPipeline& pipeline, GraphicsTexturePtr src, const GraphicsFramebuffers& srcviews, GraphicsFramebufferPtr dst);
+
 private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
 
@@ -102,6 +102,11 @@ private:
 	void destroyDeferredTextures() noexcept;
 	void destroyDeferredRenderTextures() noexcept;
 	void destroyDeferredRenderTextureLayouts() noexcept;
+
+	void destroyMRSIIMaterials(RenderPipeline& pipeline) noexcept;
+	void destroyMRSIITexture(RenderPipeline& pipeline) noexcept;
+	void destroyMRSIIRenderTextures(RenderPipeline& pipeline) noexcept;
+	void destroyMRSIIRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
 
 private:
 	virtual void onRenderPre() noexcept;
@@ -125,30 +130,39 @@ private:
 	MaterialTechPtr	_mrsiiNormalDerivateMipmap;
 	MaterialTechPtr _mrsiiComputeSubsplatStencil;
 	MaterialTechPtr _mrsiiUpsampling;
-	MaterialParamPtr _vplsColorMap;
-	MaterialParamPtr _vplsNormalMap;
-	MaterialParamPtr _vplsDepthLinearMap;
-	MaterialParamPtr _vplsSpotOuterInner;
-	MaterialParamPtr _vplsLightAttenuation;
-	MaterialParamPtr _vplsCountGridOffsetDelta;
-	MaterialParamPtr _vplsLightView2EyeView;
-	MaterialParamPtr _siiMRT0;
-	MaterialParamPtr _siiMRT1;
-	MaterialParamPtr _siiVPLsBuffer;
+	MaterialTechPtr _mrsiiUpsamplingWithBlend;
+	MaterialParamPtr _mrsiiColorMap;
+	MaterialParamPtr _mrsiiNormalMap;
+	MaterialParamPtr _mrsiiDepthLinearMap;
+	MaterialParamPtr _mrsiiSpotOuterInner;
+	MaterialParamPtr _mrsiiLightAttenuation;
+	MaterialParamPtr _mrsiiCountGridOffsetDelta;
+	MaterialParamPtr _mrsiiLightView2EyeView;
+	MaterialParamPtr _mrsiiOffset;
+	MaterialParamPtr _mrsiiMRT0;
+	MaterialParamPtr _mrsiiMRT1;
+	MaterialParamPtr _mrsiiVPLsBuffer;
+	MaterialParamPtr _mrsiiMipmapLevel;
+	MaterialParamPtr _mrsiiMipmapPass;
+	MaterialParamPtr _mrsiiThreshold;
 
 	GraphicsTexturePtr _mrsiiVPLsBufferMap;
 	GraphicsTexturePtr _mrsiiDepthDerivMap;
 	GraphicsTexturePtr _mrsiiNormalDerivMap;
 	GraphicsTexturePtr _mrsiiSubsplatStencilMap;
+	GraphicsTexturePtr _mrsiiGaterIndirectMap;
+
+	GraphicsFramebufferPtr _mrsiiVPLsView;
+	GraphicsFramebufferLayoutPtr _mrsiiVPLsViewLayout;
 
 	GraphicsFramebuffers _mrsiiDepthDerivViews;
 	GraphicsFramebuffers _mrsiiNormalDerivViews;
 	GraphicsFramebuffers _mrsiiSubsplatStencilViews;
-	GraphicsFramebufferPtr _mrsiiVPLsView;
-	GraphicsFramebufferLayoutPtr _mrsiiVPLsViewLayout;
+	GraphicsFramebuffers _mrsiiGaterIndirectViews;
 	GraphicsFramebufferLayoutPtr _mrsiiDepthDerivViewLayout;
 	GraphicsFramebufferLayoutPtr _mrsiiNormalDerivViewLayout;
 	GraphicsFramebufferLayoutPtr _mrsiiSubsplatStencilViewLayout;
+	GraphicsFramebufferLayoutPtr _mrsiiGaterIndirectViewLayout;
 
 	MaterialPtr _deferredLighting;
 	MaterialTechPtr _deferredDepthOnly;
@@ -172,7 +186,7 @@ private:
 	MaterialParamPtr _texDepth;
 	MaterialParamPtr _texLight;
 	MaterialParamPtr _texSource;
-	MaterialParamPtr _texOpaque;	
+	MaterialParamPtr _texOpaque;
 
 	MaterialParamPtr _eyePosition;
 	MaterialParamPtr _clipInfo;
@@ -233,7 +247,7 @@ private:
 	GraphicsFramebufferPtr _deferredDepthLinearView;
 	GraphicsFramebufferPtr _deferredGraphicsView;
 	GraphicsFramebufferPtr _deferredNormalView;
-	GraphicsFramebufferPtr _deferredAbufferView;	
+	GraphicsFramebufferPtr _deferredAbufferView;
 	GraphicsFramebufferPtr _deferredLightingView;
 	GraphicsFramebufferPtr _deferredOpaqueViews;
 	GraphicsFramebufferPtr _deferredTransparentViews;
@@ -242,7 +256,7 @@ private:
 	GraphicsFramebufferPtr _deferredSwapView;
 
 	RenderPipelinePtr _pipeline;
-	
+
 };
 
 _NAME_END

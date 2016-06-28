@@ -371,9 +371,7 @@ EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset
 GraphicsDataPtr
 EGL2DeviceContext::getIndexBufferData() const noexcept
 {
-	if (_indexBuffer)
-		return _indexBuffer->upcast_pointer<GraphicsData>();
-	return nullptr;
+	return _indexBuffer;
 }
 
 void
@@ -474,7 +472,22 @@ EGL2DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 			GL_CHECK(glDepthMask(GL_TRUE));
 		}
 
+		auto colorWriteFlags = _stateCaptured.getColorBlends()[0].getColorWriteMask();
+		if (colorWriteFlags != GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit)
+		{
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		}
+
 		GL_CHECK(glClear(mode));
+
+		if (colorWriteFlags != GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit)
+		{
+			GLboolean r = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit ? GL_TRUE : GL_FALSE;
+			GLboolean g = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit ? GL_TRUE : GL_FALSE;
+			GLboolean b = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE : GL_FALSE;
+			GLboolean a = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE : GL_FALSE;
+			glColorMask(r, g, b, a);
+		}
 
 		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
 		{

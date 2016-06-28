@@ -476,7 +476,22 @@ EGL3DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 
 	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
 	{
+		auto colorWriteFlags = _stateCaptured.getColorBlends()[i].getColorWriteMask();
+		if (colorWriteFlags != GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit)
+		{
+			glColorMaskiEXT(i, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		}
+
 		glClearBufferfv(GL_COLOR, i, color.ptr());
+
+		if (colorWriteFlags != GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit)
+		{
+			GLboolean r = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit ? GL_TRUE : GL_FALSE;
+			GLboolean g = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit ? GL_TRUE : GL_FALSE;
+			GLboolean b = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE : GL_FALSE;
+			GLboolean a = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE : GL_FALSE;
+			glColorMaskiEXT(i, r, g, b, a);
+		}
 	}
 }
 

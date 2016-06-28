@@ -405,7 +405,7 @@ DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, cons
 	_mrsiiVPLsBuffer->uniformTexture(_mrsiiVPLsBufferMap);
 	_mrsiiDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
 
-	pipeline.drawScreenQuad(*_mrsiiGatherIndirect, 256);
+	pipeline.drawScreenQuad(*_mrsiiGatherIndirect);
 }
 
 void

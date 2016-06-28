@@ -80,15 +80,13 @@
 
            void GatherIndirectVS(
                 in float4 Position : POSITION,
-                in uint instanceID : SV_InstanceID,
                 out float4 oTexcoord : TEXCOORD0,
                 out float3 oViewdir : TEXCOORD2,
                 out float4 oPosition : SV_Position)
             {
-                float index = instanceID.x / VPLCountGridOffsetDelta.x;
-                oTexcoord = float4(PosToCoord(Position.xy), index, 1.0);
-                oViewdir  = mul(matProjectInverse, Position).xyz;
                 oPosition = Position;
+                oTexcoord = PosToCoord(Position);
+                oViewdir  = mul(matProjectInverse, Position).xyz;
             }
 
             float4 GatherIndirectPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD2) : SV_Target
@@ -103,27 +101,30 @@
                 float3 viewNormal = restoreNormal(MRT1);
                 float3 viewPosition = restorePosition(texDepthLinear, coord.xy, V);
 
-                float4 lightColor = texVPLBuffer.Sample(PointClamp, float2(coord.z, 0.0f));
-                float4 lightNormal = texVPLBuffer.Sample(PointClamp, float2(coord.z, 0.5f));
-                float4 lightPosition = texVPLBuffer.Sample(PointClamp, float2(coord.z, 1.0f));
-                float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
+                float4 shading = 0;
 
-                if (lightColor.w < 0.001)
+                for (float i = 0; i < VPLCountGridOffsetDelta.x; i++)
                 {
-                    discard;
+                    float index = i / VPLCountGridOffsetDelta.x;
+
+                    float4 lightColor = texVPLBuffer.Sample(PointClamp, float2(index, 0.0f));
+                    float4 lightNormal = texVPLBuffer.Sample(PointClamp, float2(index, 0.5f));
+                    float4 lightPosition = texVPLBuffer.Sample(PointClamp, float2(index, 1.0f));
+                    float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
+
+                    float4 lighting = 0;
+
+                    float nl = max(0.0, dot(viewNormal, lightDirection));
+                    if (nl > 0.0f)
+                    {
+                        lighting.rgb = brdfLambert(viewNormal, lightDirection, lightColor.xyz) * lightColor.w;
+                        lighting *= attenuationTerm(viewPosition, lightPosition.xyz, float3(1, 0, 1));
+
+                        shading += lighting;
+                    }
                 }
 
-                float4 lighting = 0;
-
-                float nl = max(0.0, dot(viewNormal, lightDirection));
-                if (nl > 0.0f)
-                {
-                    lighting.rgb = brdfLambert(viewNormal, lightDirection, lightColor.xyz) * lightColor.w;
-                    lighting *= attenuationTerm(viewPosition, lightPosition.xyz, float3(1, 0, 1));
-                    //lighting *= max(0, dot(lightNormal, -lightDirection));
-                }
-
-                return lighting;
+                return shading;
             }
 
             void GatherIndirectDebugVS(
@@ -403,6 +404,12 @@
             <state name="blenddst" value="one"/>
             <state name="blendalphasrc" value="one"/>
             <state name="blendalphadst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
         </pass>
     </technique>
 </effect>

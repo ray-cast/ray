@@ -80,7 +80,7 @@
 
             float4 DeferredCopyOnlyPS(in float4 coord : TEXCOORD0) : SV_Target
             {
-                return texSource.SampleLevel(PointClamp, coord, 0);
+                return texSource.Sample(PointClamp, coord);
             }
 
             float4 DeferredAmbientLightPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target

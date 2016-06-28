@@ -18,8 +18,7 @@
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
     <parameter name="shadowView2EyeView" type="float4x4"/>
     <parameter name="threshold" type="float2"/>
-    <parameter name="mipmapLevel" type="int2"/>
-    <parameter name="mipmapPass" type="int2"/>
+    <parameter name="mipmapLevel" type="int4"/>
     <shader>
         <![CDATA[
             void ScreenQuadVS(
@@ -219,43 +218,36 @@
 
             float4 ComputeSubsplatStencilPS(in float2 coord : TEXCOORD0) : SV_Target
             {
-                float depthThresh0 = threshold.x * (3.0 / mipmapLevel.x);
-                float depthThresh1 = threshold.x * (3.0 / mipmapLevel.y);
+                if (mipmapLevel.z)
+                {
+                    float depthDeriv = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.x).r;
+                    float4 normal = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.x);
+                    float normDeriv = max(normal.z - normal.x, normal.w - normal.y);
+                    if (any(float2(depthDeriv, normDeriv) > threshold))
+                    {
+                        discard;
+                    }
+                }
 
-                float depthDeriv0 = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.x).r;
-                float depthDeriv1 = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.y).r;
-
-                float4 minMaxNorm0 = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.x);
-                float4 minMaxNorm1 = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.y);
-                float normDeriv0 = max(minMaxNorm0.z - minMaxNorm0.x, minMaxNorm0.w - minMaxNorm0.y);
-                float normDeriv1 = max(minMaxNorm1.z - minMaxNorm1.x, minMaxNorm1.w - minMaxNorm1.y);
-
-                bool invalid0 = (normDeriv0 < -1) ? true : false;
-                bool invalid1 = (normDeriv1 < -1) ? true : false;
-
-                bool atCoarsestLevel = ( mipmapLevel.y > 2 ) ? true : false;
-                bool atFinestLevel   = ( mipmapLevel.x <= 0.5 ) ? true : false;
-                bool needRefinment = (depthDeriv0 > depthThresh0) || (normDeriv0 > threshold.y);
-                bool coarseLevelSufficient = (depthDeriv1 <= depthThresh1) && (normDeriv1 <= threshold.y) && !invalid1;
-
-                if (needRefinment && !atFinestLevel)
-                    discard;
-
-                if (coarseLevelSufficient && !atCoarsestLevel)
-                    discard;
-
-                if (invalid0)
-                    discard;
+                if (mipmapLevel.w)
+                {
+                    float depthDeriv = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.y).r;
+                    float4 normal = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.y);
+                    float normDeriv = max(normal.z - normal.x, normal.w - normal.y);
+                    if (all(float2(depthDeriv, normDeriv) <= threshold))
+                    {
+                        discard;
+                    }
+                }
 
                 return 1;
             }
 
             float4 UpsamplingPS(float2 coord : TEXCOORD0) : SV_Target
             {
-                float3 color0 = texColor.SampleLevel(PointClamp, coord, mipmapLevel.x).xyz;
-                float3 color1 = texColor.SampleLevel(PointClamp, coord, mipmapLevel.y).xyz;
-
-                return float4(color0 + color1, 0);
+                float4 color0 = texColor.SampleLevel(PointClamp, coord, mipmapLevel.x);
+                float4 color1 = texColor.SampleLevel(PointClamp, coord, mipmapLevel.y);
+                return color0 + color1;
             }
         ]]>
     </shader>

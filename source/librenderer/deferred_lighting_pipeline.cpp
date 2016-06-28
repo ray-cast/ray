@@ -513,7 +513,7 @@ DeferredLightingPipeline::computeDepthDerivBuffer(RenderPipeline& pipeline, cons
 		std::uint32_t h = std::max<std::uint32_t>(height / (1 << i), 1);
 
 		_mrsiiOffset->uniform2f(1.0f / w, 1.0f / h);
-		_mrsiiMipmapLevel->uniform2i(i, 0);
+		_mrsiiMipmapLevel->uniform4i(i, 0, 0, 0);
 		_mrsiiDepthLinearMap->uniformTexture(dst[i]->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 
 		pipeline.setFramebuffer(dst[i + 1]);
@@ -539,7 +539,7 @@ DeferredLightingPipeline::computeNormalDerivBuffer(RenderPipeline& pipeline, con
 		std::uint32_t h = std::max<std::uint32_t>(height / (1 << i), 1);
 
 		_mrsiiOffset->uniform2f(1.0f / w, 1.0f / h);
-		_mrsiiMipmapLevel->uniform2i(i, 0);
+		_mrsiiMipmapLevel->uniform4i(i, 0, 0, 0);
 		_mrsiiNormalMap->uniformTexture(dst[i]->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 
 		pipeline.setFramebuffer(dst[i + 1]);
@@ -559,7 +559,12 @@ DeferredLightingPipeline::computeSubsplatStencil(RenderPipeline& pipeline, const
 
 	for (std::uint32_t i = _mrsiiDerivMipBase; i < _mrsiiDerivMipBase + _mrsiiDerivMipCount; i++)
 	{
-		_mrsiiMipmapLevel->uniform2i(i, i + 1);
+		if (i == _mrsiiDerivMipBase)
+			_mrsiiMipmapLevel->uniform4i(i, i + 1, 0, 1);
+		else if (i == _mrsiiDerivMipBase + _mrsiiDerivMipCount - 1)
+			_mrsiiMipmapLevel->uniform4i(i, i + 1, 1, 0);
+		else
+			_mrsiiMipmapLevel->uniform4i(i, i + 1, 1, 1);
 
 		pipeline.setFramebuffer(dst[i]);
 		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
@@ -573,7 +578,7 @@ DeferredLightingPipeline::computeUpsamplingMultiresBuffer(RenderPipeline& pipeli
 	for (std::int32_t i = _mrsiiDerivMipBase + _mrsiiDerivMipCount - 2; i >= (std::int32_t)_mrsiiDerivMipBase; i--)
 	{
 		_mrsiiColorMap->uniformTexture(src);
-		_mrsiiMipmapLevel->uniform2i(i, i + 1);
+		_mrsiiMipmapLevel->uniform4i(i, i + 1, 0, 0);
 
 		if (i != 0)
 		{

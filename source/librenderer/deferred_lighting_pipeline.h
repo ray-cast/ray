@@ -93,7 +93,7 @@ private:
 	bool setupDeferredRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
 
 	bool setupMRSIIMaterials(RenderPipeline& pipeline) noexcept;
-	bool setupMRSIITexture(RenderPipeline& pipeline) noexcept;
+	bool setupMRSIITextures(RenderPipeline& pipeline) noexcept;
 	bool setupMRSIIRenderTextures(RenderPipeline& pipeline) noexcept;
 	bool setupMRSIIRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
 
@@ -103,10 +103,10 @@ private:
 	void destroyDeferredRenderTextures() noexcept;
 	void destroyDeferredRenderTextureLayouts() noexcept;
 
-	void destroyMRSIIMaterials(RenderPipeline& pipeline) noexcept;
-	void destroyMRSIITexture(RenderPipeline& pipeline) noexcept;
-	void destroyMRSIIRenderTextures(RenderPipeline& pipeline) noexcept;
-	void destroyMRSIIRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
+	void destroyMRSIIMaterials() noexcept;
+	void destroyMRSIITextures() noexcept;
+	void destroyMRSIIRenderTextures() noexcept;
+	void destroyMRSIIRenderTextureLayouts() noexcept;
 
 private:
 	virtual void onRenderPre() noexcept;

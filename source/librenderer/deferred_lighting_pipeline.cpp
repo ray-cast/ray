@@ -85,7 +85,7 @@ DeferredLightingPipeline::setup(RenderPipelinePtr pipeline) noexcept
 	if (!this->setupMRSIIMaterials(*pipeline))
 		return false;
 
-	if (!this->setupMRSIITexture(*pipeline))
+	if (!this->setupMRSIITextures(*pipeline))
 		return false;
 
 	if (!this->setupMRSIIRenderTextureLayouts(*pipeline))
@@ -1041,7 +1041,7 @@ DeferredLightingPipeline::setupMRSIIMaterials(RenderPipeline& pipeline) noexcept
 }
 
 bool
-DeferredLightingPipeline::setupMRSIITexture(RenderPipeline& pipeline) noexcept
+DeferredLightingPipeline::setupMRSIITextures(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
@@ -1310,7 +1310,7 @@ DeferredLightingPipeline::destroyDeferredRenderTextures() noexcept
 }
 
 void
-DeferredLightingPipeline::destroyMRSIIMaterials(RenderPipeline& pipeline) noexcept
+DeferredLightingPipeline::destroyMRSIIMaterials() noexcept
 {
 	_mrsiiColorMap.reset();
 	_mrsiiNormalMap.reset();
@@ -1339,7 +1339,7 @@ DeferredLightingPipeline::destroyMRSIIMaterials(RenderPipeline& pipeline) noexce
 }
 
 void
-DeferredLightingPipeline::destroyMRSIITexture(RenderPipeline& pipeline) noexcept
+DeferredLightingPipeline::destroyMRSIITextures() noexcept
 {
 	_mrsiiVPLsBufferMap.reset();
 	_mrsiiDepthDerivMap.reset();
@@ -1349,7 +1349,7 @@ DeferredLightingPipeline::destroyMRSIITexture(RenderPipeline& pipeline) noexcept
 }
 
 void
-DeferredLightingPipeline::destroyMRSIIRenderTextures(RenderPipeline& pipeline) noexcept
+DeferredLightingPipeline::destroyMRSIIRenderTextures() noexcept
 {
 	_mrsiiDepthDerivViews.clear();
 	_mrsiiNormalDerivViews.clear();
@@ -1359,7 +1359,7 @@ DeferredLightingPipeline::destroyMRSIIRenderTextures(RenderPipeline& pipeline) n
 }
 
 void
-DeferredLightingPipeline::destroyMRSIIRenderTextureLayouts(RenderPipeline& pipeline) noexcept
+DeferredLightingPipeline::destroyMRSIIRenderTextureLayouts() noexcept
 {
 	_mrsiiVPLsViewLayout.reset();
 	_mrsiiDepthDerivViewLayout.reset();
@@ -1373,8 +1373,12 @@ DeferredLightingPipeline::onResolutionChange() noexcept
 {
 	destroyDeferredTextures();
 	destroyDeferredRenderTextures();
+	destroyMRSIIRenderTextures();
+	destroyMRSIITextures();
 	setupDeferredTextures(*_pipeline);
 	setupDeferredRenderTextures(*_pipeline);
+	setupMRSIITextures(*_pipeline);
+	setupMRSIIRenderTextures(*_pipeline);
 }
 
 void

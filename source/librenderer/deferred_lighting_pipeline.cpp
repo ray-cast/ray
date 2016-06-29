@@ -49,7 +49,7 @@ _NAME_BEGIN
 
 DeferredLightingPipeline::DeferredLightingPipeline() noexcept
 	: _mrsiiDerivMipBase(0)
-	, _mrsiiDerivMipCount(3)
+	, _mrsiiDerivMipCount(4)
 	, _shadowEsmFactor(300.0f)
 {
 }
@@ -572,10 +572,19 @@ DeferredLightingPipeline::computeSubsplatStencil(RenderPipeline& pipeline, const
 void
 DeferredLightingPipeline::computeUpsamplingMultiresBuffer(RenderPipeline& pipeline, GraphicsTexturePtr src, const GraphicsFramebuffers& srcviews, GraphicsFramebufferPtr dst)
 {
+	std::uint32_t width = src->getGraphicsTextureDesc().getWidth();
+	std::uint32_t height = src->getGraphicsTextureDesc().getHeight();
+
 	for (std::int32_t i = _mrsiiDerivMipBase + _mrsiiDerivMipCount - 2; i >= (std::int32_t)_mrsiiDerivMipBase; i--)
 	{
+		std::uint32_t w = std::max<std::uint32_t>(width / (1 << (i + 1)), 1);
+		std::uint32_t h = std::max<std::uint32_t>(height / (1 << (i + 1)), 1);
+		std::uint32_t w2 = std::max<std::uint32_t>(width / (1 << i), 1);
+		std::uint32_t h2 = std::max<std::uint32_t>(height / (1 << i), 1);
+
 		_mrsiiColorMap->uniformTexture(src);
-		_mrsiiMipmapLevel->uniform4i(i, i + 1, 0, 0);
+		_mrsiiOffset->uniform2f(1.0f / w2, 1.0f / h2);
+		_mrsiiMipmapLevel->uniform4i(i + 1, i, w2, h2);
 
 		if (i != 0)
 		{
@@ -733,10 +742,10 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	GraphicsTextureDesc _deferredDepthDesc;
 	_deferredDepthDesc.setWidth(width);
 	_deferredDepthDesc.setHeight(height);
-	_deferredDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthDesc.setTexFormat(_deferredDepthFormat);
-	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredDepthMap = pipeline.createTexture(_deferredDepthDesc);
 	if (!_deferredDepthMap)
 		return false;
@@ -744,10 +753,10 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	GraphicsTextureDesc _deferredDepthLinearDesc;
 	_deferredDepthLinearDesc.setWidth(width);
 	_deferredDepthLinearDesc.setHeight(height);
-	_deferredDepthLinearDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthLinearDesc.setTexFormat(_deferredDepthLinearFormat);
-	_deferredDepthLinearDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredDepthLinearDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthLinearDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_deferredDepthLinearDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredDepthLinearMap = pipeline.createTexture(_deferredDepthLinearDesc);
 	if (!_deferredDepthLinearMap)
 		return false;
@@ -755,8 +764,9 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	GraphicsTextureDesc _deferredOpaqueDesc;
 	_deferredOpaqueDesc.setWidth(width);
 	_deferredOpaqueDesc.setHeight(height);
-	_deferredOpaqueDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredOpaqueDesc.setTexFormat(_deferredOpaqueFormat);
+	_deferredOpaqueDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredOpaqueDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredOpaqueDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredOpaqueMap = pipeline.createTexture(_deferredOpaqueDesc);
 	if (!_deferredOpaqueMap)
@@ -765,8 +775,9 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	GraphicsTextureDesc _deferredNormalDesc;
 	_deferredNormalDesc.setWidth(width);
 	_deferredNormalDesc.setHeight(height);
-	_deferredNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredNormalDesc.setTexFormat(_deferredNormalFormat);
+	_deferredNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredNormalDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredNormalDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredNormalMap = pipeline.createTexture(_deferredNormalDesc);
 	if (!_deferredNormalMap)
@@ -775,8 +786,9 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	GraphicsTextureDesc _deferredTransparentDesc;
 	_deferredTransparentDesc.setWidth(width);
 	_deferredTransparentDesc.setHeight(height);
-	_deferredTransparentDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredTransparentDesc.setTexFormat(_deferredTransparentFormat);
+	_deferredTransparentDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredTransparentDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredTransparentDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredTransparentMap = pipeline.createTexture(_deferredTransparentDesc);
 	if (!_deferredTransparentMap)
@@ -785,8 +797,9 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	GraphicsTextureDesc _deferredAbufferDesc;
 	_deferredAbufferDesc.setWidth(width);
 	_deferredAbufferDesc.setHeight(height);
-	_deferredAbufferDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredAbufferDesc.setTexFormat(_deferredAbufferFormat);
+	_deferredAbufferDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredAbufferDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredAbufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredAbufferMap = pipeline.createTexture(_deferredAbufferDesc);
 	if (!_deferredAbufferMap)
@@ -795,8 +808,9 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	GraphicsTextureDesc _deferredLightDesc;
 	_deferredLightDesc.setWidth(width);
 	_deferredLightDesc.setHeight(height);
-	_deferredLightDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredLightDesc.setTexFormat(_deferredLightFormat);
+	_deferredLightDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredLightDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_deferredLightDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredLightingMap = pipeline.createTexture(_deferredLightDesc);
 	if (!_deferredLightingMap)
@@ -807,8 +821,8 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredShadingDesc.setHeight(height);
 	_deferredShadingDesc.setTexFormat(_deferredShadingFormat);
 	_deferredShadingDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredShadingDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_deferredOpaqueShadingMap = pipeline.createTexture(_deferredShadingDesc);
 	if (!_deferredOpaqueShadingMap)
 		return false;

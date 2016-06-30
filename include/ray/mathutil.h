@@ -292,8 +292,8 @@ struct _mathutil<float>
 
 	static inline void sinCos(float* returnSin, float* returnCos, float theta) noexcept
 	{
-		*returnSin = std::sinf(theta);
-		*returnCos = std::cosf(theta);
+		*returnSin = std::sin(theta);
+		*returnCos = std::cos(theta);
 	}
 
 	static inline float rad2deg(float angle) noexcept
@@ -313,12 +313,12 @@ struct _mathutil<float>
 
 	static inline float exp(float x) noexcept
 	{
-		return std::expf(x);
+		return std::exp(x);
 	}
 
 	static inline float exp2(float x) noexcept
 	{
-		return std::exp2f(x);
+		return std::exp2(x);
 	}
 
 	static inline float fast_exp2(float x) noexcept
@@ -329,42 +329,42 @@ struct _mathutil<float>
 		float t = x - e;
 		float m = (t * t + c[0] * t + c[1]) / (c[2] * t * c[1]);
 
-		return std::ldexpf(m, e);
+		return std::ldexp(m, e);
 	}
 
 	static inline float cos(float theta) noexcept
 	{
-		return std::cosf(theta);
+		return std::cos(theta);
 	}
 
 	static inline float sin(float theta) noexcept
 	{
-		return std::sinf(theta);
+		return std::sin(theta);
 	}
 
 	static inline float tan(float theta) noexcept
 	{
-		return std::tanf(theta);
+		return std::tan(theta);
 	}
 
 	static inline float atan2(float y, float x) noexcept
 	{
-		return std::atan2f(y, x);
+		return std::atan2(y, x);
 	}
 
 	static inline float log(float theta) noexcept
 	{
-		return std::logf(theta);
+		return std::log(theta);
 	}
 
 	static inline float pow(float x, float y) noexcept
 	{
-		return std::powf(x, y);
+		return std::pow(x, y);
 	}
 
 	static inline float sqrt(float theta) noexcept
 	{
-		return std::sqrtf(theta);
+		return std::sqrt(theta);
 	}
 
 	static inline float rsqrt(float x) noexcept
@@ -380,58 +380,58 @@ struct _mathutil<float>
 
 	static inline float acos(float theta) noexcept
 	{
-		return std::acosf(theta);
+		return std::acos(theta);
 	}
 
 	static inline float asin(float theta) noexcept
 	{
-		return std::asinf(theta);
+		return std::asin(theta);
 	}
 
 	static inline float atan(float theta) noexcept
 	{
-		return std::atanf(theta);
+		return std::atan(theta);
 	}
 
 	static inline float cosh(float theta) noexcept
 	{
-		return std::coshf(theta);
+		return std::cosh(theta);
 	}
 
 	static inline float sinh(float theta) noexcept
 	{
-		return std::sinhf(theta);
+		return std::sinh(theta);
 	}
 
 	static inline float tanh(float theta) noexcept
 	{
-		return std::tanhf(theta);
+		return std::tanh(theta);
 	}
 
 	static inline float log10(float theta) noexcept
 	{
-		return std::log10f(theta);
+		return std::log10(theta);
 	}
 
 	static inline float ceil(float theta) noexcept
 	{
-		return std::ceilf(theta);
+		return std::ceil(theta);
 	}
 
 	static inline float fabs(float theta) noexcept
 	{
-		return std::fabsf(theta);
+		return std::fabs(theta);
 	}
 
 	static inline float floor(float theta) noexcept
 	{
-		return std::floorf(theta);
+		return std::floor(theta);
 	}
 
 	static inline float modf(float x, float *y) noexcept
 	{
 		float d;
-		float f = std::modff(x, &d);
+		float f = std::modf(x, &d);
 		*y = d;
 		return f;
 	}
@@ -439,14 +439,14 @@ struct _mathutil<float>
 	static inline float fraction(float v) noexcept
 	{
 		float intPart;
-		return modff(v, &intPart);
+		return std::modf(v, &intPart);
 	}
 
 	static inline float safeAcos(float x) noexcept
 	{
 		if (x <= -1.0f) { return M_PI; }
 		if (x >= 1.0f) { return 0.0f; }
-		return std::acosf(x);
+		return std::acos(x);
 	}
 
 	static inline float snorm2unorm(float x) noexcept
@@ -470,8 +470,8 @@ struct _mathutil<double>
 
 	static inline void sinCos(double* returnSin, double* returnCos, double theta) noexcept
 	{
-		*returnSin = std::sinf(theta);
-		*returnCos = std::cosf(theta);
+		*returnSin = std::sin(theta);
+		*returnCos = std::cos(theta);
 	}
 
 	static inline double rad2deg(double angle) noexcept

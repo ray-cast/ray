@@ -50,7 +50,7 @@ iarchive::isentry::~isentry() noexcept
 {
 	if (_my_istr->rdbuf() != 0)
 		_my_istr->rdbuf()->unlock();
-};
+}
 
 iarchive::isentry::operator bool() const noexcept
 {

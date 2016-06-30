@@ -335,14 +335,14 @@ inline Vector3t<_Tx> operator/(const Vector3t<_Tx>& v, _Ty value)
     return Vector3t<_Tx>(v.x / value, v.y / value, v.z / value);
 }
 
-template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
+template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const Vector3t<T>& v)
 {
 	os << v.x << ", " << v.y << ", " << v.z;
 	return os;
 }
 
-template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
+template<typename istream, typename T, trait::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, Vector3t<T>& v)
 {
 	is >> v.x;

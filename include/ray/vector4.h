@@ -560,14 +560,14 @@ inline Vector4t<T> operator/(const Vector4t<T>& v1, T scale) noexcept
 	return Vector4t<T>(v1.x / scale, v1.y / scale, v1.z / scale, v1.w / scale);
 }
 
-template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
+template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const Vector4t<T>& v)
 {
     os << v.x << ", " << v.y << ", " << v.z << ", " << v.w;
     return os;
 }
 
-template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
+template<typename istream, typename T, trait::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, Vector4t<T>& v)
 {
     is >> v.x;
@@ -611,9 +611,9 @@ namespace math
 	}
 
 	template<typename T>
-	inline T distance(const Vector4t<T>& v) noexcept
+	inline T distance(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
 	{
-		return length(v - *this);
+		return length(v1 - v2);
 	}
 
 	template<typename T>

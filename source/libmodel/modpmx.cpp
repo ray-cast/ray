@@ -792,7 +792,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		{
 			char name[MAX_PATH];
 			auto length = wcstombs(nullptr, it.name.name, 0);
-			if (length != -1 && length < MAX_PATH)
+			if (length < MAX_PATH)
 			{
 				wcstombs(name, it.name.name, MAX_PATH);
 

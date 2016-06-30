@@ -964,7 +964,7 @@ const float2x2&
 GraphicsVariant::getFloat2x2() const noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat2x2);
-	return (float2x2&)_value.m2;
+	return (float2x2&)*_value.m2;
 }
 
 const float3x3&

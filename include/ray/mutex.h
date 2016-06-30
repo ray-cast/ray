@@ -103,7 +103,7 @@ public:
 
 private:
 	_Mutex* _mutex;
-	std::size_t _thread_id;
+	std::thread::id _thread_id;
 	std::size_t _count;
 };
 

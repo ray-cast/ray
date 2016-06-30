@@ -237,7 +237,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 			{
 				RGB* dest = (RGB*)image.data() + image.width() * (image.height() - i - 1);
 				RGB* src = (RGB*)image.data() + image.width() * i;
-				for (int j = 0; j < image.width(); j++)
+				for (std::uint32_t j = 0; j < image.width(); j++)
 				{
 					std::swap(*dest, *src);
 					dest++;
@@ -252,7 +252,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 			{
 				RGBA* dest = (RGBA*)image.data() + image.width() * (image.height() - i - 1);
 				RGBA* src = (RGBA*)image.data() + image.width() * i;
-				for (int j = 0; j < image.width(); j++)
+				for (std::uint32_t j = 0; j < image.width(); j++)
 				{
 					std::swap(*dest, *src);
 					dest++;

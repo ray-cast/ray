@@ -158,6 +158,11 @@ public:
 		_Mybase::_Init(other.dismiss());
 	}
 
+	scope_ptr(_Myt&& other) noexcept
+	{
+		_Mybase::_Init(other.dismiss());
+	}
+
 	~scope_ptr() noexcept
 	{
 		this->_Destroy();
@@ -220,6 +225,11 @@ public:
 	}
 
 	scope_ptr(const _Myt& other) noexcept
+	{
+		this->_Init(other.dismiss());
+	}
+
+	scope_ptr(_Myt&& other) noexcept
 	{
 		this->_Init(other.dismiss());
 	}

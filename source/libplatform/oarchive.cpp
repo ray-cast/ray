@@ -50,7 +50,7 @@ oarchive::osentry::~osentry() noexcept
 {
 	if (_my_istr->rdbuf() != 0)
 		_my_istr->rdbuf()->unlock();
-};
+}
 
 oarchive::osentry::operator bool() const noexcept
 {

@@ -38,7 +38,6 @@
 #define _H_SPHERE_H_
 
 #include <ray/aabb.h>
-#include <ray/mathutil.h>
 
 _NAME_BEGIN
 
@@ -172,11 +171,11 @@ public:
 	{
 		Vector3 m = ray.origin - _center;
 
-		float c = m.length2() - _radius * _radius;
+		float c = math::length2(m) - _radius * _radius;
 		if (c <= 0.0)
 			return true;
 
-		float b = m.dot(ray.normal);
+		float b = math::dot(m, ray.normal);
 		if (b > 0.0)
 			return 0;
 

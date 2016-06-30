@@ -86,9 +86,9 @@ _NAME_BEGIN
 #	if defined(_VISUAL_STUDIO_)
 #		pragma warning(disable : 4127)
 #	endif
-#	define VK_PLATFORM_LOG(format, ...) VulkanSystem::instance()->print(format, __VA_ARGS__)
+#	define VK_PLATFORM_LOG(format) { VulkanSystem::instance()->print(format); }
 #else
-#	define VK_PLATFORM_LOG(format, ...)
+#	define VK_PLATFORM_LOG(format)
 #endif
 
 #if _DEBUG

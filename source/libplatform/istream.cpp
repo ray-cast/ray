@@ -50,7 +50,7 @@ StreamReader::isentry::~isentry() noexcept
 {
 	if (_my_istr->rdbuf() != 0)
 		_my_istr->rdbuf()->unlock();
-};
+}
 
 StreamReader::isentry::operator bool() const noexcept
 {

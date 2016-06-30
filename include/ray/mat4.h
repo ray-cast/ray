@@ -37,9 +37,9 @@
 #ifndef _H_MATRIX4X4_H_
 #define _H_MATRIX4X4_H_
 
-#include <ray/vector4.h>
 #include <ray/mat3.h>
 #include <ray/quat.h>
+#include <ray/vector4.h>
 
 _NAME_BEGIN
 
@@ -279,7 +279,6 @@ public:
 	{
 		d1 += x;
 		d2 += y;
-		d3 += z;
 		return *this;
 	}
 
@@ -398,32 +397,36 @@ public:
 
 	Matrix4x4t<T>& makeRotateXYZ(T eulerX, T eulerY, T eulerZ) noexcept
 	{
-		T sh, ch, sp, cp, sb, cb;
+		T sj, cj, si, ci, sh, ch;
 
-		math::sinCos(&sp, &cp, DEG_TO_RAD(eulerX));
-		math::sinCos(&sh, &ch, DEG_TO_RAD(eulerY));
-		math::sinCos(&sb, &cb, DEG_TO_RAD(eulerZ));
+		math::sinCos(&si, &ci, DEG_TO_RAD(eulerX));
+		math::sinCos(&sj, &cj, DEG_TO_RAD(eulerY));
+		math::sinCos(&sh, &ch, DEG_TO_RAD(eulerZ));
 
-		a1 = ch * cb;
-		b1 = ch * sb;
-		c1 = -sh;
-		d1 = 0.f;
+		T cc = ci * ch;
+		T cs = ci * sh;
+		T sc = si * ch;
+		T ss = si * sh;
 
-		a2 = sh * sc - cs;
-		b2 = sh * ss + cc;
-		c2 = ch * sp;
-		d2 = 0.f;
+		a1 = cj * ch;
+		a2 = sj * sc - cs;
+		a3 = sj * cc + ss;
+		a4 = 0;
 
-		a3 = sh * cc + ss;
-		b3 = sh * cs - sc;
-		c3 = ch * cp;
-		d3 = 0.f;
+		b1 = cj * sh;
+		b2 = sj * ss + cc;
+		b3 = sj * cs - sc;
+		b4 = 0;
+
+		c1 = -sj;
+		c2 = cj * si;
+		c3 = cj * ci;
+		c4 = 0;
 
 		d1 = 0;
 		d2 = 0;
 		d3 = 0;
 		d4 = 1;
-
 		return *this;
 	}
 
@@ -522,6 +525,7 @@ public:
 		auto up = this->getUpVector();
 		auto forward = this->getForward();
 
+		Vector3t<T> scaling;
 		scaling.x = math::length(right);
 		scaling.y = math::length(up);
 		scaling.z = math::length(forward);
@@ -748,7 +752,6 @@ public:
 		return true;
 	}
 
-	template <typename T>
 	Matrix4x4t<T>& makePerspective_fov_lh(const T& fov, const T& aspect, const T& nearPlane, const T& farPlane) noexcept
 	{
 		const T h = 1.0f / tan(DEG_TO_RAD(fov * 0.5f));
@@ -763,7 +766,6 @@ public:
 		return *this;
 	}
 
-	template <typename T>
 	Matrix4x4t<T>& makePerspective_fov_rh(const T& fov, const T& aspect, const T& nearPlane, const T& farPlane) noexcept
 	{
 		const T h = 1.0f / tan(DEG_TO_RAD(fov * 0.5f));

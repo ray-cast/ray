@@ -489,7 +489,6 @@ DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const 
 	auto camera = pipeline.getCamera();
 	pipeline.setCamera(light.getCamera(0));
 	pipeline.setFramebuffer(_mrsiiVPLsView);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0f, 0);
 	pipeline.drawScreenQuad(*_mrsiiRsm2VPLsSpot);
 	pipeline.setCamera(camera);
 }
@@ -504,7 +503,6 @@ DeferredLightingPipeline::computeDepthDerivBuffer(RenderPipeline& pipeline, cons
 	_mrsiiDepthLinearMap->uniformTexture(src);
 
 	pipeline.setFramebuffer(dst[0]);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0f, 0.0f);
 	pipeline.drawScreenQuad(*_mrsiiDepthDerivate);
 
 	for (std::uint32_t i = _mrsiiDerivMipBase; i < _mrsiiDerivMipBase + _mrsiiDerivMipCount - 1; i++)
@@ -550,9 +548,6 @@ DeferredLightingPipeline::computeNormalDerivBuffer(RenderPipeline& pipeline, con
 void
 DeferredLightingPipeline::computeSubsplatStencil(RenderPipeline& pipeline, const GraphicsTexturePtr& depth, const GraphicsTexturePtr& normal, const GraphicsFramebuffers& dst)
 {
-	std::uint32_t width = depth->getGraphicsTextureDesc().getWidth();
-	std::uint32_t height = depth->getGraphicsTextureDesc().getHeight();
-
 	_mrsiiNormalMap->uniformTexture(normal);
 	_mrsiiDepthLinearMap->uniformTexture(depth);
 	_mrsiiThreshold->uniform2f(0.6f, 0.2f);

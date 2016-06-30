@@ -226,14 +226,14 @@ inline Vector2t<T> operator/(unsigned scale, const Vector2t<T>& v) noexcept
     return Vector2t<T>(v.x / scale, v.y / scale);
 }
 
-template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
+template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const Vector2t<T>& v)
 {
 	os << v.x << ", " << v.y;
 	return os;
 }
 
-template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
+template<typename istream, typename T, trait::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, Vector2t<T>& v)
 {
 	is >> v.x;
@@ -271,9 +271,9 @@ namespace math
 	}
 
 	template<typename T>
-	inline T distance(const Vector2t<T>& v) noexcept
+	inline T distance(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 	{
-		return length(v - *this);
+		return length(v1 - v2);
 	}
 
 	template<typename T>

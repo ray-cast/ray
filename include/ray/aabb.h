@@ -37,7 +37,7 @@
 #ifndef _H_AABB_H_
 #define _H_AABB_H_
 
-#include <ray/mathfwd.h>
+#include <ray/vector3.h>
 
 _NAME_BEGIN
 

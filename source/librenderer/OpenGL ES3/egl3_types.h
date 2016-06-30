@@ -117,16 +117,16 @@ _NAME_BEGIN
 #	define GL_CHECK(x) x
 #endif
 
-#if _DEBUG
+#if defined(__DEBUG__)
 #	if defined(_VISUAL_STUDIO_)
 #		pragma warning(disable : 4127)
 #	endif
-#	define GL_PLATFORM_LOG(format, ...) do { EGL3Check::debugOutput(format, __VA_ARGS__); } while(false)
+#	define GL_PLATFORM_LOG(format, ...) { EGL3Check::debugOutput(format); } 
 #else
 #	define GL_PLATFORM_LOG(format, ...)
 #endif
 
-#if _DEBUG
+#if defined(__DEBUG__)
 #	if defined(_VISUAL_STUDIO_)
 #		pragma warning(disable : 4127)
 #	endif

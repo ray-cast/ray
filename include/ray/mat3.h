@@ -265,23 +265,28 @@ public:
 
 	Matrix3x3t<T>& makeRotate(T eulerX, T eulerY, T eulerZ) noexcept
 	{
-		T sh, ch, sp, cp, sb, cb;
+		T sj, cj, si, ci, sh, ch;
 
-		math::sinCos(&sp, &cp, DEG_TO_RAD(eulerX));
-		math::sinCos(&sh, &ch, DEG_TO_RAD(eulerY));
-		math::sinCos(&sb, &cb, DEG_TO_RAD(eulerZ));
+		math::sinCos(&si, &ci, DEG_TO_RAD(eulerX));
+		math::sinCos(&sj, &cj, DEG_TO_RAD(eulerY));
+		math::sinCos(&sh, &ch, DEG_TO_RAD(eulerZ));
 
-		a1 = ch * cb;
-		b1 = ch * sb;
-		c1 = -sh;
+		T cc = ci * ch;
+		T cs = ci * sh;
+		T sc = si * ch;
+		T ss = si * sh;
 
-		a2 = sh * sc - cs;
-		b2 = sh * ss + cc;
-		c2 = ch * sp;
+		a1 = cj * ch;
+		a2 = sj * sc - cs;
+		a3 = sj * cc + ss;
 
-		a3 = sh * cc + ss;
-		b3 = sh * cs - sc;
-		c3 = ch * cp;
+		b1 = cj * sh;
+		b2 = sj * ss + cc;
+		b3 = sj * cs - sc;
+
+		c1 = -sj;
+		c2 = cj * si;
+		c3 = cj * ci;
 
 		return *this;
 	}
@@ -575,18 +580,16 @@ namespace math
 	}
 
 	template<typename T>
-	Matrix3x3t<T>& inverse(const Matrix3x3t<T>& _m)
+	Matrix3x3t<T> inverse(const Matrix3x3t<T>& _m)
 	{
 		const T det = determinant(_m);
 		if (det == T(0.0))
 		{
 			const T nan = std::numeric_limits<T>::quiet_NaN();
-			*this = Matrix3x3t<T>(
+			return Matrix3x3t<T>(
 				nan, nan, nan,
 				nan, nan, nan,
 				nan, nan, nan);
-
-			return *this;
 		}
 
 		T invdet = T(1.0) / det;

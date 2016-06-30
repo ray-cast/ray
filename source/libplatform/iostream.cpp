@@ -50,7 +50,7 @@ Stream::iosentry::~iosentry() noexcept
 {
 	if (_myIostr->rdbuf() != 0)
 		_myIostr->rdbuf()->unlock();
-};
+}
 
 Stream::iosentry::operator bool() const noexcept
 {

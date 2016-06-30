@@ -41,6 +41,8 @@
 
 _NAME_BEGIN
 
+struct BITMAPINFO;
+
 class BMPHandler final : public ImageHandler
 {
 public:
@@ -51,9 +53,9 @@ public:
 	bool doLoad(Image& image, StreamReader& stream) except;
 	bool doSave(Image& image, StreamWrite& stream) except;
 
-	bool decode(Image& image, StreamReader& stream, const struct BITMAPINFO& info);
-	bool encode(Image& image, StreamReader& stream, const struct BITMAPINFO& info);
-	bool loadDIB(Image& image, StreamReader& stream, const struct BITMAPINFO& info);
+	bool decode(Image& image, StreamReader& stream, const BITMAPINFO& info);
+	bool encode(Image& image, StreamReader& stream, const BITMAPINFO& info);
+	bool loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info);
 };
 
 _NAME_END

@@ -18,7 +18,8 @@ SOURCE_GROUP("model" FILES ${SOURCE_LIST})
 
 ADD_LIBRARY(libmodel SHARED ${COMMON_LSIT} ${SOURCE_LIST})
 
-TARGET_LINK_LIBRARIES(libmodel libplatform libiconv)
+TARGET_LINK_LIBRARIES(libmodel PUBLIC libplatform)
+TARGET_LINK_LIBRARIES(libmodel PRIVATE libiconv)
 
 SET_TARGET_ATTRIBUTE(libmodel "core")
 

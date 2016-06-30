@@ -17,7 +17,11 @@ SOURCE_GROUP("image" FILES ${SOURCE_LIST})
 
 ADD_LIBRARY(libimage SHARED ${COMMON_LIST} ${SOURCE_LIST})
 
-TARGET_LINK_LIBRARIES(libimage libplatform libpng libjpeg zlib unzip)
+TARGET_LINK_LIBRARIES(libimage PUBLIC libplatform)
+TARGET_LINK_LIBRARIES(libimage PRIVATE libpng)
+TARGET_LINK_LIBRARIES(libimage PRIVATE libjpeg)
+TARGET_LINK_LIBRARIES(libimage PRIVATE zlib)
+TARGET_LINK_LIBRARIES(libimage PRIVATE unzip)
 
 SET_TARGET_ATTRIBUTE(libimage "core")
 

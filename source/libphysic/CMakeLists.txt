@@ -37,7 +37,12 @@ SOURCE_GROUP("physics" FILES ${PHYSICS_SYSTEM_LIST})
 
 ADD_LIBRARY(libphysic SHARED ${PHYSICS_SYSTEM_LIST})
 
-TARGET_LINK_LIBRARIES(libphysic libplatform BulletDynamics BulletCollision BulletSoftBody LinearMath)
+TARGET_LINK_LIBRARIES(libphysic PUBLIC libplatform)
+
+TARGET_LINK_LIBRARIES(libphysic PRIVATE BulletDynamics)
+TARGET_LINK_LIBRARIES(libphysic PRIVATE BulletCollision)
+TARGET_LINK_LIBRARIES(libphysic PRIVATE BulletSoftBody)
+TARGET_LINK_LIBRARIES(libphysic PRIVATE LinearMath)
 
 IF(BUILD_MULTITHREADING)
     TARGET_LINK_LIBRARIES(libphysic BulletMultiThreaded)

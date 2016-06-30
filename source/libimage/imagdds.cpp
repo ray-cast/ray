@@ -1038,8 +1038,6 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	}
 	else
 	{
-		std::size_t length = stream.size() - offset;
-
 		if (!image.create(info.width, info.height, info.depth * faceCount, format, info.mip_level, info10.arraySize))
 			return false;
 

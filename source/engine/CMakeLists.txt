@@ -158,7 +158,7 @@ ADD_LIBRARY(ray SHARED
     ${RESOURCE_LIST}
 )
 
-TARGET_LINK_LIBRARIES(ray libplatform libimage libinput libmodel)
+TARGET_LINK_LIBRARIES(ray libplatform libinput libimage libmodel)
 
 IF(BUILD_PHYSIC)
     TARGET_LINK_LIBRARIES(ray libphysic)
@@ -174,10 +174,6 @@ ENDIF()
 
 IF(BUILD_RENDERER)
     TARGET_LINK_LIBRARIES(ray librenderer)
-ENDIF()
-
-IF(BUILD_PLATFORM_SDL2)
-    TARGET_LINK_LIBRARIES(ray SDL2)
 ENDIF()
 
 SET_TARGET_ATTRIBUTE(ray "engine")

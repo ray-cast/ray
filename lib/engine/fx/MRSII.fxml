@@ -58,7 +58,7 @@
                         if (nl > 0)
                         {
                             float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * spot * nl * shininess;
-                            lighting = float4(albedo * atten, atten);
+                            lighting = float4(albedo * atten, length(P));
                         }
                     }
 
@@ -79,15 +79,13 @@
 
            void GatherIndirectVS(
                 in float4 Position : POSITION,
-                in uint instanceID : SV_InstanceID,
                 out float4 oTexcoord : TEXCOORD0,
                 out float3 oViewdir : TEXCOORD2,
                 out float4 oPosition : SV_Position)
             {
-                float index = instanceID.x / VPLCountGridOffsetDelta.x;
-                oTexcoord = float4(PosToCoord(Position.xy), index, 1.0);
-                oViewdir  = mul(matProjectInverse, Position).xyz;
                 oPosition = Position;
+                oTexcoord = PosToCoord(Position);
+                oViewdir  = mul(matProjectInverse, Position).xyz;
             }
 
             float4 GatherIndirectPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD2) : SV_Target
@@ -102,7 +100,7 @@
                 float3 viewNormal = restoreNormal(MRT1);
                 float3 viewPosition = restorePosition(texDepthLinear, coord.xy, V);
 
-                float4 shading = 0;
+                float3 shading = 0;
 
                 for (float i = 0; i < VPLCountGridOffsetDelta.x; i++)
                 {
@@ -113,14 +111,14 @@
                     float4 lightPosition = texVPLBuffer.Sample(PointClamp, float2(index, 1.0f));
                     float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
 
-                    float4 lighting = 0;
-                    lighting.rgb = brdfLambert(viewNormal, lightDirection, lightColor.xyz);
+                    float3 lighting = 0;
+                    lighting = brdfLambert(viewNormal, lightDirection, lightColor.xyz);
                     lighting *= attenuationTerm(viewPosition, lightPosition.xyz, float3(1, 0, 1));
 
                     shading += lighting;
                 }
 
-                return float4(shading.xyz, 1.0);
+                return float4(shading, 1.0);
             }
 
             void GatherIndirectDebugVS(
@@ -259,7 +257,6 @@
                 weights[3] = color[3].a * weight.x;
 
                 float weightSum = weights[0]+weights[1]+weights[2]+weights[3];
-
                 float4 totalColor = weights[0] * color[0] + weights[1] * color[1] + weights[2] * color[2]+ weights[3] * color[3];
 
                 totalColor /= weightSum;
@@ -453,6 +450,7 @@
             <state name="fragment" value="UpsamplingInterpolationPS"/>
 
             <state name="cullmode" value="none"/>
+            <state name="colormask" value="rgb"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -460,7 +458,7 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
-            <state name="blendalphasrc" value="zero"/>
+            <state name="blendalphasrc" value="one"/>
             <state name="blendalphadst" value="one"/>
 
             <state name="stencilTest" value="true"/>

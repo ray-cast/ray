@@ -489,7 +489,7 @@ DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const 
 	auto camera = pipeline.getCamera();
 	pipeline.setCamera(light.getCamera(0));
 	pipeline.setFramebuffer(_mrsiiVPLsView);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0f, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0f, 0);
 	pipeline.drawScreenQuad(*_mrsiiRsm2VPLsSpot);
 	pipeline.setCamera(camera);
 }

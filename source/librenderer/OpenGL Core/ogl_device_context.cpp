@@ -590,18 +590,6 @@ OGLDeviceContext::present() noexcept
 bool
 OGLDeviceContext::checkSupport() noexcept
 {
-	if (!GLEW_EXT_texture_object)
-	{
-		GL_PLATFORM_LOG("Can't support GL_EXT_texture_object.");
-		return false;
-	}
-
-	if (!GLEW_EXT_packed_pixels)
-	{
-		GL_PLATFORM_LOG("Can't support GL_EXT_packed_pixels.");
-		return false;
-	}
-
 	if (!GLEW_ARB_draw_elements_base_vertex)
 	{
 		GL_PLATFORM_LOG("Can't support GL_ARB_draw_elements_base_vertex.");
@@ -631,7 +619,7 @@ OGLDeviceContext::checkSupport() noexcept
 		GL_PLATFORM_LOG("Can't support GL_ARB_framebuffer_object.");
 		return false;
 	}
-
+	
 	if (!GLEW_EXT_texture_filter_anisotropic)
 	{
 		GL_PLATFORM_LOG("Can't support GL_EXT_texture_filter_anisotropic.");

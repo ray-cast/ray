@@ -94,19 +94,38 @@ GraphicsSystem::enableDebugControl(bool enable) noexcept
 		auto device = it.lock();
 		if (device)
 		{
+#if _BUILD_OPENGL_CORE
 			if (device->isInstanceOf<OGLDevice>())
+			{
 				device->downcast<OGLDevice>()->enableDebugControl(enable);
-			else if (device->isInstanceOf<EGL2Device>())
+				return;
+			}				
+#endif
+#if _BUILD_OPENGL_ES2
+			if (device->isInstanceOf<EGL2Device>())
+			{
 				device->downcast<EGL2Device>()->enableDebugControl(enable);
-			else if (device->isInstanceOf<EGL3Device>())
+				return;
+			}
+#endif
+#if _BUILD_OPENGL_ES3
+			if (device->isInstanceOf<EGL3Device>())
+			{
 				device->downcast<EGL3Device>()->enableDebugControl(enable);
-			else if (device->isInstanceOf<VulkanDevice>())
+				return;
+			}
+				
+#endif
+#if _BUILD_VULKAN
+			if (device->isInstanceOf<VulkanDevice>())
 			{
 				if (enable)
 					VulkanSystem::instance()->startDebugControl();
 				else
 					VulkanSystem::instance()->stopDebugControl();
+				return;
 			}
+#endif
 		}
 	}
 

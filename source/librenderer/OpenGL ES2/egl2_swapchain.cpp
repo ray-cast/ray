@@ -103,7 +103,7 @@ EGL2Swapchain::setActive(bool active) noexcept
 		{
 			if (eglMakeCurrent(_display, _surface, _surface, _context) == EGL_FALSE)
 			{
-				GL_PLATFORM_LOG("eglMakeCurrent() fail : %d", eglGetError());
+				GL_PLATFORM_LOG("eglMakeCurrent() fail.");
 				return;
 			}
 
@@ -116,7 +116,7 @@ EGL2Swapchain::setActive(bool active) noexcept
 		{
 			if (eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE)
 			{
-				GL_PLATFORM_LOG("eglMakeCurrent() fail : %d", eglGetError());
+				GL_PLATFORM_LOG("eglMakeCurrent() fail.");
 				return;
 			}
 
@@ -143,19 +143,19 @@ EGL2Swapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 	{
 	case GraphicsSwapInterval::GraphicsSwapIntervalFree:
 		if (eglSwapInterval(_display, 0) == EGL_FALSE)
-			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Free) fail : %d", eglGetError());
+			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Free) fail.");
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalVsync:
 		if (eglSwapInterval(_display, 1) == EGL_FALSE)
-			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Vsync) fail : %d", eglGetError());
+			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Vsync) fail.");
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalFps30:
 		if (eglSwapInterval(_display, 2) == EGL_FALSE)
-			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps30) fail : %d", eglGetError());
+			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps30) fail.");
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalFps15:
 		if (eglSwapInterval(_display, 3) == EGL_FALSE)
-			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps15) fail : %d", eglGetError());
+			GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps15) fail.");
 		break;
 	default:
 		GL_PLATFORM_LOG("Invlid SwapInterval");
@@ -179,7 +179,7 @@ EGL2Swapchain::present() noexcept
 	assert(_surface != EGL_NO_SURFACE);
 
 	if (::eglSwapBuffers(_display, _surface) == EGL_FALSE)
-		GL_PLATFORM_LOG("eglSwapBuffers() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglSwapBuffers() fail.");
 }
 
 bool
@@ -189,7 +189,7 @@ EGL2Swapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
 	_surface = ::eglCreateWindowSurface(_display, _config, hwnd, NULL);
 	if (eglGetError() != EGL_SUCCESS)
 	{
-		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglCreateContext() fail.");
 		return false;
 	}
 
@@ -298,26 +298,26 @@ EGL2Swapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexc
 	_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (_display == EGL_NO_DISPLAY)
 	{
-		GL_PLATFORM_LOG("eglGetDisplay() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglGetDisplay() fail.");
 		return false;
 	}
 
 	if (::eglInitialize(_display, nullptr, nullptr) == EGL_FALSE)
 	{
-		GL_PLATFORM_LOG("eglInitialize() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglInitialize() fail.");
 		return false;
 	}
 
 	if (::eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE)
 	{
-		GL_PLATFORM_LOG("eglBindAPI() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglBindAPI() fail.");
 		return false;
 	}
 
 	EGLint num = 0;
 	if (::eglChooseConfig(_display, pixelFormat, &_config, 1, &num) == EGL_FALSE)
 	{
-		GL_PLATFORM_LOG("eglChooseConfig() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglChooseConfig() fail.");
 		return false;
 	}
 
@@ -347,7 +347,7 @@ EGL2Swapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcep
 	_context = ::eglCreateContext(_display, _config, EGL_NO_CONTEXT, attribs);
 	if (eglGetError() != EGL_SUCCESS)
 	{
-		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglCreateContext() fail.");
 		return false;
 	}
 

@@ -922,7 +922,7 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 				auto ubo = this->getDevice()->createGraphicsData(uniformBufferDesc);
 				if (!ubo)
 				{
-					VK_PLATFORM_LOG("Can't create uniform buffer for %s", name);
+					VK_PLATFORM_LOG("Can't create uniform buffer");
 					return false;
 				}
 

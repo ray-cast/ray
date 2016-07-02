@@ -498,18 +498,18 @@ EGL2Program::_initActiveAttribute() noexcept
 			std::string semantic;
 			std::uint32_t semanticIndex = 0;
 
-			std::size_t off = name.find_last_of('_');
-			if (off != std::string::npos)
-				semantic = name.substr(off + 1);
-			else
-				semantic = name;
-
-			auto it = std::find_if_not(semantic.rbegin(), semantic.rend(), [](char ch) { return ch >= '0' && ch <= '9'; });
-			if (it != semantic.rend())
+			auto it = std::find_if_not(name.rbegin(), name.rend(), [](char ch) { return ch >= '0' && ch <= '9'; });
+			if (it != name.rend())
 			{
-				semantic = semantic.substr(0, semantic.rend() - it);
-				semanticIndex = std::atoi(semantic.substr(semantic.rend() - it).c_str());
+				semantic = name.substr(0, name.rend() - it);
+				semanticIndex = std::atoi(name.substr(name.rend() - it).c_str());
 			}
+
+			std::size_t off = semantic.find_last_of('_');
+			if (off != std::string::npos)
+				semantic = semantic.substr(off + 1);
+			else
+				semantic = semantic;
 
 			auto attrib = std::make_shared<EGL2GraphicsAttribute>();
 			attrib->setSemantic(semantic);

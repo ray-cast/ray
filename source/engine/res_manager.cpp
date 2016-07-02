@@ -40,11 +40,15 @@
 #include <ray/mesh_component.h>
 #include <ray/mesh_render_component.h>
 #include <ray/skinned_mesh_render_component.h>
+
+#if _BUILD_PHYSIC
 #include <ray/physics_body_component.h>
 #include <ray/physics_box_component.h>
 #include <ray/physics_sphere_component.h>
 #include <ray/physics_capsule_component.h>
 #include <ray/physics_joint_configurable_component.h>
+#endif
+
 #include <ray/ik_solver_component.h>
 #include <ray/material.h>
 #include <ray/anim_component.h>
@@ -290,6 +294,7 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 void
 ResManager::createRigidbodys(const Model& model, GameObjects& rigidbodys) noexcept
 {
+#if defined(_BUILD_PHYSIC)
 	for (auto& it : model.getRigidbodyList())
 	{
 		auto gameObject = std::make_shared<GameObject>();
@@ -320,11 +325,13 @@ ResManager::createRigidbodys(const Model& model, GameObjects& rigidbodys) noexce
 
 		rigidbodys.push_back(std::move(gameObject));
 	}
+#endif
 }
 
 void
 ResManager::createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, GameObjects& bones)
 {
+#if defined(_BUILD_PHYSIC)
 	if (bones.empty())
 		return;
 
@@ -399,11 +406,13 @@ ResManager::createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, G
 			++index;
 		}
 	}*/
+#endif
 }
 
 void
 ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, GameObjects& joints) noexcept
 {
+#if defined(_BUILD_PHYSIC)
 	for (auto& it : model.getJointList())
 	{
 		auto transformA = rigidbodys[it->bodyIndexA];
@@ -437,6 +446,7 @@ ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, Game
 			joints.push_back(joint->getGameObject());
 		}
 	}
+#endif
 }
 
 MaterialPtr

@@ -209,7 +209,7 @@ VulkanSwapchain::initSwapchain(VkPhysicalDevice physicalDevice) noexcept
 	if (_swapchainDesc.getImageNums() < surfCapabilities.minImageCount &&
 		_swapchainDesc.getImageNums() > surfCapabilities.maxImageCount)
 	{
-		VK_PLATFORM_LOG("Invlida image count, min: %d, max: %d", surfCapabilities.minImageCount, surfCapabilities.maxImageCount);
+		VK_PLATFORM_LOG("Invlida image count");
 		return false;
 	}
 

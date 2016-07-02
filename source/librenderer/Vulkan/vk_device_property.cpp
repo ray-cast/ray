@@ -230,7 +230,7 @@ VulkanDeviceProperty::checkPhysicalDeviceLayer(VkPhysicalDevice physicalDevice, 
 
 			if (!found)
 			{
-				VK_PLATFORM_LOG("Cannot find layer: %s.", deviceValidationLayerNames[i]);
+				VK_PLATFORM_LOG("Cannot find layer.");
 				validationFound = false;
 				break;
 			}
@@ -285,7 +285,7 @@ VulkanDeviceProperty::checkPhysicalDeviceExtension(VkPhysicalDevice physicalDevi
 
 			if (!found)
 			{
-				VK_PLATFORM_LOG("Cannot find extensition: %s.", deviceEnabledExtensitionNames[i]);
+				VK_PLATFORM_LOG("Cannot find extensition.");
 				validationFound = false;
 				break;
 			}

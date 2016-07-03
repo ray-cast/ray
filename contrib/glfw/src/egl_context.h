@@ -2,7 +2,7 @@
 // GLFW 3.2 EGL - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2006-2016 Camilla Berglund <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -149,8 +149,8 @@ typedef GLFWglproc (EGLAPIENTRY * PFNEGLGETPROCADDRESSPROC)(const char*);
 #define eglQueryString _glfw.egl.QueryString
 #define eglGetProcAddress _glfw.egl.GetProcAddress
 
-#define _GLFW_PLATFORM_CONTEXT_STATE            _GLFWcontextEGL egl
-#define _GLFW_PLATFORM_LIBRARY_CONTEXT_STATE    _GLFWlibraryEGL egl
+#define _GLFW_EGL_CONTEXT_STATE            _GLFWcontextEGL egl
+#define _GLFW_EGL_LIBRARY_CONTEXT_STATE    _GLFWlibraryEGL egl
 
 
 // EGL-specific per-context data
@@ -164,7 +164,6 @@ typedef struct _GLFWcontextEGL
    void*            client;
 
 } _GLFWcontextEGL;
-
 
 // EGL-specific global data
 //
@@ -204,7 +203,6 @@ void _glfwTerminateEGL(void);
 GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
                                const _GLFWctxconfig* ctxconfig,
                                const _GLFWfbconfig* fbconfig);
-void _glfwDestroyContextEGL(_GLFWwindow* window);
 #if defined(_GLFW_X11)
 GLFWbool _glfwChooseVisualEGL(const _GLFWctxconfig* ctxconfig,
                               const _GLFWfbconfig* fbconfig,

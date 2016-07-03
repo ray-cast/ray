@@ -2,7 +2,7 @@
 // GLFW 3.2 Win32 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2006-2016 Camilla Berglund <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -205,22 +205,17 @@ typedef VkResult (APIENTRY *PFN_vkCreateWin32SurfaceKHR)(VkInstance,const VkWin3
 typedef VkBool32 (APIENTRY *PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)(VkPhysicalDevice,uint32_t);
 
 #include "win32_joystick.h"
-
-#if defined(_GLFW_WGL)
- #include "wgl_context.h"
-#elif defined(_GLFW_EGL)
- #define _GLFW_EGL_NATIVE_WINDOW  ((EGLNativeWindowType) window->win32.handle)
- #define _GLFW_EGL_NATIVE_DISPLAY EGL_DEFAULT_DISPLAY
- #include "egl_context.h"
-#else
- #error "No supported context creation API selected"
-#endif
+#include "wgl_context.h"
+#include "egl_context.h"
 
 #define _GLFW_WNDCLASSNAME L"GLFW30"
 
 #define _glfw_dlopen(name) LoadLibraryA(name)
 #define _glfw_dlclose(handle) FreeLibrary((HMODULE) handle)
 #define _glfw_dlsym(handle, name) GetProcAddress((HMODULE) handle, name)
+
+#define _GLFW_EGL_NATIVE_WINDOW  ((EGLNativeWindowType) window->win32.handle)
+#define _GLFW_EGL_NATIVE_DISPLAY EGL_DEFAULT_DISPLAY
 
 #define _GLFW_PLATFORM_WINDOW_STATE         _GLFWwindowWin32  win32
 #define _GLFW_PLATFORM_LIBRARY_WINDOW_STATE _GLFWlibraryWin32 win32
@@ -242,21 +237,24 @@ typedef struct _GLFWwindowWin32
     GLFWbool            iconified;
 
     // The last received cursor position, regardless of source
-    int                 cursorPosX, cursorPosY;
+    int                 lastCursorPosX, lastCursorPosY;
 
 } _GLFWwindowWin32;
-
 
 // Win32-specific global data
 //
 typedef struct _GLFWlibraryWin32
 {
-    HWND                helperWindow;
+    HWND                helperWindowHandle;
     DWORD               foregroundLockTimeout;
     char*               clipboardString;
     char                keyName[64];
     short int           publicKeys[512];
     short int           nativeKeys[GLFW_KEY_LAST + 1];
+    // Where to place the cursor when re-enabled
+    double              restoreCursorPosX, restoreCursorPosY;
+    // The window whose disabled cursor mode is active
+    _GLFWwindow*        disabledCursorWindow;
 
     struct {
         HINSTANCE       instance;
@@ -294,7 +292,6 @@ typedef struct _GLFWlibraryWin32
 
 } _GLFWlibraryWin32;
 
-
 // Win32-specific per-monitor data
 //
 typedef struct _GLFWmonitorWin32
@@ -309,7 +306,6 @@ typedef struct _GLFWmonitorWin32
 
 } _GLFWmonitorWin32;
 
-
 // Win32-specific per-cursor data
 //
 typedef struct _GLFWcursorWin32
@@ -317,7 +313,6 @@ typedef struct _GLFWcursorWin32
     HCURSOR handle;
 
 } _GLFWcursorWin32;
-
 
 // Win32-specific global timer data
 //
@@ -327,7 +322,6 @@ typedef struct _GLFWtimeWin32
     uint64_t            frequency;
 
 } _GLFWtimeWin32;
-
 
 // Win32-specific global TLS data
 //

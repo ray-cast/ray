@@ -160,10 +160,15 @@ static void handlePointerButton(_GLFWwindow* window,
                               int pressed,
                               const MirPointerEvent* pointer_event)
 {
-    MirPointerButton button = mir_pointer_event_buttons  (pointer_event);
     int mods                = mir_pointer_event_modifiers(pointer_event);
     const int publicMods    = mirModToGLFWMod(mods);
-    int publicButton;
+    MirPointerButton button = mir_pointer_button_primary;
+    static uint32_t oldButtonStates = 0;
+    uint32_t newButtonStates        = mir_pointer_event_buttons(pointer_event);
+    int publicButton                = GLFW_MOUSE_BUTTON_LEFT;
+
+    // XOR our old button states our new states to figure out what was added or removed
+    button = newButtonStates ^ oldButtonStates;
 
     switch (button)
     {
@@ -188,21 +193,22 @@ static void handlePointerButton(_GLFWwindow* window,
             break;
     }
 
+    oldButtonStates = newButtonStates;
+
     _glfwInputMouseClick(window, publicButton, pressed, publicMods);
 }
 
 static void handlePointerMotion(_GLFWwindow* window,
                                 const MirPointerEvent* pointer_event)
 {
-    int current_x = window->cursorPosX;
-    int current_y = window->cursorPosY;
+    int current_x = window->virtualCursorPosX;
+    int current_y = window->virtualCursorPosY;
     int x  = mir_pointer_event_axis_value(pointer_event, mir_pointer_axis_x);
     int y  = mir_pointer_event_axis_value(pointer_event, mir_pointer_axis_y);
     int dx = mir_pointer_event_axis_value(pointer_event, mir_pointer_axis_hscroll);
     int dy = mir_pointer_event_axis_value(pointer_event, mir_pointer_axis_vscroll);
 
-    if (current_x != x || current_y != y)
-      _glfwInputCursorMotion(window, x, y);
+    _glfwInputCursorPos(window, x, y);
     if (dx != 0 || dy != 0)
       _glfwInputScroll(window, dx, dy);
 }
@@ -345,12 +351,6 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
                               const _GLFWctxconfig* ctxconfig,
                               const _GLFWfbconfig* fbconfig)
 {
-    if (ctxconfig->api != GLFW_NO_API)
-    {
-        if (!_glfwCreateContextEGL(window, ctxconfig, fbconfig))
-            return GLFW_FALSE;
-    }
-
     if (window->monitor)
     {
         GLFWvidmode mode;
@@ -377,6 +377,12 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
     window->mir.window = mir_buffer_stream_get_egl_native_window(
                                    mir_surface_get_buffer_stream(window->mir.surface));
 
+    if (ctxconfig->client != GLFW_NO_API)
+    {
+        if (!_glfwCreateContextEGL(window, ctxconfig, fbconfig))
+            return GLFW_FALSE;
+    }
+
     return GLFW_TRUE;
 }
 
@@ -388,7 +394,8 @@ void _glfwPlatformDestroyWindow(_GLFWwindow* window)
         window->mir.surface = NULL;
     }
 
-    _glfwDestroyContextEGL(window);
+    if (window->context.client != GLFW_NO_API)
+        window->context.destroy(window);
 }
 
 void _glfwPlatformSetWindowTitle(_GLFWwindow* window, const char* title)
@@ -701,11 +708,6 @@ void _glfwPlatformSetCursor(_GLFWwindow* window, _GLFWcursor* cursor)
         mir_wait_for(mir_surface_configure_cursor(window->mir.surface, cursor->mir.conf));
         if (cursor->mir.custom_cursor)
         {
-            /* FIXME Bug https://bugs.launchpad.net/mir/+bug/1477285
-                     Requires a triple buffer swap to get the cursor buffer on top! (since mir is tripled buffered)
-            */
-            mir_buffer_stream_swap_buffers_sync(cursor->mir.custom_cursor);
-            mir_buffer_stream_swap_buffers_sync(cursor->mir.custom_cursor);
             mir_buffer_stream_swap_buffers_sync(cursor->mir.custom_cursor);
         }
     }

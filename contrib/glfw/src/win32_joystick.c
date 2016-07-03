@@ -2,7 +2,7 @@
 // GLFW 3.1 Win32 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2015 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2006-2016 Camilla Berglund <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -176,7 +176,7 @@ static int compareJoystickObjects(const void* first, const void* second)
 //
 static GLFWbool supportsXInput(const GUID* guid)
 {
-    UINT i, count;
+    UINT i, count = 0;
     RAWINPUTDEVICELIST* ridl;
     GLFWbool result = GLFW_FALSE;
 

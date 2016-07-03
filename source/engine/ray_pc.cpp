@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_PLATFORM_WINDOWS)
 #include <ray/ray.h>
+#include <ray/ray_main.h>
 
 #include <ray/game_application.h>
 
@@ -44,13 +44,8 @@
 #include <ray/input_event.h>
 #include <ray/input_feature.h>
 
-#define GLFW_EXPOSE_NATIVE_WGL
-#define GLFW_EXPOSE_NATIVE_WIN32
-
 #include <GLFW\glfw3.h>
 #include <GLFW\glfw3native.h>
-
-RAY_C_LINKAGE int RAY_CALL ray_main(int argc, const char* argv[]);
 
 GLFWwindow* _window = nullptr;
 ray::GameApplicationPtr _gameApp;
@@ -126,8 +121,23 @@ void onWindowMouseMotion(GLFWwindow* window, double x, double y)
 		ray::InputEvent event;
 		event.event = ray::InputEvent::MouseMotion;
 		event.motion.x = event.motion.xrel = x;
-		event.motion.x = event.motion.yrel = y;
+		event.motion.y = event.motion.yrel = y;
 		event.motion.timestamp = glfwGetTimerFrequency();
+		event.motion.state = false;
+
+#if defined(GLFW_EXPOSE_NATIVE_WIN32)
+		event.motion.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+
+		POINT pt;
+		pt.x = x;
+		pt.y = y;
+
+		if (ClientToScreen((HWND)event.motion.windowID, &pt))
+		{
+			event.motion.xrel = pt.x;
+			event.motion.yrel = pt.y;
+		}
+#endif
 
 		_gameApp->sendInputEvent(event);
 	}
@@ -164,7 +174,13 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 		//::glfwSetMouseButtonCallback(_window, &onWindowMouseButton);
 		//::glfwSetCursorPosCallback(_window, &onWindowMouseMotion);
 
+#if defined(GLFW_EXPOSE_NATIVE_WIN32)
 		HWND hwnd = ::glfwGetWin32Window(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_X11)
+		Window hwnd = ::glfwGetX11Window(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_EGL)
+		EGLSurface hwnd = ::glfwGetEGLSurface(_window);
+#endif
 
 		_gameApp = std::make_shared<ray::GameApplication>();
 		_gameApp->setFileService(true);
@@ -234,5 +250,3 @@ int main(int argc, const char* argv[]) noexcept
 
 	return ray_main(argc, argv);
 }
-
-#endif

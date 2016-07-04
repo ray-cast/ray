@@ -34,133 +34,26 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_INPUT_EVENT_H_
-#define _H_INPUT_EVENT_H_
+#ifndef _H_GLFW_INPUT_KEYBOARD_H_
+#define _H_GLFW_INPUT_KEYBOARD_H_
 
-#include <ray/input_key.h>
-#include <ray/input_button.h>
+#include <ray/input_keyboard.h>
 
 _NAME_BEGIN
 
-struct InputKeysym
-{
-	std::uint16_t sym;
-	std::uint16_t raw;
-	std::uint16_t mod;
-	std::uint16_t unicode;
-};
-
-struct KeyboardEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint8_t state;
-	std::uint8_t repeat;
-	std::uint8_t padding2;
-	std::uint8_t padding3;
-	InputKeysym keysym;
-};
-
-struct MouseMotionEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint8_t state;
-	int x;
-	int y;
-	int xrel;
-	int yrel;
-};
-
-struct MouseButtonEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint32_t which;
-	std::uint8_t button;
-	std::uint8_t state;
-	std::uint8_t clicks;
-	std::uint8_t padding1;
-	std::uint32_t x;
-	std::uint32_t y;
-};
-
-struct MouseWheelEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint64_t userdata;
-	std::uint8_t _state;
-	int x;
-	int y;
-};
-
-struct SizeChangeEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint32_t w;
-	std::uint32_t h;
-};
-
-struct WindowEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-};
-
-struct JoyAxisEvent {};
-struct JoyBallEvent {};
-struct JoyHatEvent {};
-struct JoyButtonEvent {};
-struct JoyDeviceEvent {};
-
-class EXPORT InputEvent final
+class GLFWInputKeyboard final : public DefaultInputKeyboard
 {
 public:
-	enum Type
-	{
-		KeyDown,
-		KeyUp,
-		Character,
+	GLFWInputKeyboard() noexcept;
+	virtual ~GLFWInputKeyboard() noexcept;
 
-		MouseMotion,
-		MouseButtonDown,
-		MouseButtonUp,
-		MouseButtonDoubleClick,
-		MouseWheelUp,
-		MouseWheelDown,
+	virtual bool getKeyState(InputKey::Code key) const noexcept;
 
-		GamePadButtonDown,
-		GamePadButtonUp,
+	virtual InputKeyboardPtr clone() const noexcept;
 
-		TouchMotionMove,
-		TouchMotionDown,
-		TouchMotionUp,
-		TouchMotionCancel,
-
-		SizeChange,
-
-		GetFocus,
-		LostFocus,
-
-		Reset,
-
-		AppQuit
-	};
-
-	Type event;
-	KeyboardEvent key;
-	MouseMotionEvent motion;
-	MouseButtonEvent button;
-	MouseWheelEvent wheel;
-	JoyAxisEvent jaxis;
-	JoyBallEvent jball;
-	JoyHatEvent  jhat;
-	JoyButtonEvent jbutton;
-	JoyDeviceEvent jdevice;
-	SizeChangeEvent change;
-	WindowEvent window;
+private:
+	GLFWInputKeyboard(const GLFWInputKeyboard&) noexcept = delete;
+	GLFWInputKeyboard& operator=(const GLFWInputKeyboard&) noexcept = delete;
 };
 
 _NAME_END

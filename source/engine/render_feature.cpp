@@ -45,7 +45,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(RenderFeature, GameFeature, "Graphics")
+__ImplementSubClass(RenderFeature, GameFeature, "RenderFeature")
 
 RenderFeature::RenderFeature() noexcept
 {

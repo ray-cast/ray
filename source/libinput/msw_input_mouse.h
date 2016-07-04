@@ -63,8 +63,8 @@ private:
 	MSWInputMouse& operator=(const MSWInputMouse&) = delete;
 
 private:
-	int _mouseOffsetX;
-	int _mouseOffsetY;
+	bool _focusWindow;
+	std::uint64_t _window;
 };
 
 _NAME_END

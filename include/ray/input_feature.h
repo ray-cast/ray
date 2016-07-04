@@ -71,7 +71,7 @@ public:
 	bool postInputEvent(const InputEvent& event) noexcept;
 
 private:
-	virtual void onActivate() noexcept;
+	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
 
 	virtual void onReset() noexcept;

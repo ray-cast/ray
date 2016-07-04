@@ -206,24 +206,6 @@ OGLFramebuffer::close() noexcept
 	}
 }
 
-void
-OGLFramebuffer::discard(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept
-{
-	assert(numAttachment < GraphicsAttachmentType::GraphicsAttachmentTypeRangeSize);
-
-	GLenum discardAttachment[GraphicsAttachmentType::GraphicsAttachmentTypeRangeSize];
-
-	for (std::size_t i = 0; i < numAttachment; i++)
-	{
-		if (attachments[i] == GraphicsAttachmentType::GraphicsAttachmentTypeDepthStencil)
-			discardAttachment[i] = GL_DEPTH_STENCIL_ATTACHMENT;
-		else
-			discardAttachment[i] = GL_COLOR_ATTACHMENT0 + attachments[i];
-	}
-	
-	glInvalidateFramebuffer(GL_FRAMEBUFFER, numAttachment, discardAttachment);
-}
-
 GLuint
 OGLFramebuffer::getInstanceID() noexcept
 {

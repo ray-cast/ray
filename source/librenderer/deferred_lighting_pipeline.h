@@ -122,6 +122,7 @@ private:
 
 	MaterialPtr _mrsii;
 	MaterialTechPtr _mrsiiRsm2VPLsSpot;
+	MaterialTechPtr _mrsiiRsm2VPLsDirectional;
 	MaterialTechPtr _mrsiiGatherIndirect;
 	MaterialTechPtr _mrsiiGatherIndirectDebug;
 	MaterialTechPtr	_mrsiiDepthDerivate;
@@ -163,6 +164,11 @@ private:
 	GraphicsFramebufferLayoutPtr _mrsiiNormalDerivViewLayout;
 	GraphicsFramebufferLayoutPtr _mrsiiSubsplatStencilViewLayout;
 	GraphicsFramebufferLayoutPtr _mrsiiGaterIndirectViewLayout;
+
+	GraphicsFormat _mrsiiDepthLinearFormat;
+	GraphicsFormat _mrsiiNormalFormat;
+	GraphicsFormat _mrsiiStencilFormat;
+	GraphicsFormat _mrsiiLightFormat;
 
 	MaterialPtr _deferredLighting;
 	MaterialTechPtr _deferredDepthOnly;

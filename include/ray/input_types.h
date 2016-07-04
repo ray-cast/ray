@@ -47,11 +47,7 @@ typedef std::shared_ptr<class InputMouse> InputMousePtr;
 typedef std::shared_ptr<class InputDevice> InputDevicePtr;
 typedef std::shared_ptr<class Input> InputPtr;
 
-#if defined(_BUILD_PLATFORM_WINDOWS)
-typedef HWND CaptureObject;
-#else
 typedef void* CaptureObject;
-#endif
 
 _NAME_END
 

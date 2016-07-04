@@ -58,27 +58,33 @@ DefaultInput::~DefaultInput() noexcept
 bool 
 DefaultInput::open() noexcept
 {
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	_inputDevice = std::make_shared<MSWInputDevice>();
 	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
 	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
+#endif
 	return true;
 }
 
 bool
 DefaultInput::open(InputDevicePtr& device) noexcept
 {
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	_inputDevice = device ? device : std::make_shared<MSWInputDevice>();
 	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
 	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
+#endif
 	return true;
 }
 
 bool
 DefaultInput::open(InputDevicePtr&& device) noexcept
 {
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	_inputDevice = device ? std::move(device) : std::make_shared<MSWInputDevice>();
 	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
 	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
+#endif
 	return true;
 }
 

@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_PLATFORM_WINDOWS)
 #include "msw_input_device.h"
 
 _NAME_BEGIN
@@ -279,7 +278,7 @@ MSWInputDevice::~MSWInputDevice() noexcept
 void
 MSWInputDevice::setCaptureObject(CaptureObject window) noexcept
 {
-	assert(::IsWindow(window));
+	assert(::IsWindow((HWND)window));
 	_window = (HWND)window;
 }
 
@@ -463,5 +462,3 @@ MSWInputDevice::clone() const noexcept
 }
 
 _NAME_END
-
-#endif

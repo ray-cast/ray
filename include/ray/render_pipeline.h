@@ -73,7 +73,7 @@ public:
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void discradRenderTexture(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept;
+	void discardFramebuffer(std::uint32_t i) noexcept;
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
 	void setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept;

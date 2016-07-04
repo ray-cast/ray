@@ -489,13 +489,6 @@ OGLDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, co
 }
 
 void
-OGLDeviceContext::discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t numAttachment) noexcept
-{
-	assert(_glcontext->getActive());
-	_framebuffer->discard(attachments, numAttachment);
-}
-
-void
 OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
@@ -510,6 +503,51 @@ OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFramebuffer);
 
 	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+void
+OGLDeviceContext::discardFramebuffer(std::uint32_t i) noexcept
+{
+	assert(_framebuffer);
+	assert(_glcontext->getActive());
+
+	const auto& layoutDesc = _framebuffer->getGraphicsFramebufferDesc().getGraphicsFramebufferLayout()->getGraphicsFramebufferLayoutDesc();
+	if (layoutDesc.getComponents().size() > i)
+	{
+		auto& attachment = layoutDesc.getComponents().at(i);
+		switch (attachment.getAttachType())
+		{
+		case GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal:
+		{
+			GLenum attachment = GL_COLOR_ATTACHMENT0 + i;
+			glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+		}
+		break;
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal:
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal:
+		{
+			auto format = attachment.getAttachFormat();
+			if (format == GraphicsFormat::GraphicsFormatS8UInt)
+			{
+				GLenum attachment = GL_STENCIL_ATTACHMENT;
+				glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+			}
+			else if (format == GraphicsFormat::GraphicsFormatD16UNorm || format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+			{
+				GLenum attachment = GL_DEPTH_ATTACHMENT;
+				glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+			}
+			else
+			{
+				GLenum attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+				glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+			}
+		}
+		break;
+		default:
+			break;
+		}
+	}
 }
 
 GraphicsFramebufferPtr

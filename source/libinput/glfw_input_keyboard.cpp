@@ -34,135 +34,28 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_INPUT_EVENT_H_
-#define _H_INPUT_EVENT_H_
-
-#include <ray/input_key.h>
-#include <ray/input_button.h>
+#include "glfw_input_keyboard.h"
 
 _NAME_BEGIN
 
-struct InputKeysym
+GLFWInputKeyboard::GLFWInputKeyboard() noexcept
 {
-	std::uint16_t sym;
-	std::uint16_t raw;
-	std::uint16_t mod;
-	std::uint16_t unicode;
-};
+}
 
-struct KeyboardEvent
+GLFWInputKeyboard::~GLFWInputKeyboard() noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint8_t state;
-	std::uint8_t repeat;
-	std::uint8_t padding2;
-	std::uint8_t padding3;
-	InputKeysym keysym;
-};
+}
 
-struct MouseMotionEvent
+bool 
+GLFWInputKeyboard::getKeyState(InputKey::Code key) const noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint8_t state;
-	int x;
-	int y;
-	int xrel;
-	int yrel;
-};
+	return false;
+}
 
-struct MouseButtonEvent
+ray::InputKeyboardPtr 
+GLFWInputKeyboard::clone() const noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint32_t which;
-	std::uint8_t button;
-	std::uint8_t state;
-	std::uint8_t clicks;
-	std::uint8_t padding1;
-	std::uint32_t x;
-	std::uint32_t y;
-};
-
-struct MouseWheelEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint64_t userdata;
-	std::uint8_t _state;
-	int x;
-	int y;
-};
-
-struct SizeChangeEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint32_t w;
-	std::uint32_t h;
-};
-
-struct WindowEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-};
-
-struct JoyAxisEvent {};
-struct JoyBallEvent {};
-struct JoyHatEvent {};
-struct JoyButtonEvent {};
-struct JoyDeviceEvent {};
-
-class EXPORT InputEvent final
-{
-public:
-	enum Type
-	{
-		KeyDown,
-		KeyUp,
-		Character,
-
-		MouseMotion,
-		MouseButtonDown,
-		MouseButtonUp,
-		MouseButtonDoubleClick,
-		MouseWheelUp,
-		MouseWheelDown,
-
-		GamePadButtonDown,
-		GamePadButtonUp,
-
-		TouchMotionMove,
-		TouchMotionDown,
-		TouchMotionUp,
-		TouchMotionCancel,
-
-		SizeChange,
-
-		GetFocus,
-		LostFocus,
-
-		Reset,
-
-		AppQuit
-	};
-
-	Type event;
-	KeyboardEvent key;
-	MouseMotionEvent motion;
-	MouseButtonEvent button;
-	MouseWheelEvent wheel;
-	JoyAxisEvent jaxis;
-	JoyBallEvent jball;
-	JoyHatEvent  jhat;
-	JoyButtonEvent jbutton;
-	JoyDeviceEvent jdevice;
-	SizeChangeEvent change;
-	WindowEvent window;
-};
+	return std::make_shared<GLFWInputKeyboard>();
+}
 
 _NAME_END
-
-#endif

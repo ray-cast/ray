@@ -34,133 +34,36 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_INPUT_EVENT_H_
-#define _H_INPUT_EVENT_H_
+#ifndef _H_GLFW_INPUT_MOUSE_H_
+#define _H_GLFW_INPUT_MOUSE_H_
 
-#include <ray/input_key.h>
-#include <ray/input_button.h>
+#include <ray/input_mouse.h>
 
 _NAME_BEGIN
 
-struct InputKeysym
-{
-	std::uint16_t sym;
-	std::uint16_t raw;
-	std::uint16_t mod;
-	std::uint16_t unicode;
-};
-
-struct KeyboardEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint8_t state;
-	std::uint8_t repeat;
-	std::uint8_t padding2;
-	std::uint8_t padding3;
-	InputKeysym keysym;
-};
-
-struct MouseMotionEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint8_t state;
-	int x;
-	int y;
-	int xrel;
-	int yrel;
-};
-
-struct MouseButtonEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint32_t which;
-	std::uint8_t button;
-	std::uint8_t state;
-	std::uint8_t clicks;
-	std::uint8_t padding1;
-	std::uint32_t x;
-	std::uint32_t y;
-};
-
-struct MouseWheelEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint64_t userdata;
-	std::uint8_t _state;
-	int x;
-	int y;
-};
-
-struct SizeChangeEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint32_t w;
-	std::uint32_t h;
-};
-
-struct WindowEvent
-{
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-};
-
-struct JoyAxisEvent {};
-struct JoyBallEvent {};
-struct JoyHatEvent {};
-struct JoyButtonEvent {};
-struct JoyDeviceEvent {};
-
-class EXPORT InputEvent final
+class GLFWInputMouse final : public DefaultInputMouse
 {
 public:
-	enum Type
-	{
-		KeyDown,
-		KeyUp,
-		Character,
+	GLFWInputMouse() noexcept;
+	~GLFWInputMouse() noexcept;
 
-		MouseMotion,
-		MouseButtonDown,
-		MouseButtonUp,
-		MouseButtonDoubleClick,
-		MouseWheelUp,
-		MouseWheelDown,
+	InputMousePtr clone() const noexcept;
 
-		GamePadButtonDown,
-		GamePadButtonUp,
+private:
+	void onShowMouse() noexcept;
+	void onHideMouse() noexcept;
 
-		TouchMotionMove,
-		TouchMotionDown,
-		TouchMotionUp,
-		TouchMotionCancel,
+	void onChangePosition(int x, int y) noexcept;
 
-		SizeChange,
+    void onInputEvent(const InputEvent& event) noexcept;
 
-		GetFocus,
-		LostFocus,
+private:
+	GLFWInputMouse(const GLFWInputMouse&) = delete;
+	GLFWInputMouse& operator=(const GLFWInputMouse&) = delete;
 
-		Reset,
-
-		AppQuit
-	};
-
-	Type event;
-	KeyboardEvent key;
-	MouseMotionEvent motion;
-	MouseButtonEvent button;
-	MouseWheelEvent wheel;
-	JoyAxisEvent jaxis;
-	JoyBallEvent jball;
-	JoyHatEvent  jhat;
-	JoyButtonEvent jbutton;
-	JoyDeviceEvent jdevice;
-	SizeChangeEvent change;
-	WindowEvent window;
+private:
+    bool _focusWindow;
+	std::uint64_t _window;
 };
 
 _NAME_END

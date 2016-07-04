@@ -34,135 +34,75 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_INPUT_EVENT_H_
-#define _H_INPUT_EVENT_H_
-
-#include <ray/input_key.h>
-#include <ray/input_button.h>
+#include "glfw_input_mouse.h"
+#include <GLFW\glfw3.h>
 
 _NAME_BEGIN
 
-struct InputKeysym
+GLFWInputMouse::GLFWInputMouse() noexcept
+	: _window(window)
 {
-	std::uint16_t sym;
-	std::uint16_t raw;
-	std::uint16_t mod;
-	std::uint16_t unicode;
-};
+}
 
-struct KeyboardEvent
+GLFWInputMouse::~GLFWInputMouse() noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint8_t state;
-	std::uint8_t repeat;
-	std::uint8_t padding2;
-	std::uint8_t padding3;
-	InputKeysym keysym;
-};
+}
 
-struct MouseMotionEvent
+void
+GLFWInputMouse::onShowMouse() noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint8_t state;
-	int x;
-	int y;
-	int xrel;
-	int yrel;
-};
+    if (_focusWindow)
+    {
+	   ::glfwSetInputMode((GLFWwindow*)_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+}
 
-struct MouseButtonEvent
+void
+GLFWInputMouse::onHideMouse() noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint32_t which;
-	std::uint8_t button;
-	std::uint8_t state;
-	std::uint8_t clicks;
-	std::uint8_t padding1;
-	std::uint32_t x;
-	std::uint32_t y;
-};
+    if (_focusWindow)
+    {
+	   ::glfwSetInputMode((GLFWwindow*)_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    }
+}
 
-struct MouseWheelEvent
+void
+GLFWInputMouse::onChangePosition(int x, int y) noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint64_t userdata;
-	std::uint8_t _state;
-	int x;
-	int y;
-};
+    if (_focusWindow)
+    {
+	   ::glfwSetCursorPos((GLFWwindow*)_window, x, y);
+    }
+}
 
-struct SizeChangeEvent
+void
+GLFWInputMouse::onInputEvent(const InputEvent& event) noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-	std::uint32_t w;
-	std::uint32_t h;
-};
+    DefaultInputMouse::onInputEvent(event);
 
-struct WindowEvent
+    switch (event.event)
+    {
+    case InputEvent::GetFocus:
+    {
+        _window = event.window.windowID;
+        _focusWindow = true;
+    }
+    break;
+    case InputEvent::LostFocus:
+    {
+        _window = event.window.windowID;
+        _focusWindow = false;
+    }
+    break;
+    default:
+        break;
+    }
+}
+
+ray::InputMousePtr
+GLFWInputMouse::clone() const noexcept
 {
-	std::uint64_t timestamp;
-	std::uint64_t windowID;
-};
-
-struct JoyAxisEvent {};
-struct JoyBallEvent {};
-struct JoyHatEvent {};
-struct JoyButtonEvent {};
-struct JoyDeviceEvent {};
-
-class EXPORT InputEvent final
-{
-public:
-	enum Type
-	{
-		KeyDown,
-		KeyUp,
-		Character,
-
-		MouseMotion,
-		MouseButtonDown,
-		MouseButtonUp,
-		MouseButtonDoubleClick,
-		MouseWheelUp,
-		MouseWheelDown,
-
-		GamePadButtonDown,
-		GamePadButtonUp,
-
-		TouchMotionMove,
-		TouchMotionDown,
-		TouchMotionUp,
-		TouchMotionCancel,
-
-		SizeChange,
-
-		GetFocus,
-		LostFocus,
-
-		Reset,
-
-		AppQuit
-	};
-
-	Type event;
-	KeyboardEvent key;
-	MouseMotionEvent motion;
-	MouseButtonEvent button;
-	MouseWheelEvent wheel;
-	JoyAxisEvent jaxis;
-	JoyBallEvent jball;
-	JoyHatEvent  jhat;
-	JoyButtonEvent jbutton;
-	JoyDeviceEvent jdevice;
-	SizeChangeEvent change;
-	WindowEvent window;
-};
+	return std::make_shared<GLFWInputMouse>(_window);
+}
 
 _NAME_END
-
-#endif

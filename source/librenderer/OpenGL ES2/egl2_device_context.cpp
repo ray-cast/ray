@@ -497,6 +497,51 @@ EGL2DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 }
 
 void
+EGL2DeviceContext::discardFramebuffer(std::uint32_t i) noexcept
+{
+	assert(_framebuffer);
+	assert(_glcontext->getActive());
+
+	const auto& layoutDesc = _framebuffer->getGraphicsFramebufferDesc().getGraphicsFramebufferLayout()->getGraphicsFramebufferLayoutDesc();
+	if (layoutDesc.getComponents().size() > i)
+	{
+		auto& attachment = layoutDesc.getComponents().at(i);
+		switch (attachment.getAttachType())
+		{
+		case GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal:
+		{
+			GLenum attachment = GL_COLOR_ATTACHMENT0 + i;
+			glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachment);
+		}
+		break;
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal:
+		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal:
+		{
+			auto format = attachment.getAttachFormat();
+			if (format == GraphicsFormat::GraphicsFormatS8UInt)
+			{
+				GLenum attachment = GL_STENCIL_ATTACHMENT;
+				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachment);
+			}
+			else if (format == GraphicsFormat::GraphicsFormatD16UNorm || format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+			{
+				GLenum attachment = GL_DEPTH_ATTACHMENT;
+				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachment);
+			}
+			else
+			{
+				GLenum attachment[] = { GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
+				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, attachment);
+			}
+		}
+		break;
+		default:
+			break;
+		}
+	}
+}
+
+void
 EGL2DeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipeline);

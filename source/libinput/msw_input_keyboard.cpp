@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_PLATFORM_WINDOWS)
 #include "msw_input_keyboard.h"
 
 _NAME_BEGIN
@@ -214,5 +213,3 @@ MSWInputKeyboard::clone() const noexcept
 }
 
 _NAME_END
-
-#endif

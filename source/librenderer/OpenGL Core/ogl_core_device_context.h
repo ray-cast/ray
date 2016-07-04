@@ -86,17 +86,12 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void discardFramebuffer(GraphicsAttachmentType attachments[], std::size_t i) noexcept;
+	void discardFramebuffer(std::uint32_t i) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
-
-	bool isTextureSupport(GraphicsFormat format) noexcept;
-	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
-	bool isVertexSupport(GraphicsFormat format) noexcept;
-	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
 
 	void enableDebugControl(bool enable) noexcept;
 	void startDebugControl() noexcept;

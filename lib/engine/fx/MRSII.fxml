@@ -77,6 +77,42 @@
                 }
             }
 
+            float4 RSM2VPLsDirectionalPS(in float2 coord : TEXCOORD0) : SV_Target
+            {
+                float instanceID = floor(coord.x * VPLCountGridOffsetDelta.x);
+                float i = VPLCountGridOffsetDelta.y * frac(instanceID / VPLCountGridOffsetDelta.y);
+                float j = floor(instanceID / VPLCountGridOffsetDelta.y);
+                float2 RSMcoord = VPLCountGridOffsetDelta.w * float2(i, j) + VPLCountGridOffsetDelta.zz;
+
+                float4 MRT0 = texColor.Sample(PointClamp, RSMcoord);
+                float4 MRT1 = texNormal.Sample(PointClamp, RSMcoord);
+
+                float specular = restoreSpecular(MRT0);
+                float shininess = restoreShininess(MRT1);
+
+                float3 N = restoreNormal(MRT1);
+                float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
+                float3 P = restorePosition(texDepthLinear, RSMcoord, V);
+                float3 albedo = restoreDiffuse(MRT0);
+
+                if (coord.y < 1 / 3.0f)
+                {
+                    float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * shininess;
+                    return float4(albedo * atten, length(P));
+                }
+                else if (coord.y < 2 / 3.0f)
+                {
+                    float4 viewNormal = mul(shadowView2EyeView, float4(N, 0));
+                    return float4(viewNormal.xyz, shininess);
+                }
+                else
+                {
+                    float4 viewPosition = mul(shadowView2EyeView, float4(P, 1));
+                    viewPosition /= viewPosition.w;
+                    return float4(viewPosition.xyz, specular);
+                }
+            }
+
            void GatherIndirectVS(
                 in float4 Position : POSITION,
                 out float4 oTexcoord : TEXCOORD0,
@@ -114,6 +150,7 @@
                     float3 lighting = 0;
                     lighting = brdfLambert(viewNormal, lightDirection, lightColor.xyz);
                     lighting *= attenuationTerm(viewPosition, lightPosition.xyz, float3(1, 0, 1));
+                    lighting *= max(0, dot(lightNormal, -lightDirection) * 0.5 + 0.5);
 
                     shading += lighting;
                 }
@@ -321,6 +358,18 @@
             <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="ScreenQuadVS"/>
             <state name="fragment" value="RSM2VPLsSpotPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="RSM2VPLsDirectional">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="RSM2VPLsDirectionalPS"/>
 
             <state name="cullmode" value="none"/>
 

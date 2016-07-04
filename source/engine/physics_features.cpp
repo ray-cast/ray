@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(PhysicFeatures, GameFeature, "Physics")
+__ImplementSubClass(PhysicFeatures, GameFeature, "PhysicFeatures")
 
 PhysicFeatures::PhysicFeatures() noexcept
 {

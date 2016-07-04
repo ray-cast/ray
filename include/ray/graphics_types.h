@@ -791,31 +791,6 @@ enum GraphicsImageTiling
 	GraphicsImageTilingMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsAttachmentType
-{
-	GraphicsAttachmentTypeColor0,
-	GraphicsAttachmentTypeColor1,
-	GraphicsAttachmentTypeColor2,
-	GraphicsAttachmentTypeColor3,
-	GraphicsAttachmentTypeColor4,
-	GraphicsAttachmentTypeColor5,
-	GraphicsAttachmentTypeColor6,
-	GraphicsAttachmentTypeColor7,
-	GraphicsAttachmentTypeColor8,
-	GraphicsAttachmentTypeColor9,
-	GraphicsAttachmentTypeColor10,
-	GraphicsAttachmentTypeColor11,
-	GraphicsAttachmentTypeColor12,
-	GraphicsAttachmentTypeColor13,
-	GraphicsAttachmentTypeColor14,
-	GraphicsAttachmentTypeColor15,
-	GraphicsAttachmentTypeDepthStencil,
-	GraphicsAttachmentTypeBeginRange = GraphicsAttachmentTypeColor0,
-	GraphicsAttachmentTypeEndRange = GraphicsAttachmentTypeDepthStencil,
-	GraphicsAttachmentTypeRangeSize = (GraphicsAttachmentTypeEndRange - GraphicsAttachmentTypeBeginRange + 1),
-	GraphicsAttachmentTypeMaxEnum = 0x7FFFFFFF
-};
-
 enum GraphicsViewUsageFlagBits
 {
 	GraphicsViewUsageFlagBitsTransferSrcBit = 0x00000001,

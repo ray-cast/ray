@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_PLATFORM_WINDOWS)
 #include "msw_input_mouse.h"
 
 _NAME_BEGIN
@@ -42,8 +41,8 @@ _NAME_BEGIN
 __ImplementSubInterface(MSWInputMouse, DefaultInputMouse, "MSWInputMouse")
 
 MSWInputMouse::MSWInputMouse() noexcept
-	: _mouseOffsetX(0)
-	, _mouseOffsetY(0)
+	: _focusWindow(false)
+	, _window(0)
 {
 }
 
@@ -54,31 +53,57 @@ MSWInputMouse::~MSWInputMouse() noexcept
 void
 MSWInputMouse::onShowMouse() noexcept
 {
-	::ShowCursor(TRUE);
+	if (_focusWindow)
+	{
+		::ShowCursor(TRUE);
+	}		
 }
 
 void
 MSWInputMouse::onHideMouse() noexcept
 {
-	::ShowCursor(FALSE);
+	if (_focusWindow)
+	{
+		::ShowCursor(FALSE);
+	}
 }
 
 void 
 MSWInputMouse::onChangePosition(int x, int y) noexcept
 {
-	::SetCursorPos(_mouseOffsetX + x, _mouseOffsetY + y);
+	if (_focusWindow)
+	{
+		POINT pt;
+		pt.x = x;
+		pt.y = y;
+
+		::ClientToScreen((HWND)_window, &pt);
+		::SetCursorPos(pt.x, pt.y);
+	}
 }
 
 void
 MSWInputMouse::onInputEvent(const InputEvent& event) noexcept
 {
-	DefaultInputMouse::onInputEvent(event);
-
-	if (event.event == InputEvent::MouseMotion)
+	switch (event.event)
 	{
-		_mouseOffsetX = event.motion.xrel - event.motion.x;
-		_mouseOffsetY = event.motion.yrel - event.motion.y;
+	case InputEvent::GetFocus:
+	{
+		_window = event.window.windowID;
+		_focusWindow = true;
 	}
+	break;
+	case InputEvent::LostFocus:
+	{
+		_window = event.window.windowID;
+		_focusWindow = false;
+	}
+	break;
+	default:
+		break;
+	}
+
+	DefaultInputMouse::onInputEvent(event);
 }
 
 InputMousePtr
@@ -88,5 +113,3 @@ MSWInputMouse::clone() const noexcept
 }
 
 _NAME_END
-
-#endif

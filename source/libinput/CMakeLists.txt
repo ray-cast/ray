@@ -1,3 +1,5 @@
+OPTION(USE_GLFW_INPUT "on for use" OFF)
+
 SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
 SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source/libinput)
 
@@ -50,13 +52,31 @@ SET(INPUT_NDK_LIST
 )
 SOURCE_GROUP("input\\ndk" FILES ${INPUT_NDK_LIST})
 
-ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_MSW_LIST})
+SET(INPUT_GLFW_LIST
+    ${SOURCE_PATH}/glfw_input_device.h
+    ${SOURCE_PATH}/glfw_input_device.cpp
+    ${SOURCE_PATH}/glfw_input_keyboard.h
+    ${SOURCE_PATH}/glfw_input_keyboard.cpp
+    ${SOURCE_PATH}/glfw_input_mouse.h
+    ${SOURCE_PATH}/glfw_input_mouse.cpp
+)
+SOURCE_GROUP("input\\glfw" FILES ${INPUT_GLFW_LIST})
+
+IF(USE_GLFW_INPUT)
+    ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_GLFW_LIST})
+ELSEIF(BUILD_PLATFORM_WINDOWS)
+    ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_MSW_LIST})
+ENDIF()
 
 TARGET_LINK_LIBRARIES(libinput PUBLIC libplatform)
 
 IF(BUILD_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(libinput PRIVATE winmm)
     TARGET_LINK_LIBRARIES(libinput PRIVATE imm32)
+ENDIF()
+
+IF(USE_GLFW_INPUT)
+    TARGET_LINK_LIBRARIES(libinput PRIVATE glfw)
 ENDIF()
 
 IF(MINGW OR UNIX)

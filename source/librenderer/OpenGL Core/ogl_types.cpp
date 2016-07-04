@@ -277,6 +277,7 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR8SScaled:
 	case GraphicsFormatR8UInt:
 	case GraphicsFormatR8SInt:
+	case GraphicsFormatR8SRGB:
 	case GraphicsFormatR16UNorm:
 	case GraphicsFormatR16SNorm:
 	case GraphicsFormatR16UScaled:
@@ -298,6 +299,7 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR8G8SScaled:
 	case GraphicsFormatR8G8UInt:
 	case GraphicsFormatR8G8SInt:
+	case GraphicsFormatR8G8SRGB:
 	case GraphicsFormatR16G16UNorm:
 	case GraphicsFormatR16G16SNorm:
 	case GraphicsFormatR16G16UScaled:
@@ -319,6 +321,7 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR8G8B8SScaled:
 	case GraphicsFormatR8G8B8UInt:
 	case GraphicsFormatR8G8B8SInt:
+	case GraphicsFormatR8G8B8SRGB:
 	case GraphicsFormatR16G16B16UNorm:
 	case GraphicsFormatR16G16B16SNorm:
 	case GraphicsFormatR16G16B16UScaled:
@@ -340,6 +343,7 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatB8G8R8SScaled:
 	case GraphicsFormatB8G8R8UInt:
 	case GraphicsFormatB8G8R8SInt:
+	case GraphicsFormatB8G8R8SRGB:
 	case GraphicsFormatB10G11R11UFloatPack32:
 		return GL_BGR;
 	case GraphicsFormatR4G4B4A4UNormPack16:
@@ -351,6 +355,7 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR8G8B8A8SScaled:
 	case GraphicsFormatR8G8B8A8UInt:
 	case GraphicsFormatR8G8B8A8SInt:
+	case GraphicsFormatR8G8B8A8SRGB:
 	case GraphicsFormatA2R10G10B10UNormPack32:
 	case GraphicsFormatA2R10G10B10SNormPack32:
 	case GraphicsFormatA2R10G10B10UScaledPack32:
@@ -379,6 +384,7 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatB8G8R8A8SScaled:
 	case GraphicsFormatB8G8R8A8UInt:
 	case GraphicsFormatB8G8R8A8SInt:
+	case GraphicsFormatB8G8R8A8SRGB:
 	case GraphicsFormatA2B10G10R10UNormPack32:
 	case GraphicsFormatA2B10G10R10SNormPack32:
 	case GraphicsFormatA2B10G10R10UScaledPack32:
@@ -392,16 +398,8 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatA8B8G8R8SScaledPack32:
 	case GraphicsFormatA8B8G8R8UIntPack32:
 	case GraphicsFormatA8B8G8R8SIntPack32:
-		return GL_ABGR_EXT;
-	case GraphicsFormatR8SRGB:
-	case GraphicsFormatR8G8SRGB:
-	case GraphicsFormatR8G8B8SRGB:
-	case GraphicsFormatB8G8R8SRGB:
-		return GL_SRGB;
-	case GraphicsFormatR8G8B8A8SRGB:
-	case GraphicsFormatB8G8R8A8SRGB:
 	case GraphicsFormatA8B8G8R8SRGBPack32:
-		return GL_SRGB_ALPHA;
+		return GL_ABGR_EXT;
 	case GraphicsFormatD16UNorm:
 	case GraphicsFormatX8_D24UNormPack32:
 	case GraphicsFormatD32_SFLOAT:
@@ -459,21 +457,21 @@ OGLTypes::asTextureType(GraphicsFormat format) noexcept
 	case GraphicsFormatB8G8R8SScaled:            return GL_BYTE;
 	case GraphicsFormatB8G8R8UInt:               return GL_UNSIGNED_BYTE;
 	case GraphicsFormatB8G8R8SInt:               return GL_BYTE;
-	case GraphicsFormatB8G8R8SRGB:               return GL_BYTE;
+	case GraphicsFormatB8G8R8SRGB:               return GL_UNSIGNED_BYTE;
 	case GraphicsFormatR8G8B8A8UNorm:            return GL_UNSIGNED_BYTE;
 	case GraphicsFormatR8G8B8A8SNorm:            return GL_BYTE;
 	case GraphicsFormatR8G8B8A8UScaled:          return GL_UNSIGNED_BYTE;
 	case GraphicsFormatR8G8B8A8SScaled:          return GL_BYTE;
 	case GraphicsFormatR8G8B8A8UInt:             return GL_UNSIGNED_BYTE;
 	case GraphicsFormatR8G8B8A8SInt:             return GL_BYTE;
-	case GraphicsFormatR8G8B8A8SRGB:             return GL_BYTE;
+	case GraphicsFormatR8G8B8A8SRGB:             return GL_UNSIGNED_BYTE;
 	case GraphicsFormatB8G8R8A8UNorm:            return GL_UNSIGNED_BYTE;
 	case GraphicsFormatB8G8R8A8SNorm:            return GL_BYTE;
 	case GraphicsFormatB8G8R8A8UScaled:          return GL_UNSIGNED_BYTE;
 	case GraphicsFormatB8G8R8A8SScaled:          return GL_BYTE;
 	case GraphicsFormatB8G8R8A8UInt:             return GL_UNSIGNED_BYTE;
 	case GraphicsFormatB8G8R8A8SInt:             return GL_BYTE;
-	case GraphicsFormatB8G8R8A8SRGB:             return GL_BYTE;
+	case GraphicsFormatB8G8R8A8SRGB:             return GL_UNSIGNED_BYTE;
 	case GraphicsFormatA8B8G8R8UNormPack32:      return GL_UNSIGNED_BYTE;
 	case GraphicsFormatA8B8G8R8SNormPack32:      return GL_BYTE;
 	case GraphicsFormatA8B8G8R8UScaledPack32:    return GL_UNSIGNED_BYTE;
@@ -625,17 +623,17 @@ OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatA8B8G8R8SIntPack32:	     internalFormat = GL_RGBA8I; break;
 	case GraphicsFormatA8B8G8R8SRGBPack32:	     internalFormat = GL_SRGB8_ALPHA8; break;
 	case GraphicsFormatA2R10G10B10UNormPack32:	 internalFormat = GL_RGB10_A2; break;
-	case GraphicsFormatA2R10G10B10SNormPack32:	 internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2R10G10B10SNormPack32:	 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA2R10G10B10UScaledPack32: internalFormat = GL_RGB10_A2UI; break;
-	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA2R10G10B10UIntPack32:	 internalFormat = GL_RGB10_A2UI; break;
-	case GraphicsFormatA2R10G10B10SIntPack32:	 internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2R10G10B10SIntPack32:	 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA2B10G10R10UNormPack32:	 internalFormat = GL_RGB10_A2; break;
-	case GraphicsFormatA2B10G10R10SNormPack32:	 internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2B10G10R10SNormPack32:	 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA2B10G10R10UScaledPack32: internalFormat = GL_RGB10_A2UI; break;
-	case GraphicsFormatA2B10G10R10SScaledPack32: internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2B10G10R10SScaledPack32: internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA2B10G10R10UIntPack32:	 internalFormat = GL_RGB10_A2UI; break;
-	case GraphicsFormatA2B10G10R10SIntPack32:	 internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2B10G10R10SIntPack32:	 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16UNorm:	             internalFormat = GL_R16; break;
 	case GraphicsFormatR16SNorm:	             internalFormat = GL_R16_SNORM; break;
 	case GraphicsFormatR16UScaled:	             internalFormat = GL_R16UI; break;

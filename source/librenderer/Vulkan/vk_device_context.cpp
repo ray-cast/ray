@@ -202,6 +202,11 @@ VulkanDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags,
 	_commandList->clearFramebuffer(i, flags, color, depth, stencil);
 }
 
+void
+VulkanDeviceContext::discardFramebuffer(std::uint32_t i) noexcept
+{
+}
+
 GraphicsFramebufferPtr
 VulkanDeviceContext::getFramebuffer() const noexcept
 {

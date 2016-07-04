@@ -146,17 +146,6 @@ GameApplication::open(WindHandle hwnd, std::uint32_t width, std::uint32_t height
 #endif
 	
 	_isInitialize = this->start();
-	if (_isInitialize)
-	{
-		InputEvent inputEvent;
-		inputEvent.event = InputEvent::SizeChange;
-		inputEvent.change.windowID = (std::uint64_t)hwnd;
-		inputEvent.change.w = width;
-		inputEvent.change.h = height;
-		inputEvent.change.timestamp = 0;
-		this->sendInputEvent(inputEvent);
-	}
-
 	return _isInitialize;
 }
 

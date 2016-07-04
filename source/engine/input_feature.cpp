@@ -41,7 +41,7 @@
 _NAME_BEGIN
 
 __ImplementSubClass(InputMessage, Message, "InputMessage")
-__ImplementSubClass(InputFeature, GameFeature, "Input")
+__ImplementSubClass(InputFeature, GameFeature, "InputFeature")
 
 InputMessage::InputMessage() noexcept
 {
@@ -80,7 +80,7 @@ public:
 
 private:
 	InputEventListener(const InputEventListener&) noexcept = delete;
-	InputEventListener& operator=(const InputEventListener&)noexcept = delete;
+	InputEventListener& operator=(const InputEventListener&) noexcept = delete;
 
 private:
 	InputFeature& _input;
@@ -117,24 +117,24 @@ InputFeature::getInput() const noexcept
 bool
 InputFeature::sendInputEvent(const InputEvent& event) noexcept
 {
-	if (_input)
-		return _input->sendInputEvent(event);
-	return false;
+	assert(_input);
+	return _input->sendInputEvent(event);
 }
 
 bool 
 InputFeature::postInputEvent(const InputEvent& event) noexcept
 {
-	if (_input)
-		return _input->postInputEvent(event);
-	return false;
+	assert(_input);
+	return _input->postInputEvent(event);
 }
 
 void
-InputFeature::onActivate() noexcept
+InputFeature::onActivate() except
 {
 	_input = std::make_shared<DefaultInput>();
-	_input->open();
+	if (!_input->open())
+		throw failure("Input::open() fail.");
+
 	_input->addInputListener(std::make_shared<InputEventListener>(*this));
 	_input->setCaptureObject(_window);
 	_input->obtainCapture();

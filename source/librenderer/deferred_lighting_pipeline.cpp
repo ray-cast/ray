@@ -106,6 +106,10 @@ DeferredLightingPipeline::close() noexcept
 	this->destroyDeferredRenderTextures();
 	this->destroyDeferredRenderTextureLayouts();
 	this->destroyDeferredTextures();
+	this->destroyMRSIIMaterials();
+	this->destroyMRSIITextures();
+	this->destroyMRSIIRenderTextures();
+	this->destroyMRSIIRenderTextureLayouts();
 }
 
 void
@@ -238,15 +242,17 @@ DeferredLightingPipeline::renderTransparentSpecificShading(RenderPipeline& pipel
 void
 DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
-	this->renderDirectLights(pipeline, target);
+	pipeline.setFramebuffer(target);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+
 	this->renderIndirectLights(pipeline, target);
+	this->renderDirectLights(pipeline, target);
 }
 
 void
 DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 
 	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
@@ -489,6 +495,7 @@ DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const 
 	auto camera = pipeline.getCamera();
 	pipeline.setCamera(light.getCamera(0));
 	pipeline.setFramebuffer(_mrsiiVPLsView);
+	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_mrsiiRsm2VPLsSpot);
 	pipeline.setCamera(camera);
 }
@@ -503,6 +510,7 @@ DeferredLightingPipeline::computeDepthDerivBuffer(RenderPipeline& pipeline, cons
 	_mrsiiDepthLinearMap->uniformTexture(src);
 
 	pipeline.setFramebuffer(dst[0]);
+	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_mrsiiDepthDerivate);
 
 	for (std::uint32_t i = _mrsiiDerivMipBase; i < _mrsiiDerivMipBase + _mrsiiDerivMipCount - 1; i++)
@@ -515,6 +523,7 @@ DeferredLightingPipeline::computeDepthDerivBuffer(RenderPipeline& pipeline, cons
 		_mrsiiDepthLinearMap->uniformTexture(dst[i]->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 
 		pipeline.setFramebuffer(dst[i + 1]);
+		pipeline.discardFramebuffer(0);
 		pipeline.drawScreenQuad(*_mrsiiDepthDerivateMipmap);
 	}
 }
@@ -529,6 +538,7 @@ DeferredLightingPipeline::computeNormalDerivBuffer(RenderPipeline& pipeline, con
 	_mrsiiNormalMap->uniformTexture(src);
 
 	pipeline.setFramebuffer(dst[0]);
+	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_mrsiiNormalDerivate);
 
 	for (std::uint32_t i = _mrsiiDerivMipBase; i < _mrsiiDerivMipBase + _mrsiiDerivMipCount - 1; i++)
@@ -541,6 +551,7 @@ DeferredLightingPipeline::computeNormalDerivBuffer(RenderPipeline& pipeline, con
 		_mrsiiNormalMap->uniformTexture(dst[i]->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 
 		pipeline.setFramebuffer(dst[i + 1]);
+		pipeline.discardFramebuffer(0);
 		pipeline.drawScreenQuad(*_mrsiiNormalDerivateMipmap);
 	}
 }
@@ -718,10 +729,34 @@ DeferredLightingPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 	else
 		return false;
 
-	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat))
+		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
+	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
 		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm;
 	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
 		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+	else
+		return false;
+
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
+		_mrsiiNormalFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+	else
+		return false;
+
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16SFloat))
+		_mrsiiDepthLinearFormat = GraphicsFormat::GraphicsFormatR16SFloat;
+	else
+		return false;
+
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatS8UInt))
+		_mrsiiStencilFormat = GraphicsFormat::GraphicsFormatS8UInt;
+	else
+		return false;
+
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32))
+		_mrsiiLightFormat = GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32;
+	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
+		_mrsiiLightFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
 	else
 		return false;
 
@@ -817,7 +852,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredShadingDesc.setTexFormat(_deferredShadingFormat);
 	_deferredShadingDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredShadingDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredOpaqueShadingMap = pipeline.createTexture(_deferredShadingDesc);
 	if (!_deferredOpaqueShadingMap)
 		return false;
@@ -1022,6 +1057,7 @@ DeferredLightingPipeline::setupMRSIIMaterials(RenderPipeline& pipeline) noexcept
 {
 	_mrsii = pipeline.createMaterial("sys:fx/MRSII.fxml"); if (!_mrsii) return false;
 	_mrsiiRsm2VPLsSpot = _mrsii->getTech("RSM2VPLsSpot"); if (!_mrsiiRsm2VPLsSpot) return false;
+	_mrsiiRsm2VPLsDirectional = _mrsii->getTech("RSM2VPLsDirectional"); if (!_mrsiiRsm2VPLsDirectional) return false;
 	_mrsiiGatherIndirect = _mrsii->getTech("GatherIndirect"); if (!_mrsiiGatherIndirect) return false;
 	_mrsiiGatherIndirectDebug = _mrsii->getTech("GatherIndirectDebug"); if (!_mrsiiGatherIndirectDebug) return false;
 	_mrsiiDepthDerivate = _mrsii->getTech("DepthDerivate"); if (!_mrsiiDepthDerivate) return false;
@@ -1069,7 +1105,7 @@ DeferredLightingPipeline::setupMRSIITextures(RenderPipeline& pipeline) noexcept
 	depthDerivDesc.setWidth(width);
 	depthDerivDesc.setHeight(height);
 	depthDerivDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	depthDerivDesc.setTexFormat(_deferredDepthLinearFormat);
+	depthDerivDesc.setTexFormat(_mrsiiDepthLinearFormat);
 	depthDerivDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	depthDerivDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	depthDerivDesc.setMipBase(_mrsiiDerivMipBase);
@@ -1082,7 +1118,7 @@ DeferredLightingPipeline::setupMRSIITextures(RenderPipeline& pipeline) noexcept
 	normalDeriveDesc.setWidth(width);
 	normalDeriveDesc.setHeight(height);
 	normalDeriveDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	normalDeriveDesc.setTexFormat(_deferredNormalFormat);
+	normalDeriveDesc.setTexFormat(_mrsiiNormalFormat);
 	normalDeriveDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	normalDeriveDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	normalDeriveDesc.setMipBase(_mrsiiDerivMipBase);
@@ -1095,7 +1131,7 @@ DeferredLightingPipeline::setupMRSIITextures(RenderPipeline& pipeline) noexcept
 	subsplatStencilDesc.setWidth(width);
 	subsplatStencilDesc.setHeight(height);
 	subsplatStencilDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	subsplatStencilDesc.setTexFormat(GraphicsFormat::GraphicsFormatS8UInt);
+	subsplatStencilDesc.setTexFormat(_mrsiiStencilFormat);
 	subsplatStencilDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	subsplatStencilDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	subsplatStencilDesc.setMipBase(_mrsiiDerivMipBase);
@@ -1108,7 +1144,7 @@ DeferredLightingPipeline::setupMRSIITextures(RenderPipeline& pipeline) noexcept
 	gaterIndirectDesc.setWidth(width);
 	gaterIndirectDesc.setHeight(height);
 	gaterIndirectDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	gaterIndirectDesc.setTexFormat(_deferredLightFormat);
+	gaterIndirectDesc.setTexFormat(_mrsiiLightFormat);
 	gaterIndirectDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	gaterIndirectDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	gaterIndirectDesc.setMipBase(_mrsiiDerivMipBase);
@@ -1130,25 +1166,25 @@ DeferredLightingPipeline::setupMRSIIRenderTextureLayouts(RenderPipeline& pipelin
 		return false;
 
 	GraphicsFramebufferLayoutDesc depthDerivLayoutDesc;
-	depthDerivLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredDepthLinearFormat));
+	depthDerivLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _mrsiiDepthLinearFormat));
 	_mrsiiDepthDerivViewLayout = pipeline.createFramebufferLayout(depthDerivLayoutDesc);
 	if (!_mrsiiDepthDerivViewLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc depthNormalLayoutDesc;
-	depthNormalLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredNormalFormat));
+	depthNormalLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _mrsiiNormalFormat));
 	_mrsiiNormalDerivViewLayout = pipeline.createFramebufferLayout(depthNormalLayoutDesc);
 	if (!_mrsiiNormalDerivViewLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc subsplatStencilViewLayoutDesc;
-	subsplatStencilViewLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, GraphicsFormat::GraphicsFormatS8UInt));
+	subsplatStencilViewLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _mrsiiStencilFormat));
 	_mrsiiSubsplatStencilViewLayout = pipeline.createFramebufferLayout(subsplatStencilViewLayoutDesc);
 	if (!_mrsiiSubsplatStencilViewLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc gaterIndirectLayoutDesc;
-	gaterIndirectLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredLightFormat));
+	gaterIndirectLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _mrsiiLightFormat));
 	gaterIndirectLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, GraphicsFormat::GraphicsFormatS8UInt));
 	_mrsiiGaterIndirectViewLayout = pipeline.createFramebufferLayout(gaterIndirectLayoutDesc);
 	if (!_mrsiiGaterIndirectViewLayout)
@@ -1338,6 +1374,7 @@ DeferredLightingPipeline::destroyMRSIIMaterials() noexcept
 	_mrsiiMipmapPass.reset();
 	_mrsiiThreshold.reset();
 	_mrsiiRsm2VPLsSpot.reset();
+	_mrsiiRsm2VPLsDirectional.reset();
 	_mrsiiGatherIndirect.reset();
 	_mrsiiGatherIndirectDebug.reset();
 	_mrsiiDepthDerivate.reset();
@@ -1346,6 +1383,7 @@ DeferredLightingPipeline::destroyMRSIIMaterials() noexcept
 	_mrsiiNormalDerivateMipmap.reset();
 	_mrsiiComputeSubsplatStencil.reset();
 	_mrsiiUpsampling.reset();
+	_mrsiiUpsamplingWithBlend.reset();
 	_mrsii.reset();
 }
 

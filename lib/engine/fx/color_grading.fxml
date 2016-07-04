@@ -11,8 +11,7 @@
             void PostProcessVS(
                 in float4 Position : POSITION0,
                 out float4 oTexcoord : TEXCOORD0,
-                out float4 oPosition : SV_Position
-                )
+                out float4 oPosition : SV_Position)
             {
                 oPosition = Position;
                 oTexcoord = PosToCoord(Position);

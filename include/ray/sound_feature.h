@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class SoundFeature final : public GameFeature
 {
+	__DeclareSubClass(SoundFeature, GameFeature)
 public:
 	SoundFeature() noexcept;
 	~SoundFeature() noexcept;

@@ -49,6 +49,8 @@
 
 GLFWwindow* _window = nullptr;
 ray::GameApplicationPtr _gameApp;
+ray::InputMousePtr _inputMessage;
+
 ray::util::string _gameRootPath;
 ray::util::string _gameScenePath;
 
@@ -84,12 +86,16 @@ void onWindowFocus(GLFWwindow* window, int focus)
 		{
 			ray::InputEvent inputEvent;
 			inputEvent.event = ray::InputEvent::GetFocus;
+			inputEvent.window.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+			inputEvent.window.timestamp = ::glfwGetTimerFrequency();
 			_gameApp->sendInputEvent(inputEvent);
 		}
 		else
 		{
 			ray::InputEvent inputEvent;
 			inputEvent.event = ray::InputEvent::LostFocus;
+			inputEvent.window.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+			inputEvent.window.timestamp = ::glfwGetTimerFrequency();
 			_gameApp->sendInputEvent(inputEvent);
 		}
 	}
@@ -188,6 +194,9 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 
 		if (!_gameApp->open(hwnd, w, h))
 			return false;
+
+		onWindowFocus(_window, true);
+		onWindowResize(_window, w, h);
 
 		if (!_gameScenePath.empty())
 		{

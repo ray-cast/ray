@@ -126,7 +126,7 @@ RenderPipeline::setTransform(const float4x4& transform) noexcept
 	auto& view = _semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeView)->getFloat4x4();
 	auto& viewProject = _semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeViewProject)->getFloat4x4();
 
-	auto modelView = math::transformMultiply(view, transform);
+	auto modelView = view * transform;
 	auto modelViewInverse = math::transformInverse(modelView);
 
 	_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeModel)->uniform4fmat(transform);

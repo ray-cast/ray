@@ -253,7 +253,7 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 	auto _buildVertexBuffer = [&](const MeshProperty& mesh, std::size_t& offsetVertices, const std::vector<char>& _vbo)
 	{
 		auto& vertices = mesh.getVertexArray();
-		auto& tangentQuats = mesh.getTangentQuatArray();
+		auto& tangentQuats = mesh.getNormalArray();
 		auto& colors = mesh.getColorArray();
 		auto& texcoords = mesh.getTexcoordArray();
 		auto& weight = mesh.getWeightArray();
@@ -278,12 +278,12 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
 			for (auto& it : tangentQuats)
 			{
-				float4 unorm = math::snorm2unorm(it);
+				float3 unorm = math::snorm2unorm(it);
 
 				data[0] = math::fpToInt8UNORM(unorm.x);
 				data[1] = math::fpToInt8UNORM(unorm.y);
 				data[2] = math::fpToInt8UNORM(unorm.z);
-				data[3] = math::fpToInt8UNORM(unorm.w);
+				data[3] = math::fpToInt8UNORM(1.0);
 				
 				data += inputSize;
 			}

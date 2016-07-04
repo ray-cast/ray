@@ -167,8 +167,9 @@ void
 DeferredLightingPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit, float4::Zero, 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueBatch);
@@ -205,9 +206,10 @@ void
 DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4(1.0,1.0,1.0,0.0), 1.0, 0);
+	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatch);
@@ -1273,6 +1275,7 @@ DeferredLightingPipeline::destroySemantic() noexcept
 	_materialDeferredGraphicMap.reset();
 	_materialDeferredNormalMap.reset();
 	_materialDeferredLightMap.reset();
+	_materialDeferredOpaqueShadingMap.reset();
 }
 
 void
@@ -1283,7 +1286,10 @@ DeferredLightingPipeline::destroyDeferredMaterials() noexcept
 	_deferredDepthLinear.reset();
 	_deferredSunLight.reset();
 	_deferredSunLightShadow.reset();
+	_deferredDirectionalLight.reset();
+	_deferredDirectionalLightShadow.reset();
 	_deferredSpotLight.reset();
+	_deferredSpotLightShadow.reset();
 	_deferredPointLight.reset();
 	_deferredAmbientLight.reset();
 	_deferredShadingOpaques.reset();
@@ -1297,7 +1303,9 @@ DeferredLightingPipeline::destroyDeferredMaterials() noexcept
 	_texDepth.reset();
 	_texLight.reset();
 	_texSource.reset();
+	_texOpaque.reset();
 
+	_scaleY.reset();
 	_clipInfo.reset();
 
 	_shadowDecal.reset();
@@ -1323,6 +1331,8 @@ DeferredLightingPipeline::destroyDeferredRenderTextureLayouts() noexcept
 	_deferredLightingImageLayout.reset();
 	_deferredShadingImageLayout.reset();
 	_deferredOpaqueImagesLayout.reset();
+	_deferredAbufferImageLayout.reset();
+	_deferredTransparentImagesLayout.reset();
 }
 
 void

@@ -122,11 +122,16 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 
 		_pipeline->setCamera(camera);
 		_pipeline->setFramebuffer(shadowFrambuffer);
-		_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
+
 		if (queue == RenderQueue::RenderQueueReflectiveShadow)
 		{
 			_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 			_pipeline->clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+			_pipeline->clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
+		}
+		else
+		{
+			_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
 		}
 
 		_pipeline->drawRenderQueue(queue, nullptr);

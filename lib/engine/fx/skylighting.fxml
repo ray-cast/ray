@@ -71,6 +71,7 @@
             <state name="fragment" value="SkyboxEnvLightingPS"/>
 
             <state name="cullmode" value="none"/>
+            <state name="colormask" value="rgb"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -94,6 +95,7 @@
             <state name="fragment" value="SkyboxEnvLightingPS"/>
 
             <state name="cullmode" value="none"/>
+            <state name="colormask" value="rgb"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>

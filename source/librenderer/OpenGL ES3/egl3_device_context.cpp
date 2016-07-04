@@ -449,40 +449,75 @@ EGL3DeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags
 void
 EGL3DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
+	assert(_framebuffer || i == 0);
 	assert(_glcontext->getActive());
+
+	GLint buffer = 0;
+	if (_framebuffer)
+	{
+		const auto& layoutDesc = _framebuffer->getGraphicsFramebufferDesc().getGraphicsFramebufferLayout()->getGraphicsFramebufferLayoutDesc();
+		if (layoutDesc.getComponents().size() <= i)
+			return;
+
+		auto type = layoutDesc.getComponents().at(i).getAttachType();
+		if (type == GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal)
+		{
+			if (!(flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit))
+				return;
+
+			flags = GraphicsClearFlagBits::GraphicsClearFlagColorBit;	
+			buffer = i;
+		}
+		else if (type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal || 
+				 type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal)
+		{
+			if (!(flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit) &&
+				!(flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit))
+			{
+				return;
+			}
+		}
+	}
 
 	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
 	{
 		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+		if (!depthWriteEnable)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
-		GLfloat f = depth;
-		glClearBufferfv(GL_DEPTH, 0, &f);
+		if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
+		{
+			GLint s = stencil;
+			GLfloat f = depth;
+			glClearBufferfi(GL_DEPTH_STENCIL, buffer, f, s);
+		}
+		else
+		{
+			GLfloat f = depth;
+			glClearBufferfv(GL_DEPTH, buffer, &f);
+		}
 
-		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+		if (!depthWriteEnable)
 		{
 			glDepthMask(GL_FALSE);
 		}
 	}
-
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
+	else if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
 	{
 		GLint s = stencil;
-		glClearBufferiv(GL_STENCIL, 0, &s);
+		glClearBufferiv(GL_STENCIL, buffer, &s);
 	}
-
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
+	else
 	{
-		auto colorWriteFlags = _stateCaptured.getColorBlends()[i].getColorWriteMask();
+		auto colorWriteFlags = _stateCaptured.getColorBlends()[buffer].getColorWriteMask();
 		if (colorWriteFlags != GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit)
 		{
-			glColorMaskiEXT(i, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			glColorMaskiEXT(buffer, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		}
 
-		glClearBufferfv(GL_COLOR, i, color.ptr());
+		glClearBufferfv(GL_COLOR, buffer, color.ptr());
 
 		if (colorWriteFlags != GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit)
 		{
@@ -490,7 +525,7 @@ EGL3DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 			GLboolean g = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit ? GL_TRUE : GL_FALSE;
 			GLboolean b = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE : GL_FALSE;
 			GLboolean a = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE : GL_FALSE;
-			glColorMaskiEXT(i, r, g, b, a);
+			glColorMaskiEXT(buffer, r, g, b, a);
 		}
 	}
 }

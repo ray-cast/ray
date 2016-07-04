@@ -12,7 +12,7 @@
                 out float3 oNormal : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
-                oNormal = Tangent.xyz*2-1;//GetRight(Tangent * 2 -1);
+                oNormal = GetRight(Tangent * 2 -1);
                 oPosition = mul(matModelViewProject, Position);
             }
 

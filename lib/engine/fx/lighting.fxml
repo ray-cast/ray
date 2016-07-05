@@ -135,7 +135,7 @@
         {
             float4 t = float4(1 / 0.96, 0.475, (0.0275 - 0.25 * 0.04) / 0.96, 0.25);
             t *= float4(gloss, gloss, gloss, gloss);
-            t += float4(0, 0, (0.015 - 0.75 * 0.04)/0.96, 0.75);
+            t += float4(0, 0, (0.015 - 0.75 * 0.04) / 0.96, 0.75);
             float a0 = t.x * min(t.y, exp2(-9.28 * dot(N, V))) + t.z;
             float a1 = t.w;
             return prefilteredColor * saturate(a0 + specular * (a1 - a0));

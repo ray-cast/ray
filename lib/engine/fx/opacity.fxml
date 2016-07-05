@@ -43,9 +43,9 @@
                 return normalize(highNormal);
             }
 
-            float2 GetSpecular(Texture2D specularMap, float2 coord)
+            float2 GetSpecular(Texture2D specularMap, float2 coord, float specular, float shininess)
             {
-                return specularMap.Sample(PointClamp, coord).rg;
+                return specularMap.Sample(PointClamp, coord).rg * float2(specular, shininess);
             }
 
             void DepthVS(
@@ -81,7 +81,7 @@
                 out float4 fragData1 : SV_Target1)
             {
                 float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : srgb2linear(diffuse);
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord) : float2(specular, shininess);
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord, specular, shininess) : float2(specular, shininess);
 
                 fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
                 fragData1 = StoreGBufferRT1(normal, brdfParm.g);
@@ -116,7 +116,7 @@
             {
                 float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : srgb2linear(diffuse.rgb);
                 float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : normalize(iNormal);
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord) : float2(specular, shininess);
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord, specular, shininess) : float2(specular, shininess);
 
                 fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
                 fragData1 = StoreGBufferRT1(normal, brdfParm.g);

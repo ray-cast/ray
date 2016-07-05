@@ -871,13 +871,13 @@ MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, iarchi
 			param->uniform1f(parseFloat<Float>(arg.second));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2:
-			param->uniform2f(parseFloat2(arg.second));
+			param->uniform2f(parseFloat2<Float>(arg.second));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3:
-			param->uniform3f(parseFloat3(arg.second));
+			param->uniform3f(parseFloat3<Float>(arg.second));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4:
-			param->uniform4f(parseFloat4(arg.second));
+			param->uniform4f(parseFloat4<Float>(arg.second));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
 			param->uniformTexture(RenderSystem::instance()->createTexture(arg.second, GraphicsTextureDim::GraphicsTextureDim2D));

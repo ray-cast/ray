@@ -131,14 +131,27 @@
             return prefilteredColor * diff;
         }
 
-        float3 brdfEnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float specular)
+        float3 brdfEnvironmentSpecularBlackOpsII(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
         {
-            float NdotV = max(0, dot(N, V));
-            float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, gloss)).rg;
-            return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
+            float4 t = float4(1 / 0.96, 0.475, (0.0275 - 0.25 * 0.04) / 0.96, 0.25);
+            t *= float4(gloss, gloss, gloss, gloss);
+            t += float4(0, 0, (0.015 - 0.75 * 0.04)/0.96, 0.75);
+            float a0 = t.x * min(t.y, exp2(-9.28 * dot(N, V))) + t.z;
+            float a1 = t.w;
+            return prefilteredColor * saturate(a0 + specular * (a1 - a0));
         }
 
-        float3 brdfEnvironmentSpecular(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
+        float3 brdfEnvironmentSpecularUnreal4(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
+        {
+            float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
+            float4 c1 = float4(1, 0.0425, 1.04, -0.04);
+            float4 r = (1 - gloss) * c0 + c1;
+            float a004 = min(r.x * r.x, exp2(-9.28 * dot(N, V))) * r.x + r.y;
+            float2 AB = float2(-1.04, 1.04) * a004 + r.zw;
+            return prefilteredColor * (specular * AB.x + AB.y);
+        }
+
+        float3 brdfEnvironmentSpecularKlayge(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
         {
             float NdotV = max(0, dot(N, V));
             gloss = max(0.5f / 16.0f, gloss);
@@ -154,6 +167,13 @@
                 + float4(0.001922126f, 0.006697305f, -0.015741592f, 0.007229544f);
             envBRDF.y = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
             envBRDF = saturate(envBRDF);
+            return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
+        }
+
+        float3 brdfEnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float3 specular)
+        {
+            float NdotV = saturate(dot(N, V));
+            float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, gloss)).rg;
             return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
         }
 

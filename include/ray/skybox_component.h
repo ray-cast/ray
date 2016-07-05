@@ -140,7 +140,6 @@ private:
 	GraphicsTexturePtr _skyTexture;
 	GraphicsTexturePtr _skyDiffTexture;
 	GraphicsTexturePtr _skySpecTexture;
-	GraphicsTexturePtr _lutTexture;
 
 	GraphicsDataPtr _renderScreenQuadVbo;
 	GraphicsDataPtr _renderScreenQuadIbo;

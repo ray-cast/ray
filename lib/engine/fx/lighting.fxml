@@ -46,6 +46,31 @@
             return 1 / (k * VdotH * VdotH + 1 - k);
         }
 
+        float3 brdfLambertDisney(float3 N, float3 L, float3 V, float specular, float gloss, float3 diffuse)
+        {
+            float nl = max(0.0, dot(N, L));
+            float nv = max(0.0, dot(N, V));
+
+            float3 H = normalize(L + V);
+            float lh = dot(L, H);
+            float fl = fresnelSchlick(nl, specular);
+            float fv = fresnelSchlick(nv, specular);
+            float rr = 2 * lh * lh * gloss;
+            float lambert = (InvPIE * (1.0 - 0.5 * fl) * (1.0 - 0.5 * fv));
+            float retro = (InvPIE * rr * (fl + fv + fl * fv * (rr - 1.0)));
+
+            return diffuse * (lambert + retro) * nl;
+        }
+
+        float3 brdfLambertRad(float3 N, float3 L, float3 V, float specular, float3 diffuse)
+        {
+            float3 H = normalize(L + V);
+            float nl = max(0.0, dot(N, L));
+            float vh = max(0.0, dot(V, H));
+            float F = fresnelSchlick(vh, 1 - specular);
+            return diffuse * F * nl * InvPIE;
+        }
+
         float3 brdfLambert(float3 N, float3 L, float3 diffuse)
         {
             return diffuse * max(0.0f, dot(N, L));

@@ -171,25 +171,61 @@
 			return dot(rgb, lumfact);
 		}
 
-		float3 GetForward(float4 quat)
+		// https://dl.dropboxusercontent.com/u/16861957/gdc2015_rendering_the_world_of_far_cry_4.pdf
+		float4 TangentSpaceToQuaternion(float3 tangent, float3 binormal, float3 normal)
+		{
+			float4 quat;
+			quat.x = normal.y - binormal.z;
+			quat.y = tangent.z - normal.x;
+			quat.z = binormal.x - tangent.y;
+			quat.w = 1.0f + tangent.x + binormal.y + normal.z;
+			return normalize(quat);
+		}
+
+		float3 QuaternionToTangentSpace(float4 quat)
+		{
+			return
+				float3( 1.0f,  0.0f,  0.0f) +
+				float3(-2.0f,  2.0f,  2.0f) * quat.y * quat.yxw +
+				float3(-2.0f, -2.0f,  2.0f) * quat.z * quat.zwx;
+		}
+
+		float3 QuaternionToTangentSpaceBinormal(float4 quat)
+		{
+			return
+				float3( 0.0f,  1.0f,  0.0f) +
+				float3( 2.0f, -2.0f,  2.0f) * quat.z * quat.wzy +
+				float3( 2.0f, -2.0f, -2.0f) * quat.x * quat.yxw;
+		}
+
+		float3 QuaternionToTangentSpaceNormal(float4 quat)
+		{
+			return
+				float3( 0.0f,  0.0f,  1.0f) +
+				float3( 2.0f,  2.0f, -2.0f) * quat.x * quat.zwx +
+				float3(-2.0f,  2.0f, -2.0f) * quat.y * quat.wzy;
+		}
+
+		// http://www.crytek.com/download/izfrey_siggraph2011.pdf
+		float3 QuaternionToTangent(float4 quat)
 		{
 			float3 qv = float3(quat.w, quat.z, -quat.y);
-			return float3(1,0,0) + cross(quat.xyz, qv) * 2;
+			return float3(1, 0, 0) + cross(quat.xyz, qv) * 2;
 		}
 
-		float3 GetUp(float4 quat)
+		float3 QuaternionToBinormal(float4 quat)
 		{
 			float3 qv = float3(-quat.z, quat.w, -quat.x);
-			return float3(0,1,0) + cross(quat.xyz, qv) * 2;
+			return float3(0, 1, 0) + cross(quat.xyz, qv) * 2;
 		}
 
-		float3 GetRight(float4 quat)
+		float3 QuaternionToNormal(float4 quat)
 		{
 			float3 qv = float3(quat.y, -quat.x, quat.w);
-			return float3(0,0,1) + cross(quat.xyz, qv) * 2;
+			return (float3(0, 0, 1) + cross(quat.xyz, qv) * 2);// * (quat.w < 0.0f ? -1.0f : 1.0f);
 		}
 
-		float3 GetAxis(float3 v, float4 quat)
+		float3 transform_quat(float3 v, float4 quat)
 		{
 			return v + cross(quat.xyz, cross(quat.xyz, v) + quat.w * v) * 2;
 		}

@@ -238,7 +238,7 @@ SkyboxComponent::_loadSkybox(const std::string& texture) noexcept
 
 	auto skyTexture = RenderSystem::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDim2D,
-		GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+		GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 
 	if (!skyTexture)
 		return false;

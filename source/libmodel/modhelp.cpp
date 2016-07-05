@@ -1707,65 +1707,86 @@ MeshProperty::computeMorphNormals() noexcept
 void
 MeshProperty::computeTangents() noexcept
 {
-	std::vector<Vector3> tan1;
-	std::vector<Vector3> tan2;
-
-	tan1.resize(_vertices.size(), Vector3::Zero);
-	tan2.resize(_vertices.size(), Vector3::Zero);
-
-	std::size_t size = _faces.size();
-	for (std::size_t i = 0; i < size; i += 3)
+	if (!_texcoords.empty())
 	{
-		std::uint32_t f1 = (_faces)[i];
-		std::uint32_t f2 = (_faces)[i + 1];
-		std::uint32_t f3 = (_faces)[i + 2];
+		std::vector<Vector3> tan1;
+		std::vector<Vector3> tan2;
 
-		auto& v1 = _vertices[f1];
-		auto& v2 = _vertices[f2];
-		auto& v3 = _vertices[f3];
+		tan1.resize(_vertices.size(), Vector3::Zero);
+		tan2.resize(_vertices.size(), Vector3::Zero);
 
-		auto& w1 = _texcoords[f1];
-		auto& w2 = _texcoords[f2];
-		auto& w3 = _texcoords[f3];
-
-		auto x1 = v2.x - v1.x;
-		auto x2 = v3.x - v1.x;
-		auto y1 = v2.y - v1.y;
-		auto y2 = v3.y - v1.y;
-		auto z1 = v2.z - v1.z;
-		auto z2 = v3.z - v1.z;
-
-		auto s1 = w2.x - w1.x;
-		auto s2 = w3.x - w1.x;
-		auto t1 = w2.y - w1.y;
-		auto t2 = w3.y - w1.y;
-
-		auto r = 1.0f / (s1 * t2 - s2 * t1);
-		if (!std::isinf(r))
+		std::size_t size = _faces.size();
+		for (std::size_t i = 0; i < size; i += 3)
 		{
-			Vector3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
-			Vector3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+			std::uint32_t f1 = (_faces)[i];
+			std::uint32_t f2 = (_faces)[i + 1];
+			std::uint32_t f3 = (_faces)[i + 2];
 
-			tan1[f1] += sdir;
-			tan1[f2] += sdir;
-			tan1[f3] += sdir;
+			auto& v1 = _vertices[f1];
+			auto& v2 = _vertices[f2];
+			auto& v3 = _vertices[f3];
 
-			tan2[f1] += tdir;
-			tan2[f2] += tdir;
-			tan2[f3] += tdir;
+			auto& w1 = _texcoords[f1];
+			auto& w2 = _texcoords[f2];
+			auto& w3 = _texcoords[f3];
+
+			auto x1 = v2.x - v1.x;
+			auto x2 = v3.x - v1.x;
+			auto y1 = v2.y - v1.y;
+			auto y2 = v3.y - v1.y;
+			auto z1 = v2.z - v1.z;
+			auto z2 = v3.z - v1.z;
+
+			auto s1 = w2.x - w1.x;
+			auto s2 = w3.x - w1.x;
+			auto t1 = w2.y - w1.y;
+			auto t2 = w3.y - w1.y;
+
+			auto r = 1.0f / (s1 * t2 - s2 * t1);
+			if (!std::isinf(r))
+			{
+				Vector3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+				Vector3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+
+				tan1[f1] += sdir;
+				tan1[f2] += sdir;
+				tan1[f3] += sdir;
+
+				tan2[f1] += tdir;
+				tan2[f2] += tdir;
+				tan2[f3] += tdir;
+			}
+		}
+
+		_tangent.resize(_normals.size());
+
+		for (std::size_t i = 0; i < _normals.size(); i++)
+		{
+			auto& n = _normals[i];
+			auto& t = tan1[i];
+
+			float handedness = math::dot(math::cross(n, t), tan2[i]) < 0.0f ? 1.0f : -1.0f;
+
+			_tangent[i] = float4(math::normalize(t - n * math::dot(n, t)), handedness);
 		}
 	}
-
-	_tangent.resize(_vertices.size());
-
-	for (std::size_t i = 0; i < _vertices.size(); i++)
+	else
 	{
-		auto& n = _normals[i];
-		auto& t = tan1[i];
+		_tangent.resize(_normals.size());
 
-		float handedness = math::dot(math::cross(n, t), tan2[i]) < 0.0f ? 1.0f : -1.0f;
+		for (std::size_t i = 0; i < _normals.size(); i++)
+		{
+			float3 c1 = math::cross(_normals[i], float3(0.0, 0.0, 1.0));
+			float3 c2 = math::cross(_normals[i], float3(0.0, 1.0, 0.0));
 
-		_tangent[i] = float4(math::normalize(t - n * math::dot(n, t)), handedness);
+			float3 tangent;
+			if (math::length(c1) > math::length(c2))
+				tangent = c1;
+			else
+				tangent = c2;
+
+			_tangent[i] = float4(math::normalize(tangent), 1.0);
+		}
 	}
 }
 
@@ -1781,17 +1802,19 @@ MeshProperty::computeTangentQuats() noexcept
 	for (std::size_t i = 0; i < numTangent; i++)
 	{
 		auto& normal = _normals[i];
+
 		auto tangent = _tangent[i].xyz();
-		auto bitangent = math::cross(normal, tangent);
+		auto binormal = math::cross(normal, tangent);
 
 		Quaternion quat;
-		quat.makeRotate(normal, bitangent, tangent);
+		quat.makeRotate(normal, binormal, tangent);
 
 		if (quat.w < 0.0f)
 			quat = -quat;
+
 		if (_tangent[i].w < 0.0f)
 			quat = -quat;
-		
+
 		_tangentQuat[i] = float4(quat.x, quat.y, quat.z, quat.w);
 	}
 }

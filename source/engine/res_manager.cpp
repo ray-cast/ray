@@ -154,9 +154,6 @@ ResManager::createMeshes(const Model& model, GameObjectPtr& object) noexcept
 	CombineMeshes combineMeshes;
 	for (auto& meshProp : model.getMeshsList())
 	{
-		if (meshProp->getTexcoordArray().empty())
-			continue;
-
 		if (meshProp->getTangentArray().empty())
 			meshProp->computeTangents();
 		if (meshProp->getTangentQuatArray().empty())

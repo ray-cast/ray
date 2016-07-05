@@ -95,8 +95,8 @@
             {
                 TangentQuat = TangentQuat * 2 - 1;
 
-                float3 Normal = GetRight(TangentQuat);
-                float3 Tangent = GetForward(TangentQuat);
+                float3 Normal = QuaternionToNormal(TangentQuat);
+                float3 Tangent = QuaternionToTangent(TangentQuat);
 
 #if SKINNING > 0
                 int4 blendIndices = (int4)BlendIndice;

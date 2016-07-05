@@ -10,6 +10,7 @@
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <parameter name="texEnvDiffuse" type="textureCUBE"/>
     <parameter name="texEnvSpecular" type="textureCUBE"/>
+    <parameter name="texLUT" type="texture2D"/>
     <parameter name="texEnvFactor" type="float3"/>
     <parameter name="envBoxMax" type="float3"/>
     <parameter name="envBoxMin" type="float3"/>
@@ -57,7 +58,7 @@
                 float3 prefilteredSpeculr = texEnvSpecular.SampleLevel(PointClamp, R2, mipLayer).rgb;
 
                 float3 shading = brdfEnvironmentDiffuse(prefilteredDiffuse, diffuse) * texEnvFactor.g;
-                shading += brdfEnvironmentSpecular(prefilteredSpeculr, worldNormal, worldView, shininess, specular) * texEnvFactor.b;
+                shading += brdfEnvironmentSpecular(prefilteredSpeculr, texLUT, worldNormal, worldView, shininess, specular) * texEnvFactor.b;
 
                 return float4(shading, 0.0);
             }

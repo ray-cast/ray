@@ -1157,7 +1157,7 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 			vertices.push_back((std::uint32_t)_vertices.size() - 1);
 		}
 	}
-	
+
 	for (std::uint32_t y = 0; y < heightSegments; y++)
 	{
 		for (std::uint32_t x = 0; x < widthSegments; x++)
@@ -1375,7 +1375,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 		std::vector<float2>* texcoords_;
 		std::vector<VertexWeight>* weights_;
 		std::vector<float4x4>* bindposes_;
-		
+
 		UintArray* faces_;
 
 		if (!merge && i != 0)
@@ -1445,7 +1445,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			const auto& weights = mesh->getWeightArray();
 			if (!weights.empty())
 				std::memcpy((*weights_).data() + offsetVertices, weights.data(), numVertex * sizeof(VertexWeight));
-			
+
 			const auto& bindposes = mesh->getBindposes();
 			for (auto& bindpose : bindposes)
 				bindposes_->push_back(bindpose);

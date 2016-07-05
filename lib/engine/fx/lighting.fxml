@@ -39,11 +39,30 @@
             return ((smoothness + 2) / 8) * exp2(smoothness * InvLog2 * NdotH - smoothness * InvLog2);
         }
 
+        float distributionTermRyse(float NdotH, float gloss)
+        {
+            // http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf
+            float alpha = pow(1 - gloss * 0.7, 6);
+            float alpha2 = alpha * alpha;
+            float denom = NdotH * NdotH * (alpha2 - 1.0) + 1.0f;
+            return alpha2 / (PIE * denom * denom);
+        }
+
         float geometricShadowingSchlickSmithBlackOpsII(float gloss, float VdotH)
         {
             // http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_slides_v2.pdf
             float k = min(1.0f, gloss + 0.545f);
             return 1 / (k * VdotH * VdotH + 1 - k);
+        }
+
+        float geometricShadowingSchlickSmithRyse(float gloss, float LdotH)
+        {
+            // http://www.filmicworlds.com/2014/04/21/optimizing-ggx-shaders-with-dotlh/
+            float alpha = pow(1 - gloss * 0.7, 6);
+            float k = (0.8 + 0.5 * alpha) / 2.0f;
+            float k2 = k * k;
+            float invK2 = 1.0f - k2;
+            return rcp(LdotH * LdotH * invK2 + k2);
         }
 
         float3 brdfLambertDisney(float3 N, float3 L, float3 V, float specular, float gloss, float3 diffuse)
@@ -87,9 +106,9 @@
                 float lh = dot(L, H);
                 float vh = dot(V, H);
 
-                float D = distributionTermBloackOpsII(nh, gloss);
+                float D = distributionTermRyse(nh, gloss);
                 float F = fresnelSchlick(lh, specular);
-                float G = geometricShadowingSchlickSmithBlackOpsII(gloss, vh);
+                float G = geometricShadowingSchlickSmithRyse(gloss, lh);
 
                 return max(0.0f, D * F * G * nl);
             }
@@ -115,7 +134,7 @@
         float3 brdfEnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float specular)
         {
             float NdotV = max(0, dot(N, V));
-            float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, 1.0f - gloss)).rg;
+            float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, gloss)).rg;
             return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
         }
 

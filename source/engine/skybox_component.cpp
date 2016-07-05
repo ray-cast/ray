@@ -380,6 +380,13 @@ SkyboxComponent::_setupSkyLighting() noexcept
 	{
 		if (_loadSkyDiffuse(_skyDiffuse) && _loadSkySpecular(_skySpecular))
 		{
+			_lutTexture = RenderSystem::instance()->createTexture("sys:media/LUT.png", GraphicsTextureDim::GraphicsTextureDim2D,
+				GraphicsSamplerFilter::GraphicsSamplerFilterLinear,
+				GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+
+			if (!_lutTexture)
+				return false;
+
 			MeshProperty quadMesh;
 			_buildQuadMesh(quadMesh);
 			_buildQuadRenderMesh(quadMesh);
@@ -486,6 +493,10 @@ SkyboxComponent::_updateMaterial() noexcept
 		auto texEnvSpecular = _skyLightingMaterial->getParameter("texEnvSpecular");
 		if (texEnvSpecular)
 			texEnvSpecular->uniformTexture(_skySpecTexture);
+
+		auto texLUT = _skyLightingMaterial->getParameter("texLUT");
+		if (texLUT)
+			texLUT->uniformTexture(_lutTexture);
 
 		auto texEnvFactor = _skyLightingMaterial->getParameter("texEnvFactor");
 		if (texEnvFactor && _skySpecTexture)

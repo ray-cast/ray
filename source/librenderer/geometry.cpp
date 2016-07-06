@@ -170,11 +170,17 @@ void
 Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 {
 	if (this->getCastShadow())
-		manager.addRenderData(RenderQueue::RenderQueueShadow, this);
+	{
+		if (_techniques[RenderQueue::RenderQueueShadow])
+			manager.addRenderData(RenderQueue::RenderQueueShadow, this);
+
+		if (_techniques[RenderQueue::RenderQueueReflectiveShadow])
+			manager.addRenderData(RenderQueue::RenderQueueReflectiveShadow, this);
+	}
 
 	for (std::size_t i = 0; i < RenderQueue::RenderQueueRangeSize; i++)
 	{
-		if (i != RenderQueue::RenderQueueShadow)
+		if (i != RenderQueue::RenderQueueShadow && i != RenderQueue::RenderQueueReflectiveShadow)
 		{
 			if (_techniques[i])
 				manager.addRenderData((RenderQueue)i, this);

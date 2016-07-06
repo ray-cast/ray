@@ -142,6 +142,7 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 			_shadowShadowSourceInv->uniform2f(shadowTextureSizeInv);
 			_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0, 1.0));
 			_pipeline->setFramebuffer(_shadowShadowDepthLinearViewTemps[lightShadowType]);
+			_pipeline->discardFramebuffer(0);
 
 			if (lightType == LightType::LightTypeSun ||
 				lightType == LightType::LightTypeDirectional)
@@ -156,6 +157,7 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 			_shadowShadowSource->uniformTexture(_shadowShadowDepthLinearMapTemps[lightShadowType]);
 			_shadowShadowSourceInv->uniform2f(shadowTextureSizeInv);
 			_pipeline->setFramebuffer(depthLienarFrambuffer);
+			_pipeline->discardFramebuffer(0);
 			_pipeline->drawScreenQuad(*_shadowBlurShadowY);
 		}
 		else
@@ -163,6 +165,7 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 			_shadowShadowSource->uniformTexture(shadowTexture);
 			_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0f, 1.0f));
 			_pipeline->setFramebuffer(depthLienarFrambuffer);
+			_pipeline->discardFramebuffer(0);
 
 			if (lightType == LightType::LightTypeSun ||
 				lightType == LightType::LightTypeDirectional)

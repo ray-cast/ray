@@ -1785,7 +1785,10 @@ MeshProperty::computeTangents() noexcept
 			else
 				tangent = c2;
 
-			_tangent[i] = float4(math::normalize(tangent), 1.0);
+			tangent = math::normalize(tangent);
+			tangent = math::normalize(tangent - _normals[i] * math::dot(_normals[i], tangent));
+
+			_tangent[i] = float4(tangent, 1.0);
 		}
 	}
 }

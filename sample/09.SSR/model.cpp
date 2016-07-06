@@ -57,7 +57,8 @@ ModelComponent::onActivate() noexcept
 		return;
 
 	stage->setActive(true);
-	stage->setTranslate(ray::float3(0, 70, 70));
+	stage->setScale(ray::float3(0.1, 0.1, 0.1));
+	stage->setTranslate(ray::float3(0, 0, 5));
 	stage->setQuaternion(ray::Quaternion(ray::float3::UnitY, -90));
 
 	_objects.push_back(stage);

@@ -53,19 +53,13 @@ MSWInputMouse::~MSWInputMouse() noexcept
 void
 MSWInputMouse::onShowMouse() noexcept
 {
-	if (_focusWindow)
-	{
-		::ShowCursor(TRUE);
-	}		
+	::ShowCursor(TRUE);
 }
 
 void
 MSWInputMouse::onHideMouse() noexcept
 {
-	if (_focusWindow)
-	{
-		::ShowCursor(FALSE);
-	}
+	::ShowCursor(FALSE);
 }
 
 void 

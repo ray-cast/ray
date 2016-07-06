@@ -84,7 +84,7 @@
                 float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord, specular, shininess) : float2(specular, shininess);
 
                 fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
-                fragData1 = StoreGBufferRT1(normal, brdfParm.g);
+                fragData1 = StoreGBufferRT1(normalize(normal), brdfParm.g);
             }
 
             void OpaqueVS(

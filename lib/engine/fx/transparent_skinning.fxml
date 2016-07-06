@@ -173,13 +173,10 @@
     </shader>
     <technique name="Shadow">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F_W4F_B4UI"/>
+            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
             <state name="vertex" value="DepthVS"/>
             <state name="fragment" value="DepthPS"/>
             <state name="primitive" value="triangle" />
-            <state name="stencilTest" value="true"/>
-            <state name="stencilPass" value="replace"/>
-            <state name="stencilTwoPass" value="replace"/>
         </pass>
     </technique>
     <technique name="Transparent">

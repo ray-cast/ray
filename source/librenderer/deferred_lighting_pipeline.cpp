@@ -371,7 +371,7 @@ DeferredLightingPipeline::renderSpotLight(RenderPipeline& pipeline, const Light&
 	auto transform = light.getTransform();
 	transform.translate(light.getForward() * light.getLightRange());
 	transform.scale(light.getLightRange());
-	
+
 	pipeline.setTransform(transform);
 
 	auto& shadowMap = light.getDepthLinearTexture();
@@ -590,7 +590,7 @@ DeferredLightingPipeline::computeUpsamplingMultiresBuffer(RenderPipeline& pipeli
 		std::uint32_t h2 = std::max<std::uint32_t>(height / (1 << i), 1);
 
 		_mrsiiColorMap->uniformTexture(src);
-		_mrsiiOffset->uniform2f(1.0f / w2, 1.0f / h2);
+		_mrsiiOffsetUpsampling->uniform4f(1.0f / w, 1.0f / h, 1.0f / w2, 1.0f / h2);
 		_mrsiiMipmapLevel->uniform4i(i + 1, i, w2, h2);
 
 		if (i != 0)
@@ -1081,6 +1081,7 @@ DeferredLightingPipeline::setupMRSIIMaterials(RenderPipeline& pipeline) noexcept
 	_mrsiiMRT1 = _mrsii->getParameter("texMRT1");
 	_mrsiiVPLsBuffer = _mrsii->getParameter("texVPLBuffer");
 	_mrsiiOffset = _mrsii->getParameter("offset");
+	_mrsiiOffsetUpsampling = _mrsii->getParameter("offsetUpsampling");
 	_mrsiiMipmapLevel = _mrsii->getParameter("mipmapLevel");
 	_mrsiiMipmapPass = _mrsii->getParameter("mipmapPass");
 	_mrsiiThreshold = _mrsii->getParameter("threshold");
@@ -1376,6 +1377,7 @@ DeferredLightingPipeline::destroyMRSIIMaterials() noexcept
 	_mrsiiCountGridOffsetDelta.reset();
 	_mrsiiLightView2EyeView.reset();
 	_mrsiiOffset.reset();
+	_mrsiiOffsetUpsampling.reset();
 	_mrsiiMRT0.reset();
 	_mrsiiMRT1.reset();
 	_mrsiiVPLsBuffer.reset();

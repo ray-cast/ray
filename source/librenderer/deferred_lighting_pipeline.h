@@ -140,6 +140,7 @@ private:
 	MaterialParamPtr _mrsiiCountGridOffsetDelta;
 	MaterialParamPtr _mrsiiLightView2EyeView;
 	MaterialParamPtr _mrsiiOffset;
+	MaterialParamPtr _mrsiiOffsetUpsampling;
 	MaterialParamPtr _mrsiiMRT0;
 	MaterialParamPtr _mrsiiMRT1;
 	MaterialParamPtr _mrsiiVPLsBuffer;

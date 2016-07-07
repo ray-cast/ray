@@ -13,9 +13,13 @@
             return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
         }
 
-        float3 fresnelSchlick(float3 L, float3 H, float3 specular)
+        float fresnelSchlick(float LdotH, float specular)
         {
-            return fresnelSchlick(dot(L, H), specular);
+            // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
+            // pow(1.0 - LdotH, 5)
+            // = exp2(-5.55473 * (LdotH * LdotH)- 6.98316 * LdotH))
+            // = exp2((-5.55473 * LdotH - 6.98316) * LdotH)
+            return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
         }
 
         float distributionTermBloackOpsII(float NdotH, float gloss)
@@ -62,11 +66,11 @@
 
             float3 H = normalize(L + V);
             float lh = dot(L, H);
-            float fl = fresnelSchlick(nl, specular);
-            float fv = fresnelSchlick(nv, specular);
+            float3 fl = fresnelSchlick(nl, specular);
+            float3 fv = fresnelSchlick(nv, specular);
             float rr = 2 * lh * lh * gloss;
-            float lambert = (InvPIE * (1.0 - 0.5 * fl) * (1.0 - 0.5 * fv));
-            float retro = (InvPIE * rr * (fl + fv + fl * fv * (rr - 1.0)));
+            float3 lambert = (InvPIE * (1.0 - 0.5 * fl) * (1.0 - 0.5 * fv));
+            float3 retro = (InvPIE * rr * (fl + fv + fl * fv * (rr - 1.0)));
 
             return diffuse * (lambert + retro) * nl;
         }
@@ -76,7 +80,7 @@
             float3 H = normalize(L + V);
             float nl = max(0.0, dot(N, L));
             float vh = max(0.0, dot(V, H));
-            float F = fresnelSchlick(vh, 1 - specular);
+            float3 F = fresnelSchlick(vh, 1 - specular);
             return diffuse * F * nl * InvPIE;
         }
 

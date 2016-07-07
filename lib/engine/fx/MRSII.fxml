@@ -12,6 +12,7 @@
     <parameter name="lightOuterInner" type="float2"/>
     <parameter name="lightAttenuation" type="float3"/>
     <parameter name="offset" type="float2"/>
+    <parameter name="offsetUpsampling" type="float4"/>
     <parameter name="VPLCountGridOffsetDelta" type="float4"/>
     <parameter name="matProject" type="float4x4" semantic="matProject"/>
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse"/>
@@ -156,8 +157,8 @@
 
                     float3 lighting;
                     lighting = brdfLambert(viewNormal, lightDirection, lightColor.rgb);
-                    lighting *= VPLsAttenTerm(lightPosition, viewPosition, lightColor.a, VPLCountGridOffsetDelta.x);
-                    lighting *= max(0, dot(lightNormal, -lightDirection) * 0.5 + 0.5);
+                    lighting *= VPLsAttenTerm(lightPosition.xyz, viewPosition, lightColor.a, VPLCountGridOffsetDelta.x);
+                    lighting *= max(0, dot(lightNormal.xyz, -lightDirection) * 0.5 + 0.5);
 
                     shading += lighting;
                 }
@@ -283,14 +284,14 @@
             {
                 float4 color[4];
                 color[0] = texColor.SampleLevel(PointClamp, coord, mipmapLevel.x);
-                color[1] = texColor.SampleLevel(PointClamp, coord + float2( offset.x, 0 ), mipmapLevel.x);
-                color[2] = texColor.SampleLevel(PointClamp, coord + float2( 0, offset.y ), mipmapLevel.x);
-                color[3] = texColor.SampleLevel(PointClamp, coord + float2( offset.x, offset.y ), mipmapLevel.x);
+                color[1] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, 0 ), mipmapLevel.x);
+                color[2] = texColor.SampleLevel(PointClamp, coord + float2( 0, offsetUpsampling.y ), mipmapLevel.x);
+                color[3] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.x);
 
                 color[0] += (1.0 - color[0].a) * texColor.SampleLevel(PointClamp, coord, mipmapLevel.y);
-                color[1] += (1.0 - color[1].a) * texColor.SampleLevel(PointClamp, coord + float2( offset.x, 0 ), mipmapLevel.y);
-                color[2] += (1.0 - color[2].a) * texColor.SampleLevel(PointClamp, coord + float2( 0, offset.y ), mipmapLevel.y);
-                color[3] += (1.0 - color[3].a) * texColor.SampleLevel(PointClamp, coord + float2( offset.x, offset.y ), mipmapLevel.y);
+                color[1] += (1.0 - color[1].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.z, 0 ), mipmapLevel.y);
+                color[2] += (1.0 - color[2].a) * texColor.SampleLevel(PointClamp, coord + float2( 0, offsetUpsampling.w ), mipmapLevel.y);
+                color[3] += (1.0 - color[3].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.z, offsetUpsampling.w ), mipmapLevel.y);
 
                 float2 weight = abs(coord.xy * mipmapLevel.zw - floor(coord.xy * mipmapLevel.zw));
 
@@ -313,24 +314,24 @@
             {
                 float4 color[9];
                 color[0] = texColor.SampleLevel(PointClamp, coord, mipmapLevel.x);
-                color[1] = texColor.SampleLevel(PointClamp, coord + float2( 0.0, offset.y ), mipmapLevel.x);
-                color[2] = texColor.SampleLevel(PointClamp, coord + float2( 0.0, -offset.y ), mipmapLevel.x);
-                color[3] = texColor.SampleLevel(PointClamp, coord + float2( offset.x, 0.0 ), mipmapLevel.x);
-                color[4] = texColor.SampleLevel(PointClamp, coord + float2( -offset.x, 0.0 ), mipmapLevel.x);
-                color[5] = texColor.SampleLevel(PointClamp, coord + float2( offset.x, offset.y ), mipmapLevel.x);
-                color[6] = texColor.SampleLevel(PointClamp, coord + float2( offset.x, -offset.y ), mipmapLevel.x);
-                color[7] = texColor.SampleLevel(PointClamp, coord + float2( -offset.x, offset.y ), mipmapLevel.x);
-                color[8] = texColor.SampleLevel(PointClamp, coord + float2( -offset.x, -offset.y ), mipmapLevel.x);
+                color[1] = texColor.SampleLevel(PointClamp, coord + float2( 0.0, offsetUpsampling.y ), mipmapLevel.x);
+                color[2] = texColor.SampleLevel(PointClamp, coord + float2( 0.0, -offsetUpsampling.y ), mipmapLevel.x);
+                color[3] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, 0.0 ), mipmapLevel.x);
+                color[4] = texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, 0.0 ), mipmapLevel.x);
+                color[5] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.x);
+                color[6] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, -offsetUpsampling.y ), mipmapLevel.x);
+                color[7] = texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.x);
+                color[8] = texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, -offsetUpsampling.y ), mipmapLevel.x);
 
                 color[0] += (1.0 - color[0].a) * texColor.SampleLevel(PointClamp, coord, mipmapLevel.y);
-                color[1] += (1.0 - color[1].a) * texColor.SampleLevel(PointClamp, coord + float2( 0.0, offset.y ), mipmapLevel.y);
-                color[2] += (1.0 - color[2].a) * texColor.SampleLevel(PointClamp, coord + float2( 0.0, -offset.y ), mipmapLevel.y);
-                color[3] += (1.0 - color[3].a) * texColor.SampleLevel(PointClamp, coord + float2( offset.x, 0.0 ), mipmapLevel.y);
-                color[4] += (1.0 - color[4].a) * texColor.SampleLevel(PointClamp, coord + float2( -offset.x, 0.0 ), mipmapLevel.y);
-                color[5] += (1.0 - color[5].a) * texColor.SampleLevel(PointClamp, coord + float2( offset.x, offset.y ), mipmapLevel.y);
-                color[6] += (1.0 - color[6].a) * texColor.SampleLevel(PointClamp, coord + float2( offset.x, -offset.y ), mipmapLevel.y);
-                color[7] += (1.0 - color[7].a) * texColor.SampleLevel(PointClamp, coord + float2( -offset.x, offset.y ), mipmapLevel.y);
-                color[8] += (1.0 - color[8].a) * texColor.SampleLevel(PointClamp, coord + float2( -offset.x, -offset.y ), mipmapLevel.y);
+                color[1] += (1.0 - color[1].a) * texColor.SampleLevel(PointClamp, coord + float2( 0.0, offsetUpsampling.y ), mipmapLevel.y);
+                color[2] += (1.0 - color[2].a) * texColor.SampleLevel(PointClamp, coord + float2( 0.0, -offsetUpsampling.y ), mipmapLevel.y);
+                color[3] += (1.0 - color[3].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, 0.0 ), mipmapLevel.y);
+                color[4] += (1.0 - color[4].a) * texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, 0.0 ), mipmapLevel.y);
+                color[5] += (1.0 - color[5].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.y);
+                color[6] += (1.0 - color[6].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, -offsetUpsampling.y ), mipmapLevel.y);
+                color[7] += (1.0 - color[7].a) * texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.y);
+                color[8] += (1.0 - color[8].a) * texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, -offsetUpsampling.y ), mipmapLevel.y);
 
                 float2 weight = abs(coord.xy * mipmapLevel.zw - floor(coord.xy * mipmapLevel.zw));
 

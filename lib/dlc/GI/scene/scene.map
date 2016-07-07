@@ -23,8 +23,7 @@
             <attribute range="30.0"/>
             <attribute spot="5.0,30.0f"/>
             <attribute intensity="1.0"/>
-            <attribute shadow="medium"/>
-            <attribute soft="true"/>
+            <attribute shadow="soft"/>
             <attribute GI="true"/>
         </component>
         <component class="FirstPersonCamera">

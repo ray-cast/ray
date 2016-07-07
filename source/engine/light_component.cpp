@@ -55,15 +55,15 @@ LightComponent::~LightComponent() noexcept
 }
 
 void
-LightComponent::setRange(float range) noexcept
+LightComponent::setLightRange(float range) noexcept
 {
-	_light->setRange(range);
+	_light->setLightRange(range);
 }
 
 void
-LightComponent::setIntensity(float intensity) noexcept
+LightComponent::setLightIntensity(float intensity) noexcept
 {
-	_light->setIntensity(intensity);
+	_light->setLightIntensity(intensity);
 }
 
 void
@@ -79,15 +79,15 @@ LightComponent::setSpotOuterCone(float value) noexcept
 }
 
 float
-LightComponent::getRange() const noexcept
+LightComponent::getLightRange() const noexcept
 {
-	return _light->getRange();
+	return _light->getLightRange();
 }
 
 float
-LightComponent::getIntensity() const noexcept
+LightComponent::getLightIntensity() const noexcept
 {
-	return _light->getIntensity();
+	return _light->getLightIntensity();
 }
 
 const float2&
@@ -103,27 +103,15 @@ LightComponent::getSpotOuterCone() const noexcept
 }
 
 void
-LightComponent::setShadow(LightShadowType shadow) noexcept
+LightComponent::setShadowMode(ShadowMode shadow) noexcept
 {
-	_light->setShadowType(shadow);
+	_light->setShadowMode(shadow);
 }
 
-LightShadowType
-LightComponent::getShadow() const noexcept
+ShadowMode
+LightComponent::getShadowMode() const noexcept
 {
-	return _light->getShadowType();;
-}
-
-void
-LightComponent::setSoftShadow(bool softEnable) noexcept
-{
-	_light->setSoftShadow(softEnable);
-}
-
-bool
-LightComponent::getSoftShadow() const noexcept
-{
-	return _light->getSoftShadow();
+	return _light->getShadowMode();
 }
 
 void
@@ -190,13 +178,12 @@ void
 LightComponent::load(iarchive& reader) noexcept
 {
 	std::string lightType;
-	std::string shadowType;
+	std::string shadowMode;
 	float2 spot(5.0f, 40.0f);
 	float3 lightColor(1, 1, 1);
 	float lightIntensity = 1.0f;
 	float lightRange = 1.0f;
 	float shadowBias = 0.0;
-	bool softShadow = false;
 	bool subsurfaceScattering = false;
 	bool enableGI = false;
 
@@ -204,10 +191,9 @@ LightComponent::load(iarchive& reader) noexcept
 
 	reader >> make_archive(lightIntensity, "intensity");
 	reader >> make_archive(lightRange, "range");
-	reader >> make_archive(shadowType, "shadow");
+	reader >> make_archive(shadowMode, "shadow");
 	reader >> make_archive(lightColor, "color");
 	reader >> make_archive(lightType, "type");
-	reader >> make_archive(softShadow, "soft");
 	reader >> make_archive(subsurfaceScattering, "sss");
 	reader >> make_archive(enableGI, "GI");
 	reader >> make_archive(shadowBias, "bias");
@@ -226,24 +212,19 @@ LightComponent::load(iarchive& reader) noexcept
 	else
 		this->setLightType(LightType::LightTypePoint);
 
-	if (shadowType == "low")
-		this->setShadow(LightShadowType::LightShadowTypeLow);
-	else if (shadowType == "medium")
-		this->setShadow(LightShadowType::LightShadowTypeMedium);
-	else if (shadowType == "high")
-		this->setShadow(LightShadowType::LightShadowTypeHigh);
-	else if (shadowType == "veryhigh")
-		this->setShadow(LightShadowType::LightShadowTypeVeryHigh);
+	if (shadowMode == "hard")
+		this->setShadowMode(ShadowMode::ShadowModeHard);
+	else if (shadowMode == "soft")
+		this->setShadowMode(ShadowMode::ShadowModeSoft);
 	else
-		this->setShadow(LightShadowType::LightShadowTypeNone);
+		this->setShadowMode(ShadowMode::ShadowModeNone);
 
 	this->setLightColor(lightColor);
-	this->setRange(lightRange);
-	this->setIntensity(lightIntensity);
+	this->setLightRange(lightRange);
+	this->setLightIntensity(lightIntensity);
 	this->setSpotInnerCone(spot.x);
 	this->setSpotOuterCone(spot.y);
 	this->setShadowBias(shadowBias);
-	this->setSoftShadow(softShadow);
 	this->setSubsurfaceScattering(subsurfaceScattering);
 	this->setGlobalIllumination(enableGI);
 }

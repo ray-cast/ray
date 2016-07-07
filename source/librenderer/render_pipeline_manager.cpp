@@ -98,7 +98,7 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 
 	_forward = forwardShading;
 
-	if (!this->setupShadowRenderer(_pipeline))
+	if (!this->setupShadowRenderer(_pipeline, setting))
 		return false;
 
 	if (setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
@@ -664,9 +664,12 @@ RenderPipelineManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFl
 }
 
 bool
-RenderPipelineManager::setupShadowRenderer(RenderPipelinePtr pipeline) noexcept
+RenderPipelineManager::setupShadowRenderer(RenderPipelinePtr pipeline, const RenderSetting& setting) noexcept
 {
 	auto shadowMapGen = std::make_shared<ShadowRenderPipeline>();
+	shadowMapGen->setShadowMode(setting.shadowMode);
+	shadowMapGen->setShadowQuality(setting.shadowQuality);
+
 	if (!shadowMapGen->setup(pipeline))
 		return false;
 

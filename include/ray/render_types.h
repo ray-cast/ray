@@ -159,17 +159,28 @@ enum LightType
 	LightTypeMaxEnum = 0x7FFFFFFF
 };
 
-enum LightShadowType
+enum ShadowMode
 {
-	LightShadowTypeNone,
-	LightShadowTypeLow,
-	LightShadowTypeMedium,
-	LightShadowTypeHigh,
-	LightShadowTypeVeryHigh,
-	LightShadowTypeBeginRange = LightShadowTypeNone,
-	LightShadowTypeEndRange = LightShadowTypeVeryHigh,
-	LightShadowTypeRangeSize = (LightShadowTypeEndRange - LightShadowTypeBeginRange + 1),
-	LightShadowTypeMaxEnum = 0x7FFFFFFF
+	ShadowModeNone,
+	ShadowModeHard,
+	ShadowModeSoft,
+	ShadowModeBeginRange = ShadowModeNone,
+	ShadowModeEndRange = ShadowModeSoft,
+	ShadowModeRangeSize = (ShadowModeEndRange - ShadowModeBeginRange + 1),
+	ShadowModeMaxEnum = 0x7FFFFFFF
+};
+
+enum ShadowQuality
+{
+	ShadowQualityNone,
+	ShadowQualityLow,
+	ShadowQualityMedium,
+	ShadowQualityHigh,
+	ShadowQualityVeryHigh,
+	ShadowQualityBeginRange = ShadowQualityNone,
+	ShadowQualityEndRange = ShadowQualityVeryHigh,
+	ShadowQualityRangeSize = (ShadowQualityEndRange - ShadowQualityBeginRange + 1),
+	ShadowQualityMaxEnum = 0x7FFFFFFF
 };
 
 enum LightShadowSize

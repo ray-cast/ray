@@ -50,6 +50,11 @@ struct EXPORT RenderSetting
 	GraphicsDeviceType deviceType;
 	GraphicsSwapInterval swapInterval;
 
+	ShadowMode shadowMode;
+	ShadowQuality shadowQuality;
+
+	std::uint32_t _vplsBufferCount;
+
 	RenderPipelineType pipelineType;
 
 	bool enableSSAO;
@@ -64,6 +69,7 @@ struct EXPORT RenderSetting
 	bool enableFXAA;
 	bool enableLightShaft;
 	bool enableColorGrading;
+	bool enableGlobalIllumination;
 
 	RenderSetting() noexcept;
 };

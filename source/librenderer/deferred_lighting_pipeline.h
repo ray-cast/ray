@@ -210,8 +210,6 @@ private:
 	MaterialParamPtr _lightAttenuation;
 	MaterialParamPtr _lightOuterInner;
 
-	float _shadowEsmFactor;
-
 	MaterialSemanticPtr _materialDeferredDepthMap;
 	MaterialSemanticPtr _materialDeferredDepthLinearMap;
 	MaterialSemanticPtr _materialDeferredGraphicMap;

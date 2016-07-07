@@ -24,8 +24,7 @@
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="60.0"/>
             <attribute intensity="2.0"/>
-            <attribute shadow="medium"/>
-            <attribute soft="true"/>
+            <attribute shadow="soft"/>
             <attribute sss="false"/>
         </component>
     </object>

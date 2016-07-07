@@ -119,7 +119,7 @@ public:
 	void render(const RenderScene& scene) noexcept;
 
 private:
-	bool setupShadowRenderer(RenderPipelinePtr pipeline) noexcept;
+	bool setupShadowRenderer(RenderPipelinePtr pipeline, const RenderSetting& setting) noexcept;
 	void destroyShadowRenderer() noexcept;
 
 private:

@@ -141,19 +141,14 @@ PostRenderPipeline::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphi
 
 	if (_SSSS)
 	{
-		std::size_t shadowIndex = 0;
-
 		auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 		for (auto& it : lights)
 		{
 			auto light = it->downcast<Light>();
-			if (light->getShadowType() != LightShadowType::LightShadowTypeNone && light->getSubsurfaceScattering())
+			if (light->getShadowMode() != ShadowMode::ShadowModeNone && light->getSubsurfaceScattering())
 			{
 				_SSSS->applyTranslucency(pipeline, source, _diffuseMap, _normalMap, *light, _depthLinearMap, light->getDepthLinearTexture());
 			}
-
-			if (light->getSoftShadow())
-				shadowIndex++;
 		}
 
 		_SSSS->applyGuassBlur(pipeline, source, _depthLinearMap, swap);

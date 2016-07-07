@@ -138,7 +138,7 @@ SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source,
 	_texMRT1->uniformTexture(MRT1);
 	_texDepthLinear->uniformTexture(linearDepth);
 
-	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
+	_lightColor->uniform3f(light.getLightColor() * light.getLightIntensity());
 	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTranslate()));
 
 	_shadowMap->uniformTexture(shaodwMap);

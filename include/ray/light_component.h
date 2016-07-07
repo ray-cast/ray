@@ -52,23 +52,20 @@ public:
 	void setLightType(LightType type) noexcept;
 	LightType getLightType() const noexcept;
 
-	void setRange(float range) noexcept;
-	void setIntensity(float intensity) noexcept;
+	void setLightRange(float range) noexcept;
+	void setLightIntensity(float intensity) noexcept;
 	void setSpotInnerCone(float value) noexcept;
 	void setSpotOuterCone(float value) noexcept;
 	void setLightColor(const float3& color) noexcept;
 
-	float getRange() const noexcept;
-	float getIntensity() const noexcept;
+	float getLightRange() const noexcept;
+	float getLightIntensity() const noexcept;
 	const float2& getSpotInnerCone() const noexcept;
 	const float2& getSpotOuterCone() const noexcept;
 	const float3& getLightColor() const noexcept;
 
-	void setShadow(LightShadowType shadowType) noexcept;
-	LightShadowType getShadow() const noexcept;
-
-	void setSoftShadow(bool softEnable) noexcept;
-	bool getSoftShadow() const noexcept;
+	void setShadowMode(ShadowMode shadowMode) noexcept;
+	ShadowMode getShadowMode() const noexcept;
 
 	void setShadowBias(float bias) noexcept;
 	float getShadowBias() const noexcept;
@@ -85,14 +82,16 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 private:
-
 	void onActivate() noexcept;
 	void onDeactivate() noexcept;
 
 	void onMoveAfter() noexcept;
 
 private:
+	LightComponent(const LightComponent&) = delete;
+	LightComponent& operator=(const LightComponent&) = delete;
 
+private:
 	LightPtr _light;
 };
 

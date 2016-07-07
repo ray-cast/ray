@@ -48,32 +48,36 @@ public:
 	Light() noexcept;
 	~Light() noexcept;
 
-	void setRange(float range) noexcept;
-	void setIntensity(float intensity) noexcept;
+	void setLightRange(float range) noexcept;
 	void setLightType(LightType type) noexcept;
+	void setLightIntensity(float intensity) noexcept;
 	void setLightColor(const float3& color) noexcept;
 	void setLightAttenuation(const float3& attenuation) noexcept;
+
 	void setSpotInnerCone(float value) noexcept;
 	void setSpotOuterCone(float value) noexcept;
-	void setShadowBias(float bias) noexcept;
-	void setShadowType(LightShadowType shadowType) noexcept;
-	void setSoftShadow(bool enable) noexcept;
-	void setSubsurfaceScattering(bool enable) noexcept;
-	void setGlobalIllumination(bool enable) noexcept;
 
-	bool getSoftShadow() const noexcept;
-	bool getSubsurfaceScattering() const noexcept;
+	void setShadowBias(float bias) noexcept;
+	void setShadowFactor(float factor) noexcept;
+	void setShadowMode(ShadowMode shadowType) noexcept;
+
+	void setGlobalIllumination(bool enable) noexcept;	
 	bool getGlobalIllumination() const noexcept;
 
-	float getRange() const noexcept;
-	float getIntensity() const noexcept;
-	float getShadowBias() const noexcept;
+	void setSubsurfaceScattering(bool enable) noexcept;
+	bool getSubsurfaceScattering() const noexcept;
 
+	float getLightRange() const noexcept;
+	float getLightIntensity() const noexcept;
 	LightType getLightType() const noexcept;
-	LightShadowType getShadowType() const noexcept;
+
+	float getShadowBias() const noexcept;
+	float getShadowFactor() const noexcept;
+	ShadowMode getShadowMode() const noexcept;
 
 	const float2& getSpotInnerCone() const noexcept;
 	const float2& getSpotOuterCone() const noexcept;
+
 	const float3& getLightColor() const noexcept;
 	const float3& getLightAttenuation() const noexcept;
 
@@ -118,7 +122,6 @@ private:
 
 private:
 	LightType _lightType;
-	LightShadowType _shadowType;
 
 	float _lightRange;
 	float _lightIntensity;
@@ -134,7 +137,9 @@ private:
 	bool _enableGlobalIllumination;
 
 	float _shadowBias;
+	float _shadowFactor;
 	Cameras _shadowCameras;
+	ShadowMode _shadowMode;
 
 	GraphicsTexturePtr _shadowDepthMap;
 	GraphicsTexturePtr _shadowColorMap;

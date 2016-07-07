@@ -51,6 +51,12 @@ public:
 	bool setup(RenderPipelinePtr pipeline) noexcept;
 	void close() noexcept;
 
+	void setShadowMode(ShadowMode mode) noexcept;
+	ShadowMode getShadowMode() const noexcept;
+	
+	void setShadowQuality(ShadowQuality quality) noexcept;
+	ShadowQuality getShadowQuality() const noexcept;
+
 	void renderShadowMaps(const CameraPtr& camera) noexcept;
 
 private:
@@ -78,9 +84,13 @@ private:
 	ShadowRenderPipeline& operator=(const ShadowRenderPipeline&) = delete;
 
 private:
+	ShadowMode _shadowMode;
+	ShadowQuality _shadowQuality;
+
 	MaterialPtr _shadowRender;
 	MaterialTechPtr _shadowBlurOrthoShadowX;
 	MaterialTechPtr _shadowBlurPerspectiveFovShadowX;
+	MaterialTechPtr _shadowBlurShadowX[LightType::LightTypeRangeSize];
 	MaterialTechPtr _shadowBlurShadowY;
 	MaterialTechPtr _shadowLogBlurShadowX;
 	MaterialTechPtr _shadowLogBlurShadowY;
@@ -92,11 +102,11 @@ private:
 	MaterialParamPtr _shadowOffset;
 	MaterialParamPtr _shadowWeight;
 
-	GraphicsTextures _shadowShadowDepthMapTemps;
-	GraphicsTextures _shadowShadowDepthLinearMapTemps;
+	GraphicsTexturePtr _shadowShadowDepthMapTemp;
+	GraphicsTexturePtr _shadowShadowDepthLinearMapTemp;
 	
-	GraphicsFramebuffers _shadowShadowDepthViewTemps;
-	GraphicsFramebuffers _shadowShadowDepthLinearViewTemps;
+	GraphicsFramebufferPtr _shadowShadowDepthViewTemp;
+	GraphicsFramebufferPtr _shadowShadowDepthLinearViewTemp;
 
 	GraphicsFramebufferLayoutPtr _shadowShadowDepthImageLayout;
 	GraphicsFramebufferLayoutPtr _shadowShadowDepthLinearImageLayout;

@@ -29,10 +29,9 @@
         <component class="Light">
             <attribute type="spot"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="200.0"/>
+            <attribute range="20.0"/>
             <attribute intensity="1.0"/>
-            <attribute shadow="low"/>
-            <attribute soft="false"/>
+            <attribute shadow="soft"/>
             <attribute GI="false"/>
         </component>
     </object>

@@ -56,8 +56,9 @@ Light::Light() noexcept
 	, _enableSoftShadow(false)
 	, _enableSubsurfaceScattering(false)
 	, _enableGlobalIllumination(false)
-	, _shadowType(LightShadowType::LightShadowTypeNone)
+	, _shadowMode(ShadowMode::ShadowModeNone)
 	, _shadowBias(0.1f)
+	, _shadowFactor(300.0f)
 {
 	_shadowCameras.push_back(std::make_shared<Camera>());
 	_shadowCameras[0]->setOwnerListener(this);
@@ -82,13 +83,13 @@ Light::setLightType(LightType type) noexcept
 }
 
 void
-Light::setIntensity(float intensity) noexcept
+Light::setLightIntensity(float intensity) noexcept
 {
 	_lightIntensity = intensity;
 }
 
 void
-Light::setRange(float range) noexcept
+Light::setLightRange(float range) noexcept
 {
 	_lightRange = range;
 	this->_updateBoundingBox();
@@ -122,13 +123,13 @@ Light::getLightType() const noexcept
 }
 
 float
-Light::getIntensity() const noexcept
+Light::getLightIntensity() const noexcept
 {
 	return _lightIntensity;
 }
 
 float
-Light::getRange() const noexcept
+Light::getLightRange() const noexcept
 {
 	return _lightRange;
 }
@@ -164,13 +165,13 @@ Light::getSpotOuterCone() const noexcept
 }
 
 void
-Light::setShadowType(LightShadowType shadowType) noexcept
+Light::setShadowMode(ShadowMode shadowMode) noexcept
 {
-	if (_shadowType != shadowType)
+	if (_shadowMode != shadowMode)
 	{
-		_shadowType = shadowType;
+		_shadowMode = shadowMode;
 
-		if (shadowType != LightShadowType::LightShadowTypeNone)
+		if (shadowMode != ShadowMode::ShadowModeNone)
 			this->setupShadowMap();
 		else
 			this->destroyShadowMap();
@@ -183,22 +184,10 @@ Light::setShadowType(LightShadowType shadowType) noexcept
 	}
 }
 
-LightShadowType
-Light::getShadowType() const noexcept
+ShadowMode
+Light::getShadowMode() const noexcept
 {
-	return _shadowType;
-}
-
-void
-Light::setSoftShadow(bool enable) noexcept
-{
-	_enableSoftShadow = enable;
-}
-
-bool
-Light::getSoftShadow() const noexcept
-{
-	return _enableSoftShadow;
+	return _shadowMode;
 }
 
 void
@@ -252,10 +241,22 @@ Light::setShadowBias(float bias) noexcept
 	_shadowBias = bias;
 }
 
+void 
+Light::setShadowFactor(float factor) noexcept
+{
+	_shadowFactor = factor;
+}
+
 float
 Light::getShadowBias() const noexcept
 {
 	return _shadowBias;
+}
+
+float
+Light::getShadowFactor() const noexcept
+{
+	return _shadowFactor;
 }
 
 void
@@ -298,13 +299,15 @@ bool
 Light::setupShadowMap() noexcept
 {
 	std::uint32_t shadowMapSize = 0;
-	if (_shadowType == LightShadowType::LightShadowTypeLow)
+
+	ShadowQuality shadowQuality = RenderSystem::instance()->getRenderSetting().shadowQuality;
+	if (shadowQuality == ShadowQuality::ShadowQualityLow)
 		shadowMapSize = LightShadowSize::LightShadowSizeLow;
-	else if (_shadowType == LightShadowType::LightShadowTypeMedium)
+	else if (shadowQuality == ShadowQuality::ShadowQualityMedium)
 		shadowMapSize = LightShadowSize::LightShadowSizeMedium;
-	else if (_shadowType == LightShadowType::LightShadowTypeHigh)
+	else if (shadowQuality == ShadowQuality::ShadowQualityHigh)
 		shadowMapSize = LightShadowSize::LightShadowSizeHigh;
-	else if (_shadowType == LightShadowType::LightShadowTypeVeryHigh)
+	else if (shadowQuality == ShadowQuality::ShadowQualityVeryHigh)
 		shadowMapSize = LightShadowSize::LightShadowSizeVeryHigh;
 	else
 		return false;
@@ -350,13 +353,15 @@ bool
 Light::setupReflectiveShadowMap() noexcept
 {
 	std::uint32_t shadowMapSize = 0;
-	if (_shadowType == LightShadowType::LightShadowTypeLow)
+
+	ShadowQuality shadowQuality = RenderSystem::instance()->getRenderSetting().shadowQuality;
+	if (shadowQuality == ShadowQuality::ShadowQualityLow)
 		shadowMapSize = LightShadowSize::LightShadowSizeLow;
-	else if (_shadowType == LightShadowType::LightShadowTypeMedium)
+	else if (shadowQuality == ShadowQuality::ShadowQualityMedium)
 		shadowMapSize = LightShadowSize::LightShadowSizeMedium;
-	else if (_shadowType == LightShadowType::LightShadowTypeHigh)
+	else if (shadowQuality == ShadowQuality::ShadowQualityHigh)
 		shadowMapSize = LightShadowSize::LightShadowSizeHigh;
-	else if (_shadowType == LightShadowType::LightShadowTypeVeryHigh)
+	else if (shadowQuality == ShadowQuality::ShadowQualityVeryHigh)
 		shadowMapSize = LightShadowSize::LightShadowSizeVeryHigh;
 	else
 		return false;
@@ -592,8 +597,8 @@ Light::clone() const noexcept
 	auto light = std::make_shared<Light>();
 	light->setLightType(this->getLightType());
 	light->setLightColor(this->getLightColor());
-	light->setIntensity(this->getIntensity());
-	light->setRange(this->getRange());
+	light->setLightIntensity(this->getLightIntensity());
+	light->setLightRange(this->getLightRange());
 	light->setTransform(this->getTransform());
 	light->setBoundingBox(this->getBoundingBox());
 

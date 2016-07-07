@@ -132,12 +132,15 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr sou
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_bloom);
+	pipeline.generateMipmap(dest->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 }
 
 void
-FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept
 {
 	_texSource->uniformTexture(source);
+	_texSourceLevel->uniform1i(level);
+	_texSourceSizeInv->uniform2f(1.0f / dest->getGraphicsFramebufferDesc().getWidth(), 1.0f / dest->getGraphicsFramebufferDesc().getHeight());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -145,9 +148,11 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 }
 
 void
-FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept
 {
 	_texSource->uniformTexture(source);
+	_texSourceLevel->uniform1i(level);
+	_texSourceSizeInv->uniform2f(1.0f / dest->getGraphicsFramebufferDesc().getWidth(), 1.0f / dest->getGraphicsFramebufferDesc().getHeight());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -171,8 +176,16 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texBloom1Map = pipeline.createTexture(width / 4.0f, height / 4.0f, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
-	_texBloom2Map = pipeline.createTexture(width / 4.0f, height / 4.0f, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	GraphicsTextureDesc samplerBloomDesc;
+	samplerBloomDesc.setWidth(width / 2);
+	samplerBloomDesc.setHeight(height / 2);
+	samplerBloomDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	samplerBloomDesc.setMipBase(0);
+	samplerBloomDesc.setMipLevel(4);
+	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
+	_texBloom1Map = pipeline.createTexture(samplerBloomDesc);
+	_texBloom2Map = pipeline.createTexture(samplerBloomDesc);
 	
 	GraphicsTextureDesc samplerLogDesc;
 	samplerLogDesc.setWidth(256);
@@ -200,20 +213,6 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	framebufferLogLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat));
 	_sampleLogImageLayout = pipeline.createFramebufferLayout(framebufferLogLayoutDesc);
 
-	GraphicsFramebufferDesc bloom1ViewDesc;
-	bloom1ViewDesc.setWidth(width / 4.0f);
-	bloom1ViewDesc.setHeight(height / 4.0f);
-	bloom1ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texBloom1Map, 0, 0));
-	bloom1ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
-	_texBloom1View = pipeline.createFramebuffer(bloom1ViewDesc);
-
-	GraphicsFramebufferDesc bloom2ViewDesc;
-	bloom2ViewDesc.setWidth(width / 4.0f);
-	bloom2ViewDesc.setHeight(height / 4.0f);
-	bloom2ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texBloom2Map, 0, 0));
-	bloom2ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
-	_texBloom2View = pipeline.createFramebuffer(bloom2ViewDesc);
-
 	GraphicsFramebufferDesc sampleLogViewDesc;
 	sampleLogViewDesc.setWidth(256);
 	sampleLogViewDesc.setHeight(256);
@@ -227,6 +226,26 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	sampleLog1ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texSampleLumMap, 0, 0));
 	sampleLog1ViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
 	_texSampleLumView = pipeline.createFramebuffer(sampleLog1ViewDesc);
+
+	_texBloom1View.resize(4);
+	_texBloom2View.resize(4);
+
+	for (std::size_t i = 0; i < 4; i++)
+	{
+		GraphicsFramebufferDesc bloom1ViewDesc;
+		bloom1ViewDesc.setWidth(width / ((2 << i)));
+		bloom1ViewDesc.setHeight(height / ((2 << i)));
+		bloom1ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texBloom1Map, i, 0));
+		bloom1ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
+		_texBloom1View[i] = pipeline.createFramebuffer(bloom1ViewDesc);
+
+		GraphicsFramebufferDesc bloom2ViewDesc;
+		bloom2ViewDesc.setWidth(width / ((2 << i)));
+		bloom2ViewDesc.setHeight(height / ((2 << i)));
+		bloom2ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texBloom2Map, i, 0));
+		bloom2ViewDesc.setGraphicsFramebufferLayout(_sampleBloomImageLayout);
+		_texBloom2View[i] = pipeline.createFramebuffer(bloom2ViewDesc);
+	}
 
 	_fimic = pipeline.createMaterial("sys:fx/fimic.fxml");
 
@@ -251,26 +270,15 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	_texLumAve = _fimic->getParameter("texLumAve");
 	_texSource = _fimic->getParameter("texSource");
 	_texSourceSizeInv = _fimic->getParameter("texSourceSizeInv");
+	_texSourceLevel = _fimic->getParameter("texSourceLevel");
 
 	_texLumAve->uniformTexture(_texSampleLumMap);
 	_toneLumExposure->uniform1f(_setting.exposure);
 
-	float2 offset[] = {
-		float2(-5.0f / (width / 4.0f), -5.0f / (height / 4.0f)),
-		float2(-4.0f / (width / 4.0f), -4.0f / (height / 4.0f)),
-		float2(-3.0f / (width / 4.0f), -3.0f / (height / 4.0f)),
-		float2(-2.0f / (width / 4.0f), -2.0f / (height / 4.0f)),
-		float2(-1.0f / (width / 4.0f), -1.0f / (height / 4.0f)),
-		float2(1.0f / (width / 4.0f), 1.0f / (height / 4.0f)),
-		float2(2.0f / (width / 4.0f), 2.0f / (height / 4.0f)),
-		float2(3.0f / (width / 4.0f), 3.0f / (height / 4.0f)),
-		float2(4.0f / (width / 4.0f), 4.0f / (height / 4.0f)),
-		float2(5.0f / (width / 4.0f), 5.0f / (height / 4.0f)),
-	};
+	float offset[] = { -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f,	};
+	float weight[] = { 0.2f, 0.02f, 0.044f, 0.0716f, 0.1046f, 0.1686f, 0.1686f, 0.1046f, 0.0716f, 0.044f, 0.02f };
 
-	float weight[] = { 0.2f,0.02f,0.044f,0.0716f,0.1046f,0.1686f,0.1686f,0.1046f,0.0716f,0.044f,0.02f };
-
-	_bloomOffset->uniform2fv(sizeof(offset) / sizeof(offset[0]), (float*)offset);
+	_bloomOffset->uniform1fv(sizeof(offset) / sizeof(offset[0]), (float*)offset);
 	_bloomWeight->uniform1fv(sizeof(weight) / sizeof(weight[0]), weight);
 
 	_timer = std::make_shared<Timer>();
@@ -306,8 +314,8 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) noexcept
 	_texSource.reset();
 	_texSourceSizeInv.reset();
 
-	_texBloom1View.reset();
-	_texBloom2View.reset();
+	_texBloom1View.clear();
+	_texBloom2View.clear();
 	_texSampleLogView.reset();
 	_texSampleLumView.reset();
 
@@ -328,15 +336,18 @@ FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphics
 
 	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 
-	this->sunLum(pipeline, texture, _texBloom1View);
+	this->sunLum(pipeline, texture, _texBloom1View[0]);
 	this->sunLumLog(pipeline, _texBloom1Map, _texSampleLogView);
 
 	this->avgLuminance(pipeline, _texSampleLumMap, _texSampleLogMap, _texSampleLumView);
 
-	this->generateBloom(pipeline, _texBloom1Map, _texBloom2View);
+	this->generateBloom(pipeline, _texBloom1Map, _texBloom2View[0]);
 
-	this->blurh(pipeline, _texBloom2Map, _texBloom1View);
-	this->blurv(pipeline, _texBloom1Map, _texBloom2View);
+	for (std::size_t i = 0; i < 4; i++)
+	{
+		this->blurh(pipeline, _texBloom2Map, _texBloom1View[i], i);
+		this->blurv(pipeline, _texBloom1Map, _texBloom2View[i], i);
+	}
 
 	this->generateToneMapping(pipeline, _texBloom2Map, texture, swap);
 

@@ -72,8 +72,8 @@ private:
 	void generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
-	void blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
-	void blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept;
+	void blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept;
 
 private:
 
@@ -111,6 +111,7 @@ private:
 	MaterialParamPtr _delta;
 	MaterialParamPtr _texLumAve;
 	MaterialParamPtr _texSource;
+	MaterialParamPtr _texSourceLevel;
 	MaterialParamPtr _texSourceSizeInv;
 
 	GraphicsTexturePtr _texBloom1Map;
@@ -122,8 +123,8 @@ private:
 	GraphicsFramebufferLayoutPtr _sampleBloomImageLayout;
 	GraphicsFramebufferLayoutPtr _sampleLogImageLayout;
 
-	GraphicsFramebufferPtr _texBloom1View;
-	GraphicsFramebufferPtr _texBloom2View;
+	GraphicsFramebuffers _texBloom1View;
+	GraphicsFramebuffers _texBloom2View;
 
 	GraphicsFramebufferPtr _texSampleLogView;
 	GraphicsFramebufferPtr _texSampleLumView;

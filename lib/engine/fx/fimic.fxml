@@ -16,8 +16,9 @@
     <parameter name="texLumAve" type="texture2D" />
     <parameter name="bloomThreshold" type="float" />
     <parameter name="bloomIntensity" type="float" />
-    <parameter name="bloomOffset[10]" type="float2[]" />
+    <parameter name="bloomOffset[10]" type="float[]" />
     <parameter name="bloomWeight[11]" type="float[]" />
+    <parameter name="texSourceLevel" type="int"/>
     <parameter name="exposure" type="float" />
     <parameter name="delta" type="float" />
     <shader>
@@ -91,9 +92,8 @@
                 return adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, 50 * delta));
             }
 
-            float3 ToneMapping(float3 color, float3 bloom, float aveLum, float exposure)
+            float3 ToneMapping(float3 color, float aveLum, float exposure)
             {
-                color += bloom;
                 color += ToneBlueShift(color, luminance(color));
                 color = FilmicTonemap(color, exposure * ToneExposure(aveLum));
                 return color;
@@ -169,11 +169,11 @@
             {
                 oPosition = Position;
                 oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(bloomOffset[0].x, 0), float2(bloomOffset[1].x, 0));
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(bloomOffset[2].x, 0), float2(bloomOffset[3].x, 0));
-                oTexcoord3 = oTexcoord0.xyxy + float4(float2(bloomOffset[4].x, 0), float2(bloomOffset[5].x, 0));
-                oTexcoord4 = oTexcoord0.xyxy + float4(float2(bloomOffset[6].x, 0), float2(bloomOffset[7].x, 0));
-                oTexcoord5 = oTexcoord0.xyxy + float4(float2(bloomOffset[8].x, 0), float2(bloomOffset[9].x, 0));
+                oTexcoord1 = oTexcoord0.xyxy + float4(float2(bloomOffset[0], 0), float2(bloomOffset[1].x, 0)) * texSourceSizeInv.x;
+                oTexcoord2 = oTexcoord0.xyxy + float4(float2(bloomOffset[2], 0), float2(bloomOffset[3].x, 0)) * texSourceSizeInv.x;
+                oTexcoord3 = oTexcoord0.xyxy + float4(float2(bloomOffset[4], 0), float2(bloomOffset[5].x, 0)) * texSourceSizeInv.x;
+                oTexcoord4 = oTexcoord0.xyxy + float4(float2(bloomOffset[6], 0), float2(bloomOffset[7].x, 0)) * texSourceSizeInv.x;
+                oTexcoord5 = oTexcoord0.xyxy + float4(float2(bloomOffset[8], 0), float2(bloomOffset[9].x, 0)) * texSourceSizeInv.x;
             }
 
             void BlurYVS(
@@ -188,11 +188,11 @@
             {
                 oPosition = Position;
                 oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[0].y), float2(0, bloomOffset[1].y));
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[2].y), float2(0, bloomOffset[3].y));
-                oTexcoord3 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[4].y), float2(0, bloomOffset[5].y));
-                oTexcoord4 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[6].y), float2(0, bloomOffset[7].y));
-                oTexcoord5 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[8].y), float2(0, bloomOffset[9].y));
+                oTexcoord1 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[0]), float2(0, bloomOffset[1])) * texSourceSizeInv.y;
+                oTexcoord2 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[2]), float2(0, bloomOffset[3])) * texSourceSizeInv.y;
+                oTexcoord3 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[4]), float2(0, bloomOffset[5])) * texSourceSizeInv.y;
+                oTexcoord4 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[6]), float2(0, bloomOffset[7])) * texSourceSizeInv.y;
+                oTexcoord5 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[8]), float2(0, bloomOffset[9])) * texSourceSizeInv.y;
             }
 
             float4 BlurPS(
@@ -204,17 +204,17 @@
                 in float4 coord5 : TEXCOORD5) : SV_Target0
             {
                 float4 color = 0;
-                color += texSource.Sample(PointClamp, coord0.xy) * bloomWeight[0];
-                color += texSource.Sample(PointClamp, coord1.xy) * bloomWeight[1];
-                color += texSource.Sample(PointClamp, coord1.zw) * bloomWeight[2];
-                color += texSource.Sample(PointClamp, coord2.xy) * bloomWeight[3];
-                color += texSource.Sample(PointClamp, coord2.zw) * bloomWeight[4];
-                color += texSource.Sample(PointClamp, coord3.xy) * bloomWeight[5];
-                color += texSource.Sample(PointClamp, coord3.zw) * bloomWeight[6];
-                color += texSource.Sample(PointClamp, coord4.xy) * bloomWeight[7];
-                color += texSource.Sample(PointClamp, coord4.zw) * bloomWeight[8];
-                color += texSource.Sample(PointClamp, coord5.xy) * bloomWeight[9];
-                color += texSource.Sample(PointClamp, coord5.zw) * bloomWeight[10];
+                color += texSource.SampleLevel(PointClamp, coord0.xy, texSourceLevel) * bloomWeight[0];
+                color += texSource.SampleLevel(PointClamp, coord1.xy, texSourceLevel) * bloomWeight[1];
+                color += texSource.SampleLevel(PointClamp, coord1.zw, texSourceLevel) * bloomWeight[2];
+                color += texSource.SampleLevel(PointClamp, coord2.xy, texSourceLevel) * bloomWeight[3];
+                color += texSource.SampleLevel(PointClamp, coord2.zw, texSourceLevel) * bloomWeight[4];
+                color += texSource.SampleLevel(PointClamp, coord3.xy, texSourceLevel) * bloomWeight[5];
+                color += texSource.SampleLevel(PointClamp, coord3.zw, texSourceLevel) * bloomWeight[6];
+                color += texSource.SampleLevel(PointClamp, coord4.xy, texSourceLevel) * bloomWeight[7];
+                color += texSource.SampleLevel(PointClamp, coord4.zw, texSourceLevel) * bloomWeight[8];
+                color += texSource.SampleLevel(PointClamp, coord5.xy, texSourceLevel) * bloomWeight[9];
+                color += texSource.SampleLevel(PointClamp, coord5.zw, texSourceLevel) * bloomWeight[10];
 
                 return color;
             }
@@ -223,8 +223,11 @@
             {
                 float aveLum = texLumAve.Sample(PointClamp, float2(0,0)).r;
                 float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
-                float3 bloom = texBloom.Sample(PointClamp, coord.xy).rgb;
-                float3 LDR = ToneMapping(color, bloom, aveLum, exposure);
+                color += texBloom.SampleLevel(PointClamp, coord.xy, 0).rgb;
+                color += texBloom.SampleLevel(PointClamp, coord.xy, 1).rgb;
+                color += texBloom.SampleLevel(PointClamp, coord.xy, 2).rgb;
+                color += texBloom.SampleLevel(PointClamp, coord.xy, 3).rgb;
+                float3 LDR = ToneMapping(color, aveLum, exposure);
                 return float4(LDR, luminance(LDR));
             }
         ]]>

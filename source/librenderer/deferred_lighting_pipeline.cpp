@@ -480,10 +480,10 @@ DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, Graphic
 void
 DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const Light& light) noexcept
 {
-	float gridCount = 255;
-	float gridSize = 16;
-	float gridOffset = 1.0f / 16.0f;
-	float gridDelta = (15.0f / 16.0f) / 16.0f;
+	float gridCount = _mrsiiVPLsView->getGraphicsFramebufferDesc().getWidth();
+	float gridSize = std::floor(std::sqrt(gridCount));
+	float gridOffset = 1.0f / gridSize;
+	float gridDelta = ((gridSize - 1) / gridSize) / gridSize;
 
 	_mrsiiCountGridOffsetDelta->uniform4f(gridCount, gridSize, gridOffset, gridDelta);
 	_mrsiiColorMap->uniformTexture(light.getColorTexture());

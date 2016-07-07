@@ -57,8 +57,8 @@
                         float nl = -N.z;
                         if (nl > 0)
                         {
-                            float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * spot * nl * shininess;
-                            lighting = float4(albedo * atten, length(P));
+                            float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * spot * nl;
+                            lighting = float4(albedo, 1) * atten * dot(P, P);
                         }
                     }
 
@@ -97,8 +97,8 @@
 
                 if (coord.y < 1 / 3.0f)
                 {
-                    float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * shininess;
-                    return float4(albedo * atten, length(P));
+                    float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation);
+                    return float4(albedo, 1) * atten * dot(P, P);
                 }
                 else if (coord.y < 2 / 3.0f)
                 {
@@ -111,6 +111,13 @@
                     viewPosition /= viewPosition.w;
                     return float4(viewPosition.xyz, specular);
                 }
+            }
+
+            float VPLsAttenTerm(float3 lightPosition, float3 P, float lenghtSqr, float vplsCount)
+            {
+                float3 v = lightPosition - P;
+                float d2 = max(0.2, dot(v, v));
+                return 1 / (lenghtSqr + vplsCount * d2);
             }
 
            void GatherIndirectVS(
@@ -147,9 +154,9 @@
                     float4 lightPosition = texVPLBuffer.Sample(PointClamp, float2(index, 1.0f));
                     float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
 
-                    float3 lighting = 0;
-                    lighting = brdfLambert(viewNormal, lightDirection, lightColor.xyz);
-                    lighting *= attenuationTerm(viewPosition, lightPosition.xyz, float3(1, 0, 1));
+                    float3 lighting;
+                    lighting = brdfLambert(viewNormal, lightDirection, lightColor.rgb);
+                    lighting *= VPLsAttenTerm(lightPosition, viewPosition, lightColor.a, VPLCountGridOffsetDelta.x);
                     lighting *= max(0, dot(lightNormal, -lightDirection) * 0.5 + 0.5);
 
                     shading += lighting;

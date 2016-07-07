@@ -15,7 +15,7 @@
         </component>
         <component class="Skybox">
             <attribute flags="skybox|skylighting"/>
-            <attribute skyIntensity="0.0,0.0"/>
+            <attribute skyIntensity="0.1,0.1"/>
             <attribute skymap="dlc:SSR/textures/output_skybox.dds"/>
             <attribute skydiffuse="dlc:SSR/textures/output_iem.dds"/>
             <attribute skyspecular="dlc:SSR/textures/output_pmrem.dds"/>
@@ -40,7 +40,7 @@
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
         <attribute rotate="0,-90,0"/>
-        <attribute active="false"/>
+        <attribute active="true"/>
         <component class="Light">
             <attribute type="ambient"/>
             <attribute range="1000.0"/>
@@ -52,7 +52,7 @@
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
         <attribute rotate="0,90,0"/>
-        <attribute active="false"/>
+        <attribute active="true"/>
         <component class="Light">
             <attribute type="ambient"/>
             <attribute range="1000.0"/>

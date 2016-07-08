@@ -86,7 +86,7 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 	_texSourceSizeInv->uniform2f(1.0 / width, 1.0 / height);
 
 	pipeline.setFramebuffer(dest);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
+	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_sunLum);
 }
 
@@ -100,9 +100,9 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 	_texSourceSizeInv->uniform2f(1.0 / width, 1.0 / height);
 
 	pipeline.setFramebuffer(dest);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
+	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_sunLumLog);
-	pipeline.generateMipmap(source);
+	pipeline.generateMipmap(dest->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 }
 
 void
@@ -183,6 +183,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR8G8B8UNorm);
 	samplerBloomDesc.setMipBase(0);
 	samplerBloomDesc.setMipLevel(4);
+	samplerBloomDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
 	_texBloom1Map = pipeline.createTexture(samplerBloomDesc);
 	_texBloom2Map = pipeline.createTexture(samplerBloomDesc);
@@ -194,7 +195,8 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerLogDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16SFloat);
 	samplerLogDesc.setMipBase(0);
 	samplerLogDesc.setMipLevel(9);
-	samplerLogDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	samplerLogDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	samplerLogDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_texSampleLogMap = pipeline.createTexture(samplerLogDesc);
 
 	GraphicsTextureDesc samplerLumDesc;
@@ -203,6 +205,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerLumDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	samplerLumDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16SFloat);
 	samplerLumDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	samplerLumDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_texSampleLumMap = pipeline.createTexture(samplerLumDesc);
 
 	GraphicsFramebufferLayoutDesc framebufferBloomLayoutDesc;

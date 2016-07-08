@@ -147,14 +147,14 @@
             float AvgLuminancePS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
             {
                 float color = texSource.SampleLevel(PointClamp, coord0.xy, 8).r;
-                float adaptedLum = texLumAve.Sample(PointClamp, float2(0,0)).r;
-                return saturate(CalcAdaptedLum(adaptedLum, exp(color), delta));
+                float adaptedLum = texLumAve.Sample(PointClamp, float2(0.5,0.5)).r;
+                return max(0, CalcAdaptedLum(adaptedLum, exp(color), delta));
             }
 
             float4 BloomPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
                 float4 color = texSource.Sample(PointClamp, coord.xy);
-                return float4(max(0, (color.rgb - bloomThreshold) * bloomIntensity), color.a);
+                return max(0, (color - bloomThreshold) * bloomIntensity);
             }
 
             void BlurXVS(
@@ -221,12 +221,12 @@
 
             float4 FimicTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
-                float aveLum = texLumAve.Sample(PointClamp, float2(0,0)).r;
+                float aveLum = texLumAve.Sample(PointClamp, float2(0.5, 0.5)).r;
                 float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
-                color += texBloom.SampleLevel(PointClamp, coord.xy, 0).rgb;
-                color += texBloom.SampleLevel(PointClamp, coord.xy, 1).rgb;
-                color += texBloom.SampleLevel(PointClamp, coord.xy, 2).rgb;
-                color += texBloom.SampleLevel(PointClamp, coord.xy, 3).rgb;
+                color += texBloom.SampleLevel(LinearClamp, coord.xy, 0).rgb;
+                color += texBloom.SampleLevel(LinearClamp, coord.xy, 1).rgb;
+                color += texBloom.SampleLevel(LinearClamp, coord.xy, 2).rgb;
+                color += texBloom.SampleLevel(LinearClamp, coord.xy, 3).rgb;
                 float3 LDR = ToneMapping(color, aveLum, exposure);
                 return float4(LDR, luminance(LDR));
             }

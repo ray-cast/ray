@@ -38,8 +38,8 @@
             {
                 oPosition = Position;
                 oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(offset[0]*texSourceSizeInv, 0), float2(offset[2]*texSourceSizeInv, 0));
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(offset[1]*texSourceSizeInv, 0), float2(offset[3]*texSourceSizeInv, 0));
+                oTexcoord1 = oTexcoord0.xyxy + float4(float2(offset[0], 0), float2(offset[2], 0)) * texSourceSizeInv;
+                oTexcoord2 = oTexcoord0.xyxy + float4(float2(offset[1], 0), float2(offset[3], 0)) * texSourceSizeInv;
             }
 
             void BlurYVS(
@@ -51,8 +51,8 @@
             {
                 oPosition = Position;
                 oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(0, offset[0]*texSourceSizeInv), float2(0, offset[2]*texSourceSizeInv));
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(0, offset[1]*texSourceSizeInv), float2(0, offset[3]*texSourceSizeInv));
+                oTexcoord1 = oTexcoord0.xyxy + float4(float2(0, offset[0]), float2(0, offset[2])) * texSourceSizeInv;
+                oTexcoord2 = oTexcoord0.xyxy + float4(float2(0, offset[1]), float2(0, offset[3])) * texSourceSizeInv;
             }
 
             float ConvOrthoLinearDepthBlurXPS(
@@ -103,8 +103,8 @@
             {
                 oPosition = Position;
                 oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(offset[0]*texSourceSizeInv, 0), float2(-offset[0]*texSourceSizeInv, 0));
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(offset[1]*texSourceSizeInv, 0), float2(-offset[1]*texSourceSizeInv, 0));
+                oTexcoord1 = oTexcoord0.xyxy + float4(float2(offset[0], 0), float2(-offset[0], 0)) * texSourceSizeInv;
+                oTexcoord2 = oTexcoord0.xyxy + float4(float2(offset[1], 0), float2(-offset[1], 0)) * texSourceSizeInv;
             }
 
             void LogBlurYVS(
@@ -116,8 +116,8 @@
             {
                 oPosition = Position;
                 oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(0, offset[0]*texSourceSizeInv), float2(0, -offset[0]*texSourceSizeInv));
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(0, offset[1]*texSourceSizeInv), float2(0, -offset[1]*texSourceSizeInv));
+                oTexcoord1 = oTexcoord0.xyxy + float4(float2(0, offset[0]), float2(0, -offset[0])) * texSourceSizeInv;
+                oTexcoord2 = oTexcoord0.xyxy + float4(float2(0, offset[1]), float2(0, -offset[1])) * texSourceSizeInv;
             }
 
             float LogBlurXPS(

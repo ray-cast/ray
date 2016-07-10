@@ -1,208 +1,294 @@
 <?xml version="1.0"?>
 <effect language="hlsl">
+    <include name="sys:fx/common.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <parameter name="matViewProject" semantic="matViewProject" type="float4x4"/>
+    <include name="sys:fx/sampler.fxml"/>
+    <macro name="TRAPEZOIDAL_INTEGRATION" value="1"/>
+    <macro name="NUM_STEP_SAMPLES" value="5"/>
+    <macro name="NUM_INTERSECTION_SAMPLES" value="200"/>
+    <parameter name="texDepth" type="texture2D" semantic="DepthMap" />
+    <parameter name="texDepthLinear" type="texture2D" semantic="DepthLinearMap" />
     <parameter name="eyePosition" semantic="CameraPosition" type="float3"/>
-    <parameter name="lightDirection" type="float3" />
-    <parameter name="invWavelength" type="float3" />
-    <parameter name="outerRadius" type="float" />
-    <parameter name="outerRadius2" type="float" />
-    <parameter name="innerRadius" type="float" />
-    <parameter name="innerRadius2" type="float" />
-    <parameter name="krESun" type="float" />
-    <parameter name="kmESun" type="float" />
-    <parameter name="kr4PI" type="float" />
-    <parameter name="km4PI" type="float" />
-    <parameter name="scaleFactor" type="float" />
-    <parameter name="scaleDepth" type="float" />
-    <parameter name="scaleOverScaleDepth" type="float" />
-    <macro name="NUM_SAMPLES" type="int" value="4"/>
+    <parameter name="matViewProjectInverse" type="float4x4"/>
+    <parameter name="rayleighAngularSctrCoeff" type="float4"/>
+    <parameter name="rayleighExtinctionCoeff" type="float4"/>
+    <parameter name="mieAngularSctrCoeff" type="float4"/>
+    <parameter name="mieExtinctionCoeff" type="float4"/>
+    <parameter name="extraterrestrialSunColor" type="float4"/>
+    <parameter name="aerosolPhaseFuncG4" type="float4"/>
+    <parameter name="earthRadius" type="float"/>
+    <parameter name="earthAtmTopHeight" type="float"/>
+    <parameter name="earthAtmTopRadius" type="float"/>
+    <parameter name="particleScaleHeight" type="float2"/>
+    <parameter name="lightDirection" type="float3"/>
+    <parameter name="tex2DOccludedNetDensityToAtmTop" type="texture2D"/>
     <shader>
         <![CDATA[
-        float scale(float angle)
-        {
-            float x = 1.0f - angle;
-            return scaleDepth * exp(-0.00287f + x * (0.459f + x * (3.83f + x * (-6.80f + x * 5.25))));
-        }
-
-        void GroundVS(
+        void ScreenQuadVS(
             in float4 Position : POSITION0,
-            out float3 c0 : TEXCOORD0,
-            out float3 c1 : TEXCOORD1,
+            out float4 oTexcoord : TEXCOORD0,
             out float4 oPosition : SV_Position)
         {
-            Position = float4(Position.xyz * innerRadius,  1.0);
-            Position.y -= innerRadius;
+            oPosition = Position;
+            oTexcoord.xy = Position.xy;
+            oTexcoord.zw = PosToCoord(Position.xy);
+        }
 
-            float3 world = Position.xyz;
-            world.y += innerRadius;
+        void ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius, out float2 minimaxIntersections)
+        {
+            float3 origin = position - center;
+            float A = dot(dir, dir);
+            float B = dot(origin, dir);
+            float C = dot(origin, origin) - radius * radius;
+            float D = B * B - C;
 
-            float3 cameraPosition = eyePosition;
-            cameraPosition.y += innerRadius;
-
-            float3 ray = Position.xyz - eyePosition;
-            float rayLength = length(ray);
-            ray /= rayLength;
-
-            float3 start = cameraPosition;
-
-            float startDepth = 0;
-            float startOffset = 0;
-
-            float cameraLength2 = dot(cameraPosition, cameraPosition);
-            if (cameraLength2 >= outerRadius2)
+            if (D < 0)
             {
-                float B = 2.0 * dot(cameraPosition, ray);
-                float C = cameraLength2 - outerRadius2;
-                float det = max(0.0, B * B - 4.0 * C);
-                float near = 0.5 * (-B - sqrt(det));
-
-                rayLength -= near;
-
-                start = start + ray * near;
-                startDepth = exp((innerRadius - outerRadius) / scaleDepth);
+                minimaxIntersections = -1;
             }
             else
             {
-                startDepth = exp((innerRadius - length(cameraPosition)) / scaleDepth);
+                D = sqrt(D);
+                minimaxIntersections = float2(-B - D, -B + D) / A;
             }
-
-            float cameraAngle = dot(-ray, world) / length(world);
-            float cameraScale = scale(cameraAngle);
-            float cameraOffset = startDepth * cameraScale;
-
-            float lightAngle = dot(lightDirection, world) / length(world);
-            float lightScale = scale(lightAngle);
-
-            // Initialize the scattering loop variables
-            float sampleLength = rayLength / NUM_SAMPLES;
-            float scaledLength = sampleLength * scaleFactor;
-
-            float3 sampleRay = ray * sampleLength;
-            float3 samplePoint = start + sampleRay * 0.5f;
-
-            // Now loop through the sample rays
-            float3 sampleColor = float3(0, 0, 0);
-
-            for(int i = 0; i < NUM_SAMPLES; i++)
-            {
-                float height = length(samplePoint);
-                float depth = exp(scaleOverScaleDepth * (innerRadius - height));
-
-                float scatter = depth * (lightScale + cameraScale) - cameraOffset;
-
-                float3 attenuate = exp(-scatter * (invWavelength * kr4PI + km4PI));
-
-                sampleColor += attenuate * (depth * scaledLength);
-                samplePoint += sampleRay;
-            }
-
-            c0 = sampleColor * (invWavelength * krESun + kmESun);
-            c1 = sampleColor * 0.25;
-
-            oPosition = mul(Position, matViewProject);
         }
 
-        float4 GroundPS(
-            in float3 c0 : TEXCOORD0,
-            in float3 c1 : TEXCOORD1) : SV_Target
+        float2 IntegrateParticleDensity(float3 start, float3 end, float3 center)
         {
-            return float4(c0 + c1, 1.0);
+            float2 particleNetDensity = 0;
+            float3 step = (end - start) / NUM_INTERSECTION_SAMPLES;
+            float stepLen = length(step);
+
+            for (float i = 0.5f; i < NUM_INTERSECTION_SAMPLES; i += 1.0f)
+            {
+                float3 position = start + step * i;
+                float height = abs(length(position - center) - earthRadius);
+                particleNetDensity += exp(-height / particleScaleHeight) * stepLen;
+            }
+
+            return particleNetDensity;
         }
 
-        void SkyVS(
-            in float4 Position : POSITION0,
-            out float3 oViewDir : TEXCOORD0,
-            out float4 oPosition : SV_Position)
+        float2 IntegrateParticleDensityAlongRay(float3 position, float3 dir, float3 earthCenter, bool bOccludeByEarth)
         {
-            Position.xyz *= outerRadius;
-            Position.y -= innerRadius;
-            oPosition = mul(Position, matViewProject);
-            oViewDir = Position.xyz;
+            if (bOccludeByEarth )
+            {
+                float2 minimaxIntersections;
+                ComputeRaySphereIntersection(position, dir, earthCenter, earthRadius, minimaxIntersections);
+                if (minimaxIntersections.x > 0)
+                    return 1e+20;
+            }
+
+            float2 minimaxIntersections;
+            ComputeRaySphereIntersection(position, dir, earthCenter, earthAtmTopRadius, minimaxIntersections);
+
+            float3 end = position + dir * minimaxIntersections.y;
+            return IntegrateParticleDensity(position, end, earthCenter);
         }
 
-        float4 SkyPS(in float3 viewdir : TEXCOORD) : SV_Target
+        float2 ComputeNetDensityToAtmTopPS(in float4 position : TEXCOORD0) : SV_Target
         {
-            float3 ray = viewdir - eyePosition;
-            float rayLength = length(ray);
-            ray /= rayLength;
+            float startHeight = lerp(0, earthAtmTopHeight, position.z);
+            float cosTheta = -position.y;
+            float sinTheta = sqrt(saturate(1 - cosTheta * cosTheta));
+            float3 start = float3(0, 0, startHeight);
+            float3 end = float3(sinTheta, 0, cosTheta);
+            float3 earthCenter = float3(0, 0, -earthRadius);
 
-            float3 cameraPosition = eyePosition + float3(0, innerRadius, 0);
-            float3 start = cameraPosition;
+            return IntegrateParticleDensityAlongRay(start, end, earthCenter, true);
+        }
 
-            float startOffset = 0;
-            float cameraLength2 = dot(cameraPosition, cameraPosition);
+        float2 GetNetParticleDensity(float height, float fCosZenithAngle)
+        {
+            return tex2DOccludedNetDensityToAtmTop.Sample(LinearClamp, float2(height / earthAtmTopHeight, fCosZenithAngle*0.5+0.5)).xy;
+        }
 
-            if (cameraLength2 >= outerRadius2)
+        void ComputeParticleDensity(float3 P, float3 earthCenter, float3 L, out float2 particleDensityCamera, out float2 particleDensityToAtmTop)
+        {
+            float3 origin = P - earthCenter;
+            float distance = length(origin);
+            float height = distance - earthRadius;
+
+            float lightAngle = dot(origin, L) / distance;
+
+            particleDensityCamera = exp(-height / particleScaleHeight);
+            particleDensityToAtmTop = GetNetParticleDensity(height, lightAngle);
+        }
+
+        void ComputeSingleScattering(float2 particleDensity, float2 particleDensityCamera, float2 particleDensityToAtmTop,
+                                    out float3 inscatteringRayleigh,
+                                    out float3 inscatteringMie)
+        {
+            float2 totalOpticalLength = particleDensityCamera + particleDensityToAtmTop;
+            float3 totalOpticalDepthMie = mieExtinctionCoeff.rgb * totalOpticalLength.y;
+            float3 totalOpticalDepthRayleigh = rayleighExtinctionCoeff.rgb * totalOpticalLength.x;
+            float3 totalSurfaceScattering = exp(-(totalOpticalDepthRayleigh + totalOpticalDepthMie));
+
+            inscatteringMie  = particleDensity.y * totalSurfaceScattering;
+            inscatteringRayleigh = particleDensity.x * totalSurfaceScattering;
+        }
+
+        void ComputeInsctrIntegral(float3 start, float3 end, float3 earthCenter, float3 L, inout float2 scatteringDensity, inout float3 scatteringRayleigh, inout float3 scatteringMie)
+        {
+            float3 step = (end - start) / NUM_STEP_SAMPLES;
+            float stepLength = length(step);
+
+        #if TRAPEZOIDAL_INTEGRATION
+            float2 lastParticleDensity = 0;
+            float3 lastInsctrRayleigh = 0;
+            float3 lastInsctrMie = 0;
+
+            float2 stepParticleNetDensity = 0;
+            ComputeParticleDensity(start, earthCenter, L, lastParticleDensity, stepParticleNetDensity);
+            ComputeSingleScattering(lastParticleDensity, scatteringDensity, stepParticleNetDensity, lastInsctrRayleigh, lastInsctrMie);
+
+            for (float i = 1.f; i <= NUM_STEP_SAMPLES; i += 1.f)
             {
-                float B = 2.0 * dot(cameraPosition, ray);
-                float C = cameraLength2 - outerRadius2;
-                float det = max(0.0, B * B - 4.0 * C);
-                float near = 0.5 * (-B - sqrt(det));
-                rayLength -= near;
-                start = start + ray * near;
-                float startDepth = exp(-1.0 / scaleDepth);
-                float startAngle = dot(ray, start) / outerRadius;
-                startOffset = startDepth * scale(startAngle);
+                float2 stepParticleDensity;
+                float2 stepParticleNetDensity;
+                float3 stepInsctrMie;
+                float3 stepInsctrRayleigh;
+                float3 position = start + step * i;
+
+                ComputeParticleDensity(position, earthCenter, L, stepParticleDensity, stepParticleNetDensity);
+
+                scatteringDensity += (stepParticleDensity + lastParticleDensity) * (stepLength / 2.f);
+                ComputeSingleScattering(stepParticleDensity, scatteringDensity, stepParticleNetDensity, stepInsctrRayleigh, stepInsctrMie);
+
+                scatteringMie      += (stepInsctrMie  + lastInsctrMie) * (stepLength / 2.f);
+                scatteringRayleigh += (stepInsctrRayleigh + lastInsctrRayleigh) * (stepLength / 2.f);
+
+                lastInsctrMie = stepInsctrMie;
+                lastInsctrRayleigh = stepInsctrRayleigh;
+                lastParticleDensity = stepParticleDensity;
             }
-            else
+        #else
+            for (float i = 0.5f; i < NUM_STEP_SAMPLES; i += 1.f)
             {
-                float startDepth = exp(scaleOverScaleDepth * (innerRadius - length(start)));
-                float startAngle = dot(ray, start) / length(start);
-                startOffset = startDepth * scale(startAngle);
+                float2 stepParticleDensity;
+                float2 stepParticleNetDensity;
+                float3 stepInsctrMie;
+                float3 stepInsctrRayleigh;
+                float3 position = start + step * i;
+
+                ComputeParticleDensity(position, earthCenter, L, stepParticleDensity, stepParticleNetDensity);
+
+                scatteringDensity  += stepParticleDensity * stepLength;
+                ComputeSingleScattering(stepParticleDensity, scatteringDensity, stepParticleNetDensity, stepInsctrRayleigh, stepInsctrMie);
+
+                scatteringMie      += stepInsctrMie * stepLength;
+                scatteringRayleigh += stepInsctrRayleigh * stepLength;
             }
+        #endif
+        }
 
-            float sampleLength = rayLength / NUM_SAMPLES;
-            float scaledLength = sampleLength * scaleFactor;
+        void ComputePhaseFunctions(float3 inscatteringRayleigh, float3 inscatteringMie, float3 viewdir, float3 lightDirection, out float3 inscattering)
+        {
+            // http://www.cescg.org/CESCG-2009/papers/PragueCUNI-Elek-Oskar.pdf
+            // aerosolPhaseFuncG4.x = 3 x (1 - g2) / 2 x (2 + g2)
+            // aerosolPhaseFuncG4.y = 1 + g2;
+            // aerosolPhaseFuncG4.z = -2g
 
-            float3 sampleRay = ray * sampleLength;
-            float3 samplePoint = start + sampleRay * 0.5f;
+            float cosTheta = dot(lightDirection, -viewdir);
+            float cosTheta2 = cosTheta * cosTheta;
 
-            float3 sampleColor = float3(0, 0, 0);
+            float denom = rsqrt(aerosolPhaseFuncG4.y + aerosolPhaseFuncG4.z * cosTheta);
+            float denom3 = denom * denom * denom;
+            float phaseFunction = aerosolPhaseFuncG4.x * (1 +  cosTheta2) * denom3;
 
-            for (int i = 0; i < NUM_SAMPLES; i++)
+            inscatteringRayleigh *= rayleighAngularSctrCoeff.rgb * (cosTheta2 * 0.75 + 0.75);
+            inscatteringRayleigh = max(0, inscatteringRayleigh);
+
+            inscatteringMie *= mieAngularSctrCoeff.rgb * phaseFunction;
+            inscatteringMie = max(0, inscatteringMie);
+
+            inscattering = inscatteringRayleigh + inscatteringMie;
+        }
+
+        void ComputePlanetarySurface(float3 totalOpticalDepthRayleigh, float3 totalOpticalDepthMie, out float3 extinction)
+        {
+            // http://www.cescg.org/CESCG-2009/papers/PragueCUNI-Elek-Oskar.pdf
+            extinction = exp(-(totalOpticalDepthRayleigh + totalOpticalDepthMie));
+        }
+
+        float3 ProjSpaceXYZToWorldSpace(in float3 f3PosPS)
+        {
+            float4 position = mul(matViewProjectInverse, float4(f3PosPS, 1));
+            position /= position.w;
+            return position.xyz;
+        }
+
+        void ComputeUnshadowedInscattering(float2 position, float depth, out float3 inscattering, out float3 extinction)
+        {
+            float3 world = ProjSpaceXYZToWorldSpace(float3(position, depth));
+            float3 viewdir = (world - eyePosition);
+            float rayLength = length(viewdir);
+            viewdir /= rayLength;
+
+            float3 earthCenter =  float3(0, -earthRadius, 0);
+
+            float2 minimaxIntersections;
+            ComputeRaySphereIntersection(eyePosition, viewdir, earthCenter, earthAtmTopRadius, minimaxIntersections);
+            if (minimaxIntersections.y <= 0)
             {
-                float height = length(samplePoint);
-                float depth = exp(scaleOverScaleDepth * (innerRadius - height));
-
-                float lightAngle = dot(lightDirection, samplePoint) / height;
-                float cameraAngle = dot(ray, samplePoint) / height;
-
-                float scatter = startOffset + depth * (scale(lightAngle) - scale(cameraAngle));
-
-                float3 attenuate = exp(-scatter * (invWavelength * kr4PI + km4PI));
-
-                sampleColor += attenuate * (depth * scaledLength);
-                samplePoint += sampleRay;
+                inscattering = 0;
+                extinction = 1;
+                return;
             }
 
-            float3 c0 = sampleColor * (invWavelength * krESun);
-            float3 c1 = sampleColor * kmESun;
+            float3 start = eyePosition + viewdir * max(0, minimaxIntersections.x);
+            float3 rayEnd = eyePosition + viewdir * min(rayLength, minimaxIntersections.y);
 
-            float g = -0.990;
-            float g2 = g * g;
+            float3 scatteringMie = 0;
+            float3 scatteringRayleigh = 0;
+            float2 scatteringDensity = 0;
+            ComputeInsctrIntegral(start, rayEnd, earthCenter, lightDirection, scatteringDensity, scatteringRayleigh, scatteringMie);
 
-            float angle = dot(lightDirection, normalize(-viewdir));
-            float miePhase = 1.5f * ((1.0f - g2) / (2.0 + g2)) * (1.0 + angle * angle) / pow(1.0f + g2 - 2.0 * g * angle, 1.5f);
+            float3 totalOpticalDepthMie  = mieExtinctionCoeff.rgb * scatteringDensity.y;
+            float3 totalOpticalDepthRayleigh = rayleighExtinctionCoeff.rgb * scatteringDensity.x;
 
-            return float4(c0 + c1 * miePhase, 1.0);
+            scatteringMie *= extraterrestrialSunColor.rgb;
+            scatteringRayleigh *= extraterrestrialSunColor.rgb;
+
+            ComputePlanetarySurface(totalOpticalDepthRayleigh, totalOpticalDepthMie, extinction);
+            ComputePhaseFunctions(scatteringRayleigh, scatteringMie, viewdir, lightDirection, inscattering);
+        }
+
+        float3 ComputeInscatteredRadiancePS(in float4 Position : TEXCOORD0) : SV_Target
+        {
+            float depth = texDepth.Sample(PointClamp, Position.zw);
+            float3 f3InsctrColor, f3Extinction;
+            ComputeUnshadowedInscattering(Position.xy, depth, f3InsctrColor, f3Extinction);
+            return f3InsctrColor;
         }
         ]]>
     </shader>
-    <technique name="ground">
+    <technique name="ComputeNetDensityToAtmTop">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="GroundVS"/>
-            <state name="fragment" value="GroundPS"/>
-            <state name="cullmode" value="back" />
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="ComputeNetDensityToAtmTopPS"/>
+            <state name="cullmode" value="none" />
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
         </pass>
     </technique>
-    <technique name="sky">
+    <technique name="ComputeInscatteredRadiance">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="SkyVS"/>
-            <state name="fragment" value="SkyPS"/>
-            <state name="cullmode" value="front" />
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="ComputeInscatteredRadiancePS"/>
+
+            <state name="cullmode" value="none" />
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
         </pass>
     </technique>
 </effect>

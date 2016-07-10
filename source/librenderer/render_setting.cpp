@@ -47,7 +47,6 @@ RenderSetting::RenderSetting() noexcept
 	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
 	, shadowMode(ShadowMode::ShadowModeSoft)
 	, shadowQuality(ShadowQuality::ShadowQualityMedium)
-	, _vplsBufferCount(256)
 	, enableSSAO(false)
 	, enableSSGI(false)
 	, enableAtmospheric(false)

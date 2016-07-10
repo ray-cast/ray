@@ -221,7 +221,7 @@
 
             float4 FimicTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
-                float aveLum = texLumAve.Sample(PointClamp, float2(0.5, 0.5)).r;
+                float aveLum = texLumAve.Sample(PointClamp, float2(0, 0)).r;
                 float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
                 color += texBloom.SampleLevel(LinearClamp, coord.xy, 0).rgb;
                 color += texBloom.SampleLevel(LinearClamp, coord.xy, 1).rgb;

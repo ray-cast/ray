@@ -58,7 +58,7 @@ Light::Light() noexcept
 	, _enableGlobalIllumination(false)
 	, _shadowMode(ShadowMode::ShadowModeNone)
 	, _shadowBias(0.1f)
-	, _shadowFactor(300.0f)
+	, _shadowFactor(600.0f)
 {
 	_shadowCameras.push_back(std::make_shared<Camera>());
 	_shadowCameras[0]->setOwnerListener(this);

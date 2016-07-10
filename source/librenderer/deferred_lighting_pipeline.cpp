@@ -263,6 +263,7 @@ DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, GraphicsF
 			this->renderAmbientLight(pipeline, *light);
 	}
 
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueAmbientLighting);
 	pipeline.drawPostProcess(RenderQueue::RenderQueueAmbientLighting, target, nullptr);
 
 	for (auto& it : lights)

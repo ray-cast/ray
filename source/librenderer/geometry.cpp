@@ -237,6 +237,7 @@ Geometry::stringToRenderQueue(const std::string& techName) noexcept
 	if (techName == "TransparentBatch")     return RenderQueue::RenderQueueTransparentBatch;	
 	if (techName == "TransparentShading")	return RenderQueue::RenderQueueTransparentShading;
 	if (techName == "TransparentSpecific")	return RenderQueue::RenderQueueTransparentSpecific;
+	if (techName == "AmbientLighting")		return RenderQueue::RenderQueueAmbientLighting;
 	if (techName == "Lighting")				return RenderQueue::RenderQueueLighting;
 	if (techName == "Postprocess")			return RenderQueue::RenderQueuePostprocess;
 

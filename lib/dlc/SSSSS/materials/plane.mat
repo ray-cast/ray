@@ -2,7 +2,7 @@
 <material>
     <attribute quality="0.0,0.0,0.0,0.0"/>
     <attribute diffuse="0.5,0.5,0.5"/>
-    <attribute specular="1.0" />
+    <attribute specular="0.0" />
     <attribute shininess="0.2" />
     <attribute shader="sys:fx/opacity.fxml"/>
 </material>

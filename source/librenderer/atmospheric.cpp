@@ -41,24 +41,33 @@
 #include <ray/geometry.h>
 #include <ray/render_pipeline.h>
 #include <ray/render_object_manager.h>
+#include <ray/graphics_framebuffer.h>
+#include <ray/graphics_texture.h>
 
 _NAME_BEGIN
 
 Atmospheric::Setting::Setting() noexcept
+	: earthRadius(6360000.f)
+	, earthAtmTopHeight(80000.f)
+	, minElevation(50.0f)
+	, maxElevation(6186.70020)
+	, particleScaleHeight(7994.f, 1200.f)
+	, rayleighAngularSctrCoeff(0)
+	, rayleighTotalSctrCoeff(0)
+	, rayleighExtinctionCoeff(0)
+	, mieAngularSctrCoeff(0)
+	, mieExtinctionCoeff(0)
+	, aerosolPhaseFuncG(0.99)
+	, aerosolPhaseFuncG4(0)
+	, aerosolAbsorbtionScale(1.0f)
+	, aerosolDensityScale(1.0f)
+	, planeNearZ(1399.75012)
+	, planeFarZ(600155.375)
 {
-	outerRadius = 3230.0f;
-	innerRadius = 3200.0f;
-
-	wavelength.x = 0.650f; // 650 nm for red
-	wavelength.y = 0.570f; // 570 nm for green
-	wavelength.z = 0.475f; // 475 nm for blue
-
-	kr = 0.0025f;
-	km = 0.0025f;
-	sun = 16.0f;
 }
 
 Atmospheric::Atmospheric() noexcept
+	: _needUpdateNetDensityToAtmTop(true)
 {
 }
 
@@ -67,58 +76,221 @@ Atmospheric::~Atmospheric() noexcept
 }
 
 void
+Atmospheric::computeRaySphereIntersection(const float3& position, const float3& dir, const float3& center, float radius, float2& intersections) noexcept
+{
+	float3 origin = position - center;
+	float A = math::dot(dir, dir);
+	float B = math::dot(origin, dir);
+	float C = math::dot(origin, origin) - radius * radius;
+	float D = B * B - C;
+	
+	if (D < 0)
+	{
+		intersections = float2(-1, -1);
+	}
+	else
+	{
+		D = std::sqrt(D);
+		intersections = float2(-B - D, -B + D) / A;
+	}
+}
+
+void
+Atmospheric::computeApproximateNearFarPlaneDist(const float3& cameraPos, const float4x4& view, const float4x4& proj, const float3& center, const float3& radius, float& znear, float& zfar) noexcept
+{
+	float4x4 viewProject = proj * view;
+	float4x4 viewProjectInverse = math::inverse(viewProject);
+
+	float3 cameraGlobalPos = cameraPos - center;
+	float cameraElevationSqr = math::dot(cameraGlobalPos, cameraGlobalPos);
+	float cameraElev = std::sqrt(cameraElevationSqr);
+
+	double radius2 = radius.x * radius.x;
+	double maxRadius2 = radius.z * radius.z;
+	double maxViewDistance = std::sqrt(cameraElevationSqr - radius2) + std::sqrt(maxRadius2 - radius2);
+
+	if (cameraElev > radius.z)
+		znear = (cameraElev - radius.z) / sqrt(1 + 1.0f / (proj.a1 * proj.a1) + 1.0f / (proj.b2 * proj.b2));
+	else
+		znear = 50.0f;
+
+	znear = std::max(znear, 50.0f);
+	zfar = 1000;
+
+	const int numTestDirections = 5;
+	for (int i = 0; i < numTestDirections; ++i)
+	{
+		for (int j = 0; j < numTestDirections; ++j)
+		{
+			float3 positionPS;
+			positionPS.x = math::unorm2snorm((float)i / (numTestDirections - 1));
+			positionPS.y = math::unorm2snorm((float)j / (numTestDirections - 1));
+			positionPS.z = 0;
+
+			float3 positionWS = viewProjectInverse * positionPS;
+			float3 dirFromCamera = math::normalize(positionWS - cameraPos);
+
+			float2 isecsWithBottomBoundSphere;
+			computeRaySphereIntersection(cameraPos, dirFromCamera, center, radius.y, isecsWithBottomBoundSphere);
+
+			float nearIsecWithBottomSphere = isecsWithBottomBoundSphere.x > 0 ? isecsWithBottomBoundSphere.x : isecsWithBottomBoundSphere.y;
+			if (nearIsecWithBottomSphere > 0)
+			{
+				float3 hitPointWS = cameraPos + dirFromCamera * nearIsecWithBottomSphere;
+				float3 hitPointCamSpace = view * hitPointWS;
+
+				zfar = std::max(zfar, hitPointCamSpace.z);
+			}
+			else
+			{
+				zfar = maxViewDistance;
+			}
+		}
+	}
+}
+
+void
+Atmospheric::computeScatteringCoefficients() noexcept
+{
+	double n = 1.0003;
+	double N = 2.545e+25;
+	double Pn = 0.035;
+	double rayleighConst = 8.0 * M_PI * M_PI * M_PI * (n * n - 1.0) * (n * n - 1.0) / (3.0 * N) * (6.0 + 3.0 * Pn) / (6.0 - 7.0 * Pn);
+
+	double3 wave(680e-9, 550e-9, 440e-9);
+	double3 lambda2 = wave * wave;
+	double3 lambda4 = lambda2 * lambda2;
+	double3 sctrCoeff = rayleighConst / lambda4;
+
+	float g = _setting.aerosolPhaseFuncG;
+	float g2 = g * g;
+
+	_setting.aerosolPhaseFuncG4.x = 3 * (1.0f - g2) / (2 * (2.0f + g2));
+	_setting.aerosolPhaseFuncG4.y = 1.f + g2;
+	_setting.aerosolPhaseFuncG4.z = -2.f * g;
+	_setting.aerosolPhaseFuncG4.w = 1.f;
+
+	_setting.rayleighTotalSctrCoeff = float4(sctrCoeff, 0.0f);
+	_setting.rayleighAngularSctrCoeff = float4(3.0 / (16.0 * M_PI) * sctrCoeff, 0.0);
+	_setting.rayleighExtinctionCoeff = _setting.rayleighTotalSctrCoeff;
+	_setting.mieTotalSctrCoeff = float4(_setting.aerosolDensityScale * 2e-5f);
+	_setting.mieAngularSctrCoeff = _setting.mieTotalSctrCoeff / (4.0f * M_PI);
+	_setting.mieExtinctionCoeff = _setting.mieTotalSctrCoeff * (1.f + _setting.aerosolAbsorbtionScale);
+}
+
+float2 ChapmanOrtho(const float2 &f2x)
+{
+	static const float fConst = static_cast<float>(std::sqrt(M_PI / 2));
+	float2 f2SqrtX = float2(sqrt(f2x.x), sqrt(f2x.y));
+	return fConst * (float2(1.f, 1.f) / (2.f * f2SqrtX) + f2SqrtX);
+}
+
+float2 ChapmanRising(const float2 &f2X, float fCosChi)
+{
+	float2 f2ChOrtho = ChapmanOrtho(f2X);
+	return f2ChOrtho / ((f2ChOrtho - float2(1, 1)) * fCosChi + float2(1, 1));
+}
+
+void
+Atmospheric::computeDensityIntegralFromChapmanFunc(float fHeightAboveSurface, const float3& f3EarthCentreToPointDir, const float3 &f3RayDir, float2& densityIntegral) noexcept
+{
+	float fCosChi = math::dot(f3EarthCentreToPointDir, f3RayDir);
+	float2 f2x = (fHeightAboveSurface + _setting.earthRadius) * float2(1.f / _setting.particleScaleHeight.x, 1.f / _setting.particleScaleHeight.y);
+	float2 f2VerticalAirMass = _setting.particleScaleHeight * math::exp(-float2(fHeightAboveSurface, fHeightAboveSurface) / _setting.particleScaleHeight);
+	if (fCosChi >= 0.f)
+	{
+		densityIntegral = f2VerticalAirMass * ChapmanRising(f2x, fCosChi);
+	}
+	else
+	{
+		float fSinChi = sqrt(1.f - fCosChi * fCosChi);
+		float fh0 = (fHeightAboveSurface + _setting.earthRadius) * fSinChi - _setting.earthRadius;
+		float2 f2VerticalAirMass0 = _setting.particleScaleHeight * math::exp(-float2(fh0, fh0) / _setting.particleScaleHeight);
+		float2 f2x0 = float2(fh0 + _setting.earthRadius, fh0 + _setting.earthRadius) / _setting.particleScaleHeight;
+		float2 f2ChOrtho_x0 = ChapmanOrtho(f2x0);
+		float2 f2Ch = ChapmanRising(f2x, -fCosChi);
+		densityIntegral = f2VerticalAirMass0 * (2.f * f2ChOrtho_x0) - f2VerticalAirMass*f2Ch;
+	}
+}
+
+void
+Atmospheric::computeSunColor(const float3& vDirectionOnSun, float4& f4SunColorAtGround, float4& f4AmbientLight) noexcept
+{
+	float zenithFactor = std::min(std::max(vDirectionOnSun.y, 0.0f), 1.0f);
+	f4AmbientLight.x = zenithFactor*0.15f;
+	f4AmbientLight.y = zenithFactor*0.1f;
+	f4AmbientLight.z = std::max(0.05f, zenithFactor*0.25f);
+	f4AmbientLight.w = 0.0f;
+
+	float2 f2NetParticleDensityToAtmTop;
+	computeDensityIntegralFromChapmanFunc(0, float3::UnitY, vDirectionOnSun, f2NetParticleDensityToAtmTop);
+
+	float3 f3RlghExtCoeff = math::max((float3&)_setting.rayleighExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
+	float3 f3RlghOpticalDepth = f3RlghExtCoeff * f2NetParticleDensityToAtmTop.x;
+	float3 f3MieExtCoeff = math::max((float3&)_setting.mieExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
+	float3 f3MieOpticalDepth = f3MieExtCoeff * f2NetParticleDensityToAtmTop.y;
+	float3 f3TotalExtinction = math::exp(-(f3RlghOpticalDepth + f3MieOpticalDepth));
+
+	const float fEarthReflectance = 0.1f;
+	f4SunColorAtGround.set(f3TotalExtinction * fEarthReflectance);
+}
+
+void
 Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 {
-	MeshProperty mesh;
-	mesh.makeSphere(1, 128, 96);
-
-	_renderable.startVertice = 0;
-	_renderable.startIndice = 0;
-	_renderable.numVertices = mesh.getNumVertices();
-	_renderable.numIndices = mesh.getNumIndices();
-
-	_sphereVbo = pipeline.createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	_sphereIbo = pipeline.createIndexBuffer(mesh);
-
 	_sat = pipeline.createMaterial("sys:fx/atmospheric.fxml");
 
-	_sky = _sat->getTech("sky");
-	_ground = _sat->getTech("ground");
+	_computeNetDensityToAtmTop = _sat->getTech("ComputeNetDensityToAtmTop");
+	_computeInscatteredRadiance = _sat->getTech("ComputeInscatteredRadiance");
+
 	_lightDirection = _sat->getParameter("lightDirection");
-	_invWavelength = _sat->getParameter("invWavelength");
-	_outerRadius = _sat->getParameter("outerRadius");
-	_outerRadius2 = _sat->getParameter("outerRadius2");
-	_innerRadius = _sat->getParameter("innerRadius");
-	_innerRadius2 = _sat->getParameter("innerRadius2");
-	_krESun = _sat->getParameter("krESun");
-	_kmESun = _sat->getParameter("kmESun");
-	_kr4PI = _sat->getParameter("kr4PI");
-	_km4PI = _sat->getParameter("km4PI");
-	_scaleFactor = _sat->getParameter("scaleFactor");
-	_scaleDepth = _sat->getParameter("scaleDepth");
-	_scaleOverScaleDepth = _sat->getParameter("scaleOverScaleDepth");
+	_rayleighAngularSctrCoeff = _sat->getParameter("rayleighAngularSctrCoeff");
+	_rayleighTotalSctrCoeff = _sat->getParameter("rayleighTotalSctrCoeff");
+	_rayleighExtinctionCoeff = _sat->getParameter("rayleighExtinctionCoeff");
+	_mieAngularSctrCoeff = _sat->getParameter("mieAngularSctrCoeff");
+	_mieExtinctionCoeff = _sat->getParameter("mieExtinctionCoeff");
+	_extraterrestrialSunColor = _sat->getParameter("extraterrestrialSunColor");
+	_aerosolPhaseFuncG4 = _sat->getParameter("aerosolPhaseFuncG4");
+	_earthRadius = _sat->getParameter("earthRadius");
+	_earthAtmTopHeight = _sat->getParameter("earthAtmTopHeight");
+	_earthAtmTopRadius = _sat->getParameter("earthAtmTopRadius");
+	_particleScaleHeight = _sat->getParameter("particleScaleHeight");
+	_tex2DOccludedNetDensityToAtmTop = _sat->getParameter("tex2DOccludedNetDensityToAtmTop");
+	_matProjectInverse = _sat->getParameter("matProjectInverse");
+	_matViewProjectInverse = _sat->getParameter("matViewProjectInverse");
 
-	float3 invWavelength4;
-	invWavelength4.x = 1.0 / powf(_setting.wavelength.x, 4.0f);
-	invWavelength4.y = 1.0 / powf(_setting.wavelength.y, 4.0f);
-	invWavelength4.z = 1.0 / powf(_setting.wavelength.z, 4.0f);
+	GraphicsTextureDesc netDensityDesc;
+	netDensityDesc.setWidth(256);
+	netDensityDesc.setHeight(256);
+	netDensityDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	netDensityDesc.setTexFormat(GraphicsFormat::GraphicsFormatR32G32SFloat);
+	netDensityDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	netDensityDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	_occludedNetDensityMap = pipeline.createTexture(netDensityDesc);
 
-	_invWavelength->uniform3f(invWavelength4);
+	GraphicsFramebufferLayoutDesc netDensityToAtmTopLayoutDesc;
+	netDensityToAtmTopLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR32G32SFloat));
+	_netDensityToAtmTopLayout = pipeline.createFramebufferLayout(netDensityToAtmTopLayoutDesc);
 
-	_innerRadius->uniform1f(_setting.innerRadius);
-	_innerRadius2->uniform1f(_setting.innerRadius * _setting.innerRadius);
-	_outerRadius->uniform1f(_setting.outerRadius);
-	_outerRadius2->uniform1f(_setting.outerRadius * _setting.outerRadius);
+	GraphicsFramebufferDesc netDensityToAtmTopDesc;
+	netDensityToAtmTopDesc.setWidth(256);
+	netDensityToAtmTopDesc.setHeight(256);
+	netDensityToAtmTopDesc.addColorAttachment(GraphicsAttachmentBinding(_occludedNetDensityMap, 0, 0));
+	netDensityToAtmTopDesc.setGraphicsFramebufferLayout(_netDensityToAtmTopLayout);
+	_netDensityToAtmTopView = pipeline.createFramebuffer(netDensityToAtmTopDesc);
 
-	_krESun->uniform1f(_setting.kr * _setting.sun);
-	_kmESun->uniform1f(_setting.km * _setting.sun);
+	this->computeScatteringCoefficients();
 
-	_kr4PI->uniform1f(float(_setting.kr * 4.0f * M_PI));
-	_km4PI->uniform1f(float(_setting.km * 4.0f * M_PI));
-
-	_scaleFactor->uniform1f(1.0f / (_setting.outerRadius - _setting.innerRadius));
-	_scaleDepth->uniform1f(0.25f);
-	_scaleOverScaleDepth->uniform1f((1.0f / (_setting.outerRadius - _setting.innerRadius)) / 0.25f);
+	_particleScaleHeight->uniform2f(_setting.particleScaleHeight);	
+	_mieAngularSctrCoeff->uniform4f(_setting.mieAngularSctrCoeff);
+	_mieExtinctionCoeff->uniform4f(_setting.mieExtinctionCoeff);	
+	_rayleighAngularSctrCoeff->uniform4f(_setting.rayleighAngularSctrCoeff);
+	_rayleighExtinctionCoeff->uniform4f(_setting.rayleighExtinctionCoeff);
+	_earthAtmTopHeight->uniform1f(_setting.earthAtmTopHeight);
+	_earthAtmTopRadius->uniform1f(_setting.earthAtmTopHeight + _setting.earthRadius);
+	_earthRadius->uniform1f(_setting.earthRadius);
+	_aerosolPhaseFuncG4->uniform4f(_setting.aerosolPhaseFuncG4);
+	_tex2DOccludedNetDensityToAtmTop->uniformTexture(_occludedNetDensityMap);
 }
 
 void
@@ -132,24 +304,38 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFrame
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;
 
-	auto& lighting = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
-	for (auto& it : lighting)
+	std::uint32_t width, height;
+	pipeline.getWindowResolution(width, height);
+
+	float4x4 project;
+	project.makePerspective_fov_lh(45.0f, (float)width / height, _setting.planeNearZ, _setting.planeFarZ);
+
+	float4x4 viewProject = project * pipeline.getCamera()->getView();
+
+	_matViewProjectInverse->uniform4fmat(math::inverse(viewProject));
+
+	if (_needUpdateNetDensityToAtmTop)
 	{
-		if (it->downcast<Light>()->getLightType() != LightType::LightTypeSun)
-			continue;
-
-		_lightDirection->uniform3f(-it->downcast<Light>()->getForward());
-
-		pipeline.setVertexBuffer(0, _sphereVbo, 0);
-		pipeline.setIndexBuffer(_sphereIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
-
-		pipeline.setFramebuffer(source);
-		pipeline.setMaterialPass(_ground->getPass(0));
-		pipeline.drawIndexed(_renderable.numIndices, _renderable.numInstances, _renderable.startIndice, _renderable.startVertice, _renderable.startInstances);
-
-		pipeline.setMaterialPass(_sky->getPass(0));
-		pipeline.drawIndexed(_renderable.numIndices, _renderable.numInstances, _renderable.startIndice, _renderable.startVertice, _renderable.startInstances);
+		pipeline.setFramebuffer(_netDensityToAtmTopView);
+		pipeline.discardFramebuffer(0);
+		pipeline.drawScreenQuad(*_computeNetDensityToAtmTop);
+		_needUpdateNetDensityToAtmTop = false;
 	}
+
+	static auto direction = float3::UnitY;
+
+	Quaternion rotate;
+	rotate.makeRotate(float3::UnitX, 0.03);
+
+	direction = math::normalize(math::rotate(rotate, direction));
+
+	_lightDirection->uniform3f(-direction);
+
+	float4 extraterrestrialSunColor = float4(10.0, 10.0, 10.0, 10.0) * 0.5f;
+	_extraterrestrialSunColor->uniform4f(extraterrestrialSunColor);
+
+	pipeline.setFramebuffer(source);
+	pipeline.drawScreenQuad(*_computeInscatteredRadiance);
 
 	return false;
 }

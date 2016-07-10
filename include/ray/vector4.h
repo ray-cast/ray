@@ -56,15 +56,22 @@ public:
 	Vector4t() noexcept {}
 	Vector4t(T xyz, T ww)  noexcept : x(xyz), y(xyz), z(xyz), w(ww) {}
 	Vector4t(T xx, T yy, T zz, T ww = 1.0)  noexcept : x(xx), y(yy), z(zz), w(ww) {}
-	Vector4t(const Vector3t<T>& v, T w)  noexcept : x(v.x) , y(v.y) , z(v.z), w(w) {}
-	Vector4t(const Vector2t<T>& xy, const Vector2t<T>& zw) noexcept : x(xy.x) , y(xy.y), z(zw.x), w(zw.y) {}
-	Vector4t(const Vector2t<T>& xy, float z, float w) noexcept : x(xy.x), y(xy.y), z(z), w(w) {}
-	Vector4t(Vector3t<T>&& v, T w)  noexcept : x(v.x), y(v.y), z(v.z), w(w) {}
-	Vector4t(Vector2t<T>&& xy, Vector2t<T>&& zw) noexcept : x(xy.x), y(xy.y), z(zw.x), w(zw.y) {}
-	Vector4t(Vector2t<T>&& xy, float z, float w) noexcept : x(xy.x), y(xy.y), z(z), w(w) {}
-	Vector4t(T xx, const Vector3t<T>& yzw) noexcept : x(xx), y(yzw.x), z(yzw.y), w(yzw.z) {}
-	Vector4t(T xx, T yy, const Vector2t<T>& zw) noexcept : x(xx), y(yy), z(zw.x), w(zw.y) {}
 	explicit Vector4t(T xyzw) noexcept : x(xyzw), y(xyzw), z(xyzw), w(xyzw) {}
+
+	template<typename S>
+	Vector4t(S xx, const Vector3t<S>& yzw) noexcept : x(xx), y(yzw.x), z(yzw.y), w(yzw.z) {}
+
+	template<typename S>
+	Vector4t(S xx, S yy, const Vector2t<S>& zw) noexcept : x(xx), y(yy), z(zw.x), w(zw.y) {}
+
+	template<typename S>
+	explicit Vector4t(const Vector3t<S>& v, T w)  noexcept : x(v.x), y(v.y), z(v.z), w(w) {}
+
+	template<typename S>
+	explicit Vector4t(const Vector2t<S>& xy, const Vector2t<S>& zw) noexcept : x(xy.x), y(xy.y), z(zw.x), w(zw.y) {}
+
+	template<typename S>
+	explicit Vector4t(const Vector2t<S>& xy, float z, float w) noexcept : x(xy.x), y(xy.y), z(z), w(w) {}
 
 	Vector4t<T>& operator+=(T scale) noexcept { x += scale; y += scale; z += scale; w += scale; return *this; }
 	Vector4t<T>& operator-=(T scale) noexcept { x -= scale; y -= scale; z -= scale; w -= scale; return *this; }
@@ -461,6 +468,7 @@ public:
 		case 'w': return w;
 		default:
 			assert(false);
+			return x;
 		}
 	}
 

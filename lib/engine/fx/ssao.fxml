@@ -41,9 +41,9 @@
             float2 tapLocation(int sampleIndex, float2 sampleNoise, float radius)
             {
                 float cosacosb = sphere[sampleIndex].x * sampleNoise.x;
-                float sinasinb = sphere[sampleIndex].y * sampleNoise.y;
                 float sinacosb = sphere[sampleIndex].y * sampleNoise.x;
                 float cosasinb = sphere[sampleIndex].x * sampleNoise.y;
+                float sinasinb = sphere[sampleIndex].y * sampleNoise.y;
                 return float2(cosacosb-sinasinb, sinacosb+cosasinb) * radius * (float(sampleIndex) * NUM_SAMPLES_INV);
             }
 
@@ -58,8 +58,7 @@
                 in float4 Position : POSITION0,
                 out float4 oTexcoord : TEXCOORD0,
                 out float3 oViewDir : TEXCOORD1,
-                out float4 oPosition : SV_Position
-                )
+                out float4 oPosition : SV_Position)
             {
                 oPosition = Position;
                 oViewDir  = mul(matProjectInverse, Position).xyz;
@@ -79,7 +78,7 @@
                 float3 viewNormal = GetNormal(coord.xy);
 
                 float sampleAngle = (3 * ssC.x ^ ssC.y + 10 * ssC.x * ssC.y) * 10;
-                float sampleRadius = projScale / radius * viewPosition.z;
+                float sampleRadius = projScale * radius / viewPosition.z;
                 float sampleAmbient = 0.0f;
 
                 float2 sampleNoise;
@@ -95,7 +94,7 @@
                     float sampleLength2 = dot(sampleDirection, sampleDirection);
 
                     float epsilon = 0.0001f;
-                    sampleAmbient += max(0.0f, (sampleAngle - viewPosition.z * bias) * rsqrt(sampleLength2));
+                    sampleAmbient += max(0.0f, (sampleAngle - viewPosition.z * bias) * rsqrt(sampleLength2 + epsilon));
                 }
 
                 return max(0.0f, 1 - sampleAmbient * intensity * NUM_SAMPLES_INV);

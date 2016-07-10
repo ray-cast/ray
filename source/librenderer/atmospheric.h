@@ -47,12 +47,29 @@ class EXPORT Atmospheric : public RenderPostProcess
 public:
 	struct EXPORT Setting
 	{
-		float outerRadius;
-		float innerRadius;
-		float kr;
-		float km;
-		float sun;
-		float3 wavelength;
+		float earthRadius;
+		float earthAtmTopHeight;
+
+		float2 particleScaleHeight;
+
+		float4 rayleighAngularSctrCoeff;
+		float4 rayleighTotalSctrCoeff;
+		float4 rayleighExtinctionCoeff;
+		
+		float4 mieAngularSctrCoeff;
+		float4 mieTotalSctrCoeff;
+		float4 mieExtinctionCoeff;
+
+		float minElevation;
+		float maxElevation;
+
+		float aerosolAbsorbtionScale;
+		float aerosolPhaseFuncG;
+		float aerosolDensityScale;
+		float4 aerosolPhaseFuncG4;
+
+		float planeNearZ;
+		float planeFarZ;
 
 		Setting() noexcept;
 	};
@@ -67,30 +84,44 @@ public:
 	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
 
 private:
+	void computeRaySphereIntersection(const float3& rayOrigin, const float3& rayDirection, const float3& center, float radius, float2& intersections) noexcept;
+	void computeApproximateNearFarPlaneDist(const float3& cameraPos, const float4x4& view, const float4x4& proj, const float3& center, const float3& radius, float &znear, float& zfar) noexcept;
+	void computeScatteringCoefficients() noexcept;
+	void computeDensityIntegralFromChapmanFunc(float heightAboveSurface, const float3& earthCentreToPointDir, const float3& rayDir, float2& densityIntegral) noexcept;
+	void computeSunColor(const float3& directionOnSun, float4& sunColor, float4& ambientLight) noexcept;
+
+private:
+	bool _needUpdateNetDensityToAtmTop;
 
 	Setting _setting;
 	MaterialPtr _sat;
-	MaterialTechPtr _sky;
-	MaterialTechPtr _ground;
+	MaterialTechPtr _computeNetDensityToAtmTop;
+	MaterialTechPtr _computeInscatteredRadiance;
 
 	MaterialParamPtr _lightDirection;
-	MaterialParamPtr _eyeDirection;
-	MaterialParamPtr _invWavelength;
-	MaterialParamPtr _outerRadius;
-	MaterialParamPtr _outerRadius2;
-	MaterialParamPtr _innerRadius;
-	MaterialParamPtr _innerRadius2;
-	MaterialParamPtr _krESun;
-	MaterialParamPtr _kmESun;
-	MaterialParamPtr _kr4PI;
-	MaterialParamPtr _km4PI;
-	MaterialParamPtr _scaleFactor;
-	MaterialParamPtr _scaleDepth;
-	MaterialParamPtr _scaleOverScaleDepth;
 
-	GraphicsDataPtr _sphereVbo;
-	GraphicsDataPtr _sphereIbo;
-	GraphicsIndirect _renderable;
+	MaterialParamPtr _rayleighTotalSctrCoeff;
+	MaterialParamPtr _rayleighExtinctionCoeff;
+	MaterialParamPtr _rayleighAngularSctrCoeff;
+
+	MaterialParamPtr _mieTotalSctrCoeff;
+	MaterialParamPtr _mieExtinctionCoeff;
+	MaterialParamPtr _mieAngularSctrCoeff;
+
+	MaterialParamPtr _earthRadius;
+	MaterialParamPtr _earthAtmTopHeight;
+	MaterialParamPtr _earthAtmTopRadius;
+
+	MaterialParamPtr _extraterrestrialSunColor;
+	MaterialParamPtr _aerosolPhaseFuncG4;
+	MaterialParamPtr _particleScaleHeight;
+	MaterialParamPtr _tex2DOccludedNetDensityToAtmTop;
+	MaterialParamPtr _matProjectInverse;
+	MaterialParamPtr _matViewProjectInverse;
+
+	GraphicsTexturePtr _occludedNetDensityMap;
+	GraphicsFramebufferPtr _netDensityToAtmTopView;
+	GraphicsFramebufferLayoutPtr _netDensityToAtmTopLayout;
 };
 
 _NAME_END

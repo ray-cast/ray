@@ -44,9 +44,9 @@
 _NAME_BEGIN
 
 SSAO::Setting::Setting() noexcept
-	: radius(20.0f)
+	: radius(10.0f)
 	, bias(0.002f)
-	, intensity(1)
+	, intensity(2)
 	, blur(true)
 	, blurRadius(6)
 	, blurScale(1.0f)
@@ -72,7 +72,6 @@ SSAO::setSetting(const Setting& setting) noexcept
 	_blurSharpness->uniform1f(_setting.blurSharpness);
 
 	_occlusionRadius->uniform1f(_setting.radius);
-	_occlusionRadius2->uniform1f(_setting.radius * _setting.radius);
 	_occlusionBias->uniform1f(_setting.bias);
 	_occlusionIntensity->uniform1f(_setting.intensity);
 
@@ -92,7 +91,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	pipeline.getWindowResolution(width, height);
 
 	_occlusionSourceInv->uniform2f(1.0 / width, 1.0 / height);
-	_cameraProjScale->uniform1f(_setting.radius * _setting.radius);
+	_cameraProjScale->uniform1f(pipeline.getCamera()->getFar());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -166,8 +165,8 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	//width *= 0.5;
-	//height *= 0.5;
+	width *= 0.5;
+	height *= 0.5;
 
 	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
 	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
@@ -199,7 +198,6 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
 
 	_occlusionRadius = _ambientOcclusion->getParameter("radius");
-	_occlusionRadius2 = _ambientOcclusion->getParameter("radius2");
 	_occlusionBias = _ambientOcclusion->getParameter("bias");
 	_occlusionIntensity = _ambientOcclusion->getParameter("intensity");
 	_occlusionAmbient = _ambientOcclusion->getParameter("texOcclusion");
@@ -233,7 +231,6 @@ SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
 	_cameraProjScale.reset();
 
 	_occlusionRadius.reset();
-	_occlusionRadius2.reset();
 	_occlusionBias.reset();
 	_occlusionIntensity.reset();
 	_occlusionAmbient.reset();
@@ -260,14 +257,14 @@ SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
 bool
 SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
-	if (queue != RenderQueue::RenderQueueAmbientLighting)
+	if (queue != RenderQueue::RenderQueueOpaqueShading)
 		return false;
 
 	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 
 	this->computeRawAO(pipeline, texture, _texAmbientView);
-	//this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
-	//this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
+	this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
+	this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
 	this->applySSAO(pipeline, _texAmbientMap, source);
 
 	return false;

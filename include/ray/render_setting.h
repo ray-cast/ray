@@ -53,8 +53,6 @@ struct EXPORT RenderSetting
 	ShadowMode shadowMode;
 	ShadowQuality shadowQuality;
 
-	std::uint32_t _vplsBufferCount;
-
 	RenderPipelineType pipelineType;
 
 	bool enableSSAO;

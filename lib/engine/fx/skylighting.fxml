@@ -54,7 +54,7 @@
                 float3 R2 = normalize(posonbox - envBoxCenter);
 
                 float3 prefilteredDiffuse = texEnvDiffuse.Sample(PointClamp, worldNormal).rgb;
-                float3 prefilteredSpeculr = texEnvSpecular.SampleLevel(PointClamp, R2, mipLayer).rgb;
+                float3 prefilteredSpeculr = texEnvSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
 
                 float3 shading = brdfEnvironmentDiffuse(prefilteredDiffuse, diffuse) * texEnvFactor.g;
                 shading += brdfEnvironmentSpecularBlackOpsII(prefilteredSpeculr, worldNormal, worldView, shininess, specular) * texEnvFactor.b;

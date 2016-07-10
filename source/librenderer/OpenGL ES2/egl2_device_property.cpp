@@ -103,26 +103,26 @@ EGL2DeviceProperty::initPixelFormat(const GraphicsDeviceDesc& deviceDesc, EGLCon
 	auto display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (display == EGL_NO_DISPLAY)
 	{
-		GL_PLATFORM_LOG("eglGetDisplay() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglGetDisplay() fail.");
 		return false;
 	}
 
 	if (::eglInitialize(display, nullptr, nullptr) == EGL_FALSE)
 	{
-		GL_PLATFORM_LOG("eglInitialize() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglInitialize() fail.");
 		return false;
 	}
 
 	if (::eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE)
 	{
-		GL_PLATFORM_LOG("eglBindAPI() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglBindAPI() fail.");
 		return false;
 	}
 
 	EGLint num = 0;
 	if (::eglChooseConfig(display, pixelFormat, &config, 1, &num) == EGL_FALSE)
 	{
-		GL_PLATFORM_LOG("eglChooseConfig() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglChooseConfig() fail.");
 		return false;
 	}
 
@@ -156,7 +156,7 @@ EGL2DeviceProperty::initContext(const GraphicsDeviceDesc& deviceDesc, EGLConfig 
 	EGLSurface surface = ::eglCreateWindowSurface(display, config, hwnd, NULL);
 	if (::eglGetError() != EGL_SUCCESS)
 	{
-		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglCreateContext() fail.");
 		return false;
 	}
 
@@ -164,7 +164,7 @@ EGL2DeviceProperty::initContext(const GraphicsDeviceDesc& deviceDesc, EGLConfig 
 	if (eglGetError() != EGL_SUCCESS)
 	{
 		::eglDestroySurface(display, surface);
-		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		GL_PLATFORM_LOG("eglCreateContext() fail.");
 		return false;
 	}
 

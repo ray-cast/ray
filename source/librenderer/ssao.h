@@ -93,7 +93,6 @@ private:
 	MaterialParamPtr _cameraProjScale;
 
 	MaterialParamPtr _occlusionRadius;
-	MaterialParamPtr _occlusionRadius2;
 	MaterialParamPtr _occlusionBias;
 	MaterialParamPtr _occlusionIntensity;
 	MaterialParamPtr _occlusionAmbient;

@@ -103,7 +103,7 @@
             return tex2DOccludedNetDensityToAtmTop.Sample(LinearClamp, float2(height / earthAtmTopHeight, lightAngle*0.5+0.5)).xy;
         }
 
-        void ComputeParticleDensity(float3 P, float3 earthCenter, float3 L, out float2 particleDensityCamera, out float2 particleDensityToAtmTop)
+        void ComputeParticleDensity(float3 P, float3 earthCenter, float3 L, out float2 particleDensityCamera, out float2 particleDensityAtmTop)
         {
             float3 origin = P - earthCenter;
             float distance = length(origin);
@@ -112,19 +112,19 @@
             float lightAngle = dot(origin, L) / distance;
 
             particleDensityCamera = exp(-height / particleScaleHeight);
-            particleDensityToAtmTop = GetNetParticleDensity(height, lightAngle);
+            particleDensityAtmTop = GetNetParticleDensity(height, lightAngle);
         }
 
-        void ComputeSingleScattering(float2 particleDensity, float2 particleDensityCamera, float2 particleDensityToAtmTop,
+        void ComputeSingleScattering(float2 particleDensity, float2 particleDensityCamera, float2 particleDensityAtmTop,
                                     out float3 inscatteringRayleigh,
                                     out float3 inscatteringMie)
         {
-            float2 totalOpticalLength = particleDensityCamera + particleDensityToAtmTop;
+            float2 totalOpticalLength = particleDensityCamera + particleDensityAtmTop;
             float3 totalOpticalDepthMie = mieExtinctionCoeff.rgb * totalOpticalLength.y;
             float3 totalOpticalDepthRayleigh = rayleighExtinctionCoeff.rgb * totalOpticalLength.x;
             float3 totalSurfaceScattering = exp(-(totalOpticalDepthRayleigh + totalOpticalDepthMie));
 
-            inscatteringMie  = particleDensity.y * totalSurfaceScattering;
+            inscatteringMie = particleDensity.y * totalSurfaceScattering;
             inscatteringRayleigh = particleDensity.x * totalSurfaceScattering;
         }
 

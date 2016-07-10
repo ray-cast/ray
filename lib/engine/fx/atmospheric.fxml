@@ -69,9 +69,9 @@
             return particleNetDensity;
         }
 
-        float2 IntegrateParticleDensityAlongRay(float3 position, float3 dir, float3 earthCenter, bool bOccludeByEarth)
+        float2 IntegrateParticleDensityAlongRay(float3 position, float3 dir, float3 earthCenter, bool occlude)
         {
-            if (bOccludeByEarth )
+            if (occlude)
             {
                 float2 minimaxIntersections;
                 ComputeRaySphereIntersection(position, dir, earthCenter, earthRadius, minimaxIntersections);
@@ -98,9 +98,9 @@
             return IntegrateParticleDensityAlongRay(start, end, earthCenter, true);
         }
 
-        float2 GetNetParticleDensity(float height, float fCosZenithAngle)
+        float2 GetNetParticleDensity(float height, float lightAngle)
         {
-            return tex2DOccludedNetDensityToAtmTop.Sample(LinearClamp, float2(height / earthAtmTopHeight, fCosZenithAngle*0.5+0.5)).xy;
+            return tex2DOccludedNetDensityToAtmTop.Sample(LinearClamp, float2(height / earthAtmTopHeight, lightAngle*0.5+0.5)).xy;
         }
 
         void ComputeParticleDensity(float3 P, float3 earthCenter, float3 L, out float2 particleDensityCamera, out float2 particleDensityToAtmTop)
@@ -142,15 +142,15 @@
             ComputeParticleDensity(start, earthCenter, L, lastParticleDensity, stepParticleNetDensity);
             ComputeSingleScattering(lastParticleDensity, scatteringDensity, stepParticleNetDensity, lastInsctrRayleigh, lastInsctrMie);
 
-            for (float i = 1.f; i <= NUM_STEP_SAMPLES; i += 1.f)
+            for (float i = 0.5f; i <= NUM_STEP_SAMPLES; i += 1.f)
             {
                 float2 stepParticleDensity;
                 float2 stepParticleNetDensity;
                 float3 stepInsctrMie;
                 float3 stepInsctrRayleigh;
-                float3 position = start + step * i;
+                float3 stepPosition = start + step * i;
 
-                ComputeParticleDensity(position, earthCenter, L, stepParticleDensity, stepParticleNetDensity);
+                ComputeParticleDensity(stepPosition, earthCenter, L, stepParticleDensity, stepParticleNetDensity);
 
                 scatteringDensity += (stepParticleDensity + lastParticleDensity) * (stepLength / 2.f);
                 ComputeSingleScattering(stepParticleDensity, scatteringDensity, stepParticleNetDensity, stepInsctrRayleigh, stepInsctrMie);
@@ -163,15 +163,15 @@
                 lastParticleDensity = stepParticleDensity;
             }
         #else
-            for (float i = 0.5f; i < NUM_STEP_SAMPLES; i += 1.f)
+            for (float i = 0.5f; i < NUM_STEP_SAMPLES; i += 1f)
             {
                 float2 stepParticleDensity;
                 float2 stepParticleNetDensity;
                 float3 stepInsctrMie;
                 float3 stepInsctrRayleigh;
-                float3 position = start + step * i;
+                float3 stepPosition = start + step * i;
 
-                ComputeParticleDensity(position, earthCenter, L, stepParticleDensity, stepParticleNetDensity);
+                ComputeParticleDensity(stepPosition, earthCenter, L, stepParticleDensity, stepParticleNetDensity);
 
                 scatteringDensity  += stepParticleDensity * stepLength;
                 ComputeSingleScattering(stepParticleDensity, scatteringDensity, stepParticleNetDensity, stepInsctrRayleigh, stepInsctrMie);

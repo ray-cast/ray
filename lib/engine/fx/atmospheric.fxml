@@ -39,7 +39,7 @@
             float3 origin = position - center;
             float B = dot(origin, dir) * 2;
             float C = dot(origin, origin) - radius * radius;
-            float D = B * B - 4 * A * C;
+            float D = B * B - C;
 
             if (D < 0)
             {
@@ -278,6 +278,12 @@
             else
             {
                 ComputeStars(viewdir, extinction, inscattering);
+            }
+
+            if (rayLength < outerIntersections.y)
+            {
+                inscattering = 0;
+                return;
             }
 
             float3 start = eyePosition + viewdir * max(0, outerIntersections.x);

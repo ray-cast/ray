@@ -24,7 +24,7 @@ The aim of the project is to create a lightweight 3D library with a very low lev
     <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/GI_small.png" width = "25%" height = "14%" align=center/>
 </a>
 <a target="_Blank" href="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/atmospheric.png">
-    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/atmospheric_small.jpg" width = "25%" height = "14%" align=center/>
+    <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/atmospheric_small.png" width = "25%" height = "14%" align=center/>
 </a>
 
 

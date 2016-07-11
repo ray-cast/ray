@@ -68,9 +68,6 @@ public:
 		float aerosolDensityScale;
 		float4 aerosolPhaseFuncG4;
 
-		float planeNearZ;
-		float planeFarZ;
-
 		Setting() noexcept;
 	};
 
@@ -85,17 +82,17 @@ public:
 
 private:
 	void computeRaySphereIntersection(const float3& rayOrigin, const float3& rayDirection, const float3& center, float radius, float2& intersections) noexcept;
-	void computeApproximateNearFarPlaneDist(const float3& cameraPos, const float4x4& view, const float4x4& proj, const float3& center, const float3& radius, float &znear, float& zfar) noexcept;
+	void computeViewProjectInverse(const Camera& camera, float4x4& viewProject) noexcept;
 	void computeScatteringCoefficients() noexcept;
 	void computeDensityIntegralFromChapmanFunc(float heightAboveSurface, const float3& earthCentreToPointDir, const float3& rayDir, float2& densityIntegral) noexcept;
 	void computeSunColor(const float3& directionOnSun, float4& sunColor, float4& ambientLight) noexcept;
 
 private:
-	bool _needUpdateNetDensityToAtmTop;
+	bool _needUpdateOpticalDepthAtmTop;
 
 	Setting _setting;
 	MaterialPtr _sat;
-	MaterialTechPtr _computeNetDensityToAtmTop;
+	MaterialTechPtr _computeOpticalDepthAtmTop;
 	MaterialTechPtr _computeInscatteredRadiance;
 
 	MaterialParamPtr _lightDirection;
@@ -116,7 +113,6 @@ private:
 	MaterialParamPtr _aerosolPhaseFuncG4;
 	MaterialParamPtr _particleScaleHeight;
 	MaterialParamPtr _tex2DOccludedNetDensityToAtmTop;
-	MaterialParamPtr _matProjectInverse;
 	MaterialParamPtr _matViewProjectInverse;
 
 	GraphicsTexturePtr _occludedNetDensityMap;

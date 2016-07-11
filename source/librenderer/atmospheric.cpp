@@ -49,25 +49,23 @@ _NAME_BEGIN
 Atmospheric::Setting::Setting() noexcept
 	: earthRadius(6360000.f)
 	, earthAtmTopHeight(80000.f)
-	, minElevation(50.0f)
-	, maxElevation(6186.70020)
-	, particleScaleHeight(7994.f, 1200.f)
+	, minElevation(0.0f)
+	, maxElevation(10000.0f)
+	, particleScaleHeight(7994.f, 2000.f)
 	, rayleighAngularSctrCoeff(0)
 	, rayleighTotalSctrCoeff(0)
 	, rayleighExtinctionCoeff(0)
 	, mieAngularSctrCoeff(0)
 	, mieExtinctionCoeff(0)
-	, aerosolPhaseFuncG(0.99)
+	, aerosolPhaseFuncG(0.97)
 	, aerosolPhaseFuncG4(0)
-	, aerosolAbsorbtionScale(1.0f)
+	, aerosolAbsorbtionScale(0.1f)
 	, aerosolDensityScale(1.0f)
-	, planeNearZ(1399.75012)
-	, planeFarZ(600155.375)
 {
 }
 
 Atmospheric::Atmospheric() noexcept
-	: _needUpdateNetDensityToAtmTop(true)
+	: _needUpdateOpticalDepthAtmTop(true)
 {
 }
 
@@ -79,7 +77,6 @@ void
 Atmospheric::computeRaySphereIntersection(const float3& position, const float3& dir, const float3& center, float radius, float2& intersections) noexcept
 {
 	float3 origin = position - center;
-	float A = math::dot(dir, dir);
 	float B = math::dot(origin, dir);
 	float C = math::dot(origin, origin) - radius * radius;
 	float D = B * B - C;
@@ -91,17 +88,17 @@ Atmospheric::computeRaySphereIntersection(const float3& position, const float3& 
 	else
 	{
 		D = std::sqrt(D);
-		intersections = float2(-B - D, -B + D) / A;
+		intersections = float2(-B - D, -B + D);
 	}
 }
 
 void
-Atmospheric::computeApproximateNearFarPlaneDist(const float3& cameraPos, const float4x4& view, const float4x4& proj, const float3& center, const float3& radius, float& znear, float& zfar) noexcept
+Atmospheric::computeViewProjectInverse(const Camera& camera, float4x4& viewProjectInverse) noexcept
 {
-	float4x4 viewProject = proj * view;
-	float4x4 viewProjectInverse = math::inverse(viewProject);
-
-	float3 cameraGlobalPos = cameraPos - center;
+	float3 center = float3(0, -_setting.earthRadius, 0);
+	float3 radius = float3(_setting.earthRadius, _setting.earthRadius + _setting.minElevation, _setting.earthRadius + _setting.maxElevation);
+	float3 eyePosition = camera.getTranslate();
+	float3 cameraGlobalPos = eyePosition - center;
 	float cameraElevationSqr = math::dot(cameraGlobalPos, cameraGlobalPos);
 	float cameraElev = std::sqrt(cameraElevationSqr);
 
@@ -109,13 +106,14 @@ Atmospheric::computeApproximateNearFarPlaneDist(const float3& cameraPos, const f
 	double maxRadius2 = radius.z * radius.z;
 	double maxViewDistance = std::sqrt(cameraElevationSqr - radius2) + std::sqrt(maxRadius2 - radius2);
 
-	if (cameraElev > radius.z)
-		znear = (cameraElev - radius.z) / sqrt(1 + 1.0f / (proj.a1 * proj.a1) + 1.0f / (proj.b2 * proj.b2));
-	else
-		znear = 50.0f;
+	float znear = 50.0f;
+	float zfar = 1000.0f;
 
-	znear = std::max(znear, 50.0f);
-	zfar = 1000;
+	if (cameraElev > radius.z)
+	{
+		const float4x4& proj = camera.getProject();
+		znear = std::max(znear, (cameraElev - radius.z) / std::sqrt(1 + 1.0f / (proj.a1 * proj.a1) + 1.0f / (proj.b2 * proj.b2)));
+	}
 
 	const int numTestDirections = 5;
 	for (int i = 0; i < numTestDirections; ++i)
@@ -127,17 +125,17 @@ Atmospheric::computeApproximateNearFarPlaneDist(const float3& cameraPos, const f
 			positionPS.y = math::unorm2snorm((float)j / (numTestDirections - 1));
 			positionPS.z = 0;
 
-			float3 positionWS = viewProjectInverse * positionPS;
-			float3 dirFromCamera = math::normalize(positionWS - cameraPos);
+			float3 positionWS = camera.getViewProjectInverse() * positionPS;
+			float3 direction = math::normalize(positionWS - eyePosition);
 
 			float2 isecsWithBottomBoundSphere;
-			computeRaySphereIntersection(cameraPos, dirFromCamera, center, radius.y, isecsWithBottomBoundSphere);
+			computeRaySphereIntersection(eyePosition, direction, center, radius.y, isecsWithBottomBoundSphere);
 
 			float nearIsecWithBottomSphere = isecsWithBottomBoundSphere.x > 0 ? isecsWithBottomBoundSphere.x : isecsWithBottomBoundSphere.y;
 			if (nearIsecWithBottomSphere > 0)
 			{
-				float3 hitPointWS = cameraPos + dirFromCamera * nearIsecWithBottomSphere;
-				float3 hitPointCamSpace = view * hitPointWS;
+				float3 hitPointWS = eyePosition + direction * nearIsecWithBottomSphere;
+				float3 hitPointCamSpace = camera.getView() * hitPointWS;
 
 				zfar = std::max(zfar, hitPointCamSpace.z);
 			}
@@ -147,6 +145,13 @@ Atmospheric::computeApproximateNearFarPlaneDist(const float3& cameraPos, const f
 			}
 		}
 	}
+
+	const float4& viewport = camera.getPixelViewport();
+
+	float4x4 project;
+	project.makePerspective_fov_lh(camera.getAperture(), (float)viewport.z / viewport.w, znear, zfar);
+
+	viewProjectInverse = math::inverse(project * camera.getView());
 }
 
 void
@@ -222,17 +227,19 @@ Atmospheric::computeSunColor(const float3& vDirectionOnSun, float4& f4SunColorAt
 	f4AmbientLight.z = std::max(0.05f, zenithFactor*0.25f);
 	f4AmbientLight.w = 0.0f;
 
-	float2 f2NetParticleDensityToAtmTop;
-	computeDensityIntegralFromChapmanFunc(0, float3::UnitY, vDirectionOnSun, f2NetParticleDensityToAtmTop);
+	float2 opticalDepthAtmosp;
+	computeDensityIntegralFromChapmanFunc(0, float3::UnitY, vDirectionOnSun, opticalDepthAtmosp);
 
-	float3 f3RlghExtCoeff = math::max((float3&)_setting.rayleighExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
-	float3 f3RlghOpticalDepth = f3RlghExtCoeff * f2NetParticleDensityToAtmTop.x;
-	float3 f3MieExtCoeff = math::max((float3&)_setting.mieExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
-	float3 f3MieOpticalDepth = f3MieExtCoeff * f2NetParticleDensityToAtmTop.y;
-	float3 f3TotalExtinction = math::exp(-(f3RlghOpticalDepth + f3MieOpticalDepth));
+	float3 rlghExtCoeff = math::max((float3&)_setting.rayleighExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
+	float3 rlghOpticalDepth = rlghExtCoeff * opticalDepthAtmosp.x;
 
-	const float fEarthReflectance = 0.1f;
-	f4SunColorAtGround.set(f3TotalExtinction * fEarthReflectance);
+	float3 mieExtCoeff = math::max((float3&)_setting.mieExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
+	float3 mieOpticalDepth = mieExtCoeff * opticalDepthAtmosp.y;
+
+	float3 totalExtinction = math::exp(-(rlghOpticalDepth + mieOpticalDepth));
+
+	const float reflectance = 0.1f;
+	f4SunColorAtGround.set(totalExtinction * reflectance);
 }
 
 void
@@ -240,7 +247,7 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_sat = pipeline.createMaterial("sys:fx/atmospheric.fxml");
 
-	_computeNetDensityToAtmTop = _sat->getTech("ComputeNetDensityToAtmTop");
+	_computeOpticalDepthAtmTop = _sat->getTech("ComputeOpticalDepthAtmTop");
 	_computeInscatteredRadiance = _sat->getTech("ComputeInscatteredRadiance");
 
 	_lightDirection = _sat->getParameter("lightDirection");
@@ -256,7 +263,6 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 	_earthAtmTopRadius = _sat->getParameter("earthAtmTopRadius");
 	_particleScaleHeight = _sat->getParameter("particleScaleHeight");
 	_tex2DOccludedNetDensityToAtmTop = _sat->getParameter("tex2DOccludedNetDensityToAtmTop");
-	_matProjectInverse = _sat->getParameter("matProjectInverse");
 	_matViewProjectInverse = _sat->getParameter("matViewProjectInverse");
 
 	GraphicsTextureDesc netDensityDesc;
@@ -304,22 +310,17 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFrame
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;
 
-	std::uint32_t width, height;
-	pipeline.getWindowResolution(width, height);
+	float4x4 viewProjectInverse; 
+	computeViewProjectInverse(*pipeline.getCamera(), viewProjectInverse);
 
-	float4x4 project;
-	project.makePerspective_fov_lh(45.0f, (float)width / height, _setting.planeNearZ, _setting.planeFarZ);
+	_matViewProjectInverse->uniform4fmat(viewProjectInverse);
 
-	float4x4 viewProject = project * pipeline.getCamera()->getView();
-
-	_matViewProjectInverse->uniform4fmat(math::inverse(viewProject));
-
-	if (_needUpdateNetDensityToAtmTop)
+	if (_needUpdateOpticalDepthAtmTop)
 	{
 		pipeline.setFramebuffer(_netDensityToAtmTopView);
 		pipeline.discardFramebuffer(0);
-		pipeline.drawScreenQuad(*_computeNetDensityToAtmTop);
-		_needUpdateNetDensityToAtmTop = false;
+		pipeline.drawScreenQuad(*_computeOpticalDepthAtmTop);
+		_needUpdateOpticalDepthAtmTop = false;
 	}
 
 	static auto direction = float3::UnitY;

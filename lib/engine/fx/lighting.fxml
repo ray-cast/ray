@@ -33,7 +33,7 @@
             return ((smoothness + 2) / 8) * exp2(smoothness * InvLog2 * NdotH - smoothness * InvLog2);
         }
 
-        float geometricShadowingSchlickSmithBlackOpsII(float gloss, float VdotH)
+        float geometricShadowingBlackOpsII(float gloss, float VdotH)
         {
             // http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_slides_v2.pdf
             float k = min(1.0f, gloss + 0.545f);
@@ -49,7 +49,7 @@
             return alpha2 / (PIE * denom * denom);
         }
 
-        float geometricShadowingSchlickSmithRyse(float gloss, float LdotH)
+        float geometricShadowingRyse(float gloss, float LdotH)
         {
             // http://www.filmicworlds.com/2014/04/21/optimizing-ggx-shaders-with-dotlh/
             float alpha = pow(1 - gloss * 0.7, 6);
@@ -102,7 +102,7 @@
 
                 float D = distributionTermRyse(nh, gloss);
                 float F = fresnelSchlick(lh, specular);
-                float G = geometricShadowingSchlickSmithRyse(gloss, lh);
+                float G = geometricShadowingRyse(gloss, lh);
 
                 return max(0.0f, D * F * G * nl);
             }

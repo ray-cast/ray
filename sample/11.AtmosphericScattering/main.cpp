@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,33 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_setting.h>
+#include <ray/ray.h>
+#include <ray/ray_main.h>
 
-_NAME_BEGIN
-
-RenderSetting::RenderSetting() noexcept
-	: window(nullptr)
-	, width(0)
-	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
-	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
-	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
-	, shadowMode(ShadowMode::ShadowModeSoft)
-	, shadowQuality(ShadowQuality::ShadowQualityMedium)
-	, enableSSAO(false)
-	, enableSSGI(false)
-	, enableAtmospheric(true)
-	, enableSSR(false)
-	, enableSSSS(false)
-	, enableFog(false)
-	, enableLightShaft(false)
-	, enableDOF(false)
-	, enableMotionBlur(false)
-	, enableFimic(true)
-	, enableColorGrading(true)
-	, enableFXAA(true)
-	, enableGlobalIllumination(true)
+int main(int argc, const char* argv[])
 {
-}
+	rayInit(argv[0], "dlc:Atmospheric\\scenes\\scene.map");
+	rayOpenWindow("Atmospheric Scattering", 1376, 768);
 
-_NAME_END
+	while (!rayIsQuitRequest())
+	{
+		rayUpdate();
+	}
+
+	rayTerminate();
+	return 0;
+}

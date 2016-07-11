@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,33 +34,41 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_setting.h>
+#ifndef _H_FIRST_PERSON_CAMERA_H_
+#define _H_FIRST_PERSON_CAMERA_H_
 
-_NAME_BEGIN
+#include <ray/game_component.h>
 
-RenderSetting::RenderSetting() noexcept
-	: window(nullptr)
-	, width(0)
-	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
-	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
-	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
-	, shadowMode(ShadowMode::ShadowModeSoft)
-	, shadowQuality(ShadowQuality::ShadowQualityMedium)
-	, enableSSAO(false)
-	, enableSSGI(false)
-	, enableAtmospheric(true)
-	, enableSSR(false)
-	, enableSSSS(false)
-	, enableFog(false)
-	, enableLightShaft(false)
-	, enableDOF(false)
-	, enableMotionBlur(false)
-	, enableFimic(true)
-	, enableColorGrading(true)
-	, enableFXAA(true)
-	, enableGlobalIllumination(true)
+class FirstPersonCameraComponent : public ray::GameComponent
 {
-}
+	__DeclareSubClass(FirstPersonCameraComponent, ray::GameComponent)
+public:
+	FirstPersonCameraComponent() noexcept;
+	~FirstPersonCameraComponent() noexcept;
 
-_NAME_END
+private:
+
+	void onActivate() noexcept;
+	void onDectivate() noexcept;
+
+	void onFrame() noexcept;
+
+	void yawCamera(float speed) noexcept;
+	void moveCamera(float speed) noexcept;
+	void rotateCamera(float angle, const ray::float3& axis) noexcept;
+	void rotateCamera(float axisX, float axisY) noexcept;
+
+	ray::GameComponentPtr clone() const noexcept;
+
+private:
+
+	float _speed;
+	float _gravity;
+	float _maxVelocityChange;
+	float _jumpHeight;
+
+	float _sensitivityX;
+	float _sensitivityY;
+};
+
+#endif

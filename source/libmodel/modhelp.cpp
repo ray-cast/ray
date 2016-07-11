@@ -1053,9 +1053,9 @@ MeshProperty::makeNoise(float width, float height, std::uint32_t widthSegments, 
 
 			accum += PL.noise(x * invfre, y * invfre, 0.8f) * 1.0f;
 			accum += PL.noise(x * invfre, y * invfre, 3.0f) * 0.17f;
-			accum += PL.noise(x * invfre, y * invfre, 3.4f) * 0.12f;
-			accum += PL.noise(x * invfre, y * invfre, 3.7f) * 0.1f;
-			accum += PL.noise(x * invfre + 0.3f, y * invfre + 0.3f, 1.0f) * 0.9f;
+			//accum += PL.noise(x * invfre, y * invfre, 3.4f) * 0.12f;
+			//accum += PL.noise(x * invfre, y * invfre, 3.7f) * 0.1f;
+			//accum += PL.noise(x * invfre + 0.3f, y * invfre + 0.3f, 1.0f) * 0.9f;
 
 			accum *= 0.1f;
 			accum += 0.5f;
@@ -1083,6 +1083,7 @@ MeshProperty::makeNoise(float width, float height, std::uint32_t widthSegments, 
 		}
 	}
 
+	this->computeVertexNormals();
 	this->computeTangents();
 	this->computeTangentQuats();
 	this->computeBoundingBox();

@@ -4,7 +4,7 @@
     <include name="sys:fx/inputlayout.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
     <macro name="TRAPEZOIDAL_INTEGRATION" value="1"/>
-    <macro name="NUM_STEP_SAMPLES" value="30"/>
+    <macro name="NUM_STEP_SAMPLES" value="10"/>
     <macro name="NUM_INTERSECTION_SAMPLES" value="200"/>
     <parameter name="texDepth" type="texture2D" semantic="DepthMap" />
     <parameter name="texDepthLinear" type="texture2D" semantic="DepthLinearMap" />
@@ -37,9 +37,9 @@
         void ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius, out float2 minimaxIntersections)
         {
             float3 origin = position - center;
-            float B = dot(origin, dir);
+            float B = dot(origin, dir) * 2;
             float C = dot(origin, origin) - radius * radius;
-            float D = B * B - C;
+            float D = B * B - 4 * A * C;
 
             if (D < 0)
             {
@@ -162,11 +162,8 @@
             float denom3 = denom * denom * denom;
             float phaseFunction = aerosolPhaseFuncG4.x * (1 +  cosTheta2) * denom3;
 
-            inscatteringRayleigh *= rayleighAngularSctrCoeff.rgb * (cosTheta2 * 0.75 + 0.75);
-            inscatteringRayleigh = max(0, inscatteringRayleigh);
-
             inscatteringMie *= mieAngularSctrCoeff.rgb * phaseFunction;
-            inscatteringMie = max(0, inscatteringMie);
+            inscatteringRayleigh *= rayleighAngularSctrCoeff.rgb * (cosTheta2 * 0.75 + 0.75);
 
             inscattering += inscatteringRayleigh + inscatteringMie;
         }
@@ -247,9 +244,9 @@
             }
         }
 
-        float3 ProjSpaceXYZToWorldSpace(in float3 f3PosPS)
+        float3 ProjSpaceXYZToWorldSpace(float3 P)
         {
-            float4 position = mul(matViewProjectInverse, float4(f3PosPS, 1));
+            float4 position = mul(matViewProjectInverse, float4(P, 1));
             position /= position.w;
             return position.xyz;
         }
@@ -267,7 +264,8 @@
             ComputeRaySphereIntersection(eyePosition, viewdir, earthCenter, earthAtmTopRadius, outerIntersections);
             if (outerIntersections.y <= 0)
             {
-                discard;
+                ComputeStars(viewdir, extinction, inscattering);
+                return;
             }
 
             float2 innerIntersections;
@@ -276,6 +274,10 @@
             {
                 float3 mix = normalize(float3(innerIntersections.xy, 0));
                 outerIntersections.y = lerp(outerIntersections.y, innerIntersections.x, mix.y * mix.y);
+            }
+            else
+            {
+                ComputeStars(viewdir, extinction, inscattering);
             }
 
             float3 start = eyePosition + viewdir * max(0, outerIntersections.x);

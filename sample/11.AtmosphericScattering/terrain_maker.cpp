@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,33 +34,55 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_setting.h>
+#include "terrain_maker.h"
+#include <ray/mesh_render_component.h>
+#include <ray/mesh_component.h>
+#include <ray/res_manager.h>
+#include <ray/material.h>
 
-_NAME_BEGIN
+__ImplementSubClass(TerrainMakerComponent, GameComponent, "TerrainMaker")
 
-RenderSetting::RenderSetting() noexcept
-	: window(nullptr)
-	, width(0)
-	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
-	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
-	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
-	, shadowMode(ShadowMode::ShadowModeSoft)
-	, shadowQuality(ShadowQuality::ShadowQualityMedium)
-	, enableSSAO(false)
-	, enableSSGI(false)
-	, enableAtmospheric(true)
-	, enableSSR(false)
-	, enableSSSS(false)
-	, enableFog(false)
-	, enableLightShaft(false)
-	, enableDOF(false)
-	, enableMotionBlur(false)
-	, enableFimic(true)
-	, enableColorGrading(true)
-	, enableFXAA(true)
-	, enableGlobalIllumination(true)
+TerrainMakerComponent::TerrainMakerComponent() noexcept
 {
 }
 
-_NAME_END
+TerrainMakerComponent::~TerrainMakerComponent() noexcept
+{
+}
+
+void
+TerrainMakerComponent::onActivate() except
+{
+	/*auto materialTemp = ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml");
+	if (!materialTemp)
+		return;
+
+	auto terrainMesh = std::make_shared<ray::MeshProperty>();
+	terrainMesh->makeNoise(2048, 2048, 400, 400);
+
+	auto gameObject = std::make_shared<ray::GameObject>();
+	gameObject->setActive(true);
+	gameObject->addComponent(std::make_shared<ray::MeshComponent>(terrainMesh));
+	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
+	gameObject->setScale(ray::float3(100, 50, 100));
+	gameObject->setTranslate(ray::float3(0, 8000, 0));
+
+	auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
+	material->getParameter("quality")->uniform4f(0.0, 0.0, 0.0, 0.0);
+	material->getParameter("diffuse")->uniform3f(ray::math::pow(ray::float3(0.15, 0.48, 0.09), ray::float3(1.0f / 2.4f)));
+	material->getParameter("specular")->uniform1f(0.1);
+	material->getParameter("shininess")->uniform1f(0.1);
+
+	_objects.push_back(gameObject);*/
+}
+
+void
+TerrainMakerComponent::onDeactivate() noexcept
+{
+}
+
+ray::GameComponentPtr
+TerrainMakerComponent::clone() const noexcept
+{
+	return std::make_shared<TerrainMakerComponent>();
+}

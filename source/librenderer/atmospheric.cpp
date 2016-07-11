@@ -112,7 +112,7 @@ Atmospheric::computeViewProjectInverse(const Camera& camera, float4x4& viewProje
 	if (cameraElev > radius.z)
 	{
 		const float4x4& proj = camera.getProject();
-		znear = std::max(znear, (cameraElev - radius.z) / std::sqrt(1 + 1.0f / (proj.a1 * proj.a1) + 1.0f / (proj.b2 * proj.b2)));
+		znear = (cameraElev - radius.z) / std::sqrt(1 + 1.0f / (proj.a1 * proj.a1) + 1.0f / (proj.b2 * proj.b2));
 	}
 
 	const int numTestDirections = 5;

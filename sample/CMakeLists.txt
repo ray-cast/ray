@@ -13,6 +13,7 @@ FOREACH(mySamples
     "08.OIT"
     "09.SSR"
 	"10.Globalillumination"
+    "11.AtmosphericScattering"
 )
 ADD_SUBDIRECTORY(${mySamples})
 

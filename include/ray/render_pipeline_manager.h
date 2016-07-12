@@ -51,6 +51,9 @@ public:
 	bool setup(const RenderSetting& setting) noexcept;
 	void close() noexcept;
 
+	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
+	RenderPipelinePtr getRenderPipeline() const noexcept;
+
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 

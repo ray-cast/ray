@@ -38,6 +38,27 @@
 
 _NAME_BEGIN
 
+void 
+RenderSetting::computeScatteringCoefficients() noexcept
+{
+	double n = 1.0003;
+	double N = 2.545e+25;
+	double Pn = 0.035;
+	double rayleighConst = 8.0 * M_PI * M_PI * M_PI * (n * n - 1.0) * (n * n - 1.0) / (3.0 * N) * (6.0 + 3.0 * Pn) / (6.0 - 7.0 * Pn);
+
+	double3 wave(680e-9, 550e-9, 440e-9);
+	double3 lambda2 = wave * wave;
+	double3 lambda4 = lambda2 * lambda2;
+	double3 sctrCoeff = rayleighConst / lambda4;
+
+	this->rayleighTotalSctrCoeff = float4(sctrCoeff, 0.0f);
+	this->rayleighAngularSctrCoeff = float4(3.0 / (16.0 * M_PI) * sctrCoeff, 0.0);
+	this->rayleighExtinctionCoeff = this->rayleighTotalSctrCoeff;
+	this->mieTotalSctrCoeff = float4(this->density * 2e-5f);
+	this->mieAngularSctrCoeff = this->mieTotalSctrCoeff / (4.0f * M_PI);
+	this->mieExtinctionCoeff = this->mieTotalSctrCoeff * (1.f + this->absorbtionScale);
+}
+
 RenderSetting::RenderSetting() noexcept
 	: window(nullptr)
 	, width(0)
@@ -49,7 +70,7 @@ RenderSetting::RenderSetting() noexcept
 	, shadowQuality(ShadowQuality::ShadowQualityMedium)
 	, enableSSAO(false)
 	, enableSSGI(false)
-	, enableAtmospheric(true)
+	, enableAtmospheric(false)
 	, enableSSR(false)
 	, enableSSSS(false)
 	, enableFog(false)
@@ -60,7 +81,20 @@ RenderSetting::RenderSetting() noexcept
 	, enableColorGrading(true)
 	, enableFXAA(true)
 	, enableGlobalIllumination(true)
+	, earthRadius(6360000.f, 6440000.f)
+	, earthScaleHeight(7994.f, 2000.f)
+	, minElevation(0.0f)
+	, maxElevation(80000.0f)
+	, rayleighAngularSctrCoeff(0)
+	, rayleighTotalSctrCoeff(0)
+	, rayleighExtinctionCoeff(0)
+	, mieAngularSctrCoeff(0)
+	, mieExtinctionCoeff(0)
+	, mie(0.97f)
+	, density(1.0f)
+	, absorbtionScale(0.1f)
 {
+	computeScatteringCoefficients();
 }
 
 _NAME_END

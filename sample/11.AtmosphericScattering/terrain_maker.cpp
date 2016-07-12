@@ -37,8 +37,9 @@
 #include "terrain_maker.h"
 #include <ray/mesh_render_component.h>
 #include <ray/mesh_component.h>
-#include <ray/res_manager.h>
 #include <ray/material.h>
+#include <ray/res_manager.h>
+#include <ray/game_object_manager.h>
 
 __ImplementSubClass(TerrainMakerComponent, GameComponent, "TerrainMaker")
 
@@ -74,11 +75,54 @@ TerrainMakerComponent::onActivate() except
 	material->getParameter("shininess")->uniform1f(0.1);
 
 	_objects.push_back(gameObject);*/
+
+	auto materialTemp = ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml");
+	if (!materialTemp)
+		return;
+
+	auto sphereMesh = std::make_shared<ray::MeshProperty>();
+	sphereMesh->makeSphere(1.0, 64, 48);
+
+	for (std::size_t i = 0; i < 10; i++)
+	{
+		for (std::size_t j = 0; j < 10; j++)
+		{
+			auto gameObject = std::make_shared<ray::GameObject>();
+			gameObject->setActive(true);
+			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
+			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
+			gameObject->setScale(ray::float3(0.9));
+			gameObject->setTranslate(ray::float3(-10.0f + i * 2.0f, 8000, j * 2.0f));
+
+			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
+			material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
+			material->getParameter("diffuse")->uniform3f(0.5,0.5,0.5);
+			material->getParameter("specular")->uniform1f(0.1);
+			material->getParameter("shininess")->uniform1f(0.1);
+
+			_objects.push_back(gameObject);
+		}
+	}
+
+	this->addComponentDispatch(ray::GameDispatchType::GameDispatchTypeFrame, this);
 }
 
 void
 TerrainMakerComponent::onDeactivate() noexcept
 {
+	this->removeComponentDispatch(ray::GameDispatchType::GameDispatchTypeFrame, this);
+}
+
+void 
+TerrainMakerComponent::onFrame() noexcept
+{
+	auto sunObject = ray::GameObjectManager::instance()->findObject("sun");
+	if (sunObject)
+	{
+		ray::Quaternion rotate;
+		rotate.makeRotate(ray::float3::UnitX, 0.03);
+		sunObject->setQuaternionAccum(rotate);
+	}
 }
 
 ray::GameComponentPtr

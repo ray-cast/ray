@@ -104,13 +104,14 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 	if (setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
 	{
 		auto deferredLighting = std::make_shared<DeferredLightingPipeline>();
-		if (!deferredLighting->setup(_pipeline))
+		if (!deferredLighting->setup(this->downcast_pointer<RenderPipelineManager>()))
 			return false;
 
 		_deferredLighting = deferredLighting;
 	}
 
 	_postprocess = std::make_shared<PostRenderPipeline>();
+	_postprocess->_setPipelineManager(this);
 	_pipeline->addPostProcess(_postprocess);
 
 	this->setRenderSetting(setting);
@@ -137,9 +138,34 @@ RenderPipelineManager::close() noexcept
 	_pipeline.reset();
 }
 
+void 
+RenderPipelineManager::setRenderPipeline(RenderPipelinePtr pipeline) noexcept
+{
+	_pipeline = pipeline;
+}
+
+RenderPipelinePtr 
+RenderPipelineManager::getRenderPipeline() const noexcept
+{
+	return _pipeline;
+}
+
 bool
 RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 {
+	_setting.earthRadius = setting.earthRadius;
+	_setting.earthScaleHeight = setting.earthScaleHeight;
+	_setting.minElevation = setting.minElevation;
+	_setting.maxElevation = setting.maxElevation;
+	_setting.rayleighAngularSctrCoeff = setting.rayleighAngularSctrCoeff;
+	_setting.rayleighTotalSctrCoeff = setting.rayleighTotalSctrCoeff;
+	_setting.rayleighExtinctionCoeff = setting.rayleighExtinctionCoeff;
+	_setting.mieAngularSctrCoeff = setting.mieAngularSctrCoeff;
+	_setting.mieExtinctionCoeff = setting.mieExtinctionCoeff;
+	_setting.mie = setting.mie;
+	_setting.density = setting.density;
+	_setting.absorbtionScale = setting.absorbtionScale;
+
 	if (_setting.enableAtmospheric != setting.enableAtmospheric)
 	{
 		if (setting.enableAtmospheric)
@@ -520,6 +546,7 @@ void
 RenderPipelineManager::addPostProcess(RenderPostProcessPtr postprocess) noexcept
 {
 	assert(_pipeline);
+	postprocess->_setPipelineManager(this);
 	_pipeline->addPostProcess(postprocess);
 }
 

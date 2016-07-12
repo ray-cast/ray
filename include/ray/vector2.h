@@ -175,19 +175,19 @@ inline Vector2t<T> operator*(const Vector2t<T>& v, T f) noexcept
 template <typename T>
 inline Vector2t<T> operator/(T f, const Vector2t<T>& v) noexcept
 {
-    return (v * (1 / f));
+    return Vector2t<T>(f / v.x, f / v.y);
 }
 
 template <typename T>
 inline Vector2t<T> operator/(const Vector2t<T>& v, T f) noexcept
 {
-    return (v * (1 / f));
+	return Vector2t<T>(v.x / f, v.y / f);
 }
 
 template <typename T>
-inline Vector2t<T> operator/(const Vector2t<T>& v, const Vector2t<T>& v2) noexcept
+inline Vector2t<T> operator/(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 {
-    return Vector2t<T>(v.x / v2.x, v.y / v2.y);
+    return Vector2t<T>(v1.x / v2.x, v1.y / v2.y);
 }
 
 template <typename T>
@@ -401,15 +401,33 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector2t<T> exp2(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::exp2(v.x), std::exp2(v.y));
+	}
+
+	template<typename T>
 	inline Vector2t<T> log(const Vector2t<T>& v)
 	{
 		return Vector2t<T>(std::log(v.x), std::log(v.y));
 	}
 
 	template<typename T>
+	inline Vector2t<T> log2(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::log2(v.x), std::log2(v.y));
+	}
+
+	template<typename T>
 	inline Vector2t<T> log10(const Vector2t<T>& v)
 	{
 		return Vector2t<T>(std::log10(v.x), std::log10(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> sqrt(const Vector2t<T>& v1)
+	{
+		return Vector2t<T>(std::sqrt(v1.x), std::sqrt(v1.y));
 	}
 
 	template<typename T>

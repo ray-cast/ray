@@ -510,8 +510,8 @@ EGL2DeviceContext::discardFramebuffer(std::uint32_t i) noexcept
 		{
 		case GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal:
 		{
-			GLenum attachment = GL_COLOR_ATTACHMENT0 + i;
-			glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachment);
+			GLenum attachments = GL_COLOR_ATTACHMENT0 + i;
+			glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachments);
 		}
 		break;
 		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal:
@@ -520,18 +520,18 @@ EGL2DeviceContext::discardFramebuffer(std::uint32_t i) noexcept
 			auto format = attachment.getAttachFormat();
 			if (format == GraphicsFormat::GraphicsFormatS8UInt)
 			{
-				GLenum attachment = GL_STENCIL_ATTACHMENT;
-				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachment);
+				GLenum attachments = GL_STENCIL_ATTACHMENT;
+				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachments);
 			}
 			else if (format == GraphicsFormat::GraphicsFormatD16UNorm || format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
 			{
-				GLenum attachment = GL_DEPTH_ATTACHMENT;
-				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachment);
+				GLenum attachments = GL_DEPTH_ATTACHMENT;
+				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, &attachments);
 			}
 			else
 			{
-				GLenum attachment[] = { GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
-				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, attachment);
+				GLenum attachments[] = { GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
+				glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, attachments);
 			}
 		}
 		break;

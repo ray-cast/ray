@@ -61,15 +61,16 @@ public:
 	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept = 0;
 
 private:
-	friend class RenderPipeline;
-	void _setRenderPipeline(RenderPipeline* pipeline) noexcept;
+	friend class RenderPipelineManager;
+	void _setPipelineManager(RenderPipelineManager* pipelineManager) noexcept;
 
 protected:
-	RenderPipeline* getRenderPipeline() const noexcept;
+	RenderPipeline* getPipeline() const noexcept;
+	RenderPipelineManager* getPipelineManager() const noexcept;
 
 private:
 	bool _active;
-	RenderPipeline* _renderPipeline;
+	RenderPipelineManager* _pipelineManager;
 };
 
 _NAME_END

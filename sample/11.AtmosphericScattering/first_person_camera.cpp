@@ -43,7 +43,7 @@
 __ImplementSubClass(FirstPersonCameraComponent, GameComponent, "FirstPersonCamera")
 
 FirstPersonCameraComponent::FirstPersonCameraComponent() noexcept
-	: _speed(1000.0)
+	: _speed(100.0)
 	, _gravity(15)
 	, _maxVelocityChange(1.0)
 	, _jumpHeight(10)

@@ -41,52 +41,18 @@
 
 _NAME_BEGIN
 
-// ---------------------------------------------------------------------------
-/** @brief Returns a string with legal copyright and licensing information
- *  about Assimp. The string may include multiple lines.
- *  @return Pointer to static string.
- */
-	EXPORT const char*  GetLegalString(void);
-
-// ---------------------------------------------------------------------------
-/** @brief Returns the current minor version number of Assimp.
- *  @return Minor version of the Assimp runtime the application was
- *    linked/built against
- */
-EXPORT unsigned int GetVersionMinor(void);
-
-// ---------------------------------------------------------------------------
-/** @brief Returns the current major version number of Assimp.
- *  @return Major version of the Assimp runtime the application was
- *    linked/built against
- */
-EXPORT unsigned int GetVersionMajor(void);
-
-// ---------------------------------------------------------------------------
-/** @brief Returns the repository revision of the Assimp runtime.
- *  @return SVN Repository revision number of the Assimp runtime the
- *    application was linked/built against
- */
-EXPORT unsigned int GetVersionRevision(void);
-
-//! Assimp was compiled as a shared object (Windows: DLL)
 #define CFLAGS_SHARED  0x1
-//! Assimp was compiled against STLport
 #define CFLAGS_STLPORT 0x2
-//! Assimp was compiled as a debug build
 #define CFLAGS_DEBUG   0x4
-
-//! Assimp was compiled with _BUILD_BOOST_WORKAROUND defined
 #define CFLAGS_NOBOOST           0x8
-//! Assimp was compiled with _BUILD_SINGLETHREADED defined
 #define CFLAGS_SINGLETHREADED    0x10
 
-// ---------------------------------------------------------------------------
-/** @brief Returns assimp's compile flags
- *  @return Any bitwise combination of the ASSIMP_CFLAGS_xxx constants.
- */
-EXPORT unsigned int GetCompileFlags(void);
+EXPORT const char*  GetVersionString(void);
+EXPORT unsigned int GetVersionMinor(void);
+EXPORT unsigned int GetVersionMajor(void);
+EXPORT unsigned int GetVersionRevision(void);
+EXPORT unsigned int GetVersionCompileFlags(void);
 
 _NAME_END
 
-#endif // !! #ifndef INCLUDED_AI_VERSION_H
+#endif

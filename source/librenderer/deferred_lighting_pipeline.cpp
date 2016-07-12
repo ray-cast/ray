@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "deferred_lighting_pipeline.h"
 #include <ray/render_pipeline.h>
+#include <ray/render_pipeline_manager.h>
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/render_scene.h>
@@ -59,41 +60,43 @@ DeferredLightingPipeline::~DeferredLightingPipeline() noexcept
 }
 
 bool
-DeferredLightingPipeline::setup(RenderPipelinePtr pipeline) noexcept
+DeferredLightingPipeline::setup(RenderPipelineManagerPtr pipelineManager) noexcept
 {
-	assert(pipeline);
+	assert(pipelineManager);
 
-	if (!this->initTextureFormat(*pipeline))
+	_pipeline = pipelineManager->getRenderPipeline();
+	_pipelineManager = pipelineManager;
+
+	if (!this->initTextureFormat(*_pipeline))
 		return false;
 
-	if (!this->setupSemantic(*pipeline))
+	if (!this->setupSemantic(*_pipeline))
 		return false;
 
-	if (!this->setupDeferredMaterials(*pipeline))
+	if (!this->setupDeferredMaterials(*_pipeline))
 		return false;
 
-	if (!this->setupDeferredTextures(*pipeline))
+	if (!this->setupDeferredTextures(*_pipeline))
 		return false;
 
-	if (!this->setupDeferredRenderTextureLayouts(*pipeline))
+	if (!this->setupDeferredRenderTextureLayouts(*_pipeline))
 		return false;
 
-	if (!this->setupDeferredRenderTextures(*pipeline))
+	if (!this->setupDeferredRenderTextures(*_pipeline))
 		return false;
 
-	if (!this->setupMRSIIMaterials(*pipeline))
+	if (!this->setupMRSIIMaterials(*_pipeline))
 		return false;
 
-	if (!this->setupMRSIITextures(*pipeline))
+	if (!this->setupMRSIITextures(*_pipeline))
 		return false;
 
-	if (!this->setupMRSIIRenderTextureLayouts(*pipeline))
+	if (!this->setupMRSIIRenderTextureLayouts(*_pipeline))
 		return false;
 
-	if (!this->setupMRSIIRenderTextures(*pipeline))
+	if (!this->setupMRSIIRenderTextures(*_pipeline))
 		return false;
 
-	_pipeline = pipeline;
 	return true;
 }
 
@@ -297,7 +300,10 @@ DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, GraphicsF
 void
 DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
-	_lightColor->uniform3f(light.getLightColor() * light.getLightIntensity());
+	float3 sunColor, ambientColor;
+	this->computeSunColor(-light.getForward(), sunColor, ambientColor);
+
+	_lightColor->uniform3f(sunColor * light.getLightColor() * light.getLightIntensity());
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
@@ -623,6 +629,67 @@ DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const Grap
 	pipeline.setViewport(0, viewport);
 	pipeline.setScissor(0, Scissor(viewport.left, viewport.top, viewport.width, viewport.height));
 	pipeline.drawScreenQuad(*_deferredCopyOnly);
+}
+
+void
+DeferredLightingPipeline::computeSunColor(const float3& L, float3& sunColor, float3& ambientColor) noexcept
+{
+	const auto& setting = _pipelineManager->getRenderSetting();
+
+	auto VerticalAirMass = [](const float2& scaleHeight, float height) -> float2
+	{
+		return scaleHeight * math::exp(-height / scaleHeight);
+	};
+
+	auto ChapmanOrtho = [](const float2 &x2) noexcept -> float2
+	{
+		static const float sqrPI_2 = (std::sqrt(M_PI / 2));
+		float2 sqrtX = math::sqrt(x2);
+		return sqrPI_2 * (float2::One / (2.f * sqrtX) + sqrtX);
+	};
+
+	auto ChapmanRising = [ChapmanOrtho](const float2 &x2, float cosChi) noexcept -> float2
+	{
+		float2 chOrtho = ChapmanOrtho(x2);
+		return chOrtho / ((chOrtho - float2::One) * cosChi + float2::One);
+	};
+
+	auto ChapmanFunction = [&](float radius, const float2& scaleHeight, float height, const float3& up, const float3 &L) -> float2
+	{
+		float cosTheta = math::dot(up, L);
+		if (cosTheta >= 0.f)
+		{
+			float2 x2 = (height + radius) / scaleHeight;
+			return VerticalAirMass(scaleHeight, height) * ChapmanRising(x2, cosTheta);
+		}
+		else
+		{
+			float sinTheta = std::sqrt(1.f - cosTheta * cosTheta);
+			float h0 = (height + radius) * sinTheta - radius;
+			float2 x0 = float2(h0 + radius) / scaleHeight;
+			float2 x2 = (height + radius) / scaleHeight;
+			float2 ch = ChapmanRising(x2, -cosTheta);
+			float2 orthox0 = ChapmanOrtho(x0);
+			return VerticalAirMass(scaleHeight, h0) * (2.f * orthox0) - VerticalAirMass(scaleHeight, height) * ch;
+		}
+	};
+
+	float2 opticalDepthAtmosp = ChapmanFunction(setting.earthRadius.x, setting.earthScaleHeight, 0, float3::UnitY, L);
+
+	float3 rlghExtCoeff = math::max((float3&)setting.rayleighExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
+	float3 rlghOpticalDepth = rlghExtCoeff * opticalDepthAtmosp.x;
+
+	float3 mieExtCoeff = math::max((float3&)setting.mieExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
+	float3 mieOpticalDepth = mieExtCoeff * opticalDepthAtmosp.y;
+
+	float3 totalExtinction = math::exp(-(rlghOpticalDepth + mieOpticalDepth));
+
+	sunColor = totalExtinction;
+
+	float zenithFactor = std::min(std::max(L.y, 0.0f), 1.0f);
+	ambientColor.x = zenithFactor * 0.15f;
+	ambientColor.y = zenithFactor * 0.1f;
+	ambientColor.z = std::max(0.05f, zenithFactor * 0.25f);
 }
 
 bool

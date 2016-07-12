@@ -48,7 +48,7 @@ public:
 	DeferredLightingPipeline() noexcept;
 	~DeferredLightingPipeline() noexcept;
 
-	bool setup(RenderPipelinePtr pipeline) noexcept;
+	bool setup(RenderPipelineManagerPtr pipelineManager) noexcept;
 	void close() noexcept;
 
 	void render3DEnvMap(const CameraPtr& camera) noexcept;
@@ -82,6 +82,8 @@ private:
 	void computeNormalDerivBuffer(RenderPipeline& pipeline, const GraphicsTexturePtr& src, const GraphicsFramebuffers& dst);
 	void computeSubsplatStencil(RenderPipeline& pipeline, const GraphicsTexturePtr& depth, const GraphicsTexturePtr& normal, const GraphicsFramebuffers& dst);
 	void computeUpsamplingMultiresBuffer(RenderPipeline& pipeline, GraphicsTexturePtr src, const GraphicsFramebuffers& srcviews, GraphicsFramebufferPtr dst);
+
+	void computeSunColor(const float3& L, float3& sunColor, float3& ambientColor) noexcept;
 
 private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
@@ -261,7 +263,7 @@ private:
 	GraphicsFramebufferPtr _deferredSwapView;
 
 	RenderPipelinePtr _pipeline;
-
+	RenderPipelineManagerPtr _pipelineManager;
 };
 
 _NAME_END

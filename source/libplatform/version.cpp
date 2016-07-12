@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/version.h>
-#include "../../revision.h"
+#include <ray/revision.h>
 
 _NAME_BEGIN
 
@@ -44,11 +44,11 @@ static const char* LEGAL_INFORMATION =
 "Open Source Library (Ray).\n"
 "A free C++ library to 3D engine into applications\n\n"
 
-"(c) 2013-2015, ray team\n"
+"(c) 2013-2016, ray team\n"
 "License under the terms and conditions of the 3-clause BSD license\n"
 ;
 
-const char* GetLegalString()
+const char* GetVersionString()
 {
 	return LEGAL_INFORMATION;
 }
@@ -63,7 +63,12 @@ unsigned int GetVersionMajor()
 	return 3;
 }
 
-unsigned int GetCompileFlags()
+unsigned int GetVersionRevision()
+{
+	return GITRevision;
+}
+
+unsigned int GetVersionCompileFlags()
 {
 	unsigned int flags = 0;
 
@@ -84,11 +89,6 @@ unsigned int GetCompileFlags()
 #endif
 
 	return flags;
-}
-
-unsigned int GetVersionRevision()
-{
-	return GITRevision;
 }
 
 _NAME_END

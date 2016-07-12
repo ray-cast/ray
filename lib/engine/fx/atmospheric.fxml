@@ -3,6 +3,7 @@
     <include name="sys:fx/common.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/math.fxml"/>
     <macro name="TRAPEZOIDAL_INTEGRATION" value="0"/>
     <macro name="NUM_STEP_SAMPLES" value="10"/>
     <macro name="NUM_INTERSECTION_SAMPLES" value="200"/>
@@ -14,13 +15,13 @@
     <parameter name="rayleighExtinctionCoeff" type="float4"/>
     <parameter name="mieAngularSctrCoeff" type="float4"/>
     <parameter name="mieExtinctionCoeff" type="float4"/>
-    <parameter name="extraterrestrialSunColor" type="float4"/>
     <parameter name="aerosolPhaseFuncG4" type="float4"/>
     <parameter name="earthRadius" type="float"/>
     <parameter name="earthAtmTopHeight" type="float"/>
     <parameter name="earthAtmTopRadius" type="float"/>
     <parameter name="particleScaleHeight" type="float2"/>
     <parameter name="lightDirection" type="float3"/>
+    <parameter name="lightColor" type="float3"/>
     <parameter name="tex2DOccludedNetDensityToAtmTop" type="texture2D"/>
     <shader>
         <![CDATA[
@@ -232,7 +233,7 @@
             return frac(xhash + yhash);
         }
 
-        void ComputeStars(float3 viewdir, float3 extinction, inout float3 inscattering)
+        void ComputeStars(float3 viewdir, inout float3 inscattering)
         {
             float threshhold = 0.98;
             float noise = noise2(viewdir.xy);
@@ -240,7 +241,7 @@
             {
                 float stars = (noise - threshhold) / (1.0 - threshhold);
                 float stars6 = stars * stars * stars * stars * stars * stars;
-                inscattering = inscattering + lerp(0, stars6, extinction);
+                inscattering = inscattering + lerp(stars6, 0, luminance(linear2srgb(inscattering)));
             }
         }
 
@@ -264,7 +265,7 @@
             ComputeRaySphereIntersection(eyePosition, viewdir, earthCenter, earthAtmTopRadius, outerIntersections);
             if (outerIntersections.y <= 0)
             {
-                ComputeStars(viewdir, extinction, inscattering);
+                ComputeStars(viewdir, inscattering);
                 return;
             }
 
@@ -274,10 +275,6 @@
             {
                 float3 mix = normalize(float3(innerIntersections.xy, 0));
                 outerIntersections.y = lerp(outerIntersections.y, innerIntersections.x, mix.y * mix.y);
-            }
-            else
-            {
-                ComputeStars(viewdir, extinction, inscattering);
             }
 
             float3 start = eyePosition + viewdir * max(0, outerIntersections.x);
@@ -291,11 +288,16 @@
             float3 totalOpticalDepthMie  = mieExtinctionCoeff.rgb * scatteringDensity.y;
             float3 totalOpticalDepthRayleigh = rayleighExtinctionCoeff.rgb * scatteringDensity.x;
 
-            scatteringMie *= extraterrestrialSunColor.rgb;
-            scatteringRayleigh *= extraterrestrialSunColor.rgb;
+            scatteringMie *= lightColor;
+            scatteringRayleigh *= lightColor;
 
             ComputeScatteringIntensity(totalOpticalDepthRayleigh, totalOpticalDepthMie, extinction);
             ComputePhaseFunctions(scatteringRayleigh, scatteringMie, viewdir, lightDirection, inscattering);
+
+            if (innerIntersections.x <= 0 && depth > 0.999f)
+            {
+                ComputeStars(viewdir, inscattering);
+            }
         }
 
         float3 ComputeInscatteredRadiancePS(in float4 Position : TEXCOORD0) : SV_Target

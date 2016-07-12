@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_post_process.h>
+#include <ray/render_pipeline_manager.h>
 
 _NAME_BEGIN
 
@@ -42,7 +43,6 @@ __ImplementSubInterface(RenderPostProcess, rtti::Interface, "RenderPostProcess")
 
 RenderPostProcess::RenderPostProcess() noexcept
 	: _active(false)
-	, _renderPipeline(nullptr)
 {
 }
 
@@ -53,14 +53,15 @@ RenderPostProcess::~RenderPostProcess() noexcept
 void
 RenderPostProcess::setActive(bool active) noexcept
 {
-	assert(_renderPipeline);
+	assert(_pipelineManager);
+	assert(_pipelineManager->getRenderPipeline());
 
 	if (_active != active)
 	{
 		if (active)
-			this->onActivate(*_renderPipeline);
+			this->onActivate(*_pipelineManager->getRenderPipeline());
 		else
-			this->onDeactivate(*_renderPipeline);
+			this->onDeactivate(*_pipelineManager->getRenderPipeline());
 
 		_active = active;
 	}
@@ -93,15 +94,21 @@ RenderPostProcess::onResolutionChangeAfter(RenderPipeline&) noexcept
 }
 
 void
-RenderPostProcess::_setRenderPipeline(RenderPipeline* pipeline) noexcept
+RenderPostProcess::_setPipelineManager(RenderPipelineManager* pipelineManager) noexcept
 {
-	_renderPipeline = pipeline;
+	_pipelineManager = pipelineManager;
 }
 
 RenderPipeline* 
-RenderPostProcess::getRenderPipeline() const noexcept
+RenderPostProcess::getPipeline() const noexcept
 {
-	return _renderPipeline;
+	return _pipelineManager->getRenderPipeline().get();
+}
+
+RenderPipelineManager*
+RenderPostProcess::getPipelineManager() const noexcept
+{
+	return _pipelineManager;
 }
 
 _NAME_END

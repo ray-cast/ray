@@ -146,6 +146,7 @@ private:
 	std::uint32_t _height;
 
 	RenderPipelineDevicePtr _pipelineDevice;
+	RenderPipelineManagerPtr _pipelineManager;
 
 	GraphicsSwapchainPtr _graphicsSwapchain;
 	GraphicsContextPtr _graphicsContext;

@@ -69,7 +69,28 @@ struct EXPORT RenderSetting
 	bool enableColorGrading;
 	bool enableGlobalIllumination;
 
+	float2 earthRadius;
+	float2 earthScaleHeight;
+
+	float4 rayleighAngularSctrCoeff;
+	float4 rayleighTotalSctrCoeff;
+	float4 rayleighExtinctionCoeff;
+
+	float4 mieAngularSctrCoeff;
+	float4 mieTotalSctrCoeff;
+	float4 mieExtinctionCoeff;
+
+	float minElevation;
+	float maxElevation;
+
+	float mie;
+	float density;
+	float absorbtionScale;
+
 	RenderSetting() noexcept;
+
+private:
+	void computeScatteringCoefficients() noexcept;
 };
 
 _NAME_END

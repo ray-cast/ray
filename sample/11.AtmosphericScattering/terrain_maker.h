@@ -52,6 +52,8 @@ private:
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
 
+	virtual void onFrame() noexcept;
+
 private:
 	TerrainMakerComponent(const TerrainMakerComponent&) = delete;
 	TerrainMakerComponent& operator=(const TerrainMakerComponent&) = delete;

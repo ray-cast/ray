@@ -63,7 +63,7 @@ PostRenderPipeline::enableSSSS(bool enable) noexcept
 		if (enable)
 		{
 			_SSSS = std::make_shared<SSSS>();
-			_SSSS->setup(*this->getRenderPipeline());
+			_SSSS->setup(*this->getPipeline());
 		}
 		else
 		{

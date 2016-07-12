@@ -519,9 +519,27 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector3t<T> exp2(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::exp2(v.x), std::exp2(v.y), std::exp2(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> sqrt(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::sqrt(v.x), std::sqrt(v.y), std::sqrt(v.z));
+	}
+
+	template<typename T>
 	inline Vector3t<T> log(const Vector3t<T>& v)
 	{
 		return Vector3t<T>(std::log(v.x), std::log(v.y), std::log(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> log2(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::log2(v.x), std::log2(v.y), std::log2(v.z));
 	}
 
 	template<typename T>

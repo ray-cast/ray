@@ -38,7 +38,7 @@
 #define _H_ATMOSPHERE_H_
 
 #include <ray/render_post_process.h>
-#include <ray/geometry.h>
+#include <ray/render_setting.h>
 
 _NAME_BEGIN
 
@@ -49,8 +49,8 @@ public:
 	{
 		float earthRadius;
 		float earthAtmTopHeight;
-
-		float2 particleScaleHeight;
+		
+		float2 earthScaleHeight;
 
 		float4 rayleighAngularSctrCoeff;
 		float4 rayleighTotalSctrCoeff;
@@ -63,10 +63,7 @@ public:
 		float minElevation;
 		float maxElevation;
 
-		float aerosolAbsorbtionScale;
-		float aerosolPhaseFuncG;
-		float aerosolDensityScale;
-		float4 aerosolPhaseFuncG4;
+		float4 mie4;
 
 		Setting() noexcept;
 	};
@@ -83,9 +80,7 @@ public:
 private:
 	void computeRaySphereIntersection(const float3& rayOrigin, const float3& rayDirection, const float3& center, float radius, float2& intersections) noexcept;
 	void computeViewProjectInverse(const Camera& camera, float4x4& viewProject) noexcept;
-	void computeScatteringCoefficients() noexcept;
-	void computeDensityIntegralFromChapmanFunc(float heightAboveSurface, const float3& earthCentreToPointDir, const float3& rayDir, float2& densityIntegral) noexcept;
-	void computeSunColor(const float3& directionOnSun, float4& sunColor, float4& ambientLight) noexcept;
+	void computeScatteringCoefficients(const RenderSetting& setting) noexcept;
 
 private:
 	bool _needUpdateOpticalDepthAtmTop;
@@ -95,6 +90,7 @@ private:
 	MaterialTechPtr _computeOpticalDepthAtmTop;
 	MaterialTechPtr _computeInscatteredRadiance;
 
+	MaterialParamPtr _lightColor;
 	MaterialParamPtr _lightDirection;
 
 	MaterialParamPtr _rayleighTotalSctrCoeff;
@@ -109,7 +105,6 @@ private:
 	MaterialParamPtr _earthAtmTopHeight;
 	MaterialParamPtr _earthAtmTopRadius;
 
-	MaterialParamPtr _extraterrestrialSunColor;
 	MaterialParamPtr _aerosolPhaseFuncG4;
 	MaterialParamPtr _particleScaleHeight;
 	MaterialParamPtr _tex2DOccludedNetDensityToAtmTop;

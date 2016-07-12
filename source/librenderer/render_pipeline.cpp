@@ -422,7 +422,6 @@ RenderPipeline::addPostProcess(RenderPostProcessPtr& postprocess) noexcept
 {
 	if (std::find(_postprocessors.begin(), _postprocessors.end(), postprocess) == _postprocessors.end())
 	{
-		postprocess->_setRenderPipeline(this);
 		postprocess->setActive(true);
 		_postprocessors.push_back(postprocess);
 	}

@@ -759,15 +759,33 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector4t<T> exp2(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::exp2(v.x), std::exp2(v.y), std::exp2(v.z), std::exp2(v.w));
+	}
+	
+	template<typename T>
 	inline Vector4t<T> log(const Vector4t<T>& v)
 	{
 		return Vector4t<T>(std::log(v.x), std::log(v.y), std::log(v.z), std::log(v.w));
 	}
 
 	template<typename T>
+	inline Vector4t<T> log2(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::log2(v.x), std::log2(v.y), std::log2(v.z), std::log2(v.w));
+	}
+
+	template<typename T>
 	inline Vector4t<T> log10(const Vector4t<T>& v)
 	{
 		return Vector4t<T>(std::log10(v.x), std::log10(v.y), std::log10(v.z), std::log10(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> sqrt(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::sqrt(v.x), std::sqrt(v.y), std::sqrt(v.z), std::sqrt(v.w));
 	}
 
 	template<typename T>

@@ -78,7 +78,7 @@ public:
 	void setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept;
 	GraphicsDataPtr getVertexBufferData(std::uint32_t i) const noexcept;
 
-	void setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
+	void setIndexBufferData(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
 	void generateMipmap(GraphicsTexturePtr texture) noexcept;
@@ -136,7 +136,6 @@ private:
 	GLint   _clearStencil;
 	GLuint _inputLayout;
 	GLenum  _indexType;
-	GLintptr _indexOffset;
 	std::vector<float4> _clearColor;
 	std::vector<Viewport> _viewports;
 	std::vector<Scissor> _scissors;

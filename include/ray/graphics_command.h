@@ -186,7 +186,7 @@ public:
 	virtual void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept = 0;
 
 	virtual void setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first, std::uint32_t count) noexcept = 0;
-	virtual void setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept = 0;
+	virtual void setIndexBuffer(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept = 0;
 
 	virtual void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept = 0;
 	virtual void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept = 0;

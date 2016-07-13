@@ -55,7 +55,6 @@ EGL3DeviceContext::EGL3DeviceContext() noexcept
 	, _clearStencil(0)
 	, _viewport(0, 0, 0, 0)
 	, _inputLayout(GL_NONE)
-	, _indexOffset(0)
 	, _indexType(GL_UNSIGNED_INT)
 	, _needUpdatePipeline(false)
 	, _needUpdateDescriptor(false)
@@ -350,7 +349,7 @@ EGL3DeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 }
 
 void
-EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<EGL3GraphicsData>());
@@ -365,7 +364,6 @@ EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset
 		_indexBuffer = ibo;
 	}
 	
-	_indexOffset = offset;
 	_indexType = EGL3Types::asIndexType(indexType);
 }
 
@@ -626,14 +624,8 @@ EGL3DeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstan
 
 	if (numIndices > 0)
 	{
-		GLbyte* offsetIndices = (GLbyte*)nullptr + _indexOffset;
-		if (_indexType == GL_UNSIGNED_INT)
-			offsetIndices = offsetIndices + sizeof(std::uint32_t) * startIndice;
-		else
-			offsetIndices = offsetIndices + sizeof(std::uint16_t) * startIndice;
-
 		GLenum drawType = EGL3Types::asVertexType(_stateCaptured.getPrimitiveType());
-		GL_CHECK(glDrawElementsInstanced(drawType, numIndices, _indexType, offsetIndices, numInstances));
+		GL_CHECK(glDrawElementsInstanced(drawType, numIndices, _indexType, (GLbyte*)nullptr + startIndice, numInstances));
 	}
 }
 

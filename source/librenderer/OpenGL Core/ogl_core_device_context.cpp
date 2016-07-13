@@ -54,7 +54,6 @@ OGLCoreDeviceContext::OGLCoreDeviceContext() noexcept
 	: _clearDepth(1.0f)
 	, _clearStencil(0)
 	, _inputLayout(GL_NONE)
-	, _indexOffset(0)
 	, _indexType(GL_UNSIGNED_INT)
 	, _needUpdatePipeline(false)
 	, _needUpdateDescriptor(false)
@@ -357,7 +356,7 @@ OGLCoreDeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 }
 
 void
-OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLCoreGraphicsData>());
@@ -372,7 +371,6 @@ OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t off
 		_indexBuffer = ibo;
 	}
 
-	_indexOffset = offset;
 	_indexType = OGLTypes::asIndexType(indexType);
 }
 
@@ -431,7 +429,6 @@ OGLCoreDeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags fl
 void
 OGLCoreDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
-	assert(_framebuffer || i == 0);
 	assert(_glcontext->getActive());
 
 	GLint buffer = 0;
@@ -628,14 +625,8 @@ OGLCoreDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numIns
 
 	if (numIndices > 0)
 	{
-		GLbyte* offsetIndices = (GLbyte*)_indexOffset;
-		if (_indexType == GL_UNSIGNED_INT)
-			offsetIndices = offsetIndices + sizeof(std::uint32_t) * startIndice;
-		else
-			offsetIndices = offsetIndices + sizeof(std::uint16_t) * startIndice;
-
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawElementsInstancedBaseVertexBaseInstance(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice, startInstances);
+		glDrawElementsInstancedBaseVertexBaseInstance(drawType, numIndices, _indexType, (GLbyte*)nullptr + startIndice, numInstances, startVertice, startInstances);
 	}
 }
 

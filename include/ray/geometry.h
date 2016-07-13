@@ -73,7 +73,7 @@ public:
 	void setVertexBuffer(GraphicsDataPtr data, std::intptr_t offset) noexcept;
 	const GraphicsDataPtr& getVertexBuffer() const noexcept;
 
-	void setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
+	void setIndexBuffer(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept;
 	const GraphicsDataPtr& getIndexBuffer() const noexcept;
 
 	void setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept;
@@ -95,7 +95,6 @@ private:
 	MaterialTechPtr _techniques[RenderQueue::RenderQueueRangeSize];
 
 	std::intptr_t _vertexOffset;
-	std::intptr_t _indexOffset;
 
 	GraphicsDataPtr _vbo;
 	GraphicsDataPtr _ibo;

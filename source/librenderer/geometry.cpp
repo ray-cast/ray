@@ -59,7 +59,6 @@ Geometry::Geometry() noexcept
 	, _isReceiveShadow(true)
 	, _indexType(GraphicsIndexType::GraphicsIndexTypeUInt32)
 	, _vertexOffset(0)
-	, _indexOffset(0)
 {
 }
 
@@ -139,13 +138,12 @@ Geometry::getVertexBuffer() const noexcept
 }
 
 void 
-Geometry::setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+Geometry::setIndexBuffer(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept
 {
 	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer));
 	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 	_ibo = data;
 	_indexType = indexType;
-	_indexOffset = offset;
 }
 
 const GraphicsDataPtr&
@@ -200,7 +198,7 @@ Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTe
 			pipeline.setVertexBuffer(0, _vbo, _vertexOffset);
 
 		if (_ibo)
-			pipeline.setIndexBuffer(_ibo, _indexOffset, _indexType);
+			pipeline.setIndexBuffer(_ibo, _indexType);
 
 		if (_techniques[queue])
 		{

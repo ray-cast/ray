@@ -460,10 +460,10 @@ RenderPipelineManager::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std
 }
 
 void 
-RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo, GraphicsIndexType indexType) noexcept
 {
 	assert(_pipeline);
-	_pipeline->setIndexBuffer(ibo, offset, indexType);
+	_pipeline->setIndexBuffer(ibo, indexType);
 }
 
 void

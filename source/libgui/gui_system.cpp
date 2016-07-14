@@ -270,8 +270,10 @@ GuiSystem::render(float delta) except
 
 	std::size_t totalVertexSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
 	std::size_t totalIndirectSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
+	if (totalVertexSize == 0 || totalIndirectSize == 0)
+		return;
 
-	if (!_vbo || _vbo->getGraphicsDataDesc().getStreamSize() <= totalVertexSize)
+	if (!_vbo || _vbo->getGraphicsDataDesc().getStreamSize() < totalVertexSize)
 	{
 		ray::GraphicsDataDesc dataDesc;
 		dataDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
@@ -283,7 +285,7 @@ GuiSystem::render(float delta) except
 			return;
 	}
 
-	if (!_ibo || _ibo->getGraphicsDataDesc().getStreamSize() <= totalIndirectSize)
+	if (!_ibo || _ibo->getGraphicsDataDesc().getStreamSize() < totalIndirectSize)
 	{
 		ray::GraphicsDataDesc elementDesc;
 		elementDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);

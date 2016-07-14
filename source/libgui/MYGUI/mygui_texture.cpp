@@ -133,7 +133,7 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	}
 
 	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml");
-	_materialTech = _material->getTech("ui");
+	_materialTech = _material->getTech("MYGUI");
 	_materialDecal = _material->getParameter("decal");
 	_materialScaleY = _material->getParameter("scaleY");
 

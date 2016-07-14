@@ -34,72 +34,32 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_SYSTEM_H_
-#define _H_GUI_SYSTEM_H_
+#ifndef _H_UI_CONTROLLER_H_
+#define _H_UI_CONTROLLER_H_
 
-#include <ray/gui_system_base.h>
-#include <ray/render_types.h>
+#include <ray/game_component.h>
 
-_NAME_BEGIN
-
-class EXPORT GuiSystem final
+class GuiControllerComponent final : public ray::GameComponent
 {
-	__DeclareSingleton(GuiSystem)
+	__DeclareSubClass(GuiControllerComponent, ray::GameComponent)
 public:
-	GuiSystem() noexcept;
-	~GuiSystem() noexcept;
+	GuiControllerComponent() noexcept;
+	~GuiControllerComponent() noexcept;
 
-	bool open(GuiSystemBasePtr impl = nullptr) except;
-	void close() noexcept;
-
-	void setGuiSystem(GuiSystemBasePtr& system) except;
-	const GuiSystemBasePtr& getGuiSystem() const noexcept;
-
-	void setCoreProfile(const std::string& core) except;
-	const std::string& getCoreProfile() const noexcept;
-
-	void setImageLoader(GuiImageLoaderPtr loader) noexcept;
-	GuiImageLoaderPtr getImageLoader() const noexcept;
-
-	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
-	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
-	bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
-	bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept;
-	bool injectKeyRelease(GuiInputKey::Code _key) noexcept;
-
-	bool isFocusMouse() const noexcept;
-	bool isFocusKey() const noexcept;
-	bool isCaptureMouse() const noexcept;
-
-	void setViewport(std::uint32_t w, std::uint32_t h) noexcept;
-	void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept;
-
-	GuiWidgetPtr createWidget(const rtti::Rtti* rtti);
-	template<typename T>
-	typename std::enable_if<std::is_base_of<GuiWidget, T>::value, std::shared_ptr<T>>::type createWidget()
-	{
-		return std::dynamic_pointer_cast<T>(this->createWidget(T::getRtti()));
-	}
-
-	void render(float delta) except;
+	ray::GameComponentPtr clone() const noexcept;
 
 private:
-	GuiSystem(const GuiSystem&) noexcept = delete;
-	GuiSystem& operator=(const GuiSystem&) noexcept = delete;
+	virtual void onMessage(const ray::MessagePtr& message) noexcept;
 
 private:
-	MaterialPtr _material;
-	MaterialTechPtr _materialTech;
-	MaterialParamPtr _materialDecal;
-	MaterialParamPtr _materialProj;
+	GuiControllerComponent(const GuiControllerComponent&) = delete;
+	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;
 
-	GraphicsDataPtr _vbo;
-	GraphicsDataPtr _ibo;
-	GraphicsTexturePtr _texture;
-
-	GuiSystemBasePtr _system;
+private:
+	float _f;
+	bool _showTestWindow;
+	bool _showAnotherWindow;
+	ray::float4 _clearColor;
 };
-
-_NAME_END
 
 #endif

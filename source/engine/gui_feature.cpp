@@ -46,7 +46,28 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(GuiMessage, Message, "GuiMessage")
 __ImplementSubClass(GuiFeature, GameFeature, "GuiFeature")
+
+GuiMessage::GuiMessage() noexcept
+{
+}
+
+GuiMessage::~GuiMessage() noexcept
+{
+}
+
+Gui&
+GuiMessage::getGui() noexcept
+{
+	return _gui;
+}
+
+const Gui& 
+GuiMessage::getGui() const noexcept
+{
+	return _gui;
+}
 
 GuiInputButton::Code ButtonCodeToGuiButton(InputButton::Code button) noexcept
 {
@@ -403,6 +424,11 @@ void
 GuiFeature::onDeactivate() noexcept
 {
 	GuiSystem::instance()->close();
+}
+
+void 
+GuiFeature::onFrameEnd() noexcept
+{
 }
 
 void

@@ -85,17 +85,20 @@ DeferredLightingPipeline::setup(RenderPipelineManagerPtr pipelineManager) noexce
 	if (!this->setupDeferredRenderTextures(*_pipeline))
 		return false;
 
-	if (!this->setupMRSIIMaterials(*_pipeline))
-		return false;
+	if (_pipelineManager->getRenderSetting().enableGlobalIllumination)
+	{
+		if (!this->setupMRSIIMaterials(*_pipeline))
+			return false;
 
-	if (!this->setupMRSIITextures(*_pipeline))
-		return false;
+		if (!this->setupMRSIITextures(*_pipeline))
+			return false;
 
-	if (!this->setupMRSIIRenderTextureLayouts(*_pipeline))
-		return false;
+		if (!this->setupMRSIIRenderTextureLayouts(*_pipeline))
+			return false;
 
-	if (!this->setupMRSIIRenderTextures(*_pipeline))
-		return false;
+		if (!this->setupMRSIIRenderTextures(*_pipeline))
+			return false;
+	}
 
 	return true;
 }
@@ -118,8 +121,8 @@ void
 DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 {
 	auto& dataManager = _pipeline->getCamera()->getRenderDataManager();
-	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() ||
-		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() ||
+	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() &&
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() &&
 		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecific).empty())
 	{
 		_texMRT0->uniformTexture(_deferredOpaqueMap);
@@ -249,7 +252,11 @@ DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebu
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 
-	this->renderIndirectLights(pipeline, target);
+	if (_pipelineManager->getRenderSetting().enableGlobalIllumination)
+	{
+		this->renderIndirectLights(pipeline, target);
+	}
+
 	this->renderDirectLights(pipeline, target);
 }
 
@@ -1501,12 +1508,16 @@ DeferredLightingPipeline::onResolutionChange() noexcept
 {
 	destroyDeferredTextures();
 	destroyDeferredRenderTextures();
-	destroyMRSIIRenderTextures();
-	destroyMRSIITextures();
 	setupDeferredTextures(*_pipeline);
 	setupDeferredRenderTextures(*_pipeline);
-	setupMRSIITextures(*_pipeline);
-	setupMRSIIRenderTextures(*_pipeline);
+
+	if (_pipelineManager->getRenderSetting().enableGlobalIllumination)
+	{
+		destroyMRSIIRenderTextures();
+		destroyMRSIITextures();
+		setupMRSIITextures(*_pipeline);
+		setupMRSIIRenderTextures(*_pipeline);
+	}
 }
 
 void

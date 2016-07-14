@@ -182,7 +182,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerBloomDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR8G8B8UNorm);
 	samplerBloomDesc.setMipBase(0);
-	samplerBloomDesc.setMipLevel(4);
+	samplerBloomDesc.setMipLevel(3);
 	samplerBloomDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
 	_texBloom1Map = pipeline.createTexture(samplerBloomDesc);
@@ -230,10 +230,10 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	sampleLog1ViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
 	_texSampleLumView = pipeline.createFramebuffer(sampleLog1ViewDesc);
 
-	_texBloom1View.resize(4);
-	_texBloom2View.resize(4);
+	_texBloom1View.resize(3);
+	_texBloom2View.resize(3);
 
-	for (std::size_t i = 0; i < 4; i++)
+	for (std::size_t i = 0; i < 3; i++)
 	{
 		GraphicsFramebufferDesc bloom1ViewDesc;
 		bloom1ViewDesc.setWidth(width / ((2 << i)));
@@ -346,7 +346,7 @@ FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphics
 
 	this->generateBloom(pipeline, _texBloom1Map, _texBloom2View[0]);
 
-	for (std::size_t i = 0; i < 4; i++)
+	for (std::size_t i = 0; i < 3; i++)
 	{
 		this->blurh(pipeline, _texBloom2Map, _texBloom1View[i], i);
 		this->blurv(pipeline, _texBloom1Map, _texBloom2View[i], i);

@@ -60,6 +60,7 @@ OGLDeviceContext::OGLDeviceContext() noexcept
 	, _pipeline(nullptr)
 	, _descriptorSet(nullptr)
 	, _indexType(GL_UNSIGNED_INT)
+	, _indexOffset(0)
 	, _state(nullptr)
 	, _glcontext(nullptr)
 	, _needUpdatePipeline(false)
@@ -362,7 +363,7 @@ OGLDeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 }
 
 void
-OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept
+OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLGraphicsData>());
@@ -378,6 +379,7 @@ OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data, GraphicsIndexType ind
 	}
 
 	_indexType = OGLTypes::asIndexType(indexType);
+	_indexOffset = offset;
 }
 
 GraphicsDataPtr
@@ -639,8 +641,14 @@ OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstanc
 	
 	if (numIndices > 0)
 	{
+		GLbyte* offsetIndices = nullptr;
+		if (_indexType == GL_UNSIGNED_INT)
+			offsetIndices += _indexOffset + sizeof(std::uint32_t) * startIndice;
+		else
+			offsetIndices += _indexOffset + sizeof(std::uint16_t) * startIndice;
+
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawElementsInstancedBaseVertex(drawType, numIndices, _indexType, (GLbyte*)nullptr + startIndice, numInstances, startVertice);
+		glDrawElementsInstancedBaseVertex(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice);
 	}
 }
 

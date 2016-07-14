@@ -174,10 +174,10 @@ RenderSystem::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_
 }
 
 void
-RenderSystem::setIndexBuffer(GraphicsDataPtr ibo, GraphicsIndexType indexType) noexcept
+RenderSystem::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setIndexBuffer(ibo, indexType);
+	_pipelineManager->setIndexBuffer(ibo, offset, indexType);
 }
 
 void

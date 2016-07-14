@@ -34,72 +34,59 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_SYSTEM_H_
-#define _H_GUI_SYSTEM_H_
+#include "uicontroller.h"
+#include <ray/gui_feature.h>
+#include <ray/game_server.h>
 
-#include <ray/gui_system_base.h>
-#include <ray/render_types.h>
+__ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")
 
-_NAME_BEGIN
-
-class EXPORT GuiSystem final
+GuiControllerComponent::GuiControllerComponent() noexcept
 {
-	__DeclareSingleton(GuiSystem)
-public:
-	GuiSystem() noexcept;
-	~GuiSystem() noexcept;
+	_f = 0.0f;
+	_clearColor = ray::float4(114.f / 255.f, 144.f / 255.f, 154.f / 255.f);
+	_showTestWindow = true;
+	_showAnotherWindow = false;
+}
 
-	bool open(GuiSystemBasePtr impl = nullptr) except;
-	void close() noexcept;
+GuiControllerComponent::~GuiControllerComponent() noexcept
+{
+}
 
-	void setGuiSystem(GuiSystemBasePtr& system) except;
-	const GuiSystemBasePtr& getGuiSystem() const noexcept;
+ray::GameComponentPtr 
+GuiControllerComponent::clone() const noexcept
+{
+	return std::make_shared<GuiControllerComponent>();
+}
 
-	void setCoreProfile(const std::string& core) except;
-	const std::string& getCoreProfile() const noexcept;
-
-	void setImageLoader(GuiImageLoaderPtr loader) noexcept;
-	GuiImageLoaderPtr getImageLoader() const noexcept;
-
-	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
-	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
-	bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
-	bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept;
-	bool injectKeyRelease(GuiInputKey::Code _key) noexcept;
-
-	bool isFocusMouse() const noexcept;
-	bool isFocusKey() const noexcept;
-	bool isCaptureMouse() const noexcept;
-
-	void setViewport(std::uint32_t w, std::uint32_t h) noexcept;
-	void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept;
-
-	GuiWidgetPtr createWidget(const rtti::Rtti* rtti);
-	template<typename T>
-	typename std::enable_if<std::is_base_of<GuiWidget, T>::value, std::shared_ptr<T>>::type createWidget()
+void 
+GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
+{
+	if (message->isInstanceOf<ray::GuiMessage>())
 	{
-		return std::dynamic_pointer_cast<T>(this->createWidget(T::getRtti()));
+		float delta = ray::GameServer::instance()->getTimer()->delta();
+		float fps = ray::GameServer::instance()->getTimer()->averageFps();
+
+		auto& Gui = message->downcast<ray::GuiMessage>()->getGui();
+
+		Gui.text("hello, world!");
+		Gui.sliderFloat("float", &_f, 0.0f, 1.0f);
+		Gui.colorEdit3("clear color", (float*)&_clearColor);
+		if (Gui.button("Test Window")) _showTestWindow ^= 1;
+		if (Gui.button("Another Window")) _showAnotherWindow ^= 1;
+		Gui.text("Application average %f ms/frame (%f FPS)", delta, fps);
+
+		if (_showAnotherWindow)
+		{
+			Gui.setNextWindowSize(ray::float2(200, 100), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+			Gui.begin("Another Window", &_showAnotherWindow);
+			Gui.text("Hello");
+			Gui.end();
+		}
+
+		if (_showTestWindow)
+		{
+			Gui.setNextWindowPos(ray::float2(650, 20), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+			Gui.showTestWindow(&_showTestWindow);
+		}
 	}
-
-	void render(float delta) except;
-
-private:
-	GuiSystem(const GuiSystem&) noexcept = delete;
-	GuiSystem& operator=(const GuiSystem&) noexcept = delete;
-
-private:
-	MaterialPtr _material;
-	MaterialTechPtr _materialTech;
-	MaterialParamPtr _materialDecal;
-	MaterialParamPtr _materialProj;
-
-	GraphicsDataPtr _vbo;
-	GraphicsDataPtr _ibo;
-	GraphicsTexturePtr _texture;
-
-	GuiSystemBasePtr _system;
-};
-
-_NAME_END
-
-#endif
+}

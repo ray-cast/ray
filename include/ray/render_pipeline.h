@@ -77,7 +77,7 @@ public:
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
 	void setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept;
-	void setIndexBuffer(GraphicsDataPtr ibo, GraphicsIndexType indexType) noexcept;
+	void setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 
 	void generateMipmap(GraphicsTexturePtr texture);
 

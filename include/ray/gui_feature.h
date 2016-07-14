@@ -38,8 +38,23 @@
 #define _H_GUI_FEATURE_H_
 
 #include <ray/game_features.h>
+#include <ray/gui.h>
 
 _NAME_BEGIN
+
+class EXPORT GuiMessage final : public Message
+{
+	__DeclareSubClass(GuiMessage, Message)
+public:
+	GuiMessage() noexcept;
+	~GuiMessage() noexcept;
+
+	Gui& getGui() noexcept;
+	const Gui& getGui() const noexcept;
+
+private:
+	Gui _gui;
+};
 
 class GuiFeature final : public GameFeature
 {
@@ -59,10 +74,11 @@ protected:
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
 
+	virtual void onFrameEnd() noexcept;
+
 	virtual void onMessage(const MessagePtr& message) except;
 
 private:
-
 	std::uint32_t _width;
 	std::uint32_t _height;
 };

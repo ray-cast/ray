@@ -23,4 +23,10 @@
     <object position="400,400,0"  scale="200, 200, 1" active="true">
         <component class="GuiButton" skin="Button" text="hello world"/>
     </object>
+    <object>
+        <attribute name="controller"/>
+        <attribute active="true"/>
+        <component class="GuiController">
+        </component>
+    </object>
 </scene>

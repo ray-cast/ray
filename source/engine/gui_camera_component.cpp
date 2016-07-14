@@ -45,6 +45,7 @@ __ImplementSubClass(GuiCameraComponent, GameComponent, "GuiCamera")
 
 GuiCameraComponent::GuiCameraComponent() noexcept
 	: _onPostRender(std::bind(&GuiCameraComponent::onPostRender, this, std::placeholders::_1))
+	, _guiMessage(std::make_shared<GuiMessage>())
 {
 }
 
@@ -85,6 +86,10 @@ GuiCameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
 void
 GuiCameraComponent::onPostRender(const Camera&) noexcept
 {
+	_guiMessage->getGui().newFrame();
+	GameServer::instance()->sendMessage(_guiMessage);
+	_guiMessage->getGui().render();
+
 	GuiSystem::instance()->render(GameServer::instance()->getTimer()->delta());
 }
 

@@ -62,10 +62,9 @@ private:
 	void renderShadowMap(const Light& light, RenderQueue queue) noexcept;
 
 private:
-	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
-
 	bool setupShadowMaterial(RenderPipeline& pipeline) noexcept;
 	bool setupShadowMaps(RenderPipeline& pipeline) noexcept;
+	bool setupShadowSoftMaps(RenderPipeline& pipeline) noexcept;
 
 	void destroyShadowMaterial() noexcept;
 	void destroyShadowMaps() noexcept;

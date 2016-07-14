@@ -71,7 +71,21 @@ ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 	assert(pipeline.getCamera());
 
 	pipeline.setFramebuffer(pipeline.getCamera()->getFramebuffer());
-	pipeline.clearFramebuffer(0, pipeline.getCamera()->getClearFlags(), pipeline.getCamera()->getClearColor(), 1.0, 0);
+
+	if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
+		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+
+	if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagDepthBit ||
+		pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
+	{
+		if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit)
+			pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+		else if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
+			pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+		else if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
+			pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+	}
+		
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 

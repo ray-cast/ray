@@ -398,7 +398,7 @@ AnimationProperty::updateIK(Bones& bones, const IKAttr& ik) noexcept
 	auto& effector = bones.at(ik.boneIndex);
 	auto& target = bones.at(ik.targetBoneIndex);
 
-	Vector3 effectPos = effector.getTransform().getTranslate();
+	const Vector3& effectPos = effector.getTransform().getTranslate();
 
 	for (std::uint32_t i = 0; i < ik.iterations; i++)
 	{
@@ -419,32 +419,30 @@ AnimationProperty::updateIK(Bones& bones, const IKAttr& ik) noexcept
 			float rotationDotProduct = math::dot(dstLocal, srcLocal);
 			float rotationAngle = math::safeAcos(rotationDotProduct) * ik.child[j].angleWeight;
 
-			if (rotationAngle > EPSILON_E5)
+			if (rotationAngle < EPSILON_E5)
+				continue;
+
+			Vector3 rotationAxis = math::cross(dstLocal, srcLocal);
+			rotationAxis = math::normalize(rotationAxis);
+
+			Quaternion q0(rotationAxis, RAD_TO_DEG(rotationAngle));
+
+			if (ik.child[j].rotateLimited)
 			{
-				Vector3 rotationAxis = math::cross(dstLocal, srcLocal);
-				rotationAxis = math::normalize(rotationAxis);
+				EulerAngles euler(q0);
+				euler.x = std::min(ik.child[j].minimumDegrees.x, euler.x);
+				euler.y = std::min(ik.child[j].minimumDegrees.y, euler.y);
+				euler.z = std::min(ik.child[j].minimumDegrees.z, euler.z);
+				euler.x = std::max(ik.child[j].maximumDegrees.x, euler.x);
+				euler.y = std::max(ik.child[j].maximumDegrees.y, euler.y);
+				euler.z = std::max(ik.child[j].maximumDegrees.z, euler.z);
 
-				Quaternion q0(rotationAxis, RAD_TO_DEG(rotationAngle));
-
-				if (ik.child[j].rotateLimited)
-				{
-					EulerAngles euler(q0);
-					euler.x = std::min(ik.child[j].minimumDegrees.x, euler.x);
-					euler.y = std::min(ik.child[j].minimumDegrees.y, euler.y);
-					euler.z = std::min(ik.child[j].minimumDegrees.z, euler.z);
-					euler.x = std::max(ik.child[j].maximumDegrees.x, euler.x);
-					euler.y = std::max(ik.child[j].maximumDegrees.y, euler.y);
-					euler.z = std::max(ik.child[j].maximumDegrees.z, euler.z);
-
-					q0.makeRotate(euler);
-				}
-
-				Quaternion qq = math::cross(bone.getRotation(), q0);
-
-				updateTransform(bone, bone.getLocalTransform().getTranslate(), qq);
+				q0.makeRotate(euler);
 			}
 
-			this->updateBoneMatrix(bone);
+			Quaternion qq = math::cross(bone.getRotation(), q0);
+			updateTransform(bone, bone.getLocalTransform().getTranslate(), qq);
+
 			this->updateBoneMatrix(target);
 		}
 	}

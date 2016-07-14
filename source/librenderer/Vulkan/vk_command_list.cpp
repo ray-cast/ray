@@ -456,15 +456,15 @@ VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first,
 }
 
 void
-VulkanCommandList::setIndexBuffer(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept
+VulkanCommandList::setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 	
 	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer(); 
 	if (indexType == GraphicsIndexType::GraphicsIndexTypeUInt16)
-		vkCmdBindIndexBuffer(_commandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT16);
+		vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, VkIndexType::VK_INDEX_TYPE_UINT16);
 	else if (indexType == GraphicsIndexType::GraphicsIndexTypeUInt32)
-		vkCmdBindIndexBuffer(_commandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
 }
 
 void 

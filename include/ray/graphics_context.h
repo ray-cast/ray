@@ -88,7 +88,7 @@ public:
 	virtual void setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept = 0;
 	virtual GraphicsDataPtr getVertexBufferData(std::uint32_t i) const noexcept = 0;
 
-	virtual void setIndexBufferData(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept = 0;
+	virtual void setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept = 0;
 	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
 
 	virtual void generateMipmap(GraphicsTexturePtr texture) noexcept = 0;

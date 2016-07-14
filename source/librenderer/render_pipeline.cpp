@@ -294,10 +294,10 @@ RenderPipeline::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intpt
 }
 
 void 
-RenderPipeline::setIndexBuffer(GraphicsDataPtr ibo, GraphicsIndexType indexType) noexcept
+RenderPipeline::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->setIndexBufferData(ibo, indexType);
+	_graphicsContext->setIndexBufferData(ibo, offset, indexType);
 }
 
 void
@@ -311,7 +311,7 @@ void
 RenderPipeline::drawSphere(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
 	this->setVertexBuffer(0, _sphereVbo, 0);
-	this->setIndexBuffer(_sphereIbo, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	this->setIndexBuffer(_sphereIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -327,7 +327,7 @@ void
 RenderPipeline::drawCone(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
 	this->setVertexBuffer(0, _coneVbo, 0);
-	this->setIndexBuffer(_coneIbo, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	this->setIndexBuffer(_coneIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -343,7 +343,7 @@ void
 RenderPipeline::drawScreenQuad(const MaterialTech& tech, std::uint32_t instanceCount) noexcept
 {
 	this->setVertexBuffer(0, _screenQuadVbo, 0);
-	this->setIndexBuffer(_screenQuadIbo, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	this->setIndexBuffer(_screenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -359,7 +359,7 @@ void
 RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer, std::uint32_t instanceCount) noexcept
 {
 	this->setVertexBuffer(0, _screenQuadVbo, 0);
-	this->setIndexBuffer(_screenQuadIbo, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	this->setIndexBuffer(_screenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 	
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)

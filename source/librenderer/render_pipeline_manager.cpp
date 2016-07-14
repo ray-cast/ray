@@ -98,22 +98,6 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 
 	_forward = forwardShading;
 
-	if (!this->setupShadowRenderer(_pipeline, setting))
-		return false;
-
-	if (setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
-	{
-		auto deferredLighting = std::make_shared<DeferredLightingPipeline>();
-		if (!deferredLighting->setup(this->downcast_pointer<RenderPipelineManager>()))
-			return false;
-
-		_deferredLighting = deferredLighting;
-	}
-
-	_postprocess = std::make_shared<PostRenderPipeline>();
-	_postprocess->_setPipelineManager(this);
-	_pipeline->addPostProcess(_postprocess);
-
 	this->setRenderSetting(setting);
 	return true;
 }
@@ -165,6 +149,7 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 	_setting.mie = setting.mie;
 	_setting.density = setting.density;
 	_setting.absorbtionScale = setting.absorbtionScale;
+	_setting.enableGlobalIllumination = setting.enableGlobalIllumination;
 
 	if (_setting.enableAtmospheric != setting.enableAtmospheric)
 	{
@@ -311,10 +296,25 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		}
 	}
 
-	if (_setting.swapInterval != setting.swapInterval)
+	if (setting.shadowQuality != ShadowQuality::ShadowQualityNone)
 	{
-		_pipeline->setSwapInterval(setting.swapInterval);
+		if (!this->setupShadowRenderer(_pipeline, setting))
+			return false;
 	}
+
+	if (setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
+	{
+		auto deferredLighting = std::make_shared<DeferredLightingPipeline>();
+		if (!deferredLighting->setup(this->downcast_pointer<RenderPipelineManager>()))
+			return false;
+
+		_deferredLighting = deferredLighting;
+	}
+
+	_postprocess = std::make_shared<PostRenderPipeline>();
+	_postprocess->_setPipelineManager(this);
+	_pipeline->addPostProcess(_postprocess);
+	_pipeline->setSwapInterval(setting.swapInterval);
 
 	_setting = setting;
 	return true;
@@ -327,54 +327,30 @@ RenderPipelineManager::getRenderSetting() const noexcept
 }
 
 void
-RenderPipelineManager::renderBegin() noexcept
+RenderPipelineManager::setWindowResolution(std::uint32_t width, std::uint32_t height) noexcept
 {
-	assert(_pipeline);
-	_pipeline->renderBegin();
-}
-
-void
-RenderPipelineManager::render(const RenderScene& scene) noexcept
-{
-	assert(_pipeline);
-
-	auto& cameras = scene.getCameraList();
-	for (auto& camera : cameras)
+	if (_setting.width != width || _setting.height != height)
 	{
-		camera->onRenderPre(*camera);
+		_pipeline->setWindowResolution(width, height);
 
-		if (camera->getCameraOrder() != CameraOrder::CameraOrder3D &&
-			camera->getCameraOrder() != CameraOrder::CameraOrder2D)
-			continue;
+		_setting.width = width;
+		_setting.height = height;
 
-		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
-		{
-			_shadowMapGen->onRenderPre();
-			_shadowMapGen->onRenderPipeline(camera);
-			_shadowMapGen->onRenderPost();
-		}
+		_forward->onResolutionChange();
 
-		auto renderPipeline = _forward;
-		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
-		{
-			if (_setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
-				renderPipeline = _deferredLighting;
-		}
+		if (_forwardPlus)
+			_forwardPlus->onResolutionChange();
 
-		renderPipeline->onRenderPre();
-		renderPipeline->onRenderPipeline(camera);
-
-		camera->onRenderPost(*camera);
-
-		renderPipeline->onRenderPost();
+		if (_deferredLighting)
+			_deferredLighting->onResolutionChange();
 	}
 }
 
 void
-RenderPipelineManager::renderEnd() noexcept
+RenderPipelineManager::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
 {
-	_pipeline->present();
-	_pipeline->renderEnd();
+	w = _setting.width;
+	h = _setting.height;
 }
 
 void
@@ -460,10 +436,10 @@ RenderPipelineManager::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std
 }
 
 void 
-RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo, GraphicsIndexType indexType) noexcept
+RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_pipeline);
-	_pipeline->setIndexBuffer(ibo, indexType);
+	_pipeline->setIndexBuffer(ibo, offset, indexType);
 }
 
 void
@@ -513,33 +489,6 @@ RenderPipelineManager::drawIndexedLayer(std::uint32_t numIndices, std::uint32_t 
 {
 	assert(_pipeline);
 	_pipeline->drawIndexedLayer(numIndices, numInstances, startIndice, startVertice, startInstances, layer);
-}
-
-void
-RenderPipelineManager::setWindowResolution(std::uint32_t width, std::uint32_t height) noexcept
-{
-	if (_setting.width != width || _setting.height != height)
-	{
-		_pipeline->setWindowResolution(width, height);
-
-		_setting.width = width;
-		_setting.height = height;
-
-		_forward->onResolutionChange();
-
-		if (_forwardPlus)
-			_forwardPlus->onResolutionChange();
-
-		if (_deferredLighting)
-			_deferredLighting->onResolutionChange();
-	}
-}
-
-void
-RenderPipelineManager::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
-{
-	w = _setting.width;
-	h = _setting.height;
 }
 
 void
@@ -708,6 +657,60 @@ void
 RenderPipelineManager::destroyShadowRenderer() noexcept
 {
 	_shadowMapGen.reset();
+}
+
+void
+RenderPipelineManager::renderBegin() noexcept
+{
+	assert(_pipeline);
+	_pipeline->renderBegin();
+}
+
+void
+RenderPipelineManager::render(const RenderScene& scene) noexcept
+{
+	assert(_pipeline);
+
+	auto& cameras = scene.getCameraList();
+	for (auto& camera : cameras)
+	{
+		camera->onRenderPre(*camera);
+
+		if (camera->getCameraOrder() != CameraOrder::CameraOrder3D &&
+			camera->getCameraOrder() != CameraOrder::CameraOrder2D)
+			continue;
+
+		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
+		{
+			if (_shadowMapGen)
+			{
+				_shadowMapGen->onRenderPre();
+				_shadowMapGen->onRenderPipeline(camera);
+				_shadowMapGen->onRenderPost();
+			}
+		}
+
+		auto renderPipeline = _forward;
+		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
+		{
+			if (_setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
+				renderPipeline = _deferredLighting;
+		}
+
+		renderPipeline->onRenderPre();
+		renderPipeline->onRenderPipeline(camera);
+
+		camera->onRenderPost(*camera);
+
+		renderPipeline->onRenderPost();
+	}
+}
+
+void
+RenderPipelineManager::renderEnd() noexcept
+{
+	_pipeline->present();
+	_pipeline->renderEnd();
 }
 
 _NAME_END

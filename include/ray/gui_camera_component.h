@@ -38,6 +38,7 @@
 #define _H_GUI_CAMERA_COMPONENT_H_
 
 #include <ray/game_component.h>
+#include <ray/gui_feature.h>
 
 _NAME_BEGIN
 
@@ -67,7 +68,7 @@ private:
 
 	GameComponentPtr _mouseFocus;
 	GameComponentPtr _motionFocus;
-
+	std::shared_ptr<GuiMessage> _guiMessage;
 	std::function<void(const Camera&)> _onPostRender;
 };
 

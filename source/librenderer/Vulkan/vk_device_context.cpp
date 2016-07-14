@@ -262,7 +262,7 @@ VulkanDeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 }
 
 void
-VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data, GraphicsIndexType indexType) noexcept
+VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<VulkanGraphicsData>());
@@ -270,7 +270,7 @@ VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data, GraphicsIndexType 
 	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	_indexBuffer = data;
-	_commandList->setIndexBuffer(data, indexType);
+	_commandList->setIndexBuffer(data, offset, indexType);
 }
 
 GraphicsDataPtr

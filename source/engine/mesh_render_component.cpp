@@ -547,7 +547,7 @@ bool
 MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, const MeshProperty& mesh, GraphicsDataPtr vbo, GraphicsDataPtr ibo) noexcept
 {
 	renderObject->setVertexBuffer(vbo, 0);
-	renderObject->setIndexBuffer(ibo, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	renderObject->setIndexBuffer(ibo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	renderObject->setBoundingBox(mesh.getBoundingBox());
 	renderObject->setOwnerListener(this);

@@ -264,77 +264,93 @@ GuiSystem::render(float delta) except
 	assert(_system);
 	_system->render(delta);
 
-	auto renderer = RenderSystem::instance();
-	
-	std::uint32_t width, height;
-	_system->getViewport(width, height);
+	auto renderer = RenderSystem::instance();	
 
-	renderer->setViewport(0, ray::Viewport(0, 0, width, height));
-	renderer->setScissor(0, ray::Scissor(0, 0, width, height));
-
-	renderer->setMaterialPass(_materialTech->getPass(0));
-
+	auto& io = ImGui::GetIO();
 	auto drawData = ImGui::GetDrawData();
+
+	std::size_t totalVertexSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
+	std::size_t totalIndirectSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
+
+	if (!_vbo || _vbo->getGraphicsDataDesc().getStreamSize() <= totalVertexSize)
+	{
+		ray::GraphicsDataDesc dataDesc;
+		dataDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+		dataDesc.setStream(0);
+		dataDesc.setStreamSize(totalVertexSize);
+		dataDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
+		_vbo = renderer->createGraphicsData(dataDesc);
+		if (!_vbo)
+			return;
+	}
+
+	if (!_ibo || _ibo->getGraphicsDataDesc().getStreamSize() <= totalIndirectSize)
+	{
+		ray::GraphicsDataDesc elementDesc;
+		elementDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+		elementDesc.setStream(0);
+		elementDesc.setStreamSize(totalIndirectSize);
+		elementDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
+		_ibo = renderer->createGraphicsData(elementDesc);
+		if (!_ibo)
+			return;
+	}
+
+	ImDrawVert* vbo;
+	ImDrawIdx* ibo;
+
+	_vbo->map(0, totalVertexSize, (void**)&vbo);
+	_ibo->map(0, totalIndirectSize, (void**)&ibo);
+
 	for (int n = 0; n < drawData->CmdListsCount; n++)
 	{
 		const ImDrawList* cmd_list = drawData->CmdLists[n];
-		std::uint32_t idx_buffer_offset = 0;
+		std::memcpy(vbo, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
+		std::memcpy(ibo, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx));
+		vbo += cmd_list->VtxBuffer.size();
+		ibo += cmd_list->IdxBuffer.size();
+	}
 
-		std::size_t needVertexSize = cmd_list->VtxBuffer.size() * sizeof(ImDrawVert);
-		std::size_t needIndirectSize = cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx);
+	_vbo->unmap();
+	_ibo->unmap();
 
-		if (!_vbo || _vbo->getGraphicsDataDesc().getStreamSize() <= needVertexSize)
-		{
-			ray::GraphicsDataDesc dataDesc;
-			dataDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
-			dataDesc.setStream((std::uint8_t*)cmd_list->VtxBuffer.Data);
-			dataDesc.setStreamSize(needVertexSize);
-			dataDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
-			_vbo = renderer->createGraphicsData(dataDesc);
-			if (!_vbo)
-				return;
-		}
-		else
-		{
-			void* vbo;
-			_vbo->map(0, needVertexSize, &vbo);
-			std::memcpy(vbo, cmd_list->VtxBuffer.Data, needVertexSize);
-			_vbo->unmap();
-		}
+	renderer->setViewport(0, ray::Viewport(0, 0, io.DisplaySize.x, io.DisplaySize.y));
+	renderer->setScissor(0, ray::Scissor(0, 0, io.DisplaySize.x, io.DisplaySize.y));
 
-		if (!_ibo || _ibo->getGraphicsDataDesc().getStreamSize() <= needIndirectSize)
-		{
-			ray::GraphicsDataDesc elementDesc;
-			elementDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-			elementDesc.setStream((std::uint8_t*)cmd_list->IdxBuffer.Data);
-			elementDesc.setStreamSize(needIndirectSize);
-			elementDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
-			_ibo = renderer->createGraphicsData(elementDesc);
-			if (!_ibo)
-				return;
-		}
-		else
-		{
-			void* ibo;
-			_ibo->map(0, needIndirectSize, &ibo);
-			std::memcpy(ibo, cmd_list->IdxBuffer.Data, needIndirectSize);
-			_ibo->unmap();
-		}
+	renderer->setVertexBuffer(0, _vbo, 0);
+	renderer->setIndexBuffer(_ibo, 0, ray::GraphicsIndexType::GraphicsIndexTypeUInt16);
 
-		renderer->setVertexBuffer(0, _vbo, 0);
-		renderer->setIndexBuffer(_ibo, 0, ray::GraphicsIndexType::GraphicsIndexTypeUInt16);
+	renderer->setMaterialPass(_materialTech->getPass(0));
+	
+	std::uint32_t vdx_buffer_offset = 0;
+	std::uint32_t idx_buffer_offset = 0;
+
+	for (int n = 0; n < drawData->CmdListsCount; n++)
+	{
+		const ImDrawList* cmd_list = drawData->CmdLists[n];
 
 		for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end(); pcmd++)
 		{
 			auto texture = (ray::GraphicsTexture*)pcmd->TextureId;
 			_materialDecal->uniformTexture(texture->downcast_pointer<ray::GraphicsTexture>());
 
-			auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-			renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
-			renderer->drawIndexed(pcmd->ElemCount, 1, idx_buffer_offset, 0, 0);
+			if (renderer->getRenderSetting().deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+			{
+				auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+				renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
+			}
+			else
+			{
+				auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)(io.DisplaySize.y - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+				renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
+			}		
+
+			renderer->drawIndexed(pcmd->ElemCount, 1, idx_buffer_offset, vdx_buffer_offset, 0);
 
 			idx_buffer_offset += pcmd->ElemCount;
 		}
+
+		vdx_buffer_offset += cmd_list->VtxBuffer.size();
 	}
 }
 

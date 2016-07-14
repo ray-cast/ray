@@ -180,7 +180,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerBloomDesc.setWidth(width / 2);
 	samplerBloomDesc.setHeight(height / 2);
 	samplerBloomDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 	samplerBloomDesc.setMipBase(0);
 	samplerBloomDesc.setMipLevel(3);
 	samplerBloomDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);

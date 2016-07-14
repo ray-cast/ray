@@ -123,7 +123,7 @@ OGLCoreDeviceContext::renderBegin() noexcept
 		this->startDebugControl();
 		_needEnableDebugControl = false;
 	}
-		
+
 	if (_needDisableDebugControl)
 	{
 		this->stopDebugControl();
@@ -161,7 +161,13 @@ OGLCoreDeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexce
 
 	if (_scissors[i] != scissor)
 	{
-		glScissorIndexed(i, scissor.left, scissor.top, scissor.width, scissor.height);
+		std::uint32_t height;
+		if (_framebuffer)
+			height = _framebuffer->getGraphicsFramebufferDesc().getWidth();
+		else
+			height = _glcontext->getGraphicsSwapchainDesc().getHeight();
+
+		glScissorIndexed(i, scissor.left, height - scissor.height - scissor.top, scissor.width, scissor.height);
 		_scissors[i] = scissor;
 	}
 }
@@ -192,7 +198,7 @@ OGLCoreDeviceContext::setStencilCompareMask(GraphicsStencilFaceFlags face, std::
 			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask);
 			_stateCaptured.setStencilBackReadMask(mask);
 		}
-	}	
+	}
 }
 
 std::uint32_t
@@ -413,6 +419,8 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			for (std::size_t i = 0; i < viewportCount; i++)
 			{
 				this->setViewport(i, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+
+				glScissorIndexed(i, _scissors[i].left, framebufferDesc.getHeight() - _scissors[i].height - _scissors[i].top, _scissors[i].width, _scissors[i].height);
 			}
 		}
 	}
@@ -458,6 +466,14 @@ OGLCoreDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags
 				return;
 			}
 		}
+	}
+
+	if (_stateCaptured.getScissorTestEnable())
+	{
+		if (_framebuffer)
+			glScissor(0, 0, _framebuffer->getGraphicsFramebufferDesc().getWidth(), _framebuffer->getGraphicsFramebufferDesc().getHeight());
+		else
+			glScissor(0, 0, _glcontext->getGraphicsSwapchainDesc().getWidth(), _glcontext->getGraphicsSwapchainDesc().getHeight());
 	}
 
 	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
@@ -507,6 +523,22 @@ OGLCoreDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags
 			GLboolean b = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE : GL_FALSE;
 			GLboolean a = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE : GL_FALSE;
 			glColorMaski(buffer, r, g, b, a);
+		}
+	}
+
+	if (_stateCaptured.getScissorTestEnable())
+	{
+		if (_framebuffer)
+		{
+			std::size_t viewportCount = std::max<std::size_t>(1, _framebuffer->getGraphicsFramebufferDesc().getColorAttachments().size());
+			for (std::size_t i = 0; i < viewportCount; i++)
+			{
+				glScissorIndexed(i, _scissors[i].left, _scissors[i].top, _scissors[i].width, _scissors[i].height);
+			}
+		}
+		else
+		{
+			glScissorIndexed(0, _scissors[0].left, _scissors[0].top, _scissors[0].width, _scissors[0].height);
 		}
 	}
 }
@@ -717,7 +749,7 @@ OGLCoreDeviceContext::checkSupport() noexcept
 	return true;
 }
 
-void 
+void
 OGLCoreDeviceContext::enableDebugControl(bool enable) noexcept
 {
 	if (enable)

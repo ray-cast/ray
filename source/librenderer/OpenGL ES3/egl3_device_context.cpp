@@ -152,7 +152,13 @@ EGL3DeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 
 	if (_scissor != scissor)
 	{
-		GL_CHECK(glScissor(scissor.left, scissor.top, scissor.width, scissor.height));
+		std::uint32_t height;
+		if (_framebuffer)
+			height = _framebuffer->getGraphicsFramebufferDesc().getWidth();
+		else
+			height = _glcontext->getGraphicsSwapchainDesc().getHeight();
+
+		GL_CHECK(glScissor(scissor.left, height - scissor.top, scissor.width, scissor.height));
 		_scissor = scissor;
 	}
 }
@@ -363,7 +369,7 @@ EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset
 		GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID()));
 		_indexBuffer = ibo;
 	}
-	
+
 	_indexType = EGL3Types::asIndexType(indexType);
 	_indexOffset = offset;
 }
@@ -404,6 +410,8 @@ EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
 			this->setViewport(0, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+
+			glScissor(_scissor.left, framebufferDesc.getHeight() - _scissor.height - _scissor.top, _scissor.width, _scissor.height);
 		}
 	}
 	else
@@ -464,10 +472,10 @@ EGL3DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 			if (!(flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit))
 				return;
 
-			flags = GraphicsClearFlagBits::GraphicsClearFlagColorBit;	
+			flags = GraphicsClearFlagBits::GraphicsClearFlagColorBit;
 			buffer = i;
 		}
-		else if (type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal || 
+		else if (type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal ||
 				 type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal)
 		{
 			if (!(flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit) &&
@@ -476,6 +484,14 @@ EGL3DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 				return;
 			}
 		}
+	}
+
+	if (_stateCaptured.getScissorTestEnable())
+	{
+		if (_framebuffer)
+			glScissor(0, 0, _framebuffer->getGraphicsFramebufferDesc().getWidth(), _framebuffer->getGraphicsFramebufferDesc().getHeight());
+		else
+			glScissor(0, 0, _glcontext->getGraphicsSwapchainDesc().getWidth(), _glcontext->getGraphicsSwapchainDesc().getHeight());
 	}
 
 	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
@@ -526,6 +542,11 @@ EGL3DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 			GLboolean a = colorWriteFlags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE : GL_FALSE;
 			glColorMaskiEXT(buffer, r, g, b, a);
 		}
+	}
+
+	if (_stateCaptured.getScissorTestEnable())
+	{
+		glScissor(_scissor.left, _scissor.top, _scissor.width, _scissor.height);
 	}
 }
 
@@ -673,7 +694,7 @@ EGL3DeviceContext::startDebugControl() noexcept
 #endif
 }
 
-void 
+void
 EGL3DeviceContext::enableDebugControl(bool enable) noexcept
 {
 	if (enable)

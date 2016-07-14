@@ -266,7 +266,6 @@ GuiSystem::render(float delta) except
 
 	auto renderer = RenderSystem::instance();	
 
-	auto& io = ImGui::GetIO();
 	auto drawData = ImGui::GetDrawData();
 
 	std::size_t totalVertexSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
@@ -314,6 +313,7 @@ GuiSystem::render(float delta) except
 	_vbo->unmap();
 	_ibo->unmap();
 
+	auto& io = ImGui::GetIO();
 	renderer->setViewport(0, ray::Viewport(0, 0, io.DisplaySize.x, io.DisplaySize.y));
 	renderer->setScissor(0, ray::Scissor(0, 0, io.DisplaySize.x, io.DisplaySize.y));
 
@@ -334,17 +334,8 @@ GuiSystem::render(float delta) except
 			auto texture = (ray::GraphicsTexture*)pcmd->TextureId;
 			_materialDecal->uniformTexture(texture->downcast_pointer<ray::GraphicsTexture>());
 
-			if (renderer->getRenderSetting().deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
-			{
-				auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-				renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
-			}
-			else
-			{
-				auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)(io.DisplaySize.y - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-				renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
-			}		
-
+			auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+			renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
 			renderer->drawIndexed(pcmd->ElemCount, 1, idx_buffer_offset, vdx_buffer_offset, 0);
 
 			idx_buffer_offset += pcmd->ElemCount;

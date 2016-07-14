@@ -276,7 +276,7 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 			stateDesc.setCullMode(stringToCullMode(reader.getValue<std::string>("value")));
 		else if (name == "polygonMode")
 			stateDesc.setPolygonMode(stringToFillMode(reader.getValue<std::string>("value")));
-		else if (name == "scissorTestEnable")
+		else if (name == "scissortest")
 			stateDesc.setScissorTestEnable(reader.getValue<bool>("value"));
 		else if (name == "primitive")
 			stateDesc.setPrimitiveType(stringToPrimitive(reader.getValue<std::string>("value")));

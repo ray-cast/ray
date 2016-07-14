@@ -89,7 +89,7 @@ EGL2DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 
 	if (!this->initStateSystem())
 		return false;
-	
+
 	return true;
 }
 
@@ -154,7 +154,13 @@ EGL2DeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	if (_scissor != scissor)
 	{
-		glScissor(scissor.left, scissor.top, scissor.width, scissor.height);
+		std::uint32_t height;
+		if (_framebuffer)
+			height = _framebuffer->getGraphicsFramebufferDesc().getWidth();
+		else
+			height = _glcontext->getGraphicsSwapchainDesc().getHeight();
+
+		glScissor(scissor.left, height - scissor.top, scissor.width, scissor.height);
 		_scissor = scissor;
 	}
 }
@@ -404,6 +410,8 @@ EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
 			this->setViewport(0, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+
+			glScissor(_scissor.left, framebufferDesc.getHeight() - _scissor.height - _scissor.top, _scissor.width, _scissor.height);
 		}
 	}
 	else
@@ -419,7 +427,7 @@ EGL2DeviceContext::getFramebuffer() const noexcept
 	return _framebuffer;
 }
 
-void 
+void
 EGL2DeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 }
@@ -464,6 +472,14 @@ EGL2DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 		}
 	}
 
+	if (_stateCaptured.getScissorTestEnable())
+	{
+		if (_framebuffer)
+			glScissor(0, 0, _framebuffer->getGraphicsFramebufferDesc().getWidth(), _framebuffer->getGraphicsFramebufferDesc().getHeight());
+		else
+			glScissor(0, 0, _glcontext->getGraphicsSwapchainDesc().getWidth(), _glcontext->getGraphicsSwapchainDesc().getHeight());
+	}
+
 	if (mode != 0)
 	{
 		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
@@ -493,6 +509,11 @@ EGL2DeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, c
 		{
 			GL_CHECK(glDepthMask(GL_FALSE));
 		}
+	}
+
+	if (_stateCaptured.getScissorTestEnable())
+	{
+		glScissor(_scissor.left, _scissor.top, _scissor.width, _scissor.height);
 	}
 }
 
@@ -618,7 +639,7 @@ EGL2DeviceContext::enableDebugControl(bool enable) noexcept
 	{
 		_needEnableDebugControl = true;
 		_needDisableDebugControl = false;
-	}		
+	}
 	else
 	{
 		_needEnableDebugControl = false;

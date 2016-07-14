@@ -67,6 +67,7 @@
             <state name="cullmode" value="none"/>
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+            <state name="scissortest" value="true"/>
             <state name="blend" value="true"/>
             <state name="blendsrc" value="srcalpha"/>
             <state name="blenddst" value="invsrcalpha"/>

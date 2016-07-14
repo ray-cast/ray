@@ -163,7 +163,7 @@ OGLCoreDeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexce
 	{
 		std::uint32_t height;
 		if (_framebuffer)
-			height = _framebuffer->getGraphicsFramebufferDesc().getWidth();
+			height = _framebuffer->getGraphicsFramebufferDesc().getHeight();
 		else
 			height = _glcontext->getGraphicsSwapchainDesc().getHeight();
 

@@ -46,22 +46,20 @@
 #if defined(_WINDOWS_)
 #   include <dos.h>
 #   include <io.h>
-#elif defined(__LINUX__) || defined(__ANDROID__)
+#	include <fcntl.h>
+#elif defined(__LINUX__) || defined(__ANDROID__) || defined(__APPLE__)
 #	include <sys/stat.h>
 #	include <sys/types.h>
 #	include <sys/param.h>
+#	include <sys/fcntl.h>
 #	include <unistd.h>
 #	include <dirent.h>
 #endif
 
 _NAME_BEGIN
 
-#if defined(__WINDOWS__)
-#   if defined(__MINGW64__)
-#       define  POSIX(func) _ ## func
-#   else
-#       define  POSIX(func) _ ## func
-#   endif
+#if defined(__WINDOWS__) || defined(__MINGW64__)
+#   define  POSIX(func) _ ## func
 #else
 #   define  POSIX(func) func
 #endif

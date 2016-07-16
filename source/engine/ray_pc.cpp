@@ -169,7 +169,7 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 		return false;
 
 	::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	
+
 	_window = ::glfwCreateWindow(w, h, title, nullptr, nullptr);
 	if (_window)
 	{
@@ -186,6 +186,8 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 		Window hwnd = ::glfwGetX11Window(_window);
 #elif defined(GLFW_EXPOSE_NATIVE_EGL)
 		EGLSurface hwnd = ::glfwGetEGLSurface(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_NSGL)
+	demo.hwnd = ::glfwGetCocoaWindow(_window);
 #endif
 
 		_gameApp = std::make_shared<ray::GameApplication>();

@@ -93,7 +93,7 @@ OGLDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 	swapchain->setDevice(this->downcast_pointer<OGLDevice>());
 	if (swapchain->setup(desc))
 		return swapchain;
-	return false;
+	return nullptr;
 }
 
 GraphicsContextPtr
@@ -120,7 +120,7 @@ OGLDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 		}
 	}
 
-	return false;
+	return nullptr;
 }
 
 GraphicsInputLayoutPtr

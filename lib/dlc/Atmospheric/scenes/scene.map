@@ -10,12 +10,13 @@
             <attribute znear="0.1"/>
             <attribute zfar="1000.0"/>
         </component>
+        <component class="GuiCamera"/>
         <component class="FirstPersonCamera">
         </component>
     </object>
     <object>
         <attribute name="sun"/>
-        <attribute position="0, 10055, -25"/>
+        <attribute position="0, 10055, 0"/>
         <attribute rotate="90, 0, 0"/>
         <attribute active="true"/>
         <component class="Light">
@@ -23,6 +24,18 @@
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="10000.0"/>
             <attribute intensity="10"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="moon"/>
+        <attribute position="0, -10055, 0"/>
+        <attribute rotate="-90, 0, 0"/>
+        <attribute active="true"/>
+        <component class="Light">
+            <attribute type="sun"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="100000.0"/>
+            <attribute intensity="1"/>
         </component>
     </object>
     <object>

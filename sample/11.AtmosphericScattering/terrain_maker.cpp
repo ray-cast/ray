@@ -39,7 +39,12 @@
 #include <ray/mesh_component.h>
 #include <ray/material.h>
 #include <ray/res_manager.h>
+#include <ray/game_server.h>
 #include <ray/game_object_manager.h>
+#include <ray/gui_feature.h>
+#include <ray/input_feature.h>
+
+using namespace ray;
 
 __ImplementSubClass(TerrainMakerComponent, GameComponent, "TerrainMaker")
 
@@ -54,48 +59,26 @@ TerrainMakerComponent::~TerrainMakerComponent() noexcept
 void
 TerrainMakerComponent::onActivate() except
 {
-	/*auto materialTemp = ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml");
+	auto materialTemp = ResManager::instance()->createMaterial("sys:fx/opacity.fxml");
 	if (!materialTemp)
 		return;
 
-	auto terrainMesh = std::make_shared<ray::MeshProperty>();
-	terrainMesh->makeNoise(2048, 2048, 400, 400);
-
-	auto gameObject = std::make_shared<ray::GameObject>();
-	gameObject->setActive(true);
-	gameObject->addComponent(std::make_shared<ray::MeshComponent>(terrainMesh));
-	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
-	gameObject->setScale(ray::float3(100, 50, 100));
-	gameObject->setTranslate(ray::float3(0, 8000, 0));
-
-	auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
-	material->getParameter("quality")->uniform4f(0.0, 0.0, 0.0, 0.0);
-	material->getParameter("diffuse")->uniform3f(ray::math::pow(ray::float3(0.15, 0.48, 0.09), ray::float3(1.0f / 2.4f)));
-	material->getParameter("specular")->uniform1f(0.1);
-	material->getParameter("shininess")->uniform1f(0.1);
-
-	_objects.push_back(gameObject);*/
-
-	auto materialTemp = ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml");
-	if (!materialTemp)
-		return;
-
-	auto sphereMesh = std::make_shared<ray::MeshProperty>();
+	auto sphereMesh = std::make_shared<MeshProperty>();
 	sphereMesh->makeSphere(1.0, 64, 48);
 
 	for (std::size_t i = 0; i < 10; i++)
 	{
 		for (std::size_t j = 0; j < 10; j++)
 		{
-			auto gameObject = std::make_shared<ray::GameObject>();
+			auto gameObject = std::make_shared<GameObject>();
 			gameObject->setActive(true);
-			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
-			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
-			gameObject->setScale(ray::float3(0.9));
-			gameObject->setTranslate(ray::float3(-10.0f + i * 2.0f, 8000, j * 2.0f));
+			gameObject->addComponent(std::make_shared<MeshComponent>(sphereMesh));
+			gameObject->addComponent(std::make_shared<MeshRenderComponent>(materialTemp->clone()));
+			gameObject->setScale(float3(0.9));
+			gameObject->setTranslate(float3(-10.0f + i * 2.0f, 0, j * 2.0f));
 
-			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
-			material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
+			auto material = gameObject->getComponent<MeshRenderComponent>()->getMaterial();
+			material->getParameter("quality")->uniform4f(float4(0.0, 0.0, 0.0, 0.0));
 			material->getParameter("diffuse")->uniform3f(0.5,0.5,0.5);
 			material->getParameter("specular")->uniform1f(0.1);
 			material->getParameter("shininess")->uniform1f(0.1);
@@ -104,28 +87,122 @@ TerrainMakerComponent::onActivate() except
 		}
 	}
 
-	this->addComponentDispatch(ray::GameDispatchType::GameDispatchTypeFrame, this);
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeFrame, this);
 }
 
 void
 TerrainMakerComponent::onDeactivate() noexcept
 {
-	this->removeComponentDispatch(ray::GameDispatchType::GameDispatchTypeFrame, this);
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeFrame, this);
 }
 
 void 
 TerrainMakerComponent::onFrame() noexcept
 {
-	auto sunObject = ray::GameObjectManager::instance()->findObject("sun");
+	auto sunObject = GameObjectManager::instance()->findObject("sun");
 	if (sunObject)
 	{
-		ray::Quaternion rotate;
-		rotate.makeRotate(ray::float3::UnitX, 0.03);
+		Quaternion rotate;
+		rotate.makeRotate(float3::UnitX, 0.03);
 		sunObject->setQuaternionAccum(rotate);
+	}
+
+	auto moonObject = GameObjectManager::instance()->findObject("moon");
+	if (moonObject)
+	{
+		Quaternion rotate;
+		rotate.makeRotate(float3::UnitX, 0.03);
+		moonObject->setQuaternionAccum(rotate);
 	}
 }
 
-ray::GameComponentPtr
+void
+TerrainMakerComponent::onMessage(const MessagePtr& message) noexcept
+{
+	static bool _showTestWindow = true;
+
+	auto inputFeature = GameServer::instance()->getFeature<InputFeature>();
+	if (inputFeature)
+	{
+		if (inputFeature->getInput()->isLockedCursor())
+			return;
+	}
+
+	if (message->isInstanceOf<GuiMessage>())
+	{
+		float delta = GameServer::instance()->getTimer()->delta();
+		float fps = GameServer::instance()->getTimer()->averageFps();
+
+		auto& Gui = message->downcast<GuiMessage>()->getGui();
+
+		Gui.setNextWindowPos(float2(0, 0), GuiSetCondFlagBits::GuiSetCondFlagAlwaysBit);
+		Gui.setNextWindowSize(float2(300, 768), GuiSetCondFlagBits::GuiSetCondFlagAlwaysBit);
+		if (!Gui.begin("Setting"))
+		{
+			Gui.end();
+			return;
+		}
+
+		if (Gui.collapsingHeader("Abount"))
+		{
+		}
+
+		Gui.separator();
+
+		if (Gui.collapsingHeader("Rendering"))
+		{
+		}
+
+		Gui.separator();
+
+		if (Gui.collapsingHeader("Environment"))
+		{
+		}
+
+		Gui.separator();
+
+		if (Gui.collapsingHeader("HDR"))
+		{
+		}
+
+		Gui.separator();
+
+		if (Gui.collapsingHeader("Anti-aliasing"))
+		{
+		}
+
+		Gui.separator();
+		
+		if (Gui.collapsingHeader("Style"))
+		{
+			Gui.pushStyleColor(ray::GuiColText, float4(0, 0, 0));
+			Gui.showStyleEditor();
+			Gui.popStyleColor(1);
+		}
+		
+		Gui.separator();
+
+		if (Gui.collapsingHeader("Debug"))
+		{
+			Gui.pushStyleColor(ray::GuiColText, float4(0, 0, 0));
+
+			if (Gui.button("Test Window")) _showTestWindow ^= 1;
+			Gui.text("Application average %f ms/frame (%f FPS)", delta, fps);
+
+			Gui.popStyleColor(1);
+		}
+
+		Gui.end();
+
+		if (_showTestWindow)
+		{
+			Gui.setNextWindowPos(float2(650, 20), GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+			Gui.showTestWindow(&_showTestWindow);
+		}
+	}
+}
+
+GameComponentPtr
 TerrainMakerComponent::clone() const noexcept
 {
 	return std::make_shared<TerrainMakerComponent>();

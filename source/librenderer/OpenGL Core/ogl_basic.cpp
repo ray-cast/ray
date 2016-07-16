@@ -383,6 +383,8 @@ PFNGLVERTEX4SV __glVertex4sv;
 PFNGLVERTEXPOINTER __glVertexPointer;
 PFNGLVIEWPORT __glViewport;
 
+#if defined(_BUILD_PLATFORM_WINDOWS)
+
 PFNWGLSWAPBUFFERSPROC      __wglSwapBuffers;
 PFNWGLSWAPINTERVALEXTPROC __wglSwapIntervalEXT;
 PFNWGLCREATECONTEXTATTRIBSARBPROC   __wglCreateContextAttribsARB;
@@ -752,3 +754,5 @@ bool initWGLExtenstion() noexcept
 	initWGLExtention = __wglCreateContextAttribsARB ? true : false;
 	return initWGLExtention;
 }
+
+#endif

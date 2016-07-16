@@ -34,67 +34,116 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_setting.h>
+#if defined(_BUILD_PLATFORM_APPLE)
+#include "nsgl_swapchain.h"
 
 _NAME_BEGIN
 
-void
-RenderSetting::computeScatteringCoefficients() noexcept
+__ImplementSubClass(NSGLSwapchain, GraphicsSwapchain, "NSGLSwapchain")
+
+NSGLSwapchain* NSGLSwapchain::_swapchain = nullptr;
+
+NSGLSwapchain::NSGLSwapchain() noexcept
+	: _isActive(false)
+	, _major(3)
+	, _minor(3)
 {
-	double n = 1.0003;
-	double N = 2.545e+25;
-	double Pn = 0.035;
-	double rayleighConst = 8.0 * M_PI * M_PI * M_PI * (n * n - 1.0) * (n * n - 1.0) / (3.0 * N) * (6.0 + 3.0 * Pn) / (6.0 - 7.0 * Pn);
-
-	double3 wave(680e-9, 550e-9, 440e-9);
-	double3 lambda2 = wave * wave;
-	double3 lambda4 = lambda2 * lambda2;
-	double3 sctrCoeff = rayleighConst / lambda4;
-
-	this->rayleighTotalSctrCoeff = float4(sctrCoeff, 0.0f);
-	this->rayleighAngularSctrCoeff = float4(4.0 / (16.0 * M_PI) * sctrCoeff, 0.0);
-	this->rayleighExtinctionCoeff = this->rayleighTotalSctrCoeff;
-	this->mieTotalSctrCoeff = float4(this->density * 2e-5f);
-	this->mieAngularSctrCoeff = this->mieTotalSctrCoeff / (4.0f * M_PI);
-	this->mieExtinctionCoeff = this->mieTotalSctrCoeff * (1.f + this->absorbtionScale);
 }
 
-RenderSetting::RenderSetting() noexcept
-	: window(nullptr)
-	, width(0)
-	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
-	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
-	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
-	, shadowMode(ShadowMode::ShadowModeSoft)
-	, shadowQuality(ShadowQuality::ShadowQualityMedium)
-	, enableSSAO(false)
-	, enableSSGI(false)
-	, enableAtmospheric(false)
-	, enableSSR(false)
-	, enableSSSS(false)
-	, enableFog(false)
-	, enableLightShaft(false)
-	, enableDOF(false)
-	, enableMotionBlur(false)
-	, enableFimic(true)
-	, enableColorGrading(true)
-	, enableFXAA(true)
-	, enableGlobalIllumination(true)
-	, earthRadius(6360000.f, 6440000.f)
-	, earthScaleHeight(7994.f, 2000.f)
-	, minElevation(0.0f)
-	, maxElevation(80000.0f)
-	, rayleighAngularSctrCoeff(0)
-	, rayleighTotalSctrCoeff(0)
-	, rayleighExtinctionCoeff(0)
-	, mieAngularSctrCoeff(0)
-	, mieExtinctionCoeff(0)
-	, mie(0.97f)
-	, density(1.0f)
-	, absorbtionScale(0.1f)
+NSGLSwapchain::NSGLSwapchain(GLuint major, GLuint minor) noexcept
+	: _isActive(false)
+	, _major(major)
+	, _minor(minor)
 {
-	computeScatteringCoefficients();
+}
+
+NSGLSwapchain::~NSGLSwapchain() noexcept
+{
+	this->close();
+}
+
+bool
+NSGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
+{
+	assert(swapchainDesc.getWindHandle());
+
+	if (!initSurface(swapchainDesc))
+		return false;
+
+	if (!initPixelFormat(swapchainDesc))
+		return false;
+
+	if (!initSwapchain(swapchainDesc))
+		return false;
+
+	_swapchainDesc = swapchainDesc;
+	return true;
+}
+
+void
+NSGLSwapchain::close() noexcept
+{
+	this->setActive(false);
+}
+
+void
+NSGLSwapchain::setActive(bool active) noexcept
+{
+}
+
+bool
+NSGLSwapchain::getActive() const noexcept
+{
+	return _isActive;
+}
+
+void
+NSGLSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
+{
+	_swapchainDesc.setSwapInterval(interval);
+}
+
+GraphicsSwapInterval
+NSGLSwapchain::getSwapInterval() const noexcept
+{
+	return _swapchainDesc.getSwapInterval();
+}
+
+void
+NSGLSwapchain::present() noexcept
+{
+}
+
+bool
+NSGLSwapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
+{
+	return false;
+}
+
+bool
+NSGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept
+{
+	return true;
+}
+
+const GraphicsSwapchainDesc&
+NSGLSwapchain::getGraphicsSwapchainDesc() const noexcept
+{
+	return _swapchainDesc;
+}
+
+void
+NSGLSwapchain::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+NSGLSwapchain::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END
+
+#endif

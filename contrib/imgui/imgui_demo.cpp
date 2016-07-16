@@ -173,6 +173,8 @@ void ImGui::ShowTestWindow(bool* p_open)
     // Menu
     if (ImGui::BeginMenuBar())
     {
+		ImGui::PushStyleColor(ImGuiCol_Text, ImColor(240, 240, 240, 255));
+
         if (ImGui::BeginMenu("Menu"))
         {
             ShowExampleMenuFile();
@@ -201,6 +203,8 @@ void ImGui::ShowTestWindow(bool* p_open)
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
+
+		ImGui::PopStyleColor(1);
     }
 
     ImGui::Spacing();

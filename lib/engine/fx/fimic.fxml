@@ -225,8 +225,6 @@
                 float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
                 color += texBloom.SampleLevel(LinearClamp, coord.xy, 0).rgb;
                 color += texBloom.SampleLevel(LinearClamp, coord.xy, 1).rgb;
-                color += texBloom.SampleLevel(LinearClamp, coord.xy, 2).rgb;
-                color += texBloom.SampleLevel(LinearClamp, coord.xy, 3).rgb;
                 float3 LDR = ToneMapping(color, aveLum, exposure);
                 return float4(LDR, luminance(LDR));
             }

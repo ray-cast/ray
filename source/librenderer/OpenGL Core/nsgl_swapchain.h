@@ -34,67 +34,60 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_setting.h>
+#ifndef _H_NSGL_SWAPCHAIN_H_
+#define _H_NSGL_SWAPCHAIN_H_
+
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-void
-RenderSetting::computeScatteringCoefficients() noexcept
+class NSGLSwapchain : public GraphicsSwapchain
 {
-	double n = 1.0003;
-	double N = 2.545e+25;
-	double Pn = 0.035;
-	double rayleighConst = 8.0 * M_PI * M_PI * M_PI * (n * n - 1.0) * (n * n - 1.0) / (3.0 * N) * (6.0 + 3.0 * Pn) / (6.0 - 7.0 * Pn);
+	__DeclareSubClass(NSGLSwapchain, GraphicsSwapchain)
+public:
+	NSGLSwapchain() noexcept;
+	NSGLSwapchain(GLuint major, GLuint minor) noexcept;
+	virtual ~NSGLSwapchain() noexcept;
 
-	double3 wave(680e-9, 550e-9, 440e-9);
-	double3 lambda2 = wave * wave;
-	double3 lambda4 = lambda2 * lambda2;
-	double3 sctrCoeff = rayleighConst / lambda4;
+	bool setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
+	void close() noexcept;
 
-	this->rayleighTotalSctrCoeff = float4(sctrCoeff, 0.0f);
-	this->rayleighAngularSctrCoeff = float4(4.0 / (16.0 * M_PI) * sctrCoeff, 0.0);
-	this->rayleighExtinctionCoeff = this->rayleighTotalSctrCoeff;
-	this->mieTotalSctrCoeff = float4(this->density * 2e-5f);
-	this->mieAngularSctrCoeff = this->mieTotalSctrCoeff / (4.0f * M_PI);
-	this->mieExtinctionCoeff = this->mieTotalSctrCoeff * (1.f + this->absorbtionScale);
-}
+	void setActive(bool active) noexcept;
+	bool getActive() const noexcept;
 
-RenderSetting::RenderSetting() noexcept
-	: window(nullptr)
-	, width(0)
-	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
-	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
-	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
-	, shadowMode(ShadowMode::ShadowModeSoft)
-	, shadowQuality(ShadowQuality::ShadowQualityMedium)
-	, enableSSAO(false)
-	, enableSSGI(false)
-	, enableAtmospheric(false)
-	, enableSSR(false)
-	, enableSSSS(false)
-	, enableFog(false)
-	, enableLightShaft(false)
-	, enableDOF(false)
-	, enableMotionBlur(false)
-	, enableFimic(true)
-	, enableColorGrading(true)
-	, enableFXAA(true)
-	, enableGlobalIllumination(true)
-	, earthRadius(6360000.f, 6440000.f)
-	, earthScaleHeight(7994.f, 2000.f)
-	, minElevation(0.0f)
-	, maxElevation(80000.0f)
-	, rayleighAngularSctrCoeff(0)
-	, rayleighTotalSctrCoeff(0)
-	, rayleighExtinctionCoeff(0)
-	, mieAngularSctrCoeff(0)
-	, mieExtinctionCoeff(0)
-	, mie(0.97f)
-	, density(1.0f)
-	, absorbtionScale(0.1f)
-{
-	computeScatteringCoefficients();
-}
+	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
+	GraphicsSwapInterval getSwapInterval() const noexcept;
+
+	void present() noexcept;
+
+	const GraphicsSwapchainDesc& getGraphicsSwapchainDesc() const noexcept;
+
+private:
+	bool initSurface(const GraphicsSwapchainDesc& swapchainDesc);
+	bool initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
+	bool initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	NSGLSwapchain(const NSGLSwapchain&) noexcept = delete;
+	NSGLSwapchain& operator=(const NSGLSwapchain&) noexcept = delete;
+
+private:
+	bool _isActive;
+
+	GLuint _major;
+	GLuint _minor;
+
+	GraphicsSwapchainDesc _swapchainDesc;
+	GraphicsDeviceWeakPtr _device;
+
+	static NSGLSwapchain* _swapchain;
+};
 
 _NAME_END
+
+#endif

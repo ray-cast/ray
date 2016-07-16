@@ -54,6 +54,8 @@ private:
 
 	virtual void onFrame() noexcept;
 
+	virtual void onMessage(const ray::MessagePtr& message) noexcept;
+
 private:
 	TerrainMakerComponent(const TerrainMakerComponent&) = delete;
 	TerrainMakerComponent& operator=(const TerrainMakerComponent&) = delete;

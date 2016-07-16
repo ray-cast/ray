@@ -73,6 +73,22 @@ GuiSystem::open(GuiSystemBasePtr custom) except
 
 	ImGuiIO& io = ImGui::GetIO();
 
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.FrameRounding = 8.0f;
+	style.Colors[ImGuiCol_MenuBarBg] = ImColor(213, 166, 13, 255);
+	style.Colors[ImGuiCol_Text] = ImColor(200, 200, 200, 255);
+	style.Colors[ImGuiCol_TextDisabled] = ImColor(150, 150, 150, 255);
+	style.Colors[ImGuiCol_WindowBg] = ImColor(0, 0, 0, 220);
+	style.Colors[ImGuiCol_Header] = ImColor(0, 0, 0, 0);
+	style.Colors[ImGuiCol_HeaderHovered] = ImColor(34, 134, 230, 179);
+	style.Colors[ImGuiCol_HeaderActive] = ImColor(24, 96, 200, 179);
+	style.Colors[ImGuiCol_TitleBg] = ImColor(0, 0, 0, 179);
+	style.Colors[ImGuiCol_TitleBgCollapsed] = ImColor(0, 0, 0, 179);
+	style.Colors[ImGuiCol_TitleBgActive] = ImColor(0, 0, 0, 179);
+	style.Colors[ImGuiCol_Button] = ImColor(213, 166, 13, 255);
+	style.Colors[ImGuiCol_ButtonHovered] = ImColor(230, 179, 0, 255);
+	style.Colors[ImGuiCol_ButtonActive] = ImColor(255, 153, 0, 255);
+
 	std::uint8_t* pixels;
 	int width, height;
 	io.Fonts->ClearFonts();

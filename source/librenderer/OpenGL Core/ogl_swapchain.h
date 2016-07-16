@@ -45,6 +45,8 @@
 #		include "x11_swapchain.h"
 #		define ToplevelSwapchain XGLSwapchain
 #	elif defined(_BUILD_PLATFORM_APPLE)
+#		include "nsgl_swapchain.h"
+#		define ToplevelSwapchain NSGLSwapchain
 #	endif
 #endif
 

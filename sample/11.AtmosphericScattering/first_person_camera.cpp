@@ -143,22 +143,16 @@ FirstPersonCameraComponent::onFrame() noexcept
 			}
 		}
 
-		if (input->getKey(ray::InputKey::ESCAPE))
+		if (input->getKeyDown(ray::InputKey::ESCAPE))
 		{
-			input->lockCursor(false);
+			if (input->isLockedCursor())
+				input->lockCursor(false);
+			else
+				input->lockCursor(true);
 		}
-
-		if (input->isLockedCursor())
+		else if (input->isLockedCursor())
 		{
 			rotateCamera(input->getAxisX(), input->getAxisY());
-		}
-		else
-		{
-			if (input->getButtonDown(ray::InputButton::Code::LEFT) &&
-				!input->getKey(ray::InputKey::Code::LCTRL))
-			{
-				input->lockCursor(true);
-			}
 		}
 	}
 }

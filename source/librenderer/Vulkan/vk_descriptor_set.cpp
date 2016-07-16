@@ -1020,7 +1020,7 @@ VulkanDescriptorSet::update() noexcept
 				auto& info = descriptorImageInfos[descriptorWriteCount];
 				info.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
 				info.imageView = vkTexture->getImageView();
-				info.sampler = nullptr;
+				info.sampler = VK_NULL_HANDLE;
 
 				auto& write = descriptorWrites[descriptorWriteCount++];
 				write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1048,7 +1048,7 @@ VulkanDescriptorSet::update() noexcept
 				VkDescriptorImageInfo info;
 				info.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
 				info.imageView = vkTexture->getImageView();
-				info.sampler = nullptr;
+				info.sampler = VK_NULL_HANDLE;
 
 				auto& write = descriptorWrites[descriptorWriteCount++];
 				write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

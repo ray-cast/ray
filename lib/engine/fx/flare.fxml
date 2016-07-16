@@ -1,0 +1,41 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/common.fxml"/>
+    <parameter name="dir" type="float2" />
+    <parameter name="color" type="float2" />
+    <shader>
+        <![CDATA[
+        void ScreenQuadVS(
+            in float4 Position : POSITION,
+            out float4 oTexcoord : TEXCOORD0,
+            out float4 oPosition : SV_Position)
+        {
+            oPosition = Position;
+            oTexcoord = Position;
+        }
+
+        float FlarePS(in float2 uv : TEXCOORD)
+        {
+            // https://www.shadertoy.com/view/llj3zV
+
+            float d = length( uv - dot( uv, dir ) * dir );
+            float f = 0.0;
+            f += max( pow(1.0 - d, 128.0) * (1.0   * color - length(uv)), 0.0);
+            f += max( pow(1.0 - d,  64.0) * (0.5   * color - length(uv)), 0.0);
+            f += max( pow(1.0 - d,  32.0) * (0.25  * color - length(uv)), 0.0);
+            f += max( pow(1.0 - d,  16.0) * (0.125 * color - length(uv)), 0.0);
+            return f;
+        }
+        ]]>
+    </shader>
+    <technique name="Flare">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="FlarePS"/>
+            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+</effect>

@@ -542,9 +542,9 @@ OGLDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, co
 		if (_framebuffer)
 		{
 			std::size_t viewportCount = std::max<std::size_t>(1, _framebuffer->getGraphicsFramebufferDesc().getColorAttachments().size());
-			for (std::size_t i = 0; i < viewportCount; i++)
+			for (std::size_t j = 0; j < viewportCount; j++)
 			{
-				glScissorIndexed(i, _scissors[i].left, _scissors[i].top, _scissors[i].width, _scissors[i].height);
+				glScissorIndexed(j, _scissors[j].left, _scissors[j].top, _scissors[j].width, _scissors[j].height);
 			}
 		}
 		else

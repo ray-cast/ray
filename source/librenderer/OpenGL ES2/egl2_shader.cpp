@@ -40,6 +40,7 @@
 #include <hlslcc.hpp>
 
 #if defined(__WINDOWS__)
+#	include <sstream>
 #	include <d3dcompiler.h>
 #endif
 
@@ -278,6 +279,7 @@ EGL2Shader::getInstanceID() const noexcept
 bool
 EGL2Shader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out)
 {
+#if defined(__WINDOWS__)
 	std::string profile;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 		profile = "vs_4_0";
@@ -302,14 +304,29 @@ EGL2Shader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& co
 		0,
 		&binary,
 		&error
-		);
+	);
 
-	if (hr == S_OK)
+	if (hr != S_OK)
 	{
-		return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
+		std::string line;
+		std::size_t index = 1;
+		std::ostringstream ostream;
+		std::istringstream istream(codes);
+
+		ostream << (const char*)error->GetBufferPointer() << std::endl;
+		while (std::getline(istream, line))
+		{
+			ostream << index << '\t' << line << std::endl;
+			index++;
+		}
+
+		GL_PLATFORM_LOG(ostream.str().c_str());
 	}
 
+	return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
+#else
 	return false;
+#endif
 }
 
 bool

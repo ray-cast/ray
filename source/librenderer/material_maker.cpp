@@ -54,6 +54,7 @@
 #include <ray/except.h>
 
 #if !defined(_BUILD_OPENGL_ES) || defined(__WINDOWS__)
+#	include <regex>
 #	include <d3dcompiler.h>
 #endif
 
@@ -212,19 +213,37 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 
 		if (hr != S_OK)
 		{
-			std::string line;
-			std::size_t index = 1;
-			std::ostringstream ostream;
-			std::istringstream istream(_hlslCodes);
-
-			ostream << (const char*)error->GetBufferPointer() << std::endl;
-			while (std::getline(istream, line))
+		
+			std::regex pattern("\\((.*?,.*?)\\): error");
+			std::match_results<std::string::const_iterator> result;
+			std::string errorString((char*)error->GetBufferPointer(), error->GetBufferSize());
+			
+			if (std::regex_search(errorString, result, pattern))
 			{
-				ostream << index << '\t' << line << std::endl;
-				index++;
-			}
+				std::istringstream patternResult(result.str());
 
-			throw ray::failure(ostream.str().c_str());
+				std::size_t row;
+				patternResult.ignore(1);
+				patternResult >> row;
+
+				std::string line;
+				std::ostringstream ostream;
+				std::istringstream istream(_hlslCodes);
+				ostream << (const char*)error->GetBufferPointer() << std::endl;
+
+				std::size_t start = std::max<std::size_t>(0, row - 10);
+
+				for (std::size_t i = 0; i < row + 10; i++)
+				{
+					if (!std::getline(istream, line))
+						break;
+
+					if (i >= start)
+						ostream << i << '\t' << line << std::endl;
+				}
+
+				throw ray::failure(ostream.str().c_str());
+			}
 		}
 
 		shaderDesc.setStage(shaderStage);

@@ -36,12 +36,11 @@
 // +----------------------------------------------------------------------
 #include "ogl_shader.h"
 
-#include <sstream>
-
 #define EXCLUDE_PSTDINT
 #include <hlslcc.hpp>
 
 #if defined(__WINDOWS__)
+#	include <sstream>
 #	include <d3dcompiler.h>
 #endif
 
@@ -371,6 +370,7 @@ OGLShader::getInstanceID() const noexcept
 bool
 OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out)
 {
+#if defined(__WINDOWS__)
 	std::string profile;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 		profile = "vs_4_0";
@@ -415,6 +415,9 @@ OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& cod
 	}
 
 	return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
+#else
+	return false;
+#endif
 }
 
 bool

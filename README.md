@@ -27,18 +27,6 @@ The aim of the project is to create a lightweight 3D library with a very low lev
     <img src="https://coding.net/u/raycast/p/ray/git/raw/master/screenshot/atmospheric_small.png" width = "25%" height = "14%" align=center/>
 </a>
 
-### Support rendering backends:
-* OpenGL ES 2
-* OpenGL ES 3.2
-* OpenGL 3.1
-* OpenGL 4.5
-* Vulkan 1.0
-
-### Supported compilers:
-* Clang 3.3 and above
-* GCC 4.6 and above
-* vs2015 and above
-
 ### Building ###
 
 Our build system is CMake, if you already used CMake before there is a good chance you know what to do.
@@ -55,7 +43,25 @@ Ray3D is released as Open Source under the terms of a 3-clause BSD license.
     http://www.linfo.org/bsdlicense.html
 ```
 
-### Engine Design ###
+### Supported compilers:
+* Clang 3.3 and above
+* GCC 4.6 and above
+* vs2015 and above
+
+### Support rendering backends:
+* OpenGL ES 2
+* OpenGL ES 3.2
+* OpenGL 3.1
+* OpenGL 4.5
+* Vulkan 1.0
+
+### Supported platforms:
+* ~~Android (21+, ARM, x86, MIPS)~~
+* OSX (10.9+)
+* Linux
+* Windows (XP, Vista, 7, 8, 10)
+
+### Engine Design:
 * Data-Driven Renderer
 * Physically-Based Rendering
 * Practical Parallel Rendering

@@ -617,40 +617,40 @@ SET(COMMON_OBJS  common/atomic.c
                  common/threads.c
                  common/uintmap.c
 )
-SET(OPENAL_OBJS  OpenAL32/alAuxEffectSlot.c
-                 OpenAL32/alBuffer.c
-                 OpenAL32/alEffect.c
-                 OpenAL32/alError.c
-                 OpenAL32/alExtension.c
-                 OpenAL32/alFilter.c
-                 OpenAL32/alListener.c
-                 OpenAL32/alSource.c
-                 OpenAL32/alState.c
-                 OpenAL32/alThunk.c
-                 OpenAL32/sample_cvt.c
+SET(OPENAL_OBJS  openal32/alAuxEffectSlot.c
+                 openal32/alBuffer.c
+                 openal32/alEffect.c
+                 openal32/alError.c
+                 openal32/alExtension.c
+                 openal32/alFilter.c
+                 openal32/alListener.c
+                 openal32/alSource.c
+                 openal32/alState.c
+                 openal32/alThunk.c
+                 openal32/sample_cvt.c
 )
-SET(ALC_OBJS  Alc/ALc.c
-              Alc/ALu.c
-              Alc/alcConfig.c
-              Alc/alcRing.c
-              Alc/bs2b.c
-              Alc/effects/autowah.c
-              Alc/effects/chorus.c
-              Alc/effects/compressor.c
-              Alc/effects/dedicated.c
-              Alc/effects/distortion.c
-              Alc/effects/echo.c
-              Alc/effects/equalizer.c
-              Alc/effects/flanger.c
-              Alc/effects/modulator.c
-              Alc/effects/null.c
-              Alc/effects/reverb.c
-              Alc/helpers.c
-              Alc/bsinc.c
-              Alc/hrtf.c
-              Alc/panning.c
-              Alc/mixer.c
-              Alc/mixer_c.c
+SET(ALC_OBJS  alc/ALc.c
+              alc/ALu.c
+              alc/alcConfig.c
+              alc/alcRing.c
+              alc/bs2b.c
+              alc/effects/autowah.c
+              alc/effects/chorus.c
+              alc/effects/compressor.c
+              alc/effects/dedicated.c
+              alc/effects/distortion.c
+              alc/effects/echo.c
+              alc/effects/equalizer.c
+              alc/effects/flanger.c
+              alc/effects/modulator.c
+              alc/effects/null.c
+              alc/effects/reverb.c
+              alc/helpers.c
+              alc/bsinc.c
+              alc/hrtf.c
+              alc/panning.c
+              alc/mixer.c
+              alc/mixer_c.c
 )
 
 
@@ -681,9 +681,9 @@ IF(HAVE_XMMINTRIN_H)
     IF(ALSOFT_CPUEXT_SSE)
         IF(ALIGN_DECL OR HAVE_C11_ALIGNAS)
             SET(HAVE_SSE 1)
-            SET(ALC_OBJS  ${ALC_OBJS} Alc/mixer_sse.c)
+            SET(ALC_OBJS  ${ALC_OBJS} alc/mixer_sse.c)
             IF(SSE_SWITCH)
-                SET_SOURCE_FILES_PROPERTIES(Alc/mixer_sse.c PROPERTIES
+                SET_SOURCE_FILES_PROPERTIES(alc/mixer_sse.c PROPERTIES
                                             COMPILE_FLAGS "${SSE_SWITCH}")
             ENDIF()
             SET(CPU_EXTS "${CPU_EXTS}, SSE")
@@ -699,9 +699,9 @@ IF(HAVE_EMMINTRIN_H)
     IF(HAVE_SSE AND ALSOFT_CPUEXT_SSE2)
         IF(ALIGN_DECL OR HAVE_C11_ALIGNAS)
             SET(HAVE_SSE2 1)
-            SET(ALC_OBJS  ${ALC_OBJS} Alc/mixer_sse2.c)
+            SET(ALC_OBJS  ${ALC_OBJS} alc/mixer_sse2.c)
             IF(SSE2_SWITCH)
-                SET_SOURCE_FILES_PROPERTIES(Alc/mixer_sse2.c PROPERTIES
+                SET_SOURCE_FILES_PROPERTIES(alc/mixer_sse2.c PROPERTIES
                                             COMPILE_FLAGS "${SSE2_SWITCH}")
             ENDIF()
             SET(CPU_EXTS "${CPU_EXTS}, SSE2")
@@ -717,9 +717,9 @@ IF(HAVE_EMMINTRIN_H)
     IF(HAVE_SSE2 AND ALSOFT_CPUEXT_SSE3)
         IF(ALIGN_DECL OR HAVE_C11_ALIGNAS)
             SET(HAVE_SSE3 1)
-            SET(ALC_OBJS  ${ALC_OBJS} Alc/mixer_sse3.c)
+            SET(ALC_OBJS  ${ALC_OBJS} alc/mixer_sse3.c)
             IF(SSE2_SWITCH)
-                SET_SOURCE_FILES_PROPERTIES(Alc/mixer_sse3.c PROPERTIES
+                SET_SOURCE_FILES_PROPERTIES(alc/mixer_sse3.c PROPERTIES
                                             COMPILE_FLAGS "${SSE3_SWITCH}")
             ENDIF()
             SET(CPU_EXTS "${CPU_EXTS}, SSE3")
@@ -735,9 +735,9 @@ IF(HAVE_SMMINTRIN_H)
     IF(HAVE_SSE2 AND ALSOFT_CPUEXT_SSE4_1)
         IF(ALIGN_DECL OR HAVE_C11_ALIGNAS)
             SET(HAVE_SSE4_1 1)
-            SET(ALC_OBJS  ${ALC_OBJS} Alc/mixer_sse41.c)
+            SET(ALC_OBJS  ${ALC_OBJS} alc/mixer_sse41.c)
             IF(SSE4_1_SWITCH)
-                SET_SOURCE_FILES_PROPERTIES(Alc/mixer_sse41.c PROPERTIES
+                SET_SOURCE_FILES_PROPERTIES(alc/mixer_sse41.c PROPERTIES
                                             COMPILE_FLAGS "${SSE4_1_SWITCH}")
             ENDIF()
             SET(CPU_EXTS "${CPU_EXTS}, SSE4.1")
@@ -753,7 +753,7 @@ CHECK_INCLUDE_FILE(arm_neon.h HAVE_ARM_NEON_H)
 IF(HAVE_ARM_NEON_H)
     IF(ALSOFT_CPUEXT_NEON)
         SET(HAVE_NEON 1)
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/mixer_neon.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/mixer_neon.c)
         SET(CPU_EXTS "${CPU_EXTS}, Neon")
     ENDIF()
 ENDIF()
@@ -775,10 +775,10 @@ ENDIF()
 
 SET(BACKENDS "")
 SET(ALC_OBJS  ${ALC_OBJS}
-              Alc/backends/base.c
+              alc/backends/base.c
               # Default backends, always available
-              Alc/backends/loopback.c
-              Alc/backends/null.c
+              alc/backends/loopback.c
+              alc/backends/null.c
 )
 
 # Check ALSA backend
@@ -786,7 +786,7 @@ IF(ALSA_FOUND)
     IF(ALSOFT_BACKEND_ALSA)
         SET(HAVE_ALSA 1)
         SET(BACKENDS  "${BACKENDS} ALSA${IS_LINKED},")
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/alsa.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/backends/alsa.c)
         ADD_BACKEND_LIBS(${ALSA_LIBRARIES})
         IF(CMAKE_VERSION VERSION_LESS "2.8.8")
             INCLUDE_DIRECTORIES(${ALSA_INCLUDE_DIRS})
@@ -802,7 +802,7 @@ IF(OSS_FOUND)
     IF(ALSOFT_BACKEND_OSS)
         SET(HAVE_OSS 1)
         SET(BACKENDS  "${BACKENDS} OSS,")
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/oss.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/backends/oss.c)
         IF(CMAKE_VERSION VERSION_LESS "2.8.8")
             INCLUDE_DIRECTORIES(${OSS_INCLUDE_DIRS})
         ENDIF()
@@ -817,7 +817,7 @@ IF(AUDIOIO_FOUND)
     IF(ALSOFT_BACKEND_SOLARIS)
         SET(HAVE_SOLARIS 1)
         SET(BACKENDS  "${BACKENDS} Solaris,")
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/solaris.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/backends/solaris.c)
         IF(CMAKE_VERSION VERSION_LESS "2.8.8")
             INCLUDE_DIRECTORIES(${AUDIOIO_INCLUDE_DIRS})
         ENDIF()
@@ -832,7 +832,7 @@ IF(SOUNDIO_FOUND)
     IF(ALSOFT_BACKEND_SNDIO)
         SET(HAVE_SNDIO 1)
         SET(BACKENDS  "${BACKENDS} SndIO (linked),")
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/sndio.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/backends/sndio.c)
         SET(EXTRA_LIBS ${SOUNDIO_LIBRARIES} ${EXTRA_LIBS})
         IF(CMAKE_VERSION VERSION_LESS "2.8.8")
             INCLUDE_DIRECTORIES(${SOUNDIO_INCLUDE_DIRS})
@@ -848,7 +848,7 @@ IF(QSA_FOUND)
     IF(ALSOFT_BACKEND_QSA)
         SET(HAVE_QSA 1)
         SET(BACKENDS  "${BACKENDS} QSA (linked),")
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/qsa.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/backends/qsa.c)
         SET(EXTRA_LIBS ${QSA_LIBRARIES} ${EXTRA_LIBS})
         IF(CMAKE_VERSION VERSION_LESS "2.8.8")
             INCLUDE_DIRECTORIES(${QSA_INCLUDE_DIRS})
@@ -869,7 +869,7 @@ IF(HAVE_WINDOWS_H)
             IF(ALSOFT_BACKEND_WINMM)
                 SET(HAVE_WINMM 1)
                 SET(BACKENDS  "${BACKENDS} WinMM,")
-                SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/winmm.c)
+                SET(ALC_OBJS  ${ALC_OBJS} alc/backends/winmm.c)
                 SET(EXTRA_LIBS winmm ${EXTRA_LIBS})
             ENDIF()
         ENDIF()
@@ -881,7 +881,7 @@ IF(HAVE_WINDOWS_H)
         IF(ALSOFT_BACKEND_DSOUND)
             SET(HAVE_DSOUND 1)
             SET(BACKENDS  "${BACKENDS} DirectSound${IS_LINKED},")
-            SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/dsound.c)
+            SET(ALC_OBJS  ${ALC_OBJS} alc/backends/dsound.c)
             ADD_BACKEND_LIBS(${DSOUND_LIBRARIES})
             IF(CMAKE_VERSION VERSION_LESS "2.8.8")
                 INCLUDE_DIRECTORIES(${DSOUND_INCLUDE_DIRS})
@@ -895,7 +895,7 @@ IF(HAVE_WINDOWS_H)
         IF(ALSOFT_BACKEND_MMDEVAPI)
             SET(HAVE_MMDEVAPI 1)
             SET(BACKENDS  "${BACKENDS} MMDevApi,")
-            SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/mmdevapi.c)
+            SET(ALC_OBJS  ${ALC_OBJS} alc/backends/mmdevapi.c)
         ENDIF()
     ENDIF()
 ENDIF()
@@ -914,7 +914,7 @@ IF(PORTAUDIO_FOUND)
     IF(ALSOFT_BACKEND_PORTAUDIO)
         SET(HAVE_PORTAUDIO 1)
         SET(BACKENDS  "${BACKENDS} PortAudio${IS_LINKED},")
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/portaudio.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/backends/portaudio.c)
         ADD_BACKEND_LIBS(${PORTAUDIO_LIBRARIES})
         IF(CMAKE_VERSION VERSION_LESS "2.8.8")
             INCLUDE_DIRECTORIES(${PORTAUDIO_INCLUDE_DIRS})
@@ -930,7 +930,7 @@ IF(PULSEAUDIO_FOUND)
     IF(ALSOFT_BACKEND_PULSEAUDIO)
         SET(HAVE_PULSEAUDIO 1)
         SET(BACKENDS  "${BACKENDS} PulseAudio${IS_LINKED},")
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/pulseaudio.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/backends/pulseaudio.c)
         ADD_BACKEND_LIBS(${PULSEAUDIO_LIBRARIES})
         IF(CMAKE_VERSION VERSION_LESS "2.8.8")
             INCLUDE_DIRECTORIES(${PULSEAUDIO_INCLUDE_DIRS})
@@ -946,7 +946,7 @@ IF(JACK_FOUND)
     IF(ALSOFT_BACKEND_JACK)
         SET(HAVE_JACK 1)
         SET(BACKENDS  "${BACKENDS} JACK${IS_LINKED},")
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/jack.c)
+        SET(ALC_OBJS  ${ALC_OBJS} alc/backends/jack.c)
         ADD_BACKEND_LIBS(${JACK_LIBRARIES})
         IF(CMAKE_VERSION VERSION_LESS "2.8.8")
             INCLUDE_DIRECTORIES(${JACK_INCLUDE_DIRS})
@@ -966,7 +966,7 @@ IF(ALSOFT_REQUIRE_COREAUDIO)
     IF(COREAUDIO_FRAMEWORK)
         IF(ALSOFT_BACKEND_COREAUDIO)
             SET(HAVE_COREAUDIO 1)
-            SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/coreaudio.c)
+            SET(ALC_OBJS  ${ALC_OBJS} alc/backends/coreaudio.c)
             SET(BACKENDS  "${BACKENDS} CoreAudio,")
             SET(EXTRA_LIBS ${COREAUDIO_FRAMEWORK} ${EXTRA_LIBS})
             SET(EXTRA_LIBS /System/Library/Frameworks/AudioUnit.framework ${EXTRA_LIBS})
@@ -997,7 +997,7 @@ IF(HAVE_SLES_OPENSLES_ANDROID_H)
     IF(HAVE_LIBOPENSLES)
         IF(ALSOFT_BACKEND_OPENSL)
             SET(HAVE_OPENSL 1)
-            SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/opensl.c)
+            SET(ALC_OBJS  ${ALC_OBJS} alc/backends/opensl.c)
             SET(BACKENDS  "${BACKENDS} OpenSL,")
             SET(EXTRA_LIBS OpenSLES ${EXTRA_LIBS})
         ENDIF()
@@ -1010,7 +1010,7 @@ ENDIF()
 # Optionally enable the Wave Writer backend
 IF(ALSOFT_BACKEND_WAVE)
     SET(HAVE_WAVE 1)
-    SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/wave.c)
+    SET(ALC_OBJS  ${ALC_OBJS} alc/backends/wave.c)
     SET(BACKENDS  "${BACKENDS} WaveFile,")
 ENDIF()
 

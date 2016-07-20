@@ -35,8 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/string.h>
-#include <math.h>
+#include <cmath>
 #include <locale>
+#include <limits.h>
 
 _NAME_BEGIN
 

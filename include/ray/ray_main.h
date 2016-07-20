@@ -42,6 +42,10 @@
 #ifndef RAY_MAIN_HANDLED
 #	if defined(__WIN32__)
 #		define RAY_MAIN_AVAILABLE
+#	elif defined(__linux__)
+#		define RAY_MAIN_AVAILABLE
+#	elif defined(__APPLE__)
+#		define RAY_MAIN_AVAILABLE
 #	elif defined(__WINRT__)
 #		define RAY_MAIN_NEEDED
 #	elif defined(__IPHONEOS__)

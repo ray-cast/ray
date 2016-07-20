@@ -45,35 +45,25 @@
 #	endif
 #endif
 
-#if defined(_BUILD_PLATFORM_WINDOWS)
-#	ifndef __WIN32__
-#		define __WIN32__ 1
-#	endif
-
+#if defined(_BUILD_PLATFORM_WINDOWS) || defined(_BUILD_PLATFORM_LINUX) || defined(_BUILD_PLATFORM_APPLE)
 #	if defined(_BUILD_DLL_EXPORT)
-#		define RAY_EXPORT
-#		define RAY_EXPORT_WINONLY
+#		define RAY_EXPORT 
 #	else
-#		define RAY_EXPORT
-#		define RAY_EXPORT_WINONLY
+#		define RAY_EXPORT 
 #	endif
 
-#	ifndef  RAY_CALL
+#	if defined(_BUILD_PLATFORM_WINDOWS)
 #		define RAY_CALL __stdcall
+#	else
+#		define RAY_CALL 
 #	endif
-
 #elif defined(_BUILD_PLATFORM_ANDROID)
-#include <jni.h>
-
+#	include <jni.h>
 #	ifndef RAY_EXPORT
 #		define RAY_EXPORT JNIEXPORT
-#		define RAY_EXPORT_WINONLY
 #	endif
 
-#	ifndef  RAY_CALL
-#		define RAY_CALL JNICALL
-#	endif
-
+#	define RAY_CALL JNICALL
 #endif
 
 RAY_C_LINKAGE RAY_EXPORT void RAY_CALL rayInit(const char* gamedir, const char* scenename) noexcept;

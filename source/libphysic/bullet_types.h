@@ -44,10 +44,10 @@
 #pragma warning (disable:5027)
 #include <btBulletDynamicsCommon.h>
 #include <btBulletCollisionCommon.h>
-#include <BulletDynamics\Character\btKinematicCharacterController.h>
-#include <BulletCollision\CollisionShapes\btCapsuleShape.h>
-#include <BulletCollision\CollisionDispatch\btGhostObject.h>
-#include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
+#include <BulletDynamics/Character/btKinematicCharacterController.h>
+#include <BulletCollision/CollisionShapes/btCapsuleShape.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 #pragma warning (pop)
 
 #endif

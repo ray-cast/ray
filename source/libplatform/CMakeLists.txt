@@ -1,4 +1,4 @@
-PROJECT("libplatform")
+PROJECT(libplatform)
 
 SET(LIB_NAME libplatform)
 

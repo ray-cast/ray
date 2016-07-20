@@ -55,7 +55,7 @@ RenderSetting::computeScatteringCoefficients() noexcept
 	this->rayleighAngularSctrCoeff = float4(4.0 / (16.0 * M_PI) * sctrCoeff, 0.0);
 	this->rayleighExtinctionCoeff = this->rayleighTotalSctrCoeff;
 	this->mieTotalSctrCoeff = float4(this->density * 2e-5f);
-	this->mieAngularSctrCoeff = this->mieTotalSctrCoeff / (4.0f * M_PI);
+	this->mieAngularSctrCoeff = this->mieTotalSctrCoeff / float(4.0f * M_PI);
 	this->mieExtinctionCoeff = this->mieTotalSctrCoeff * (1.f + this->absorbtionScale);
 }
 

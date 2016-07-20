@@ -39,7 +39,7 @@
 
 #include <ray/math.h>
 
-#if (defined(__clang__) || defined(__GNUC__)) && !defined(__MINGW32__) && !defined(__MINGW64__)
+#if (defined(__clang__) || defined(__GNUC__))
 #	define PRINTFARGS(FMT) __attribute__((format(printf, FMT, (FMT+1))))
 #else
 #	define PRINTFARGS(FMT)
@@ -370,19 +370,19 @@ public:
 	GuiID         getID(const char* str_id_begin, const char* str_id_end) noexcept;
 	GuiID         getID(const void* ptr_id) noexcept;
 
-	void          text(const char* fmt, ...) PRINTFARGS(1) noexcept;
+	void          text(const char* fmt, ...) noexcept;
 	void          textV(const char* fmt, va_list args) noexcept;
-	void          textColored(const float4& col, const char* fmt, ...) PRINTFARGS(2) noexcept;
+	void          textColored(const float4& col, const char* fmt, ...) noexcept;
 	void          textColoredV(const float4& col, const char* fmt, va_list args) noexcept;
-	void          textDisabled(const char* fmt, ...) PRINTFARGS(1) noexcept;
+	void          textDisabled(const char* fmt, ...) noexcept;
 	void          textDisabledV(const char* fmt, va_list args) noexcept;
-	void          textWrapped(const char* fmt, ...) PRINTFARGS(1) noexcept;
+	void          textWrapped(const char* fmt, ...) noexcept;
 	void          textWrappedV(const char* fmt, va_list args) noexcept;
 	void          textUnformatted(const char* text, const char* text_end = nullptr) noexcept;
-	void          labelText(const char* label, const char* fmt, ...) PRINTFARGS(2) noexcept;
+	void          labelText(const char* label, const char* fmt, ...) noexcept;
 	void          labelTextV(const char* label, const char* fmt, va_list args) noexcept;
 	void          bullet() noexcept;
-	void          bulletText(const char* fmt, ...) PRINTFARGS(1) noexcept;
+	void          bulletText(const char* fmt, ...) noexcept;
 	void          bulletTextV(const char* fmt, va_list args) noexcept;
 	bool          button(const char* label, const float2& size = float2::Zero) noexcept;
 	bool          smallButton(const char* label) noexcept;
@@ -441,13 +441,13 @@ public:
 	bool          vSliderInt(const char* label, const float2& size, int* v, int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 
 	bool          treeNode(const char* label) noexcept;
-	bool          treeNode(const char* str_id, const char* fmt, ...) PRINTFARGS(2) noexcept;
-	bool          treeNode(const void* ptr_id, const char* fmt, ...) PRINTFARGS(2) noexcept;
+	bool          treeNode(const char* str_id, const char* fmt, ...) noexcept;
+	bool          treeNode(const void* ptr_id, const char* fmt, ...) noexcept;
 	bool          treeNodeV(const char* str_id, const char* fmt, va_list args) noexcept;
 	bool          treeNodeV(const void* ptr_id, const char* fmt, va_list args) noexcept;
 	bool          treeNodeEx(const char* label, GuiTreeNodeFlags flags = 0) noexcept;
-	bool          treeNodeEx(const char* str_id, GuiTreeNodeFlags flags, const char* fmt, ...) PRINTFARGS(3) noexcept;
-	bool          treeNodeEx(const void* ptr_id, GuiTreeNodeFlags flags, const char* fmt, ...) PRINTFARGS(3) noexcept;
+	bool          treeNodeEx(const char* str_id, GuiTreeNodeFlags flags, const char* fmt, ...) noexcept;
+	bool          treeNodeEx(const void* ptr_id, GuiTreeNodeFlags flags, const char* fmt, ...) noexcept;
 	bool          treeNodeExV(const char* str_id, GuiTreeNodeFlags flags, const char* fmt, va_list args) noexcept;
 	bool          treeNodeExV(const void* ptr_id, GuiTreeNodeFlags flags, const char* fmt, va_list args) noexcept;
 	void          treePush(const char* str_id = nullptr) noexcept;
@@ -474,7 +474,7 @@ public:
 	void          valueColor(const char* prefix, const float4& v) noexcept;
 	void          valueColor(const char* prefix, std::uint32_t v) noexcept;
 
-	void          setTooltip(const char* fmt, ...) PRINTFARGS(1) noexcept;
+	void          setTooltip(const char* fmt, ...) noexcept;
 	void          setTooltipV(const char* fmt, va_list args) noexcept;
 	void          beginTooltip() noexcept;
 	void          endTooltip() noexcept;

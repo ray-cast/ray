@@ -1,8 +1,9 @@
-PROJECT("libphysic")
+PROJECT(libphysic)
 
 SET(HEADER_PATH ${CMAKE_SOURCE_DIR}/include/ray)
 SET(SOURCE_PATH ${CMAKE_SOURCE_DIR}/source/libphysic)
 
+message(${DEPENDENCIES_PATH}/bullet/src)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/bullet/src)
 
 SET(PHYSICS_SYSTEM_LIST

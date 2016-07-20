@@ -1,5 +1,5 @@
-SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
-SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source/engine)
+SET(HEADER_PATH ${CMAKE_SOURCE_DIR}/include/ray)
+SET(SOURCE_PATH ${CMAKE_SOURCE_DIR}/source/engine)
 
 SET(GAMEAPP_LIST
     ${SOURCE_PATH}/game_application.cpp

@@ -44,8 +44,8 @@
 #include <ray/input_event.h>
 #include <ray/input_feature.h>
 
-#include <GLFW\glfw3.h>
-#include <GLFW\glfw3native.h>
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 GLFWwindow* _window = nullptr;
 ray::GameApplicationPtr _gameApp;
@@ -62,7 +62,15 @@ void onWindowResize(GLFWwindow* glfwWindow, int w, int h)
 		inputEvent.event = ray::InputEvent::SizeChange;
 		inputEvent.change.w = w;
 		inputEvent.change.h = h;
+#if defined(GLFW_EXPOSE_NATIVE_WIN32)
 		inputEvent.change.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_X11)
+		inputEvent.change.windowID = (std::uint64_t)::glfwGetX11Window(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_EGL)
+		inputEvent.change.windowID = (std::uint64_t)::glfwGetEGLSurface(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_NSGL)
+		inputEvent.change.windowID = (std::uint64_t)::glfwGetCocoaWindow(_window);
+#endif
 		inputEvent.change.timestamp = ::glfwGetTimerFrequency();
 		_gameApp->sendInputEvent(inputEvent);
 	}
@@ -86,7 +94,15 @@ void onWindowFocus(GLFWwindow* window, int focus)
 		{
 			ray::InputEvent inputEvent;
 			inputEvent.event = ray::InputEvent::GetFocus;
-			inputEvent.window.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+#if defined(GLFW_EXPOSE_NATIVE_WIN32)
+		inputEvent.window.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_X11)
+		inputEvent.window.windowID = (std::uint64_t)::glfwGetX11Window(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_EGL)
+		inputEvent.window.windowID = (std::uint64_t)::glfwGetEGLSurface(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_NSGL)
+		inputEvent.window.windowID = (std::uint64_t)::glfwGetCocoaWindow(_window);
+#endif
 			inputEvent.window.timestamp = ::glfwGetTimerFrequency();
 			_gameApp->sendInputEvent(inputEvent);
 		}
@@ -94,7 +110,15 @@ void onWindowFocus(GLFWwindow* window, int focus)
 		{
 			ray::InputEvent inputEvent;
 			inputEvent.event = ray::InputEvent::LostFocus;
-			inputEvent.window.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+#if defined(GLFW_EXPOSE_NATIVE_WIN32)
+		inputEvent.window.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_X11)
+		inputEvent.window.windowID = (std::uint64_t)::glfwGetX11Window(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_EGL)
+		inputEvent.window.windowID = (std::uint64_t)::glfwGetEGLSurface(_window);
+#elif defined(GLFW_EXPOSE_NATIVE_NSGL)
+		inputEvent.window.windowID = (std::uint64_t)::glfwGetCocoaWindow(_window);
+#endif
 			inputEvent.window.timestamp = ::glfwGetTimerFrequency();
 			_gameApp->sendInputEvent(inputEvent);
 		}
@@ -187,14 +211,14 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 #elif defined(GLFW_EXPOSE_NATIVE_EGL)
 		EGLSurface hwnd = ::glfwGetEGLSurface(_window);
 #elif defined(GLFW_EXPOSE_NATIVE_NSGL)
-	demo.hwnd = ::glfwGetCocoaWindow(_window);
+		id = hwnd = ::glfwGetCocoaWindow(_window);
 #endif
 
 		_gameApp = std::make_shared<ray::GameApplication>();
 		_gameApp->setFileService(true);
 		_gameApp->setFileServicePath(_gameRootPath);
 
-		if (!_gameApp->open(hwnd, w, h))
+		if (!_gameApp->open((ray::WindHandle)hwnd, w, h))
 			return false;
 
 		onWindowFocus(_window, true);

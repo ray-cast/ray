@@ -53,7 +53,7 @@
 #include <ray/parse.h>
 #include <ray/except.h>
 
-#if !defined(_BUILD_OPENGL_ES) || defined(__WINDOWS__)
+#if defined(_BUILD_PLATFORM_WINDOWS)
 #	include <regex>
 #	include <d3dcompiler.h>
 #endif
@@ -185,6 +185,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 	}
 	else
 	{
+#if defined(_BUILD_PLATFORM_WINDOWS)
 		std::string profile;
 		if (type == "vertex")
 			profile = "vs_5_0";
@@ -249,6 +250,9 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 		shaderDesc.setStage(shaderStage);
 		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes);
 		shaderDesc.setByteCodes(std::string((char*)binary->GetBufferPointer(), binary->GetBufferSize()));
+#else
+		throw failure(__TEXT("Can't support HLSL : ") + reader.getCurrentNodePath());
+#endif
 	}
 
 	auto shaderModule = manager.createShader(shaderDesc);

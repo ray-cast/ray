@@ -59,8 +59,8 @@ public:
 	bool init(int size, const AABB& box);
 	bool init(std::string szMapName, int size, const AABB& box);
 
-	const std::uint32_t getSize() const { return size_; }
-	const float       getCellSize() const { return cellSize_; }
+	std::uint32_t getSize() const { return size_; }
+	float	getCellSize() const { return cellSize_; }
 
 	const Vector3f makePosition(float x, float y, float z) const
 	{

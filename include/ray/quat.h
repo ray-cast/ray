@@ -161,9 +161,9 @@ public:
 		T sp, sb, sh;
 		T cp, cb, ch;
 
-		math::sinCos(&sp, &cp, DEG_TO_RAD(euler.x) * 0.5f);
-		math::sinCos(&sh, &ch, DEG_TO_RAD(euler.y) * 0.5f);
-		math::sinCos(&sb, &cb, DEG_TO_RAD(euler.z) * 0.5f);
+		math::sinCos(&sp, &cp, (float)DEG_TO_RAD(euler.x) * 0.5f);
+		math::sinCos(&sh, &ch, (float)DEG_TO_RAD(euler.y) * 0.5f);
+		math::sinCos(&sb, &cb, (float)DEG_TO_RAD(euler.z) * 0.5f);
 
 		x = sp * ch * cb - cp * sh * sb;
 		y = cp * sh * cb + sp * ch * sb;

@@ -43,9 +43,9 @@
 #include <ray/sound_listener.h>
 
 #define AL_ALEXT_PROTOTYPES
-#include <al/al.h>
-#include <al/alc.h>
-#include <al/alext.h>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
 #include <AL/efx.h>
 
 _NAME_BEGIN

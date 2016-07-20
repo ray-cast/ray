@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 
-include_directories(include)
-include_directories(src/mesa)
-include_directories(src/mapi)
-include_directories(src/glsl)
+PROJECT("glsl_optimizer")
+
+INCLUDE_DIRECTORIES(include)
+INCLUDE_DIRECTORIES(src/mesa)
+INCLUDE_DIRECTORIES(src/mapi)
+INCLUDE_DIRECTORIES(src/glsl)
+
 INCLUDE_DIRECTORIES(SRC)
 
 FILE(GLOB glcpp-library_sources src/glsl/glcpp/*.c src/util/*.c)

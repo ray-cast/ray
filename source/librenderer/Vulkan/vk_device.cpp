@@ -116,11 +116,19 @@ VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 	info.ppEnabledExtensionNames = extensionNames;
 	info.pEnabledFeatures = 0;
 
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	if (!vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice, graphicsQueueNodeIndex))
 	{
 		VK_PLATFORM_LOG("vkGetPhysicalDeviceWin32PresentationSupportKHR fail.");
 		return false;
 	}
+#elif defined(_BUILD_PLATFORM_WINDOWS)
+	if (!vkGetPhysicalDeviceXlibPresentationSupportKHR(physicalDevice, graphicsQueueNodeIndex))
+	{
+		VK_PLATFORM_LOG("vkGetPhysicalDeviceWin32PresentationSupportKHR fail.");
+		return false;
+	}
+#endif
 
 	if (vkCreateDevice(physicalDevice, &info, 0, &_device) != VK_SUCCESS)
 	{

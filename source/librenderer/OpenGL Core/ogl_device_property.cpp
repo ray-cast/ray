@@ -46,10 +46,10 @@ OGLDeviceProperty::~OGLDeviceProperty() noexcept
 {
 }
 
-bool 
+bool
 OGLDeviceProperty::setup() noexcept
 {
-#if defined(_WIN32)
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	HWND hwnd = nullptr;
 	HDC hdc = nullptr;
 	HINSTANCE hInstance = nullptr;
@@ -73,18 +73,46 @@ OGLDeviceProperty::setup() noexcept
 	}
 
 	closeWGLEnvironment(hwnd, hdc, hInstance);
+	return true;
+#elif defined(_BUILD_PLATFORM_LINUX)
+	return true;
+#elif defined(_BUILD_PLATFORM_APPLE)
+	CGLContextObj ctx, octx;
 
-#endif
+	if (!setupCGLEnvironment(ctx, octx))
+	{
+		closeCGLEnvironment(ctx, octx);
+		return false;
+	}
+
+	if (!initGLExtenstion())
+	{
+		GL_PLATFORM_LOG("setupGLExtenstion fail");
+		closeCGLEnvironment(ctx, octx);
+		return false;
+	}
+
+	if (!initDeviceProperties())
+	{
+		GL_PLATFORM_LOG("setupDeviceProperties fail");
+		closeCGLEnvironment(ctx, octx);
+		return false;
+	}
+
+	closeCGLEnvironment(ctx, octx);
 
 	return true;
+#else
+	return false;
+#endif
 }
 
-void 
+void
 OGLDeviceProperty::close() noexcept
 {
 }
 
-#if defined(_WIN32)
+#if defined(_BUILD_PLATFORM_WINDOWS)
 bool
 OGLDeviceProperty::setupWGLEnvironment(HWND& hwnd, HDC& hdc, HINSTANCE& hinstance) noexcept
 {
@@ -96,7 +124,7 @@ OGLDeviceProperty::setupWGLEnvironment(HWND& hwnd, HDC& hdc, HINSTANCE& hinstanc
 	wc.lpszClassName = "OGL";
 	if (!::RegisterClassEx(&wc))
 		return false;
-	
+
 	hwnd = CreateWindowEx(WS_EX_APPWINDOW, "OGL", "OGL", 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, wc.hInstance, NULL);
 	if (!hwnd)
 	{
@@ -110,7 +138,7 @@ OGLDeviceProperty::setupWGLEnvironment(HWND& hwnd, HDC& hdc, HINSTANCE& hinstanc
 		GL_PLATFORM_LOG("GetDC() fail");
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -162,9 +190,9 @@ OGLDeviceProperty::setupWGLExtensions(HDC hdc) noexcept
 		return false;
 	}
 
-	if (!::initWGLExtenstion())
+	if (!initGLExtenstion())
 	{
-		GL_PLATFORM_LOG("setupWGLExtenstion fail");
+		GL_PLATFORM_LOG("setupGLExtenstion fail");
 		::wglDeleteContext(context);
 		return false;
 	}
@@ -193,11 +221,70 @@ OGLDeviceProperty::closeWGLEnvironment(HWND hwnd, HDC hdc, HINSTANCE hinstance) 
 	if (hinstance)
 	{
 		UnregisterClass("OGL", GetModuleHandle(NULL));
-	}	
+	}
 }
 #endif
 
-bool 
+#if defined(_BUILD_PLATFORM_APPLE)
+bool
+OGLDeviceProperty::setupCGLEnvironment(CGLContextObj& ctx, CGLContextObj& octx) noexcept
+{
+	octx = CGLGetCurrentContext();
+	if (!octx)
+	{
+		std::size_t index = 0;
+
+		CGLPixelFormatAttribute contextAttrs[20];
+		contextAttrs[index++] = kCGLPFAAccelerated;
+		contextAttrs[index++] = kCGLPFAOpenGLProfile;
+		contextAttrs[index++] = (CGLPixelFormatAttribute)kCGLOGLPVersion_3_2_Core;
+		contextAttrs[index++] = (CGLPixelFormatAttribute)0;
+
+		GLint npix;
+		CGLPixelFormatObj pf;
+		CGLError error = CGLChoosePixelFormat(contextAttrs, &pf, &npix);
+		if (error)
+		{
+			GL_PLATFORM_LOG("CGLChoosePixelFormat() fail");
+			return false;
+		}
+
+		error = CGLCreateContext(pf, NULL, &ctx);
+		if (error)
+		{
+			GL_PLATFORM_LOG("CGLCreateContext() fail");
+			return false;
+		}
+
+		CGLReleasePixelFormat(pf);
+		error = CGLSetCurrentContext(ctx);
+		if (error)
+		{
+			GL_PLATFORM_LOG("CGLSetCurrentContext() fail");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void
+OGLDeviceProperty::closeCGLEnvironment(CGLContextObj ctx, CGLContextObj octx) noexcept
+{
+	if (octx)
+	{
+		CGLSetCurrentContext(octx);
+	}
+
+	if (ctx)
+	{
+		CGLReleaseContext(ctx);
+	}
+}
+
+#endif
+
+bool
 OGLDeviceProperty::initDeviceProperties() noexcept
 {
 	static_assert(sizeof(GLint) == sizeof(std::uint32_t), "not match");
@@ -211,7 +298,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&_deviceProperties.maxImageDimension2D);
 	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, (GLint*)&_deviceProperties.maxImageDimension3D);
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, (GLint*)&_deviceProperties.maxImageDimensionCube);
-	
+
 	glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, (GLint*)&_deviceProperties.maxImageArrayLayers);
 	glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, (GLint*)&_deviceProperties.maxTexelBufferElements);
 	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, (GLint*)&_deviceProperties.maxUniformBufferRange);
@@ -219,10 +306,14 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	_deviceProperties.maxMemoryAllocationCount;
 	_deviceProperties.maxSamplerAllocationCount;
 	_deviceProperties.bufferImageGranularity;
-	
-	glGetInteger64v(GL_SPARSE_BUFFER_PAGE_SIZE_ARB, (GLint64*)&_deviceProperties.sparseAddressSpaceSize);
+
+	if (glGetInteger64v)
+	{
+		glGetInteger64v(GL_SPARSE_BUFFER_PAGE_SIZE_ARB, (GLint64*)&_deviceProperties.sparseAddressSpaceSize);
+	}
+
 	_deviceProperties.maxBoundDescriptorSets;
-	
+
 	glGetIntegerv(GL_MAX_FRAGMENT_IMAGE_UNIFORMS, (GLint*)&_deviceProperties.maxPerStageDescriptorSamplers);
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, (GLint*)&_deviceProperties.maxPerStageDescriptorUniformBuffers);
 	glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, (GLint*)&_deviceProperties.maxPerStageDescriptorStorageBuffers);
@@ -230,7 +321,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, (GLint*)&_deviceProperties.maxPerStageDescriptorInputAttachments);
 	glGetIntegerv(GL_MAX_FRAGMENT_IMAGE_UNIFORMS, (GLint*)&_deviceProperties.maxPerStageDescriptorStorageImages);
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, (GLint*)&_deviceProperties.maxPerStageResources);
-	
+
 	glGetIntegerv(GL_MAX_SAMPLES, (GLint*)&_deviceProperties.maxDescriptorSetSamplers);
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, (GLint*)&_deviceProperties.maxDescriptorSetUniformBuffers);
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, (GLint*)&_deviceProperties.maxDescriptorSetUniformBuffersDynamic);
@@ -257,7 +348,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 		glGetIntegerv(GL_MAX_TESS_EVALUATION_INPUT_COMPONENTS, (GLint*)&_deviceProperties.maxTessellationEvaluationInputComponents);
 		glGetIntegerv(GL_MAX_TESS_EVALUATION_OUTPUT_COMPONENTS, (GLint*)&_deviceProperties.maxTessellationEvaluationOutputComponents);
 	}
-	
+
 	if (GLEW_ARB_geometry_shader4)
 	{
 		glGetIntegerv(GL_MAX_GEOMETRY_SHADER_INVOCATIONS, (GLint*)&_deviceProperties.maxGeometryShaderInvocations);
@@ -266,7 +357,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 		glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, (GLint*)&_deviceProperties.maxGeometryOutputVertices);
 		glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_COMPONENTS, (GLint*)&_deviceProperties.maxGeometryTotalOutputComponents);
 	}
-	
+
 	if (GLEW_ARB_compute_shader)
 	{
 		glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, (GLint*)&_deviceProperties.maxComputeSharedMemorySize);
@@ -288,7 +379,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetIntegerv(GL_SUBPIXEL_BITS, (GLint*)&_deviceProperties.mipmapPrecisionBits);
 	glGetIntegerv(GL_MAX_ELEMENT_INDEX, (GLint*)&_deviceProperties.maxDrawIndexedIndexValue);
 	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, (GLint*)&_deviceProperties.maxDrawIndirectCount);
-		
+
 	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &_deviceProperties.maxSamplerLodBias);
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &_deviceProperties.maxSamplerAnisotropy);
 	glGetIntegerv(GL_MAX_VIEWPORTS, (GLint*)&_deviceProperties.maxViewports);
@@ -296,16 +387,19 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetFloatv(GL_VIEWPORT_BOUNDS_RANGE, &_deviceProperties.minViewportBoundsRange);
 	glGetIntegerv(GL_VIEWPORT_SUBPIXEL_BITS, (GLint*)&_deviceProperties.viewportSubPixelBits);
 	glGetIntegerv(GL_MIN_MAP_BUFFER_ALIGNMENT, (GLint*)&_deviceProperties.minMemoryMapAlignment);
-	glGetInteger64v(GL_TEXTURE_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minTexelBufferOffsetAlignment);
-	glGetInteger64v(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minUniformBufferOffsetAlignment);
-	glGetInteger64v(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minStorageBufferOffsetAlignment);
+	if (glGetInteger64v)
+	{
+		glGetInteger64v(GL_TEXTURE_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minTexelBufferOffsetAlignment);
+		glGetInteger64v(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minUniformBufferOffsetAlignment);
+		glGetInteger64v(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minStorageBufferOffsetAlignment);
+	}
 	glGetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, (GLint*)&_deviceProperties.minTexelOffset);
 	glGetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET, (GLint*)&_deviceProperties.maxTexelOffset);
 	glGetIntegerv(GL_MIN_PROGRAM_TEXTURE_GATHER_OFFSET, (GLint*)&_deviceProperties.minTexelGatherOffset);
 	glGetIntegerv(GL_MAX_PROGRAM_TEXTURE_GATHER_OFFSET, (GLint*)&_deviceProperties.minTexelGatherOffset);
 	glGetIntegerv(GL_MIN_FRAGMENT_INTERPOLATION_OFFSET, (GLint*)&_deviceProperties.minInterpolationOffset);
 	glGetIntegerv(GL_MAX_FRAGMENT_INTERPOLATION_OFFSET, (GLint*)&_deviceProperties.maxInterpolationOffset);
-	glGetIntegerv(GL_FRAGMENT_INTERPOLATION_OFFSET_BITS, (GLint*)&_deviceProperties.subPixelInterpolationOffsetBits);	
+	glGetIntegerv(GL_FRAGMENT_INTERPOLATION_OFFSET_BITS, (GLint*)&_deviceProperties.subPixelInterpolationOffsetBits);
 	glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, (GLint*)&_deviceProperties.maxFramebufferWidth);
 	glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, (GLint*)&_deviceProperties.maxFramebufferHeight);
 	glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, (GLint*)&_deviceProperties.maxFramebufferLayers);
@@ -320,9 +414,9 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetIntegerv(GL_MAX_DEPTH_TEXTURE_SAMPLES, (GLint*)&_deviceProperties.sampledImageStencilSampleCounts);
 	glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, (GLint*)&_deviceProperties.storageImageSampleCounts);
 	glGetIntegerv(GL_MAX_SAMPLE_MASK_WORDS, (GLint*)&_deviceProperties.maxSampleMaskWords);
-	_deviceProperties.timestampComputeAndGraphics;	
+	_deviceProperties.timestampComputeAndGraphics;
 	_deviceProperties.timestampPeriod;
-	
+
 	glGetIntegerv(GL_MAX_CLIP_DISTANCES, (GLint*)&_deviceProperties.maxClipDistances);
 
 	if (GLEW_ARB_cull_distance)
@@ -340,7 +434,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	_deviceProperties.optimalBufferCopyOffsetAlignment;
 	_deviceProperties.optimalBufferCopyRowPitchAlignment;
 	_deviceProperties.nonCoherentAtomSize;
-	
+
 	return true;
 }
 
@@ -701,7 +795,7 @@ OGLDeviceProperty::initShaderSupports() noexcept
 
 	if (GLEW_ARB_geometry_shader4)
 		_deviceProperties.supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit);
-	
+
 	if (GLEW_ARB_compute_shader)
 		_deviceProperties.supportShaders.push_back(GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit);
 
@@ -714,7 +808,7 @@ OGLDeviceProperty::initShaderSupports() noexcept
 	return true;
 }
 
-const GraphicsDeviceProperties& 
+const GraphicsDeviceProperties&
 OGLDeviceProperty::getGraphicsDeviceProperties() const noexcept
 {
 	return _deviceProperties;

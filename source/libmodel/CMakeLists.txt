@@ -1,5 +1,7 @@
-SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
-SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source/libmodel)
+PROJECT("libmodel")
+
+SET(HEADER_PATH ${CMAKE_SOURCE_DIR}/include/ray)
+SET(SOURCE_PATH ${CMAKE_SOURCE_DIR}/source/libmodel)
 
 SET(COMMON_LSIT
     ${HEADER_PATH}/modcfg.h

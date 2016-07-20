@@ -1,3 +1,5 @@
+PROJECT("06.CubeWorld")
+
 SET(LIB_NAME "06.CubeWorld")
 
 FILE(GLOB HEADER_LIST *.h)

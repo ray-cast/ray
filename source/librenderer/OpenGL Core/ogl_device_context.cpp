@@ -394,7 +394,7 @@ OGLDeviceContext::getIndexBufferData() const noexcept
 	return _indexBuffer;
 }
 
-void 
+void
 OGLDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
 {
 	assert(texture);
@@ -465,10 +465,10 @@ OGLDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, co
 			if (!(flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit))
 				return;
 
-			flags = GraphicsClearFlagBits::GraphicsClearFlagColorBit;	
+			flags = GraphicsClearFlagBits::GraphicsClearFlagColorBit;
 			buffer = i;
 		}
-		else if (type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal || 
+		else if (type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal ||
 				 type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal)
 		{
 			if (!(flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit) &&
@@ -670,7 +670,7 @@ OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstanc
 		_descriptorSet->apply(*_program);
 		_needUpdateDescriptor = false;
 	}
-	
+
 	if (numIndices > 0)
 	{
 		GLbyte* offsetIndices = nullptr;
@@ -706,12 +706,6 @@ OGLDeviceContext::checkSupport() noexcept
 		return false;
 	}
 
-	if (!GLEW_ARB_texture_buffer_object)
-	{
-		GL_PLATFORM_LOG("Can't support GL_ARB_texture_buffer_object.");
-		return false;
-	}
-
 	if (!GLEW_ARB_sampler_objects)
 	{
 		GL_PLATFORM_LOG("Can't support GL_ARB_sampler_objects.");
@@ -721,12 +715,6 @@ OGLDeviceContext::checkSupport() noexcept
 	if (!GLEW_ARB_framebuffer_object)
 	{
 		GL_PLATFORM_LOG("Can't support GL_ARB_framebuffer_object.");
-		return false;
-	}
-	
-	if (!GLEW_EXT_texture_filter_anisotropic)
-	{
-		GL_PLATFORM_LOG("Can't support GL_EXT_texture_filter_anisotropic.");
 		return false;
 	}
 
@@ -822,9 +810,17 @@ OGLDeviceContext::initStateSystem() noexcept
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glGenVertexArrays(1, &_globalVao);
-	glBindVertexArray(_globalVao);
-	
+	if (GLEW_ARB_vertex_array_object)
+	{
+		glGenVertexArrays(1, &_globalVao);
+		glBindVertexArray(_globalVao);
+	}
+	else if (GLEW_APPLE_vertex_array_object)
+	{
+		glGenVertexArraysAPPLE(1, &_globalVao);
+		glBindVertexArrayAPPLE(_globalVao);
+	}
+
 	auto& deviceProperties = this->getDevice()->getGraphicsDeviceProperty().getGraphicsDeviceProperties();
 	_vertexBuffers.resize(deviceProperties.maxVertexInputBindings);
 	_viewports.resize(deviceProperties.maxViewports, Viewport(0, 0, 0, 0));

@@ -1,3 +1,5 @@
+PROJECT("03.Sound")
+
 SET(LIB_NAME "03.Sound")
 
 FILE(GLOB HEADER_LIST *.h)

@@ -1,3 +1,5 @@
+PROJECT("07.Skinning")
+
 SET(LIB_NAME "07.Skinning")
 
 FILE(GLOB HEADER_LIST *.h)

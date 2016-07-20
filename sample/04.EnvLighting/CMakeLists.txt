@@ -1,3 +1,5 @@
+PROJECT("04.EnvLighting")
+
 SET(LIB_NAME "04.EnvLighting")
 
 FILE(GLOB HEADER_LIST *.h)

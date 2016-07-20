@@ -109,11 +109,11 @@ WGLSwapchain::setActive(bool active) noexcept
 	{
 		if (active)
 		{
-			if (!::wglMakeCurrent(_hdc, _context))
-				GL_PLATFORM_LOG("wglMakeCurrent() fail");
-
 			if (_swapchain)
 				_swapchain->setActive(false);
+
+			if (!::wglMakeCurrent(_hdc, _context))
+				GL_PLATFORM_LOG("wglMakeCurrent() fail");
 
 			_swapchain = this;
 		}
@@ -173,8 +173,7 @@ WGLSwapchain::getSwapInterval() const noexcept
 void
 WGLSwapchain::present() noexcept
 {
-	assert(__wglSwapBuffers);
-	__wglSwapBuffers(_hdc);
+	SwapBuffers(_hdc);
 }
 
 bool
@@ -315,7 +314,7 @@ WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexce
 		return false;
 	}
 
-	if (!::SetPixelFormat(_hdc, pixelFormat, &pfd))
+	if (!::SetPixelFormat(_hdc, pixelFormat, &pfd2))
 	{
 		GL_PLATFORM_LOG("SetPixelFormat() fail");
 		return false;
@@ -373,9 +372,9 @@ WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 		return false;
 	}
 
-	::wglMakeCurrent(_hdc, _context);
+	this->setActive(true);
 	this->setSwapInterval(swapchainDesc.getSwapInterval());
-	::wglMakeCurrent(NULL, NULL);
+	this->setActive(false);
 
 	return true;
 }

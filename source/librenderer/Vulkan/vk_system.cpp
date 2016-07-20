@@ -37,6 +37,8 @@
 #include "vk_system.h"
 #include "vk_device_property.h"
 
+#include <stdarg.h>
+
 #pragma warning (push)
 #pragma warning (disable:4458)
 #pragma warning (disable:4464)
@@ -283,17 +285,17 @@ VulkanSystem::checkInstanceExtenstion(std::size_t instanceEnabledLayerCount, con
 				extensionNames[enabledExtensionCount++] = VK_KHR_SURFACE_EXTENSION_NAME;
 			}
 
-#ifdef _WIN32
+#ifdef _BUILD_PLATFORM_WINDOWS
 			if (!strcmp(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, _instanceExtensions[i].extensionName))
 			{
 				platformSurfaceExtFound = true;
 				extensionNames[enabledExtensionCount++] = VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
 			}
-#else
-			if (!strcmp(VK_KHR_XCB_SURFACE_EXTENSION_NAME, _instanceExtensions[i].extensionName))
+#elif _BUILD_PLATFORM_LINUX
+			if (!strcmp(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, _instanceExtensions[i].extensionName))
 			{
 				platformSurfaceExtFound = true;
-				extensionNames[enabledExtensionCount++] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+				extensionNames[enabledExtensionCount++] = VK_KHR_XLIB_SURFACE_EXTENSION_NAME;
 			}
 #endif
 			if (!strcmp(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, _instanceExtensions[i].extensionName))
@@ -316,16 +318,16 @@ VulkanSystem::checkInstanceExtenstion(std::size_t instanceEnabledLayerCount, con
 
 	if (!platformSurfaceExtFound)
 	{
-#ifdef _WIN32
+#if defined(_BUILD_PLATFORM_WINDOWS)
 		this->print("vkEnumerateInstanceExtensionProperties failed to find "
 			"the " VK_KHR_WIN32_SURFACE_EXTENSION_NAME
 			" extension.\n\nDo you have a compatible "
 			"Vulkan installable client driver (ICD) installed?\nPlease "
 			"look at the Getting Started guide for additional "
 			"information.\n");
-#else
+#elif defined(_BUILD_PLATFORM_LINUX)
 		this->print("vkEnumerateInstanceExtensionProperties failed to find "
-			"the " VK_KHR_XCB_SURFACE_EXTENSION_NAME
+			"the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME
 			" extension.\n\nDo you have a compatible "
 			"Vulkan installable client driver (ICD) installed?\nPlease "
 			"look at the Getting Started guide for additional "
@@ -341,7 +343,11 @@ bool
 VulkanSystem::initInstance() noexcept
 {
 	static const char* instanceValidationLayerNames[] = { "VK_LAYER_LUNARG_swapchain" };
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	static const char* instanceExtensionNames[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
+#elif defined(_BUILD_PLATFORM_LINUX)
+	static const char* instanceExtensionNames[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
+#endif
 
 	if (!this->checkInstanceLayer(0, nullptr))
 		return false;

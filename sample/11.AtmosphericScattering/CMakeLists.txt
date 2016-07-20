@@ -1,3 +1,5 @@
+PROJECT("11.AtmosphericScattering")
+
 SET(LIB_NAME "11.AtmosphericScattering")
 
 FILE(GLOB HEADER_LIST *.h)

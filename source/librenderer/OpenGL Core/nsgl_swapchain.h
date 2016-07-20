@@ -82,6 +82,9 @@ private:
 	GLuint _major;
 	GLuint _minor;
 
+	void* _context;
+	void* _pixelFormat;
+
 	GraphicsSwapchainDesc _swapchainDesc;
 	GraphicsDeviceWeakPtr _device;
 

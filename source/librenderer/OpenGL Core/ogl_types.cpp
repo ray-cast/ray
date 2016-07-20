@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_types.h"
+#include <stdarg.h>
 
 _NAME_BEGIN
 
@@ -1102,7 +1103,7 @@ OGLCheck::checkError() noexcept
 {
 	bool success = true;
 
-	GLenum result = ::glGetError();
+	GLenum result = glGetError();
 	if (GL_NO_ERROR != result)
 	{
 		success = false;
@@ -1162,7 +1163,11 @@ OGLCheck::checkError() noexcept
 		}
 	}
 
+#if defined(_BUILD_PLATFORM_LINUX)
+	return true;
+#else
 	return success;
+#endif
 }
 
 void

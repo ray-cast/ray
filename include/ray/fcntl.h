@@ -37,10 +37,9 @@
 #ifndef _H_FCNTL_H_
 #define _H_FCNTL_H_
 
-#include <ray/iosbase.h>
-#include <ray/string.h>
+#include "iosbase.h"
+#include "string.h"
 
-#include <fcntl.h>
 #include <sys/stat.h>
 
 #if defined(_WINDOWS_)
@@ -142,12 +141,14 @@ namespace fcntl
 	{
 #if defined(__WINDOWS__)
 		return ::__waccess(path, mode);
-#elif defined(__LINUX__)
+#elif defined(__LINUX__) || defined(__APPLE__)
 		char fn[PATHLIMIT];
 		if (::wcstombs(fn, path, PATHLIMIT) == (std::size_t) - 1)
 			return EOF;
 
 		return ::__access(fn, mode);
+#else
+		return 0;
 #endif
 	}
 
@@ -155,12 +156,14 @@ namespace fcntl
 	{
 #if defined(__WINDOWS__)
 		return ::__waccess(path.c_str(), mode);
-#elif defined(__LINUX__)
+#elif defined(__LINUX__) || defined(__APPLE__)
 		char fn[PATHLIMIT];
 		if (::wcstombs(fn, path.c_str(), PATHLIMIT) == (std::size_t) - 1)
 			return EOF;
 
 		return ::__access(fn, mode);
+#else
+		return 0;
 #endif
 	}
 
@@ -178,7 +181,7 @@ namespace fcntl
 	{
 #if defined(__WINDOWS__)
 		return ::__wstat(filename, stat);
-#elif defined(__LINUX__)
+#elif defined(__LINUX__) || defined(__APPLE__)
 		char fn[PATHLIMIT];
 		if (::wcstombs(fn, filename, PATHLIMIT) == (std::size_t) - 1)
 			return EOF;
@@ -192,7 +195,7 @@ namespace fcntl
 	{
 #if defined(__WINDOWS__)
 		return ::__wstat(filename.data(), stat);
-#elif defined(__LINUX__)
+#elif defined(__LINUX__) || defined(__APPLE__)
 		char fn[PATHLIMIT];
 		if (::wcstombs(fn, filename.c_str(), PATHLIMIT) == (std::size_t) - 1)
 			return EOF;
@@ -216,7 +219,7 @@ namespace fcntl
 	{
 #if defined(__WINDOWS__)
 		return ::__wopen(filename, flag, mode);
-#elif defined(__LINUX__)
+#elif defined(__LINUX__) || defined(__APPLE__)
 		char fn[PATHLIMIT];
 		if (::wcstombs(fn, filename, PATHLIMIT) == (std::size_t) - 1)
 			return EOF;
@@ -231,7 +234,7 @@ namespace fcntl
 	{
 #if defined(__WINDOWS__)
 		return ::__wopen(filename.c_str(), flag, mode);
-#elif defined(__LINUX__)
+#elif defined(__LINUX__) || defined(__APPLE__)
 		char fn[PATHLIMIT];
 		if (::wcstombs(fn, filename.c_str(), PATHLIMIT) == (std::size_t) - 1)
 			return EOF;

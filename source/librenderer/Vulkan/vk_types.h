@@ -55,8 +55,10 @@
 #include <ray/graphics_semaphore.h>
 #include <ray/graphics_variant.h>
 
-#if defined(__WINDOWS__)
+#if defined(_BUILD_PLATFORM_WINDOWS)
 #	define VK_USE_PLATFORM_WIN32_KHR 1
+#elif defined(_BUILD_PLATFORM_LINUX)
+#	define VK_USE_PLATFORM_XLIB_KHR 1
 #endif
 
 #include <vulkan/vulkan.h>

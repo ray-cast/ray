@@ -39,10 +39,17 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(XGLSwapchain, GraphicsSwapchain, "XGLSwapchain")
+
+PFNGLXCHOOSEFBCONFIGPROC glXChooseFBConfig = nullptr;
+PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = nullptr;
+PFNGLXMAKECONTEXTCURRENTPROC glXMakeContextCurrent = nullptr;
+
+XGLSwapchain* XGLSwapchain::_swapchain = nullptr;
+
 XGLSwapchain::XGLSwapchain() noexcept
 	: _isActive(false)
 {
-	initPixelFormat(_fbconfig, _ctxconfig);
 }
 
 XGLSwapchain::~XGLSwapchain() noexcept
@@ -50,90 +57,105 @@ XGLSwapchain::~XGLSwapchain() noexcept
 	this->close();
 }
 
-void
-XGLSwapchain::open(WindHandle window) noexcept
+bool
+XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
-	GLint attribs[80];
-	GLint index = 0, mask = 0, flags = 0, startegy = 0;
-
-	if (_ctxconfig.api == GPU_OPENGL_API)
+	assert(swapchainDesc.getWidth() > 0);
+	assert(swapchainDesc.getHeight() > 0);
+	
+	if (swapchainDesc.getImageNums() != 2)
 	{
-		if (_ctxconfig.forward)
-			flags |= GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+		GL_PLATFORM_LOG("Invalid image number");
+		return false;
+	}
 
-		if (_ctxconfig.debug)
-			flags |= GLX_CONTEXT_DEBUG_BIT_ARB;
+	GLint index = 0;
 
-		if (_ctxconfig.profile)
-		{
-			if (_ctxconfig.profile == GPU_OPENGL_CORE_PROFILE)
-				mask |= GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
-			else if (_ctxconfig.profile == GPU_OPENGL_COMPAT_PROFILE)
-				mask |= GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-			else
-				mask |= GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
-		}
+	int att[80];
+	att[index++] = GLX_X_RENDERABLE;
+	att[index++] = GL_TRUE;
+	att[index++] = GLX_DRAWABLE_TYPE;
+	att[index++] = GLX_WINDOW_BIT;
+
+	if (swapchainDesc.getImageNums() == 2)
+	{
+		att[index++] = GLX_DOUBLEBUFFER;
+		att[index++] = GL_TRUE;
+	}
+
+	auto colorFormat = swapchainDesc.getColorFormat();
+	if (colorFormat == GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
+	{
+		att[index++] = GLX_RENDER_TYPE;
+		att[index++] = GLX_RGBA_BIT,
+		att[index++] = GLX_X_VISUAL_TYPE;
+		att[index++] = GLX_TRUE_COLOR,
+		att[index++] = GLX_RED_SIZE;
+		att[index++] = 8;
+		att[index++] = GLX_GREEN_SIZE;
+		att[index++] = 8;
+		att[index++] = GLX_BLUE_SIZE;
+		att[index++] = 8;
+		att[index++] = GLX_ALPHA_SIZE;
+		att[index++] = 8;
 	}
 	else
 	{
-		mask |= GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
+		GL_PLATFORM_LOG("Can't support color format");
+		return false;
 	}
 
-	if (_ctxconfig.robustness)
+	auto depthStencilFormat = swapchainDesc.getDepthStencilFormat();
+	if (depthStencilFormat == GraphicsFormat::GraphicsFormatD16UNorm)
 	{
-		if (_ctxconfig.robustness == GLFW_NO_RESET_NOTIFICATION)
-			strategy = GLX_NO_RESET_NOTIFICATION_ARB;
-		else if (_ctxconfig.robustness == GLFW_LOSE_CONTEXT_ON_RESET)
-			strategy = GLX_LOSE_CONTEXT_ON_RESET_ARB;
-
-		flags |= GLX_CONTEXT_ROBUST_ACCESS_BIT_ARB;
+		att[index++] = GLX_DEPTH_SIZE;
+		att[index++] = 16;
+		att[index++] = GLX_STENCIL_SIZE;
+		att[index++] = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatX8_D24UNormPack32)
+	{
+		att[index++] = GLX_DEPTH_SIZE;
+		att[index++] = 24;
+		att[index++] = GLX_STENCIL_SIZE;
+		att[index++] = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+	{
+		att[index++] = GLX_DEPTH_SIZE;
+		att[index++] = 32;
+		att[index++] = GLX_STENCIL_SIZE;
+		att[index++] = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt)
+	{
+		att[index++] = GLX_DEPTH_SIZE;
+		att[index++] = 16;
+		att[index++] = GLX_STENCIL_SIZE;
+		att[index++] = 8;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt)
+	{
+		att[index++] = GLX_DEPTH_SIZE;
+		att[index++] = 24;
+		att[index++] = GLX_STENCIL_SIZE;
+		att[index++] = 8;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
+	{
+		att[index++] = GLX_DEPTH_SIZE;
+		att[index++] = 32;
+		att[index++] = GLX_STENCIL_SIZE;
+		att[index++] = 8;
+	}
+	else
+	{
+		GL_PLATFORM_LOG("Can't support depth stencil format");
+		return false;
 	}
 
-	if (_ctxconfig.major > 1 && _ctxconfig.major < 4 && _ctxconfig.minor != 0)
-	{
-		attribs[index++] = GLX_CONTEXT_MAJOR_VERSION_ARB;
-		attribs[index++] = _ctxconfig.major;
-
-		attribs[index++] = GLX_CONTEXT_MINOR_VERSION_ARB;
-		attribs[index++] = _ctxconfig.minor;
-	}
-
-	if (mask)
-	{
-		attribs[index++] = GLX_CONTEXT_PROFILE_MASK_ARB;
-		attribs[index++] = mask;
-	}
-
-	if (flags)
-	{
-		attribs[index++] = GLX_CONTEXT_FLAGS_ARB;
-		attribs[index++] = flags;
-	}
-
-	if (startegy)
-	{
-		attribs[index++] = GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
-		attribs[index++] = startegy;
-	}
-
-	attribs[index++] = GL_NONE;
-	attribs[index++] = GL_NONE;
-
-	static int att[] =
-	{
-		GLX_X_RENDERABLE    , GL_TRUE,
-		GLX_DRAWABLE_TYPE   , GLX_WINDOW_BIT,
-		GLX_RENDER_TYPE     , GLX_RGBA_BIT,
-		GLX_X_VISUAL_TYPE   , GLX_TRUE_COLOR,
-		GLX_RED_SIZE        , fbconfig.red_size,
-		GLX_GREEN_SIZE      , fbconfig.greeen_size,
-		GLX_BLUE_SIZE       , fbconfig.blue_size,
-		GLX_ALPHA_SIZE      , fbconfig.alpha_size,
-		GLX_DEPTH_SIZE      , fbconfig.depth_size,
-		GLX_STENCIL_SIZE    , fbconfig.stencil_size,
-		GLX_DOUBLEBUFFER    , GL_TRUE,
-		GL_NONE
-	};
+	att[index++] = 0;
+	att[index++] = 0;
 
 	_display = ::XOpenDisplay(NULL);
 	if (_display == nullptr)
@@ -155,6 +177,16 @@ XGLSwapchain::open(WindHandle window) noexcept
 		return false;
 	}
 
+	if (!glXChooseFBConfig)
+	{
+		glXChooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)glXGetProcAddress((const GLubyte *)"glXChooseFBConfig");
+		if (!glXChooseFBConfig)
+		{
+			GL_PLATFORM_LOG("Failed to get glXChooseFBConfig.");
+			return false;
+		}
+	}
+
 	int fbcount = 0;
 	_cfg = glXChooseFBConfig(_display, 0, att, &fbcount);
 	if (!_cfg)
@@ -163,45 +195,76 @@ XGLSwapchain::open(WindHandle window) noexcept
 		return false;
 	}
 
-	_window = window;
+	index = 0;
 
-	GLXCREATECONTEXTATTRIBSARB glXCreateContextAttribsARB = nullptr;
-	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARB)glXGetProcAddressARB((const GLubyte *)"glXCreateContextAttribsARB");
-	if (glXCreateContextAttribsARB)
+	GLint attribs[80];
+	attribs[index++] = GLX_CONTEXT_FLAGS_ARB;
+	attribs[index++] = GLX_CONTEXT_DEBUG_BIT_ARB;
+
+	attribs[index++] = GLX_CONTEXT_PROFILE_MASK_ARB;
+	attribs[index++] = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
+
+	auto deviceType = this->getDevice()->getGraphicsDeviceDesc().getDeviceType();
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
 	{
-		_glc = glXCreateContextAttribsARB(_display, _cfg, _ctxconfig.share, true, attribs);
-		if (!_glc)
-		{
-			if (_ctxconfig.api == GPU_OPENGL_API &&
-				_ctxconfig.profile == GPU_GL_ANY_PROFILE &&
-				_ctxconfig.forward == GL_FALSE)
-			{
-				_glc = glXCreateNewContext(_display, _cfg, GLX_RGBA_TYPE, _ctxconfig.share, GL_TRUE);
-			}
-		}
+		attribs[index++] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+		attribs[index++] = 4;
+
+		attribs[index++] = GLX_CONTEXT_MINOR_VERSION_ARB;
+		attribs[index++] = 5;
 	}
 	else
 	{
-		_glc = glXCreateNewContext(_display, _cfg, GLX_RGBA_TYPE, _ctxconfig.share, GL_TRUE);
+		attribs[index++] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+		attribs[index++] = 3;
+
+		attribs[index++] = GLX_CONTEXT_MINOR_VERSION_ARB;
+		attribs[index++] = 3;
 	}
 
+	attribs[index++] = GL_NONE;
+	attribs[index++] = GL_NONE;
+
+	if (!glXCreateContextAttribsARB)
+	{
+		glXCreateContextAttribsARB = (PFNGLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
+		if (!glXCreateContextAttribsARB)
+		{
+			GL_PLATFORM_LOG("Failed to get glXCreateContextAttribsARB.");
+			return false;
+		}
+	}
+
+	_glc = glXCreateContextAttribsARB(_display, *_cfg, 0, true, attribs);
 	if (!_glc)
 	{
 		GL_PLATFORM_LOG("Failed to create context");
 		return false;
 	}
 
-	glXMakeContextCurrent(_display, _window, _window, _glc);
+	_window = (Window)swapchainDesc.getWindHandle();
 
-	if (GLEW_OK != glewInit())
+	if (!glXMakeContextCurrent)
 	{
-		GL_PLATFORM_LOG("Unable to initialize glext");
-		return false;
+		glXMakeContextCurrent = (PFNGLXMAKECONTEXTCURRENTPROC)glXGetProcAddress((const GLubyte *)"glXMakeContextCurrent");
+		if (!glXMakeContextCurrent)
+		{
+			GL_PLATFORM_LOG("Failed to get glXMakeContextCurrent.");
+			return false;
+		}
 	}
+
+	this->setActive(true);
+	bool init = initGLExtenstion();
+	this->setSwapInterval(swapchainDesc.getSwapInterval());
+	this->setActive(false);
+
+	_swapchainDesc = swapchainDesc;
+	return init;
 }
 
 void
-XGLSwapchain::close(WindHandle wx) noexcept
+XGLSwapchain::close() noexcept
 {
 	if (_cfg)
 	{
@@ -217,73 +280,74 @@ XGLSwapchain::close(WindHandle wx) noexcept
 }
 
 void
-XGLSwapchain::setSwapInterval(SwapInterval interval) noexcept
-{
-	if (_interval != interval)
-	{
-		glXSwapIntervalEXT(_display, _window, (int)interval);
-		_interval = interval;
-	}
-}
-
-SwapInterval
-XGLSwapchain::getSwapInterval(SwapInterval interval) noexcept
-{
-	return _interval;
-}
-
-void
-XGLSwapchain::setActive(bool active) noexcepts
+XGLSwapchain::setActive(bool active) noexcept
 {
 	if (_isActive != active)
 	{
 		if (active)
-			glXMakeContextCurrent(_display, _window, _window, _glc);
+		{
+			if (_swapchain)
+				_swapchain->setActive(false);
+
+			if (!glXMakeContextCurrent(_display, _window, _window, _glc))
+				GL_PLATFORM_LOG("Failed to make context");
+
+			_swapchain = this;
+		}
 		else
+		{
+			if (_swapchain == this)
+				_swapchain = nullptr;
+
 			glXMakeContextCurrent(_display, 0, 0, 0);
+		}
+
 		_isActive = active;
 	}
 }
 
-void
+bool
 XGLSwapchain::getActive() noexcept
 {
 	return _isActive;
 }
 
-bool
-XGLSwapchain::present() noexcept
+void
+XGLSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
-	glXSwapBuffers(_display, _window);
-	return true;
+	glXSwapIntervalEXT(_display, _window, (int)interval);
+	_swapchainDesc.setSwapInterval(interval);
+}
+
+GraphicsSwapInterval
+XGLSwapchain::getSwapInterval() const noexcept
+{
+	return _swapchainDesc.getSwapInterval();
 }
 
 void
-XGLSwapchain::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept
+XGLSwapchain::present() noexcept
 {
-	fbconfig.redSize = 8;
-	fbconfig.greenSize = 8;
-	fbconfig.blueSize = 8;
-	fbconfig.alphaSize = 8;
-	fbconfig.bufferSize = 32;
-	fbconfig.depthSize = 24;
-	fbconfig.stencilSize = 8;
-	fbconfig.accumSize = 0;
-	fbconfig.accumRedSize = 0;
-	fbconfig.accumGreenSize = 0;
-	fbconfig.accumBlueSize = 0;
-	fbconfig.accumAlphaSize = 0;
-	fbconfig.samples = 0;
+	glXSwapBuffers(_display, _window);
 
-	ctxconfig.major = 3;
-	ctxconfig.minor = 0;
-	ctxconfig.release = 0;
-	ctxconfig.robustness = 0;
-	ctxconfig.share = nullptr;
-	ctxconfig.api = GPU_OPENGL_ES_API;
-	ctxconfig.profile = GPU_GL_CORE_PROFILE;
-	ctxconfig.forward = 0;
-	ctxconfig.multithread = false;
+}
+
+const GraphicsSwapchainDesc&
+XGLSwapchain::getGraphicsSwapchainDesc() const noexcept
+{
+	return _swapchainDesc;
+}
+
+void
+XGLSwapchain::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+XGLSwapchain::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

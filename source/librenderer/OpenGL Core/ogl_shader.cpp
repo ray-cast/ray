@@ -370,7 +370,7 @@ OGLShader::getInstanceID() const noexcept
 bool
 OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out)
 {
-#if defined(__WINDOWS__)
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	std::string profile;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 		profile = "vs_4_0";

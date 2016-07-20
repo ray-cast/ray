@@ -53,11 +53,16 @@ public:
 	const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept;
 
 private:
-#if defined(_WIN32)
+
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	bool setupWGLEnvironment(HWND& hwnd, HDC& hdc, HINSTANCE& hinstance) noexcept;
 	bool setupWGLPixelFormat(HDC hdc) noexcept;
 	bool setupWGLExtensions(HDC hdc) noexcept;
 	void closeWGLEnvironment(HWND hwnd, HDC hdc, HINSTANCE hinstance) noexcept;
+
+#elif defined(_BUILD_PLATFORM_APPLE)
+	bool setupCGLEnvironment(CGLContextObj& ctx, CGLContextObj& octx) noexcept;
+	void closeCGLEnvironment(CGLContextObj ctx, CGLContextObj octx) noexcept;
 #endif
 
 	bool initDeviceProperties() noexcept;

@@ -1,9 +1,11 @@
+PROJECT("libplatform")
+
 SET(LIB_NAME libplatform)
 
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/tinyxml)
 
-SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
-SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source/libplatform)
+SET(HEADER_PATH ${CMAKE_SOURCE_DIR}/include/ray)
+SET(SOURCE_PATH ${CMAKE_SOURCE_DIR}/source/libplatform)
 
 SET(PLATFORM_CORE_LIST
     ${HEADER_PATH}/def.h

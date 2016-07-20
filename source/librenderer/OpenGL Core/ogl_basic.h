@@ -43,6 +43,7 @@
 #	include <GL/glew.h>
 #	include <GL/wglew.h>
 #elif _BUILD_PLATFORM_LINUX
+#	include <X11/Xlib.h>
 #	include <GL/glew.h>
 #	include <GL/glxew.h>
 #elif _BUILD_PLATFORM_APPLE
@@ -50,6 +51,10 @@
 #	include <OpenGL/OpenGL.h>
 #	include <OpenGL/CGLTypes.h>
 #endif
+
+_NAME_BEGIN
+
+#if defined(_BUILD_OPENGL_ES)
 
 typedef void (GLAPIENTRY* PFNGLACCUM) (GLenum op, GLfloat value);
 typedef void (GLAPIENTRY* PFNGLALPHAFUNC) (GLenum func, GLclampf ref);
@@ -388,13 +393,6 @@ typedef void (GLAPIENTRY* PFNGLVERTEX4SV) (const GLshort *v);
 typedef void (GLAPIENTRY* PFNGLVERTEXPOINTER) (GLint size, GLenum type, GLsizei stride, const void *pointer);
 typedef void (GLAPIENTRY* PFNGLVIEWPORT) (GLint x, GLint y, GLsizei width, GLsizei height);
 
-#if defined(_BUILD_PLATFORM_WINDOWS)
-typedef BOOL(GLAPIENTRY * PFNWGLSWAPBUFFERSPROC) (HDC hdc);
-typedef BOOL(GLAPIENTRY * PFNWGLSWAPINTERVALEXTPROC) (int interval);
-typedef HGLRC(GLAPIENTRY * PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC, HGLRC hShareContext, const int* attribList);
-typedef BOOL(GLAPIENTRY * PFNWGLGETPIXELFORMATATTRIBIVARBPROC) (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
-#endif
-
 extern PFNGLACCUM __glAccum;
 extern PFNGLALPHAFUNC __glAlphaFunc;
 extern PFNGLARETEXTURESRESIDENT __glAreTexturesResident;
@@ -731,13 +729,6 @@ extern PFNGLVERTEX4S __glVertex4s;
 extern PFNGLVERTEX4SV __glVertex4sv;
 extern PFNGLVERTEXPOINTER __glVertexPointer;
 extern PFNGLVIEWPORT __glViewport;
-
-#if defined(_BUILD_PLATFORM_WINDOWS)
-extern PFNWGLSWAPBUFFERSPROC      __wglSwapBuffers;
-extern PFNWGLSWAPINTERVALEXTPROC __wglSwapIntervalEXT;
-extern PFNWGLCREATECONTEXTATTRIBSARBPROC   __wglCreateContextAttribsARB;
-extern PFNWGLGETPIXELFORMATATTRIBIVARBPROC __wglGetPixelFormatAttribivARB;
-#endif
 
 #define glAccum __glAccum
 #define glAlphaFunc __glAlphaFunc
@@ -1076,8 +1067,22 @@ extern PFNWGLGETPIXELFORMATATTRIBIVARBPROC __wglGetPixelFormatAttribivARB;
 #define glVertexPointer __glVertexPointer
 #define glViewport __glViewport
 
-#if defined(_BUILD_PLATFORM_WINDOWS)
-	bool initWGLExtenstion() noexcept;
 #endif
+
+#if defined(_BUILD_PLATFORM_WINDOWS)
+
+typedef BOOL(GLAPIENTRY * PFNWGLSWAPINTERVALEXTPROC) (int interval);
+typedef HGLRC(GLAPIENTRY * PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC, HGLRC hShareContext, const int* attribList);
+typedef BOOL(GLAPIENTRY * PFNWGLGETPIXELFORMATATTRIBIVARBPROC) (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
+
+extern PFNWGLSWAPINTERVALEXTPROC __wglSwapIntervalEXT;
+extern PFNWGLCREATECONTEXTATTRIBSARBPROC   __wglCreateContextAttribsARB;
+extern PFNWGLGETPIXELFORMATATTRIBIVARBPROC __wglGetPixelFormatAttribivARB;
+
+#endif
+
+bool initGLExtenstion() noexcept;
+
+_NAME_END
 
 #endif

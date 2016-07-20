@@ -1,4 +1,4 @@
-project(tinyxml)
+PROJECT(tinyxml)
 
 SET(LIB_NAME tinyxml)
 

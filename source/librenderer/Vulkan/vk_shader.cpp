@@ -546,6 +546,7 @@ VulkanStageShader::getDevice() noexcept
 bool
 VulkanStageShader::HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, std::uint32_t startLocation, const std::string& codes, std::string& out)
 {
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	std::string profile;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 		profile = "vs_4_0";
@@ -591,6 +592,9 @@ VulkanStageShader::HlslCodes2GLSL(GraphicsShaderStageFlagBits stage, std::uint32
 	}
 
 	return HlslByteCodes2GLSL(stage, startLocation, (char*)binary->GetBufferPointer(), out);
+#else
+	return false;
+#endif
 }
 
 bool

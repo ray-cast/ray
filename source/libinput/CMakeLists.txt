@@ -1,7 +1,9 @@
+PROJECT("libinput")
+
 OPTION(USE_GLFW_INPUT "on for use" OFF)
 
-SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
-SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source/libinput)
+SET(HEADER_PATH ${CMAKE_SOURCE_DIR}/include/ray)
+SET(SOURCE_PATH ${CMAKE_SOURCE_DIR}/source/libinput)
 
 SET(INPUT_CORE_LIST
     ${HEADER_PATH}/input_button.h

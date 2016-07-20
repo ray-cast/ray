@@ -37,44 +37,55 @@
 #ifndef _H_X11_CORE_SWAPCHAIN_H_
 #define _H_X11_CORE_SWAPCHAIN_H_
 
-#include "ogl_core_types.h"
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-class XGLSwapchain
+class XGLSwapchain : public GraphicsSwapchain
 {
+	__DeclareSubClass(XGLSwapchain, GraphicsSwapchain)
 public:
 	XGLSwapchain() noexcept;
-	~XGLSwapchain() noexcept;
+	virtual ~XGLSwapchain() noexcept;
 
-	bool open(WindHandle hwnd) noexcept;
+	bool setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
 	void close() noexcept;
 
 	void setActive(bool active) noexcept;
-	void getActive() noexcept;
+	bool getActive() noexcept;
 
-	void setSwapInterval(SwapInterval interval) noexcept;
-	SwapInterval getSwapInterval() const noexcept;
+	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
+	GraphicsSwapInterval getSwapInterval() const noexcept;
 
 	void present() noexcept;
 
-	WindHandle getWindHandle() const noexcept;
+	const GraphicsSwapchainDesc& getGraphicsSwapchainDesc() const noexcept;
 
 private:
+	static void initPixelFormat() noexcept;
 
-	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	XGLSwapchain(const XGLSwapchain&) noexcept = delete;
+	XGLSwapchain& operator=(const XGLSwapchain&) noexcept = delete;
 
 private:
 	bool _isActive;
 
-	XWindow _window;
-	XDisplay* _display;
+	Window _window;
+	Display* _display;
 
 	GLXContext _glc;
 	GLXFBConfig* _cfg;
 
-	GPUfbconfig _fbconfig;
-	GPUctxconfig _ctxconfig;
+	GraphicsSwapchainDesc _swapchainDesc;
+	GraphicsDeviceWeakPtr _device;
+
+	static XGLSwapchain* _swapchain;
 };
 
 _NAME_END

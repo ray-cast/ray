@@ -34,7 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "ogl_basic.h"
+#include "ogl_types.h"
+
+#if defined(_BUILD_PLATFORM_LINUX) || defined(_BUILD_PLATFORM_APPLE) && defined(_BUILD_OPENGL_ES)
+#	include <dlfcn.h>
+#endif
+
+_NAME_BEGIN
 
 #ifdef GLEW_MX
 #	ifdef _WIN32
@@ -45,6 +51,8 @@ GLXEWContext _glxewctx;
 #	define glxewGetContext() (&_glxewctx)
 #	endif
 #endif
+
+#if defined(_BUILD_OPENGL_ES)
 
 PFNGLACCUM __glAccum;
 PFNGLALPHAFUNC __glAlphaFunc;
@@ -383,32 +391,64 @@ PFNGLVERTEX4SV __glVertex4sv;
 PFNGLVERTEXPOINTER __glVertexPointer;
 PFNGLVIEWPORT __glViewport;
 
-#if defined(_BUILD_PLATFORM_WINDOWS)
+#endif
 
-PFNWGLSWAPBUFFERSPROC      __wglSwapBuffers;
+#if defined(_BUILD_PLATFORM_WINDOWS)
 PFNWGLSWAPINTERVALEXTPROC __wglSwapIntervalEXT;
 PFNWGLCREATECONTEXTATTRIBSARBPROC   __wglCreateContextAttribsARB;
 PFNWGLGETPIXELFORMATATTRIBIVARBPROC __wglGetPixelFormatAttribivARB;
-
-bool initWGLExtention = false;
-
-bool initWGLExtenstion() noexcept
-{
-	if (initWGLExtention)
-		return true;
-
-	if (glewInit() != GLEW_OK)
-		return false;
-
-#if defined(GLEW_MX)
-	if (wglewInit() != GLEW_OK)
-		return false;
+#elif defined(_BUILD_OPENGL_ES)
+#	define GetProcAddress dlsym
 #endif
 
-	HMODULE module = ::LoadLibrary(__TEXT("OpenGL32"));
-	if (!module)
-		return false;
+bool initGLExtention = false;
 
+bool initGLExtenstion() noexcept
+{
+	if (initGLExtention)
+		return true;
+
+	glewExperimental = true;
+	if (glewInit() != GLEW_OK)
+	{
+		GL_PLATFORM_LOG("glewInit() failed.");
+		return false;
+	}
+
+#if defined(GLEW_MX)
+#	if	defined(_BUILD_PLATFORM_WINDOWS)
+	if (wglewInit() != GLEW_OK)
+		return false;
+#	elif defined(_BUILD_PLATFORM_LINUX)
+	if (glxewInit() != GLEW_OK)
+		return false;
+#	endif
+#endif
+
+#if defined(_BUILD_PLATFORM_WINDOWS) && defined(_BUILD_OPENGL_ES)
+	HMODULE module = ::LoadLibrary("OpenGL32");
+	if (!module)
+	{
+		GL_PLATFORM_LOG("OpenGL dynamic library is not found.");
+		return false;
+	}
+#elif defined(_BUILD_PLATFORM_LINUX) && defined(_BUILD_OPENGL_ES)
+	void* module = ::dlopen("/usr/lib/x86_64-linux-gnu/libGL.so.1", RTLD_NOW);
+	if (!module)
+	{
+		GL_PLATFORM_LOG("OpenGL dynamic library is not found.");
+		return false;
+	}
+#elif defined(_BUILD_PLATFORM_APPLE) && defined(_BUILD_OPENGL_ES)
+	void* module = ::dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_NOW);
+	if (!module)
+	{
+		GL_PLATFORM_LOG("OpenGL dynamic library is not found.");
+		return false;
+	}
+#endif
+
+#if defined(_BUILD_OPENGL_ES)
 	__glAccum = (PFNGLACCUM)::GetProcAddress(module, "glAccum");
 	__glAlphaFunc = (PFNGLALPHAFUNC)::GetProcAddress(module, "glAlphaFunc");
 	__glAreTexturesResident = (PFNGLARETEXTURESRESIDENT)::GetProcAddress(module, "glAreTexturesResident");
@@ -745,14 +785,19 @@ bool initWGLExtenstion() noexcept
 	__glVertex4sv = (PFNGLVERTEX4SV)::GetProcAddress(module, "glVertex4sv");
 	__glVertexPointer = (PFNGLVERTEXPOINTER)::GetProcAddress(module, "glVertexPointer");
 	__glViewport = (PFNGLVIEWPORT)::GetProcAddress(module, "glViewport");
+#endif
 
-	__wglSwapBuffers = (PFNWGLSWAPBUFFERSPROC)::GetProcAddress(module, "wglSwapBuffers");
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	__wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)::wglGetProcAddress("wglSwapIntervalEXT");
 	__wglGetPixelFormatAttribivARB = (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)::wglGetProcAddress("wglGetPixelFormatAttribivARB");
 	__wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)::wglGetProcAddress("wglCreateContextAttribsARB");
 
-	initWGLExtention = __wglCreateContextAttribsARB ? true : false;
-	return initWGLExtention;
+	initGLExtention = __wglCreateContextAttribsARB ? true : false;
+#else
+	initGLExtention = true;
+#endif
+
+	return initGLExtention;
 }
 
-#endif
+_NAME_END

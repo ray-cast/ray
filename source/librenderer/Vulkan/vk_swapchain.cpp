@@ -125,6 +125,7 @@ VulkanSwapchain::getSwapInterval() const noexcept
 bool
 VulkanSwapchain::initSurface() noexcept
 {
+#if defined(_BUILD_PLATFORM_WINDOWS)
 	VkWin32SurfaceCreateInfoKHR info;
 	info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	info.pNext = 0;
@@ -145,6 +146,26 @@ VulkanSwapchain::initSurface() noexcept
 	}
 
 	return true;
+
+#elif defined(_BUILD_PLATFORM_LINUX)
+	VkXlibSurfaceCreateInfoKHR info;
+	info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+	info.pNext = 0;
+	info.flags = 0;
+	info.dpy = XOpenDisplay(NULL);
+	info.window = (Window)_swapchainDesc.getWindHandle();
+
+	if (vkCreateXlibSurfaceKHR(VulkanSystem::instance()->getInstance(), &info, 0, &_surface) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateXlibSurfaceKHR() fail");
+		return false;
+	}
+
+	return true;
+
+#else
+	return false;
+#endif
 }
 
 bool

@@ -1,3 +1,5 @@
+PROJECT(MyGUIEngine)
+
 INCLUDE(MyGUIEngine.list)
 
 IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")

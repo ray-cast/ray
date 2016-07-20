@@ -128,7 +128,7 @@ TerrainMakerComponent::onMessage(const MessagePtr& message) noexcept
 			return;
 	}
 
-	if (message->isInstanceOf<GuiMessage>())
+	/*if (message->isInstanceOf<GuiMessage>())
 	{
 		float delta = GameServer::instance()->getTimer()->delta();
 		float fps = GameServer::instance()->getTimer()->averageFps();
@@ -199,7 +199,7 @@ TerrainMakerComponent::onMessage(const MessagePtr& message) noexcept
 			Gui.setNextWindowPos(float2(650, 20), GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 			Gui.showTestWindow(&_showTestWindow);
 		}
-	}
+	}*/
 }
 
 GameComponentPtr

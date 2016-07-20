@@ -37,10 +37,9 @@
 #ifndef _H_GUI_WIDGET_ALIGN_H_
 #define _H_GUI_WIDGET_ALIGN_H_
 
-#include <ray/platform.h>
 #include <ray/math.h>
 
-#if defined(__clang__) || defined(__GNUC__)
+#if (defined(__clang__) || defined(__GNUC__)) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #	define PRINTFARGS(FMT) __attribute__((format(printf, FMT, (FMT+1))))
 #else
 #	define PRINTFARGS(FMT)

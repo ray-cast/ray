@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/file.h>
+#include <ray/fcntl.h>
 #include <limits>
 
 _NAME_BEGIN
@@ -163,7 +164,7 @@ int fclose(FILE* stream) noexcept
 			free(stream->_base);
 		}
 
-		int ret = ::__close(stream->_file);
+		int ret = fcntl::close(stream->_file);
 
 		free(stream);
 
@@ -195,7 +196,7 @@ streamsize fread(void* buf, streamsize size, FILE* stream) noexcept
 
 			if (count > 0)
 			{
-				int result = ::__read(stream->_file, buf, count);
+				int result = fcntl::read(stream->_file, buf, count);
 				if (result != 0)
 				{
 					out += result;
@@ -213,7 +214,7 @@ streamsize fread(void* buf, streamsize size, FILE* stream) noexcept
 	}
 	else
 	{
-		return (streamsize)::__read(stream->_file, buf, (unsigned int)size);
+		return (streamsize)fcntl::read(stream->_file, buf, (unsigned int)size);
 	}
 }
 
@@ -239,7 +240,7 @@ streamsize fwrite(const void* buf, streamsize size, FILE* stream) noexcept
 
 			if (count > 0)
 			{
-				int result = ::__write(stream->_file, buf, count);
+				int result = fcntl::write(stream->_file, buf, count);
 				if (result != 0)
 				{
 					out += result;
@@ -257,7 +258,7 @@ streamsize fwrite(const void* buf, streamsize size, FILE* stream) noexcept
 	}
 	else
 	{
-		return (streamsize)::__write(stream->_file, buf, (unsigned int)size);
+		return (streamsize)fcntl::write(stream->_file, buf, (unsigned int)size);
 	}
 }
 
@@ -304,7 +305,7 @@ int fgetc(FILE* stream) noexcept
 streamoff ftell(FILE* stream) noexcept
 {
 #if defined(__WINDOWS__) || defined(__DOS__)
-	return ::__tell(stream->_file);
+	return fcntl::tell(stream->_file);
 #else
 	return fseek(stream, 0, ios_base::cur);
 #endif
@@ -351,6 +352,16 @@ streamoff fseek(FILE* stream, streamoff _off, ios_base::seekdir seek) noexcept
 	{
 		return fcntl::seek(stream->_file, (long)_off, seek);
 	}
+}
+
+int faccess(const char* path, int mode) noexcept
+{
+	return fcntl::access(path, mode);
+}
+
+int faccess(const wchar_t* path, int mode) noexcept
+{
+	return fcntl::access(path, mode);
 }
 
 IOFILE::IOFILE() noexcept

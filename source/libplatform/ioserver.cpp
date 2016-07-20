@@ -318,7 +318,7 @@ IoServer::existsFileFromDisk(const std::string& path) noexcept
 	if (resolvePath.empty())
 		resolvePath = path;
 
-	if (fcntl::access(resolvePath.c_str(), 0) == 0)
+	if (faccess(resolvePath.c_str(), 0) == 0)
 	{
 		this->clear(ios_base::goodbit);
 		return *this;
@@ -328,7 +328,7 @@ IoServer::existsFileFromDisk(const std::string& path) noexcept
 	{
 		resolvePath = assign.second + path;
 
-		if (fcntl::access(resolvePath.c_str(), 0) == 0)
+		if (faccess(resolvePath.c_str(), 0) == 0)
 		{
 			this->clear(ios_base::goodbit);
 			return *this;

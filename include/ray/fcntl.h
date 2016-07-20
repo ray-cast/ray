@@ -37,8 +37,8 @@
 #ifndef _H_FCNTL_H_
 #define _H_FCNTL_H_
 
-#include "iosbase.h"
-#include "string.h"
+#include <ray/iosbase.h>
+#include <ray/string.h>
 
 #include <sys/stat.h>
 
@@ -278,11 +278,25 @@ namespace fcntl
 
 #endif
 
-	inline bool close(int fd)
+	inline int close(int fd)
 	{
-		return ::__close(fd) != -1;
+		return ::__close(fd);
 	}
 }
+
+#undef __access
+#undef __close
+#undef __flush
+#undef __write
+#undef __open
+#undef __stat
+#undef __read
+#undef __tell
+#undef __seek
+#undef __lseek
+#undef __wopen
+#undef __wstat
+#undef __waccess
 
 _NAME_END
 

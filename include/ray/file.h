@@ -37,7 +37,7 @@
 #ifndef _H_FILE_H_
 #define _H_FILE_H_
 
-#include <ray/fcntl.h>
+#include <ray/iosbase.h>
 
 _NAME_BEGIN
 
@@ -67,6 +67,9 @@ extern streamoff ftell(FILE* stream) noexcept;
 extern streamoff fseek(FILE* stream, streamoff _off, ios_base::seekdir seek) noexcept;
 extern streamoff fgetpos(FILE* stream);
 extern streamoff fsetpos(FILE* stream);
+
+extern int faccess(const char* path, int mode) noexcept;
+extern int faccess(const wchar_t* path, int mode) noexcept;
 
 //extern int feof(FILE* stream);
 //extern int ferror(FILE* stream);

@@ -577,7 +577,7 @@ FxmlCompile::compile(FxmlOptions& options) except
 			index++;
 		}
 
-		throw std::exception(ostream.str().c_str());
+		throw ray::failure(ostream.str().c_str());
 	}
 	else
 	{

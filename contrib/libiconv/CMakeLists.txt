@@ -1,4 +1,4 @@
-PROJECT(libiconv)
+PROJECT(libiconv C)
 
 SET(LIB_NAME libiconv)
 

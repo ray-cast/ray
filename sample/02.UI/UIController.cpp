@@ -52,13 +52,13 @@ GuiControllerComponent::~GuiControllerComponent() noexcept
 {
 }
 
-ray::GameComponentPtr 
+ray::GameComponentPtr
 GuiControllerComponent::clone() const noexcept
 {
 	return std::make_shared<GuiControllerComponent>();
 }
 
-void 
+void
 GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 {
 	if (message->isInstanceOf<ray::GuiMessage>())
@@ -73,7 +73,7 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 		Gui.colorEdit3("clear color", (float*)&_clearColor);
 		if (Gui.button("Test Window")) _showTestWindow ^= 1;
 		if (Gui.button("Another Window")) _showAnotherWindow ^= 1;
-		Gui.text("Application average %f ms/frame (%f FPS)", delta, fps);
+		Gui.text("Application average %f ms/frame (%f FPS)", std::abs(delta), fps);
 
 		if (_showAnotherWindow)
 		{

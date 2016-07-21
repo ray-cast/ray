@@ -40,7 +40,7 @@
 #include "ray.h"
 
 #ifndef RAY_MAIN_HANDLED
-#	if defined(__WIN32__)
+#	if defined(_WIN32) || defined(_WIN64)
 #		define RAY_MAIN_AVAILABLE
 #	elif defined(__linux__)
 #		define RAY_MAIN_AVAILABLE

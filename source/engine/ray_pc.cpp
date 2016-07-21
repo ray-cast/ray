@@ -192,7 +192,13 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 	if (::glfwInit() == GL_FALSE)
 		return false;
 
+#if defined(GLFW_EXPOSE_NATIVE_X11)
+	::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	::glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#else
 	::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#endif
 
 	_window = ::glfwCreateWindow(w, h, title, nullptr, nullptr);
 	if (_window)

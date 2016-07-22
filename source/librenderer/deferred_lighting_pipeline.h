@@ -38,7 +38,6 @@
 #define _H_DEFERRED_LIGHTING_PIPELINE_H_
 
 #include <ray/render_pipeline_controller.h>
-#include "post_render_pipeline.h"
 
 _NAME_BEGIN
 

@@ -218,7 +218,6 @@ enum RenderQueue
 	RenderQueueTransparentSpecific,
 	RenderQueueTransparentSpecificBatch,
 	RenderQueueTransparentShading,
-	RenderQueueAmbientLighting,
 	RenderQueueLighting,
 	RenderQueuePostprocess,
 	RenderQueueBeginRange = RenderQueueCustom,

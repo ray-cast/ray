@@ -121,8 +121,8 @@ void
 DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 {
 	auto& dataManager = _pipeline->getCamera()->getRenderDataManager();
-	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() &&
-		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() &&
+	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() ||
 		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecific).empty())
 	{
 		_texMRT0->uniformTexture(_deferredOpaqueMap);
@@ -270,16 +270,6 @@ DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, GraphicsF
 	{
 		auto light = it->downcast<Light>();
 		if (light->getLightType() == LightType::LightTypeAmbient)
-			this->renderAmbientLight(pipeline, *light);
-	}
-
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueAmbientLighting);
-	pipeline.drawPostProcess(RenderQueue::RenderQueueAmbientLighting, target, nullptr);
-
-	for (auto& it : lights)
-	{
-		auto light = it->downcast<Light>();
-		if (light->getLightType() == LightType::LightTypeAmbient)
 			continue;
 
 		switch (light->getLightType())
@@ -295,6 +285,9 @@ DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, GraphicsF
 			break;
 		case LightType::LightTypeSpot:
 			this->renderSpotLight(pipeline, *light);
+			break;
+		case LightType::LightTypeAmbient:
+			this->renderAmbientLight(pipeline, *light);
 			break;
 		default:
 			break;
@@ -412,7 +405,7 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 {
 	_lightColor->uniform3f(light.getLightColor() * light.getLightIntensity());
 	_lightEyePosition->uniform3f(math::invTranslateVector3(pipeline.getCamera()->getTransform(), light.getTranslate()));
-	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), -light.getForward()));
+	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
 	pipeline.drawScreenQuadLayer(*_deferredAmbientLight, light.getLayer());

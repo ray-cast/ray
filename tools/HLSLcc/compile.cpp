@@ -38,6 +38,7 @@
 
 #include <d3dcompiler.h>
 #include <sstream>
+#include <regex>
 
 #define EXCLUDE_PSTDINT
 #include <hlslcc.hpp>
@@ -45,96 +46,6 @@
 #include <ray/except.h>
 #include <ray/xmlreader.h>
 #include <ray/ioserver.h>
-
-struct ShaderIncludePath : public ID3DInclude
-{
-public:
-	ShaderIncludePath(const ray::util::string& shader_path)
-	{
-		_path = shader_path;
-		auto begin = _path.rbegin();
-		auto end = _path.rend();
-
-		for (auto& it : _path)
-		{
-			if (it == '\\')
-				it = '/';
-		}
-
-		std::size_t length = _path.find_last_of('/') + 1;
-		_filename = _path.substr(length, _path.size() - length);
-		_filename = _filename.substr(0, _filename.find('.'));
-		_path = _path.substr(0, length);
-	}
-
-	HRESULT STDMETHODCALLTYPE Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes)
-	{
-		std::string filename;
-
-		if (IncludeType == D3D_INCLUDE_LOCAL)
-		{
-			filename = _path;
-			filename += pFileName;
-		}
-		else if (IncludeType == D3D_INCLUDE_SYSTEM)
-		{
-			filename = "shaders/";
-			filename += pFileName;
-		}
-		else // invalid type passed ???
-		{
-			*ppData = NULL;
-			*pBytes = 0;
-			return S_OK;
-		}
-
-		// open file
-		char* data;
-		DWORD size, read;
-
-		ray::StreamReaderPtr stream;
-		if (ray::IoServer::instance()->openFile(stream, filename))
-		{
-			std::size_t size = stream->size();
-			if (size > 0)
-			{
-				data = new char[size];
-				if (stream->read(data, size))
-				{
-					*ppData = data;
-					*pBytes = size;
-					return S_OK;
-				}
-
-				delete[] data;
-			}
-		}
-
-		*ppData = NULL;
-		*pBytes = 0;
-		return S_OK;
-	}
-
-	HRESULT STDMETHODCALLTYPE Close(LPCVOID pData)
-	{
-		delete[](std::uint8_t*)pData;
-		return S_OK;
-	}
-
-	ray::util::string path() const
-	{
-		return _path;
-	}
-
-	ray::util::string filename() const
-	{
-		return _filename;
-	}
-
-private:
-	ray::util::string _path;
-	ray::util::string _filename;
-};
 
 GLLang ConvGLLang(const std::string& str)
 {
@@ -308,6 +219,41 @@ FxmlCompile::load(ray::iarchive& reader) except
 
 			_parameters.push_back(parameter);
 		}
+		else if (name == "buffer")
+		{
+			cbuffer buffer;
+
+			buffer.name = reader.getValue<std::string>("name");
+			_hlslCodes += "cbuffer " + buffer.name + " {";
+
+			do
+			{
+				auto nodename = reader.getCurrentNodeName();
+				if (nodename == "parameter")
+				{
+					Parameter parameter;
+					parameter.name = reader.getValue<std::string>("name");
+					parameter.type = reader.getValue<std::string>("type");
+					parameter.semantic = reader.getValue<std::string>("semantic");
+					parameter.value = reader.getValue<std::string>("value");
+
+					buffer.params.push_back(parameter);
+
+					if (parameter.name.empty())
+						continue;
+					if (parameter.name.empty())
+						continue;
+
+					parameter.type = parameter.type.substr(0, parameter.type.find_first_of('['));
+					_hlslCodes += "uniform " + parameter.type + " " + parameter.name + ";\n";
+				}
+
+			} while (reader.setToNextChild());
+
+			_hlslCodes += "}";
+
+			_buffers.push_back(buffer);
+		}
 		else if (name == "macro")
 		{
 			Parameter macro;
@@ -372,20 +318,24 @@ FxmlCompile::load(ray::iarchive& reader) except
 			{
 				do
 				{
-					Pass pass;
-					pass.name = reader.getValue<std::string>("name");
-					if (reader.setToFirstChild())
+					if (reader.getCurrentNodeName() == "pass")
 					{
-						do
+						Pass pass;
+						pass.name = reader.getValue<std::string>("name");
+						if (reader.setToFirstChild())
 						{
-							State state;
-							state.name = reader.getValue<std::string>("name");
-							state.value = reader.getValue<std::string>("value");
-							pass.state.push_back(state);
-						} while (reader.setToNextChild());
+							do
+							{
+								State state;
+								state.name = reader.getValue<std::string>("name");
+								state.value = reader.getValue<std::string>("value");
+								pass.state.push_back(state);
+							} while (reader.setToNextChild());
+						}
+
+						technique.pass.push_back(pass);
 					}
 
-					technique.pass.push_back(pass);
 				} while (reader.setToNextChild());
 			}
 
@@ -442,6 +392,26 @@ FxmlCompile::save(ray::oarchive& reader) except
 		}
 
 		reader.setToParent();
+	}
+
+	for (auto& buffer : _buffers)
+	{
+		reader.addSubNode("buffer");
+		reader.addAttribute("name", buffer.name);
+
+		for (auto& parameter : buffer.params)
+		{
+			reader.addSubNode("parameter");
+			if (!parameter.name.empty())
+				reader.addAttribute("name", parameter.name);
+			if (!parameter.type.empty())
+				reader.addAttribute("type", parameter.type);
+			if (!parameter.semantic.empty())
+				reader.addAttribute("semantic", parameter.semantic);
+			if (!parameter.value.empty())
+				reader.addAttribute("value", parameter.value);
+			reader.setToParent();
+		}
 	}
 
 	for (auto& inputLayout : _inputLayouts)
@@ -543,8 +513,6 @@ FxmlCompile::compile(FxmlOptions& options) except
 	D3DCreateBlob(4096, &binary);
 	D3DCreateBlob(4096, &error);
 
-	ShaderIncludePath sh_include(options.complieIn);
-
 	D3D_SHADER_MACRO macro;
 	macro.Name = options.defineKey.empty() ? NULL : options.defineKey.c_str();
 	macro.Definition = options.defineValue.empty() ? NULL : options.defineValue.c_str();
@@ -554,7 +522,7 @@ FxmlCompile::compile(FxmlOptions& options) except
 		options.hlslCode.size(),
 		options.complieIn.c_str(),
 		&macro,
-		&sh_include,
+		nullptr,
 		options.main.c_str(),
 		options.hlsl.c_str(),
 		D3DCOMPILE_OPTIMIZATION_LEVEL3,
@@ -565,19 +533,42 @@ FxmlCompile::compile(FxmlOptions& options) except
 
 	if (hr != S_OK)
 	{
-		std::string line;
-		std::size_t index = 1;
-		std::ostringstream ostream;
-		std::istringstream istream(options.hlslCode);
+		std::regex pattern("\\((.*?,.*?)\\): error");
+		std::match_results<std::string::const_iterator> result;
+		std::string errorString((char*)error->GetBufferPointer(), error->GetBufferSize());
 
-		ostream << (const char*)error->GetBufferPointer() << std::endl;
-		while (std::getline(istream, line))
+		if (std::regex_search(errorString, result, pattern))
 		{
-			ostream << index << '\t' << line << std::endl;
-			index++;
-		}
+			std::istringstream patternResult(result.str());
 
-		throw ray::failure(ostream.str().c_str());
+			std::size_t row;
+			patternResult.ignore(1);
+			patternResult >> row;
+
+			std::string line;
+			std::ostringstream ostream;
+			std::istringstream istream(_hlslCodes);
+			ostream << (const char*)error->GetBufferPointer() << std::endl;
+
+			std::size_t start = std::max<std::size_t>(0, row - 10);
+
+			for (std::size_t i = 0; i < row + 10; i++)
+			{
+				if (!std::getline(istream, line))
+					break;
+
+				if (i >= start)
+					ostream << i << '\t' << line << std::endl;
+			}
+
+			if (binary)
+				binary->Release();
+
+			if (error)
+				error->Release();
+
+			throw ray::failure(ostream.str().c_str());
+		}
 	}
 	else
 	{

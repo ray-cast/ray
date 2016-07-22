@@ -90,7 +90,7 @@
                 float3 V = normalize(viewdir);
                 float3 N = restoreNormal(MRT1);
                 float3 P = restorePosition(texDepthLinear, coord, V);
-                float3 L = normalize(lightEyeDirection);
+                float3 L = -lightEyeDirection;
 
                 float4 lighting = 0;
                 lighting.rgb = saturate(dot(N, L) * 0.5 + 0.5) * lightColor;

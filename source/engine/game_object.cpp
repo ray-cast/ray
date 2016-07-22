@@ -538,6 +538,7 @@ GameObject::setWorldTransform(const float4x4& transform) noexcept
 	this->_onMoveBefore();
 
 	_worldTransform = transform.getTransform(_worldTranslate, _worldRotation, _worldScaling);
+	_worldTransformInverse = math::transformInverse(_worldTransform);
 	_worldNeedUpdates = false;
 
 	this->_updateWorldChildren();
@@ -551,6 +552,7 @@ GameObject::setWorldTransformOnlyRotate(const float4x4& transform) noexcept
 
 	_worldTransform = transform.getTransformOnlyRotation(_worldTranslate, _worldRotation);
 	_worldTransform.scale(_worldScaling);
+	_worldTransformInverse = math::transformInverse(_worldTransform);
 
 	_worldNeedUpdates = false;
 

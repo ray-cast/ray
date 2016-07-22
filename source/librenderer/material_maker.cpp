@@ -213,8 +213,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 			);
 
 		if (hr != S_OK)
-		{
-		
+		{		
 			std::regex pattern("\\((.*?,.*?)\\): error");
 			std::match_results<std::string::const_iterator> result;
 			std::string errorString((char*)error->GetBufferPointer(), error->GetBufferSize());
@@ -243,6 +242,12 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 						ostream << i << '\t' << line << std::endl;
 				}
 
+				if (binary)
+					binary->Release();
+
+				if (error)
+					error->Release();
+
 				throw ray::failure(ostream.str().c_str());
 			}
 		}
@@ -250,6 +255,12 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 		shaderDesc.setStage(shaderStage);
 		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes);
 		shaderDesc.setByteCodes(std::string((char*)binary->GetBufferPointer(), binary->GetBufferSize()));
+
+		if (binary)
+			binary->Release();
+
+		if (error)
+			error->Release();
 #else
 		throw failure(__TEXT("Can't support HLSL : ") + reader.getCurrentNodePath());
 #endif

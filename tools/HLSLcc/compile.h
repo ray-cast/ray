@@ -132,6 +132,12 @@ private:
 		std::vector<InputLayoutChild> layouts;
 	};
 
+	struct cbuffer
+	{
+		std::string name;
+		std::vector<Parameter> params;
+	};
+
 	std::string _conv;
 	std::string _hlslCodes;
 
@@ -141,6 +147,7 @@ private:
 	std::vector<Shader> _shader;
 	std::vector<Parameter> _macros;
 	std::vector<Parameter> _parameters;
+	std::vector<cbuffer> _buffers;
 	std::vector<Sampler> _samplers;
 	std::vector<Technique> _techniques;
 	std::vector<InputLayout> _inputLayouts;

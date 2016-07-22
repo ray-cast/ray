@@ -93,6 +93,25 @@ GuiSystem::open(GuiSystemBasePtr custom) except
 	int width, height;
 	io.Fonts->ClearFonts();
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+	io.KeyMap[ImGuiKey_Tab] = GuiInputKey::Tab;
+	io.KeyMap[ImGuiKey_LeftArrow] = GuiInputKey::ArrowLeft;
+	io.KeyMap[ImGuiKey_RightArrow] = GuiInputKey::ArrowRight;
+	io.KeyMap[ImGuiKey_UpArrow] = GuiInputKey::ArrowUp;
+	io.KeyMap[ImGuiKey_DownArrow] = GuiInputKey::ArrowDown;
+	io.KeyMap[ImGuiKey_PageUp] = GuiInputKey::PageUp;
+	io.KeyMap[ImGuiKey_PageDown] = GuiInputKey::PageDown;
+	io.KeyMap[ImGuiKey_Home] = GuiInputKey::Home;
+	io.KeyMap[ImGuiKey_End] = GuiInputKey::End;
+	io.KeyMap[ImGuiKey_Delete] = GuiInputKey::Delete;
+	io.KeyMap[ImGuiKey_Backspace] = GuiInputKey::Backspace;
+	io.KeyMap[ImGuiKey_Enter] = GuiInputKey::Return;
+	io.KeyMap[ImGuiKey_Escape] = GuiInputKey::Escape;
+	io.KeyMap[ImGuiKey_A] = GuiInputKey::A;
+	io.KeyMap[ImGuiKey_C] = GuiInputKey::C;
+	io.KeyMap[ImGuiKey_V] = GuiInputKey::V;
+	io.KeyMap[ImGuiKey_X] = GuiInputKey::X;
+	io.KeyMap[ImGuiKey_Y] = GuiInputKey::Y;
+	io.KeyMap[ImGuiKey_Z] = GuiInputKey::Z;
 
 	ray::GraphicsTextureDesc fontDesc;
 	fontDesc.setSize(width, height);
@@ -210,6 +229,11 @@ GuiSystem::injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept
 {
 	assert(_system);
 	auto& io = ImGui::GetIO();
+	if (_key == GuiInputKey::Code::LeftControl)
+		io.KeyCtrl = true;
+	else if (_key == GuiInputKey::Code::LeftAlt)
+		io.KeyAlt = true;
+	io.KeysDown[_key] = true;
 	return _system->injectKeyPress(_key, _char);
 }
 
@@ -217,6 +241,12 @@ bool
 GuiSystem::injectKeyRelease(GuiInputKey::Code _key) noexcept
 {
 	assert(_system);
+	auto& io = ImGui::GetIO();
+	if (_key == GuiInputKey::Code::LeftControl)
+		io.KeyCtrl = false;
+	else if (_key == GuiInputKey::Code::LeftAlt)
+		io.KeyAlt = false;
+	io.KeysDown[_key] = false;
 	return _system->injectKeyRelease(_key);
 }
 
@@ -250,6 +280,8 @@ GuiSystem::setViewport(std::uint32_t w, std::uint32_t h) noexcept
 	ImGuiIO& io = ImGui::GetIO();
 	io.DisplaySize.x = w;
 	io.DisplaySize.y = h;
+	io.DisplayFramebufferScale.x = w;
+	io.DisplayFramebufferScale.y = h;
 
 	ray::float4x4 project;
 	if (RenderSystem::instance()->getRenderSetting().deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
@@ -332,8 +364,8 @@ GuiSystem::render(float delta) except
 	_ibo->unmap();
 
 	auto& io = ImGui::GetIO();
-	renderer->setViewport(0, ray::Viewport(0, 0, io.DisplaySize.x, io.DisplaySize.y));
-	renderer->setScissor(0, ray::Scissor(0, 0, io.DisplaySize.x, io.DisplaySize.y));
+	renderer->setViewport(0, ray::Viewport(0, 0, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y));
+	renderer->setScissor(0, ray::Scissor(0, 0, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y));
 
 	renderer->setVertexBuffer(0, _vbo, 0);
 	renderer->setIndexBuffer(_ibo, 0, ray::GraphicsIndexType::GraphicsIndexTypeUInt16);

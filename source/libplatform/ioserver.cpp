@@ -109,7 +109,7 @@ IoServer::removeAssign(const std::string& name) noexcept
 IoServer&
 IoServer::getAssign(const std::string& name, std::string& path) noexcept
 {
-	path = _assignTable.at(name);
+	path = _assignTable[name];
 	if (path.empty())
 		this->setstate(ios_base::failbit);
 	else

@@ -53,7 +53,7 @@ __ImplementSubClass(ShadowRenderPipeline, RenderPipelineController, "ShadowRende
 ShadowRenderPipeline::ShadowRenderPipeline() noexcept
 	: _shadowMode(ShadowMode::ShadowModeSoft)
 	, _shadowQuality(ShadowQuality::ShadowQualityMedium)
-	, _shadowDepthFormat(GraphicsFormat::GraphicsFormatD16UNorm)
+	, _shadowDepthFormat(GraphicsFormat::GraphicsFormatX8_D24UNormPack32)
 	, _shadowDepthLinearFormat(GraphicsFormat::GraphicsFormatR32SFloat)
 {
 }
@@ -194,19 +194,19 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 bool
 ShadowRenderPipeline::setupShadowMaterial(RenderPipeline& pipeline) noexcept
 {
-	_shadowRender = pipeline.createMaterial("sys:fx/shadowmap.fxml");
-	_shadowConvOrthoLinearDepth = _shadowRender->getTech("ConvOrthoLinearDepth");
-	_shadowConvPerspectiveFovLinearDepth = _shadowRender->getTech("ConvPerspectiveFovLinearDepth");
-	_shadowBlurOrthoShadowX = _shadowRender->getTech("ConvOrthoLinearDepthBlurX");
-	_shadowBlurPerspectiveFovShadowX = _shadowRender->getTech("ConvPerspectiveFovLinearDepthBlurX");
-	_shadowBlurShadowY = _shadowRender->getTech("BlurY");
-	_shadowLogBlurShadowX = _shadowRender->getTech("LogBlurX");
-	_shadowLogBlurShadowY = _shadowRender->getTech("LogBlurY");
-	_shadowShadowSource = _shadowRender->getParameter("texSource");
-	_shadowShadowSourceInv = _shadowRender->getParameter("texSourceSizeInv");
-	_shadowClipConstant = _shadowRender->getParameter("clipConstant");
-	_shadowOffset = _shadowRender->getParameter("offset");
-	_shadowWeight = _shadowRender->getParameter("weight");
+	_shadowRender = pipeline.createMaterial("sys:fx/shadowmap.fxml"); if (!_shadowRender) return false;
+	_shadowConvOrthoLinearDepth = _shadowRender->getTech("ConvOrthoLinearDepth"); if (!_shadowConvOrthoLinearDepth) return false;
+	_shadowConvPerspectiveFovLinearDepth = _shadowRender->getTech("ConvPerspectiveFovLinearDepth"); if (!_shadowConvPerspectiveFovLinearDepth) return false;
+	_shadowBlurOrthoShadowX = _shadowRender->getTech("ConvOrthoLinearDepthBlurX"); if (!_shadowBlurOrthoShadowX) return false;
+	_shadowBlurPerspectiveFovShadowX = _shadowRender->getTech("ConvPerspectiveFovLinearDepthBlurX"); if (!_shadowBlurPerspectiveFovShadowX) return false;
+	_shadowBlurShadowY = _shadowRender->getTech("BlurY"); if (!_shadowBlurShadowY) return false;
+	_shadowLogBlurShadowX = _shadowRender->getTech("LogBlurX"); if (!_shadowLogBlurShadowX) return false;
+	_shadowLogBlurShadowY = _shadowRender->getTech("LogBlurY"); if (!_shadowLogBlurShadowY) return false;
+	_shadowShadowSource = _shadowRender->getParameter("texSource"); if (!_shadowShadowSource) return false;
+	_shadowShadowSourceInv = _shadowRender->getParameter("texSourceSizeInv"); if (!_shadowShadowSourceInv) return false;
+	_shadowClipConstant = _shadowRender->getParameter("clipConstant"); if (!_shadowClipConstant) return false;
+	_shadowOffset = _shadowRender->getParameter("offset"); if (!_shadowOffset) return false;
+	_shadowWeight = _shadowRender->getParameter("weight"); if (!_shadowWeight) return false;
 
 	_shadowBlurShadowX[LightType::LightTypeSun] = _shadowBlurOrthoShadowX;
 	_shadowBlurShadowX[LightType::LightTypeDirectional] = _shadowBlurOrthoShadowX;

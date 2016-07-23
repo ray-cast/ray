@@ -72,8 +72,8 @@ GameApplication::GameApplication() noexcept
 	: _isInitialize(false)
 	, _gameServer(nullptr)
 	, _workDir("")
-	, _engineDir("..\\..\\engine\\")
-	, _resourceBaseDir("..\\..\\dlc\\")
+	, _engineDir("../../engine/")
+	, _resourceBaseDir("../../dlc/")
 {
 	_ioServer = IoServer::instance();
 	_ioInterface = IoInterface::instance();

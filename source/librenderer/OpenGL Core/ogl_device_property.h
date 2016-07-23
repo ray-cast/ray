@@ -53,17 +53,59 @@ public:
 	const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept;
 
 private:
-
 #if defined(_BUILD_PLATFORM_WINDOWS)
-	bool setupWGLEnvironment(HWND& hwnd, HDC& hdc, HINSTANCE& hinstance) noexcept;
-	bool setupWGLPixelFormat(HDC hdc) noexcept;
-	bool setupWGLExtensions(HDC hdc) noexcept;
-	void closeWGLEnvironment(HWND hwnd, HDC hdc, HINSTANCE hinstance) noexcept;
+	struct CreateParam
+	{
+		HWND hwnd;
+		HDC hdc;
+		HINSTANCE hinstance;
+		HGLRC context;
 
+		CreateParam()
+			: hwnd(nullptr)
+			, hdc(nullptr)
+			, hinstance(nullptr)
+			, context(nullptr)
+		{
+		}
+	};
+#elif defined(_BUILD_PLATFORM_LINUX)
+	struct CreateParam
+	{
+		Display* dpy;
+		XVisualInfo* vi;
+		GLXContext ctx;
+		Colormap cmap;
+		Window wnd;
+		GLXFBConfig* config;
+
+		CreateParam()
+			: dpy(nullptr)
+			, vi(nullptr)
+			, ctx(nullptr)
+			, cmap(0)
+			, wnd(0)
+			, config(0)
+		{
+		}
+	};
 #elif defined(_BUILD_PLATFORM_APPLE)
-	bool setupCGLEnvironment(CGLContextObj& ctx, CGLContextObj& octx) noexcept;
-	void closeCGLEnvironment(CGLContextObj ctx, CGLContextObj octx) noexcept;
+	struct CreateParam
+	{
+		CGLContextObj ctx;
+		CGLContextObj octx;
+
+		CreateParam()
+			: ctx(nullptr)
+			, ctx(nullptr)
+		{
+		}
+	};
 #endif
+
+private:
+	bool setupGLEnvironment(CreateParam& param) noexcept;
+	void closeGLEnvironment(const CreateParam& param) noexcept;
 
 	bool initDeviceProperties() noexcept;
 

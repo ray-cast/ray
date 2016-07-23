@@ -53,7 +53,7 @@ __ImplementSubClass(ShadowRenderPipeline, RenderPipelineController, "ShadowRende
 ShadowRenderPipeline::ShadowRenderPipeline() noexcept
 	: _shadowMode(ShadowMode::ShadowModeSoft)
 	, _shadowQuality(ShadowQuality::ShadowQualityMedium)
-	, _shadowDepthFormat(GraphicsFormat::GraphicsFormatX8_D24UNormPack32)
+	, _shadowDepthFormat(GraphicsFormat::GraphicsFormatD16UNorm)
 	, _shadowDepthLinearFormat(GraphicsFormat::GraphicsFormatR32SFloat)
 {
 }
@@ -241,7 +241,14 @@ ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 	shadowMapSize[ShadowQuality::ShadowQualityVeryHigh] = LightShadowSize::LightShadowSizeVeryHigh;
 
 	if (!pipeline.isTextureSupport(_shadowDepthFormat))
-		return false;
+	{
+		if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatD24UNorm_S8UInt))
+			_shadowDepthFormat = GraphicsFormat::GraphicsFormatD24UNorm_S8UInt;
+		else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt))
+			_shadowDepthFormat = GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt;
+		else
+			return false;
+	}
 
 	GraphicsFramebufferLayoutDesc shadowDephLayoutDesc;
 	shadowDephLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _shadowDepthFormat));

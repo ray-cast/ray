@@ -49,62 +49,30 @@ OGLDeviceProperty::~OGLDeviceProperty() noexcept
 bool
 OGLDeviceProperty::setup() noexcept
 {
-#if defined(_BUILD_PLATFORM_WINDOWS)
-	HWND hwnd = nullptr;
-	HDC hdc = nullptr;
-	HINSTANCE hInstance = nullptr;
+	CreateParam param;
 
-	if (!setupWGLEnvironment(hwnd, hdc, hInstance))
+	if (!setupGLEnvironment(param))
 	{
-		closeWGLEnvironment(hwnd, hdc, hInstance);
-		return false;
-	}
-
-	if (!setupWGLPixelFormat(hdc))
-	{
-		closeWGLEnvironment(hwnd, hdc, hInstance);
-		return false;
-	}
-
-	if (!setupWGLExtensions(hdc))
-	{
-		closeWGLEnvironment(hwnd, hdc, hInstance);
-		return false;
-	}
-
-	closeWGLEnvironment(hwnd, hdc, hInstance);
-	return true;
-#elif defined(_BUILD_PLATFORM_LINUX)
-	return true;
-#elif defined(_BUILD_PLATFORM_APPLE)
-	CGLContextObj ctx, octx;
-
-	if (!setupCGLEnvironment(ctx, octx))
-	{
-		closeCGLEnvironment(ctx, octx);
+		closeGLEnvironment(param);
 		return false;
 	}
 
 	if (!initGLExtenstion())
 	{
-		GL_PLATFORM_LOG("setupGLExtenstion fail");
-		closeCGLEnvironment(ctx, octx);
+		GL_PLATFORM_LOG("initGLExtenstion fail");
+		closeGLEnvironment(param);
 		return false;
 	}
 
 	if (!initDeviceProperties())
 	{
-		GL_PLATFORM_LOG("setupDeviceProperties fail");
-		closeCGLEnvironment(ctx, octx);
+		GL_PLATFORM_LOG("initDeviceProperties fail");
+		closeGLEnvironment(param);
 		return false;
 	}
 
-	closeCGLEnvironment(ctx, octx);
-
+	closeGLEnvironment(param);
 	return true;
-#else
-	return false;
-#endif
 }
 
 void
@@ -114,123 +82,163 @@ OGLDeviceProperty::close() noexcept
 
 #if defined(_BUILD_PLATFORM_WINDOWS)
 bool
-OGLDeviceProperty::setupWGLEnvironment(HWND& hwnd, HDC& hdc, HINSTANCE& hinstance) noexcept
+OGLDeviceProperty::setupGLEnvironment(CreateParam& param) noexcept
 {
 	WNDCLASSEXA wc;
 	std::memset(&wc, 0, sizeof(wc));
 	wc.cbSize = sizeof(wc);
-	wc.hInstance = hinstance = ::GetModuleHandle(NULL);
+	wc.hInstance = param.hinstance = ::GetModuleHandle(NULL);
 	wc.lpfnWndProc = ::DefWindowProc;
 	wc.lpszClassName = "OGL";
 	if (!::RegisterClassEx(&wc))
 		return false;
 
-	hwnd = CreateWindowEx(WS_EX_APPWINDOW, "OGL", "OGL", 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, wc.hInstance, NULL);
-	if (!hwnd)
+	param.hwnd = CreateWindowEx(WS_EX_APPWINDOW, "OGL", "OGL", 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, wc.hInstance, NULL);
+	if (!param.hwnd)
 	{
 		GL_PLATFORM_LOG("CreateWindowEx() fail");
 		return false;
 	}
 
-	hdc = ::GetDC(hwnd);
-	if (!hdc)
+	param.hdc = ::GetDC(param.hwnd);
+	if (!param.hdc)
 	{
 		GL_PLATFORM_LOG("GetDC() fail");
 		return false;
 	}
 
-	return true;
-}
-
-bool
-OGLDeviceProperty::setupWGLPixelFormat(HDC hdc) noexcept
-{
 	PIXELFORMATDESCRIPTOR pfd;
 	std::memset(&pfd, 0, sizeof(pfd));
 	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
 	pfd.nVersion = 1;
 	pfd.dwFlags |= PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
 
-	int pixelFormat = ::ChoosePixelFormat(hdc, &pfd);
+	int pixelFormat = ::ChoosePixelFormat(param.hdc, &pfd);
 	if (!pixelFormat)
 	{
 		GL_PLATFORM_LOG("ChoosePixelFormat() fail");
 		return false;
 	}
 
-	if (!::DescribePixelFormat(hdc, pixelFormat, sizeof(pfd), &pfd))
+	if (!::DescribePixelFormat(param.hdc, pixelFormat, sizeof(pfd), &pfd))
 	{
 		GL_PLATFORM_LOG("DescribePixelFormat() fail");
 		return false;
 	}
 
-	if (!::SetPixelFormat(hdc, pixelFormat, &pfd))
+	if (!::SetPixelFormat(param.hdc, pixelFormat, &pfd))
 	{
 		GL_PLATFORM_LOG("SetPixelFormat() fail");
 		return false;
 	}
 
-	return true;
-}
-
-bool
-OGLDeviceProperty::setupWGLExtensions(HDC hdc) noexcept
-{
-	HGLRC context = ::wglCreateContext(hdc);
-	if (!context)
+	param.context = ::wglCreateContext(param.hdc);
+	if (!param.context)
 	{
 		GL_PLATFORM_LOG("wglCreateContext fail");
 		return false;
 	}
 
-	if (!::wglMakeCurrent(hdc, context))
+	if (!::wglMakeCurrent(param.hdc, param.context))
 	{
 		GL_PLATFORM_LOG("wglMakeCurrent fail");
-		::wglDeleteContext(context);
 		return false;
 	}
-
-	if (!initGLExtenstion())
-	{
-		GL_PLATFORM_LOG("setupGLExtenstion fail");
-		::wglDeleteContext(context);
-		return false;
-	}
-
-	if (!initDeviceProperties())
-	{
-		GL_PLATFORM_LOG("setupDeviceProperties fail");
-		::wglDeleteContext(context);
-		return false;
-	}
-
-	::wglDeleteContext(context);
 
 	return true;
 }
 
 void
-OGLDeviceProperty::closeWGLEnvironment(HWND hwnd, HDC hdc, HINSTANCE hinstance) noexcept
+OGLDeviceProperty::closeGLEnvironment(const CreateParam& param) noexcept
 {
-	if (hwnd)
+	if (param.context)
 	{
-		if (hdc) ReleaseDC(hwnd, hdc);
-		DestroyWindow(hwnd);
+		::wglDeleteContext(param.context);
 	}
 
-	if (hinstance)
+	if (param.hwnd)
+	{
+		if (param.hdc) ReleaseDC(param.hwnd, param.hdc);
+		DestroyWindow(param.hwnd);
+	}
+
+	if (param.hinstance)
 	{
 		UnregisterClass("OGL", GetModuleHandle(NULL));
 	}
 }
-#endif
-
-#if defined(_BUILD_PLATFORM_APPLE)
-bool
-OGLDeviceProperty::setupCGLEnvironment(CGLContextObj& ctx, CGLContextObj& octx) noexcept
+#elif defined(_BUILD_PLATFORM_LINUX)
+bool 
+OGLDeviceProperty::setupGLEnvironment(CreateParam& param) noexcept
 {
-	octx = CGLGetCurrentContext();
-	if (!octx)
+	param.dpy = XOpenDisplay(NULL);
+	if (!param.dpy) return false;
+
+	int erb, evb;
+	if (!glXQueryExtension(param.dpy, &erb, &evb)) return false;
+
+	int attrib[] = { GLX_RGBA, GLX_DOUBLEBUFFER, GL_NONE };
+	param.vi = glXChooseVisual(param.dpy, DefaultScreen(param.dpy), attrib);
+	if (!param.vi) return false;
+
+	param.ctx = glXCreateContext(param.dpy, param.vi, GL_NONE, true);
+	if (!param.ctx) return false;
+
+	param.cmap = XCreateColormap(param.dpy, RootWindow(param.dpy, param.vi->screen), param.vi->visual, AllocNone);
+
+	XSetWindowAttributes swa;
+	swa.border_pixel = 0;
+	swa.colormap = param.cmap;
+	param.wnd = XCreateWindow(param.dpy, RootWindow(param.dpy, param.vi->screen), 0, 0, 1, 1, 0, param.vi->depth, InputOutput, param.vi->visual, CWBorderPixel | CWColormap, &swa);
+
+	if (!glXMakeCurrent(param.dpy, param.wnd, param.ctx)) return false;
+
+	if (::glxewInit() != GLEW_OK) return false;
+
+	GLXContext oldCtx = param.ctx;
+	int FBConfigAttrs[] = { GLX_FBCONFIG_ID, 0, GL_NONE };
+	if (glXQueryContext(param.dpy, oldCtx, GLX_FBCONFIG_ID, &FBConfigAttrs[1]))
+		return false;
+
+	int nelems = 0;
+	param.config = glXChooseFBConfig(param.dpy, param.vi->screen, FBConfigAttrs, &nelems);
+	if (nelems < 1)
+		return false;
+
+	int contextAttrs[20];
+	contextAttrs[0] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+	contextAttrs[1] = 3;
+	contextAttrs[2] = GLX_CONTEXT_MINOR_VERSION_ARB;
+	contextAttrs[3] = 3;
+	contextAttrs[4] = GLX_CONTEXT_PROFILE_MASK_ARB;
+	contextAttrs[5] = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+	contextAttrs[6] = GL_NONE;
+
+	param.ctx = glXCreateContextAttribsARB(param.dpy, *param.config, 0, true, contextAttrs);
+	if (!param.ctx) return false;
+
+	if (!glXMakeCurrent(param.dpy, param.wnd, param.ctx)) return false;
+
+	glXDestroyContext(param.dpy, oldCtx);
+	return true;
+}
+
+void 
+OGLDeviceProperty::closeGLEnvironment(const CreateParam& param) noexcept
+{
+	if (param.dpy && param.ctx) glXDestroyContext(param.dpy, param.ctx);
+	if (param.dpy && param.wnd) XDestroyWindow(param.dpy, param.wnd);
+	if (param.dpy && param.cmap) XFreeColormap(param.dpy, param.cmap);
+	if (param.vi) XFree(param.vi);
+	if (param.config) XFree(param.config);
+	if (param.dpy) XCloseDisplay(param.dpy);
+}
+#elif defined(_BUILD_PLATFORM_APPLE)
+bool
+OGLDeviceProperty::setupCGLEnvironment(CreateParam& param) noexcept
+{
+	param.octx = CGLGetCurrentContext();
+	if (!param.octx)
 	{
 		std::size_t index = 0;
 
@@ -249,7 +257,7 @@ OGLDeviceProperty::setupCGLEnvironment(CGLContextObj& ctx, CGLContextObj& octx) 
 			return false;
 		}
 
-		error = CGLCreateContext(pf, NULL, &ctx);
+		error = CGLCreateContext(pf, NULL, &param.ctx);
 		if (error)
 		{
 			GL_PLATFORM_LOG("CGLCreateContext() fail");
@@ -257,7 +265,7 @@ OGLDeviceProperty::setupCGLEnvironment(CGLContextObj& ctx, CGLContextObj& octx) 
 		}
 
 		CGLReleasePixelFormat(pf);
-		error = CGLSetCurrentContext(ctx);
+		error = CGLSetCurrentContext(param.ctx);
 		if (error)
 		{
 			GL_PLATFORM_LOG("CGLSetCurrentContext() fail");
@@ -269,16 +277,16 @@ OGLDeviceProperty::setupCGLEnvironment(CGLContextObj& ctx, CGLContextObj& octx) 
 }
 
 void
-OGLDeviceProperty::closeCGLEnvironment(CGLContextObj ctx, CGLContextObj octx) noexcept
+OGLDeviceProperty::closeCGLEnvironment(const CreateParam& param) noexcept
 {
-	if (octx)
+	if (param.octx)
 	{
-		CGLSetCurrentContext(octx);
+		CGLSetCurrentContext(param.octx);
 	}
 
-	if (ctx)
+	if (param.ctx)
 	{
-		CGLReleaseContext(ctx);
+		CGLReleaseContext(param.ctx);
 	}
 }
 

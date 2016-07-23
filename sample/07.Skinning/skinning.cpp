@@ -52,15 +52,15 @@ SkinningComponent::~SkinningComponent() noexcept
 void
 SkinningComponent::onActivate() except
 {
-	auto stage = ray::ResManager::instance()->createGameObject("dlc:skinning/models/PDF »î¶¯Ð¡³ó/stage.pmx");
+	auto stage = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/PDF æ´»åŠ¨å°ä¸‘/stage.pmx");
 	if (!stage)
 		return;
 
 	stage->setTranslate(ray::float3(0, 0, -2.5));
 	stage->setActive(true);
 
-	//auto gameObject = ray::ResManager::instance()->createGameObject("dlc:skinning/models/miku/miku.pmd", "dlc:skinning/animotion/ÛÑÔÈ~.vmd");
-	auto gameObject = ray::ResManager::instance()->createGameObject("dlc:skinning/models/PDF »î¶¯Ð¡³ó/»î¶¯Ð¡³ó.pmx", "dlc:skinning/animotion/ÛÑÔÈ~.vmd");
+	//auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/miku/miku.pmd", "dlc:Skinning/animotion/ÂÃ›Ã‘Ã”Ãˆ~.vmd");
+	auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/PDF æ´»åŠ¨å°ä¸‘/æ´»åŠ¨å°ä¸‘.pmx", "dlc:Skinning/animotion/æ„›è¨€è‘‰.vmd");
 	gameObject->setActive(true);
 
 	_objects.push_back(stage);

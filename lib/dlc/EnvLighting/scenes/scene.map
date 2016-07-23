@@ -35,32 +35,4 @@
         <attribute active="true"/>
         <component class="SphereMaker"/>
     </object>
-    <!--object name="UIRoot">
-        <attribute position="0,0,-1"/>
-        <attribute active="true"/>
-        <component class="Camera">
-            <attribute type="ortho"/>
-            <attribute order="2D"/>
-            <attribute clearflags="depth"/>
-        </component>
-        <component class="GuiCamera"/>
-    </object>
-    <object>
-        <attribute position="0,0,0"/>
-        <attribute scale="300, 760, 0"/>
-        <attribute active="true"/>
-        <component class="GuiWindow">
-            <attribute skin="WindowCS"/>
-            <attribute text="Setting"/>
-        </component>
-        <object>
-            <attribute position="0,0,0"/>
-            <attribute scale="300,768,0"/>
-            <attribute active="true"/>
-            <component class="GuiScrollView" skin="ScrollViewEmpty" canvasSize="256,256" align="Stretch"/>
-            <object active="true" position="0,0,0" scale="256, 256, 0">
-                <component class="GuiImage" skin="ImageBox" texture="dlc:ui/textures/Crystal_Clear_View.png"/>
-            </object>
-        </object>
-    </object-->
 </scene>

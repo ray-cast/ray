@@ -39,7 +39,7 @@
 
 int main(int argc, const char* argv[])
 {
-	rayInit(argv[0], "dlc:skinning/scene/scene.map");
+	rayInit(argv[0], "dlc:Skinning/scene/scene.map");
 	rayOpenWindow("Skinning", 1376, 768);
 	
 	while (!rayIsQuitRequest())

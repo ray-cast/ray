@@ -4,8 +4,8 @@
     <attribute diffuse="1.0, 1.0, 1.0" />
     <attribute specular="0.3"/>
     <attribute shininess="1.0" />
-    <attribute texDiffuse="dlc:sssss/models/head/DiffuseMap.dds"/>
-    <attribute texNormal="dlc:sssss/models/head/NormalMap.dds"/>
-    <attribute texSpecular="dlc:sssss/models/head/SpecularAOMap.dds"/>
+    <attribute texDiffuse="dlc:SSSSS/models/head/DiffuseMap.dds"/>
+    <attribute texNormal="dlc:SSSSS/models/head/NormalMap.dds"/>
+    <attribute texSpecular="dlc:SSSSS/models/head/SpecularAOMap.dds"/>
     <attribute shader="sys:/fx/opacity.fxml"/>
 </material>

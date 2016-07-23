@@ -408,13 +408,15 @@ bool initGLExtenstion() noexcept
 	if (initGLExtention)
 		return true;
 
+#if	defined(_BUILD_PLATFORM_APPLE)
 	glewExperimental = true;
+#endif
 	if (glewInit() != GLEW_OK)
 	{
 		GL_PLATFORM_LOG("glewInit() failed.");
 		return false;
 	}
-
+	
 #if defined(GLEW_MX)
 #	if	defined(_BUILD_PLATFORM_WINDOWS)
 	if (wglewInit() != GLEW_OK)

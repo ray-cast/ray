@@ -255,12 +255,11 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	}
 
 	this->setActive(true);
-	bool init = initGLExtenstion();
 	this->setSwapInterval(swapchainDesc.getSwapInterval());
 	this->setActive(false);
 
 	_swapchainDesc = swapchainDesc;
-	return init;
+	return true;
 }
 
 void
@@ -276,6 +275,12 @@ XGLSwapchain::close() noexcept
 	{
 		glXDestroyContext(_display, _glc);
 		_glc = nullptr;
+	}
+
+	if (_display)
+	{
+		XCloseDisplay(_display);
+		_display = nullptr;
 	}
 }
 

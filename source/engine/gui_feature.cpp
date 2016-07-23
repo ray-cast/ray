@@ -416,7 +416,7 @@ GuiFeature::onActivate() except
 		throw failure("GuiSystem::instance() fail");
 
 	GuiSystem::instance()->setImageLoader(std::make_shared<ImageLoader>());
-	GuiSystem::instance()->setCoreProfile("sys:media/ui/MyGUI_Core.xml");
+	GuiSystem::instance()->setCoreProfile("sys:media/UI/MyGUI_Core.xml");
 	GuiSystem::instance()->setViewport(_width, _height);
 }
 

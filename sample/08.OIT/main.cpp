@@ -39,7 +39,7 @@
 
 int main(int argc, const char* argv[])
 {
-	rayInit(argv[0], "dlc:EnvLighting\\scenes\\scene.map");
+	rayInit(argv[0], "dlc:EnvLighting/scenes/scene.map");
 	rayOpenWindow("Order Independent Transparency", 1376, 768);
 
 	while (!rayIsQuitRequest())

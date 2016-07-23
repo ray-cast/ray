@@ -272,6 +272,10 @@ bool RAY_CALL rayIsQuitRequest() noexcept
 
 void RAY_CALL rayUpdate() noexcept
 {
+#if !defined(GLFW_EXPOSE_NATIVE_WIN32)
+	::glfwPollEvents();
+#endif	
+
 	if (_gameApp)
 		_gameApp->update();
 }

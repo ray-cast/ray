@@ -39,7 +39,7 @@
 
 int main(int argc, const char* argv[])
 {
-	rayInit(argv[0], "dlc:ui/scenes/scene.map");
+	rayInit(argv[0], "dlc:UI/scenes/scene.map");
 	rayOpenWindow("UI", 1376, 768);
 
 	while (!rayIsQuitRequest())

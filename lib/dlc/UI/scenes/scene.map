@@ -16,7 +16,7 @@
         <object active="true" position="10,10,0" scale="350, 300, 1">
             <component class="GuiScrollView" skin="ScrollViewEmpty" canvasSize="256,256" align="Stretch" />
             <object active="true" position="0,0,0" scale="256, 256, 1">
-                <component class="GuiImage" skin="ImageBox" texture="dlc:ui/textures/Crystal_Clear_View.png"/>
+                <component class="GuiImage" skin="ImageBox" texture="dlc:UI/textures/Crystal_Clear_View.png"/>
             </object>
         </object>
     </object>

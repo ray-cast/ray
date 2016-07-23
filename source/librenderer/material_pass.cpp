@@ -612,7 +612,7 @@ MaterialPass::setName(const std::string& name) noexcept
 	_name = name;
 }
 
-void 
+void
 MaterialPass::setName(std::string&& name) noexcept
 {
 	_name = std::move(name);
@@ -741,7 +741,7 @@ MaterialPass::clone() const noexcept
 	{
 		pass->_descriptorPool = _program->getDevice()->createDescriptorPool(_descriptorPool->getGraphicsDescriptorPoolDesc());
 		if (!pass->_descriptorPool)
-			return false;
+			return nullptr;
 	}
 
 	if (_descriptorSet)
@@ -771,7 +771,7 @@ MaterialPass::update(const MaterialSemanticManager& semanticManager) noexcept
 	}
 }
 
-void 
+void
 MaterialPass::updateSemantic(GraphicsUniformSet& uniform, const MaterialSemantic& semantic) noexcept
 {
 	switch (semantic.getType())

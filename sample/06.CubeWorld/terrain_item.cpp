@@ -109,7 +109,8 @@ TerrainObject::visiable(const TerrainChunk& chunk, const TerrainData& it, Visiab
 void
 TerrainObject::makeCube(ray::MeshPropertyPtr data, const VisiableFaces& faces, float x, float y, float z, float n) noexcept
 {
-	static const float positions[6][4][3] = {
+	static const float positions[6][4][3] = 
+	{
 		{ { -1, -1, -1 },{ -1, -1, +1 },{ -1, +1, -1 },{ -1, +1, +1 } },
 		{ { +1, -1, -1 },{ +1, -1, +1 },{ +1, +1, -1 },{ +1, +1, +1 } },
 		{ { -1, +1, -1 },{ -1, +1, +1 },{ +1, +1, -1 },{ +1, +1, +1 } },
@@ -117,7 +118,9 @@ TerrainObject::makeCube(ray::MeshPropertyPtr data, const VisiableFaces& faces, f
 		{ { -1, -1, -1 },{ -1, +1, -1 },{ +1, -1, -1 },{ +1, +1, -1 } },
 		{ { -1, -1, +1 },{ -1, +1, +1 },{ +1, -1, +1 },{ +1, +1, +1 } }
 	};
-	static const float normals[6][3] = {
+
+	static const float normals[6][3] = 
+	{
 		{ -1, 0, 0 },
 		{ +1, 0, 0 },
 		{ 0, +1, 0 },
@@ -125,7 +128,9 @@ TerrainObject::makeCube(ray::MeshPropertyPtr data, const VisiableFaces& faces, f
 		{ 0, 0, -1 },
 		{ 0, 0, +1 }
 	};
-	static const float uvs[6][4][2] = {
+
+	static const float uvs[6][4][2] = 
+	{
 		{ { 0, 0 },{ 1, 0 },{ 0, 1 },{ 1, 1 } },
 		{ { 1, 0 },{ 0, 0 },{ 1, 1 },{ 0, 1 } },
 		{ { 0, 1 },{ 0, 0 },{ 1, 1 },{ 1, 0 } },
@@ -133,7 +138,9 @@ TerrainObject::makeCube(ray::MeshPropertyPtr data, const VisiableFaces& faces, f
 		{ { 0, 0 },{ 0, 1 },{ 1, 0 },{ 1, 1 } },
 		{ { 1, 0 },{ 1, 1 },{ 0, 0 },{ 0, 1 } }
 	};
-	static const float indices[6][6] = {
+
+	static const float indices[6][6] = 
+	{
 		{ 0, 3, 2, 0, 1, 3 },
 		{ 0, 3, 1, 0, 2, 3 },
 		{ 0, 3, 2, 0, 1, 3 },
@@ -141,7 +148,9 @@ TerrainObject::makeCube(ray::MeshPropertyPtr data, const VisiableFaces& faces, f
 		{ 0, 3, 2, 0, 1, 3 },
 		{ 0, 3, 1, 0, 2, 3 }
 	};
-	static const float flipped[6][6] = {
+
+	static const float flipped[6][6] = 
+	{
 		{ 0, 1, 2, 1, 3, 2 },
 		{ 0, 2, 1, 2, 3, 1 },
 		{ 0, 1, 2, 1, 3, 2 },
@@ -160,11 +169,13 @@ TerrainObject::makeCube(ray::MeshPropertyPtr data, const VisiableFaces& faces, f
 	auto& texcoord = data->getTexcoordArray();
 	auto& face = data->getFaceArray();
 
-	for (int i = 0; i < 6; i++) {
-		if (visiable[i] == 0) {
+	for (int i = 0; i < 6; i++) 
+	{
+		if (visiable[i] == 0) 
 			continue;
-		}
-		for (int j = 0; j < 6; j++) {
+
+		for (int j = 0; j < 6; j++) 
+		{
 			int k = indices[i][j];
 
 			ray::Vector3 v;
@@ -172,17 +183,17 @@ TerrainObject::makeCube(ray::MeshPropertyPtr data, const VisiableFaces& faces, f
 			v.y = y + n * positions[i][k][1];
 			v.z = z + n * positions[i][k][2];
 
-			ray::Vector3 n;
-			n.x = normals[i][0];
-			n.y = normals[i][1];
-			n.z = normals[i][2];
+			ray::Vector3 vn;
+			vn.x = normals[i][0];
+			vn.y = normals[i][1];
+			vn.z = normals[i][2];
 
 			ray::Vector2 uv;
 			uv.x = (uvs[i][k][0] ? b : a);
 			uv.y = (uvs[i][k][1] ? b : a);
 
 			vertex.push_back(v);
-			normal.push_back(n);
+			normal.push_back(vn);
 			texcoord.push_back(uv);
 			face.push_back(vertex.size() - 1);
 		}

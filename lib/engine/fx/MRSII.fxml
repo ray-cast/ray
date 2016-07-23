@@ -121,7 +121,7 @@
                 return 1 / (lenghtSqr + vplsCount * d2);
             }
 
-           void GatherIndirectVS(
+            void GatherIndirectVS(
                 in float4 Position : POSITION,
                 out float4 oTexcoord : TEXCOORD0,
                 out float3 oViewdir : TEXCOORD2,

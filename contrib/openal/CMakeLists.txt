@@ -20,7 +20,7 @@ INCLUDE(CheckSymbolExists)
 INCLUDE(CheckCCompilerFlag)
 INCLUDE(CheckCSourceCompiles)
 INCLUDE(CheckTypeSize)
-include(CheckFileOffsetBits)
+INCLUDE(CheckFileOffsetBits)
 
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/openal)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/openal/include)
@@ -110,15 +110,9 @@ IF(ALSOFT_REQUIRE_QSA)
     FIND_PACKAGE(QSA)
 ENDIF()
 
-IF(NOT WIN32)
-    SET(LIBNAME openal)
-ELSE()
+IF(BUILD_PLATFORM_WINDOWS)
     SET(LIBNAME OpenAL32)
     ADD_DEFINITIONS("-D_WIN32 -D_WIN32_WINNT=0x0502")
-
-    # This option is mainly for static linking OpenAL Soft into another project
-    # that already defines the IDs. It is up to that project to ensure all
-    # required IDs are defined.
 
     IF(MINGW)
         IF(NOT DLLTOOL)
@@ -129,6 +123,8 @@ ELSE()
             ENDIF()
         ENDIF()
     ENDIF()
+ELSE()
+    SET(LIBNAME openal)
 ENDIF()
 
 # QNX's gcc do not uses /usr/include and /usr/lib pathes by default
@@ -322,7 +318,7 @@ ELSE()
     # the POSITION_INDEPENDENT_CODE target property). The static common library
     # will be linked into the dynamic openal library, which requires all its
     # code to be position-independent.
-    IF(CMAKE_VERSION VERSION_LESS "2.8.9" AND NOT WIN32)
+    IF(CMAKE_VERSION VERSION_LESS "2.8.9" AND NOT BUILD_PLATFORM_WINDOWS)
         CHECK_C_COMPILER_FLAG(-fPIC HAVE_FPIC_SWITCH)
         IF(HAVE_FPIC_SWITCH)
             ADD_DEFINITIONS(-fPIC)
@@ -342,7 +338,7 @@ ELSE()
 ENDIF()
 
 # Set visibility/export options if available
-IF(WIN32)
+IF(BUILD_PLATFORM_WINDOWS)
     SET(EXPORT_DECL "__declspec(dllexport)")
     IF(NOT MINGW)
         SET(ALIGN_DECL "__declspec(align(x))")
@@ -762,7 +758,7 @@ IF(ALSOFT_REQUIRE_NEON AND NOT HAVE_NEON)
 ENDIF()
 
 
-IF(WIN32 OR HAVE_DLFCN_H)
+IF(BUILD_PLATFORM_WINDOWS OR HAVE_DLFCN_H)
     SET(IS_LINKED "")
     MACRO(ADD_BACKEND_LIBS _LIBS)
     ENDMACRO()
@@ -1069,7 +1065,7 @@ ELSE()
     ADD_LIBRARY(${LIBNAME} SHARED ${OPENAL_OBJS} ${ALC_OBJS})
 ENDIF()
 SET_PROPERTY(TARGET ${LIBNAME} APPEND PROPERTY COMPILE_DEFINITIONS AL_BUILD_LIBRARY AL_ALEXT_PROTOTYPES)
-IF(WIN32 AND ALSOFT_NO_UID_DEFS)
+IF(BUILD_PLATFORM_WINDOWS AND ALSOFT_NO_UID_DEFS)
     SET_PROPERTY(TARGET ${LIBNAME} APPEND PROPERTY COMPILE_DEFINITIONS AL_NO_UID_DEFS)
 ENDIF()
 SET_PROPERTY(TARGET ${LIBNAME} APPEND PROPERTY INCLUDE_DIRECTORIES "${OpenAL_SOURCE_DIR}/OpenAL32/Include" "${OpenAL_SOURCE_DIR}/Alc")
@@ -1100,9 +1096,10 @@ ENDIF()
 IF(HAVE_JACK)
     SET_PROPERTY(TARGET ${LIBNAME} APPEND PROPERTY INCLUDE_DIRECTORIES ${JACK_INCLUDE_DIRS})
 ENDIF()
-SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES VERSION ${LIB_VERSION}
-                                            SOVERSION ${LIB_MAJOR_VERSION})
-IF(WIN32 AND NOT LIBTYPE STREQUAL "STATIC")
+
+SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES VERSION ${LIB_VERSION} SOVERSION ${LIB_MAJOR_VERSION})
+
+IF(BUILD_PLATFORM_WINDOWS AND NOT LIBTYPE STREQUAL "STATIC")
     SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES PREFIX "")
 
     IF(MINGW AND ALSOFT_BUILD_IMPORT_LIB)
@@ -1145,10 +1142,8 @@ IF(ALSOFT_INSTALL)
                   include/AL/efx-presets.h
             DESTINATION include/AL
     )
-    INSTALL(FILES "${OpenAL_BINARY_DIR}/openal.pc"
-            DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
+    INSTALL(FILES "${OpenAL_BINARY_DIR}/openal.pc" DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
 ENDIF()
-
 
 MESSAGE(STATUS "")
 MESSAGE(STATUS "Building OpenAL with support for the following backends:")
@@ -1158,7 +1153,7 @@ MESSAGE(STATUS "Building with support for CPU extensions:")
 MESSAGE(STATUS "    ${CPU_EXTS}")
 MESSAGE(STATUS "")
 
-IF(WIN32)
+IF(BUILD_PLATFORM_WINDOWS)
     IF(NOT HAVE_DSOUND)
         MESSAGE(STATUS "WARNING: Building the Windows version without DirectSound output")
         MESSAGE(STATUS "         This is probably NOT what you want!")

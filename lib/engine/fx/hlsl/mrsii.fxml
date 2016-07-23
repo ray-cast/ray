@@ -1,0 +1,528 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/GBuffer.fxml"/>
+    <include name="sys:fx/lighting.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="texColor" type="texture2D"/>
+    <parameter name="texNormal" type="texture2D"/>
+    <parameter name="texDepthLinear" type="texture2D"/>
+    <parameter name="texVPLBuffer" type="texture2D"/>
+    <parameter name="texMRT0" type="texture2D"/>
+    <parameter name="texMRT1" type="texture2D"/>
+    <parameter name="lightOuterInner" type="float2"/>
+    <parameter name="lightAttenuation" type="float3"/>
+    <parameter name="offset" type="float2"/>
+    <parameter name="offsetUpsampling" type="float4"/>
+    <parameter name="VPLCountGridOffsetDelta" type="float4"/>
+    <parameter name="matProject" type="float4x4" semantic="matProject"/>
+    <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse"/>
+    <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
+    <parameter name="shadowView2EyeView" type="float4x4"/>
+    <parameter name="threshold" type="float2"/>
+    <parameter name="mipmapLevel" type="int4"/>
+    <shader>
+        <![CDATA[
+            void ScreenQuadVS(
+                in float4 Position : POSITION,
+                out float4 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position)
+            {
+                oPosition = Position;
+                oTexcoord = PosToCoord(Position);
+            }
+
+            float4 RSM2VPLsSpotPS(in float2 coord : TEXCOORD0) : SV_Target
+            {
+                float instanceID = floor(coord.x * VPLCountGridOffsetDelta.x);
+                float i = VPLCountGridOffsetDelta.y * frac(instanceID / VPLCountGridOffsetDelta.y);
+                float j = floor(instanceID / VPLCountGridOffsetDelta.y);
+                float2 RSMcoord = VPLCountGridOffsetDelta.w * float2(i, j) + VPLCountGridOffsetDelta.zz;
+
+                float4 MRT0 = texColor.Sample(PointClamp, RSMcoord);
+                float4 MRT1 = texNormal.Sample(PointClamp, RSMcoord);
+
+                float specular = restoreSpecular(MRT0);
+                float shininess = restoreShininess(MRT1);
+
+                float3 N = restoreNormal(MRT1);
+                float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
+                float3 P = restorePosition(texDepthLinear, RSMcoord, V);
+                float3 albedo = restoreDiffuse(MRT0);
+
+                if (coord.y < 1 / 3.0f)
+                {
+                    float4 lighting = 0;
+                    float spot = spotLighting(float3(0,0,0), float3(0,0,1), lightOuterInner, P);
+                    if (spot > 0)
+                    {
+                        float nl = -N.z;
+                        if (nl > 0)
+                        {
+                            float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * spot * nl;
+                            lighting = float4(albedo, 1) * atten * dot(P, P);
+                        }
+                    }
+
+                    return lighting;
+                }
+                else if (coord.y < 2 / 3.0f)
+                {
+                    float4 viewNormal = mul(shadowView2EyeView, float4(N, 0));
+                    return float4(viewNormal.xyz, shininess);
+                }
+                else
+                {
+                    float4 viewPosition = mul(shadowView2EyeView, float4(P, 1));
+                    viewPosition /= viewPosition.w;
+                    return float4(viewPosition.xyz, specular);
+                }
+            }
+
+            float4 RSM2VPLsDirectionalPS(in float2 coord : TEXCOORD0) : SV_Target
+            {
+                float instanceID = floor(coord.x * VPLCountGridOffsetDelta.x);
+                float i = VPLCountGridOffsetDelta.y * frac(instanceID / VPLCountGridOffsetDelta.y);
+                float j = floor(instanceID / VPLCountGridOffsetDelta.y);
+                float2 RSMcoord = VPLCountGridOffsetDelta.w * float2(i, j) + VPLCountGridOffsetDelta.zz;
+
+                float4 MRT0 = texColor.Sample(PointClamp, RSMcoord);
+                float4 MRT1 = texNormal.Sample(PointClamp, RSMcoord);
+
+                float specular = restoreSpecular(MRT0);
+                float shininess = restoreShininess(MRT1);
+
+                float3 N = restoreNormal(MRT1);
+                float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
+                float3 P = restorePosition(texDepthLinear, RSMcoord, V);
+                float3 albedo = restoreDiffuse(MRT0);
+
+                if (coord.y < 1 / 3.0f)
+                {
+                    float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation);
+                    return float4(albedo, 1) * atten * dot(P, P);
+                }
+                else if (coord.y < 2 / 3.0f)
+                {
+                    float4 viewNormal = mul(shadowView2EyeView, float4(N, 0));
+                    return float4(viewNormal.xyz, shininess);
+                }
+                else
+                {
+                    float4 viewPosition = mul(shadowView2EyeView, float4(P, 1));
+                    viewPosition /= viewPosition.w;
+                    return float4(viewPosition.xyz, specular);
+                }
+            }
+
+            float VPLsAttenTerm(float3 lightPosition, float3 P, float lenghtSqr, float vplsCount)
+            {
+                float3 v = lightPosition - P;
+                float d2 = max(0.2, dot(v, v));
+                return 1 / (lenghtSqr + vplsCount * d2);
+            }
+
+            void GatherIndirectVS(
+                in float4 Position : POSITION,
+                out float4 oTexcoord : TEXCOORD0,
+                out float3 oViewdir : TEXCOORD2,
+                out float4 oPosition : SV_Position)
+            {
+                oPosition = Position;
+                oTexcoord = PosToCoord(Position);
+                oViewdir  = mul(matProjectInverse, Position).xyz;
+            }
+
+            float4 GatherIndirectPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD2) : SV_Target
+            {
+                float4 MRT0 = texMRT0.Sample(PointClamp, coord.xy);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord.xy);
+
+                float specular = restoreSpecular(MRT0);
+                float shininess = restoreShininess(MRT1);
+
+                float3 V = normalize(viewdir);
+                float3 viewNormal = restoreNormal(MRT1);
+                float3 viewPosition = restorePosition(texDepthLinear, coord.xy, V);
+
+                float3 shading = 0;
+
+                for (float i = 0; i < VPLCountGridOffsetDelta.x; i++)
+                {
+                    float index = i / VPLCountGridOffsetDelta.x;
+
+                    float4 lightColor = texVPLBuffer.Sample(PointClamp, float2(index, 0.0f));
+                    float4 lightNormal = texVPLBuffer.Sample(PointClamp, float2(index, 0.5f));
+                    float4 lightPosition = texVPLBuffer.Sample(PointClamp, float2(index, 1.0f));
+                    float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
+
+                    float3 lighting;
+                    lighting = brdfLambert(viewNormal, lightDirection, lightColor.rgb);
+                    lighting *= VPLsAttenTerm(lightPosition.xyz, viewPosition, lightColor.a, VPLCountGridOffsetDelta.x);
+                    lighting *= max(0, dot(lightNormal.xyz, -lightDirection) * 0.5 + 0.5);
+
+                    shading += lighting;
+                }
+
+                return float4(shading, 1.0);
+            }
+
+            void GatherIndirectDebugVS(
+                in float4 Position : POSITION,
+                in uint instanceID : SV_InstanceID,
+                out float4 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position)
+            {
+                float index = instanceID.x / VPLCountGridOffsetDelta.x;
+                float4 lightPosition = texVPLBuffer.SampleLevel(PointClamp, float2(index, 1.0), 0);
+                oTexcoord = float4(index, 0.0, 0.0, 0.0);
+                oPosition = mul(matProject, Position * 0.05 + lightPosition);
+            }
+
+            float4 GatherIndirectDebugPS(in float4 coord0 : TEXCOORD0) : SV_Target
+            {
+                float4 lightColor = texVPLBuffer.Sample(PointClamp, coord0.xy);
+                if (lightColor.w < 0.001)
+                {
+                    discard;
+                }
+
+                return lightColor;
+            }
+
+            float DepthDerivatePS(in float2 coord : TEXCOORD0) : SV_Target
+            {
+                float2 w[9] = { float2(0, 0), float2(-1,  0), float2(-1,  1), float2(0, 1), float2( 1,  1), float2( 1,  0), float2(1,-1), float2( 0, -1), float2(-1, -1) };
+                float maxDepth = texDepthLinear.Sample(PointClamp, coord).x;
+                float minDepth = maxDepth;
+
+                for (int i = 1; i < 9; ++i)
+                {
+                    float2 step = coord + w[i] * offset;
+                    float depth = texDepthLinear.Sample(PointClamp, step).x;
+                    maxDepth = max(maxDepth, depth);
+                    minDepth = min(minDepth, depth);
+                }
+
+                return maxDepth - minDepth;
+            }
+
+            float DepthDerivateMipmapPS(in float2 coord : TEXCOORD) : SV_Target
+            {
+                float2 w[9] = { float2(0, 0), float2(-1,  0), float2(-1,  1), float2(0, 1), float2( 1,  1), float2( 1,  0), float2(1,-1), float2( 0, -1), float2(-1, -1) };
+                float maxDepth = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.x).x;
+
+                for (int i = 1; i < 9; ++i)
+                {
+                    float2 step = coord + w[i] * offset;
+                    float depth = texDepthLinear.SampleLevel(PointClamp, step, mipmapLevel.x).x;
+                    maxDepth = max(maxDepth, depth);
+                }
+
+                return maxDepth;
+            }
+
+            float4 NormalDerivatePS(in float2 coord : TEXCOORD0) : SV_Target
+            {
+                float2 maxNormal = restoreNormal(texNormal.Sample(PointClamp, coord)).xy;
+                float2 minNormal = maxNormal;
+
+                return float4(minNormal, maxNormal) * 0.5 + 0.5;
+            }
+
+            float4 NormalDerivateMipmapPS(in float2 coord : TEXCOORD0) : SV_Target
+            {
+                float2 w[9] = { float2(0, 0), float2(-1,  0), float2(-1,  1), float2(0, 1), float2( 1,  1), float2( 1,  0), float2(1,-1), float2( 0, -1), float2(-1, -1) };
+
+                float4 minmax = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.x);
+
+                for (int i = 1; i < 9; ++i)
+                {
+                    float2 step = coord + w[i] * offset;
+                    float4 normal = texNormal.SampleLevel(PointClamp, step, mipmapLevel.x);
+                    minmax.xy = min(minmax.xy, normal.xy);
+                    minmax.zw = max(minmax.zw, normal.zw);
+                }
+
+                return minmax;
+            }
+
+            float4 ComputeSubsplatStencilPS(in float2 coord : TEXCOORD0) : SV_Target
+            {
+                if (mipmapLevel.z)
+                {
+                    float depthDeriv = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.x).r;
+                    float4 normal = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.x);
+                    float normDeriv = max(normal.z - normal.x, normal.w - normal.y);
+                    if (any(float2(depthDeriv, normDeriv) > threshold))
+                    {
+                        discard;
+                    }
+                }
+
+                if (mipmapLevel.w)
+                {
+                    float depthDeriv = texDepthLinear.SampleLevel(PointClamp, coord, mipmapLevel.y).r;
+                    float4 normal = texNormal.SampleLevel(PointClamp, coord, mipmapLevel.y);
+                    float normDeriv = max(normal.z - normal.x, normal.w - normal.y);
+                    if (all(float2(depthDeriv, normDeriv) <= threshold))
+                    {
+                        discard;
+                    }
+                }
+
+                return 1;
+            }
+
+            float4 UpsamplingPS(float2 coord : TEXCOORD0) : SV_Target
+            {
+                float4 color0 = texColor.SampleLevel(PointClamp, coord, mipmapLevel.x);
+                float4 color1 = texColor.SampleLevel(PointClamp, coord, mipmapLevel.y);
+                return color0 + color1;
+            }
+
+            float4 UpsamplingInterpolationPS(float2 coord : TEXCOORD0) : SV_Target
+            {
+                float4 color[4];
+                color[0] = texColor.SampleLevel(PointClamp, coord, mipmapLevel.x);
+                color[1] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, 0 ), mipmapLevel.x);
+                color[2] = texColor.SampleLevel(PointClamp, coord + float2( 0, offsetUpsampling.y ), mipmapLevel.x);
+                color[3] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.x);
+
+                color[0] += (1.0 - color[0].a) * texColor.SampleLevel(PointClamp, coord, mipmapLevel.y);
+                color[1] += (1.0 - color[1].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.z, 0 ), mipmapLevel.y);
+                color[2] += (1.0 - color[2].a) * texColor.SampleLevel(PointClamp, coord + float2( 0, offsetUpsampling.w ), mipmapLevel.y);
+                color[3] += (1.0 - color[3].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.z, offsetUpsampling.w ), mipmapLevel.y);
+
+                float2 weight = abs(coord.xy * mipmapLevel.zw - floor(coord.xy * mipmapLevel.zw));
+
+                float weights[4];
+                weights[0] = 1.0;
+                weights[1] = color[1].a * weight.y;
+                weights[2] = color[2].a * (1.0-weight.y);
+                weights[3] = color[3].a * weight.x;
+
+                float weightSum = weights[0]+weights[1]+weights[2]+weights[3];
+                float4 totalColor = weights[0] * color[0] + weights[1] * color[1] + weights[2] * color[2]+ weights[3] * color[3];
+
+                totalColor /= weightSum;
+                totalColor.a = 1.0;
+
+                return totalColor * color[0].a;
+            }
+
+            float4 UpsamplingInterpolationHighestPS(float2 coord : TEXCOORD0) : SV_Target
+            {
+                float4 color[9];
+                color[0] = texColor.SampleLevel(PointClamp, coord, mipmapLevel.x);
+                color[1] = texColor.SampleLevel(PointClamp, coord + float2( 0.0, offsetUpsampling.y ), mipmapLevel.x);
+                color[2] = texColor.SampleLevel(PointClamp, coord + float2( 0.0, -offsetUpsampling.y ), mipmapLevel.x);
+                color[3] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, 0.0 ), mipmapLevel.x);
+                color[4] = texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, 0.0 ), mipmapLevel.x);
+                color[5] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.x);
+                color[6] = texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, -offsetUpsampling.y ), mipmapLevel.x);
+                color[7] = texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.x);
+                color[8] = texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, -offsetUpsampling.y ), mipmapLevel.x);
+
+                color[0] += (1.0 - color[0].a) * texColor.SampleLevel(PointClamp, coord, mipmapLevel.y);
+                color[1] += (1.0 - color[1].a) * texColor.SampleLevel(PointClamp, coord + float2( 0.0, offsetUpsampling.y ), mipmapLevel.y);
+                color[2] += (1.0 - color[2].a) * texColor.SampleLevel(PointClamp, coord + float2( 0.0, -offsetUpsampling.y ), mipmapLevel.y);
+                color[3] += (1.0 - color[3].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, 0.0 ), mipmapLevel.y);
+                color[4] += (1.0 - color[4].a) * texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, 0.0 ), mipmapLevel.y);
+                color[5] += (1.0 - color[5].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.y);
+                color[6] += (1.0 - color[6].a) * texColor.SampleLevel(PointClamp, coord + float2( offsetUpsampling.x, -offsetUpsampling.y ), mipmapLevel.y);
+                color[7] += (1.0 - color[7].a) * texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, offsetUpsampling.y ), mipmapLevel.y);
+                color[8] += (1.0 - color[8].a) * texColor.SampleLevel(PointClamp, coord + float2( -offsetUpsampling.x, -offsetUpsampling.y ), mipmapLevel.y);
+
+                float2 weight = abs(coord.xy * mipmapLevel.zw - floor(coord.xy * mipmapLevel.zw));
+
+                float weights[9];
+                weights[0] = 1.0;
+                weights[1] = color[1].a * weight.y;
+                weights[2] = color[2].a * (1.0-weight.y);
+                weights[3] = color[3].a * weight.x;
+                weights[4] = color[4].a * (1.0-weight.x);
+                weights[5] = min(1.0, color[1].a + color[3].a) * color[5].a * weight.x * weight.y;
+                weights[6] = min(1.0, color[2].a + color[3].a) * color[6].a * weight.x * (1.0 - weight.y);
+                weights[7] = min(1.0, color[1].a + color[4].a) * color[7].a * (1.0 - weight.x) * weight.y;
+                weights[8] = min(1.0, color[2].a + color[4].a) * color[8].a * (1.0 - weight.x) * (1.0 - weight.y);
+
+                float weightSum = weights[0]+weights[1]+weights[2]+
+                                  weights[3]+weights[4]+weights[5]+
+                                  weights[6]+weights[7]+weights[8];
+
+                float4 totalColor = weights[0] * color[0] + weights[1] * color[1] + weights[2] * color[2]+
+                             weights[3] * color[3] + weights[4] * color[4] + weights[5] * color[5]+
+                             weights[6] * color[6] + weights[7] * color[7] + weights[8] * color[8];
+
+                totalColor /= weightSum;
+                totalColor.a = 1.0;
+
+                return totalColor * color[0].a;
+            }
+        ]]>
+    </shader>
+    <technique name="RSM2VPLsSpot">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="RSM2VPLsSpotPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="RSM2VPLsDirectional">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="RSM2VPLsDirectionalPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="GatherIndirect">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="GatherIndirectVS"/>
+            <state name="fragment" value="GatherIndirectPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
+        </pass>
+    </technique>
+    <technique name="GatherIndirectDebug">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="GatherIndirectDebugVS"/>
+            <state name="fragment" value="GatherIndirectDebugPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="DepthDerivate">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="DepthDerivatePS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="DepthDerivateMipmap">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="DepthDerivateMipmapPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="NormalDerivate">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="NormalDerivatePS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="NormalDerivateMipmap">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="NormalDerivateMipmapPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="ComputeSubsplatStencil">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="ComputeSubsplatStencilPS"/>
+
+            <state name="cullmode" value="none"/>
+            <state name="colormask" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilPass" value="replace"/>
+            <state name="stencilTwoPass" value="replace"/>
+            <state name="stencilRef" value="1"/>
+            <state name="stencilTwoRef" value="1"/>
+        </pass>
+    </technique>
+    <technique name="Upsampling">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="UpsamplingInterpolationPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="UpsamplingWithBlend">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="UpsamplingInterpolationPS"/>
+
+            <state name="cullmode" value="none"/>
+            <state name="colormask" value="rgb"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
+        </pass>
+    </technique>
+</effect>

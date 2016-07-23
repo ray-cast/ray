@@ -1,0 +1,54 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/math.fxml"/>
+    <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="colorGrading" type="int2"/>
+    <parameter name="texSource" type="texture2D"/>
+    <parameter name="texColorGrading" type="texture3D"/>
+    <shader>
+        <![CDATA[
+            void PostProcessVS(
+                in float4 Position : POSITION0,
+                out float4 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position)
+            {
+                oPosition = Position;
+                oTexcoord = PosToCoord(Position);
+            }
+
+            float3 ColorGrading(float3 rgb)
+            {
+                const float DIM = 16;
+                return texColorGrading.Sample(LinearClamp, (rgb * (DIM - 1) + 0.5f) / DIM).xyz;
+            }
+
+            float4 ColorGradingPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                float4 rgba = texSource.Sample(PointClamp, coord.xy);
+                float3 rgb = saturate(rgba.rgb);
+
+                if (colorGrading.x > 0)
+                    rgb = linear2srgb(rgb);
+                if (colorGrading.y > 0)
+                    rgb = ColorGrading(rgb);
+                return float4(rgb, rgba.a);
+            }
+        ]]>
+    </shader>
+    <technique name="ColorGrading">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="ColorGradingPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="linear2srgb" value="false"/>
+        </pass>
+    </technique>
+</effect>

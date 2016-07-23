@@ -1,0 +1,76 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="scaleY" type="float" />
+    <parameter name="proj" type="float4x4" />
+    <parameter name="decal" type="texture2D"/>
+    <shader>
+        <![CDATA[
+        void UILayoutVS(
+            in float4 Position : POSITION0,
+            in float4 Diffuse  : COLOR0,
+            in float4 Texcoord : TEXCOORD0,
+
+            out float4 oDiffuse  : TEXCOORD0,
+            out float4 oTexcoord : TEXCOORD1,
+            out float4 oPosition : SV_Position)
+        {
+            oDiffuse = Diffuse;
+            oTexcoord = Texcoord;
+            oPosition = Position;
+            oPosition.y *= scaleY;
+        }
+
+        void UILayoutVS2(
+            in float4 Position : POSITION0,
+            in float4 Diffuse  : COLOR0,
+            in float4 Texcoord : TEXCOORD0,
+
+            out float4 oDiffuse  : TEXCOORD0,
+            out float4 oTexcoord : TEXCOORD1,
+            out float4 oPosition : SV_Position)
+        {
+            oDiffuse = Diffuse;
+            oTexcoord = Texcoord;
+            oPosition = mul(proj, float4(Position.xy, 0, 1));
+        }
+
+        float4 UILayoutPS(
+            in float4 diffuse : TEXCOORD0,
+            in float4 texcoord   : TEXCOORD1) : SV_Target
+        {
+            return decal.Sample(LinearClamp, texcoord.xy) * diffuse;
+        }
+        ]]>
+    </shader>
+    <technique name="MYGUI">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_COL4C_UV2F"/>
+            <state name="vertex" value="UILayoutVS"/>
+            <state name="fragment" value="UILayoutPS"/>
+            <state name="primitive" value="triangle" />
+            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="srcalpha"/>
+            <state name="blenddst" value="invsrcalpha"/>
+        </pass>
+    </technique>
+    <technique name="IMGUI">
+        <pass name="p0">
+            <state name="inputlayout" value="POS2F_UV2F_COL4C"/>
+            <state name="vertex" value="UILayoutVS2"/>
+            <state name="fragment" value="UILayoutPS"/>
+            <state name="primitive" value="triangle" />
+            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+            <state name="scissortest" value="true"/>
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="srcalpha"/>
+            <state name="blenddst" value="invsrcalpha"/>
+        </pass>
+    </technique>
+</effect>

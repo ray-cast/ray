@@ -1,15 +1,5 @@
-<?xml version='1.0'?>
-<effect version="1270" language="hlsl">
-    <include name="sys:fx/math.fxml"/>
-    <include name="sys:fx/sampler.fxml"/>
-    <include name="sys:fx/inputlayout.fxml"/>
-    <macro name="TONEMAP_LINEAR" value="0"/>
-    <macro name="TONEMAP_EXPONENTIAL" value="1"/>
-    <macro name="TONEMAP_EXPONENTIAL_HSV" value="2"/>
-    <macro name="TONEMAP_REINHARD" value="3"/>
-    <macro name="TONEMAP_FILMIC" value="4"/>
-    <macro name="TONEMAP_UNCHARTED2" value="5"/>
-    <macro name="TONEMAP_OPERATOR" value="TONEMAP_UNCHARTED2"/>
+<?xml version="1.0" encoding="utf-8" ?>
+<effect language="bytecodes">
     <parameter name="texSource" type="texture2D" />
     <parameter name="texSourceSizeInv" type="float2" />
     <parameter name="texBloom" type="texture2D" />
@@ -18,300 +8,1062 @@
     <parameter name="bloomIntensity" type="float" />
     <parameter name="bloomOffset[10]" type="float[]" />
     <parameter name="bloomWeight[11]" type="float[]" />
-    <parameter name="texSourceLevel" type="int"/>
+    <parameter name="texSourceLevel" type="int" />
     <parameter name="exposure" type="float" />
     <parameter name="delta" type="float" />
-    <shader>
+    <macro name="TONEMAP_LINEAR" value="0" />
+    <macro name="TONEMAP_EXPONENTIAL" value="1" />
+    <macro name="TONEMAP_EXPONENTIAL_HSV" value="2" />
+    <macro name="TONEMAP_REINHARD" value="3" />
+    <macro name="TONEMAP_FILMIC" value="4" />
+    <macro name="TONEMAP_UNCHARTED2" value="5" />
+    <macro name="TONEMAP_OPERATOR" value="TONEMAP_UNCHARTED2" />
+    <sampler name="PointClamp">
+        <state name="filter" value="min_mag_mip_point" />
+        <state name="wrap" value="clamp" />
+    </sampler>
+    <sampler name="LinearClamp">
+        <state name="filter" value="min_mag_linear_mip_point" />
+        <state name="wrap" value="clamp" />
+    </sampler>
+    <inputlayout name="POS3F_COL4C_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="COLOR" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS2F_UV2F_COL4C">
+        <layout name="POSITION" format="R32G32SFloat" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+        <layout name="COLOR" format="R8G8B8A8UNorm" />
+    </inputlayout>
+    <inputlayout name="POS3F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_UV2F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <inputlayout name="POS3F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <shader name="AvgLuminancePS">
         <![CDATA[
-            float3 Uncharted2Tonemap(float3 x)
-            {
-                const float A = 0.22; // Shoulder Strength
-                const float B = 0.30; // Linear Strength
-                const float C = 0.10; // Linear Angle
-                const float D = 0.20; // Toe Strength
-                const float E = 0.01; // Toe Numerator
-                const float F = 0.30; // Toe Denominator E/F = Toe Angle
-                const float W = 11.2; // Linear White Point Value
-                return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-            }
-
-            float3 FilmicTonemap(float3 color, float exposure)
-            {
-                #if TONEMAP_OPERATOR == TONEMAP_LINEAR
-                    return exposure * color;
-                #elif TONEMAP_OPERATOR == TONEMAP_EXPONENTIAL
-                    color = 1.0 - exp2(-exposure * color);
-                    return color;
-                #elif TONEMAP_OPERATOR == TONEMAP_EXPONENTIAL_HSV
-                    color = rgb2hsv(color);
-                    color.b = 1.0 - exp2(-exposure * color.b);
-                    color = hsv2rgb(color);
-                    return color;
-                #elif TONEMAP_OPERATOR == TONEMAP_REINHARD
-                    color = xyz2Yxy(rgb2xyz(color));
-                    float L = color.r;
-                    L *= exposure;
-                    float LL = 1 + L / (burnout * burnout);
-                    float L_d = L * LL / (1 + L);
-                    color.r = L_d;
-                    color = xyz2rgb(Yxy2xyz(color));
-                    return color;
-                #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
-                    color = 2 * Uncharted2Tonemap(exposure * color);
-                    float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
-                    color *= whiteScale;
-                    return color;
-                #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
-                    color = Uncharted2Tonemap(exposure * color);
-                    float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
-                    color *= whiteScale;
-                    return color;
-                #else
-                    return color;
-                #endif
-            }
-
-            float3 ToneBlueShift(float3 color, float lum)
-            {
-                const float3 BLUE_SHIFT = float3(0.4f, 0.4f, 0.7f);
-                return lerp(lum * BLUE_SHIFT, color, saturate(16.0f * lum));
-            }
-
-            float EyeAdaption(float lum)
-            {
-                return lerp(0.2f, lum, 0.5f);
-            }
-
-            float ToneExposure(float avgLum)
-            {
-                return 3 / (max(0.1f, 1 + 10 * EyeAdaption(avgLum)));
-            }
-
-            float CalcAdaptedLum(float adaptedLum, float lum, float delta)
-            {
-                return adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, 50 * delta));
-            }
-
-            float3 ToneMapping(float3 color, float aveLum, float exposure)
-            {
-                color += ToneBlueShift(color, luminance(color));
-                color = FilmicTonemap(color, exposure * ToneExposure(aveLum));
-                return color;
-            }
-
-            void PostProcessVS(
-                in float4 Position : POSITION0,
-                out float4 oTexcoord : TEXCOORD0,
-                out float4 oPosition : SV_Position)
-            {
-                oPosition = Position;
-                oTexcoord = PosToCoord(Position);
-            }
-
-            void SumLumVS(
-                in float4 Position : POSITION0,
-                out float4 oTexcoord0 : TEXCOORD0,
-                out float4 oTexcoord1 : TEXCOORD1,
-                out float4 oPosition : SV_Position)
-            {
-                oPosition = Position;
-                oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord0.zw = oTexcoord0.xy + float2(texSourceSizeInv.x, 0);
-                oTexcoord1.xy = oTexcoord0.xy + texSourceSizeInv;
-                oTexcoord1.zw = oTexcoord0.xy + float2(0, texSourceSizeInv.y);
-            }
-
-            float4 SumLumPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
-            {
-                float4 color = texSource.Sample(PointClamp, coord0.xy);
-                color += texSource.Sample(PointClamp, coord0.zw);
-                color += texSource.Sample(PointClamp, coord1.xy);
-                color += texSource.Sample(PointClamp, coord1.zw);
-                color *= 0.25;
-
-                return color;
-            }
-
-            float SumLumLogPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
-            {
-                float4 color = texSource.Sample(PointClamp, coord0.xy);
-                color += texSource.Sample(PointClamp, coord0.zw);
-                color += texSource.Sample(PointClamp, coord1.xy);
-                color += texSource.Sample(PointClamp, coord1.zw);
-                color *= 0.25;
-
-                const float epsilon = 0.01f;
-                return log(max(epsilon, luminance(color)));
-            }
-
-            float AvgLuminancePS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
-            {
-                float color = texSource.SampleLevel(PointClamp, coord0.xy, 8).r;
-                float adaptedLum = texLumAve.Sample(PointClamp, float2(0.5,0.5)).r;
-                return max(0, CalcAdaptedLum(adaptedLum, exp(color), delta));
-            }
-
-            float4 BloomPS(in float4 coord : TEXCOORD0) : SV_Target0
-            {
-                float4 color = texSource.Sample(PointClamp, coord.xy);
-                return max(0, (color - bloomThreshold) * bloomIntensity);
-            }
-
-            void BlurXVS(
-                in float4 Position : POSITION0,
-                out float4 oTexcoord0 : TEXCOORD0,
-                out float4 oTexcoord1 : TEXCOORD1,
-                out float4 oTexcoord2 : TEXCOORD2,
-                out float4 oTexcoord3 : TEXCOORD3,
-                out float4 oTexcoord4 : TEXCOORD4,
-                out float4 oTexcoord5 : TEXCOORD5,
-                out float4 oPosition : SV_Position)
-            {
-                oPosition = Position;
-                oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(bloomOffset[0], 0), float2(bloomOffset[1].x, 0)) * texSourceSizeInv.x;
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(bloomOffset[2], 0), float2(bloomOffset[3].x, 0)) * texSourceSizeInv.x;
-                oTexcoord3 = oTexcoord0.xyxy + float4(float2(bloomOffset[4], 0), float2(bloomOffset[5].x, 0)) * texSourceSizeInv.x;
-                oTexcoord4 = oTexcoord0.xyxy + float4(float2(bloomOffset[6], 0), float2(bloomOffset[7].x, 0)) * texSourceSizeInv.x;
-                oTexcoord5 = oTexcoord0.xyxy + float4(float2(bloomOffset[8], 0), float2(bloomOffset[9].x, 0)) * texSourceSizeInv.x;
-            }
-
-            void BlurYVS(
-                in float4 Position : POSITION0,
-                out float4 oTexcoord0 : TEXCOORD0,
-                out float4 oTexcoord1 : TEXCOORD1,
-                out float4 oTexcoord2 : TEXCOORD2,
-                out float4 oTexcoord3 : TEXCOORD3,
-                out float4 oTexcoord4 : TEXCOORD4,
-                out float4 oTexcoord5 : TEXCOORD5,
-                out float4 oPosition : SV_Position)
-            {
-                oPosition = Position;
-                oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[0]), float2(0, bloomOffset[1])) * texSourceSizeInv.y;
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[2]), float2(0, bloomOffset[3])) * texSourceSizeInv.y;
-                oTexcoord3 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[4]), float2(0, bloomOffset[5])) * texSourceSizeInv.y;
-                oTexcoord4 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[6]), float2(0, bloomOffset[7])) * texSourceSizeInv.y;
-                oTexcoord5 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[8]), float2(0, bloomOffset[9])) * texSourceSizeInv.y;
-            }
-
-            float4 BlurPS(
-                in float4 coord0 : TEXCOORD0,
-                in float4 coord1 : TEXCOORD1,
-                in float4 coord2 : TEXCOORD2,
-                in float4 coord3 : TEXCOORD3,
-                in float4 coord4 : TEXCOORD4,
-                in float4 coord5 : TEXCOORD5) : SV_Target0
-            {
-                float4 color = 0;
-                color += texSource.SampleLevel(PointClamp, coord0.xy, texSourceLevel) * bloomWeight[0];
-                color += texSource.SampleLevel(PointClamp, coord1.xy, texSourceLevel) * bloomWeight[1];
-                color += texSource.SampleLevel(PointClamp, coord1.zw, texSourceLevel) * bloomWeight[2];
-                color += texSource.SampleLevel(PointClamp, coord2.xy, texSourceLevel) * bloomWeight[3];
-                color += texSource.SampleLevel(PointClamp, coord2.zw, texSourceLevel) * bloomWeight[4];
-                color += texSource.SampleLevel(PointClamp, coord3.xy, texSourceLevel) * bloomWeight[5];
-                color += texSource.SampleLevel(PointClamp, coord3.zw, texSourceLevel) * bloomWeight[6];
-                color += texSource.SampleLevel(PointClamp, coord4.xy, texSourceLevel) * bloomWeight[7];
-                color += texSource.SampleLevel(PointClamp, coord4.zw, texSourceLevel) * bloomWeight[8];
-                color += texSource.SampleLevel(PointClamp, coord5.xy, texSourceLevel) * bloomWeight[9];
-                color += texSource.SampleLevel(PointClamp, coord5.zw, texSourceLevel) * bloomWeight[10];
-
-                return color;
-            }
-
-            float4 FimicTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target0
-            {
-                float aveLum = texLumAve.Sample(PointClamp, float2(0, 0)).r;
-                float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
-                color += texBloom.SampleLevel(LinearClamp, coord.xy, 0).rgb;
-                color += texBloom.SampleLevel(LinearClamp, coord.xy, 1).rgb;
-                float3 LDR = ToneMapping(color, aveLum, exposure);
-                return float4(LDR, luminance(LDR));
-            }
-        ]]>
+44 58 42 43 c9 0d ed da 79 fc 07 d0 ee 08 ea 95 
+85 eb c1 77 01 00 00 00 74 05 00 00 05 00 00 00 
+34 00 00 00 c8 02 00 00 14 03 00 00 48 03 00 00 
+f8 04 00 00 52 44 45 46 8c 02 00 00 01 00 00 00 
+c4 00 00 00 04 00 00 00 1c 00 00 00 00 04 ff ff 
+00 81 00 00 57 02 00 00 9c 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 a7 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 00 00 00 00 
+01 00 00 00 0c 00 00 00 b1 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 01 00 00 00 
+01 00 00 00 0c 00 00 00 bb 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 50 6f 69 6e 74 43 6c 61 
+6d 70 00 74 65 78 53 6f 75 72 63 65 00 74 65 78 
+4c 75 6d 41 76 65 00 24 47 6c 6f 62 61 6c 73 00 
+bb 00 00 00 08 00 00 00 dc 00 00 00 60 01 00 00 
+00 00 00 00 00 00 00 00 9c 01 00 00 00 00 00 00 
+08 00 00 00 00 00 00 00 b0 01 00 00 00 00 00 00 
+c0 01 00 00 08 00 00 00 04 00 00 00 00 00 00 00 
+d0 01 00 00 00 00 00 00 e0 01 00 00 0c 00 00 00 
+04 00 00 00 00 00 00 00 d0 01 00 00 00 00 00 00 
+ef 01 00 00 10 00 00 00 94 00 00 00 00 00 00 00 
+fc 01 00 00 00 00 00 00 0c 02 00 00 b0 00 00 00 
+a4 00 00 00 00 00 00 00 18 02 00 00 00 00 00 00 
+28 02 00 00 54 01 00 00 04 00 00 00 00 00 00 00 
+38 02 00 00 00 00 00 00 48 02 00 00 58 01 00 00 
+04 00 00 00 00 00 00 00 d0 01 00 00 00 00 00 00 
+51 02 00 00 5c 01 00 00 04 00 00 00 02 00 00 00 
+d0 01 00 00 00 00 00 00 74 65 78 53 6f 75 72 63 
+65 53 69 7a 65 49 6e 76 00 ab ab ab 01 00 03 00 
+01 00 02 00 00 00 00 00 00 00 00 00 62 6c 6f 6f 
+6d 54 68 72 65 73 68 6f 6c 64 00 ab 00 00 03 00 
+01 00 01 00 00 00 00 00 00 00 00 00 62 6c 6f 6f 
+6d 49 6e 74 65 6e 73 69 74 79 00 62 6c 6f 6f 6d 
+4f 66 66 73 65 74 00 ab 00 00 03 00 01 00 01 00 
+0a 00 00 00 00 00 00 00 62 6c 6f 6f 6d 57 65 69 
+67 68 74 00 00 00 03 00 01 00 01 00 0b 00 00 00 
+00 00 00 00 74 65 78 53 6f 75 72 63 65 4c 65 76 
+65 6c 00 ab 00 00 02 00 01 00 01 00 00 00 00 00 
+00 00 00 00 65 78 70 6f 73 75 72 65 00 64 65 6c 
+74 61 00 4d 69 63 72 6f 73 6f 66 74 20 28 52 29 
+20 48 4c 53 4c 20 53 68 61 64 65 72 20 43 6f 6d 
+70 69 6c 65 72 20 31 30 2e 30 2e 31 30 30 31 31 
+2e 31 36 33 38 34 00 ab 49 53 47 4e 44 00 00 00 
+02 00 00 00 08 00 00 00 38 00 00 00 00 00 00 00 
+00 00 00 00 03 00 00 00 00 00 00 00 0f 03 00 00 
+38 00 00 00 01 00 00 00 00 00 00 00 03 00 00 00 
+01 00 00 00 0f 00 00 00 54 45 58 43 4f 4f 52 44 
+00 ab ab ab 4f 53 47 4e 2c 00 00 00 01 00 00 00 
+08 00 00 00 20 00 00 00 00 00 00 00 00 00 00 00 
+03 00 00 00 00 00 00 00 01 0e 00 00 53 56 5f 54 
+61 72 67 65 74 00 ab ab 53 48 44 52 a8 01 00 00 
+40 00 00 00 6a 00 00 00 59 00 00 04 46 8e 20 00 
+00 00 00 00 16 00 00 00 5a 00 00 03 00 60 10 00 
+00 00 00 00 58 18 00 04 00 70 10 00 00 00 00 00 
+55 55 00 00 58 18 00 04 00 70 10 00 01 00 00 00 
+55 55 00 00 62 10 00 03 32 10 10 00 00 00 00 00 
+65 00 00 03 12 20 10 00 00 00 00 00 68 00 00 02 
+02 00 00 00 38 00 00 08 12 00 10 00 00 00 00 00 
+3a 80 20 00 00 00 00 00 15 00 00 00 01 40 00 00 
+54 89 ba bf 19 00 00 05 12 00 10 00 00 00 00 00 
+0a 00 10 00 00 00 00 00 00 00 00 08 12 00 10 00 
+00 00 00 00 0a 00 10 80 41 00 00 00 00 00 00 00 
+01 40 00 00 00 00 80 3f 48 00 00 0b f2 00 10 00 
+01 00 00 00 46 10 10 00 00 00 00 00 46 7e 10 00 
+00 00 00 00 00 60 10 00 00 00 00 00 01 40 00 00 
+00 00 00 41 38 00 00 07 22 00 10 00 00 00 00 00 
+0a 00 10 00 01 00 00 00 01 40 00 00 3b aa b8 3f 
+19 00 00 05 22 00 10 00 00 00 00 00 1a 00 10 00 
+00 00 00 00 45 00 00 0c f2 00 10 00 01 00 00 00 
+02 40 00 00 00 00 00 3f 00 00 00 3f 00 00 00 00 
+00 00 00 00 46 7e 10 00 01 00 00 00 00 60 10 00 
+00 00 00 00 00 00 00 08 22 00 10 00 00 00 00 00 
+1a 00 10 00 00 00 00 00 0a 00 10 80 41 00 00 00 
+01 00 00 00 32 00 00 09 12 00 10 00 00 00 00 00 
+1a 00 10 00 00 00 00 00 0a 00 10 00 00 00 00 00 
+0a 00 10 00 01 00 00 00 34 00 00 07 12 20 10 00 
+00 00 00 00 0a 00 10 00 00 00 00 00 01 40 00 00 
+00 00 00 00 3e 00 00 01 53 54 41 54 74 00 00 00 
+0b 00 00 00 02 00 00 00 00 00 00 00 02 00 00 00 
+08 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 01 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 ]]>
+    </shader>
+    <shader name="BloomPS">
+        <![CDATA[
+44 58 42 43 53 05 a0 bb ef 62 85 ab 49 6d 77 23 
+6e 8c 40 5e 01 00 00 00 74 04 00 00 05 00 00 00 
+34 00 00 00 a0 02 00 00 d4 02 00 00 08 03 00 00 
+f8 03 00 00 52 44 45 46 64 02 00 00 01 00 00 00 
+9c 00 00 00 03 00 00 00 1c 00 00 00 00 04 ff ff 
+00 81 00 00 2f 02 00 00 7c 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 87 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 00 00 00 00 
+01 00 00 00 0c 00 00 00 91 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 50 6f 69 6e 74 43 6c 61 
+6d 70 00 74 65 78 53 6f 75 72 63 65 00 24 47 6c 
+6f 62 61 6c 73 00 ab ab 91 00 00 00 08 00 00 00 
+b4 00 00 00 60 01 00 00 00 00 00 00 00 00 00 00 
+74 01 00 00 00 00 00 00 08 00 00 00 00 00 00 00 
+88 01 00 00 00 00 00 00 98 01 00 00 08 00 00 00 
+04 00 00 00 02 00 00 00 a8 01 00 00 00 00 00 00 
+b8 01 00 00 0c 00 00 00 04 00 00 00 02 00 00 00 
+a8 01 00 00 00 00 00 00 c7 01 00 00 10 00 00 00 
+94 00 00 00 00 00 00 00 d4 01 00 00 00 00 00 00 
+e4 01 00 00 b0 00 00 00 a4 00 00 00 00 00 00 00 
+f0 01 00 00 00 00 00 00 00 02 00 00 54 01 00 00 
+04 00 00 00 00 00 00 00 10 02 00 00 00 00 00 00 
+20 02 00 00 58 01 00 00 04 00 00 00 00 00 00 00 
+a8 01 00 00 00 00 00 00 29 02 00 00 5c 01 00 00 
+04 00 00 00 00 00 00 00 a8 01 00 00 00 00 00 00 
+74 65 78 53 6f 75 72 63 65 53 69 7a 65 49 6e 76 
+00 ab ab ab 01 00 03 00 01 00 02 00 00 00 00 00 
+00 00 00 00 62 6c 6f 6f 6d 54 68 72 65 73 68 6f 
+6c 64 00 ab 00 00 03 00 01 00 01 00 00 00 00 00 
+00 00 00 00 62 6c 6f 6f 6d 49 6e 74 65 6e 73 69 
+74 79 00 62 6c 6f 6f 6d 4f 66 66 73 65 74 00 ab 
+00 00 03 00 01 00 01 00 0a 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 57 65 69 67 68 74 00 00 00 03 00 
+01 00 01 00 0b 00 00 00 00 00 00 00 74 65 78 53 
+6f 75 72 63 65 4c 65 76 65 6c 00 ab 00 00 02 00 
+01 00 01 00 00 00 00 00 00 00 00 00 65 78 70 6f 
+73 75 72 65 00 64 65 6c 74 61 00 4d 69 63 72 6f 
+73 6f 66 74 20 28 52 29 20 48 4c 53 4c 20 53 68 
+61 64 65 72 20 43 6f 6d 70 69 6c 65 72 20 31 30 
+2e 30 2e 31 30 30 31 31 2e 31 36 33 38 34 00 ab 
+49 53 47 4e 2c 00 00 00 01 00 00 00 08 00 00 00 
+20 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 03 00 00 54 45 58 43 4f 4f 52 44 
+00 ab ab ab 4f 53 47 4e 2c 00 00 00 01 00 00 00 
+08 00 00 00 20 00 00 00 00 00 00 00 00 00 00 00 
+03 00 00 00 00 00 00 00 0f 00 00 00 53 56 5f 54 
+61 72 67 65 74 00 ab ab 53 48 44 52 e8 00 00 00 
+40 00 00 00 3a 00 00 00 59 00 00 04 46 8e 20 00 
+00 00 00 00 01 00 00 00 5a 00 00 03 00 60 10 00 
+00 00 00 00 58 18 00 04 00 70 10 00 00 00 00 00 
+55 55 00 00 62 10 00 03 32 10 10 00 00 00 00 00 
+65 00 00 03 f2 20 10 00 00 00 00 00 68 00 00 02 
+01 00 00 00 45 00 00 09 f2 00 10 00 00 00 00 00 
+46 10 10 00 00 00 00 00 46 7e 10 00 00 00 00 00 
+00 60 10 00 00 00 00 00 00 00 00 09 f2 00 10 00 
+00 00 00 00 46 0e 10 00 00 00 00 00 a6 8a 20 80 
+41 00 00 00 00 00 00 00 00 00 00 00 38 00 00 08 
+f2 00 10 00 00 00 00 00 46 0e 10 00 00 00 00 00 
+f6 8f 20 00 00 00 00 00 00 00 00 00 34 00 00 0a 
+f2 20 10 00 00 00 00 00 46 0e 10 00 00 00 00 00 
+02 40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 3e 00 00 01 53 54 41 54 74 00 00 00 
+05 00 00 00 01 00 00 00 00 00 00 00 02 00 00 00 
+03 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 ]]>
+    </shader>
+    <shader name="BlurPS">
+        <![CDATA[
+44 58 42 43 89 af 3c 46 fb ec 9e c2 29 8f 24 31 
+32 3c 34 92 01 00 00 00 44 08 00 00 05 00 00 00 
+34 00 00 00 a0 02 00 00 4c 03 00 00 80 03 00 00 
+c8 07 00 00 52 44 45 46 64 02 00 00 01 00 00 00 
+9c 00 00 00 03 00 00 00 1c 00 00 00 00 04 ff ff 
+00 81 00 00 2f 02 00 00 7c 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 87 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 00 00 00 00 
+01 00 00 00 0c 00 00 00 91 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 50 6f 69 6e 74 43 6c 61 
+6d 70 00 74 65 78 53 6f 75 72 63 65 00 24 47 6c 
+6f 62 61 6c 73 00 ab ab 91 00 00 00 08 00 00 00 
+b4 00 00 00 60 01 00 00 00 00 00 00 00 00 00 00 
+74 01 00 00 00 00 00 00 08 00 00 00 00 00 00 00 
+88 01 00 00 00 00 00 00 98 01 00 00 08 00 00 00 
+04 00 00 00 00 00 00 00 a8 01 00 00 00 00 00 00 
+b8 01 00 00 0c 00 00 00 04 00 00 00 00 00 00 00 
+a8 01 00 00 00 00 00 00 c7 01 00 00 10 00 00 00 
+94 00 00 00 00 00 00 00 d4 01 00 00 00 00 00 00 
+e4 01 00 00 b0 00 00 00 a4 00 00 00 02 00 00 00 
+f0 01 00 00 00 00 00 00 00 02 00 00 54 01 00 00 
+04 00 00 00 02 00 00 00 10 02 00 00 00 00 00 00 
+20 02 00 00 58 01 00 00 04 00 00 00 00 00 00 00 
+a8 01 00 00 00 00 00 00 29 02 00 00 5c 01 00 00 
+04 00 00 00 00 00 00 00 a8 01 00 00 00 00 00 00 
+74 65 78 53 6f 75 72 63 65 53 69 7a 65 49 6e 76 
+00 ab ab ab 01 00 03 00 01 00 02 00 00 00 00 00 
+00 00 00 00 62 6c 6f 6f 6d 54 68 72 65 73 68 6f 
+6c 64 00 ab 00 00 03 00 01 00 01 00 00 00 00 00 
+00 00 00 00 62 6c 6f 6f 6d 49 6e 74 65 6e 73 69 
+74 79 00 62 6c 6f 6f 6d 4f 66 66 73 65 74 00 ab 
+00 00 03 00 01 00 01 00 0a 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 57 65 69 67 68 74 00 00 00 03 00 
+01 00 01 00 0b 00 00 00 00 00 00 00 74 65 78 53 
+6f 75 72 63 65 4c 65 76 65 6c 00 ab 00 00 02 00 
+01 00 01 00 00 00 00 00 00 00 00 00 65 78 70 6f 
+73 75 72 65 00 64 65 6c 74 61 00 4d 69 63 72 6f 
+73 6f 66 74 20 28 52 29 20 48 4c 53 4c 20 53 68 
+61 64 65 72 20 43 6f 6d 70 69 6c 65 72 20 31 30 
+2e 30 2e 31 30 30 31 31 2e 31 36 33 38 34 00 ab 
+49 53 47 4e a4 00 00 00 06 00 00 00 08 00 00 00 
+98 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 03 00 00 98 00 00 00 01 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 0f 00 00 
+98 00 00 00 02 00 00 00 00 00 00 00 03 00 00 00 
+02 00 00 00 0f 0f 00 00 98 00 00 00 03 00 00 00 
+00 00 00 00 03 00 00 00 03 00 00 00 0f 0f 00 00 
+98 00 00 00 04 00 00 00 00 00 00 00 03 00 00 00 
+04 00 00 00 0f 0f 00 00 98 00 00 00 05 00 00 00 
+00 00 00 00 03 00 00 00 05 00 00 00 0f 0f 00 00 
+54 45 58 43 4f 4f 52 44 00 ab ab ab 4f 53 47 4e 
+2c 00 00 00 01 00 00 00 08 00 00 00 20 00 00 00 
+00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 
+0f 00 00 00 53 56 5f 54 61 72 67 65 74 00 ab ab 
+53 48 44 52 40 04 00 00 40 00 00 00 10 01 00 00 
+59 00 00 04 46 8e 20 00 00 00 00 00 16 00 00 00 
+5a 00 00 03 00 60 10 00 00 00 00 00 58 18 00 04 
+00 70 10 00 00 00 00 00 55 55 00 00 62 10 00 03 
+32 10 10 00 00 00 00 00 62 10 00 03 f2 10 10 00 
+01 00 00 00 62 10 00 03 f2 10 10 00 02 00 00 00 
+62 10 00 03 f2 10 10 00 03 00 00 00 62 10 00 03 
+f2 10 10 00 04 00 00 00 62 10 00 03 f2 10 10 00 
+05 00 00 00 65 00 00 03 f2 20 10 00 00 00 00 00 
+68 00 00 02 03 00 00 00 2b 00 00 06 12 00 10 00 
+00 00 00 00 1a 80 20 00 00 00 00 00 15 00 00 00 
+48 00 00 0b f2 00 10 00 01 00 00 00 46 10 10 00 
+01 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 0a 00 10 00 00 00 00 00 38 00 00 08 
+f2 00 10 00 01 00 00 00 46 0e 10 00 01 00 00 00 
+06 80 20 00 00 00 00 00 0c 00 00 00 48 00 00 0b 
+f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00 
+46 7e 10 00 00 00 00 00 00 60 10 00 00 00 00 00 
+0a 00 10 00 00 00 00 00 32 00 00 0a f2 00 10 00 
+01 00 00 00 46 0e 10 00 02 00 00 00 06 80 20 00 
+00 00 00 00 0b 00 00 00 46 0e 10 00 01 00 00 00 
+48 00 00 0b f2 00 10 00 02 00 00 00 e6 1a 10 00 
+01 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 0a 00 10 00 00 00 00 00 32 00 00 0a 
+f2 00 10 00 01 00 00 00 46 0e 10 00 02 00 00 00 
+06 80 20 00 00 00 00 00 0d 00 00 00 46 0e 10 00 
+01 00 00 00 48 00 00 0b f2 00 10 00 02 00 00 00 
+46 10 10 00 02 00 00 00 46 7e 10 00 00 00 00 00 
+00 60 10 00 00 00 00 00 0a 00 10 00 00 00 00 00 
+32 00 00 0a f2 00 10 00 01 00 00 00 46 0e 10 00 
+02 00 00 00 06 80 20 00 00 00 00 00 0e 00 00 00 
+46 0e 10 00 01 00 00 00 48 00 00 0b f2 00 10 00 
+02 00 00 00 e6 1a 10 00 02 00 00 00 46 7e 10 00 
+00 00 00 00 00 60 10 00 00 00 00 00 0a 00 10 00 
+00 00 00 00 32 00 00 0a f2 00 10 00 01 00 00 00 
+46 0e 10 00 02 00 00 00 06 80 20 00 00 00 00 00 
+0f 00 00 00 46 0e 10 00 01 00 00 00 48 00 00 0b 
+f2 00 10 00 02 00 00 00 46 10 10 00 03 00 00 00 
+46 7e 10 00 00 00 00 00 00 60 10 00 00 00 00 00 
+0a 00 10 00 00 00 00 00 32 00 00 0a f2 00 10 00 
+01 00 00 00 46 0e 10 00 02 00 00 00 06 80 20 00 
+00 00 00 00 10 00 00 00 46 0e 10 00 01 00 00 00 
+48 00 00 0b f2 00 10 00 02 00 00 00 e6 1a 10 00 
+03 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 0a 00 10 00 00 00 00 00 32 00 00 0a 
+f2 00 10 00 01 00 00 00 46 0e 10 00 02 00 00 00 
+06 80 20 00 00 00 00 00 11 00 00 00 46 0e 10 00 
+01 00 00 00 48 00 00 0b f2 00 10 00 02 00 00 00 
+46 10 10 00 04 00 00 00 46 7e 10 00 00 00 00 00 
+00 60 10 00 00 00 00 00 0a 00 10 00 00 00 00 00 
+32 00 00 0a f2 00 10 00 01 00 00 00 46 0e 10 00 
+02 00 00 00 06 80 20 00 00 00 00 00 12 00 00 00 
+46 0e 10 00 01 00 00 00 48 00 00 0b f2 00 10 00 
+02 00 00 00 e6 1a 10 00 04 00 00 00 46 7e 10 00 
+00 00 00 00 00 60 10 00 00 00 00 00 0a 00 10 00 
+00 00 00 00 32 00 00 0a f2 00 10 00 01 00 00 00 
+46 0e 10 00 02 00 00 00 06 80 20 00 00 00 00 00 
+13 00 00 00 46 0e 10 00 01 00 00 00 48 00 00 0b 
+f2 00 10 00 02 00 00 00 46 10 10 00 05 00 00 00 
+46 7e 10 00 00 00 00 00 00 60 10 00 00 00 00 00 
+0a 00 10 00 00 00 00 00 48 00 00 0b f2 00 10 00 
+00 00 00 00 e6 1a 10 00 05 00 00 00 46 7e 10 00 
+00 00 00 00 00 60 10 00 00 00 00 00 0a 00 10 00 
+00 00 00 00 32 00 00 0a f2 00 10 00 01 00 00 00 
+46 0e 10 00 02 00 00 00 06 80 20 00 00 00 00 00 
+14 00 00 00 46 0e 10 00 01 00 00 00 32 00 00 0a 
+f2 20 10 00 00 00 00 00 46 0e 10 00 00 00 00 00 
+06 80 20 00 00 00 00 00 15 00 00 00 46 0e 10 00 
+01 00 00 00 3e 00 00 01 53 54 41 54 74 00 00 00 
+18 00 00 00 03 00 00 00 00 00 00 00 07 00 00 00 
+0b 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 0b 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 ]]>
+    </shader>
+    <shader name="BlurXVS">
+        <![CDATA[
+44 58 42 43 97 2e 7d 67 ef 4f 2d f5 76 c8 68 3e 
+44 bf 7d a5 01 00 00 00 54 07 00 00 05 00 00 00 
+34 00 00 00 4c 02 00 00 80 02 00 00 50 03 00 00 
+d8 06 00 00 52 44 45 46 10 02 00 00 01 00 00 00 
+48 00 00 00 01 00 00 00 1c 00 00 00 00 04 fe ff 
+00 81 00 00 db 01 00 00 3c 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 24 47 6c 6f 62 61 6c 73 
+00 ab ab ab 3c 00 00 00 08 00 00 00 60 00 00 00 
+60 01 00 00 00 00 00 00 00 00 00 00 20 01 00 00 
+00 00 00 00 08 00 00 00 02 00 00 00 34 01 00 00 
+00 00 00 00 44 01 00 00 08 00 00 00 04 00 00 00 
+00 00 00 00 54 01 00 00 00 00 00 00 64 01 00 00 
+0c 00 00 00 04 00 00 00 00 00 00 00 54 01 00 00 
+00 00 00 00 73 01 00 00 10 00 00 00 94 00 00 00 
+02 00 00 00 80 01 00 00 00 00 00 00 90 01 00 00 
+b0 00 00 00 a4 00 00 00 00 00 00 00 9c 01 00 00 
+00 00 00 00 ac 01 00 00 54 01 00 00 04 00 00 00 
+00 00 00 00 bc 01 00 00 00 00 00 00 cc 01 00 00 
+58 01 00 00 04 00 00 00 00 00 00 00 54 01 00 00 
+00 00 00 00 d5 01 00 00 5c 01 00 00 04 00 00 00 
+00 00 00 00 54 01 00 00 00 00 00 00 74 65 78 53 
+6f 75 72 63 65 53 69 7a 65 49 6e 76 00 ab ab ab 
+01 00 03 00 01 00 02 00 00 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 54 68 72 65 73 68 6f 6c 64 00 ab 
+00 00 03 00 01 00 01 00 00 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 49 6e 74 65 6e 73 69 74 79 00 62 
+6c 6f 6f 6d 4f 66 66 73 65 74 00 ab 00 00 03 00 
+01 00 01 00 0a 00 00 00 00 00 00 00 62 6c 6f 6f 
+6d 57 65 69 67 68 74 00 00 00 03 00 01 00 01 00 
+0b 00 00 00 00 00 00 00 74 65 78 53 6f 75 72 63 
+65 4c 65 76 65 6c 00 ab 00 00 02 00 01 00 01 00 
+00 00 00 00 00 00 00 00 65 78 70 6f 73 75 72 65 
+00 64 65 6c 74 61 00 4d 69 63 72 6f 73 6f 66 74 
+20 28 52 29 20 48 4c 53 4c 20 53 68 61 64 65 72 
+20 43 6f 6d 70 69 6c 65 72 20 31 30 2e 30 2e 31 
+30 30 31 31 2e 31 36 33 38 34 00 ab 49 53 47 4e 
+2c 00 00 00 01 00 00 00 08 00 00 00 20 00 00 00 
+00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 
+0f 0f 00 00 50 4f 53 49 54 49 4f 4e 00 ab ab ab 
+4f 53 47 4e c8 00 00 00 07 00 00 00 08 00 00 00 
+b0 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 0c 00 00 b0 00 00 00 01 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 00 00 00 
+b0 00 00 00 02 00 00 00 00 00 00 00 03 00 00 00 
+02 00 00 00 0f 00 00 00 b0 00 00 00 03 00 00 00 
+00 00 00 00 03 00 00 00 03 00 00 00 0f 00 00 00 
+b0 00 00 00 04 00 00 00 00 00 00 00 03 00 00 00 
+04 00 00 00 0f 00 00 00 b0 00 00 00 05 00 00 00 
+00 00 00 00 03 00 00 00 05 00 00 00 0f 00 00 00 
+b9 00 00 00 00 00 00 00 01 00 00 00 03 00 00 00 
+06 00 00 00 0f 00 00 00 54 45 58 43 4f 4f 52 44 
+00 53 56 5f 50 6f 73 69 74 69 6f 6e 00 ab ab ab 
+53 48 44 52 80 03 00 00 40 00 01 00 e0 00 00 00 
+59 00 00 04 46 8e 20 00 00 00 00 00 0b 00 00 00 
+5f 00 00 03 f2 10 10 00 00 00 00 00 65 00 00 03 
+32 20 10 00 00 00 00 00 65 00 00 03 f2 20 10 00 
+01 00 00 00 65 00 00 03 f2 20 10 00 02 00 00 00 
+65 00 00 03 f2 20 10 00 03 00 00 00 65 00 00 03 
+f2 20 10 00 04 00 00 00 65 00 00 03 f2 20 10 00 
+05 00 00 00 67 00 00 04 f2 20 10 00 06 00 00 00 
+01 00 00 00 68 00 00 02 02 00 00 00 32 00 00 0f 
+32 00 10 00 00 00 00 00 46 10 10 00 00 00 00 00 
+02 40 00 00 00 00 00 3f 00 00 00 3f 00 00 00 00 
+00 00 00 00 02 40 00 00 00 00 00 3f 00 00 00 3f 
+00 00 00 00 00 00 00 00 36 00 00 05 32 20 10 00 
+00 00 00 00 46 00 10 00 00 00 00 00 38 00 00 09 
+12 00 10 00 01 00 00 00 0a 80 20 00 00 00 00 00 
+00 00 00 00 0a 80 20 00 00 00 00 00 01 00 00 00 
+36 00 00 08 a2 00 10 00 01 00 00 00 02 40 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+38 00 00 09 42 00 10 00 01 00 00 00 0a 80 20 00 
+00 00 00 00 00 00 00 00 0a 80 20 00 00 00 00 00 
+02 00 00 00 00 00 00 07 f2 20 10 00 01 00 00 00 
+46 04 10 00 00 00 00 00 46 0e 10 00 01 00 00 00 
+38 00 00 09 12 00 10 00 01 00 00 00 0a 80 20 00 
+00 00 00 00 00 00 00 00 0a 80 20 00 00 00 00 00 
+03 00 00 00 36 00 00 08 a2 00 10 00 01 00 00 00 
+02 40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 38 00 00 09 42 00 10 00 01 00 00 00 
+0a 80 20 00 00 00 00 00 00 00 00 00 0a 80 20 00 
+00 00 00 00 04 00 00 00 00 00 00 07 f2 20 10 00 
+02 00 00 00 46 04 10 00 00 00 00 00 46 0e 10 00 
+01 00 00 00 38 00 00 09 12 00 10 00 01 00 00 00 
+0a 80 20 00 00 00 00 00 00 00 00 00 0a 80 20 00 
+00 00 00 00 05 00 00 00 36 00 00 08 a2 00 10 00 
+01 00 00 00 02 40 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 38 00 00 09 42 00 10 00 
+01 00 00 00 0a 80 20 00 00 00 00 00 00 00 00 00 
+0a 80 20 00 00 00 00 00 06 00 00 00 00 00 00 07 
+f2 20 10 00 03 00 00 00 46 04 10 00 00 00 00 00 
+46 0e 10 00 01 00 00 00 38 00 00 09 12 00 10 00 
+01 00 00 00 0a 80 20 00 00 00 00 00 00 00 00 00 
+0a 80 20 00 00 00 00 00 07 00 00 00 36 00 00 08 
+a2 00 10 00 01 00 00 00 02 40 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 38 00 00 09 
+42 00 10 00 01 00 00 00 0a 80 20 00 00 00 00 00 
+00 00 00 00 0a 80 20 00 00 00 00 00 08 00 00 00 
+00 00 00 07 f2 20 10 00 04 00 00 00 46 04 10 00 
+00 00 00 00 46 0e 10 00 01 00 00 00 38 00 00 09 
+12 00 10 00 01 00 00 00 0a 80 20 00 00 00 00 00 
+00 00 00 00 0a 80 20 00 00 00 00 00 09 00 00 00 
+36 00 00 08 a2 00 10 00 01 00 00 00 02 40 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+38 00 00 09 42 00 10 00 01 00 00 00 0a 80 20 00 
+00 00 00 00 00 00 00 00 0a 80 20 00 00 00 00 00 
+0a 00 00 00 00 00 00 07 f2 20 10 00 05 00 00 00 
+46 04 10 00 00 00 00 00 46 0e 10 00 01 00 00 00 
+36 00 00 05 f2 20 10 00 06 00 00 00 46 1e 10 00 
+00 00 00 00 3e 00 00 01 53 54 41 54 74 00 00 00 
+18 00 00 00 02 00 00 00 00 00 00 00 08 00 00 00 
+10 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 ]]>
+    </shader>
+    <shader name="BlurYVS">
+        <![CDATA[
+44 58 42 43 21 23 4e ed fc 24 e1 ea 06 98 c4 b2 
+de 7c 45 9c 01 00 00 00 54 07 00 00 05 00 00 00 
+34 00 00 00 4c 02 00 00 80 02 00 00 50 03 00 00 
+d8 06 00 00 52 44 45 46 10 02 00 00 01 00 00 00 
+48 00 00 00 01 00 00 00 1c 00 00 00 00 04 fe ff 
+00 81 00 00 db 01 00 00 3c 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 24 47 6c 6f 62 61 6c 73 
+00 ab ab ab 3c 00 00 00 08 00 00 00 60 00 00 00 
+60 01 00 00 00 00 00 00 00 00 00 00 20 01 00 00 
+00 00 00 00 08 00 00 00 02 00 00 00 34 01 00 00 
+00 00 00 00 44 01 00 00 08 00 00 00 04 00 00 00 
+00 00 00 00 54 01 00 00 00 00 00 00 64 01 00 00 
+0c 00 00 00 04 00 00 00 00 00 00 00 54 01 00 00 
+00 00 00 00 73 01 00 00 10 00 00 00 94 00 00 00 
+02 00 00 00 80 01 00 00 00 00 00 00 90 01 00 00 
+b0 00 00 00 a4 00 00 00 00 00 00 00 9c 01 00 00 
+00 00 00 00 ac 01 00 00 54 01 00 00 04 00 00 00 
+00 00 00 00 bc 01 00 00 00 00 00 00 cc 01 00 00 
+58 01 00 00 04 00 00 00 00 00 00 00 54 01 00 00 
+00 00 00 00 d5 01 00 00 5c 01 00 00 04 00 00 00 
+00 00 00 00 54 01 00 00 00 00 00 00 74 65 78 53 
+6f 75 72 63 65 53 69 7a 65 49 6e 76 00 ab ab ab 
+01 00 03 00 01 00 02 00 00 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 54 68 72 65 73 68 6f 6c 64 00 ab 
+00 00 03 00 01 00 01 00 00 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 49 6e 74 65 6e 73 69 74 79 00 62 
+6c 6f 6f 6d 4f 66 66 73 65 74 00 ab 00 00 03 00 
+01 00 01 00 0a 00 00 00 00 00 00 00 62 6c 6f 6f 
+6d 57 65 69 67 68 74 00 00 00 03 00 01 00 01 00 
+0b 00 00 00 00 00 00 00 74 65 78 53 6f 75 72 63 
+65 4c 65 76 65 6c 00 ab 00 00 02 00 01 00 01 00 
+00 00 00 00 00 00 00 00 65 78 70 6f 73 75 72 65 
+00 64 65 6c 74 61 00 4d 69 63 72 6f 73 6f 66 74 
+20 28 52 29 20 48 4c 53 4c 20 53 68 61 64 65 72 
+20 43 6f 6d 70 69 6c 65 72 20 31 30 2e 30 2e 31 
+30 30 31 31 2e 31 36 33 38 34 00 ab 49 53 47 4e 
+2c 00 00 00 01 00 00 00 08 00 00 00 20 00 00 00 
+00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 
+0f 0f 00 00 50 4f 53 49 54 49 4f 4e 00 ab ab ab 
+4f 53 47 4e c8 00 00 00 07 00 00 00 08 00 00 00 
+b0 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 0c 00 00 b0 00 00 00 01 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 00 00 00 
+b0 00 00 00 02 00 00 00 00 00 00 00 03 00 00 00 
+02 00 00 00 0f 00 00 00 b0 00 00 00 03 00 00 00 
+00 00 00 00 03 00 00 00 03 00 00 00 0f 00 00 00 
+b0 00 00 00 04 00 00 00 00 00 00 00 03 00 00 00 
+04 00 00 00 0f 00 00 00 b0 00 00 00 05 00 00 00 
+00 00 00 00 03 00 00 00 05 00 00 00 0f 00 00 00 
+b9 00 00 00 00 00 00 00 01 00 00 00 03 00 00 00 
+06 00 00 00 0f 00 00 00 54 45 58 43 4f 4f 52 44 
+00 53 56 5f 50 6f 73 69 74 69 6f 6e 00 ab ab ab 
+53 48 44 52 80 03 00 00 40 00 01 00 e0 00 00 00 
+59 00 00 04 46 8e 20 00 00 00 00 00 0b 00 00 00 
+5f 00 00 03 f2 10 10 00 00 00 00 00 65 00 00 03 
+32 20 10 00 00 00 00 00 65 00 00 03 f2 20 10 00 
+01 00 00 00 65 00 00 03 f2 20 10 00 02 00 00 00 
+65 00 00 03 f2 20 10 00 03 00 00 00 65 00 00 03 
+f2 20 10 00 04 00 00 00 65 00 00 03 f2 20 10 00 
+05 00 00 00 67 00 00 04 f2 20 10 00 06 00 00 00 
+01 00 00 00 68 00 00 02 02 00 00 00 32 00 00 0f 
+32 00 10 00 00 00 00 00 46 10 10 00 00 00 00 00 
+02 40 00 00 00 00 00 3f 00 00 00 3f 00 00 00 00 
+00 00 00 00 02 40 00 00 00 00 00 3f 00 00 00 3f 
+00 00 00 00 00 00 00 00 36 00 00 05 32 20 10 00 
+00 00 00 00 46 00 10 00 00 00 00 00 36 00 00 08 
+52 00 10 00 01 00 00 00 02 40 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 38 00 00 09 
+22 00 10 00 01 00 00 00 1a 80 20 00 00 00 00 00 
+00 00 00 00 0a 80 20 00 00 00 00 00 01 00 00 00 
+38 00 00 09 82 00 10 00 01 00 00 00 1a 80 20 00 
+00 00 00 00 00 00 00 00 0a 80 20 00 00 00 00 00 
+02 00 00 00 00 00 00 07 f2 20 10 00 01 00 00 00 
+46 04 10 00 00 00 00 00 46 0e 10 00 01 00 00 00 
+36 00 00 08 52 00 10 00 01 00 00 00 02 40 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+38 00 00 09 22 00 10 00 01 00 00 00 1a 80 20 00 
+00 00 00 00 00 00 00 00 0a 80 20 00 00 00 00 00 
+03 00 00 00 38 00 00 09 82 00 10 00 01 00 00 00 
+1a 80 20 00 00 00 00 00 00 00 00 00 0a 80 20 00 
+00 00 00 00 04 00 00 00 00 00 00 07 f2 20 10 00 
+02 00 00 00 46 04 10 00 00 00 00 00 46 0e 10 00 
+01 00 00 00 36 00 00 08 52 00 10 00 01 00 00 00 
+02 40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 38 00 00 09 22 00 10 00 01 00 00 00 
+1a 80 20 00 00 00 00 00 00 00 00 00 0a 80 20 00 
+00 00 00 00 05 00 00 00 38 00 00 09 82 00 10 00 
+01 00 00 00 1a 80 20 00 00 00 00 00 00 00 00 00 
+0a 80 20 00 00 00 00 00 06 00 00 00 00 00 00 07 
+f2 20 10 00 03 00 00 00 46 04 10 00 00 00 00 00 
+46 0e 10 00 01 00 00 00 36 00 00 08 52 00 10 00 
+01 00 00 00 02 40 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 38 00 00 09 22 00 10 00 
+01 00 00 00 1a 80 20 00 00 00 00 00 00 00 00 00 
+0a 80 20 00 00 00 00 00 07 00 00 00 38 00 00 09 
+82 00 10 00 01 00 00 00 1a 80 20 00 00 00 00 00 
+00 00 00 00 0a 80 20 00 00 00 00 00 08 00 00 00 
+00 00 00 07 f2 20 10 00 04 00 00 00 46 04 10 00 
+00 00 00 00 46 0e 10 00 01 00 00 00 36 00 00 08 
+52 00 10 00 01 00 00 00 02 40 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 38 00 00 09 
+22 00 10 00 01 00 00 00 1a 80 20 00 00 00 00 00 
+00 00 00 00 0a 80 20 00 00 00 00 00 09 00 00 00 
+38 00 00 09 82 00 10 00 01 00 00 00 1a 80 20 00 
+00 00 00 00 00 00 00 00 0a 80 20 00 00 00 00 00 
+0a 00 00 00 00 00 00 07 f2 20 10 00 05 00 00 00 
+46 04 10 00 00 00 00 00 46 0e 10 00 01 00 00 00 
+36 00 00 05 f2 20 10 00 06 00 00 00 46 1e 10 00 
+00 00 00 00 3e 00 00 01 53 54 41 54 74 00 00 00 
+18 00 00 00 02 00 00 00 00 00 00 00 08 00 00 00 
+10 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 ]]>
+    </shader>
+    <shader name="FimicTongMappingPS">
+        <![CDATA[
+44 58 42 43 c9 05 e7 97 1a 3b f7 31 9e d1 6d 65 
+c5 08 d7 a9 01 00 00 00 a4 08 00 00 05 00 00 00 
+34 00 00 00 20 03 00 00 54 03 00 00 88 03 00 00 
+28 08 00 00 52 44 45 46 e4 02 00 00 01 00 00 00 
+1c 01 00 00 06 00 00 00 1c 00 00 00 00 04 ff ff 
+00 81 00 00 af 02 00 00 dc 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 e7 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+01 00 00 00 00 00 00 00 f3 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 00 00 00 00 
+01 00 00 00 0c 00 00 00 fd 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 01 00 00 00 
+01 00 00 00 0c 00 00 00 06 01 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 02 00 00 00 
+01 00 00 00 0c 00 00 00 10 01 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 50 6f 69 6e 74 43 6c 61 
+6d 70 00 4c 69 6e 65 61 72 43 6c 61 6d 70 00 74 
+65 78 53 6f 75 72 63 65 00 74 65 78 42 6c 6f 6f 
+6d 00 74 65 78 4c 75 6d 41 76 65 00 24 47 6c 6f 
+62 61 6c 73 00 ab ab ab 10 01 00 00 08 00 00 00 
+34 01 00 00 60 01 00 00 00 00 00 00 00 00 00 00 
+f4 01 00 00 00 00 00 00 08 00 00 00 00 00 00 00 
+08 02 00 00 00 00 00 00 18 02 00 00 08 00 00 00 
+04 00 00 00 00 00 00 00 28 02 00 00 00 00 00 00 
+38 02 00 00 0c 00 00 00 04 00 00 00 00 00 00 00 
+28 02 00 00 00 00 00 00 47 02 00 00 10 00 00 00 
+94 00 00 00 00 00 00 00 54 02 00 00 00 00 00 00 
+64 02 00 00 b0 00 00 00 a4 00 00 00 00 00 00 00 
+70 02 00 00 00 00 00 00 80 02 00 00 54 01 00 00 
+04 00 00 00 00 00 00 00 90 02 00 00 00 00 00 00 
+a0 02 00 00 58 01 00 00 04 00 00 00 02 00 00 00 
+28 02 00 00 00 00 00 00 a9 02 00 00 5c 01 00 00 
+04 00 00 00 00 00 00 00 28 02 00 00 00 00 00 00 
+74 65 78 53 6f 75 72 63 65 53 69 7a 65 49 6e 76 
+00 ab ab ab 01 00 03 00 01 00 02 00 00 00 00 00 
+00 00 00 00 62 6c 6f 6f 6d 54 68 72 65 73 68 6f 
+6c 64 00 ab 00 00 03 00 01 00 01 00 00 00 00 00 
+00 00 00 00 62 6c 6f 6f 6d 49 6e 74 65 6e 73 69 
+74 79 00 62 6c 6f 6f 6d 4f 66 66 73 65 74 00 ab 
+00 00 03 00 01 00 01 00 0a 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 57 65 69 67 68 74 00 00 00 03 00 
+01 00 01 00 0b 00 00 00 00 00 00 00 74 65 78 53 
+6f 75 72 63 65 4c 65 76 65 6c 00 ab 00 00 02 00 
+01 00 01 00 00 00 00 00 00 00 00 00 65 78 70 6f 
+73 75 72 65 00 64 65 6c 74 61 00 4d 69 63 72 6f 
+73 6f 66 74 20 28 52 29 20 48 4c 53 4c 20 53 68 
+61 64 65 72 20 43 6f 6d 70 69 6c 65 72 20 31 30 
+2e 30 2e 31 30 30 31 31 2e 31 36 33 38 34 00 ab 
+49 53 47 4e 2c 00 00 00 01 00 00 00 08 00 00 00 
+20 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 03 00 00 54 45 58 43 4f 4f 52 44 
+00 ab ab ab 4f 53 47 4e 2c 00 00 00 01 00 00 00 
+08 00 00 00 20 00 00 00 00 00 00 00 00 00 00 00 
+03 00 00 00 00 00 00 00 0f 00 00 00 53 56 5f 54 
+61 72 67 65 74 00 ab ab 53 48 44 52 98 04 00 00 
+40 00 00 00 26 01 00 00 59 00 00 04 46 8e 20 00 
+00 00 00 00 16 00 00 00 5a 00 00 03 00 60 10 00 
+00 00 00 00 5a 00 00 03 00 60 10 00 01 00 00 00 
+58 18 00 04 00 70 10 00 00 00 00 00 55 55 00 00 
+58 18 00 04 00 70 10 00 01 00 00 00 55 55 00 00 
+58 18 00 04 00 70 10 00 02 00 00 00 55 55 00 00 
+62 10 00 03 32 10 10 00 00 00 00 00 65 00 00 03 
+f2 20 10 00 00 00 00 00 68 00 00 02 03 00 00 00 
+45 00 00 09 f2 00 10 00 00 00 00 00 46 10 10 00 
+00 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 48 00 00 0b f2 00 10 00 01 00 00 00 
+46 10 10 00 00 00 00 00 46 7e 10 00 01 00 00 00 
+00 60 10 00 01 00 00 00 01 40 00 00 00 00 00 00 
+00 00 00 07 72 00 10 00 00 00 00 00 46 02 10 00 
+00 00 00 00 46 02 10 00 01 00 00 00 48 00 00 0b 
+f2 00 10 00 01 00 00 00 46 10 10 00 00 00 00 00 
+46 7e 10 00 01 00 00 00 00 60 10 00 01 00 00 00 
+01 40 00 00 00 00 80 3f 00 00 00 07 72 00 10 00 
+00 00 00 00 46 02 10 00 00 00 00 00 46 02 10 00 
+01 00 00 00 10 00 00 0a 82 00 10 00 00 00 00 00 
+46 02 10 00 00 00 00 00 02 40 00 00 d0 b3 59 3e 
+59 17 37 3f 98 dd 93 3d 00 00 00 00 32 00 00 0d 
+72 00 10 00 01 00 00 00 f6 0f 10 80 41 00 00 00 
+00 00 00 00 02 40 00 00 cd cc cc 3e cd cc cc 3e 
+33 33 33 3f 00 00 00 00 46 02 10 00 00 00 00 00 
+38 00 00 0a 72 00 10 00 02 00 00 00 f6 0f 10 00 
+00 00 00 00 02 40 00 00 00 00 80 41 cd cc cc 3e 
+33 33 33 3f 00 00 00 00 36 20 00 05 12 00 10 00 
+02 00 00 00 0a 00 10 00 02 00 00 00 32 00 00 09 
+72 00 10 00 01 00 00 00 06 00 10 00 02 00 00 00 
+46 02 10 00 01 00 00 00 56 06 10 00 02 00 00 00 
+00 00 00 07 72 00 10 00 00 00 00 00 46 02 10 00 
+00 00 00 00 46 02 10 00 01 00 00 00 45 00 00 0c 
+f2 00 10 00 01 00 00 00 02 40 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 46 7e 10 00 
+02 00 00 00 00 60 10 00 00 00 00 00 00 00 00 07 
+82 00 10 00 00 00 00 00 0a 00 10 00 01 00 00 00 
+01 40 00 00 cd cc 4c be 32 00 00 09 82 00 10 00 
+00 00 00 00 3a 00 10 00 00 00 00 00 01 40 00 00 
+00 00 00 3f 01 40 00 00 cd cc 4c 3e 32 00 00 09 
+82 00 10 00 00 00 00 00 3a 00 10 00 00 00 00 00 
+01 40 00 00 00 00 20 41 01 40 00 00 00 00 80 3f 
+34 00 00 07 82 00 10 00 00 00 00 00 3a 00 10 00 
+00 00 00 00 01 40 00 00 cd cc cc 3d 0e 00 00 07 
+82 00 10 00 00 00 00 00 01 40 00 00 00 00 40 40 
+3a 00 10 00 00 00 00 00 38 00 00 08 82 00 10 00 
+00 00 00 00 3a 00 10 00 00 00 00 00 2a 80 20 00 
+00 00 00 00 15 00 00 00 38 00 00 07 72 00 10 00 
+00 00 00 00 46 02 10 00 00 00 00 00 f6 0f 10 00 
+00 00 00 00 32 00 00 0f 72 00 10 00 01 00 00 00 
+46 02 10 00 00 00 00 00 02 40 00 00 ae 47 61 3e 
+ae 47 61 3e ae 47 61 3e 00 00 00 00 02 40 00 00 
+8f c2 f5 3c 8f c2 f5 3c 8f c2 f5 3c 00 00 00 00 
+32 00 00 0c 72 00 10 00 01 00 00 00 46 02 10 00 
+00 00 00 00 46 02 10 00 01 00 00 00 02 40 00 00 
+6f 12 03 3b 6f 12 03 3b 6f 12 03 3b 00 00 00 00 
+32 00 00 0f 72 00 10 00 02 00 00 00 46 02 10 00 
+00 00 00 00 02 40 00 00 ae 47 61 3e ae 47 61 3e 
+ae 47 61 3e 00 00 00 00 02 40 00 00 9a 99 99 3e 
+9a 99 99 3e 9a 99 99 3e 00 00 00 00 32 00 00 0c 
+72 00 10 00 00 00 00 00 46 02 10 00 00 00 00 00 
+46 02 10 00 02 00 00 00 02 40 00 00 8f c2 75 3d 
+8f c2 75 3d 8f c2 75 3d 00 00 00 00 0e 00 00 07 
+72 00 10 00 00 00 00 00 46 02 10 00 01 00 00 00 
+46 02 10 00 00 00 00 00 00 00 00 0a 72 00 10 00 
+00 00 00 00 46 02 10 00 00 00 00 00 02 40 00 00 
+89 88 08 bd 89 88 08 bd 89 88 08 bd 00 00 00 00 
+38 00 00 0a 72 00 10 00 00 00 00 00 46 02 10 00 
+00 00 00 00 02 40 00 00 92 95 93 3f 92 95 93 3f 
+92 95 93 3f 00 00 00 00 10 00 00 0a 82 20 10 00 
+00 00 00 00 46 02 10 00 00 00 00 00 02 40 00 00 
+d0 b3 59 3e 59 17 37 3f 98 dd 93 3d 00 00 00 00 
+36 00 00 05 72 20 10 00 00 00 00 00 46 02 10 00 
+00 00 00 00 3e 00 00 01 53 54 41 54 74 00 00 00 
+1d 00 00 00 03 00 00 00 00 00 00 00 02 00 00 00 
+16 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 02 00 00 00 02 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 ]]>
+    </shader>
+    <shader name="PostProcessVS">
+        <![CDATA[
+44 58 42 43 12 09 8a 49 94 90 6c 3e bd fe a7 4c 
+8a b5 19 08 01 00 00 00 20 02 00 00 05 00 00 00 
+34 00 00 00 8c 00 00 00 c0 00 00 00 18 01 00 00 
+a4 01 00 00 52 44 45 46 50 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 1c 00 00 00 00 04 fe ff 
+00 81 00 00 1c 00 00 00 4d 69 63 72 6f 73 6f 66 
+74 20 28 52 29 20 48 4c 53 4c 20 53 68 61 64 65 
+72 20 43 6f 6d 70 69 6c 65 72 20 31 30 2e 30 2e 
+31 30 30 31 31 2e 31 36 33 38 34 00 49 53 47 4e 
+2c 00 00 00 01 00 00 00 08 00 00 00 20 00 00 00 
+00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 
+0f 0f 00 00 50 4f 53 49 54 49 4f 4e 00 ab ab ab 
+4f 53 47 4e 50 00 00 00 02 00 00 00 08 00 00 00 
+38 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 00 00 00 41 00 00 00 00 00 00 00 
+01 00 00 00 03 00 00 00 01 00 00 00 0f 00 00 00 
+54 45 58 43 4f 4f 52 44 00 53 56 5f 50 6f 73 69 
+74 69 6f 6e 00 ab ab ab 53 48 44 52 84 00 00 00 
+40 00 01 00 21 00 00 00 5f 00 00 03 f2 10 10 00 
+00 00 00 00 65 00 00 03 f2 20 10 00 00 00 00 00 
+67 00 00 04 f2 20 10 00 01 00 00 00 01 00 00 00 
+32 00 00 0f f2 20 10 00 00 00 00 00 46 1e 10 00 
+00 00 00 00 02 40 00 00 00 00 00 3f 00 00 00 3f 
+00 00 00 3f 00 00 00 3f 02 40 00 00 00 00 00 3f 
+00 00 00 3f 00 00 00 3f 00 00 00 3f 36 00 00 05 
+f2 20 10 00 01 00 00 00 46 1e 10 00 00 00 00 00 
+3e 00 00 01 53 54 41 54 74 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 03 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+]]>
+    </shader>
+    <shader name="SumLumLogPS">
+        <![CDATA[
+44 58 42 43 bf 96 c1 93 c2 2d 26 89 a8 63 aa a9 
+e3 61 38 2c 01 00 00 00 bc 03 00 00 05 00 00 00 
+34 00 00 00 e4 00 00 00 30 01 00 00 64 01 00 00 
+40 03 00 00 52 44 45 46 a8 00 00 00 00 00 00 00 
+00 00 00 00 02 00 00 00 1c 00 00 00 00 04 ff ff 
+00 81 00 00 71 00 00 00 5c 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 67 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 00 00 00 00 
+01 00 00 00 0c 00 00 00 50 6f 69 6e 74 43 6c 61 
+6d 70 00 74 65 78 53 6f 75 72 63 65 00 4d 69 63 
+72 6f 73 6f 66 74 20 28 52 29 20 48 4c 53 4c 20 
+53 68 61 64 65 72 20 43 6f 6d 70 69 6c 65 72 20 
+31 30 2e 30 2e 31 30 30 31 31 2e 31 36 33 38 34 
+00 ab ab ab 49 53 47 4e 44 00 00 00 02 00 00 00 
+08 00 00 00 38 00 00 00 00 00 00 00 00 00 00 00 
+03 00 00 00 00 00 00 00 0f 0f 00 00 38 00 00 00 
+01 00 00 00 00 00 00 00 03 00 00 00 01 00 00 00 
+0f 0f 00 00 54 45 58 43 4f 4f 52 44 00 ab ab ab 
+4f 53 47 4e 2c 00 00 00 01 00 00 00 08 00 00 00 
+20 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 01 0e 00 00 53 56 5f 54 61 72 67 65 
+74 00 ab ab 53 48 44 52 d4 01 00 00 40 00 00 00 
+75 00 00 00 5a 00 00 03 00 60 10 00 00 00 00 00 
+58 18 00 04 00 70 10 00 00 00 00 00 55 55 00 00 
+62 10 00 03 f2 10 10 00 00 00 00 00 62 10 00 03 
+f2 10 10 00 01 00 00 00 65 00 00 03 12 20 10 00 
+00 00 00 00 68 00 00 02 02 00 00 00 45 00 00 09 
+f2 00 10 00 00 00 00 00 46 10 10 00 00 00 00 00 
+46 7e 10 00 00 00 00 00 00 60 10 00 00 00 00 00 
+45 00 00 09 f2 00 10 00 01 00 00 00 e6 1a 10 00 
+00 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 00 00 00 07 72 00 10 00 00 00 00 00 
+46 02 10 00 00 00 00 00 46 02 10 00 01 00 00 00 
+45 00 00 09 f2 00 10 00 01 00 00 00 46 10 10 00 
+01 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 00 00 00 07 72 00 10 00 00 00 00 00 
+46 02 10 00 00 00 00 00 46 02 10 00 01 00 00 00 
+45 00 00 09 f2 00 10 00 01 00 00 00 e6 1a 10 00 
+01 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 00 00 00 07 72 00 10 00 00 00 00 00 
+46 02 10 00 00 00 00 00 46 02 10 00 01 00 00 00 
+38 00 00 0a 72 00 10 00 00 00 00 00 46 02 10 00 
+00 00 00 00 02 40 00 00 00 00 80 3e 00 00 80 3e 
+00 00 80 3e 00 00 00 00 10 00 00 0a 12 00 10 00 
+00 00 00 00 46 02 10 00 00 00 00 00 02 40 00 00 
+d0 b3 59 3e 59 17 37 3f 98 dd 93 3d 00 00 00 00 
+34 00 00 07 12 00 10 00 00 00 00 00 0a 00 10 00 
+00 00 00 00 01 40 00 00 0a d7 23 3c 2f 00 00 05 
+12 00 10 00 00 00 00 00 0a 00 10 00 00 00 00 00 
+38 00 00 07 12 20 10 00 00 00 00 00 0a 00 10 00 
+00 00 00 00 01 40 00 00 18 72 31 3f 3e 00 00 01 
+53 54 41 54 74 00 00 00 0d 00 00 00 02 00 00 00 
+00 00 00 00 03 00 00 00 08 00 00 00 00 00 00 00 
+00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 ]]>
+    </shader>
+    <shader name="SumLumPS">
+        <![CDATA[
+44 58 42 43 b3 bf 42 28 2a 25 c1 aa 8f de 7d 29 
+f2 f5 66 dd 01 00 00 00 48 03 00 00 05 00 00 00 
+34 00 00 00 e4 00 00 00 30 01 00 00 64 01 00 00 
+cc 02 00 00 52 44 45 46 a8 00 00 00 00 00 00 00 
+00 00 00 00 02 00 00 00 1c 00 00 00 00 04 ff ff 
+00 81 00 00 71 00 00 00 5c 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 67 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 00 00 00 00 
+01 00 00 00 0c 00 00 00 50 6f 69 6e 74 43 6c 61 
+6d 70 00 74 65 78 53 6f 75 72 63 65 00 4d 69 63 
+72 6f 73 6f 66 74 20 28 52 29 20 48 4c 53 4c 20 
+53 68 61 64 65 72 20 43 6f 6d 70 69 6c 65 72 20 
+31 30 2e 30 2e 31 30 30 31 31 2e 31 36 33 38 34 
+00 ab ab ab 49 53 47 4e 44 00 00 00 02 00 00 00 
+08 00 00 00 38 00 00 00 00 00 00 00 00 00 00 00 
+03 00 00 00 00 00 00 00 0f 0f 00 00 38 00 00 00 
+01 00 00 00 00 00 00 00 03 00 00 00 01 00 00 00 
+0f 0f 00 00 54 45 58 43 4f 4f 52 44 00 ab ab ab 
+4f 53 47 4e 2c 00 00 00 01 00 00 00 08 00 00 00 
+20 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 00 00 00 53 56 5f 54 61 72 67 65 
+74 00 ab ab 53 48 44 52 60 01 00 00 40 00 00 00 
+58 00 00 00 5a 00 00 03 00 60 10 00 00 00 00 00 
+58 18 00 04 00 70 10 00 00 00 00 00 55 55 00 00 
+62 10 00 03 f2 10 10 00 00 00 00 00 62 10 00 03 
+f2 10 10 00 01 00 00 00 65 00 00 03 f2 20 10 00 
+00 00 00 00 68 00 00 02 02 00 00 00 45 00 00 09 
+f2 00 10 00 00 00 00 00 46 10 10 00 00 00 00 00 
+46 7e 10 00 00 00 00 00 00 60 10 00 00 00 00 00 
+45 00 00 09 f2 00 10 00 01 00 00 00 e6 1a 10 00 
+00 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 00 00 00 07 f2 00 10 00 00 00 00 00 
+46 0e 10 00 00 00 00 00 46 0e 10 00 01 00 00 00 
+45 00 00 09 f2 00 10 00 01 00 00 00 46 10 10 00 
+01 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 00 00 00 07 f2 00 10 00 00 00 00 00 
+46 0e 10 00 00 00 00 00 46 0e 10 00 01 00 00 00 
+45 00 00 09 f2 00 10 00 01 00 00 00 e6 1a 10 00 
+01 00 00 00 46 7e 10 00 00 00 00 00 00 60 10 00 
+00 00 00 00 00 00 00 07 f2 00 10 00 00 00 00 00 
+46 0e 10 00 00 00 00 00 46 0e 10 00 01 00 00 00 
+38 00 00 0a f2 20 10 00 00 00 00 00 46 0e 10 00 
+00 00 00 00 02 40 00 00 00 00 80 3e 00 00 80 3e 
+00 00 80 3e 00 00 80 3e 3e 00 00 01 53 54 41 54 
+74 00 00 00 09 00 00 00 02 00 00 00 00 00 00 00 
+03 00 00 00 04 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 04 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 ]]>
+    </shader>
+    <shader name="SumLumVS">
+        <![CDATA[
+44 58 42 43 06 75 9b 5c 4f b7 e2 80 06 64 32 d9 
+7f 2f 4e 02 01 00 00 00 3c 05 00 00 05 00 00 00 
+34 00 00 00 4c 02 00 00 80 02 00 00 f0 02 00 00 
+c0 04 00 00 52 44 45 46 10 02 00 00 01 00 00 00 
+48 00 00 00 01 00 00 00 1c 00 00 00 00 04 fe ff 
+00 81 00 00 db 01 00 00 3c 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 24 47 6c 6f 62 61 6c 73 
+00 ab ab ab 3c 00 00 00 08 00 00 00 60 00 00 00 
+60 01 00 00 00 00 00 00 00 00 00 00 20 01 00 00 
+00 00 00 00 08 00 00 00 02 00 00 00 34 01 00 00 
+00 00 00 00 44 01 00 00 08 00 00 00 04 00 00 00 
+00 00 00 00 54 01 00 00 00 00 00 00 64 01 00 00 
+0c 00 00 00 04 00 00 00 00 00 00 00 54 01 00 00 
+00 00 00 00 73 01 00 00 10 00 00 00 94 00 00 00 
+00 00 00 00 80 01 00 00 00 00 00 00 90 01 00 00 
+b0 00 00 00 a4 00 00 00 00 00 00 00 9c 01 00 00 
+00 00 00 00 ac 01 00 00 54 01 00 00 04 00 00 00 
+00 00 00 00 bc 01 00 00 00 00 00 00 cc 01 00 00 
+58 01 00 00 04 00 00 00 00 00 00 00 54 01 00 00 
+00 00 00 00 d5 01 00 00 5c 01 00 00 04 00 00 00 
+00 00 00 00 54 01 00 00 00 00 00 00 74 65 78 53 
+6f 75 72 63 65 53 69 7a 65 49 6e 76 00 ab ab ab 
+01 00 03 00 01 00 02 00 00 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 54 68 72 65 73 68 6f 6c 64 00 ab 
+00 00 03 00 01 00 01 00 00 00 00 00 00 00 00 00 
+62 6c 6f 6f 6d 49 6e 74 65 6e 73 69 74 79 00 62 
+6c 6f 6f 6d 4f 66 66 73 65 74 00 ab 00 00 03 00 
+01 00 01 00 0a 00 00 00 00 00 00 00 62 6c 6f 6f 
+6d 57 65 69 67 68 74 00 00 00 03 00 01 00 01 00 
+0b 00 00 00 00 00 00 00 74 65 78 53 6f 75 72 63 
+65 4c 65 76 65 6c 00 ab 00 00 02 00 01 00 01 00 
+00 00 00 00 00 00 00 00 65 78 70 6f 73 75 72 65 
+00 64 65 6c 74 61 00 4d 69 63 72 6f 73 6f 66 74 
+20 28 52 29 20 48 4c 53 4c 20 53 68 61 64 65 72 
+20 43 6f 6d 70 69 6c 65 72 20 31 30 2e 30 2e 31 
+30 30 31 31 2e 31 36 33 38 34 00 ab 49 53 47 4e 
+2c 00 00 00 01 00 00 00 08 00 00 00 20 00 00 00 
+00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 
+0f 0f 00 00 50 4f 53 49 54 49 4f 4e 00 ab ab ab 
+4f 53 47 4e 68 00 00 00 03 00 00 00 08 00 00 00 
+50 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 00 00 00 50 00 00 00 01 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 00 00 00 
+59 00 00 00 00 00 00 00 01 00 00 00 03 00 00 00 
+02 00 00 00 0f 00 00 00 54 45 58 43 4f 4f 52 44 
+00 53 56 5f 50 6f 73 69 74 69 6f 6e 00 ab ab ab 
+53 48 44 52 c8 01 00 00 40 00 01 00 72 00 00 00 
+59 00 00 04 46 8e 20 00 00 00 00 00 01 00 00 00 
+5f 00 00 03 f2 10 10 00 00 00 00 00 65 00 00 03 
+f2 20 10 00 00 00 00 00 65 00 00 03 f2 20 10 00 
+01 00 00 00 67 00 00 04 f2 20 10 00 02 00 00 00 
+01 00 00 00 68 00 00 02 01 00 00 00 32 00 00 09 
+12 00 10 00 00 00 00 00 0a 10 10 00 00 00 00 00 
+01 40 00 00 00 00 00 3f 01 40 00 00 00 00 00 3f 
+36 00 00 06 a2 00 10 00 00 00 00 00 06 84 20 00 
+00 00 00 00 00 00 00 00 00 00 00 07 42 20 10 00 
+00 00 00 00 1a 00 10 00 00 00 00 00 0a 00 10 00 
+00 00 00 00 32 00 00 0f b2 20 10 00 00 00 00 00 
+46 14 10 00 00 00 00 00 02 40 00 00 00 00 00 3f 
+00 00 00 3f 00 00 00 00 00 00 00 3f 02 40 00 00 
+00 00 00 3f 00 00 00 3f 00 00 00 00 00 00 00 3f 
+32 00 00 0f 32 00 10 00 00 00 00 00 46 10 10 00 
+00 00 00 00 02 40 00 00 00 00 00 3f 00 00 00 3f 
+00 00 00 00 00 00 00 00 02 40 00 00 00 00 00 00 
+00 00 00 3f 00 00 00 00 00 00 00 00 36 00 00 05 
+42 00 10 00 00 00 00 00 01 40 00 00 00 00 00 3f 
+00 00 00 07 c2 20 10 00 01 00 00 00 a6 0e 10 00 
+00 00 00 00 06 04 10 00 00 00 00 00 32 00 00 0f 
+32 00 10 00 00 00 00 00 46 10 10 00 00 00 00 00 
+02 40 00 00 00 00 00 3f 00 00 00 3f 00 00 00 00 
+00 00 00 00 02 40 00 00 00 00 00 3f 00 00 00 3f 
+00 00 00 00 00 00 00 00 00 00 00 08 32 20 10 00 
+01 00 00 00 46 00 10 00 00 00 00 00 46 80 20 00 
+00 00 00 00 00 00 00 00 36 00 00 05 f2 20 10 00 
+02 00 00 00 46 1e 10 00 00 00 00 00 3e 00 00 01 
+53 54 41 54 74 00 00 00 0b 00 00 00 01 00 00 00 
+00 00 00 00 04 00 00 00 07 00 00 00 00 00 00 00 
+00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 03 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 ]]>
     </shader>
     <technique name="SumLum">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
+            <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="SumLumVS" />
             <state name="fragment" value="SumLumPS" />
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="cullmode" value="none" />
         </pass>
     </technique>
     <technique name="SumLumLog">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
+            <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="SumLumVS" />
             <state name="fragment" value="SumLumLogPS" />
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="cullmode" value="none" />
         </pass>
     </technique>
     <technique name="AvgLuminance">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
+            <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="SumLumVS" />
             <state name="fragment" value="AvgLuminancePS" />
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="cullmode" value="none" />
         </pass>
     </technique>
     <technique name="GenerateBloom">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
+            <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="BloomPS" />
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="cullmode" value="none" />
         </pass>
     </technique>
     <technique name="BlurBloomh">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
+            <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="BlurXVS" />
             <state name="fragment" value="BlurPS" />
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="cullmode" value="none" />
         </pass>
     </technique>
     <technique name="BlurBloomv">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
+            <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="BlurYVS" />
             <state name="fragment" value="BlurPS" />
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="cullmode" value="none" />
         </pass>
     </technique>
     <technique name="FimicTongMapping">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
+            <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="FimicTongMappingPS" />
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="cullmode" value="none" />
         </pass>
     </technique>
 </effect>

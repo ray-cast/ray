@@ -1,0 +1,33 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/Gbuffer.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
+    <shader>
+        <![CDATA[
+             void OpaqueVS(
+                in float4 Position : POSITION,
+                out float4 oPosition : SV_Position)
+            {
+                oPosition = mul(matModelViewProject, Position);
+            }
+
+            float4 OpaquePS() : SV_Target
+            {
+                return float4(0.0,0.478,0.8,1.0);
+            }
+        ]]>
+    </shader>
+    <technique name="opaquespecific">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="OpaqueVS"/>
+            <state name="fragment" value="OpaquePS"/>
+            <state name="primitive" value="line" />
+            <state name="linewidth" value="3"/>
+            <state name="cullmode" value="none"/>
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+</effect>

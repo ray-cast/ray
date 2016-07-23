@@ -1,0 +1,338 @@
+<?xml version="1.0"?>
+<effect language="hlsl">
+    <include name="sys:fx/common.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/math.fxml"/>
+    <macro name="TRAPEZOIDAL_INTEGRATION" value="1"/>
+    <macro name="NUM_STEP_SAMPLES" value="10"/>
+    <macro name="NUM_INTERSECTION_SAMPLES" value="200"/>
+    <macro name="STARDISTANCE" value="300"/>
+    <macro name="STARBRIGHTNESS" value="0.4"/>
+    <macro name="STARDENCITY" value="0.02"/>
+    <parameter name="texDepth" type="texture2D" semantic="DepthMap" />
+    <parameter name="texDepthLinear" type="texture2D" semantic="DepthLinearMap" />
+    <parameter name="eyePosition" semantic="CameraPosition" type="float3"/>
+    <parameter name="matViewProjectInverse" type="float4x4"/>
+    <parameter name="rayleighAngularSctrCoeff" type="float4"/>
+    <parameter name="rayleighExtinctionCoeff" type="float4"/>
+    <parameter name="mieAngularSctrCoeff" type="float4"/>
+    <parameter name="mieExtinctionCoeff" type="float4"/>
+    <parameter name="aerosolPhaseFuncG4" type="float4"/>
+    <parameter name="earthRadius" type="float"/>
+    <parameter name="earthAtmTopHeight" type="float"/>
+    <parameter name="earthAtmTopRadius" type="float"/>
+    <parameter name="particleScaleHeight" type="float2"/>
+    <parameter name="lightDirection" type="float3"/>
+    <parameter name="lightColor" type="float3"/>
+    <parameter name="tex2DOccludedNetDensityToAtmTop" type="texture2D"/>
+    <shader>
+        <![CDATA[
+        void ScreenQuadVS(
+            in float4 Position : POSITION0,
+            out float4 oTexcoord : TEXCOORD0,
+            out float4 oPosition : SV_Position)
+        {
+            oPosition = Position;
+            oTexcoord.xy = Position.xy;
+            oTexcoord.zw = PosToCoord(Position.xy);
+        }
+
+        void ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius, out float2 minimaxIntersections)
+        {
+            float3 origin = position - center;
+            float B = dot(origin, dir);
+            float C = dot(origin, origin) - radius * radius;
+            float D = B * B - C;
+
+            if (D < 0)
+            {
+                minimaxIntersections = -1;
+            }
+            else
+            {
+                D = sqrt(D);
+                minimaxIntersections = float2(-B - D, -B + D);
+            }
+        }
+
+        float2 IntegrateParticleDensity(float3 start, float3 end, float3 center)
+        {
+            float2 particleNetDensity = 0;
+            float3 step = (end - start) / NUM_INTERSECTION_SAMPLES;
+            float stepLen = length(step);
+
+            for (float i = 0.5f; i < NUM_INTERSECTION_SAMPLES; i += 1.0f)
+            {
+                float3 position = start + step * i;
+                float height = abs(length(position - center) - earthRadius);
+                particleNetDensity += exp(-height / particleScaleHeight) * stepLen;
+            }
+
+            return particleNetDensity;
+        }
+
+        float2 IntegrateParticleDensityAlongRay(float3 position, float3 dir, float3 earthCenter, bool occlude)
+        {
+            if (occlude)
+            {
+                float2 minimaxIntersections;
+                ComputeRaySphereIntersection(position, dir, earthCenter, earthRadius, minimaxIntersections);
+                if (minimaxIntersections.x > 0)
+                    return 1e+20;
+            }
+
+            float2 minimaxIntersections;
+            ComputeRaySphereIntersection(position, dir, earthCenter, earthAtmTopRadius, minimaxIntersections);
+
+            float3 end = position + dir * minimaxIntersections.y;
+            return IntegrateParticleDensity(position, end, earthCenter);
+        }
+
+        float2 ComputeOpticalDepthAtmTop(in float4 position : TEXCOORD0) : SV_Target
+        {
+            float startHeight = lerp(0, earthAtmTopHeight, position.z);
+            float cosTheta = -position.y;
+            float sinTheta = sqrt(saturate(1 - cosTheta * cosTheta));
+            float3 start = float3(0, 0, startHeight);
+            float3 end = float3(sinTheta, 0, cosTheta);
+            float3 earthCenter = float3(0, 0, -earthRadius);
+
+            return IntegrateParticleDensityAlongRay(start, end, earthCenter, true);
+        }
+
+        float2 GetOpticalDepth(float3 P, float3 center)
+        {
+            float3 origin = P - center;
+            float distance = length(origin);
+            float height = distance - earthRadius;
+            return exp(-height / particleScaleHeight);
+        }
+
+        float2 GetOpticalDepthAtmTop(float3 P, float3 L, float3 center)
+        {
+            float2 minimaxIntersections;
+            ComputeRaySphereIntersection(P, L, center, earthRadius, minimaxIntersections);
+            return GetOpticalDepth(P + L * minimaxIntersections.y, center);
+        }
+
+        void ComputeOpticalLength(float3 P, float3 L, float3 center, out float2 opticalCamera, out float2 opticalAtmTop)
+        {
+            opticalCamera = GetOpticalDepth(P, center);
+            opticalAtmTop = GetOpticalDepthAtmTop(P, L, center);
+        }
+
+        void ComputeOpticalLengthLUT(float3 P, float3 L, float3 center, out float2 opticalCamera, out float2 opticalAtmTop)
+        {
+            float3 origin = P - center;
+            float distance = length(origin);
+            float height = distance - earthRadius;
+            float lightAngle = (dot(origin, L) / distance) * 0.5 + 0.5;
+
+            opticalCamera = exp(-height / particleScaleHeight);
+            opticalAtmTop = tex2DOccludedNetDensityToAtmTop.Sample(LinearClamp, float2(height / earthAtmTopHeight, lightAngle)).xy;
+        }
+
+        void ComputeScatteringIntensity(float3 opticalDepthRayleigh, float3 opticalDepthMie, out float3 extinction)
+        {
+            // http://www.cescg.org/CESCG-2009/papers/PragueCUNI-Elek-Oskar.pdf
+            extinction = exp(-(opticalDepthRayleigh + opticalDepthMie));
+        }
+
+        void ComputeSingleScattering(float2 density, float2 opticalCamera, float2 opticalAtmTop, out float3 inscatteringRayleigh, out float3 inscatteringMie)
+        {
+            float2 singleOpticalLength = opticalCamera + opticalAtmTop;
+            float3 singleOpticalDepthMie = mieExtinctionCoeff.rgb * singleOpticalLength.y;
+            float3 singleOpticalDepthRayleigh = rayleighExtinctionCoeff.rgb * singleOpticalLength.x;
+
+            float3 singleScatteringIntensity;
+            ComputeScatteringIntensity(singleOpticalDepthRayleigh, singleOpticalDepthMie, singleScatteringIntensity);
+
+            inscatteringMie = density.y * singleScatteringIntensity;
+            inscatteringRayleigh = density.x * singleScatteringIntensity;
+        }
+
+        void ComputePhaseFunctions(float3 inscatteringRayleigh, float3 inscatteringMie, float3 viewdir, float3 lightDirection, inout float3 inscattering)
+        {
+            // http://www.cescg.org/CESCG-2009/papers/PragueCUNI-Elek-Oskar.pdf
+            // aerosolPhaseFuncG4.x = 3 x (1 - g2) / 2 x (2 + g2)
+            // aerosolPhaseFuncG4.y = 1 + g2;
+            // aerosolPhaseFuncG4.z = -2g
+
+            float cosTheta = dot(lightDirection, -viewdir);
+            float cosTheta2 = cosTheta * cosTheta;
+
+            float denom = rsqrt(aerosolPhaseFuncG4.y + aerosolPhaseFuncG4.z * cosTheta);
+            float denom3 = denom * denom * denom;
+            float phaseFunction = aerosolPhaseFuncG4.x * (1 +  cosTheta2) * denom3;
+
+            inscatteringMie *= mieAngularSctrCoeff.rgb * phaseFunction;
+            inscatteringRayleigh *= rayleighAngularSctrCoeff.rgb * (cosTheta2 * 0.75 + 0.75);
+
+            inscattering += inscatteringRayleigh + inscatteringMie;
+        }
+
+        void ComputeInsctrIntegral(float3 start, float3 end, float3 earthCenter, float3 L, inout float2 scatteringDensity, inout float3 scatteringRayleigh, inout float3 scatteringMie)
+        {
+            float3 step = (end - start) / NUM_STEP_SAMPLES;
+            float stepLength = length(step);
+
+        #if TRAPEZOIDAL_INTEGRATION
+            float2 lastParticleDensity = 0;
+            float3 lastInsctrRayleigh = 0;
+            float3 lastInsctrMie = 0;
+
+            float2 stepOpticalAtmosphere = 0;
+            ComputeOpticalLengthLUT(start, L, earthCenter, lastParticleDensity, stepOpticalAtmosphere);
+            ComputeSingleScattering(lastParticleDensity, scatteringDensity, stepOpticalAtmosphere, lastInsctrRayleigh, lastInsctrMie);
+
+            for (float i = 0.5f; i <= NUM_STEP_SAMPLES; i += 1.f)
+            {
+                float2 stepOpticalCamera;
+                float2 stepOpticalAtmosphere;
+                float3 stepInsctrMie;
+                float3 stepInsctrRayleigh;
+                float3 stepPosition = start + step * i;
+
+                ComputeOpticalLengthLUT(stepPosition, L, earthCenter, stepOpticalCamera, stepOpticalAtmosphere);
+                scatteringDensity  += (stepOpticalCamera + lastParticleDensity) * (stepLength / 2.f);
+                ComputeSingleScattering(stepOpticalCamera, scatteringDensity, stepOpticalAtmosphere, stepInsctrRayleigh, stepInsctrMie);
+
+                scatteringMie      += (stepInsctrMie  + lastInsctrMie) * (stepLength / 2.f);
+                scatteringRayleigh += (stepInsctrRayleigh + lastInsctrRayleigh) * (stepLength / 2.f);
+
+                lastInsctrMie = stepInsctrMie;
+                lastInsctrRayleigh = stepInsctrRayleigh;
+                lastParticleDensity = stepOpticalCamera;
+            }
+        #else
+            for (float i = 0.5f; i < NUM_STEP_SAMPLES; i += 1.0f)
+            {
+                float2 stepOpticalCamera;
+                float2 stepOpticalAtmosphere;
+                float3 stepInsctrMie;
+                float3 stepInsctrRayleigh;
+                float3 stepPosition = start + step * i;
+
+                ComputeOpticalLengthLUT(stepPosition, L, earthCenter, stepOpticalCamera, stepOpticalAtmosphere);
+                scatteringDensity  += stepOpticalCamera * stepLength;
+                ComputeSingleScattering(stepOpticalCamera, scatteringDensity, stepOpticalAtmosphere, stepInsctrRayleigh, stepInsctrMie);
+
+                scatteringMie      += stepInsctrMie * stepLength;
+                scatteringRayleigh += stepInsctrRayleigh * stepLength;
+            }
+        #endif
+        }
+
+        float hash(float3 p3)
+        {
+            p3  = frac(p3 * float3(.1031,.11369,.13787));
+            p3 += dot(p3, p3.yzx + 19.19);
+            return frac((p3.x + p3.y) * p3.z);
+        }
+
+        float stars(float3 ray)
+        {
+            float3 p = ray * STARDISTANCE;
+            float brigtness = smoothstep(1.0 - STARDENCITY, 1.0, hash(floor(p)));
+            return smoothstep(STARBRIGHTNESS, 0, length(frac(p) - 0.5)) * brigtness;
+        }
+
+        void ComputeStars(float3 viewdir, inout float3 inscattering)
+        {
+            inscattering = inscattering + lerp(stars(viewdir), 0, luminance(linear2srgb(inscattering)));
+        }
+
+        float3 ProjSpaceXYZToWorldSpace(float3 P)
+        {
+            float4 position = mul(matViewProjectInverse, float4(P, 1));
+            position /= position.w;
+            return position.xyz;
+        }
+
+        void ComputeUnshadowedInscattering(float4 position, float depth, inout float3 inscattering, inout float3 extinction)
+        {
+            float3 world = ProjSpaceXYZToWorldSpace(float3(position.xy, depth));
+            float3 viewdir = (world - eyePosition);
+            float rayLength = length(viewdir);
+            viewdir /= rayLength;
+
+            float3 earthCenter =  float3(0, -earthRadius, 0);
+
+            float2 outerIntersections;
+            ComputeRaySphereIntersection(eyePosition, viewdir, earthCenter, earthAtmTopRadius, outerIntersections);
+            if (outerIntersections.y <= 0)
+            {
+                ComputeStars(viewdir, inscattering);
+                return;
+            }
+
+            float2 innerIntersections;
+            ComputeRaySphereIntersection(eyePosition, viewdir, earthCenter, earthRadius, innerIntersections);
+            if (innerIntersections.x > 0)
+            {
+                float3 mix = normalize(float3(innerIntersections.xy, 0));
+                outerIntersections.y = lerp(outerIntersections.y, innerIntersections.x, mix.y * mix.y);
+            }
+
+            float3 start = eyePosition + viewdir * max(0, outerIntersections.x);
+            float3 end = eyePosition + viewdir * min(rayLength, outerIntersections.y);
+
+            float3 scatteringMie = 0;
+            float3 scatteringRayleigh = 0;
+            float2 scatteringDensity = 0;
+            ComputeInsctrIntegral(start, end, earthCenter, lightDirection, scatteringDensity, scatteringRayleigh, scatteringMie);
+
+            float3 totalOpticalDepthMie  = mieExtinctionCoeff.rgb * scatteringDensity.y;
+            float3 totalOpticalDepthRayleigh = rayleighExtinctionCoeff.rgb * scatteringDensity.x;
+
+            scatteringMie *= lightColor;
+            scatteringRayleigh *= lightColor;
+
+            ComputeScatteringIntensity(totalOpticalDepthRayleigh, totalOpticalDepthMie, extinction);
+            ComputePhaseFunctions(scatteringRayleigh, scatteringMie, viewdir, lightDirection, inscattering);
+
+            if (innerIntersections.x <= 0 && depth > 0.999f)
+            {
+                ComputeStars(viewdir, inscattering);
+            }
+        }
+
+        float3 ComputeInscatteredRadiancePS(in float4 Position : TEXCOORD0) : SV_Target
+        {
+            float depth = texDepth.Sample(PointClamp, Position.zw);
+            float3 insctrColor = 0, extinction = 1;
+            ComputeUnshadowedInscattering(Position, depth, insctrColor, extinction);
+            return insctrColor;
+        }
+        ]]>
+    </shader>
+    <technique name="ComputeOpticalDepthAtmTop">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="ComputeOpticalDepthAtmTop"/>
+            <state name="cullmode" value="none" />
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="ComputeInscatteredRadiance">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="ScreenQuadVS"/>
+            <state name="fragment" value="ComputeInscatteredRadiancePS"/>
+
+            <state name="cullmode" value="none" />
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
+        </pass>
+    </technique>
+</effect>

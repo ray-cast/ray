@@ -224,7 +224,11 @@ FxmlCompile::load(ray::iarchive& reader) except
 			cbuffer buffer;
 
 			buffer.name = reader.getValue<std::string>("name");
-			_hlslCodes += "cbuffer " + buffer.name + " {";
+
+			if (!reader.setToFirstChild())
+				continue;
+
+			_hlslCodes += "cbuffer " + buffer.name + " {\n";
 
 			do
 			{
@@ -250,7 +254,7 @@ FxmlCompile::load(ray::iarchive& reader) except
 
 			} while (reader.setToNextChild());
 
-			_hlslCodes += "}";
+			_hlslCodes += "}\n";
 
 			_buffers.push_back(buffer);
 		}
@@ -412,6 +416,8 @@ FxmlCompile::save(ray::oarchive& reader) except
 				reader.addAttribute("value", parameter.value);
 			reader.setToParent();
 		}
+
+		reader.setToParent();
 	}
 
 	for (auto& inputLayout : _inputLayouts)

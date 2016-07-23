@@ -269,9 +269,6 @@ DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, GraphicsF
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
-		if (light->getLightType() == LightType::LightTypeAmbient)
-			continue;
-
 		switch (light->getLightType())
 		{
 		case LightType::LightTypeSun:
@@ -1124,7 +1121,7 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 bool
 DeferredLightingPipeline::setupMRSIIMaterials(RenderPipeline& pipeline) noexcept
 {
-	_mrsii = pipeline.createMaterial("sys:fx/MRSII.fxml"); if (!_mrsii) return false;
+	_mrsii = pipeline.createMaterial("sys:fx/mrsii.fxml"); if (!_mrsii) return false;
 	_mrsiiRsm2VPLsSpot = _mrsii->getTech("RSM2VPLsSpot"); if (!_mrsiiRsm2VPLsSpot) return false;
 	_mrsiiRsm2VPLsDirectional = _mrsii->getTech("RSM2VPLsDirectional"); if (!_mrsiiRsm2VPLsDirectional) return false;
 	_mrsiiGatherIndirect = _mrsii->getTech("GatherIndirect"); if (!_mrsiiGatherIndirect) return false;

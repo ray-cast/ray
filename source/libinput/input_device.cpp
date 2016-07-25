@@ -50,6 +50,17 @@ DefaultInputDevice::~DefaultInputDevice() noexcept
 	this->clearInputListener();
 }
 
+void 
+DefaultInputDevice::setCaptureObject(CaptureObject window) noexcept
+{
+}
+
+CaptureObject 
+DefaultInputDevice::getCaptureObject() const noexcept
+{
+	return nullptr;
+}
+
 void
 DefaultInputDevice::enableEventPosting(bool enable) noexcept
 {
@@ -201,6 +212,12 @@ DefaultInputDevice::flushEvent() noexcept
 	_mutex.lock();
 	_events = std::queue<InputEvent>();
 	_mutex.unlock();
+}
+
+InputDevicePtr 
+DefaultInputDevice::clone() const noexcept
+{
+	return std::make_shared<DefaultInputDevice>();
 }
 
 _NAME_END

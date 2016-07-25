@@ -49,7 +49,9 @@ public:
 	MSWInputKeyboard() noexcept;
 	virtual ~MSWInputKeyboard() noexcept;
 
-	virtual bool getKeyState(InputKey::Code key) const noexcept;
+	virtual bool getKeyDown(InputKey::Code key) const noexcept;
+	virtual bool getKeyUp(InputKey::Code key) const noexcept;
+	virtual bool getKey(InputKey::Code key) const noexcept;
 
 	virtual InputKeyboardPtr clone() const noexcept;
 

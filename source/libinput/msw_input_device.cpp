@@ -48,21 +48,21 @@ InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	{
 		switch (MapVirtualKey(flags & 0xFF, 1))
 		{
-		case VK_INSERT:   return InputKey::Code::INSERT;
-		case VK_END:      return InputKey::Code::END;
-		case VK_DOWN:     return InputKey::Code::DOWN;
-		case VK_NEXT:     return InputKey::Code::PGDN;
-		case VK_LEFT:     return InputKey::Code::LEFT;
-		case VK_CLEAR:    return InputKey::Code::CLEAR;
-		case VK_RIGHT:    return InputKey::Code::RIGHT;
-		case VK_HOME:     return InputKey::Code::HOME;
-		case VK_UP:       return InputKey::Code::UP;
-		case VK_PRIOR:    return InputKey::Code::PGUP;
-		case VK_DIVIDE:   return InputKey::Code::DIVIDE;
-		case VK_MULTIPLY: return InputKey::Code::MULTIPLY;
-		case VK_SUBTRACT: return InputKey::Code::SUB;
-		case VK_ADD:      return InputKey::Code::ADD;
-		case VK_DELETE:   return InputKey::Code::DELETE;
+		case VK_INSERT:   return InputKey::Code::Insert;
+		case VK_END:      return InputKey::Code::End;
+		case VK_DOWN:     return InputKey::Code::Down;
+		case VK_NEXT:     return InputKey::Code::PageDown;
+		case VK_LEFT:     return InputKey::Code::Left;
+		case VK_CLEAR:    return InputKey::Code::None;
+		case VK_RIGHT:    return InputKey::Code::Right;
+		case VK_HOME:     return InputKey::Code::Home;
+		case VK_UP:       return InputKey::Code::Up;
+		case VK_PRIOR:    return InputKey::Code::PageUp;
+		case VK_DIVIDE:   return InputKey::Code::KP_Divide;
+		case VK_MULTIPLY: return InputKey::Code::KP_Multiply;
+		case VK_SUBTRACT: return InputKey::Code::KP_Subtract;
+		case VK_ADD:      return InputKey::Code::KP_Add;
+		case VK_DELETE:   return InputKey::Code::Delete;
 		}
 	}
 
@@ -75,16 +75,16 @@ InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		scan_code = MapVirtualKey(VK_RSHIFT, 0);
 		if ((DWORD)(lParam & 0x01ff0000 >> 16) == scan_code)
 		{
-			return InputKey::Code::RSHIFT;
+			return InputKey::Code::RightShift;
 		}
 
-		return InputKey::Code::LSHIFT;
+		return InputKey::Code::LeftShift;
 	}
 	case VK_CONTROL:
 	{
 		if (lParam & 0x01000000)
 		{
-			return InputKey::Code::RCTRL;
+			return InputKey::Code::RightControl;
 		}
 
 		DWORD time = (DWORD)::GetMessageTime();
@@ -103,39 +103,39 @@ InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 			}
 		}
 
-		return InputKey::Code::LCTRL;
+		return InputKey::Code::LeftControl;
 	}
 
 	case VK_MENU:
 	{
 		if (lParam & 0x01000000)
-			return InputKey::Code::RALT;
+			return InputKey::Code::RightAlt;
 
-		return InputKey::Code::LALT;
+		return InputKey::Code::LeftAlt;
 	}
 
 	case VK_RETURN:
 	{
 		if (lParam & 0x01000000)
 		{
-			return InputKey::Code::ENTER;
+			return InputKey::Code::Enter;
 		}
 
-		return InputKey::Code::ENTER;
+		return InputKey::Code::Enter;
 	}
-	case VK_ESCAPE:        return InputKey::Code::ESCAPE;
-	case VK_TAB:           return InputKey::Code::TAB;
-	case VK_BACK:          return InputKey::Code::BACKSPACE;
-	case VK_HOME:          return InputKey::Code::HOME;
-	case VK_END:           return InputKey::Code::END;
-	case VK_PRIOR:         return InputKey::Code::PGUP;
-	case VK_NEXT:          return InputKey::Code::PGDN;
-	case VK_INSERT:        return InputKey::Code::INSERT;
-	case VK_DELETE:        return InputKey::Code::DELETE;
-	case VK_LEFT:          return InputKey::Code::LEFT;
-	case VK_UP:            return InputKey::Code::UP;
-	case VK_RIGHT:         return InputKey::Code::RIGHT;
-	case VK_DOWN:          return InputKey::Code::DOWN;
+	case VK_ESCAPE:        return InputKey::Code::Escape;
+	case VK_TAB:           return InputKey::Code::Tab;
+	case VK_BACK:          return InputKey::Code::Backspace;
+	case VK_HOME:          return InputKey::Code::Home;
+	case VK_END:           return InputKey::Code::End;
+	case VK_PRIOR:         return InputKey::Code::PageUp;
+	case VK_NEXT:          return InputKey::Code::PageDown;
+	case VK_INSERT:        return InputKey::Code::Insert;
+	case VK_DELETE:        return InputKey::Code::Delete;
+	case VK_LEFT:          return InputKey::Code::Left;
+	case VK_UP:            return InputKey::Code::Up;
+	case VK_RIGHT:         return InputKey::Code::Right;
+	case VK_DOWN:          return InputKey::Code::Down;
 	case VK_F1:            return InputKey::Code::F1;
 	case VK_F2:            return InputKey::Code::F2;
 	case VK_F3:            return InputKey::Code::F3;
@@ -161,33 +161,33 @@ InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	case VK_F23:           return InputKey::Code::F23;
 	case VK_F24:           return InputKey::Code::F24;
 
-	case VK_SPACE:         return InputKey::Code::SPACE;
+	case VK_SPACE:         return InputKey::Code::Space;
 
-	case VK_NUMPAD0:       return InputKey::Code::NP_0;
-	case VK_NUMPAD1:       return InputKey::Code::NP_1;
-	case VK_NUMPAD2:       return InputKey::Code::NP_2;
-	case VK_NUMPAD3:       return InputKey::Code::NP_3;
-	case VK_NUMPAD4:       return InputKey::Code::NP_4;
-	case VK_NUMPAD5:       return InputKey::Code::NP_5;
-	case VK_NUMPAD6:       return InputKey::Code::NP_6;
-	case VK_NUMPAD7:       return InputKey::Code::NP_7;
-	case VK_NUMPAD8:       return InputKey::Code::NP_8;
-	case VK_NUMPAD9:       return InputKey::Code::NP_9;
+	case VK_NUMPAD0:       return InputKey::Code::KP_0;
+	case VK_NUMPAD1:       return InputKey::Code::KP_1;
+	case VK_NUMPAD2:       return InputKey::Code::KP_2;
+	case VK_NUMPAD3:       return InputKey::Code::KP_3;
+	case VK_NUMPAD4:       return InputKey::Code::KP_4;
+	case VK_NUMPAD5:       return InputKey::Code::KP_5;
+	case VK_NUMPAD6:       return InputKey::Code::KP_6;
+	case VK_NUMPAD7:       return InputKey::Code::KP_7;
+	case VK_NUMPAD8:       return InputKey::Code::KP_8;
+	case VK_NUMPAD9:       return InputKey::Code::KP_9;
 
-	case VK_DIVIDE:        return InputKey::Code::DIVIDE;
-	case VK_MULTIPLY:      return InputKey::Code::MULTIPLY;
-	case VK_SUBTRACT:      return InputKey::Code::SUBTRACT;
-	case VK_ADD:           return InputKey::Code::ADD;
-	case VK_DECIMAL:       return InputKey::Code::DECIMAL;
-	case VK_NUMLOCK:       return InputKey::Code::NUMLOCK;
+	case VK_DIVIDE:        return InputKey::Code::KP_Divide;
+	case VK_MULTIPLY:      return InputKey::Code::KP_Multiply;
+	case VK_SUBTRACT:      return InputKey::Code::KP_Subtract;
+	case VK_ADD:           return InputKey::Code::KP_Add;
+	case VK_DECIMAL:       return InputKey::Code::KP_Decimal;
+	case VK_NUMLOCK:       return InputKey::Code::NumLock;
 
-	case VK_CAPITAL:       return InputKey::Code::CAPSLOCK;
-	case VK_SCROLL:        return InputKey::Code::SCROLLLOCK;
-	case VK_PAUSE:         return InputKey::Code::PAUSE;
+	case VK_CAPITAL:       return InputKey::Code::CapsLock;
+	case VK_SCROLL:        return InputKey::Code::ScrollLock;
+	case VK_PAUSE:         return InputKey::Code::Pause;
 
-	case VK_LWIN:          return InputKey::Code::LWIN;
-	case VK_RWIN:          return InputKey::Code::RWIN;
-	case VK_APPS:          return InputKey::Code::APPS;
+	case VK_LWIN:          return InputKey::Code::Menu;
+	case VK_RWIN:          return InputKey::Code::Menu;
+	case VK_APPS:          return InputKey::Code::None;
 	}
 
 	if (wParam >= 'a' && wParam <= 'z')

@@ -70,6 +70,12 @@ DefaultInputKeyboard::getKey(InputKey::Code key) const noexcept
 	return _keyState[key].pressed;
 }
 
+InputKeyboardPtr
+DefaultInputKeyboard::clone() const noexcept
+{
+	return std::make_shared<DefaultInputKeyboard>();
+}
+
 void
 DefaultInputKeyboard::onFrameEnd() noexcept
 {
@@ -80,14 +86,6 @@ DefaultInputKeyboard::onFrameEnd() noexcept
 		if (key.up)
 		{
 			key.pressed = false;
-		}
-
-		if (key.pressed)
-		{
-			if (!this->getKeyState(InputKey::Code(i)))
-			{
-				key.pressed = false;
-			}
 		}
 
 		key.up = false;

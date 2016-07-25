@@ -52,6 +52,8 @@ public:
 	virtual bool getKeyUp(InputKey::Code key) const noexcept;
 	virtual bool getKey(InputKey::Code key) const noexcept;
 
+	virtual InputKeyboardPtr clone() const noexcept;
+
 private:
 	virtual void onFrameEnd() noexcept;
 	virtual void onObtainCapture() noexcept;

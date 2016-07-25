@@ -107,65 +107,65 @@ GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 	{
 	case InputKey::None:
 		return GuiInputKey::Code::None;
-	case InputKey::BACKSPACE:
+	case InputKey::Backspace:
 		return GuiInputKey::Code::Backspace;
-	case InputKey::TAB:
+	case InputKey::Tab:
 		return GuiInputKey::Code::Tab;
-	case InputKey::ENTER:
+	case InputKey::Enter:
 		return GuiInputKey::Code::Return;
-	case InputKey::PAUSE:
+	case InputKey::Pause:
 		return GuiInputKey::Code::Pause;
-	case InputKey::ESCAPE:
+	case InputKey::Escape:
 		return GuiInputKey::Code::Escape;
-	case InputKey::SPACE:
+	case InputKey::Space:
 		return GuiInputKey::Code::Space;
-	case InputKey::PGDN:
+	case InputKey::PageDown:
 		return GuiInputKey::Code::NextTrack;
-	case InputKey::END:
+	case InputKey::End:
 		return GuiInputKey::Code::End;
-	case InputKey::HOME:
+	case InputKey::Home:
 		return GuiInputKey::Code::Home;
-	case InputKey::LEFT:
+	case InputKey::Left:
 		return GuiInputKey::Code::ArrowLeft;
-	case InputKey::RIGHT:
+	case InputKey::Right:
 		return GuiInputKey::Code::ArrowRight;
-	case InputKey::UP:
+	case InputKey::Up:
 		return GuiInputKey::Code::ArrowUp;
-	case InputKey::DOWN:
+	case InputKey::Down:
 		return GuiInputKey::Code::ArrowDown;
-	case InputKey::INSERT:
+	case InputKey::Insert:
 		return GuiInputKey::Code::Insert;
-	case InputKey::DELETE:
+	case InputKey::Delete:
 		return GuiInputKey::Code::Delete;
-	case InputKey::NP_0:
+	case InputKey::KP_0:
 		return GuiInputKey::Code::Numpad0;
-	case InputKey::NP_1:
+	case InputKey::KP_1:
 		return GuiInputKey::Code::Numpad1;
-	case InputKey::NP_2:
+	case InputKey::KP_2:
 		return GuiInputKey::Code::Numpad2;
-	case InputKey::NP_3:
+	case InputKey::KP_3:
 		return GuiInputKey::Code::Numpad3;
-	case InputKey::NP_4:
+	case InputKey::KP_4:
 		return GuiInputKey::Code::Numpad4;
-	case InputKey::NP_5:
+	case InputKey::KP_5:
 		return GuiInputKey::Code::Numpad5;
-	case InputKey::NP_6:
+	case InputKey::KP_6:
 		return GuiInputKey::Code::Numpad6;
-	case InputKey::NP_7:
+	case InputKey::KP_7:
 		return GuiInputKey::Code::Numpad7;
-	case InputKey::NP_8:
+	case InputKey::KP_8:
 		return GuiInputKey::Code::Numpad8;
-	case InputKey::NP_9:
+	case InputKey::KP_9:
 		return GuiInputKey::Code::Numpad9;
-	case InputKey::MULTIPLY:
+	case InputKey::KP_Multiply:
 		return GuiInputKey::Code::Multiply;
-	case InputKey::ADD:
+	case InputKey::KP_Add:
 		return GuiInputKey::Code::Add;
-	case InputKey::SUBTRACT:
+	case InputKey::KP_Subtract:
 		return GuiInputKey::Code::Subtract;
-	case InputKey::DECIMAL:
+	case InputKey::KP_Decimal:
 		return GuiInputKey::Code::Decimal;
-	case InputKey::DIVIDE:
+	case InputKey::KP_Divide:
 		return GuiInputKey::Code::Divide;
 	case InputKey::F1:
 		return GuiInputKey::Code::F1;
@@ -197,45 +197,43 @@ GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 		return GuiInputKey::Code::F14;
 	case InputKey::F15:
 		return GuiInputKey::Code::F15;
-	case InputKey::NUMLOCK:
+	case InputKey::NumLock:
 		return GuiInputKey::Code::NumLock;
-	case InputKey::SCROLLLOCK:
+	case InputKey::ScrollLock:
 		return GuiInputKey::Code::ScrollLock;
-	case InputKey::SEMICOLON:
+	case InputKey::Semicolon:
 		return GuiInputKey::Code::Semicolon;
-	case InputKey::SLASH:
+	case InputKey::Slash:
 		return GuiInputKey::Code::Slash;
-	case InputKey::GRAVE:
-		return GuiInputKey::Code::Grave;
-	case InputKey::LBRACKET:
+	case InputKey::GraveAccent:
+		return GuiInputKey::Code::GraveAccent;
+	case InputKey::LeftBracket:
 		return GuiInputKey::Code::LeftBracket;
-	case InputKey::RBRACKET:
+	case InputKey::RightBracket:
 		return GuiInputKey::Code::RightBracket;
-	case InputKey::BACKSLASH:
+	case InputKey::Backslash:
 		return GuiInputKey::Code::Backslash;
-	case InputKey::COMMA:
+	case InputKey::Comma:
 		return GuiInputKey::Code::Comma;
-	case InputKey::UNDERLINE:
+	case InputKey::Minus:
 		return GuiInputKey::Code::Minus;
-	case InputKey::PERIOD:
+	case InputKey::Period:
 		return GuiInputKey::Code::Period;
-	case InputKey::EQUALS:
+	case InputKey::Equal:
 		return GuiInputKey::Code::Equals;
-	case InputKey::LSHIFT:
+	case InputKey::LeftShift:
 		return GuiInputKey::Code::LeftShift;
-	case InputKey::RSHIFT:
+	case InputKey::RightShift:
 		return GuiInputKey::Code::RightShift;
-	case InputKey::LCTRL:
+	case InputKey::LeftControl:
 		return GuiInputKey::Code::LeftControl;
-	case InputKey::RCTRL:
+	case InputKey::RightControl:
 		return GuiInputKey::Code::RightControl;
-	case InputKey::LWIN:
+	case InputKey::Menu:
 		return GuiInputKey::Code::LeftWindows;
-	case InputKey::RWIN:
-		return GuiInputKey::Code::RightWindow;
-	case InputKey::VOLUMEDOWN:
+	case InputKey::VolumeDown:
 		return GuiInputKey::Code::VolumeDown;
-	case InputKey::VOLUMEUP:
+	case InputKey::VolumeUp:
 		return GuiInputKey::Code::VolumeUp;
 	case InputKey::Key0:
 		return GuiInputKey::Code::Zero;

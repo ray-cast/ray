@@ -150,17 +150,21 @@ public:
 	};
 
 	Type event;
-	KeyboardEvent key;
-	MouseMotionEvent motion;
-	MouseButtonEvent button;
-	MouseWheelEvent wheel;
-	JoyAxisEvent jaxis;
-	JoyBallEvent jball;
-	JoyHatEvent  jhat;
-	JoyButtonEvent jbutton;
-	JoyDeviceEvent jdevice;
-	SizeChangeEvent change;
-	WindowEvent window;
+
+	union
+	{
+		KeyboardEvent key;
+		MouseMotionEvent motion;
+		MouseButtonEvent button;
+		MouseWheelEvent wheel;
+		JoyAxisEvent jaxis;
+		JoyBallEvent jball;
+		JoyHatEvent  jhat;
+		JoyButtonEvent jbutton;
+		JoyDeviceEvent jdevice;
+		SizeChangeEvent change;
+		WindowEvent window;
+	};
 };
 
 _NAME_END

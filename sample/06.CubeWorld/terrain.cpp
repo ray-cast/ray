@@ -436,7 +436,7 @@ TerrainComponent::hitChunks() noexcept
 
 	if (input->getButtonDown(ray::InputButton::LEFT))
 	{
-		if (input->getKey(ray::InputKey::LCTRL) || input->isLockedCursor())
+		if (input->getKey(ray::InputKey::LeftControl) || input->isLockedCursor())
 		{
 			this->removeBlockByMousePos(mouseX, mouseY);
 		}

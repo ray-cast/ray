@@ -134,7 +134,7 @@ MyGUI::KeyCode GuiKeyToMyGUI(GuiInputKey::Code key)
 	case GuiInputKey::Code::L: return MyGUI::KeyCode::L;
 	case GuiInputKey::Code::Semicolon: return MyGUI::KeyCode::Semicolon;
 	case GuiInputKey::Code::Apostrophe: return MyGUI::KeyCode::Apostrophe;
-	case GuiInputKey::Code::Grave: return MyGUI::KeyCode::Grave;
+	case GuiInputKey::Code::GraveAccent: return MyGUI::KeyCode::Grave;
 	case GuiInputKey::Code::LeftShift: return MyGUI::KeyCode::LeftShift;
 	case GuiInputKey::Code::Backslash: return MyGUI::KeyCode::Backslash;
 	case GuiInputKey::Code::Z: return MyGUI::KeyCode::Z;

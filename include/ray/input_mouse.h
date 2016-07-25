@@ -67,20 +67,21 @@ public:
 
 	bool getButton(InputButton::Code key) const noexcept;
 
+	InputMousePtr clone() const noexcept;
+
 protected:
-	void onFrameBegin() noexcept;
-	void onFrameEnd() noexcept;
+	virtual void onFrameBegin() noexcept;
+	virtual void onFrameEnd() noexcept;
 
-	void onObtainCapture() noexcept;
-	void onReleaseCapture() noexcept;
+	virtual void onObtainCapture() noexcept;
+	virtual void onReleaseCapture() noexcept;
 
-	void onInputEvent(const InputEvent& event) noexcept;
+	virtual void onInputEvent(const InputEvent& event) noexcept;
 
-private:
-	virtual void onShowMouse() noexcept = 0;
-	virtual void onHideMouse() noexcept = 0;
+	virtual void onShowMouse() noexcept;
+	virtual void onHideMouse() noexcept;
 
-	virtual void onChangePosition(int x, int y) noexcept = 0;
+	virtual void onChangePosition(int x, int y) noexcept;
 
 private:
 	DefaultInputMouse(const DefaultInputMouse&) noexcept = delete;

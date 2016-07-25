@@ -40,6 +40,10 @@
 #	include "msw_input_device.h"
 #	include "msw_input_keyboard.h"
 #	include "msw_input_mouse.h"
+#else
+#	include <ray/input_device.h>
+#	include <ray/input_keyboard.h>
+#	include <ray/input_mouse.h>
 #endif
 
 _NAME_BEGIN
@@ -58,10 +62,13 @@ DefaultInput::~DefaultInput() noexcept
 bool 
 DefaultInput::open() noexcept
 {
+	_inputDevice = std::make_shared<DefaultInputDevice>();
 #if defined(_BUILD_PLATFORM_WINDOWS)
-	_inputDevice = std::make_shared<MSWInputDevice>();
 	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
 	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
+#else
+	this->obtainMouseCapture(std::make_shared<DefaultInputMouse>());
+	this->obtainKeyboardCapture(std::make_shared<DefaultInputKeyboard>());
 #endif
 	return true;
 }
@@ -69,10 +76,13 @@ DefaultInput::open() noexcept
 bool
 DefaultInput::open(InputDevicePtr& device) noexcept
 {
+	_inputDevice = device ? device : std::make_shared<DefaultInputDevice>();
 #if defined(_BUILD_PLATFORM_WINDOWS)
-	_inputDevice = device ? device : std::make_shared<MSWInputDevice>();
 	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
 	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
+#else
+	this->obtainMouseCapture(std::make_shared<DefaultInputMouse>());
+	this->obtainKeyboardCapture(std::make_shared<DefaultInputKeyboard>());
 #endif
 	return true;
 }
@@ -80,10 +90,13 @@ DefaultInput::open(InputDevicePtr& device) noexcept
 bool
 DefaultInput::open(InputDevicePtr&& device) noexcept
 {
+	_inputDevice = device ? std::move(device) : std::make_shared<DefaultInputDevice>();
 #if defined(_BUILD_PLATFORM_WINDOWS)
-	_inputDevice = device ? std::move(device) : std::make_shared<MSWInputDevice>();
 	this->obtainMouseCapture(std::make_shared<MSWInputMouse>());
 	this->obtainKeyboardCapture(std::make_shared<MSWInputKeyboard>());
+#else
+	this->obtainMouseCapture(std::make_shared<DefaultInputMouse>());
+	this->obtainKeyboardCapture(std::make_shared<DefaultInputKeyboard>());
 #endif
 	return true;
 }

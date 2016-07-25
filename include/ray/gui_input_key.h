@@ -87,7 +87,7 @@ public:
 		L = 0x26,
 		Semicolon = 0x27,
 		Apostrophe = 0x28,
-		Grave = 0x29,    /* Accent grave ( ~ ) */
+		GraveAccent = 0x29,    /* Accent grave ( ~ ) */
 		LeftShift = 0x2A,
 		Backslash = 0x2B,
 		Z = 0x2C,

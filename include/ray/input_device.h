@@ -52,6 +52,9 @@ public:
 	DefaultInputDevice() noexcept;
 	virtual ~DefaultInputDevice() noexcept;
 
+	virtual void setCaptureObject(CaptureObject window) noexcept;
+	virtual CaptureObject getCaptureObject() const noexcept;
+
 	virtual void enableEventPosting(bool enable) noexcept;
 	virtual bool enableEventPosting() const noexcept;
 
@@ -69,6 +72,8 @@ public:
 	virtual bool waitEvents(InputEvent& event) noexcept;
 	virtual bool waitEvents(InputEvent& event, int timeout) noexcept;
 	virtual void flushEvent() noexcept;
+
+	virtual InputDevicePtr clone() const noexcept;
 
 private:
 	DefaultInputDevice(const DefaultInputDevice&) noexcept = delete;

@@ -89,7 +89,7 @@ FirstPersonCameraComponent::onFrame() noexcept
 		if (!input)
 			return;
 
-		if (input->getKey(ray::InputKey::Code::LSHIFT))
+		if (input->getKey(ray::InputKey::Code::LeftShift))
 			step *= 3;
 
 		auto character = this->getGameObject()->getComponent<ray::PhysicsCharacterComponent>();
@@ -136,23 +136,29 @@ FirstPersonCameraComponent::onFrame() noexcept
 
 			character->setWalkDirection(walkDirection * step);
 
-			if (input->getKey(ray::InputKey::SPACE))
+			if (input->getKey(ray::InputKey::Space))
 			{
 				if (character->canJumping())
 					character->jump(_jumpHeight);
 			}
 		}
 
-		if (input->getKeyDown(ray::InputKey::ESCAPE))
+		if (input->getKey(ray::InputKey::Escape))
 		{
-			if (input->isLockedCursor())
-				input->lockCursor(false);
-			else
-				input->lockCursor(true);
+			input->lockCursor(false);
 		}
-		else if (input->isLockedCursor())
+
+		if (input->isLockedCursor())
 		{
 			rotateCamera(input->getAxisX(), input->getAxisY());
+		}
+		else
+		{
+			if (input->getButtonDown(ray::InputButton::Code::LEFT))
+			{
+				if (!input->getKey(ray::InputKey::Code::LeftControl))
+					input->lockCursor(true);
+			}
 		}
 	}
 }

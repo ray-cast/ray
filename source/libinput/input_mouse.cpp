@@ -155,19 +155,25 @@ DefaultInputMouse::getButton(InputButton::Code key) const noexcept
 	return _buttonState[key].pressed;
 }
 
+InputMousePtr 
+DefaultInputMouse::clone() const noexcept
+{
+	return std::make_shared<DefaultInputMouse>();
+}
+
+void
+DefaultInputMouse::onShowMouse() noexcept
+{	
+}
+
+void
+DefaultInputMouse::onHideMouse() noexcept
+{	
+}
+
 void
 DefaultInputMouse::onFrameBegin() noexcept
 {
-	for (auto& button : _buttonState)
-	{
-		if (button.up)
-		{
-			button.pressed = false;
-		}
-
-		button.up = false;
-		button.down = false;
-	}
 }
 
 void
@@ -175,6 +181,15 @@ DefaultInputMouse::onFrameEnd() noexcept
 {
 	if (this->isLockedMouse())
 		this->setPosition(_centerX, _centerY);
+
+	for (auto& button : _buttonState)
+	{
+		if (button.up)
+			button.pressed = false;
+
+		button.up = false;
+		button.down = false;
+	}
 }
 
 void
@@ -195,6 +210,11 @@ DefaultInputMouse::onReleaseCapture() noexcept
 		this->showMouse();
 		_isMouseLocked = false;
 	}
+}
+
+void 
+DefaultInputMouse::onChangePosition(int x, int y) noexcept
+{	
 }
 
 void

@@ -63,7 +63,7 @@ MSWInputKeyboard::getKeyUp(InputKey::Code key) const noexcept
 bool
 MSWInputKeyboard::getKey(InputKey::Code key) const noexcept
 {
-	return DefaultInputKeyboard::getKeyUp(key);
+	return DefaultInputKeyboard::getKey(key);
 }
 
 InputKeyboardPtr

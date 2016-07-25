@@ -106,10 +106,10 @@ RenderPipelineDevice::getDeviceType() const noexcept
 }
 
 RenderPipelinePtr
-RenderPipelineDevice::createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept
+RenderPipelineDevice::createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h, GraphicsSwapInterval interval) noexcept
 {
 	auto pipelineContext = std::make_shared<RenderPipeline>();
-	if (pipelineContext->setup(this->downcast_pointer<RenderPipelineDevice>(), window, w, h, interval))
+	if (pipelineContext->setup(this->downcast_pointer<RenderPipelineDevice>(), window, w, h, dpi_w, dpi_h, interval))
 		return pipelineContext;
 	return nullptr;
 }

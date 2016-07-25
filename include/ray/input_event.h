@@ -140,6 +140,7 @@ public:
 		TouchMotionCancel,
 
 		SizeChange,
+		SizeChangeDPI,
 
 		GetFocus,
 		LostFocus,

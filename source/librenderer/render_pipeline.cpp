@@ -65,6 +65,8 @@ static float4x4 adjustProject = (float4x4().makeScale(1.0, 1.0, 2.0).setTranslat
 RenderPipeline::RenderPipeline() noexcept
 	: _width(0)
 	, _height(0)
+	, _dpi_w(0)
+	, _dpi_h(0)
 {
 }
 
@@ -74,12 +76,14 @@ RenderPipeline::~RenderPipeline() noexcept
 }
 
 bool
-RenderPipeline::setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept
+RenderPipeline::setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h, GraphicsSwapInterval interval) noexcept
 {
 	assert(pipelineDevice);
 
 	_width = w;
 	_height = h;
+	_dpi_w = dpi_w;
+	_dpi_h = dpi_h;
 
 	_pipelineDevice = pipelineDevice;
 
@@ -154,19 +158,13 @@ RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) n
 {
 	if (_width != width || _height != height)
 	{
-		for (auto& it : _postprocessors)
-		{
-			if (it->getActive())
-				it->onResolutionChangeBefore(*this);
-		}
-
 		_width = width;
 		_height = height;
 
 		for (auto& it : _postprocessors)
 		{
 			if (it->getActive())
-				it->onResolutionChangeAfter(*this);
+				it->onResolutionChange(*this);
 		}
 	}
 }
@@ -176,6 +174,29 @@ RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const no
 {
 	w = _width;
 	h = _height;
+}
+
+void 
+RenderPipeline::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept
+{
+	if (_dpi_w != w || _dpi_h != h)
+	{
+		_dpi_w = w;
+		_dpi_h = h;
+
+		for (auto& it : _postprocessors)
+		{
+			if (it->getActive())
+				it->onResolutionChangeDPI(*this);
+		}
+	}
+}
+
+void 
+RenderPipeline::getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	w = _dpi_w;
+	h = _dpi_h;
 }
 
 GraphicsDeviceType 

@@ -62,6 +62,9 @@ public:
 	void setViewport(std::uint32_t w, std::uint32_t h) noexcept;
 	void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept;
 
+	void setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept;
+	void getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept;
+
 	virtual const MyGUI::IntSize& getViewSize() const noexcept;
 	virtual MyGUI::VertexColourType getVertexFormat() noexcept;
 	virtual bool isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage) noexcept;
@@ -88,6 +91,7 @@ private:
 	bool _isInitialise;
 
 	MyGUI::IntSize _viewport;
+	MyGUI::IntSize _displayScale;
 	MyGUI::VertexColourType _vertexFormat;
 	MyGUI::RenderTargetInfo _info;
 

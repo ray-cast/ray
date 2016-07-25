@@ -288,6 +288,20 @@ MyGuiRenderer::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 	h = _viewport.height;
 }
 
+void 
+MyGuiRenderer::setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept
+{
+	_displayScale.width = w;
+	_displayScale.height = h;
+}
+
+void 
+MyGuiRenderer::getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept
+{
+	w = _displayScale.width;
+	h = _displayScale.height;
+}
+
 _NAME_END
 
 #endif

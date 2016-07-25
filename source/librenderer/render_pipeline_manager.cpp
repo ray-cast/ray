@@ -77,6 +77,7 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 {
 	assert(setting.window);
 	assert(setting.width > 0 && setting.height > 0);
+	assert(setting.dpi_w > 0 && setting.dpi_h > 0);
 
 	if (setting.deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2)
 	{
@@ -88,7 +89,7 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 	if (!_pipelineDevice->open(setting.deviceType))
 		return false;
 
-	_pipeline = _pipelineDevice->createRenderPipeline(setting.window, setting.width, setting.height, setting.swapInterval);
+	_pipeline = _pipelineDevice->createRenderPipeline(setting.window, setting.width, setting.height, setting.dpi_w, setting.dpi_h, setting.swapInterval);
 	if (!_pipeline)
 		return false;
 
@@ -142,20 +143,29 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 	_setting.minElevation = setting.minElevation;
 	_setting.maxElevation = setting.maxElevation;
 	_setting.rayleighAngularSctrCoeff = setting.rayleighAngularSctrCoeff;
-	_setting.rayleighTotalSctrCoeff = setting.rayleighTotalSctrCoeff;
 	_setting.rayleighExtinctionCoeff = setting.rayleighExtinctionCoeff;
 	_setting.mieAngularSctrCoeff = setting.mieAngularSctrCoeff;
 	_setting.mieExtinctionCoeff = setting.mieExtinctionCoeff;
 	_setting.mie = setting.mie;
 	_setting.density = setting.density;
-	_setting.absorbtionScale = setting.absorbtionScale;
 	_setting.enableGlobalIllumination = setting.enableGlobalIllumination;
 
 	if (_setting.enableAtmospheric != setting.enableAtmospheric)
 	{
 		if (setting.enableAtmospheric)
 		{
-			_atmospheric = std::make_shared<Atmospheric>();
+			Atmospheric::Setting createParams;
+			createParams.earthRadius = setting.earthRadius;
+			createParams.earthScaleHeight = setting.earthScaleHeight;
+			createParams.minElevation = setting.minElevation;
+			createParams.maxElevation = setting.maxElevation;
+			createParams.rayleighAngularSctrCoeff = setting.rayleighAngularSctrCoeff;
+			createParams.rayleighExtinctionCoeff = setting.rayleighExtinctionCoeff;
+			createParams.mieAngularSctrCoeff = setting.mieAngularSctrCoeff;
+			createParams.mieExtinctionCoeff = setting.mieExtinctionCoeff;
+			createParams.mie = setting.mie;
+
+			_atmospheric = std::make_shared<Atmospheric>(createParams);
 			this->addPostProcess(_atmospheric);
 		}
 		else if (_atmospheric)
@@ -351,6 +361,33 @@ RenderPipelineManager::getWindowResolution(std::uint32_t& w, std::uint32_t& h) c
 {
 	w = _setting.width;
 	h = _setting.height;
+}
+
+void 
+RenderPipelineManager::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept
+{
+	if (_setting.dpi_w != w || _setting.dpi_h != h)
+	{
+		_pipeline->setWindowResolutionDPI(w, h);
+
+		_setting.dpi_w = w;
+		_setting.dpi_h = h;
+
+		_forward->onResolutionChangeDPI();
+
+		if (_forwardPlus)
+			_forwardPlus->onResolutionChangeDPI();
+
+		if (_deferredLighting)
+			_deferredLighting->onResolutionChangeDPI();
+	}
+}
+
+void 
+RenderPipelineManager::getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	w = _setting.dpi_w;
+	h = _setting.dpi_h;
 }
 
 void

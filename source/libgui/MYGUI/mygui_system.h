@@ -72,6 +72,9 @@ public:
 	void setViewport(std::uint32_t w, std::uint32_t h) noexcept;
 	void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept;
 
+	void setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept;
+	void getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept;
+
 	GuiWidgetPtr createWidget(const rtti::Rtti* rtti) except;
 
 	void render(float delta) noexcept;

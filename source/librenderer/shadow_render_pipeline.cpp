@@ -353,16 +353,6 @@ ShadowRenderPipeline::destroyShadowMaps() noexcept
 }
 
 void
-ShadowRenderPipeline::onResolutionChangeBefore() noexcept
-{
-}
-
-void
-ShadowRenderPipeline::onResolutionChangeAfter() noexcept
-{
-}
-
-void
 ShadowRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 {
 	assert(camera);

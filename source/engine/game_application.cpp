@@ -85,7 +85,7 @@ GameApplication::~GameApplication() noexcept
 }
 
 bool
-GameApplication::open(WindHandle hwnd, std::uint32_t width, std::uint32_t height) noexcept
+GameApplication::open(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h) noexcept
 {
 	if (_isInitialize)
 		return false;
@@ -117,10 +117,10 @@ GameApplication::open(WindHandle hwnd, std::uint32_t width, std::uint32_t height
 	_soundFeature = std::make_shared<SoundFeature>();
 #endif
 #if defined(_BUILD_RENDERER)
-	_renderFeature = std::make_shared<RenderFeature>(hwnd, width, height);
+	_renderFeature = std::make_shared<RenderFeature>(hwnd, w, h, dpi_w, dpi_h);
 #endif
 #if defined(_BUILD_GUI)
-	_guiFeature = std::make_shared<GuiFeature>(width, height);
+	_guiFeature = std::make_shared<GuiFeature>(w, h, dpi_w, dpi_h);
 #endif
 
 #if defined(_BUILD_INPUT)

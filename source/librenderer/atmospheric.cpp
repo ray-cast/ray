@@ -48,19 +48,25 @@
 _NAME_BEGIN
 
 Atmospheric::Setting::Setting() noexcept
-	: minElevation(0.0f)
+	: earthRadius(6360000.f, 6440000.f)
+	, earthScaleHeight(7994.f, 2000.f)
+	, minElevation(0.0f)
 	, maxElevation(80000.0f)
 	, rayleighAngularSctrCoeff(0)
-	, rayleighTotalSctrCoeff(0)
 	, rayleighExtinctionCoeff(0)
 	, mieAngularSctrCoeff(0)
 	, mieExtinctionCoeff(0)
-	, mie4(0)
+	, mie(0.97f)
 {
 }
 
 Atmospheric::Atmospheric() noexcept
 	: _needUpdateOpticalDepthAtmTop(true)
+{
+}
+
+Atmospheric::Atmospheric(Setting& setting) noexcept
+	: _setting(setting)
 {
 }
 
@@ -90,8 +96,8 @@ Atmospheric::computeRaySphereIntersection(const float3& position, const float3& 
 void
 Atmospheric::computeViewProjectInverse(const Camera& camera, float4x4& viewProjectInverse) noexcept
 {
-	float3 center = float3(0, -_setting.earthRadius, 0);
-	float3 radius = float3(_setting.earthRadius, _setting.earthRadius + _setting.minElevation, _setting.earthRadius + _setting.maxElevation);
+	float3 center = float3(0, -_setting.earthRadius.x, 0);
+	float3 radius = float3(_setting.earthRadius.x, _setting.earthRadius.x + _setting.minElevation, _setting.earthRadius.x + _setting.maxElevation);
 	float3 eyePosition = camera.getTranslate();
 	float3 cameraGlobalPos = eyePosition - center;
 	float cameraElevationSqr = math::dot(cameraGlobalPos, cameraGlobalPos);
@@ -149,26 +155,39 @@ Atmospheric::computeViewProjectInverse(const Camera& camera, float4x4& viewProje
 	viewProjectInverse = math::inverse(project * camera.getView());
 }
 
-void
-Atmospheric::computeScatteringCoefficients(const RenderSetting& setting) noexcept
+void 
+Atmospheric::setScatteringCoefficients(const Setting& setting) noexcept
 {
-	float g = setting.mie;
-	float g2 = g * g;
+	if (_sat)
+	{
+		float g = setting.mie;
+		float g2 = g * g;
 
-	_setting.mie4.x = 3 * (1.0f - g2) / (2 * (2.0f + g2));
-	_setting.mie4.y = 1.f + g2;
-	_setting.mie4.z = -2.f * g;
-	_setting.mie4.w = 1.f;
-	_setting.earthRadius = setting.earthRadius.x;
-	_setting.earthAtmTopHeight = setting.earthRadius.y - setting.earthRadius.x;
-	_setting.earthScaleHeight = setting.earthScaleHeight;
+		float4 mie4;
+		mie4.x = 3 * (1.0f - g2) / (2 * (2.0f + g2));
+		mie4.y = 1.f + g2;
+		mie4.z = -2.f * g;
+		mie4.w = 1.f;
 
-	_setting.rayleighTotalSctrCoeff = setting.rayleighTotalSctrCoeff;
-	_setting.rayleighAngularSctrCoeff = setting.rayleighAngularSctrCoeff;
-	_setting.rayleighExtinctionCoeff = setting.rayleighExtinctionCoeff;
-	_setting.mieTotalSctrCoeff = setting.mieTotalSctrCoeff;
-	_setting.mieAngularSctrCoeff = setting.mieAngularSctrCoeff;
-	_setting.mieExtinctionCoeff = setting.mieExtinctionCoeff;
+		_particleScaleHeight->uniform2f(setting.earthScaleHeight);
+		_mieAngularSctrCoeff->uniform4f(setting.mieAngularSctrCoeff);
+		_mieExtinctionCoeff->uniform4f(setting.mieExtinctionCoeff);
+		_rayleighAngularSctrCoeff->uniform4f(setting.rayleighAngularSctrCoeff);
+		_rayleighExtinctionCoeff->uniform4f(setting.rayleighExtinctionCoeff);
+		_earthAtmTopHeight->uniform1f(setting.earthRadius.y - setting.earthRadius.x);
+		_earthAtmTopRadius->uniform1f(setting.earthRadius.y);
+		_earthRadius->uniform1f(setting.earthRadius.x);
+		_aerosolPhaseFuncG4->uniform4f(mie4);
+		_tex2DOccludedNetDensityToAtmTop->uniformTexture(_occludedNetDensityMap);
+	}
+
+	_setting = setting;
+}
+
+const Atmospheric::Setting&
+Atmospheric::getScatteringCoefficients() const noexcept
+{
+	return _setting;
 }
 
 void
@@ -182,7 +201,6 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 	_lightColor = _sat->getParameter("lightColor");
 	_lightDirection = _sat->getParameter("lightDirection");
 	_rayleighAngularSctrCoeff = _sat->getParameter("rayleighAngularSctrCoeff");
-	_rayleighTotalSctrCoeff = _sat->getParameter("rayleighTotalSctrCoeff");
 	_rayleighExtinctionCoeff = _sat->getParameter("rayleighExtinctionCoeff");
 	_mieAngularSctrCoeff = _sat->getParameter("mieAngularSctrCoeff");
 	_mieExtinctionCoeff = _sat->getParameter("mieExtinctionCoeff");
@@ -214,18 +232,7 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 	netDensityToAtmTopDesc.setGraphicsFramebufferLayout(_netDensityToAtmTopLayout);
 	_netDensityToAtmTopView = pipeline.createFramebuffer(netDensityToAtmTopDesc);
 
-	this->computeScatteringCoefficients(this->getPipelineManager()->getRenderSetting());
-
-	_particleScaleHeight->uniform2f(_setting.earthScaleHeight);
-	_mieAngularSctrCoeff->uniform4f(_setting.mieAngularSctrCoeff);
-	_mieExtinctionCoeff->uniform4f(_setting.mieExtinctionCoeff);	
-	_rayleighAngularSctrCoeff->uniform4f(_setting.rayleighAngularSctrCoeff);
-	_rayleighExtinctionCoeff->uniform4f(_setting.rayleighExtinctionCoeff);
-	_earthAtmTopHeight->uniform1f(_setting.earthAtmTopHeight);
-	_earthAtmTopRadius->uniform1f(_setting.earthAtmTopHeight + _setting.earthRadius);
-	_earthRadius->uniform1f(_setting.earthRadius);
-	_aerosolPhaseFuncG4->uniform4f(_setting.mie4);
-	_tex2DOccludedNetDensityToAtmTop->uniformTexture(_occludedNetDensityMap);
+	this->setScatteringCoefficients(_setting);
 }
 
 void

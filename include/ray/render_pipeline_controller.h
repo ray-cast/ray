@@ -49,6 +49,7 @@ public:
 	virtual ~RenderPipelineController() noexcept;
 
 	virtual void onResolutionChange() noexcept;
+	virtual void onResolutionChangeDPI() noexcept;
 
 	virtual void onRenderPre() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;

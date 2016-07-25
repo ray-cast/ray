@@ -53,7 +53,7 @@ public:
 
 	GraphicsDeviceType getDeviceType() const noexcept;
 
-	RenderPipelinePtr createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept;
+	RenderPipelinePtr createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h, GraphicsSwapInterval interval) noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	void destroyMaterial(MaterialPtr material) noexcept;

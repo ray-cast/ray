@@ -311,6 +311,20 @@ Camera::getPixelViewport() const noexcept
 	return result;
 }
 
+float4
+Camera::getPixelViewportDPI() const noexcept
+{
+	std::uint32_t width, height;
+	RenderSystem::instance()->getWindowResolutionDPI(width, height);
+
+	float4 result;
+	result.x = _viewport.x * width;
+	result.y = _viewport.y * height;
+	result.z = _viewport.z * width;
+	result.w = _viewport.w * height;
+	return result;
+}
+
 void
 Camera::setCameraType(CameraType type) noexcept
 {

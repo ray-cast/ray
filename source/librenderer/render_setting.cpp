@@ -51,18 +51,20 @@ RenderSetting::computeScatteringCoefficients() noexcept
 	double3 lambda4 = lambda2 * lambda2;
 	double3 sctrCoeff = rayleighConst / lambda4;
 
-	this->rayleighTotalSctrCoeff = float4(sctrCoeff, 0.0f);
+	float4 mieTotalSctrCoeff = float4(this->density * 2e-5f);
+
 	this->rayleighAngularSctrCoeff = float4(4.0 / (16.0 * M_PI) * sctrCoeff, 0.0);
-	this->rayleighExtinctionCoeff = this->rayleighTotalSctrCoeff;
-	this->mieTotalSctrCoeff = float4(this->density * 2e-5f);
-	this->mieAngularSctrCoeff = this->mieTotalSctrCoeff / float(4.0f * M_PI);
-	this->mieExtinctionCoeff = this->mieTotalSctrCoeff * (1.f + this->absorbtionScale);
+	this->rayleighExtinctionCoeff = float4(sctrCoeff, 0.0f);
+	this->mieAngularSctrCoeff = mieTotalSctrCoeff / float(4.0f * M_PI);
+	this->mieExtinctionCoeff = mieTotalSctrCoeff * (1.f);
 }
 
 RenderSetting::RenderSetting() noexcept
 	: window(nullptr)
 	, width(0)
 	, height(0)
+	, dpi_w(0)
+	, dpi_h(0)
 	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
 	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
@@ -86,13 +88,11 @@ RenderSetting::RenderSetting() noexcept
 	, minElevation(0.0f)
 	, maxElevation(80000.0f)
 	, rayleighAngularSctrCoeff(0)
-	, rayleighTotalSctrCoeff(0)
 	, rayleighExtinctionCoeff(0)
 	, mieAngularSctrCoeff(0)
 	, mieExtinctionCoeff(0)
 	, mie(0.97f)
 	, density(1.0f)
-	, absorbtionScale(0.1f)
 {
 	computeScatteringCoefficients();
 }

@@ -387,6 +387,20 @@ MyGuiSystem::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 	_renderer->getViewport(w, h);
 }
 
+void 
+MyGuiSystem::setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept
+{
+	assert(_renderer);
+	_renderer->setFramebufferScale(w, h);
+}
+
+void 
+MyGuiSystem::getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept
+{
+	assert(_renderer);
+	_renderer->getFramebufferScale(w, h);
+}
+
 GuiWidgetPtr
 MyGuiSystem::createWidget(const rtti::Rtti* rtti) except
 {

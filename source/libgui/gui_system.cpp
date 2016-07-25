@@ -280,6 +280,22 @@ GuiSystem::setViewport(std::uint32_t w, std::uint32_t h) noexcept
 	ImGuiIO& io = ImGui::GetIO();
 	io.DisplaySize.x = w;
 	io.DisplaySize.y = h;
+}
+
+void
+GuiSystem::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
+{
+	assert(_system);
+	_system->getViewport(w, h);
+}
+
+void 
+GuiSystem::setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept
+{
+	assert(_system);
+	_system->setFramebufferScale(w, h);
+
+	ImGuiIO& io = ImGui::GetIO();
 	io.DisplayFramebufferScale.x = w;
 	io.DisplayFramebufferScale.y = h;
 
@@ -292,11 +308,11 @@ GuiSystem::setViewport(std::uint32_t w, std::uint32_t h) noexcept
 	_materialProj->uniform4fmat(project);
 }
 
-void
-GuiSystem::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
+void 
+GuiSystem::getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept
 {
 	assert(_system);
-	_system->getViewport(w, h);
+	_system->getFramebufferScale(w, h);
 }
 
 GuiWidgetPtr

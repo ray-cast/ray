@@ -48,7 +48,7 @@ class EXPORT RenderFeature final : public GameFeature
 public:
 	RenderFeature() noexcept;
 	RenderFeature(const RenderSetting& setting) noexcept;
-	RenderFeature(WindHandle hwnd, std::uint32_t w, std::uint32_t h) noexcept;
+	RenderFeature(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h) noexcept;
 	virtual ~RenderFeature() noexcept;
 
 	void setRenderSetting(const RenderSetting& setting) noexcept;

@@ -70,9 +70,6 @@ private:
 	void destroyShadowMaps() noexcept;
 
 private:
-	virtual void onResolutionChangeBefore() noexcept;
-	virtual void onResolutionChangeAfter() noexcept;
-
 	virtual void onRenderPre() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
 	virtual void onRenderPost() noexcept;

@@ -48,7 +48,7 @@ public:
 	RenderPipeline() noexcept;
 	~RenderPipeline() noexcept;
 
-	bool setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept;
+	bool setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h, GraphicsSwapInterval interval) noexcept;
 	void close() noexcept;
 
 	void renderBegin() noexcept;
@@ -56,6 +56,9 @@ public:
 
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
+
+	void setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept;
+	void getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
 	GraphicsDeviceType getDeviceType() const noexcept;
 
@@ -144,6 +147,9 @@ private:
 private:
 	std::uint32_t _width;
 	std::uint32_t _height;
+
+	std::uint32_t _dpi_w;
+	std::uint32_t _dpi_h;
 
 	RenderPipelineDevicePtr _pipelineDevice;
 	RenderPipelineManagerPtr _pipelineManager;

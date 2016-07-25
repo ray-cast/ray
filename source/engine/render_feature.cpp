@@ -56,11 +56,13 @@ RenderFeature::RenderFeature(const RenderSetting& setting) noexcept
 {
 }
 
-RenderFeature::RenderFeature(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
+RenderFeature::RenderFeature(WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h) noexcept
 {
 	_renderSetting.window = window;
 	_renderSetting.width = w;
 	_renderSetting.height = h;
+	_renderSetting.dpi_w = dpi_w;
+	_renderSetting.dpi_h = dpi_h;
 }
 
 RenderFeature::~RenderFeature() noexcept

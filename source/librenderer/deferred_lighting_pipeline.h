@@ -73,7 +73,7 @@ public:
 	void renderIndirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
 	void copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst) noexcept;
-	void copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
+	void copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const float4& viewport) noexcept;
 
 private:
 	void computeSpotVPLBuffers(RenderPipeline& pipeline, const Light& light) noexcept;

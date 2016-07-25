@@ -55,8 +55,8 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) noexcept;
 	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
-	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChange(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChangeDPI(RenderPipeline& pipeline) noexcept;
 
 	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept = 0;
 

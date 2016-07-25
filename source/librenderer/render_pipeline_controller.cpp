@@ -68,4 +68,9 @@ RenderPipelineController::onResolutionChange() noexcept
 {
 }
 
+void 
+RenderPipelineController::onResolutionChangeDPI() noexcept
+{
+}
+
 _NAME_END

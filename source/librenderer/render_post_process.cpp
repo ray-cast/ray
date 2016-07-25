@@ -84,12 +84,12 @@ RenderPostProcess::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 void
-RenderPostProcess::onResolutionChangeBefore(RenderPipeline&) noexcept
+RenderPostProcess::onResolutionChange(RenderPipeline&) noexcept
 {
 }
 
 void
-RenderPostProcess::onResolutionChangeAfter(RenderPipeline&) noexcept
+RenderPostProcess::onResolutionChangeDPI(RenderPipeline&) noexcept
 {
 }
 

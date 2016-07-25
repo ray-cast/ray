@@ -619,12 +619,12 @@ DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const Grap
 }
 
 void
-DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const Viewport& viewport) noexcept
+DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const GraphicsTexturePtr& src, GraphicsFramebufferPtr dst, const float4& viewport) noexcept
 {
 	_texSource->uniformTexture(src);
 	pipeline.setFramebuffer(dst);
-	pipeline.setViewport(0, viewport);
-	pipeline.setScissor(0, Scissor(viewport.left, viewport.top, viewport.width, viewport.height));
+	pipeline.setViewport(0, Viewport(viewport.x, viewport.y, viewport.z, viewport.w));
+	pipeline.setScissor(0, Scissor(viewport.x, viewport.y, viewport.z, viewport.w));
 	pipeline.drawScreenQuad(*_deferredCopyOnly);
 }
 
@@ -1545,16 +1545,14 @@ DeferredLightingPipeline::onRenderPost() noexcept
 	if (!camera)
 		return;
 
-	float4 pixel = camera->getPixelViewport();
-
-	Viewport viewport(pixel.x, pixel.y, pixel.z, pixel.w);
-
 	auto flags = camera->getCameraRenderFlags();
 	if (flags & CameraRenderFlagBits::CameraRenderTextureBit)
 	{
 		auto framebuffer = camera->getFramebuffer();
 		if (framebuffer)
 		{
+			float4 viewport = camera->getPixelViewport();
+
 			if (flags & CameraRenderFlagBits::CameraRenderGbufferDiffuseBit)
 				this->copyRenderTexture(*_pipeline, _deferredOpaqueMap, framebuffer, viewport);
 			else if (flags & CameraRenderFlagBits::CameraRenderGbufferNormalBit)
@@ -1568,6 +1566,8 @@ DeferredLightingPipeline::onRenderPost() noexcept
 
 	if (flags & CameraRenderFlagBits::CameraRenderScreenBit)
 	{
+		float4 viewport = camera->getPixelViewportDPI();
+
 		if (flags & CameraRenderFlagBits::CameraRenderGbufferDiffuseBit)
 			this->copyRenderTexture(*_pipeline, _deferredOpaqueMap, nullptr, viewport);
 		else if (flags & CameraRenderFlagBits::CameraRenderGbufferNormalBit)

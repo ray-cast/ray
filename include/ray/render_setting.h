@@ -47,6 +47,9 @@ struct EXPORT RenderSetting
 	std::uint32_t width;
 	std::uint32_t height;
 
+	std::uint32_t dpi_w;
+	std::uint32_t dpi_h;
+
 	GraphicsDeviceType deviceType;
 	GraphicsSwapInterval swapInterval;
 
@@ -73,11 +76,9 @@ struct EXPORT RenderSetting
 	float2 earthScaleHeight;
 
 	float4 rayleighAngularSctrCoeff;
-	float4 rayleighTotalSctrCoeff;
 	float4 rayleighExtinctionCoeff;
 
 	float4 mieAngularSctrCoeff;
-	float4 mieTotalSctrCoeff;
 	float4 mieExtinctionCoeff;
 
 	float minElevation;
@@ -85,7 +86,6 @@ struct EXPORT RenderSetting
 
 	float mie;
 	float density;
-	float absorbtionScale;
 
 	RenderSetting() noexcept;
 

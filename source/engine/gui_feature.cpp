@@ -364,12 +364,16 @@ private:
 GuiFeature::GuiFeature() noexcept
 	: _width(0)
 	, _height(0)
+	, _dpi_w(0)
+	, _dpi_h(0)
 {
 }
 
-GuiFeature::GuiFeature(std::uint32_t w, std::uint32_t h) noexcept
+GuiFeature::GuiFeature(std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h) noexcept
 	: _width(w)
 	, _height(h)
+	, _dpi_w(dpi_w)
+	, _dpi_h(dpi_h)
 {
 }
 
@@ -398,13 +402,30 @@ GuiFeature::setViewport(std::uint32_t w, std::uint32_t h) noexcept
 		GuiSystem::instance()->setViewport(w, h);
 		_width = w;
 		_height = h;
-	}		
+	}
 }
 
 void
 GuiFeature::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 {
 	GuiSystem::instance()->getViewport(w, h);
+}
+
+void 
+GuiFeature::setWindowFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept
+{
+	if (_dpi_w != w || _dpi_h != h)
+	{
+		GuiSystem::instance()->setFramebufferScale(w, h);
+		_dpi_w = w;
+		_dpi_h = h;
+	}
+}
+
+void 
+GuiFeature::getWindowFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept
+{
+	GuiSystem::instance()->getFramebufferScale(w, h);
 }
 
 void
@@ -416,6 +437,7 @@ GuiFeature::onActivate() except
 	GuiSystem::instance()->setImageLoader(std::make_shared<ImageLoader>());
 	GuiSystem::instance()->setCoreProfile("sys:media/UI/MyGUI_Core.xml");
 	GuiSystem::instance()->setViewport(_width, _height);
+	GuiSystem::instance()->setFramebufferScale(_dpi_w, _dpi_h);
 }
 
 void
@@ -460,6 +482,10 @@ GuiFeature::onMessage(const MessagePtr& message) except
 				break;
 			case InputEvent::SizeChange:
 				GuiSystem::instance()->setViewport(event.change.w, event.change.h);
+				break;
+			case InputEvent::SizeChangeDPI:
+				GuiSystem::instance()->setFramebufferScale(event.change.w, event.change.h);
+				break;
 			default:
 				return;
 			}

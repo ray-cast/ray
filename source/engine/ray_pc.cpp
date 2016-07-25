@@ -80,6 +80,16 @@ void onWindowResize(GLFWwindow* window, int w, int h)
 
 void onWindowFramebufferResize(GLFWwindow* window, int w, int h)
 {
+	if (_gameApp)
+	{
+		ray::InputEvent event;
+		event.event = ray::InputEvent::SizeChangeDPI;
+		event.change.w = w;
+		event.change.h = h;
+		event.change.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.change.timestamp = ::glfwGetTimerFrequency();
+		_gameApp->sendInputEvent(event);
+	}
 }
 
 void onWindowClose(GLFWwindow* window)
@@ -268,17 +278,21 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 		::glfwSetKeyCallback(_window, &onWindowKey);
 		::glfwSetCharModsCallback(_window, &onWindowKeyChar);
 
+		int dpi_w, dpi_h;
+		::glfwGetFramebufferSize(_window, &dpi_w, &dpi_h);
+
 		ray::WindHandle hwnd = (ray::WindHandle)::glfwGetWinHandle(_window);
 
 		_gameApp = std::make_shared<ray::GameApplication>();
 		_gameApp->setFileService(true);
 		_gameApp->setFileServicePath(_gameRootPath);
 
-		if (!_gameApp->open(hwnd, w, h))
+		if (!_gameApp->open(hwnd, w, h, dpi_w, dpi_h))
 			return false;
 
 		onWindowFocus(_window, true);
 		onWindowResize(_window, w, h);
+		onWindowFramebufferResize(_window, dpi_w, dpi_h);
 
 		if (!_gameScenePath.empty())
 		{

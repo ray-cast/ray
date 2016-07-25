@@ -42,36 +42,37 @@
 
 _NAME_BEGIN
 
-class EXPORT Atmospheric : public RenderPostProcess
+class EXPORT Atmospheric final : public RenderPostProcess
 {
 public:
 	struct EXPORT Setting
 	{
-		float earthRadius;
-		float earthAtmTopHeight;
-		
+		float2 earthRadius;
 		float2 earthScaleHeight;
 
 		float4 rayleighAngularSctrCoeff;
-		float4 rayleighTotalSctrCoeff;
 		float4 rayleighExtinctionCoeff;
-		
+
 		float4 mieAngularSctrCoeff;
-		float4 mieTotalSctrCoeff;
 		float4 mieExtinctionCoeff;
 
 		float minElevation;
 		float maxElevation;
 
-		float4 mie4;
+		float mie;
 
 		Setting() noexcept;
 	};
 
 public:
 	Atmospheric() noexcept;
+	Atmospheric(Setting& setting) noexcept;
 	~Atmospheric() noexcept;
 
+	void setScatteringCoefficients(const Setting& setting) noexcept;
+	const Setting& getScatteringCoefficients() const noexcept;
+
+protected:
 	void onActivate(RenderPipeline& pipeline) noexcept;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
@@ -80,7 +81,6 @@ public:
 private:
 	void computeRaySphereIntersection(const float3& rayOrigin, const float3& rayDirection, const float3& center, float radius, float2& intersections) noexcept;
 	void computeViewProjectInverse(const Camera& camera, float4x4& viewProject) noexcept;
-	void computeScatteringCoefficients(const RenderSetting& setting) noexcept;
 
 private:
 	bool _needUpdateOpticalDepthAtmTop;
@@ -93,11 +93,9 @@ private:
 	MaterialParamPtr _lightColor;
 	MaterialParamPtr _lightDirection;
 
-	MaterialParamPtr _rayleighTotalSctrCoeff;
 	MaterialParamPtr _rayleighExtinctionCoeff;
 	MaterialParamPtr _rayleighAngularSctrCoeff;
 
-	MaterialParamPtr _mieTotalSctrCoeff;
 	MaterialParamPtr _mieExtinctionCoeff;
 	MaterialParamPtr _mieAngularSctrCoeff;
 

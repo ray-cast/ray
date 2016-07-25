@@ -61,14 +61,18 @@ class GuiFeature final : public GameFeature
 	__DeclareSubClass(GuiFeature, GameFeature)
 public:
 	GuiFeature() noexcept;
-	GuiFeature(std::uint32_t w, std::uint32_t h) noexcept;
+	GuiFeature(std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h) noexcept;
 	~GuiFeature() noexcept;
 
 	void setCoreProfile(const std::string& core) except;
 	const std::string& getCoreProfile() const noexcept;
 
+private:
 	void setViewport(std::uint32_t w, std::uint32_t h) noexcept;
 	void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept;
+
+	void setWindowFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept;
+	void getWindowFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept;
 
 protected:
 	virtual void onActivate() except;
@@ -81,6 +85,8 @@ protected:
 private:
 	std::uint32_t _width;
 	std::uint32_t _height;
+	std::uint32_t _dpi_w;
+	std::uint32_t _dpi_h;
 };
 
 _NAME_END

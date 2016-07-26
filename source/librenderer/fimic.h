@@ -51,7 +51,6 @@ public:
 		float bloomIntensity;
 
 		float exposure;
-		float middleGray;
 
 		Setting() noexcept;
 	};

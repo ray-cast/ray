@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<effect language="bytecodes">
+    <parameter name="scaleY" type="float" />
+    <parameter name="proj" type="float4x4" />
+    <parameter name="decal" type="texture2D" />
+    <sampler name="PointClamp">
+        <state name="filter" value="min_mag_mip_point" />
+        <state name="wrap" value="clamp" />
+    </sampler>
+    <sampler name="LinearClamp">
+        <state name="filter" value="min_mag_linear_mip_point" />
+        <state name="wrap" value="clamp" />
+    </sampler>
+    <inputlayout name="POS3F_COL4C_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="COLOR" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS2F_UV2F_COL4C">
+        <layout name="POSITION" format="R32G32SFloat" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+        <layout name="COLOR" format="R8G8B8A8UNorm" />
+    </inputlayout>
+    <inputlayout name="POS3F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_UV2F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <inputlayout name="POS3F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <inputlayout name="POS3F_COL4C_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="COLOR" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS2F_UV2F_COL4C">
+        <layout name="POSITION" format="R32G32SFloat" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+        <layout name="COLOR" format="R8G8B8A8UNorm" />
+    </inputlayout>
+    <inputlayout name="POS3F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_UV2F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS3F_T4F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TANGENT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <inputlayout name="POS3F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="BLENDWEIGHT" format="R8G8B8A8UNorm" />
+        <layout name="BLENDINDICES" format="R8G8B8A8UScaled" />
+    </inputlayout>
+    <shader name="UILayoutPS">
+        <![CDATA[
+44 58 42 43 57 9c f9 ab b2 d5 f5 10 52 10 08 94 
+1b d9 10 d3 01 00 00 00 78 02 00 00 05 00 00 00 
+34 00 00 00 e0 00 00 00 2c 01 00 00 60 01 00 00 
+fc 01 00 00 52 44 45 46 a4 00 00 00 00 00 00 00 
+00 00 00 00 02 00 00 00 1c 00 00 00 00 04 ff ff 
+00 81 00 00 6e 00 00 00 5c 00 00 00 03 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 68 00 00 00 02 00 00 00 
+05 00 00 00 04 00 00 00 ff ff ff ff 00 00 00 00 
+01 00 00 00 0c 00 00 00 4c 69 6e 65 61 72 43 6c 
+61 6d 70 00 64 65 63 61 6c 00 4d 69 63 72 6f 73 
+6f 66 74 20 28 52 29 20 48 4c 53 4c 20 53 68 61 
+64 65 72 20 43 6f 6d 70 69 6c 65 72 20 31 30 2e 
+30 2e 31 30 30 31 31 2e 31 36 33 38 34 00 ab ab 
+49 53 47 4e 44 00 00 00 02 00 00 00 08 00 00 00 
+38 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 0f 00 00 38 00 00 00 01 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 03 00 00 
+54 45 58 43 4f 4f 52 44 00 ab ab ab 4f 53 47 4e 
+2c 00 00 00 01 00 00 00 08 00 00 00 20 00 00 00 
+00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 
+0f 00 00 00 53 56 5f 54 61 72 67 65 74 00 ab ab 
+53 48 44 52 94 00 00 00 40 00 00 00 25 00 00 00 
+5a 00 00 03 00 60 10 00 00 00 00 00 58 18 00 04 
+00 70 10 00 00 00 00 00 55 55 00 00 62 10 00 03 
+f2 10 10 00 00 00 00 00 62 10 00 03 32 10 10 00 
+01 00 00 00 65 00 00 03 f2 20 10 00 00 00 00 00 
+68 00 00 02 01 00 00 00 45 00 00 09 f2 00 10 00 
+00 00 00 00 46 10 10 00 01 00 00 00 46 7e 10 00 
+00 00 00 00 00 60 10 00 00 00 00 00 38 00 00 07 
+f2 20 10 00 00 00 00 00 46 0e 10 00 00 00 00 00 
+46 1e 10 00 00 00 00 00 3e 00 00 01 53 54 41 54 
+74 00 00 00 03 00 00 00 01 00 00 00 00 00 00 00 
+03 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 ]]>
+    </shader>
+    <shader name="UILayoutVS">
+        <![CDATA[
+44 58 42 43 6d d0 b7 5c 91 c9 b0 a8 64 7f 74 29 
+e9 47 1d 90 01 00 00 00 58 03 00 00 05 00 00 00 
+34 00 00 00 30 01 00 00 a0 01 00 00 10 02 00 00 
+dc 02 00 00 52 44 45 46 f4 00 00 00 01 00 00 00 
+48 00 00 00 01 00 00 00 1c 00 00 00 00 04 fe ff 
+00 81 00 00 c0 00 00 00 3c 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 24 47 6c 6f 62 61 6c 73 
+00 ab ab ab 3c 00 00 00 02 00 00 00 60 00 00 00 
+50 00 00 00 00 00 00 00 00 00 00 00 90 00 00 00 
+00 00 00 00 04 00 00 00 02 00 00 00 98 00 00 00 
+00 00 00 00 a8 00 00 00 10 00 00 00 40 00 00 00 
+00 00 00 00 b0 00 00 00 00 00 00 00 73 63 61 6c 
+65 59 00 ab 00 00 03 00 01 00 01 00 00 00 00 00 
+00 00 00 00 70 72 6f 6a 00 ab ab ab 03 00 03 00 
+04 00 04 00 00 00 00 00 00 00 00 00 4d 69 63 72 
+6f 73 6f 66 74 20 28 52 29 20 48 4c 53 4c 20 53 
+68 61 64 65 72 20 43 6f 6d 70 69 6c 65 72 20 31 
+30 2e 30 2e 31 30 30 31 31 2e 31 36 33 38 34 00 
+49 53 47 4e 68 00 00 00 03 00 00 00 08 00 00 00 
+50 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 0f 00 00 59 00 00 00 00 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 0f 00 00 
+5f 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+02 00 00 00 0f 0f 00 00 50 4f 53 49 54 49 4f 4e 
+00 43 4f 4c 4f 52 00 54 45 58 43 4f 4f 52 44 00 
+4f 53 47 4e 68 00 00 00 03 00 00 00 08 00 00 00 
+50 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 00 00 00 50 00 00 00 01 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 00 00 00 
+59 00 00 00 00 00 00 00 01 00 00 00 03 00 00 00 
+02 00 00 00 0f 00 00 00 54 45 58 43 4f 4f 52 44 
+00 53 56 5f 50 6f 73 69 74 69 6f 6e 00 ab ab ab 
+53 48 44 52 c4 00 00 00 40 00 01 00 31 00 00 00 
+59 00 00 04 46 8e 20 00 00 00 00 00 01 00 00 00 
+5f 00 00 03 f2 10 10 00 00 00 00 00 5f 00 00 03 
+f2 10 10 00 01 00 00 00 5f 00 00 03 f2 10 10 00 
+02 00 00 00 65 00 00 03 f2 20 10 00 00 00 00 00 
+65 00 00 03 f2 20 10 00 01 00 00 00 67 00 00 04 
+f2 20 10 00 02 00 00 00 01 00 00 00 36 00 00 05 
+f2 20 10 00 00 00 00 00 46 1e 10 00 01 00 00 00 
+36 00 00 05 f2 20 10 00 01 00 00 00 46 1e 10 00 
+02 00 00 00 38 00 00 08 22 20 10 00 02 00 00 00 
+1a 10 10 00 00 00 00 00 0a 80 20 00 00 00 00 00 
+00 00 00 00 36 00 00 05 d2 20 10 00 02 00 00 00 
+06 1e 10 00 00 00 00 00 3e 00 00 01 53 54 41 54 
+74 00 00 00 05 00 00 00 00 00 00 00 00 00 00 00 
+06 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 ]]>
+    </shader>
+    <shader name="UILayoutVS2">
+        <![CDATA[
+44 58 42 43 41 32 4c b3 20 4f 45 6d 92 c4 a9 5d 
+55 92 ec bc 01 00 00 00 94 03 00 00 05 00 00 00 
+34 00 00 00 30 01 00 00 a0 01 00 00 10 02 00 00 
+18 03 00 00 52 44 45 46 f4 00 00 00 01 00 00 00 
+48 00 00 00 01 00 00 00 1c 00 00 00 00 04 fe ff 
+00 81 00 00 c0 00 00 00 3c 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+01 00 00 00 00 00 00 00 24 47 6c 6f 62 61 6c 73 
+00 ab ab ab 3c 00 00 00 02 00 00 00 60 00 00 00 
+50 00 00 00 00 00 00 00 00 00 00 00 90 00 00 00 
+00 00 00 00 04 00 00 00 00 00 00 00 98 00 00 00 
+00 00 00 00 a8 00 00 00 10 00 00 00 40 00 00 00 
+02 00 00 00 b0 00 00 00 00 00 00 00 73 63 61 6c 
+65 59 00 ab 00 00 03 00 01 00 01 00 00 00 00 00 
+00 00 00 00 70 72 6f 6a 00 ab ab ab 03 00 03 00 
+04 00 04 00 00 00 00 00 00 00 00 00 4d 69 63 72 
+6f 73 6f 66 74 20 28 52 29 20 48 4c 53 4c 20 53 
+68 61 64 65 72 20 43 6f 6d 70 69 6c 65 72 20 31 
+30 2e 30 2e 31 30 30 31 31 2e 31 36 33 38 34 00 
+49 53 47 4e 68 00 00 00 03 00 00 00 08 00 00 00 
+50 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 03 00 00 59 00 00 00 00 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 0f 00 00 
+5f 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+02 00 00 00 0f 0f 00 00 50 4f 53 49 54 49 4f 4e 
+00 43 4f 4c 4f 52 00 54 45 58 43 4f 4f 52 44 00 
+4f 53 47 4e 68 00 00 00 03 00 00 00 08 00 00 00 
+50 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 
+00 00 00 00 0f 00 00 00 50 00 00 00 01 00 00 00 
+00 00 00 00 03 00 00 00 01 00 00 00 0f 00 00 00 
+59 00 00 00 00 00 00 00 01 00 00 00 03 00 00 00 
+02 00 00 00 0f 00 00 00 54 45 58 43 4f 4f 52 44 
+00 53 56 5f 50 6f 73 69 74 69 6f 6e 00 ab ab ab 
+53 48 44 52 00 01 00 00 40 00 01 00 40 00 00 00 
+59 00 00 04 46 8e 20 00 00 00 00 00 05 00 00 00 
+5f 00 00 03 32 10 10 00 00 00 00 00 5f 00 00 03 
+f2 10 10 00 01 00 00 00 5f 00 00 03 f2 10 10 00 
+02 00 00 00 65 00 00 03 f2 20 10 00 00 00 00 00 
+65 00 00 03 f2 20 10 00 01 00 00 00 67 00 00 04 
+f2 20 10 00 02 00 00 00 01 00 00 00 68 00 00 02 
+01 00 00 00 36 00 00 05 f2 20 10 00 00 00 00 00 
+46 1e 10 00 01 00 00 00 36 00 00 05 f2 20 10 00 
+01 00 00 00 46 1e 10 00 02 00 00 00 38 00 00 08 
+f2 00 10 00 00 00 00 00 56 15 10 00 00 00 00 00 
+46 8e 20 00 00 00 00 00 02 00 00 00 32 00 00 0a 
+f2 00 10 00 00 00 00 00 46 8e 20 00 00 00 00 00 
+01 00 00 00 06 10 10 00 00 00 00 00 46 0e 10 00 
+00 00 00 00 00 00 00 08 f2 20 10 00 02 00 00 00 
+46 0e 10 00 00 00 00 00 46 8e 20 00 00 00 00 00 
+04 00 00 00 3e 00 00 01 53 54 41 54 74 00 00 00 
+06 00 00 00 01 00 00 00 00 00 00 00 06 00 00 00 
+03 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 ]]>
+    </shader>
+    <technique name="MYGUI">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_COL4C_UV2F" />
+            <state name="vertex" value="UILayoutVS" />
+            <state name="fragment" value="UILayoutPS" />
+            <state name="primitive" value="triangle" />
+            <state name="cullmode" value="none" />
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="blend" value="true" />
+            <state name="blendsrc" value="srcalpha" />
+            <state name="blenddst" value="invsrcalpha" />
+        </pass>
+    </technique>
+    <technique name="IMGUI">
+        <pass name="p0">
+            <state name="inputlayout" value="POS2F_UV2F_COL4C" />
+            <state name="vertex" value="UILayoutVS2" />
+            <state name="fragment" value="UILayoutPS" />
+            <state name="primitive" value="triangle" />
+            <state name="cullmode" value="none" />
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="scissortest" value="true" />
+            <state name="blend" value="true" />
+            <state name="blendsrc" value="srcalpha" />
+            <state name="blenddst" value="invsrcalpha" />
+        </pass>
+    </technique>
+</effect>

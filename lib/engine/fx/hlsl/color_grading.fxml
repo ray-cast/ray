@@ -3,7 +3,6 @@
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <parameter name="colorGrading" type="int2"/>
     <parameter name="texSource" type="texture2D"/>
     <parameter name="texColorGrading" type="texture3D"/>
     <shader>
@@ -26,13 +25,7 @@
             float4 ColorGradingPS(in float4 coord : TEXCOORD0) : SV_Target
             {
                 float4 rgba = texSource.Sample(PointClamp, coord.xy);
-                float3 rgb = saturate(rgba.rgb);
-
-                if (colorGrading.x > 0)
-                    rgb = linear2srgb(rgb);
-                if (colorGrading.y > 0)
-                    rgb = ColorGrading(rgb);
-                return float4(rgb, rgba.a);
+                return float4(ColorGrading(rgba.rgb), rgba.a);
             }
         ]]>
     </shader>
@@ -47,8 +40,6 @@
             <state name="depthwrite" value="false"/>
 
             <state name="cullmode" value="none"/>
-
-            <state name="linear2srgb" value="false"/>
         </pass>
     </technique>
 </effect>

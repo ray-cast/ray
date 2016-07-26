@@ -10,6 +10,7 @@
     <macro name="TONEMAP_FILMIC" value="4"/>
     <macro name="TONEMAP_UNCHARTED2" value="5"/>
     <macro name="TONEMAP_OPERATOR" value="TONEMAP_UNCHARTED2"/>
+    <macro name="LIGHT_UNIT_SCALE" value="10000.0f"/>
     <parameter name="texSource" type="texture2D" />
     <parameter name="texSourceSizeInv" type="float2" />
     <parameter name="texBloom" type="texture2D" />
@@ -73,30 +74,44 @@
 
             float3 ToneBlueShift(float3 color, float lum)
             {
+                // martin's modified blue shift
                 const float3 BLUE_SHIFT = float3(0.4f, 0.4f, 0.7f);
                 return lerp(lum * BLUE_SHIFT, color, saturate(16.0f * lum));
             }
 
-            float EyeAdaption(float lum)
+            float ComputeExposure(float avgLum)
             {
-                return lerp(0.2f, lum, 0.5f);
+                float middleGray = 1.03h - 2.0h / (2.0h + log2(avgLum + 1.0));
+                return middleGray / avgLum;
             }
 
-            float ToneExposure(float avgLum)
+            float CalcAdaptedLum(float adaptedLum, float lum, float step)
             {
-                return 3 / (max(0.1f, 1 + 10 * EyeAdaption(avgLum)));
+                // step = 1.0f - pow(0.98f, 50 * delta);
+                return max(0, adaptedLum + (lum - adaptedLum) * step);
             }
 
-            float CalcAdaptedLum(float adaptedLum, float lum, float delta)
+            float3 NRand3( float2 seed )
             {
-                return adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, 50 * delta));
+                return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
             }
 
-            float3 ToneMapping(float3 color, float aveLum, float exposure)
+            float3 ApplyDithering(float3 color, float2 uv)
             {
-                color += ToneBlueShift(color, luminance(color));
-                color = FilmicTonemap(color, exposure * ToneExposure(aveLum));
+                // Apply dithering in sRGB space to minimize quantization artifacts
+                // Use a triangular distribution which gives a more uniform noise by avoiding low-noise areas
+                float3 rndValue = NRand3(uv) + NRand3(uv + 0.5789) - 0.5;
+                color += rndValue / 255.0;
                 return color;
+            }
+
+            float3 ToneMapping(float3 color, float3 bloom, float avgLum, float exposure)
+            {
+                color += bloom;
+                color += ToneBlueShift(color, luminance(color));
+                color = FilmicTonemap(color, exposure * ComputeExposure(avgLum));
+                color = saturate(color);
+                return linear2srgb(color);
             }
 
             void PostProcessVS(
@@ -148,7 +163,7 @@
             {
                 float color = texSource.SampleLevel(PointClamp, coord0.xy, 8).r;
                 float adaptedLum = texLumAve.Sample(PointClamp, float2(0.5,0.5)).r;
-                return max(0, CalcAdaptedLum(adaptedLum, exp(color), delta));
+                return CalcAdaptedLum(adaptedLum, exp(color), delta);
             }
 
             float4 BloomPS(in float4 coord : TEXCOORD0) : SV_Target0
@@ -221,12 +236,12 @@
 
             float4 FimicTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
-                float aveLum = texLumAve.Sample(PointClamp, float2(0, 0)).r;
+                float avgLum = texLumAve.Sample(PointClamp, float2(0, 0)).r;
                 float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
-                color += texBloom.SampleLevel(LinearClamp, coord.xy, 0).rgb;
-                color += texBloom.SampleLevel(LinearClamp, coord.xy, 1).rgb;
-                float3 LDR = ToneMapping(color, aveLum, exposure);
-                return float4(LDR, luminance(LDR));
+                float3 bloom = texBloom.SampleLevel(LinearClamp, coord.xy, 0).rgb;
+                bloom += texBloom.SampleLevel(LinearClamp, coord.xy, 1).rgb;
+                float3 LDR = ToneMapping(color, bloom, avgLum, exposure);
+                return float4(ApplyDithering(LDR, coord.xy), luminance(LDR));
             }
         ]]>
     </shader>

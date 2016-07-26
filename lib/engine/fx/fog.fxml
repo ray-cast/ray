@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<effect version="1270" language="hlsl">
+    <include name="sys:fx/sampelr.fxml"/>
+    <include name="sys:fx/common.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="matViewProjectInverse" type="float4x4" semantic="matViewProjectInverse"/>
+    <parameter name="texDepth" type="texture2D"/>
+    <parameter name="texSource" type="texture2D"/>
+    <parameter name="eyePosition" type="float3"/>
+    <parameter name="fogFalloff" type="float"/>
+    <parameter name="fogDensity" type="float"/>
+    <parameter name="fogColor" type="float3"/>
+    <shader name="vertex">
+        <![CDATA[
+            float fogFactorLinear(float dist, float start, float end)
+            {
+                float fog = (end - dist) / (end - start);
+                return clamp(fog, 0, 1);
+            }
+
+            float fogFactorLinear(float dist, float density)
+            {
+                float fog = 1 - density * dist;
+                return clamp(fog, 0, 1);
+            }
+
+            float fogFactorExp(float dist, float density)
+            {
+                float fog = 1 - exp(-density * dist);
+                return clamp(fog, 0, 1);
+            }
+
+            float fogFactorExp2(float dist, float density)
+            {
+                const float LOG2 = -1.442695;
+                float dc = density * dist;
+                float fog = 1 - exp2(dc * dc * LOG2);
+                return clamp(fog, 0, 1);
+            }
+
+            float fogFactor(float dist, float3 rayOrigin, float3 rayDirection)
+            {
+                float fogAmount = exp((-rayOrigin.y*fogFalloff*fogDensity)) * (1.0-exp(-dist*rayDirection.y*fogFalloff*fogDensity)) / rayDirection.y * fogFalloff;
+                return clamp(fogAmount, 0, 1);
+            }
+
+            float4 samplePosition(vec2 coord)
+            {
+                float depth  = texDepth.Sample(PointClamp, coord.xy, 0).r;
+                float4 result = matViewProjectInverse * float4(coord * 2.0 - 1.0, depth, 1.0);
+                result /= result.w;
+                return result;
+            }
+
+            void PostProcessVS(
+                in float4 Position : POSITION0,
+                out float4 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position
+                )
+            {
+                oPosition = Position;
+                oTexcoord = PosToCoord(Position);
+            }
+
+            float4 FogPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                float3 P = samplePosition(coord.xy).rgb;
+                float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
+                float dist = distance(eyePosition, P);
+                return lerp(color, fogColor, fogFactorExp(dist, fogFalloff * fogDensity));
+            }
+        ]]>
+    </shader>
+    <technique name="Fog">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="FogPS"/>
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+            <state name="cullmode" value="none" />
+        </pass>
+    </technique>
+</effect>

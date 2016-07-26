@@ -1,0 +1,231 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/Gbuffer.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <include name="sys:fx/lighting.fxml"/>
+    <parameter name="matModelView" type="float4x4" semantic="matModelView" />
+    <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
+    <parameter name="matView" type="float4x4" semantic="matView"/>
+    <parameter name="quality" type="float4"/>
+    <parameter name="diffuse" type="float4"/>
+    <parameter name="opacity" type="float"/>
+    <parameter name="specular" type="float"/>
+    <parameter name="shininess" type="float"/>
+    <parameter name="texDiffuse" type="texture2D"/>
+    <parameter name="texNormal" type="texture2D" />
+    <parameter name="texSpecular" type="texture2D" />
+    <buffer name="joints">
+        <parameter name="bindpose[NUM_JOINT]" type="float4x4[]"/>
+    </buffer>
+    <shader>
+        <![CDATA[
+            float3 DecodeNormalMap(Texture2D normal, float2 coord)
+            {
+                float3 bump;
+                bump.xy = normal.Sample(PointClamp, coord).gr * 2.0 - 1.0;
+                bump.z = sqrt(1.0 - bump.x * bump.x - bump.y * bump.y);
+                return normalize(bump);
+            }
+
+            float4 GetDiffuse(Texture2D diffuseMap, float4 diffuse, float2 coord)
+            {
+                return srgb2linear(diffuseMap.Sample(PointClamp, coord)) * diffuse;
+            }
+
+            float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
+            {
+                float3 tangentNormal;
+                if (quality > 0.55)
+                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb;
+                else
+                    tangentNormal = DecodeNormalMap(normalMap, coord);
+
+                float3 N = normalize(normal);
+                float3 T = normalize(tangent);
+                float3 B = cross(N, T);
+
+                float3x3 tbn = float3x3(T, B, N);
+                float3 highNormal = mul(tangentNormal, tbn);
+                return normalize(highNormal);
+            }
+
+            float2 GetSpecular(Texture2D specularMap, float2 coord)
+            {
+                return specularMap.Sample(PointClamp, coord).rg;
+            }
+
+            void DepthVS(
+                in float4 Position : POSITION,
+#if SKINNING > 0
+                in float4 BlendWeight : BLENDWEIGHT,
+                in float4 BlendIndice : BLENDINDICES,
+#endif
+                out float4 oPosition : SV_Position)
+            {
+#if SKINNING > 0
+                int4 blendIndices = (int4)BlendIndice;
+
+                oPosition = mul(bindpose[blendIndices.x], Position) * BlendWeight.x;
+                oPosition += mul(bindpose[blendIndices.y], Position) * BlendWeight.y;
+                oPosition += mul(bindpose[blendIndices.z], Position) * BlendWeight.z;
+                oPosition += mul(bindpose[blendIndices.w], Position) * BlendWeight.w;
+                oPosition = mul(matModelViewProject, oPosition);
+#else
+                oPosition = mul(matModelViewProject, Position);
+#endif
+            }
+
+            void DepthPS()
+            {
+            }
+
+            void TransparentVS(
+                in float4 Position : POSITION,
+                in float4 TangentQuat : TANGENT,
+                in float2 Texcoord : TEXCOORD,
+#if SKINNING > 0
+                in float4 BlendWeight : BLENDWEIGHT,
+                in float4 BlendIndice : BLENDINDICES,
+#endif
+                out float3 oNormal   : TEXCOORD0,
+                out float3 oTangent  : TEXCOORD1,
+                out float2 oTexcoord : TEXCOORD2,
+                out float3 oViewDir  : TEXCOORD3,
+                out float4 oPosition : SV_Position)
+            {
+                TangentQuat = TangentQuat * 2 - 1;
+
+                float3 Normal = QuaternionToNormal(TangentQuat);
+                float3 Tangent = QuaternionToTangent(TangentQuat);
+
+#if SKINNING > 0
+                int4 blendIndices = (int4)BlendIndice;
+
+                oPosition = mul(bindpose[blendIndices.x], Position) * BlendWeight.x;
+                oPosition += mul(bindpose[blendIndices.y], Position) * BlendWeight.y;
+                oPosition += mul(bindpose[blendIndices.z], Position) * BlendWeight.z;
+                oPosition += mul(bindpose[blendIndices.w], Position) * BlendWeight.w;
+
+                oNormal = mul((float3x3)bindpose[blendIndices.x], Normal) * BlendWeight.x;
+                oNormal += mul((float3x3)bindpose[blendIndices.y], Normal) * BlendWeight.y;
+                oNormal += mul((float3x3)bindpose[blendIndices.z], Normal) * BlendWeight.z;
+                oNormal += mul((float3x3)bindpose[blendIndices.w], Normal) * BlendWeight.w;
+
+                oNormal = mul((float3x3)matView, oNormal);
+#else
+                oNormal = mul((float3x3)matView, Normal);
+                oTangent = mul((float3x3)matView, Tangent);
+                oPosition = Position;
+#endif
+                oTexcoord = Texcoord;
+                oViewDir = -mul(matModelView, oPosition).xyz;
+                oPosition = mul(matModelViewProject, oPosition);
+            }
+
+            void TransparentPS(
+                in float3 iNormal   : TEXCOORD0,
+                in float3 iTangent  : TEXCOORD1,
+                in float2 iTexcoord : TEXCOORD2,
+                in float3 iViewdir  : TEXCOORD3,
+                in float4 iPosition : SV_Position,
+                out float4 fragData0 : SV_Target0,
+                out float4 fragData1 : SV_Target1,
+                out float4 fragData2 : SV_Target2)
+            {
+                float4 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse;
+                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
+                float2 brdfParm = float2(specular, shininess);
+                if (quality.b > 0.0)
+                {
+                    brdfParm = GetSpecular(texSpecular, iTexcoord);
+                }
+
+                float3 L = mul((float3x3)matView, float3(0,1,0));
+
+                float viewDepth = abs(1.0 / iPosition.w) * 0.5;
+                float weight = computeWeightBlendOIT(viewDepth) * max(0, dot(normal,L));
+
+                fragData0 = StoreGBufferRT0(PremultipliedAlpha(albedo) * weight, brdfParm.r);
+                fragData2 = StoreGBufferRT2(albedo.a, albedo.a * weight);
+            }
+
+            void Transparent2PS(
+                in float3 iNormal : TEXCOORD0,
+                in float3 iTangent : TEXCOORD1,
+                in float2 iTexcoord : TEXCOORD2,
+                in float4 iPosition : SV_Position,
+                out float4 fragData0 : SV_Target0,
+                out float4 fragData1 : SV_Target1,
+                out float4 fragData2 : SV_Target2)
+            {
+                float4 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse;
+                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
+                float2 brdfParm = float2(specular, shininess);
+                if (quality.b > 0.0)
+                {
+                    brdfParm = GetSpecular(texSpecular, iTexcoord);
+                }
+
+                fragData0 = StoreGBufferRT0(float3(0,0,0), brdfParm.r);
+                fragData1 = StoreGBufferRT1(normal, brdfParm.g);
+            }
+        ]]>
+    </shader>
+    <technique name="Shadow">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
+            <state name="vertex" value="DepthVS"/>
+            <state name="fragment" value="DepthPS"/>
+            <state name="primitive" value="triangle" />
+        </pass>
+    </technique>
+    <technique name="Transparent">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
+
+            <state name="vertex" value="TransparentVS"/>
+            <state name="fragment" value="TransparentPS"/>
+
+            <state name="primitive" value="triangle" />
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilPass" value="replace"/>
+            <state name="stencilTwoPass" value="replace"/>
+
+            <state name="depthtest" value="true"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+            <state name="colormask0" value="rgb"/>
+            <state name="colormask1" value="none"/>
+
+            <state name="blend0" value="true"/>
+            <state name="blendsrc0" value="one"/>
+            <state name="blenddst0" value="one"/>
+
+            <state name="blend2" value="true"/>
+            <state name="blendsrc2" value="zero"/>
+            <state name="blenddst2" value="invsrccol"/>
+            <state name="blendalphasrc2" value="one"/>
+            <state name="blendalphadst2" value="one"/>
+        </pass>
+    </technique>
+   <technique name="TransparentBatch">
+        <pass name="p1">
+            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
+
+            <state name="vertex" value="TransparentVS"/>
+            <state name="fragment" value="Transparent2PS"/>
+
+            <state name="primitive" value="triangle" />
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
+
+            <state name="colormask0" value="alpha"/>
+            <state name="colormask1" value="rgba"/>
+            <state name="colormask2" value="none"/>
+        </pass>
+    </technique>
+</effect>

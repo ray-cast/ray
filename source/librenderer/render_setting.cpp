@@ -80,7 +80,7 @@ RenderSetting::RenderSetting() noexcept
 	, enableDOF(false)
 	, enableMotionBlur(false)
 	, enableFimic(true)
-	, enableColorGrading(true)
+	, enableColorGrading(false)
 	, enableFXAA(true)
 	, enableGlobalIllumination(true)
 	, earthRadius(6360000.f, 6440000.f)

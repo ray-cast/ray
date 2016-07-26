@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+﻿// +----------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -59,7 +59,7 @@ SkinningComponent::onActivate() except
 	stage->setTranslate(ray::float3(0, 0, -2.5));
 	stage->setActive(true);
 
-	//auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/miku/miku.pmd", "dlc:Skinning/animotion/ÛÑÔÈ~.vmd");
+	//auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/miku/miku.pmd", "dlc:Skinning/animotion/愛言葉.vmd");
 	auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/PDF 活动小丑/活动小丑.pmx", "dlc:Skinning/animotion/愛言葉.vmd");
 	gameObject->setActive(true);
 

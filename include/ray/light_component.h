@@ -54,12 +54,14 @@ public:
 
 	void setLightRange(float range) noexcept;
 	void setLightIntensity(float intensity) noexcept;
+	void setLightAttenuation(const float3& atten) noexcept;
 	void setSpotInnerCone(float value) noexcept;
 	void setSpotOuterCone(float value) noexcept;
 	void setLightColor(const float3& color) noexcept;
 
 	float getLightRange() const noexcept;
 	float getLightIntensity() const noexcept;
+	const float3& getLightAttenuation() const noexcept;
 	const float2& getSpotInnerCone() const noexcept;
 	const float2& getSpotOuterCone() const noexcept;
 	const float3& getLightColor() const noexcept;

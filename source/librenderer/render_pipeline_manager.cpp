@@ -138,16 +138,6 @@ RenderPipelineManager::getRenderPipeline() const noexcept
 bool
 RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 {
-	_setting.earthRadius = setting.earthRadius;
-	_setting.earthScaleHeight = setting.earthScaleHeight;
-	_setting.minElevation = setting.minElevation;
-	_setting.maxElevation = setting.maxElevation;
-	_setting.rayleighAngularSctrCoeff = setting.rayleighAngularSctrCoeff;
-	_setting.rayleighExtinctionCoeff = setting.rayleighExtinctionCoeff;
-	_setting.mieAngularSctrCoeff = setting.mieAngularSctrCoeff;
-	_setting.mieExtinctionCoeff = setting.mieExtinctionCoeff;
-	_setting.mie = setting.mie;
-	_setting.density = setting.density;
 	_setting.enableGlobalIllumination = setting.enableGlobalIllumination;
 
 	if (_setting.enableAtmospheric != setting.enableAtmospheric)

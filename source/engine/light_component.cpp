@@ -67,6 +67,12 @@ LightComponent::setLightIntensity(float intensity) noexcept
 }
 
 void
+LightComponent::setLightAttenuation(const float3& atten) noexcept
+{
+	return _light->setLightAttenuation(atten);
+}
+
+void
 LightComponent::setSpotInnerCone(float value) noexcept
 {
 	_light->setSpotInnerCone(value);
@@ -88,6 +94,12 @@ float
 LightComponent::getLightIntensity() const noexcept
 {
 	return _light->getLightIntensity();
+}
+
+const float3& 
+LightComponent::getLightAttenuation() const noexcept
+{
+	return _light->getLightAttenuation();
 }
 
 const float2&
@@ -181,6 +193,7 @@ LightComponent::load(iarchive& reader) noexcept
 	std::string shadowMode;
 	float2 spot(5.0f, 40.0f);
 	float3 lightColor(1, 1, 1);
+	float3 lightAtten;
 	float lightIntensity = 1.0f;
 	float lightRange = 1.0f;
 	float shadowBias = 0.0;
@@ -189,14 +202,18 @@ LightComponent::load(iarchive& reader) noexcept
 
 	GameComponent::load(reader);
 
+	if (reader.getValue("atten", lightAtten))
+		this->setLightAttenuation(lightAtten);
+
 	reader >> make_archive(lightIntensity, "intensity");
 	reader >> make_archive(lightRange, "range");
-	reader >> make_archive(shadowMode, "shadow");
 	reader >> make_archive(lightColor, "color");
+	reader >> make_archive(lightAtten, "atten");
 	reader >> make_archive(lightType, "type");
 	reader >> make_archive(subsurfaceScattering, "sss");
 	reader >> make_archive(enableGI, "GI");
 	reader >> make_archive(shadowBias, "bias");
+	reader >> make_archive(shadowMode, "shadow");
 	reader >> make_archive(spot, "spot");
 
 	if (lightType == "sun")

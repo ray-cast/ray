@@ -494,8 +494,9 @@ DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const 
 	_mrsiiNormalMap->uniformTexture(light.getNormalTexture());
 	_mrsiiDepthLinearMap->uniformTexture(light.getDepthLinearTexture());
 	_mrsiiLightAttenuation->uniform3f(light.getLightAttenuation());
-	_mrsiiSpotOuterInner->uniform2f(light.getSpotOuterCone().y, light.getSpotInnerCone().y);
+	_mrsiiLightOuterInner->uniform2f(light.getSpotOuterCone().y, light.getSpotInnerCone().y);
 	_mrsiiLightView2EyeView->uniform4fmat(pipeline.getCamera()->getView() * light.getCamera(0)->getViewInverse());
+	_mrsiiLightColor->uniform3f(light.getLightColor() * light.getLightIntensity());
 
 	auto camera = pipeline.getCamera();
 	pipeline.setCamera(light.getCamera(0));
@@ -819,7 +820,9 @@ DeferredLightingPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 	else
 		return false;
 
-	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32))
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat))
+		_mrsiiLightFormat = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
+	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32))
 		_mrsiiLightFormat = GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32;
 	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
 		_mrsiiLightFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
@@ -1138,7 +1141,8 @@ DeferredLightingPipeline::setupMRSIIMaterials(RenderPipeline& pipeline) noexcept
 	_mrsiiNormalMap = _mrsii->getParameter("texNormal");
 	_mrsiiDepthLinearMap = _mrsii->getParameter("texDepthLinear");
 	_mrsiiLightAttenuation = _mrsii->getParameter("lightAttenuation");
-	_mrsiiSpotOuterInner = _mrsii->getParameter("lightOuterInner");
+	_mrsiiLightColor = _mrsii->getParameter("lightColor");
+	_mrsiiLightOuterInner = _mrsii->getParameter("lightOuterInner");
 	_mrsiiLightView2EyeView = _mrsii->getParameter("shadowView2EyeView");
 	_mrsiiCountGridOffsetDelta = _mrsii->getParameter("VPLCountGridOffsetDelta");
 
@@ -1437,7 +1441,7 @@ DeferredLightingPipeline::destroyMRSIIMaterials() noexcept
 	_mrsiiColorMap.reset();
 	_mrsiiNormalMap.reset();
 	_mrsiiDepthLinearMap.reset();
-	_mrsiiSpotOuterInner.reset();
+	_mrsiiLightOuterInner.reset();
 	_mrsiiLightAttenuation.reset();
 	_mrsiiCountGridOffsetDelta.reset();
 	_mrsiiLightView2EyeView.reset();

@@ -11,6 +11,7 @@
     <parameter name="texMRT1" type="texture2D"/>
     <parameter name="lightOuterInner" type="float2"/>
     <parameter name="lightAttenuation" type="float3"/>
+    <parameter name="lightColor" type="float3"/>
     <parameter name="offset" type="float2"/>
     <parameter name="offsetUpsampling" type="float4"/>
     <parameter name="VPLCountGridOffsetDelta" type="float4"/>
@@ -59,7 +60,7 @@
                         if (nl > 0)
                         {
                             float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * spot * nl;
-                            lighting = float4(albedo, 1) * atten * dot(P, P);
+                            lighting = float4(lightColor * albedo, 1) * atten * dot(P, P);
                         }
                     }
 
@@ -99,7 +100,7 @@
                 if (coord.y < 1 / 3.0f)
                 {
                     float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation);
-                    return float4(albedo, 1) * atten * dot(P, P);
+                    return float4(lightColor * albedo, 1) * atten * dot(P, P);
                 }
                 else if (coord.y < 2 / 3.0f)
                 {

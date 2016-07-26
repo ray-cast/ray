@@ -136,8 +136,9 @@ private:
 	MaterialParamPtr _mrsiiColorMap;
 	MaterialParamPtr _mrsiiNormalMap;
 	MaterialParamPtr _mrsiiDepthLinearMap;
-	MaterialParamPtr _mrsiiSpotOuterInner;
+	MaterialParamPtr _mrsiiLightColor;
 	MaterialParamPtr _mrsiiLightAttenuation;
+	MaterialParamPtr _mrsiiLightOuterInner;
 	MaterialParamPtr _mrsiiCountGridOffsetDelta;
 	MaterialParamPtr _mrsiiLightView2EyeView;
 	MaterialParamPtr _mrsiiOffset;

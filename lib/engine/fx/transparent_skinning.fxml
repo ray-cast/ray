@@ -5,6 +5,7 @@
     <include name="sys:fx/lighting.fxml"/>
     <parameter name="matModelView" type="float4x4" semantic="matModelView" />
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
+    <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
     <parameter name="matView" type="float4x4" semantic="matView"/>
     <parameter name="quality" type="float4"/>
     <parameter name="diffuse" type="float4"/>
@@ -36,7 +37,7 @@
             {
                 float3 tangentNormal;
                 if (quality > 0.55)
-                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb;
+                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb * 2 - 1;
                 else
                     tangentNormal = DecodeNormalMap(normalMap, coord);
 
@@ -49,20 +50,17 @@
                 return normalize(highNormal);
             }
 
-            float2 GetSpecular(Texture2D specularMap, float2 coord)
+            float2 GetSpecular(Texture2D specularMap, float2 coord, float specular, float shininess)
             {
-                return specularMap.Sample(PointClamp, coord).rg;
+                return specularMap.Sample(PointClamp, coord).rg * float2(specular, shininess);
             }
 
             void DepthVS(
                 in float4 Position : POSITION,
-#if SKINNING > 0
                 in float4 BlendWeight : BLENDWEIGHT,
                 in float4 BlendIndice : BLENDINDICES,
-#endif
                 out float4 oPosition : SV_Position)
             {
-#if SKINNING > 0
                 int4 blendIndices = (int4)BlendIndice;
 
                 oPosition = mul(bindpose[blendIndices.x], Position) * BlendWeight.x;
@@ -70,9 +68,6 @@
                 oPosition += mul(bindpose[blendIndices.z], Position) * BlendWeight.z;
                 oPosition += mul(bindpose[blendIndices.w], Position) * BlendWeight.w;
                 oPosition = mul(matModelViewProject, oPosition);
-#else
-                oPosition = mul(matModelViewProject, Position);
-#endif
             }
 
             void DepthPS()
@@ -83,10 +78,8 @@
                 in float4 Position : POSITION,
                 in float4 TangentQuat : TANGENT,
                 in float2 Texcoord : TEXCOORD,
-#if SKINNING > 0
                 in float4 BlendWeight : BLENDWEIGHT,
                 in float4 BlendIndice : BLENDINDICES,
-#endif
                 out float3 oNormal   : TEXCOORD0,
                 out float3 oTangent  : TEXCOORD1,
                 out float2 oTexcoord : TEXCOORD2,
@@ -98,7 +91,6 @@
                 float3 Normal = QuaternionToNormal(TangentQuat);
                 float3 Tangent = QuaternionToTangent(TangentQuat);
 
-#if SKINNING > 0
                 int4 blendIndices = (int4)BlendIndice;
 
                 oPosition = mul(bindpose[blendIndices.x], Position) * BlendWeight.x;
@@ -111,12 +103,8 @@
                 oNormal += mul((float3x3)bindpose[blendIndices.z], Normal) * BlendWeight.z;
                 oNormal += mul((float3x3)bindpose[blendIndices.w], Normal) * BlendWeight.w;
 
-                oNormal = mul((float3x3)matView, oNormal);
-#else
-                oNormal = mul((float3x3)matView, Normal);
-                oTangent = mul((float3x3)matView, Tangent);
-                oPosition = Position;
-#endif
+                oNormal = mul(oNormal, (float3x3)matModelViewInverse);
+
                 oTexcoord = Texcoord;
                 oViewDir = -mul(matModelView, oPosition).xyz;
                 oPosition = mul(matModelViewProject, oPosition);
@@ -134,11 +122,7 @@
             {
                 float4 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse;
                 float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
-                float2 brdfParm = float2(specular, shininess);
-                if (quality.b > 0.0)
-                {
-                    brdfParm = GetSpecular(texSpecular, iTexcoord);
-                }
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord, specular, shininess) : float2(specular, shininess);
 
                 float3 L = mul((float3x3)matView, float3(0,1,0));
 
@@ -160,11 +144,7 @@
             {
                 float4 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse;
                 float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
-                float2 brdfParm = float2(specular, shininess);
-                if (quality.b > 0.0)
-                {
-                    brdfParm = GetSpecular(texSpecular, iTexcoord);
-                }
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord, specular, shininess) : float2(specular, shininess);
 
                 fragData0 = StoreGBufferRT0(float3(0,0,0), brdfParm.r);
                 fragData1 = StoreGBufferRT1(normal, brdfParm.g);

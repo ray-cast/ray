@@ -6,8 +6,8 @@
     <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
     <parameter name="quality" type="float4"/>
     <parameter name="diffuse" type="float4"/>
-    <parameter name="specular" type="float"/>
-    <parameter name="shininess" type="float"/>
+    <parameter name="metalness" type="float"/>
+    <parameter name="smoothness" type="float"/>
     <parameter name="translucency" type="float"/>
     <parameter name="texDiffuse" type="texture2D"/>
     <parameter name="texNormal" type="texture2D" />
@@ -55,9 +55,9 @@
                 return normalize(highNormal);
             }
 
-            float2 GetSpecular(Texture2D specularMap, float2 coord, float specular, float shininess)
+            float2 GetSpecular(Texture2D specularMap, float2 coord)
             {
-                return specularMap.Sample(PointClamp, coord).rg * float2(specular, shininess);
+                return specularMap.Sample(PointClamp, coord).rg;
             }
 
             void DepthVS(
@@ -93,7 +93,7 @@
                 out float4 fragData1 : SV_Target1)
             {
                 float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : srgb2linear(diffuse.rgb);
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord, specular, shininess) : float2(specular, shininess);
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord) : float2(metalness, smoothness);
 
                 fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
                 fragData1 = StoreGBufferRT1(normalize(normal), brdfParm.g);
@@ -144,13 +144,13 @@
                 if (quality.b > 0.0)
                 {
                     float4 specularTex = texSpecular.Sample(PointClamp, iTexcoord);
-                    material.specular = specularTex.r * specular;
-                    material.smoothness = specularTex.g * shininess;
+                    material.specular = specularTex.r;
+                    material.smoothness = specularTex.g;
                 }
                 else
                 {
-                    material.specular = specular;
-                    material.smoothness = shininess;
+                    material.specular = metalness;
+                    material.smoothness = smoothness;
                 }
 
                 material.transmittance = SkinTransmittance(translucency);

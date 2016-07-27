@@ -63,20 +63,20 @@ ModelComponent::onActivate() noexcept
 	auto white = materialTemp->clone();
 	white->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
 	white->getParameter("diffuse")->uniform3f(ray::math::pow(ray::float3(0.76, 0.75, 0.5), ray::float3(1.0f / 2.4f)));
-	white->getParameter("specular")->uniform1f(0.1);
-	white->getParameter("shininess")->uniform1f(0.1);
+	white->getParameter("metalness")->uniform1f(0.1);
+	white->getParameter("smoothness")->uniform1f(0.1);
 
 	auto red = materialTemp->clone();
 	red->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
 	red->getParameter("diffuse")->uniform3f(ray::math::pow(ray::float3(0.63, 0.06, 0.04), ray::float3(1.0f / 2.4f)));
-	red->getParameter("specular")->uniform1f(0.1);
-	red->getParameter("shininess")->uniform1f(0.1);
+	red->getParameter("metalness")->uniform1f(0.1);
+	red->getParameter("smoothness")->uniform1f(0.1);
 
 	auto green = materialTemp->clone();
 	green->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
 	green->getParameter("diffuse")->uniform3f(ray::math::pow(ray::float3(0.15, 0.48, 0.09), ray::float3(1.0f / 2.4f)));
-	green->getParameter("specular")->uniform1f(0.1);
-	green->getParameter("shininess")->uniform1f(0.1);
+	green->getParameter("metalness")->uniform1f(0.1);
+	green->getParameter("smoothness")->uniform1f(0.1);
 
 	auto planeMesh = std::make_shared<ray::MeshProperty>();
 	planeMesh->makePlane(1.0, 1.0);

@@ -10,8 +10,8 @@
     <parameter name="quality" type="float4"/>
     <parameter name="diffuse" type="float4"/>
     <parameter name="opacity" type="float"/>
-    <parameter name="specular" type="float"/>
-    <parameter name="shininess" type="float"/>
+    <parameter name="metalness" type="float"/>
+    <parameter name="smoothness" type="float"/>
     <parameter name="texDiffuse" type="texture2D"/>
     <parameter name="texNormal" type="texture2D" />
     <parameter name="texSpecular" type="texture2D" />
@@ -50,9 +50,9 @@
                 return normalize(highNormal);
             }
 
-            float2 GetSpecular(Texture2D specularMap, float2 coord, float specular, float shininess)
+            float2 GetSpecular(Texture2D specularMap, float2 coord)
             {
-                return specularMap.Sample(PointClamp, coord).rg * float2(specular, shininess);
+                return specularMap.Sample(PointClamp, coord).rg;
             }
 
             void DepthVS(
@@ -122,7 +122,7 @@
             {
                 float4 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse;
                 float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord, specular, shininess) : float2(specular, shininess);
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord) : float2(metalness, smoothness);
 
                 float3 L = mul((float3x3)matView, float3(0,1,0));
 
@@ -144,7 +144,7 @@
             {
                 float4 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse;
                 float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord, specular, shininess) : float2(specular, shininess);
+                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord) : float2(metalness, smoothness);
 
                 fragData0 = StoreGBufferRT0(float3(0,0,0), brdfParm.r);
                 fragData1 = StoreGBufferRT1(normal, brdfParm.g);

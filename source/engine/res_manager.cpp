@@ -449,18 +449,18 @@ ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, Game
 MaterialPtr
 ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::string& file, const std::string& directory) noexcept
 {
-	float3 specular(0.5f);
+	float3 metalness(0.5f);
 	float3 diffuseColor(1.0f);
 	float4 quality(0.0f);
-	float shininess = 0.0;
+	float smoothness = 0.0;
 	float opacity = 1.0;
 	std::string diffuseTexture;
 	std::string normalTexture;
 
 	material.get(MATKEY_OPACITY, opacity);
-	material.get(MATKEY_SHININESS, shininess);
+	material.get(MATKEY_SHININESS, smoothness);
 	material.get(MATKEY_COLOR_DIFFUSE, diffuseColor);
-	material.get(MATKEY_COLOR_SPECULAR, specular);
+	material.get(MATKEY_COLOR_SPECULAR, metalness);
 	material.get(MATKEY_TEXTURE_DIFFUSE(0), diffuseTexture);
 	material.get(MATKEY_TEXTURE_NORMALS(0), normalTexture);
 
@@ -501,8 +501,8 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 	else
 		effect->getParameter("diffuse")->uniform3f(diffuseColor);
 
-	effect->getParameter("specular")->uniform1f(luminance(specular));
-	effect->getParameter("shininess")->uniform1f(shininess);
+	effect->getParameter("metalness")->uniform1f(metalness.x);
+	effect->getParameter("smoothness")->uniform1f(smoothness);
 
 	return effect;
 }

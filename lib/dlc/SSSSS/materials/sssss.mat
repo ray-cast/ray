@@ -2,8 +2,8 @@
 <material>
     <attribute quality="1.0,0.5,1.0,0.0"/>
     <attribute diffuse="1.0, 1.0, 1.0, 0.2" />
-    <attribute specular="0.3"/>
-    <attribute shininess="1.0" />
+    <attribute metalness="0.3"/>
+    <attribute smoothness="1.0" />
     <attribute translucency="0.5"/>
     <attribute texDiffuse="dlc:SSSSS/models/head/DiffuseMap.dds"/>
     <attribute texNormal="dlc:SSSSS/models/head/NormalMap.dds"/>

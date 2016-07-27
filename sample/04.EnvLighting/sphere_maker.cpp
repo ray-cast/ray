@@ -290,8 +290,8 @@ SphereMakerComponent::onActivate() except
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
 			material->getParameter("diffuse")->uniform3f(ray::math::pow(diff_spec_parametes[i * 10 + j].xyz(), ray::float3(1.0f / 2.4f)));
-			material->getParameter("specular")->uniform1f(diff_spec_parametes[i * 10 + j].w);
-			material->getParameter("shininess")->uniform1f(shininess_parametes[i * 10 + j]);
+			material->getParameter("metalness")->uniform1f(diff_spec_parametes[i * 10 + j].w);
+			material->getParameter("smoothness")->uniform1f(shininess_parametes[i * 10 + j]);
 			material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
 			material->getParameter("texNormal")->uniformTexture(normalMap);
 

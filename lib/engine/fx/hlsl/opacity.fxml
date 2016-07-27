@@ -107,19 +107,28 @@
                 oPosition = mul(matModelViewProject, Position);
             }
 
-            void OpaquePS(
-                in float3 iNormal : TEXCOORD0,
-                in float3 iTangent : TEXCOORD1,
-                in float2 iTexcoord : TEXCOORD2,
-                out float4 fragData0 : SV_Target0,
-                out float4 fragData1 : SV_Target1)
+            GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 iTexcoord : TEXCOORD2)
             {
-                float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : srgb2linear(diffuse.rgb);
-                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : normalize(iNormal);
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord, specular, shininess) : float2(specular, shininess);
+                MaterialParam material;
+                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : srgb2linear(diffuse.rgb);
+                material.normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : normalize(iNormal);
 
-                fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
-                fragData1 = StoreGBufferRT1(normal, brdfParm.g);
+                if (quality.b > 0.0)
+                {
+                    float4 specularTex = texSpecular.Sample(PointClamp, iTexcoord);
+                    material.specular = specularTex.rgb * specular;
+                    material.smoothness = specularTex.a * shininess;
+                }
+                else
+                {
+                    material.specular = specular;
+                    material.smoothness = shininess;
+                }
+
+                material.transmittance = 0;
+                material.lightModel = LIGHTINGMODEL_NORMAL;
+
+                return EncodeGbuffer(material);
             }
         ]]>
     </shader>

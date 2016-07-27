@@ -217,6 +217,7 @@ private:
 	MaterialSemanticPtr _materialDeferredDepthLinearMap;
 	MaterialSemanticPtr _materialDeferredGraphicMap;
 	MaterialSemanticPtr _materialDeferredNormalMap;
+	MaterialSemanticPtr _materialDeferredGbuffer3Map;
 	MaterialSemanticPtr _materialDeferredLightMap;
 	MaterialSemanticPtr _materialDeferredOpaqueShadingMap;
 

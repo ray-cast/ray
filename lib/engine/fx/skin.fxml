@@ -5,9 +5,10 @@
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
     <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
     <parameter name="quality" type="float4"/>
-    <parameter name="diffuse" type="float3"/>
+    <parameter name="diffuse" type="float4"/>
     <parameter name="specular" type="float"/>
     <parameter name="shininess" type="float"/>
+    <parameter name="translucency" type="float"/>
     <parameter name="texDiffuse" type="texture2D"/>
     <parameter name="texNormal" type="texture2D" />
     <parameter name="texSpecular" type="texture2D" />
@@ -21,9 +22,20 @@
                 return normalize(bump);
             }
 
-            float3 GetDiffuse(Texture2D diffuseMap, float3 diffuse, float2 coord)
+            float3 SkinSynthesis(float3 diffuse, float m)
             {
-                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb * diffuse);
+                float3 melanin = diffuse * luminance(diffuse);
+                return diffuse * lerp(1.0, melanin, m);
+            }
+
+            float3 SkinTransmittance(float translucency)
+            {
+                return exp((1 - saturate(translucency)) * float3(-8, -40, -64));
+            }
+
+            float3 GetDiffuse(Texture2D diffuseMap, float4 diffuse, float2 coord)
+            {
+                return SkinSynthesis(srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb * diffuse.rgb), diffuse.w);
             }
 
             float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
@@ -80,7 +92,7 @@
                 out float4 fragData0 : SV_Target0,
                 out float4 fragData1 : SV_Target1)
             {
-                float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : srgb2linear(diffuse);
+                float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : srgb2linear(diffuse.rgb);
                 float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord, specular, shininess) : float2(specular, shininess);
 
                 fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
@@ -107,22 +119,33 @@
                 oPosition = mul(matModelViewProject, Position);
             }
 
-            float3 SkinTransmittance(float translucency)
-            {
-                return exp((1 - saturate(translucency)) * float3(-8, -40, -64));
-            }
-
             GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 iTexcoord : TEXCOORD2)
             {
                 MaterialParam material;
-                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : srgb2linear(diffuse.rgb);
-                material.normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : normalize(iNormal);
+                if (quality.r > 0.0)
+                {
+                    material.albedo = srgb2linear(texDiffuse.Sample(PointClamp, iTexcoord).rgb * diffuse.rgb);
+                    material.albedo = SkinSynthesis(material.albedo, diffuse.w);
+                }
+                else
+                {
+                    material.albedo = srgb2linear(diffuse.rgb);
+                }
+
+                if (quality.g > 0.0)
+                {
+                    material.normal = GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g);
+                }
+                else
+                {
+                    material.normal = normalize(iNormal);
+                }
 
                 if (quality.b > 0.0)
                 {
                     float4 specularTex = texSpecular.Sample(PointClamp, iTexcoord);
-                    material.specular = specularTex.rgb * specular;
-                    material.smoothness = specularTex.a * shininess;
+                    material.specular = specularTex.r * specular;
+                    material.smoothness = specularTex.g * shininess;
                 }
                 else
                 {
@@ -130,8 +153,8 @@
                     material.smoothness = shininess;
                 }
 
-                material.transmittance = SkinTransmittance(0.5);
-                material.lightModel = LIGHTINGMODEL_NORMAL;
+                material.transmittance = SkinTransmittance(translucency);
+                material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
 
                 return EncodeGbuffer(material);
             }

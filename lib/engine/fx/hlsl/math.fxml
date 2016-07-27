@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <effect version="1270" language="hlsl">
-    <include name="sys:fx/common.fxml"/>
     <shader>
     	<![CDATA[
 		#define InvLog2 3.32192809489f
@@ -209,49 +208,24 @@
 		}
 
 		// http://www.crytek.com/download/izfrey_siggraph2011.pdf
-		float3 QuaternionToTangent(float4 quat)
-		{
-			float3 qv = float3(quat.w, quat.z, -quat.y);
-			return float3(1, 0, 0) + cross(quat.xyz, qv) * 2;
-		}
-
-		float3 QuaternionToBinormal(float4 quat)
-		{
-			float3 qv = float3(-quat.z, quat.w, -quat.x);
-			return float3(0, 1, 0) + cross(quat.xyz, qv) * 2;
-		}
-
-		float3 QuaternionToNormal(float4 quat)
-		{
-			float3 qv = float3(quat.y, -quat.x, quat.w);
-			return (float3(0, 0, 1) + cross(quat.xyz, qv) * 2);// * (quat.w < 0.0f ? -1.0f : 1.0f);
-		}
-
-		float3 transform_quat(float3 v, float4 quat)
+		float3 QuaternionTransform(float3 v, float4 quat)
 		{
 			return v + cross(quat.xyz, cross(quat.xyz, v) + quat.w * v) * 2;
 		}
 
-		float3 packNormal(float3 normal)
+		float3 QuaternionToTangent(float4 quat)
 		{
-			float p = sqrt(-normal.z * 8 + 8);
-			float2 enc = normal.xy / p + 0.5f;
-			float2 enc255 = enc * 255;
-			float2 residual = floor(frac(enc255) * 16);
-			return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
+			return QuaternionTransform(float3(1, 0, 0), quat);
 		}
 
-		float3 unpackNormal(float3 enc)
+		float3 QuaternionToBinormal(float4 quat)
 		{
-			float nz = floor(enc.z * 255) / 16;
-			enc.xy += float2(floor(nz) / 16, frac(nz)) / 255;
-			float2 fenc = enc.xy * 4 - 2;
-			float f = dot(fenc, fenc);
-			float g = sqrt(1 - f / 4);
-			float3 normal;
-			normal.xy = fenc * g;
-			normal.z = f / 2 - 1;
-			return normal;
+			return QuaternionTransform(float3(0, 1, 0), quat);
+		}
+
+		float3 QuaternionToNormal(float4 quat)
+		{
+			return QuaternionTransform(float3(0, 0, 1), quat);
 		}
 
 		float4 SmoothCurve(float4 x)
@@ -283,6 +257,99 @@
 		{
 			return sqrt(1.0 - x) * (1.5707963267948966192313216916398f + x * (-0.213300989f + x * (0.077980478f + x * -0.02164095f)));
 		}
+
+        float2 PosToCoord(float2 Position)
+        {
+            return mad(Position, 0.5, 0.5);
+        }
+
+        float3 PosToCoord(float3 Position)
+        {
+            return mad(Position, 0.5, 0.5);
+        }
+
+        float4 PosToCoord(float4 Position)
+        {
+            return mad(Position, 0.5, 0.5);
+        }
+
+        float2 CoordToPos(float2 coord)
+        {
+            return mad(coord, 2.0, -1.0);
+        }
+
+        float3 CoordToPos(float3 coord)
+        {
+            return mad(coord, 2.0, -1.0);
+        }
+
+        float4 CoordToPos(float4 coord)
+        {
+            return mad(coord, 2.0, -1.0);
+        }
+
+        float linearDepthOrthoLH(float2 clipConstant, float depth)
+        {
+            // clipConstant.x = znear;
+            // clipConstant.y = zfar - znear;
+            return clipConstant.x + clipConstant.y * depth;
+        }
+
+        float linearDepthPerspectiveFovLH(float2 clipConstant, float depth)
+        {
+            // clipConstant.x = _znear * (_zfar / (_zfar - _znear));
+            // clipConstant.y = _zfar / (_zfar - _znear);
+            return clipConstant.x / (clipConstant.y - depth);
+        }
+
+        float linearDepthPerspectiveOffCenterLH(float3 clipConstant, float depth)
+        {
+            // clipConstant.x = (2 * znear * zfar);
+            // clipConstant.y = zfar + znear;
+            // clipConstant.z = zfar - znear;
+            return clipConstant.x / (clipConstant.y - clipConstant.z * depth);
+        }
+
+        float3 computeTangent(float3 viewdir, float2 coord)
+        {
+            float3 dp1 = ddx(viewdir);
+            float3 dp2 = ddy(viewdir);
+            float2 duv1 = ddx(coord);
+            float2 duv2 = ddy(coord);
+
+            float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+            float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+            float3 T = mul(float2(duv1.x, duv2.x), I);
+            return T;
+        }
+
+        float3 computeBinormal(float3 N, float3 viewdir, float2 coord)
+        {
+            float3 dp1 = ddx(viewdir);
+            float3 dp2 = ddy(viewdir);
+            float2 duv1 = ddx(coord);
+            float2 duv2 = ddy(coord);
+
+            float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+            float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+            float3 B = mul(float2(duv1.y, duv2.y), I);
+            return B;
+        }
+
+        float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
+        {
+            float3 dp1 = ddx(viewdir);
+            float3 dp2 = ddy(viewdir);
+            float2 duv1 = ddx(coord);
+            float2 duv2 = ddy(coord);
+
+            float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+            float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+            float3 T = mul(float2(duv1.x, duv2.x), I);
+            float3 B = mul(float2(duv1.y, duv2.y), I);
+
+            return float3x3(normalize(T), normalize(B), N);
+        }
 
         float2 computeSphereCoord(float3 normal)
         {

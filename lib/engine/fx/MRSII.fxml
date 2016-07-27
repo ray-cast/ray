@@ -45,7 +45,7 @@
                 float specular = restoreSpecular(MRT0);
                 float shininess = restoreShininess(MRT1);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
                 float3 P = restorePosition(texDepthLinear, RSMcoord, V);
                 float3 albedo = restoreDiffuse(MRT0);
@@ -92,7 +92,7 @@
                 float specular = restoreSpecular(MRT0);
                 float shininess = restoreShininess(MRT1);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
                 float3 P = restorePosition(texDepthLinear, RSMcoord, V);
                 float3 albedo = restoreDiffuse(MRT0);
@@ -142,7 +142,7 @@
                 float shininess = restoreShininess(MRT1);
 
                 float3 V = normalize(viewdir);
-                float3 viewNormal = restoreNormal(MRT1);
+                float3 viewNormal = DecodeGBufferNormal(MRT1);
                 float3 viewPosition = restorePosition(texDepthLinear, coord.xy, V);
 
                 float3 shading = 0;
@@ -157,7 +157,7 @@
                     float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
 
                     float3 lighting;
-                    lighting = DiffuseBRDF(viewNormal, lightDirection, V, lightNormal.w, lightColor);
+                    lighting = DiffuseBRDF(viewNormal, lightDirection, V, lightNormal.w) * lightColor;
                     lighting *= VPLsAttenTerm(lightPosition.xyz, viewPosition, lightColor.a, VPLCountGridOffsetDelta.x);
                     lighting *= max(0, dot(lightNormal.xyz, -lightDirection) * 0.5 + 0.5);
 
@@ -224,7 +224,7 @@
 
             float4 NormalDerivatePS(in float2 coord : TEXCOORD0) : SV_Target
             {
-                float2 maxNormal = restoreNormal(texNormal.Sample(PointClamp, coord)).xy;
+                float2 maxNormal = DecodeGBufferNormal(texNormal.Sample(PointClamp, coord)).xy;
                 float2 minNormal = maxNormal;
 
                 return float4(minNormal, maxNormal) * 0.5 + 0.5;

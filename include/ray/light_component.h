@@ -72,9 +72,6 @@ public:
 	void setShadowBias(float bias) noexcept;
 	float getShadowBias() const noexcept;
 
-	void setSubsurfaceScattering(bool enable) noexcept;
-	bool getSubsurfaceScattering() const noexcept;
-
 	void setGlobalIllumination(bool enable) noexcept;
 	bool getGlobalIllumination() const noexcept;
 

@@ -84,7 +84,7 @@
 
                 float specular = restoreSpecular(MRT0);
 
-                float3 viewNormal = restoreNormal(MRT1);
+                float3 viewNormal = DecodeGBufferNormal(MRT1);
                 float3 viewPosition = GetPosition(viewdir, coord);
 
                 float4 colors = traceScreenSpaceRay(coord, viewdir, viewPosition, viewNormal);

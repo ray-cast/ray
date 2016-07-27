@@ -43,13 +43,13 @@
             float3 GetNormal(float2 uv)
             {
                 float4 MRT1 = texNormal.Sample(PointClamp, uv);
-                return restoreNormal(MRT1);
+                return DecodeGBufferNormal(MRT1);
             }
 
             float3 GetNormal(int2 pt)
             {
                 float4 MRT1 = texNormal.Load(int3(pt,0.0));
-                return restoreNormal(MRT1);
+                return DecodeGBufferNormal(MRT1);
             }
 
             float2 tapLocation(int sampleIndex, float2 sampleNoise, float radius)

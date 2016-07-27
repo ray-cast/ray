@@ -21,7 +21,7 @@
     <parameter name="bloomWeight[11]" type="float[]" />
     <parameter name="texSourceLevel" type="int"/>
     <parameter name="exposure" type="float" />
-    <parameter name="delta" type="float" />
+    <parameter name="delta" type="float2" />
     <shader>
         <![CDATA[
             float3 Uncharted2Tonemap(float3 x)
@@ -79,16 +79,33 @@
                 return lerp(lum * BLUE_SHIFT, color, saturate(16.0f * lum));
             }
 
+            float ComputeExposureISO(float avgLum)
+            {
+                // Compute EV with ISO 100 and standard camera settings
+                float EV100 = log2(avgLum * LIGHT_UNIT_SCALE * 100.0 / 330.0);
+
+                // Apply automatic exposure compensation based on scene key
+                EV100 -= ((clamp(log10(avgLum * LIGHT_UNIT_SCALE + 1), 0.1, 5.2) - 3.0) / 2.0) * 1000.f;
+
+                // Clamp EV
+                EV100 = clamp(EV100, 8, 12.0f);
+
+                // Compute maximum luminance based on Saturation Based Film Sensitivity (ISO 100, lens factor q=0.65)
+                float maxLum = 1.2 * exp2(EV100) / LIGHT_UNIT_SCALE;
+
+                return 1 / maxLum;
+            }
+
             float ComputeExposure(float avgLum)
             {
                 float middleGray = 1.03h - 2.0h / (2.0h + log2(avgLum + 1.0));
                 return middleGray / avgLum;
             }
 
-            float CalcAdaptedLum(float adaptedLum, float lum, float step)
+            float CalcAdaptedLum(float adaptedLum, float lum, float2 step)
             {
                 // step = 1.0f - pow(0.98f, 50 * delta);
-                return max(0, adaptedLum + (lum - adaptedLum) * step);
+                return max(0, adaptedLum + (lum - adaptedLum) * step.x);
             }
 
             float3 noise3( float2 seed )

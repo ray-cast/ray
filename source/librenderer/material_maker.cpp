@@ -1274,6 +1274,7 @@ MaterialMaker::stringToSemanticType(const std::string& type) noexcept
 	if (type == "DepthLinearMap") return GlobalSemanticType::GlobalSemanticTypeDepthLinearMap;
 	if (type == "DiffuseMap") return GlobalSemanticType::GlobalSemanticTypeDiffuseMap;
 	if (type == "NormalMap") return GlobalSemanticType::GlobalSemanticTypeNormalMap;
+	if (type == "Gbuffer3Map") return GlobalSemanticType::GlobalSemanticTypeGbuffer3Map;
 	if (type == "LightingMap") return GlobalSemanticType::GlobalSemanticTypeLightingMap;
 
 	assert(false);

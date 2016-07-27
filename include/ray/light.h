@@ -64,9 +64,6 @@ public:
 	void setGlobalIllumination(bool enable) noexcept;	
 	bool getGlobalIllumination() const noexcept;
 
-	void setSubsurfaceScattering(bool enable) noexcept;
-	bool getSubsurfaceScattering() const noexcept;
-
 	float getLightRange() const noexcept;
 	float getLightIntensity() const noexcept;
 	LightType getLightType() const noexcept;
@@ -133,7 +130,6 @@ private:
 	float2 _spotOuterCone;
 
 	bool _enableSoftShadow;
-	bool _enableSubsurfaceScattering;
 	bool _enableGlobalIllumination;
 
 	float _shadowBias;

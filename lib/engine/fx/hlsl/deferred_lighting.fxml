@@ -88,7 +88,7 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
 
                 float3 V = normalize(viewdir);
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
@@ -103,21 +103,17 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float smoothness = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
-                float4 lighting = 0;
 
-                float NL = dot(N, L);
-                if (NL > 0)
-                {
-                    lighting.rgb = brdfLambert(N, L, lightColor);
-                    lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                }
+                float4 lighting = 0;
+                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
+                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
 
                 return lighting;
             }
@@ -127,22 +123,18 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float smoothness = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
-                float4 lighting = 0;
 
-                float NL = dot(N, L);
-                if (NL > 0)
-                {
-                    lighting.rgb = brdfLambert(N, L, lightColor);
-                    lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                    lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
-                }
+                float4 lighting = 0;
+                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
+                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 
                 return lighting;
             }
@@ -152,21 +144,17 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float smoothness = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
-                float4 lighting = 0;
 
-                float NL = dot(N, L);
-                if (NL > 0)
-                {
-                    lighting.rgb = brdfLambert(N, L, lightColor);
-                    lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                }
+                float4 lighting = 0;
+                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
+                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
 
                 return lighting;
             }
@@ -176,22 +164,18 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float smoothness = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
-                float4 lighting = 0;
 
-                float NL = dot(N, L);
-                if (NL > 0)
-                {
-                    lighting.rgb = brdfLambert(N, L, lightColor);
-                    lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                    lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
-                }
+                float4 lighting = 0;
+                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
+                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 
                 return lighting;
             }
@@ -203,23 +187,19 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
 
-                float shininess = restoreShininess(MRT1);
+                float smoothness = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
-                float4 lighting = 0;
 
-                float spot = spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, P);
-                if (spot > 0)
-                {
-                    lighting.rgb = brdfLambert(N, L, lightColor);
-                    lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                    lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
-                    lighting *= spot;
-                }
+                float4 lighting = 0;
+                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
+                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
+                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, P);
 
                 return lighting;
             }
@@ -231,24 +211,20 @@
                 float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
                 float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
 
-                float shininess = restoreShininess(MRT1);
+                float smoothness = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
-                float4 lighting = 0;
 
-                float spot = spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, P);
-                if (spot > 0)
-                {
-                    lighting.rgb = brdfLambert(N, L, lightColor);
-                    lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                    lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
-                    lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
-                    lighting *= spot;
-                }
+                float4 lighting = 0;
+                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
+                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
+                lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
+                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, P);
 
                 return lighting;
             }
@@ -260,22 +236,18 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
 
-                float shininess = restoreShininess(MRT1);
+                float smoothness = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
 
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
-                float4 lighting = 0;
 
-                float NL = dot(N, L);
-                if (NL > 0)
-                {
-                    lighting.rgb = brdfLambert(N, L, lightColor);
-                    lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                    lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
-                }
+                float4 lighting = 0;
+                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
+                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
 
                 return lighting;
             }
@@ -286,7 +258,7 @@
                 float4 lighting = texLight.Sample(PointClamp, coord);
 
                 float3 diffuse = restoreDiffuse(MRT0);
-                float3 shading = shadingLight(diffuse, lighting.rgb, lighting.a);
+                float3 shading = shadingLight(diffuse, lighting);
 
                 return float4(shading, 1.0);
             }
@@ -299,7 +271,7 @@
                 float4 lighting = texLight.Sample(PointClamp, coord);
 
                 float3 diffuse = restoreDiffuse(MRT0) / max(MRT2.a, 0.00001);
-                float3 shading = shadingLight(diffuse, lighting.rgb, lighting.a);
+                float3 shading = shadingLight(diffuse, lighting);
 
                 return float4(PremultipliedBlend(source, shading, MRT2.x), 1.0);
             }

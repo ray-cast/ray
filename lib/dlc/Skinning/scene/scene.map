@@ -25,7 +25,6 @@
             <attribute range="60.0"/>
             <attribute intensity="2.0"/>
             <attribute shadow="soft"/>
-            <attribute GI="false"/>
         </component>
     </object>
     <object>

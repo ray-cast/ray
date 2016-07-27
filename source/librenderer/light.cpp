@@ -54,7 +54,6 @@ Light::Light() noexcept
 	, _spotInnerCone(5.0f, math::cos(math::deg2rad(5.0f)))
 	, _spotOuterCone(40.0f, math::cos(math::deg2rad(40.0f)))
 	, _enableSoftShadow(false)
-	, _enableSubsurfaceScattering(false)
 	, _enableGlobalIllumination(false)
 	, _shadowMode(ShadowMode::ShadowModeNone)
 	, _shadowBias(0.1f)
@@ -190,12 +189,6 @@ Light::getShadowMode() const noexcept
 	return _shadowMode;
 }
 
-void
-Light::setSubsurfaceScattering(bool enable) noexcept
-{
-	_enableSubsurfaceScattering = enable;
-}
-
 void 
 Light::setGlobalIllumination(bool enable) noexcept
 {
@@ -208,12 +201,6 @@ Light::setGlobalIllumination(bool enable) noexcept
 
 		_enableGlobalIllumination = enable;
 	}	
-}
-
-bool
-Light::getSubsurfaceScattering() const noexcept
-{
-	return _enableSubsurfaceScattering;
 }
 
 bool 

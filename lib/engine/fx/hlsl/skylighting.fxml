@@ -35,7 +35,7 @@
                 float shininess = restoreShininess(MRT1);
                 float specular = restoreSpecular(MRT0);
                 float3 diffuse = restoreDiffuse(MRT0);
-                float3 N = restoreNormal(MRT1);
+                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
 
@@ -57,7 +57,7 @@
                 float3 prefilteredSpeculr = texEnvSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
 
                 float3 shading = brdfEnvironmentDiffuse(prefilteredDiffuse, diffuse) * texEnvFactor.g;
-                shading += brdfEnvironmentSpecularKlayge(prefilteredSpeculr, worldNormal, worldView, shininess, specular) * texEnvFactor.b;
+                shading += brdfEnvironmentSpecularBlackOpsII(prefilteredSpeculr, worldNormal, worldView, shininess, specular) * texEnvFactor.b;
 
                 return float4(shading, 0.0);
             }

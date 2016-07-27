@@ -138,18 +138,6 @@ LightComponent::getShadowBias() const noexcept
 	return _light->getShadowBias();
 }
 
-void
-LightComponent::setSubsurfaceScattering(bool enable) noexcept
-{
-	_light->setSubsurfaceScattering(enable);
-}
-
-bool
-LightComponent::getSubsurfaceScattering() const noexcept
-{
-	return _light->getSubsurfaceScattering();
-}
-
 void 
 LightComponent::setGlobalIllumination(bool enable) noexcept
 {
@@ -197,7 +185,6 @@ LightComponent::load(iarchive& reader) noexcept
 	float lightIntensity = 1.0f;
 	float lightRange = 1.0f;
 	float shadowBias = 0.0;
-	bool subsurfaceScattering = false;
 	bool enableGI = false;
 
 	GameComponent::load(reader);
@@ -210,7 +197,6 @@ LightComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(lightColor, "color");
 	reader >> make_archive(lightAtten, "atten");
 	reader >> make_archive(lightType, "type");
-	reader >> make_archive(subsurfaceScattering, "sss");
 	reader >> make_archive(enableGI, "GI");
 	reader >> make_archive(shadowBias, "bias");
 	reader >> make_archive(shadowMode, "shadow");
@@ -242,7 +228,6 @@ LightComponent::load(iarchive& reader) noexcept
 	this->setSpotInnerCone(spot.x);
 	this->setSpotOuterCone(spot.y);
 	this->setShadowBias(shadowBias);
-	this->setSubsurfaceScattering(subsurfaceScattering);
 	this->setGlobalIllumination(enableGI);
 }
 

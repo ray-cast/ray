@@ -270,6 +270,7 @@ enum GlobalSemanticType
 	GlobalSemanticTypeDepthLinearMap,
 	GlobalSemanticTypeDiffuseMap,
 	GlobalSemanticTypeNormalMap,
+	GlobalSemanticTypeGbuffer3Map,
 	GlobalSemanticTypeLightingMap,
 	GlobalSemanticTypeOpaqueShadingMap,
 	GlobalSemanticTypeBeginRange = GlobalSemanticTypeNone,

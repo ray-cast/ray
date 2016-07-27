@@ -127,6 +127,7 @@ DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 	{
 		_texMRT0->uniformTexture(_deferredOpaqueMap);
 		_texMRT1->uniformTexture(_deferredNormalMap);
+		_texMRT2->uniformTexture(_deferredAbufferMap);
 
 		_materialDeferredGraphicMap->uniformTexture(_deferredOpaqueMap);
 
@@ -154,6 +155,7 @@ DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 	{
 		_texMRT0->uniformTexture(_deferredOpaqueMap);
 		_texMRT1->uniformTexture(_deferredNormalMap);
+		_texMRT2->uniformTexture(_deferredAbufferMap);
 
 		_materialDeferredGraphicMap->uniformTexture(_deferredOpaqueMap);
 
@@ -174,7 +176,8 @@ DeferredLightingPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFrameb
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit, float4::Zero, 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueBatch);
@@ -697,6 +700,7 @@ DeferredLightingPipeline::setupSemantic(RenderPipeline& pipeline) noexcept
 	_materialDeferredDepthLinearMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthLinearMap);
 	_materialDeferredGraphicMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDiffuseMap);
 	_materialDeferredNormalMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeNormalMap);
+	_materialDeferredGbuffer3Map = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeGbuffer3Map);
 	_materialDeferredLightMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeLightingMap);
 	_materialDeferredOpaqueShadingMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeOpaqueShadingMap);
 	return true;
@@ -973,7 +977,8 @@ DeferredLightingPipeline::setupDeferredRenderTextureLayouts(RenderPipeline& pipe
 	GraphicsFramebufferLayoutDesc deferredOqaqueImagesLayoutDesc;
 	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredOpaqueFormat));
 	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredNormalFormat));
-	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
+	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredAbufferFormat));
+	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(3, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
 	_deferredOpaqueImagesLayout = pipeline.createFramebufferLayout(deferredOqaqueImagesLayoutDesc);
 	if (!_deferredOpaqueImagesLayout)
 		return false;
@@ -1071,6 +1076,7 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 	deferredOpaqueDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_deferredDepthMap, 0, 0));
 	deferredOpaqueDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredOpaqueMap, 0, 0));
 	deferredOpaqueDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredNormalMap, 0, 0));
+	deferredOpaqueDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredAbufferMap, 0, 0));
 	deferredOpaqueDesc.setGraphicsFramebufferLayout(_deferredOpaqueImagesLayout);
 	_deferredOpaqueViews = pipeline.createFramebuffer(deferredOpaqueDesc);
 	if (!_deferredOpaqueViews)
@@ -1520,6 +1526,7 @@ DeferredLightingPipeline::onRenderPre() noexcept
 	_materialDeferredDepthMap->uniformTexture(_deferredDepthMap);
 	_materialDeferredDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
 	_materialDeferredNormalMap->uniformTexture(_deferredNormalMap);
+	_materialDeferredGbuffer3Map->uniformTexture(_deferredAbufferMap);
 	_materialDeferredGraphicMap->uniformTexture(_deferredOpaqueMap);
 	_materialDeferredLightMap->uniformTexture(_deferredLightingMap);
 }

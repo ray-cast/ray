@@ -229,8 +229,10 @@ GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 		return GuiInputKey::Code::LeftControl;
 	case InputKey::RightControl:
 		return GuiInputKey::Code::RightControl;
-	case InputKey::Menu:
+	case InputKey::LeftSuper:
 		return GuiInputKey::Code::LeftWindows;
+	case InputKey::RightSuper:
+		return GuiInputKey::Code::RightWindows;
 	case InputKey::VolumeDown:
 		return GuiInputKey::Code::VolumeDown;
 	case InputKey::VolumeUp:

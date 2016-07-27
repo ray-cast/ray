@@ -2,6 +2,7 @@
 <effect version="1270" language="hlsl">
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/lighting.fxml"/>
     <shader>
         <![CDATA[
             float4 StoreGBufferRT0(float3 diffuse, float3 specular)
@@ -14,9 +15,9 @@
                 return float4(diffuse, specular);
             }
 
-            float4 StoreGBufferRT1(float3 n, float roughness)
+            float4 StoreGBufferRT1(float3 n, float smoothness)
             {
-                return float4(packNormal(n), roughness);
+                return float4(packNormal(n), smoothness);
             }
 
             float4 StoreGBufferRT2(float weight, float alpha)

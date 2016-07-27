@@ -117,7 +117,7 @@ FimicToneMapping::avgLuminance(RenderPipeline& pipeline, GraphicsTexturePtr adap
 
 	_texLumAve->uniformTexture(adaptedLum);
 
-	_delta->uniform1f(1.0f - pow(0.98f, 50 * _timer->delta()));
+	_delta->uniform2f(1.0f - pow(0.98f, 50 * _timer->delta()), _timer->delta());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(*_avgLuminance);

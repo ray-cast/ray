@@ -41,49 +41,35 @@
 
 _NAME_BEGIN
 
-class SSSS final
+class SSSS final : public RenderPostProcess
 {
 public:
 	SSSS() noexcept;
 	~SSSS() noexcept;
 
-	bool setup(RenderPipeline& pipeline) noexcept;
-	void close() noexcept;
-
-	void setScale(float scale) noexcept;
 	void setStrength(float strength) noexcept;
 	void setCorrection(float correction) noexcept;
 
-	float getScale() const noexcept;
 	float getStrength() const noexcept;
 	float getCorrection() const noexcept;
 
-	void applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, const Light& light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwmap) noexcept;
-	void applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr linearDepth, GraphicsFramebufferPtr swap) noexcept;
+	void applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap) noexcept;
 
 private:
-	float _sssScale;
+	virtual void onActivate(RenderPipeline& pipeline) noexcept;
+	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
+
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
+
+private:
 	float _sssStrength;
 	float _sssCorrection;
 
-	MaterialPtr _material;
-	MaterialTechPtr _sssTranslucency;
+	MaterialPtr _ssss;
 	MaterialTechPtr _sssGuassBlur;
 
 	MaterialParamPtr _sssFactor;
 	MaterialParamPtr _sssSource;
-
-	MaterialParamPtr _texMRT0;
-	MaterialParamPtr _texMRT1;
-	MaterialParamPtr _texDepthLinear;
-
-	MaterialParamPtr _lightColor;
-	MaterialParamPtr _lightEyePosition;
-
-	MaterialParamPtr _shadowMap;
-	MaterialParamPtr _shadowFactor;
-	MaterialParamPtr _shadowEye2LightView;
-	MaterialParamPtr _shadowEye2LightViewProject;
 };
 
 _NAME_END

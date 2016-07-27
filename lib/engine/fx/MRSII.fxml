@@ -157,7 +157,7 @@
                     float3 lightDirection = normalize(lightPosition.xyz - viewPosition);
 
                     float3 lighting;
-                    lighting = brdfLambert(viewNormal, lightDirection, lightColor.rgb);
+                    lighting = DiffuseBRDF(viewNormal, lightDirection, V, lightNormal.w, lightColor);
                     lighting *= VPLsAttenTerm(lightPosition.xyz, viewPosition, lightColor.a, VPLCountGridOffsetDelta.x);
                     lighting *= max(0, dot(lightNormal.xyz, -lightDirection) * 0.5 + 0.5);
 

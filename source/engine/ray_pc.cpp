@@ -64,6 +64,136 @@ ray::InputMousePtr _inputMessage;
 ray::util::string _gameRootPath;
 ray::util::string _gameScenePath;
 
+ray::InputKey::Code KeyCodetoInputKey(int key) noexcept
+{
+	switch (key)
+	{
+		case GLFW_KEY_UNKNOWN: return ray::InputKey::Code::None;
+		case GLFW_KEY_SPACE: return ray::InputKey::Code::Space;
+		case GLFW_KEY_APOSTROPHE: return ray::InputKey::Code::Apostrophe;
+		case GLFW_KEY_COMMA: return ray::InputKey::Code::Comma;
+		case GLFW_KEY_MINUS: return ray::InputKey::Code::Minus;
+		case GLFW_KEY_PERIOD: return ray::InputKey::Code::Period;
+		case GLFW_KEY_SLASH: return ray::InputKey::Code::Slash;
+		case GLFW_KEY_0: return ray::InputKey::Code::Key0;
+		case GLFW_KEY_1: return ray::InputKey::Code::Key1;
+		case GLFW_KEY_2: return ray::InputKey::Code::Key2;
+		case GLFW_KEY_3: return ray::InputKey::Code::Key3;
+		case GLFW_KEY_4: return ray::InputKey::Code::Key4;
+		case GLFW_KEY_5: return ray::InputKey::Code::Key5;
+		case GLFW_KEY_6: return ray::InputKey::Code::Key6;
+		case GLFW_KEY_7: return ray::InputKey::Code::Key7;
+		case GLFW_KEY_8: return ray::InputKey::Code::Key8;
+		case GLFW_KEY_9: return ray::InputKey::Code::Key9;
+		case GLFW_KEY_SEMICOLON: return ray::InputKey::Code::Semicolon;
+		case GLFW_KEY_EQUAL: return ray::InputKey::Code::Equal;
+		case GLFW_KEY_A: return ray::InputKey::Code::A;
+		case GLFW_KEY_B: return ray::InputKey::Code::B;
+		case GLFW_KEY_C: return ray::InputKey::Code::C;
+		case GLFW_KEY_D: return ray::InputKey::Code::D;
+		case GLFW_KEY_E: return ray::InputKey::Code::E;
+		case GLFW_KEY_F: return ray::InputKey::Code::F;
+		case GLFW_KEY_G: return ray::InputKey::Code::G;
+		case GLFW_KEY_H: return ray::InputKey::Code::H;
+		case GLFW_KEY_I: return ray::InputKey::Code::I;
+		case GLFW_KEY_J: return ray::InputKey::Code::J;
+		case GLFW_KEY_K: return ray::InputKey::Code::K;
+		case GLFW_KEY_L: return ray::InputKey::Code::L;
+		case GLFW_KEY_M: return ray::InputKey::Code::M;
+		case GLFW_KEY_N: return ray::InputKey::Code::N;
+		case GLFW_KEY_O: return ray::InputKey::Code::O;
+		case GLFW_KEY_P: return ray::InputKey::Code::P;
+		case GLFW_KEY_Q: return ray::InputKey::Code::Q;
+		case GLFW_KEY_R: return ray::InputKey::Code::R;
+		case GLFW_KEY_S: return ray::InputKey::Code::S;
+		case GLFW_KEY_T: return ray::InputKey::Code::T;
+		case GLFW_KEY_U: return ray::InputKey::Code::U;
+		case GLFW_KEY_V: return ray::InputKey::Code::V;
+		case GLFW_KEY_W: return ray::InputKey::Code::W;
+		case GLFW_KEY_X: return ray::InputKey::Code::X;
+		case GLFW_KEY_Y: return ray::InputKey::Code::Y;
+		case GLFW_KEY_Z: return ray::InputKey::Code::Z;
+		case GLFW_KEY_LEFT_BRACKET: return ray::InputKey::Code::LeftBracket;
+		case GLFW_KEY_BACKSLASH: return ray::InputKey::Code::Backslash;
+		case GLFW_KEY_RIGHT_BRACKET: return ray::InputKey::Code::RightBracket;
+		case GLFW_KEY_GRAVE_ACCENT: return ray::InputKey::Code::GraveAccent;
+		case GLFW_KEY_WORLD_1: return ray::InputKey::Code::World1;
+		case GLFW_KEY_WORLD_2: return ray::InputKey::Code::World2;
+		case GLFW_KEY_ESCAPE: return ray::InputKey::Code::Escape;
+		case GLFW_KEY_ENTER: return ray::InputKey::Code::Enter;
+		case GLFW_KEY_TAB: return ray::InputKey::Code::Tab;
+		case GLFW_KEY_BACKSPACE: return ray::InputKey::Code::Backspace;
+		case GLFW_KEY_INSERT: return ray::InputKey::Code::Insert;
+		case GLFW_KEY_DELETE: return ray::InputKey::Code::Delete;
+		case GLFW_KEY_RIGHT: return ray::InputKey::Code::Right;
+		case GLFW_KEY_LEFT: return ray::InputKey::Code::Left;
+		case GLFW_KEY_DOWN: return ray::InputKey::Code::Down;
+		case GLFW_KEY_UP: return ray::InputKey::Code::Up;
+		case GLFW_KEY_PAGE_UP: return ray::InputKey::Code::PageUp;
+		case GLFW_KEY_PAGE_DOWN: return ray::InputKey::Code::PageDown;
+		case GLFW_KEY_HOME: return ray::InputKey::Code::Home;
+		case GLFW_KEY_END: return ray::InputKey::Code::End;
+		case GLFW_KEY_CAPS_LOCK: return ray::InputKey::Code::CapsLock;
+		case GLFW_KEY_SCROLL_LOCK: return ray::InputKey::Code::ScrollLock;
+		case GLFW_KEY_NUM_LOCK: return ray::InputKey::Code::NumLock;
+		case GLFW_KEY_PRINT_SCREEN: return ray::InputKey::Code::PrintScreen;
+		case GLFW_KEY_PAUSE: return ray::InputKey::Code::Pause;
+		case GLFW_KEY_F1: return ray::InputKey::Code::F1;
+		case GLFW_KEY_F2: return ray::InputKey::Code::F2;
+		case GLFW_KEY_F3: return ray::InputKey::Code::F3;
+		case GLFW_KEY_F4: return ray::InputKey::Code::F4;
+		case GLFW_KEY_F5: return ray::InputKey::Code::F5;
+		case GLFW_KEY_F6: return ray::InputKey::Code::F6;
+		case GLFW_KEY_F7: return ray::InputKey::Code::F7;
+		case GLFW_KEY_F8: return ray::InputKey::Code::F8;
+		case GLFW_KEY_F9: return ray::InputKey::Code::F9;
+		case GLFW_KEY_F10: return ray::InputKey::Code::F10;
+		case GLFW_KEY_F11: return ray::InputKey::Code::F11;
+		case GLFW_KEY_F12: return ray::InputKey::Code::F12;
+		case GLFW_KEY_F13: return ray::InputKey::Code::F13;
+		case GLFW_KEY_F14: return ray::InputKey::Code::F14;
+		case GLFW_KEY_F15: return ray::InputKey::Code::F15;
+		case GLFW_KEY_F16: return ray::InputKey::Code::F16;
+		case GLFW_KEY_F17: return ray::InputKey::Code::F17;
+		case GLFW_KEY_F18: return ray::InputKey::Code::F18;
+		case GLFW_KEY_F19: return ray::InputKey::Code::F19;
+		case GLFW_KEY_F20: return ray::InputKey::Code::F20;
+		case GLFW_KEY_F21: return ray::InputKey::Code::F21;
+		case GLFW_KEY_F22: return ray::InputKey::Code::F22;
+		case GLFW_KEY_F23: return ray::InputKey::Code::F23;
+		case GLFW_KEY_F24: return ray::InputKey::Code::F24;
+		case GLFW_KEY_F25: return ray::InputKey::Code::F25;
+		case GLFW_KEY_KP_0: return ray::InputKey::Code::KP_0;
+		case GLFW_KEY_KP_1: return ray::InputKey::Code::KP_1;
+		case GLFW_KEY_KP_2: return ray::InputKey::Code::KP_2;
+		case GLFW_KEY_KP_3: return ray::InputKey::Code::KP_3;
+		case GLFW_KEY_KP_4: return ray::InputKey::Code::KP_4;
+		case GLFW_KEY_KP_5: return ray::InputKey::Code::KP_5;
+		case GLFW_KEY_KP_6: return ray::InputKey::Code::KP_6;
+		case GLFW_KEY_KP_7: return ray::InputKey::Code::KP_7;
+		case GLFW_KEY_KP_8: return ray::InputKey::Code::KP_8;
+		case GLFW_KEY_KP_9: return ray::InputKey::Code::KP_9;
+		case GLFW_KEY_KP_DECIMAL: return ray::InputKey::Code::KP_Decimal;
+		case GLFW_KEY_KP_DIVIDE: return ray::InputKey::Code::KP_Divide;
+		case GLFW_KEY_KP_MULTIPLY: return ray::InputKey::Code::KP_Multiply;
+		case GLFW_KEY_KP_SUBTRACT: return ray::InputKey::Code::KP_Subtract;
+		case GLFW_KEY_KP_ADD: return ray::InputKey::Code::KP_Add;
+		case GLFW_KEY_KP_ENTER: return ray::InputKey::Code::KP_Enter;
+		case GLFW_KEY_KP_EQUAL: return ray::InputKey::Code::KP_Equal;
+		case GLFW_KEY_LEFT_SHIFT: return ray::InputKey::Code::LeftShift;
+		case GLFW_KEY_LEFT_CONTROL: return ray::InputKey::Code::LeftControl;
+		case GLFW_KEY_LEFT_ALT: return ray::InputKey::Code::LeftAlt;
+		case GLFW_KEY_LEFT_SUPER: return ray::InputKey::Code::LeftSuper;
+		case GLFW_KEY_RIGHT_SHIFT: return ray::InputKey::Code::LeftSuper;
+		case GLFW_KEY_RIGHT_CONTROL: return ray::InputKey::Code::RightControl;
+		case GLFW_KEY_RIGHT_ALT: return ray::InputKey::Code::RightAlt;
+		case GLFW_KEY_RIGHT_SUPER: return ray::InputKey::Code::RightSuper;
+		case GLFW_KEY_MENU: return ray::InputKey::Code::Menu;
+		default:
+			return ray::InputKey::Code::None;
+	}
+}
+
 void onWindowResize(GLFWwindow* window, int w, int h)
 {
 	if (_gameApp)
@@ -129,7 +259,7 @@ void onWindowKey(GLFWwindow* window, int key, int scancode, int action, int mods
 		event.key.repeat = (action == GLFW_REPEAT) ? true : false;
 		event.key.state = ::glfwGetKey(_window, key) == GLFW_PRESS ? true : false;
 		event.key.keysym.raw = scancode;
-		event.key.keysym.sym = key;
+		event.key.keysym.sym = KeyCodetoInputKey(key);
 		event.key.keysym.mod = mods;
 		event.key.keysym.unicode = 0;
 

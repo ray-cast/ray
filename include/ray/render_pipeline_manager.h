@@ -137,6 +137,7 @@ private:
 	RenderSetting _setting;
 	RenderPostProcessPtr _SSGI;
 	RenderPostProcessPtr _SSAO;
+	RenderPostProcessPtr _SSSS;
 	RenderPostProcessPtr _atmospheric;
 	RenderPostProcessPtr _SSR;
 	RenderPostProcessPtr _DOF;
@@ -145,7 +146,6 @@ private:
 	RenderPostProcessPtr _fimicToneMapping;
 	RenderPostProcessPtr _FXAA;
 	RenderPostProcessPtr _colorGrading;
-	RenderPostProcessPtr _postprocess;
 
 	RenderPipelinePtr _pipeline;
 	RenderPipelineDevicePtr _pipelineDevice;

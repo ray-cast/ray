@@ -56,7 +56,6 @@
 #include "fxaa.h"
 #include "light_shaft.h"
 #include "color_grading.h"
-#include "post_render_pipeline.h"
 
 _NAME_BEGIN
 
@@ -112,6 +111,7 @@ RenderPipelineManager::close() noexcept
 	_SSAO.reset();
 	_SSGI.reset();
 	_SSR.reset();
+	_SSSS.reset();
 	_fog.reset();
 	_DOF.reset();
 	_fimicToneMapping.reset();
@@ -119,7 +119,6 @@ RenderPipelineManager::close() noexcept
 	_colorGrading.reset();
 	_deferredLighting.reset();
 	_forward.reset();
-	_postprocess.reset();
 	_pipeline.reset();
 }
 
@@ -209,7 +208,16 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 
 	if (_setting.enableSSSS != setting.enableSSSS)
 	{
-		_postprocess->downcast<PostRenderPipeline>()->enableSSSS(setting.enableSSSS);
+		if (setting.enableSSSS)
+		{
+			_SSSS = std::make_shared<SSSS>();
+			this->addPostProcess(_SSSS);
+		}
+		else if (_SSSS)
+		{
+			this->removePostProcess(_SSSS);
+			_SSSS.reset();
+		}
 	}
 
 	if (_setting.enableSSR != setting.enableSSR)
@@ -311,9 +319,6 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		_deferredLighting = deferredLighting;
 	}
 
-	_postprocess = std::make_shared<PostRenderPipeline>();
-	_postprocess->_setPipelineManager(this);
-	_pipeline->addPostProcess(_postprocess);
 	_pipeline->setSwapInterval(setting.swapInterval);
 
 	_setting = setting;

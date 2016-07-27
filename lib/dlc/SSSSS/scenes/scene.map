@@ -50,8 +50,8 @@
             <attribute type="spot"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="10.0"/>
-            <attribute intensity="10.0"/>
-            <attribute atten="1,0,1"/>
+            <attribute intensity="1.0"/>
+            <attribute atten="1,0,0"/>
             <attribute shadow="soft"/>
             <attribute sss="true"/>
         </component>

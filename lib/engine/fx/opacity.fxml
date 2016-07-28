@@ -121,8 +121,8 @@
                 if (quality.b > 0.0)
                 {
                     float4 specularTex = texSpecular.Sample(PointClamp, iTexcoord);
-                    material.specular = specularTex.rgb;
-                    material.smoothness = specularTex.a;
+                    material.specular = specularTex.r;
+                    material.smoothness = specularTex.g;
                 }
                 else
                 {

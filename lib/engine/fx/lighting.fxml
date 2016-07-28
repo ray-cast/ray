@@ -24,6 +24,11 @@
             return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
         }
 
+        float3 fresnelSchlick(float LdotH, float3 f0, float f9)
+        {
+            return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
+        }
+
         float distributionTermBloackOpsII(float NdotH, float smoothness)
         {
             float alpha = pow(8192.0f, smoothness);
@@ -93,7 +98,7 @@
             return transmittanceColor * transmittance + diffuse;
         }
 
-        float SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float f0)
+        float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
         {
             float3 H = normalize(L + V);
 
@@ -107,7 +112,7 @@
 
             float D = distributionTermGGX(nh, alpha);
             float G = geometricShadowingGGX(alpha, lh);
-            float F = fresnelSchlick(lh, f0, saturate(dot(f0, 0.33333h) / 0.02h));
+            float3 F = fresnelSchlick(lh, f0, saturate(dot(f0, 0.33333h) / 0.02h));
 
             return D * F * G * nl;
         }

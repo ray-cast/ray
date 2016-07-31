@@ -8,6 +8,7 @@
         // http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_slides_v2.pdf
         // http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf
         // http://www.filmicworlds.com/2014/04/21/optimizing-ggx-shaders-with-dotlh/
+        // http://ruh.li/GraphicsOrenNayar.html
 
         float SmoothnessToRoughness(float smoothness)
         {
@@ -19,12 +20,12 @@
             return 1.0f - sqrt(roughness);
         }
 
-        float fresnelSchlick(float LdotH, float f0, float f9)
+        float fresnelSchlick(float f0, float f9, float LdotH)
         {
             return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
         }
 
-        float3 fresnelSchlick(float LdotH, float3 f0, float f9)
+        float3 fresnelSchlick(float3 f0, float f9, float LdotH)
         {
             return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
         }
@@ -74,28 +75,61 @@
             return rcp(LdotH * LdotH * invK2 + k4);
         }
 
+        float LambertBRDF(float3 N, float3 L)
+        {
+            return saturate(dot(N, L));
+        }
+
+        float OrenNayarBRDF(float3 N, float3 L, float3 V, float roughness)
+        {
+            float sigma2 = roughness * roughness;
+
+            float nl = dot(N, L);
+            float nv = dot(N, V);
+            float lv = dot(L, V);
+
+            float s = lv - nl * nv;
+            float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
+
+            float A = 1 - 0.5 * (sigma2 / (sigma2 + 0.57));
+            float B = 0.45 * (sigma2 / (sigma2 + 0.09));
+
+            return max(0, nl) * max(A + B * (s / t), 0);
+        }
+
+        float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
+        {
+            float3 H = normalize(V + L);
+
+            float energyBias = 0.5 * roughness;
+            float energyFactor = lerp(1, 1 / 1.51, roughness);
+
+            float nl = saturate(dot(N, L));
+            float vh = saturate(dot(V, H));
+            float nv = abs(dot(N, V)) + 1e-5h;
+
+            float fd90 = energyBias + 2.0 * vh * vh * roughness;
+
+            float FL = fresnelSchlick(1, fd90, nl);
+            float FV = fresnelSchlick(1, fd90, nv);
+
+            return FL * FV * energyFactor * nl;
+        }
+
         float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
         {
             float roughness = SmoothnessToRoughness(gloss);
-            float energyBias = 0.5 * roughness;
-            float energyFactor = lerp(1, 1 / 1.51, roughness);
-            float nl = saturate(dot(N, L));
-            float vh = saturate(dot(V, normalize(V + L)));
-            float nv = abs(dot(N, V)) + 1e-5h;
-            float fd90 = energyBias + 2.0 * vh * vh * roughness;
-            float fl = fresnelSchlick(nl, 1, fd90);
-            float fv = fresnelSchlick(nv, 1, fd90);
-            return fl * fv * energyFactor * nl;
+            return BurleyBRDF(N, L, V, roughness);
         }
 
         float3 TranslucencyBRDF(float3 N, float3 L, float3 transmittanceColor)
         {
             float w = lerp(0, 0.5, luminance(transmittanceColor));
             float wn = rcp((1 + w) * (1 + w));
-            float NdotL = dot(N, L);
-            float transmittance = saturate((-NdotL + w) * wn);
-            float diffuse = saturate((NdotL + w) * wn);
-            return transmittanceColor * transmittance + diffuse;
+            float nl = dot(N, L);
+            float transmittance = saturate((-nl + w) * wn);
+            float diffuse = saturate((nl + w) * wn);
+            return diffuse + transmittanceColor * transmittance;
         }
 
         float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
@@ -112,7 +146,7 @@
 
             float D = distributionTermGGX(nh, alpha);
             float G = geometricShadowingGGX(alpha, lh);
-            float3 F = fresnelSchlick(lh, f0, saturate(dot(f0, 0.33333h) / 0.02h));
+            float3 F = fresnelSchlick(f0, saturate(dot(f0, 0.33333h) / 0.02h), lh);
 
             return D * F * G * nl;
         }
@@ -182,15 +216,17 @@
             float3 v = lightPosition - P;
             float d2 = dot(v, v);
             float d = sqrt(d2);
-            return 1 / dot(atten, float3(1, d, d2));
+            return rcp(dot(atten, float3(1, d, d2)));
         }
 
-        float spotLighting(float3 lightPosition, float3 lightDirection, float2 cosOuterInner, float3 pos)
+        float spotLighting(float3 lightPosition, float3 lightDirection, float2 cosOuterInner, float3 atten, float3 pos)
         {
             // cosOuterInner is (cos_outer_cone, cos_inner_cone)
-            float3 v = normalize(pos - lightPosition);
-            float spotFactor = dot(v, lightDirection);
-            return smoothstep(cosOuterInner.x, cosOuterInner.y, spotFactor);
+            float3 v = pos - lightPosition;
+            float d2 = dot(v, v);
+            float d = sqrt(d2);
+            float spotFactor = dot(normalize(v), lightDirection);
+            return smoothstep(cosOuterInner.x, cosOuterInner.y, spotFactor) * (spotFactor / dot(atten, float3(1, d, d2)));
         }
 
         float shadowLighting(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float2 shadowFactor, float3 viewPosition)

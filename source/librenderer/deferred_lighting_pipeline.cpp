@@ -121,45 +121,38 @@ void
 DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 {
 	auto& dataManager = _pipeline->getCamera()->getRenderDataManager();
-	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparent).empty() ||
-		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatch).empty() ||
-		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecific).empty())
+	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBack).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatchBack).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecificBack).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentFront).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatchFront).empty() ||
+		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecificFront).empty())
 	{
-		_texMRT0->uniformTexture(_deferredOpaqueMap);
-		_texMRT1->uniformTexture(_deferredNormalMap);
-		_texMRT2->uniformTexture(_deferredAbufferMap);
-
-		_materialDeferredGraphicMap->uniformTexture(_deferredOpaqueMap);
-
-		this->renderOpaques(*_pipeline, _deferredOpaqueViews);
+		this->renderOpaques(*_pipeline, _deferredGbuffersView);
 		this->renderOpaquesDepthLinear(*_pipeline, _deferredDepthLinearView);
 		this->renderLights(*_pipeline, _deferredLightingView);
 		this->renderOpaquesShading(*_pipeline, _deferredOpaqueShadingView);
 		this->renderOpaquesSpecificShading(*_pipeline, _deferredOpaqueShadingView);
 
-		_texMRT0->uniformTexture(_deferredTransparentMap);
-		_texMRT1->uniformTexture(_deferredNormalMap);
-		_texMRT2->uniformTexture(_deferredAbufferMap);
-
-		_materialDeferredGraphicMap->uniformTexture(_deferredTransparentMap);
-
 		_texOpaque->uniformTexture(_deferredOpaqueShadingMap);
 
-		this->renderTransparent(*_pipeline, _deferredTransparentViews);
-		this->renderTransparentDepthLinear(*_pipeline, _deferredDepthLinearView);
+		this->renderTransparentBack(*_pipeline, _deferredGbuffersView);
+		this->renderTransparentDepthLinearBack(*_pipeline, _deferredDepthLinearView);
 		this->renderLights(*_pipeline, _deferredLightingView);
-		this->renderTransparentShading(*_pipeline, _deferredFinalShadingView);
-		this->renderTransparentSpecificShading(*_pipeline, _deferredFinalShadingView);
+		this->renderTransparentShadingBack(*_pipeline, _deferredTransparentShadingViews);
+		this->renderTransparentSpecificShadingBack(*_pipeline, _deferredTransparentShadingViews);
+
+		_texOpaque->uniformTexture(_deferredTransparentShadingMap);
+
+		this->renderTransparentFront(*_pipeline, _deferredGbuffersView);
+		this->renderTransparentDepthLinearFront(*_pipeline, _deferredDepthLinearView);
+		this->renderLights(*_pipeline, _deferredLightingView);
+		this->renderTransparentShadingFront(*_pipeline, _deferredFinalShadingView);
+		this->renderTransparentSpecificShadingFront(*_pipeline, _deferredFinalShadingView);
 	}
 	else
 	{
-		_texMRT0->uniformTexture(_deferredOpaqueMap);
-		_texMRT1->uniformTexture(_deferredNormalMap);
-		_texMRT2->uniformTexture(_deferredAbufferMap);
-
-		_materialDeferredGraphicMap->uniformTexture(_deferredOpaqueMap);
-
-		this->renderOpaques(*_pipeline, _deferredOpaqueViews);
+		this->renderOpaques(*_pipeline, _deferredGbuffersView);
 		this->renderOpaquesDepthLinear(*_pipeline, _deferredDepthLinearView);
 		this->renderLights(*_pipeline, _deferredLightingView);
 		this->renderOpaquesShading(*_pipeline, _deferredFinalShadingView);
@@ -211,20 +204,20 @@ DeferredLightingPipeline::renderOpaquesSpecificShading(RenderPipeline& pipeline,
 }
 
 void
-DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+DeferredLightingPipeline::renderTransparentBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4(1.0,1.0,1.0,0.0), 1.0, 0);
+	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
 
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatch);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBack);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatchBack);
 }
 
 void
-DeferredLightingPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+DeferredLightingPipeline::renderTransparentDepthLinearBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	_clipInfo->uniform2f(_pipeline->getCamera()->getClipConstant().xy());
 
@@ -233,20 +226,59 @@ DeferredLightingPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline,
 }
 
 void
-DeferredLightingPipeline::renderTransparentShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+DeferredLightingPipeline::renderTransparentShadingBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
 	pipeline.drawScreenQuad(*_deferredShadingTransparents);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentShading);
-	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentShading, target, target);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentShadingBack);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentShadingBack, target, target);
 }
 
 void
-DeferredLightingPipeline::renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+DeferredLightingPipeline::renderTransparentSpecificShadingBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentSpecific);
-	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentSpecific, target, target);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentSpecificBack);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentSpecificBack, target, target);
+}
+
+void
+DeferredLightingPipeline::renderTransparentFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+{
+	pipeline.setFramebuffer(target);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
+
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentFront);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatchFront);
+}
+
+void
+DeferredLightingPipeline::renderTransparentDepthLinearFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+{
+	_clipInfo->uniform2f(_pipeline->getCamera()->getClipConstant().xy());
+
+	pipeline.setFramebuffer(target);
+	pipeline.drawScreenQuad(*_deferredDepthLinear);
+}
+
+void
+DeferredLightingPipeline::renderTransparentShadingFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+{
+	pipeline.setFramebuffer(target);
+	pipeline.drawScreenQuad(*_deferredShadingTransparents);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentShadingFront);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentShadingFront, target, target);
+}
+
+void
+DeferredLightingPipeline::renderTransparentSpecificShadingFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+{
+	pipeline.setFramebuffer(target);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentSpecificFront);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentSpecificFront, target, target);
 }
 
 void
@@ -414,8 +446,8 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 void
 DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
-	_mrsiiMRT0->uniformTexture(_deferredOpaqueMap);
-	_mrsiiMRT1->uniformTexture(_deferredNormalMap);
+	_mrsiiMRT0->uniformTexture(_deferredGbuffer1Map);
+	_mrsiiMRT1->uniformTexture(_deferredGbuffer2Map);
 	_mrsiiVPLsBuffer->uniformTexture(_mrsiiVPLsBufferMap);
 	_mrsiiDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
 
@@ -453,7 +485,7 @@ DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, Graphic
 		return;
 
 	this->computeDepthDerivBuffer(pipeline, _deferredDepthLinearMap, _mrsiiDepthDerivViews);
-	this->computeNormalDerivBuffer(pipeline, _deferredNormalMap, _mrsiiNormalDerivViews);
+	this->computeNormalDerivBuffer(pipeline, _deferredGbuffer2Map, _mrsiiNormalDerivViews);
 	this->computeSubsplatStencil(pipeline, _mrsiiDepthDerivMap, _mrsiiNormalDerivMap, _mrsiiSubsplatStencilViews);
 
 	for (std::uint32_t i = _mrsiiDerivMipBase; i < _mrsiiDerivMipBase + _mrsiiDerivMipCount; i++)
@@ -592,14 +624,12 @@ DeferredLightingPipeline::computeUpsamplingMultiresBuffer(RenderPipeline& pipeli
 
 	for (std::int32_t i = _mrsiiDerivMipBase + _mrsiiDerivMipCount - 2; i >= (std::int32_t)_mrsiiDerivMipBase; i--)
 	{
-		std::uint32_t w = std::max<std::uint32_t>(width / (1 << (i + 1)), 1);
-		std::uint32_t h = std::max<std::uint32_t>(height / (1 << (i + 1)), 1);
-		std::uint32_t w2 = std::max<std::uint32_t>(width / (1 << i), 1);
-		std::uint32_t h2 = std::max<std::uint32_t>(height / (1 << i), 1);
+		std::uint32_t w = std::max<std::uint32_t>(float(width) / (1 << i), 1);
+		std::uint32_t h = std::max<std::uint32_t>(float(height) / (1 << i), 1);
 
 		_mrsiiColorMap->uniformTexture(src);
-		_mrsiiOffsetUpsampling->uniform4f(1.0f / w, 1.0f / h, 1.0f / w2, 1.0f / h2);
-		_mrsiiMipmapLevel->uniform4i(i + 1, i, w2, h2);
+		_mrsiiOffsetUpsampling->uniform4f(1.0f / w, 1.0f / h, 1.0f / w, 1.0f / h);
+		_mrsiiMipmapLevel->uniform4i(i + 1, i, w, h);
 
 		if (i != 0)
 		{
@@ -698,8 +728,8 @@ DeferredLightingPipeline::setupSemantic(RenderPipeline& pipeline) noexcept
 {
 	_materialDeferredDepthMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthMap);
 	_materialDeferredDepthLinearMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthLinearMap);
-	_materialDeferredGraphicMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDiffuseMap);
-	_materialDeferredNormalMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeNormalMap);
+	_materialDeferredGbuffer1Map = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDiffuseMap);
+	_materialDeferredGbuffer2Map = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeNormalMap);
 	_materialDeferredGbuffer3Map = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeGbuffer3Map);
 	_materialDeferredLightMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeLightingMap);
 	_materialDeferredOpaqueShadingMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeOpaqueShadingMap);
@@ -787,16 +817,7 @@ DeferredLightingPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 		return false;
 
 	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
-		_deferredOpaqueFormat = _deferredNormalFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
-	else
-		return false;
-
-	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat))
-		_deferredTransparentFormat = _deferredAbufferFormat = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
-	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
-		_deferredTransparentFormat = _deferredAbufferFormat = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm;
-	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
-		_deferredTransparentFormat = _deferredAbufferFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+		_deferredGbuffer1Format = _deferredGbuffer2Format = _deferredGbuffer3Format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
 	else
 		return false;
 
@@ -806,6 +827,15 @@ DeferredLightingPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm;
 	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
 		_deferredShadingFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+	else
+		return false;
+
+	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat))
+		_deferredTransparentFormat = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
+	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm))
+		_deferredTransparentFormat = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm;
+	else if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
+		_deferredTransparentFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
 	else
 		return false;
 
@@ -864,48 +894,37 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	if (!_deferredDepthLinearMap)
 		return false;
 
-	GraphicsTextureDesc _deferredOpaqueDesc;
-	_deferredOpaqueDesc.setWidth(width);
-	_deferredOpaqueDesc.setHeight(height);
-	_deferredOpaqueDesc.setTexFormat(_deferredOpaqueFormat);
-	_deferredOpaqueDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	_deferredOpaqueDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredOpaqueDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_deferredOpaqueMap = pipeline.createTexture(_deferredOpaqueDesc);
-	if (!_deferredOpaqueMap)
+	GraphicsTextureDesc _deferredGbufferDesc;
+	_deferredGbufferDesc.setWidth(width);
+	_deferredGbufferDesc.setHeight(height);
+	_deferredGbufferDesc.setTexFormat(_deferredGbuffer1Format);
+	_deferredGbufferDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredGbufferDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_deferredGbufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredGbuffer1Map = pipeline.createTexture(_deferredGbufferDesc);
+	if (!_deferredGbuffer1Map)
 		return false;
 
-	GraphicsTextureDesc _deferredNormalDesc;
-	_deferredNormalDesc.setWidth(width);
-	_deferredNormalDesc.setHeight(height);
-	_deferredNormalDesc.setTexFormat(_deferredNormalFormat);
-	_deferredNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	_deferredNormalDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredNormalDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_deferredNormalMap = pipeline.createTexture(_deferredNormalDesc);
-	if (!_deferredNormalMap)
+	GraphicsTextureDesc _deferredGbuffer2Desc;
+	_deferredGbuffer2Desc.setWidth(width);
+	_deferredGbuffer2Desc.setHeight(height);
+	_deferredGbuffer2Desc.setTexFormat(_deferredGbuffer2Format);
+	_deferredGbuffer2Desc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredGbuffer2Desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_deferredGbuffer2Desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredGbuffer2Map = pipeline.createTexture(_deferredGbuffer2Desc);
+	if (!_deferredGbuffer2Map)
 		return false;
 
-	GraphicsTextureDesc _deferredTransparentDesc;
-	_deferredTransparentDesc.setWidth(width);
-	_deferredTransparentDesc.setHeight(height);
-	_deferredTransparentDesc.setTexFormat(_deferredTransparentFormat);
-	_deferredTransparentDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	_deferredTransparentDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredTransparentDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_deferredTransparentMap = pipeline.createTexture(_deferredTransparentDesc);
-	if (!_deferredTransparentMap)
-		return false;
-
-	GraphicsTextureDesc _deferredAbufferDesc;
-	_deferredAbufferDesc.setWidth(width);
-	_deferredAbufferDesc.setHeight(height);
-	_deferredAbufferDesc.setTexFormat(_deferredAbufferFormat);
-	_deferredAbufferDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	_deferredAbufferDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredAbufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_deferredAbufferMap = pipeline.createTexture(_deferredAbufferDesc);
-	if (!_deferredAbufferMap)
+	GraphicsTextureDesc _deferredGbuffer3Desc;
+	_deferredGbuffer3Desc.setWidth(width);
+	_deferredGbuffer3Desc.setHeight(height);
+	_deferredGbuffer3Desc.setTexFormat(_deferredGbuffer3Format);
+	_deferredGbuffer3Desc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredGbuffer3Desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_deferredGbuffer3Desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredGbuffer3Map = pipeline.createTexture(_deferredGbuffer3Desc);
+	if (!_deferredGbuffer3Map)
 		return false;
 
 	GraphicsTextureDesc _deferredLightDesc;
@@ -928,6 +947,17 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredShadingDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredOpaqueShadingMap = pipeline.createTexture(_deferredShadingDesc);
 	if (!_deferredOpaqueShadingMap)
+		return false;
+
+	GraphicsTextureDesc _deferredTransparentDesc;
+	_deferredTransparentDesc.setWidth(width);
+	_deferredTransparentDesc.setHeight(height);
+	_deferredTransparentDesc.setTexFormat(_deferredTransparentFormat);
+	_deferredTransparentDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredTransparentDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_deferredTransparentDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredTransparentShadingMap = pipeline.createTexture(_deferredTransparentDesc);
+	if (!_deferredTransparentShadingMap)
 		return false;
 
 	_deferredFinalShadingMap = pipeline.createTexture(_deferredShadingDesc);
@@ -957,39 +987,30 @@ DeferredLightingPipeline::setupDeferredRenderTextureLayouts(RenderPipeline& pipe
 		return false;
 
 	GraphicsFramebufferLayoutDesc deferredGraphicsLayoutDesc;
-	deferredGraphicsLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredOpaqueFormat));
-	_deferredGraphicsImageLayout = pipeline.createFramebufferLayout(deferredGraphicsLayoutDesc);
-	if (!_deferredGraphicsImageLayout)
+	deferredGraphicsLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer1Format));
+	_deferredGbuffer1ImageLayout = pipeline.createFramebufferLayout(deferredGraphicsLayoutDesc);
+	if (!_deferredGbuffer1ImageLayout)
 		return false;
 
-	GraphicsFramebufferLayoutDesc deferredNormalLayoutDesc;
-	deferredNormalLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredNormalFormat));
-	_deferredNormalImageLayout = pipeline.createFramebufferLayout(deferredNormalLayoutDesc);
-	if (!_deferredNormalImageLayout)
+	GraphicsFramebufferLayoutDesc deferredGbuffer2LayoutDesc;
+	deferredGbuffer2LayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer2Format));
+	_deferredGbuffer2ImageLayout = pipeline.createFramebufferLayout(deferredGbuffer2LayoutDesc);
+	if (!_deferredGbuffer2ImageLayout)
 		return false;
 
-	GraphicsFramebufferLayoutDesc deferredAbufferLayoutDesc;
-	deferredAbufferLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredAbufferFormat));
-	_deferredAbufferImageLayout = pipeline.createFramebufferLayout(deferredAbufferLayoutDesc);
-	if (!_deferredAbufferImageLayout)
+	GraphicsFramebufferLayoutDesc deferredGbuffer3LayoutDesc;
+	deferredGbuffer3LayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer3Format));
+	_deferredGbuffer3ImageLayout = pipeline.createFramebufferLayout(deferredGbuffer3LayoutDesc);
+	if (!_deferredGbuffer3ImageLayout)
 		return false;
 
-	GraphicsFramebufferLayoutDesc deferredOqaqueImagesLayoutDesc;
-	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredOpaqueFormat));
-	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredNormalFormat));
-	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredAbufferFormat));
-	deferredOqaqueImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(3, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
-	_deferredOpaqueImagesLayout = pipeline.createFramebufferLayout(deferredOqaqueImagesLayoutDesc);
-	if (!_deferredOpaqueImagesLayout)
-		return false;
-
-	GraphicsFramebufferLayoutDesc deferredTransparenImagesLayoutDesc;
-	deferredTransparenImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredTransparentFormat));
-	deferredTransparenImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredNormalFormat));
-	deferredTransparenImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredAbufferFormat));
-	deferredTransparenImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(3, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
-	_deferredTransparentImagesLayout = pipeline.createFramebufferLayout(deferredTransparenImagesLayoutDesc);
-	if (!_deferredTransparentImagesLayout)
+	GraphicsFramebufferLayoutDesc deferredGbuffersImageLayoutDesc;
+	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer1Format));
+	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer2Format));
+	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer3Format));
+	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(3, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
+	_deferredGbuffersImageLayout = pipeline.createFramebufferLayout(deferredGbuffersImageLayoutDesc);
+	if (!_deferredGbuffersImageLayout)
 		return false;
 
 	GraphicsFramebufferLayoutDesc deferredLightingLayoutDesc;
@@ -1004,6 +1025,13 @@ DeferredLightingPipeline::setupDeferredRenderTextureLayouts(RenderPipeline& pipe
 	deferredShadingLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, _deferredDepthFormat));
 	_deferredShadingImageLayout = pipeline.createFramebufferLayout(deferredShadingLayoutDesc);
 	if (!_deferredShadingImageLayout)
+		return false;
+
+	GraphicsFramebufferLayoutDesc deferredTransparenImagesLayoutDesc;
+	deferredTransparenImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredShadingFormat));
+	deferredTransparenImagesLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
+	_deferredTransparentImagesLayout = pipeline.createFramebufferLayout(deferredTransparenImagesLayoutDesc);
+	if (!_deferredTransparentImagesLayout)
 		return false;
 
 	return true;
@@ -1033,31 +1061,43 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 	if (!_deferredDepthLinearView)
 		return false;
 
-	GraphicsFramebufferDesc deferredGraphicsDesc;
-	deferredGraphicsDesc.setWidth(width);
-	deferredGraphicsDesc.setHeight(height);
-	deferredGraphicsDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredOpaqueMap, 0, 0));
-	deferredGraphicsDesc.setGraphicsFramebufferLayout(_deferredGraphicsImageLayout);
-	_deferredGraphicsView = pipeline.createFramebuffer(deferredGraphicsDesc);
-	if (!_deferredGraphicsView)
+	GraphicsFramebufferDesc deferredGbuffer1Desc;
+	deferredGbuffer1Desc.setWidth(width);
+	deferredGbuffer1Desc.setHeight(height);
+	deferredGbuffer1Desc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer1Map, 0, 0));
+	deferredGbuffer1Desc.setGraphicsFramebufferLayout(_deferredGbuffer1ImageLayout);
+	_deferredGbuffer1View = pipeline.createFramebuffer(deferredGbuffer1Desc);
+	if (!_deferredGbuffer1View)
 		return false;
 
-	GraphicsFramebufferDesc deferredNormalDesc;
-	deferredNormalDesc.setWidth(width);
-	deferredNormalDesc.setHeight(height);
-	deferredNormalDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredNormalMap, 0, 0));
-	deferredNormalDesc.setGraphicsFramebufferLayout(_deferredNormalImageLayout);
-	_deferredNormalView = pipeline.createFramebuffer(deferredNormalDesc);
-	if (!_deferredNormalView)
+	GraphicsFramebufferDesc deferredGbuffer2Desc;
+	deferredGbuffer2Desc.setWidth(width);
+	deferredGbuffer2Desc.setHeight(height);
+	deferredGbuffer2Desc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer2Map, 0, 0));
+	deferredGbuffer2Desc.setGraphicsFramebufferLayout(_deferredGbuffer2ImageLayout);
+	_deferredGbuffer2View = pipeline.createFramebuffer(deferredGbuffer2Desc);
+	if (!_deferredGbuffer2View)
 		return false;
 
-	GraphicsFramebufferDesc deferredAbufferDesc;
-	deferredAbufferDesc.setWidth(width);
-	deferredAbufferDesc.setHeight(height);
-	deferredAbufferDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredAbufferMap, 0, 0));
-	deferredAbufferDesc.setGraphicsFramebufferLayout(_deferredAbufferImageLayout);
-	_deferredAbufferView = pipeline.createFramebuffer(deferredAbufferDesc);
-	if (!_deferredAbufferView)
+	GraphicsFramebufferDesc deferredGbuffer3Desc;
+	deferredGbuffer3Desc.setWidth(width);
+	deferredGbuffer3Desc.setHeight(height);
+	deferredGbuffer3Desc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer3Map, 0, 0));
+	deferredGbuffer3Desc.setGraphicsFramebufferLayout(_deferredGbuffer3ImageLayout);
+	_deferredGbuffer3View = pipeline.createFramebuffer(deferredGbuffer3Desc);
+	if (!_deferredGbuffer3View)
+		return false;
+
+	GraphicsFramebufferDesc deferredGbuffersDesc;
+	deferredGbuffersDesc.setWidth(width);
+	deferredGbuffersDesc.setHeight(height);
+	deferredGbuffersDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_deferredDepthMap, 0, 0));
+	deferredGbuffersDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer1Map, 0, 0));
+	deferredGbuffersDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer2Map, 0, 0));
+	deferredGbuffersDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer3Map, 0, 0));
+	deferredGbuffersDesc.setGraphicsFramebufferLayout(_deferredGbuffersImageLayout);
+	_deferredGbuffersView = pipeline.createFramebuffer(deferredGbuffersDesc);
+	if (!_deferredGbuffersView)
 		return false;
 
 	GraphicsFramebufferDesc deferredLightingDesc;
@@ -1068,30 +1108,6 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 	deferredLightingDesc.setGraphicsFramebufferLayout(_deferredLightingImageLayout);
 	_deferredLightingView = pipeline.createFramebuffer(deferredLightingDesc);
 	if (!_deferredLightingView)
-		return false;
-
-	GraphicsFramebufferDesc deferredOpaqueDesc;
-	deferredOpaqueDesc.setWidth(width);
-	deferredOpaqueDesc.setHeight(height);
-	deferredOpaqueDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_deferredDepthMap, 0, 0));
-	deferredOpaqueDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredOpaqueMap, 0, 0));
-	deferredOpaqueDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredNormalMap, 0, 0));
-	deferredOpaqueDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredAbufferMap, 0, 0));
-	deferredOpaqueDesc.setGraphicsFramebufferLayout(_deferredOpaqueImagesLayout);
-	_deferredOpaqueViews = pipeline.createFramebuffer(deferredOpaqueDesc);
-	if (!_deferredOpaqueViews)
-		return false;
-
-	GraphicsFramebufferDesc deferredTransparentDesc;
-	deferredTransparentDesc.setWidth(width);
-	deferredTransparentDesc.setHeight(height);
-	deferredTransparentDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_deferredDepthMap, 0, 0));
-	deferredTransparentDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredTransparentMap, 0, 0));
-	deferredTransparentDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredNormalMap, 0, 0));
-	deferredTransparentDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredAbufferMap, 0, 0));
-	deferredTransparentDesc.setGraphicsFramebufferLayout(_deferredTransparentImagesLayout);
-	_deferredTransparentViews = pipeline.createFramebuffer(deferredTransparentDesc);
-	if (!_deferredTransparentViews)
 		return false;
 
 	GraphicsFramebufferDesc deferredOpaqueShadingDesc;
@@ -1108,9 +1124,19 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 	deferredTransparentShadingDesc.setWidth(width);
 	deferredTransparentShadingDesc.setHeight(height);
 	deferredTransparentShadingDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_deferredDepthMap, 0, 0));
-	deferredTransparentShadingDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredFinalShadingMap, 0, 0));
-	deferredTransparentShadingDesc.setGraphicsFramebufferLayout(_deferredShadingImageLayout);
-	_deferredFinalShadingView = pipeline.createFramebuffer(deferredTransparentShadingDesc);
+	deferredTransparentShadingDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredTransparentShadingMap, 0, 0));
+	deferredTransparentShadingDesc.setGraphicsFramebufferLayout(_deferredTransparentImagesLayout);
+	_deferredTransparentShadingViews = pipeline.createFramebuffer(deferredTransparentShadingDesc);
+	if (!_deferredTransparentShadingViews)
+		return false;
+
+	GraphicsFramebufferDesc deferredFinalShadingDesc;
+	deferredFinalShadingDesc.setWidth(width);
+	deferredFinalShadingDesc.setHeight(height);
+	deferredFinalShadingDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_deferredDepthMap, 0, 0));
+	deferredFinalShadingDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredFinalShadingMap, 0, 0));
+	deferredFinalShadingDesc.setGraphicsFramebufferLayout(_deferredShadingImageLayout);
+	_deferredFinalShadingView = pipeline.createFramebuffer(deferredFinalShadingDesc);
 	if (!_deferredFinalShadingView)
 		return false;
 
@@ -1347,8 +1373,9 @@ DeferredLightingPipeline::destroySemantic() noexcept
 {
 	_materialDeferredDepthMap.reset();
 	_materialDeferredDepthLinearMap.reset();
-	_materialDeferredGraphicMap.reset();
-	_materialDeferredNormalMap.reset();
+	_materialDeferredGbuffer1Map.reset();
+	_materialDeferredGbuffer2Map.reset();
+	_materialDeferredGbuffer3Map.reset();
 	_materialDeferredLightMap.reset();
 	_materialDeferredOpaqueShadingMap.reset();
 }
@@ -1401,12 +1428,12 @@ DeferredLightingPipeline::destroyDeferredRenderTextureLayouts() noexcept
 {
 	_deferredDepthImageLayout.reset();
 	_deferredDepthLinearImageLayout.reset();
-	_deferredGraphicsImageLayout.reset();
-	_deferredNormalImageLayout.reset();
+	_deferredGbuffer1ImageLayout.reset();
+	_deferredGbuffer2ImageLayout.reset();
+	_deferredGbuffer3ImageLayout.reset();
 	_deferredLightingImageLayout.reset();
 	_deferredShadingImageLayout.reset();
-	_deferredOpaqueImagesLayout.reset();
-	_deferredAbufferImageLayout.reset();
+	_deferredGbuffersImageLayout.reset();
 	_deferredTransparentImagesLayout.reset();
 }
 
@@ -1415,10 +1442,10 @@ DeferredLightingPipeline::destroyDeferredTextures() noexcept
 {
 	_deferredDepthMap.reset();
 	_deferredDepthLinearMap.reset();
-	_deferredOpaqueMap.reset();
-	_deferredTransparentMap.reset();
-	_deferredNormalMap.reset();
-	_deferredAbufferMap.reset();
+	_deferredGbuffer1Map.reset();
+	_deferredGbuffer2Map.reset();
+	_deferredGbuffer3Map.reset();
+	_deferredTransparentShadingMap.reset();
 	_deferredLightingMap.reset();
 	_deferredOpaqueShadingMap.reset();
 	_deferredFinalShadingMap.reset();
@@ -1430,13 +1457,13 @@ DeferredLightingPipeline::destroyDeferredRenderTextures() noexcept
 {
 	_deferredDepthView.reset();
 	_deferredDepthLinearView.reset();
-	_deferredGraphicsView.reset();
-	_deferredNormalView.reset();
-	_deferredAbufferView.reset();
+	_deferredGbuffer1View.reset();
+	_deferredGbuffer2View.reset();
+	_deferredGbuffer3View.reset();
+	_deferredGbuffersView.reset();
 	_deferredLightingView.reset();
-	_deferredOpaqueViews.reset();
-	_deferredTransparentViews.reset();
 	_deferredOpaqueShadingView.reset();
+	_deferredTransparentShadingViews.reset();
 	_deferredFinalShadingView.reset();
 	_deferredSwapView.reset();
 }
@@ -1525,10 +1552,14 @@ DeferredLightingPipeline::onRenderPre() noexcept
 {
 	_materialDeferredDepthMap->uniformTexture(_deferredDepthMap);
 	_materialDeferredDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
-	_materialDeferredNormalMap->uniformTexture(_deferredNormalMap);
-	_materialDeferredGbuffer3Map->uniformTexture(_deferredAbufferMap);
-	_materialDeferredGraphicMap->uniformTexture(_deferredOpaqueMap);
+	_materialDeferredGbuffer1Map->uniformTexture(_deferredGbuffer1Map);
+	_materialDeferredGbuffer2Map->uniformTexture(_deferredGbuffer2Map);
+	_materialDeferredGbuffer3Map->uniformTexture(_deferredGbuffer3Map);
 	_materialDeferredLightMap->uniformTexture(_deferredLightingMap);
+
+	_texMRT0->uniformTexture(_deferredGbuffer1Map);
+	_texMRT1->uniformTexture(_deferredGbuffer2Map);
+	_texMRT2->uniformTexture(_deferredGbuffer3Map);
 }
 
 void
@@ -1564,10 +1595,12 @@ DeferredLightingPipeline::onRenderPost() noexcept
 		{
 			float4 viewport = camera->getPixelViewport();
 
-			if (flags & CameraRenderFlagBits::CameraRenderGbufferDiffuseBit)
-				this->copyRenderTexture(*_pipeline, _deferredOpaqueMap, framebuffer, viewport);
-			else if (flags & CameraRenderFlagBits::CameraRenderGbufferNormalBit)
-				this->copyRenderTexture(*_pipeline, _deferredNormalMap, framebuffer, viewport);
+			if (flags & CameraRenderFlagBits::CameraRenderGbuffer1Bit)
+				this->copyRenderTexture(*_pipeline, _deferredGbuffer1Map, framebuffer, viewport);
+			else if (flags & CameraRenderFlagBits::CameraRenderGbuffer2Bit)
+				this->copyRenderTexture(*_pipeline, _deferredGbuffer2Map, framebuffer, viewport);
+			else if (flags & CameraRenderFlagBits::CameraRenderGbuffer3Bit)
+				this->copyRenderTexture(*_pipeline, _deferredGbuffer3Map, framebuffer, viewport);
 			else if (flags & CameraRenderFlagBits::CameraRenderLightingBit)
 				this->copyRenderTexture(*_pipeline, _deferredLightingMap, framebuffer, viewport);
 			else if (flags & CameraRenderFlagBits::CameraRenderShadingBit)
@@ -1579,10 +1612,12 @@ DeferredLightingPipeline::onRenderPost() noexcept
 	{
 		float4 viewport = camera->getPixelViewportDPI();
 
-		if (flags & CameraRenderFlagBits::CameraRenderGbufferDiffuseBit)
-			this->copyRenderTexture(*_pipeline, _deferredOpaqueMap, nullptr, viewport);
-		else if (flags & CameraRenderFlagBits::CameraRenderGbufferNormalBit)
-			this->copyRenderTexture(*_pipeline, _deferredNormalMap, nullptr, viewport);
+		if (flags & CameraRenderFlagBits::CameraRenderGbuffer1Bit)
+			this->copyRenderTexture(*_pipeline, _deferredGbuffer1Map, nullptr, viewport);
+		else if (flags & CameraRenderFlagBits::CameraRenderGbuffer2Bit)
+			this->copyRenderTexture(*_pipeline, _deferredGbuffer2Map, nullptr, viewport);
+		else if (flags & CameraRenderFlagBits::CameraRenderGbuffer3Bit)
+			this->copyRenderTexture(*_pipeline, _deferredGbuffer3Map, nullptr, viewport);
 		else if (flags & CameraRenderFlagBits::CameraRenderLightingBit)
 			this->copyRenderTexture(*_pipeline, _deferredLightingMap, nullptr, viewport);
 		else if (flags & CameraRenderFlagBits::CameraRenderShadingBit)

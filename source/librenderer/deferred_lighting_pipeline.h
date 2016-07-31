@@ -57,10 +57,15 @@ public:
 	void renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 	void renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
-	void renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
-	void renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
-	void renderTransparentShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
-	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentDepthLinearBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentShadingBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentSpecificShadingBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+
+	void renderTransparentFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentDepthLinearFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentShadingFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderTransparentSpecificShadingFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
 	void renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 	void renderDirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
@@ -215,51 +220,51 @@ private:
 
 	MaterialSemanticPtr _materialDeferredDepthMap;
 	MaterialSemanticPtr _materialDeferredDepthLinearMap;
-	MaterialSemanticPtr _materialDeferredGraphicMap;
-	MaterialSemanticPtr _materialDeferredNormalMap;
+	MaterialSemanticPtr _materialDeferredGbuffer1Map;
+	MaterialSemanticPtr _materialDeferredGbuffer2Map;
 	MaterialSemanticPtr _materialDeferredGbuffer3Map;
 	MaterialSemanticPtr _materialDeferredLightMap;
 	MaterialSemanticPtr _materialDeferredOpaqueShadingMap;
 
 	GraphicsFormat _deferredDepthFormat;
 	GraphicsFormat _deferredDepthLinearFormat;
-	GraphicsFormat _deferredOpaqueFormat;
+	GraphicsFormat _deferredGbuffer1Format;
+	GraphicsFormat _deferredGbuffer2Format;
+	GraphicsFormat _deferredGbuffer3Format;
 	GraphicsFormat _deferredTransparentFormat;
-	GraphicsFormat _deferredNormalFormat;
-	GraphicsFormat _deferredAbufferFormat;
 	GraphicsFormat _deferredLightFormat;
 	GraphicsFormat _deferredShadingFormat;
 
 	GraphicsTexturePtr _deferredDepthMap;
 	GraphicsTexturePtr _deferredDepthLinearMap;
-	GraphicsTexturePtr _deferredOpaqueMap;
-	GraphicsTexturePtr _deferredTransparentMap;
-	GraphicsTexturePtr _deferredNormalMap;
-	GraphicsTexturePtr _deferredAbufferMap;
+	GraphicsTexturePtr _deferredGbuffer1Map;
+	GraphicsTexturePtr _deferredGbuffer2Map;
+	GraphicsTexturePtr _deferredGbuffer3Map;
 	GraphicsTexturePtr _deferredLightingMap;
 	GraphicsTexturePtr _deferredOpaqueShadingMap;
+	GraphicsTexturePtr _deferredTransparentShadingMap;
 	GraphicsTexturePtr _deferredFinalShadingMap;
 	GraphicsTexturePtr _deferredSwapMap;
 
 	GraphicsFramebufferLayoutPtr _deferredDepthImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredDepthLinearImageLayout;
-	GraphicsFramebufferLayoutPtr _deferredGraphicsImageLayout;
-	GraphicsFramebufferLayoutPtr _deferredNormalImageLayout;
-	GraphicsFramebufferLayoutPtr _deferredAbufferImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredGbuffer1ImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredGbuffer2ImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredGbuffer3ImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredGbuffersImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredLightingImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredShadingImageLayout;
-	GraphicsFramebufferLayoutPtr _deferredOpaqueImagesLayout;
 	GraphicsFramebufferLayoutPtr _deferredTransparentImagesLayout;
 
 	GraphicsFramebufferPtr _deferredDepthView;
 	GraphicsFramebufferPtr _deferredDepthLinearView;
-	GraphicsFramebufferPtr _deferredGraphicsView;
-	GraphicsFramebufferPtr _deferredNormalView;
-	GraphicsFramebufferPtr _deferredAbufferView;
+	GraphicsFramebufferPtr _deferredGbuffer1View;
+	GraphicsFramebufferPtr _deferredGbuffer2View;
+	GraphicsFramebufferPtr _deferredGbuffer3View;
+	GraphicsFramebufferPtr _deferredGbuffersView;
 	GraphicsFramebufferPtr _deferredLightingView;
-	GraphicsFramebufferPtr _deferredOpaqueViews;
-	GraphicsFramebufferPtr _deferredTransparentViews;
 	GraphicsFramebufferPtr _deferredOpaqueShadingView;
+	GraphicsFramebufferPtr _deferredTransparentShadingViews;
 	GraphicsFramebufferPtr _deferredFinalShadingView;
 	GraphicsFramebufferPtr _deferredSwapView;
 

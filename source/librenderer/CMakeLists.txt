@@ -216,8 +216,6 @@ SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/ssss.cpp
     ${SOURCE_PATH}/irradiance.h
     ${SOURCE_PATH}/irradiance.cpp
-    ${SOURCE_PATH}/post_render_pipeline.h
-    ${SOURCE_PATH}/post_render_pipeline.cpp
 )
 SOURCE_GROUP("renderer\\postprocess" FILES ${RENDERER_POST_PROCESS})
 

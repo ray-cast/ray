@@ -42,29 +42,19 @@
                 float4 MRT0 = texColor.Sample(PointClamp, RSMcoord);
                 float4 MRT1 = texNormal.Sample(PointClamp, RSMcoord);
 
-                float specular = restoreSpecular(MRT0);
-                float shininess = restoreShininess(MRT1);
+                float specular = DecodeSpecular(MRT0);
+                float shininess = DecodeSmoothness(MRT1);
 
                 float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
                 float3 P = restorePosition(texDepthLinear, RSMcoord, V);
-                float3 albedo = restoreDiffuse(MRT0);
+                float3 albedo = DecodeDiffuse(MRT0);
 
                 if (coord.y < 1 / 3.0f)
                 {
-                    float4 lighting = 0;
-                    float spot = spotLighting(float3(0,0,0), float3(0,0,1), lightOuterInner, P);
-                    if (spot > 0)
-                    {
-                        float nl = -N.z;
-                        if (nl > 0)
-                        {
-                            float atten = attenuationTerm(float3(0, 0, 0), P, lightAttenuation) * spot * nl;
-                            lighting = float4(lightColor * albedo, 1) * atten * dot(P, P);
-                        }
-                    }
-
-                    return lighting;
+                    float nl = -N.z;
+                    float spot = spotLighting(float3(0,0,0), float3(0,0,1), lightOuterInner, lightAttenuation, P);
+                    return float4(lightColor * albedo, 1) * spot * nl * dot(P, P);
                 }
                 else if (coord.y < 2 / 3.0f)
                 {
@@ -89,13 +79,13 @@
                 float4 MRT0 = texColor.Sample(PointClamp, RSMcoord);
                 float4 MRT1 = texNormal.Sample(PointClamp, RSMcoord);
 
-                float specular = restoreSpecular(MRT0);
-                float shininess = restoreShininess(MRT1);
+                float specular = DecodeSpecular(MRT0);
+                float shininess = DecodeSmoothness(MRT1);
 
                 float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
                 float3 P = restorePosition(texDepthLinear, RSMcoord, V);
-                float3 albedo = restoreDiffuse(MRT0);
+                float3 albedo = DecodeDiffuse(MRT0);
 
                 if (coord.y < 1 / 3.0f)
                 {
@@ -138,8 +128,8 @@
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord.xy);
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord.xy);
 
-                float specular = restoreSpecular(MRT0);
-                float shininess = restoreShininess(MRT1);
+                float specular = DecodeSpecular(MRT0);
+                float shininess = DecodeSmoothness(MRT1);
 
                 float3 V = normalize(viewdir);
                 float3 viewNormal = DecodeGBufferNormal(MRT1);

@@ -312,27 +312,51 @@ inline bool operator>=(const _Ty value, const Vector3t<_Tx>& v)
 }
 
 template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator*(const Vector3t<_Tx>& v, _Ty value)
+inline Vector3t<_Tx> operator+(_Ty value, const Vector3t<_Tx>& v)
 {
-    return Vector3t<_Tx>((_Tx)(v.x * value), (_Tx)(v.y * value), (_Tx)(v.z * value));
+	return Vector3t<_Tx>((_Tx)(value + v.x), (_Tx)(value + v.y), (_Tx)(value + v.z));
+}
+
+template<typename _Tx, typename _Ty>
+inline Vector3t<_Tx> operator-(_Ty value, const Vector3t<_Tx>& v)
+{
+	return Vector3t<_Tx>((_Tx)(value - v.x), (_Tx)(value - v.y), (_Tx)(value - v.z));
 }
 
 template<typename _Tx, typename _Ty>
 inline Vector3t<_Tx> operator*(_Ty value, const Vector3t<_Tx>& v)
 {
-    return Vector3t<_Tx>(v.x * value, v.y * value, v.z * value);
+	return Vector3t<_Tx>((_Tx)(value * v.x), (_Tx)(value * v.y), (_Tx)(value * v.z));
 }
 
 template<typename _Tx, typename _Ty>
 inline Vector3t<_Tx> operator/(_Ty value, const Vector3t<_Tx>& v)
 {
-    return Vector3t<_Tx>(value / v.x, value / v.y, value / v.z);
+	return Vector3t<_Tx>((_Tx)(value / v.x), (_Tx)(value / v.y), (_Tx)(value / v.z));
+}
+
+template<typename _Tx, typename _Ty>
+inline Vector3t<_Tx> operator+(const Vector3t<_Tx>& v, _Ty value)
+{
+	return Vector3t<_Tx>((_Tx)(v.x + value), (_Tx)(v.y + value), (_Tx)(v.z + value));
+}
+
+template<typename _Tx, typename _Ty>
+inline Vector3t<_Tx> operator-(const Vector3t<_Tx>& v, _Ty value)
+{
+	return Vector3t<_Tx>((_Tx)(v.x - value), (_Tx)(v.y - value), (_Tx)(v.z - value));
+}
+
+template<typename _Tx, typename _Ty>
+inline Vector3t<_Tx> operator*(const Vector3t<_Tx>& v, _Ty value)
+{
+	return Vector3t<_Tx>((_Tx)(v.x * value), (_Tx)(v.y * value), (_Tx)(v.z * value));
 }
 
 template<typename _Tx, typename _Ty>
 inline Vector3t<_Tx> operator/(const Vector3t<_Tx>& v, _Ty value)
 {
-    return Vector3t<_Tx>(v.x / value, v.y / value, v.z / value);
+	return Vector3t<_Tx>((_Tx)(v.x / value), (_Tx)(v.y / value), (_Tx)(v.z / value));
 }
 
 template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
@@ -549,6 +573,12 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector3t<T> pow(const Vector3t<T>& v1, T v2)
+	{
+		return Vector3t<T>(std::pow(v1.x, v2), std::pow(v1.y, v2), std::pow(v1.z, v2));
+	}
+
+	template<typename T>
 	inline Vector3t<T> pow(const Vector3t<T>& v1, const Vector3t<T>& v2)
 	{
 		return Vector3t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y), std::pow(v1.z, v2.z));
@@ -558,6 +588,20 @@ namespace math
 	inline Vector3t<T> random(const Vector3t<T>& min, const Vector3t<T>& max)
 	{
 		return Vector3t<T>(random(min.x, max.x), random(min.y, max.y), random(min.z, max.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> linear2srgb(const Vector3t<T>& srgb)
+	{
+		const float ALPHA = 0.055f;
+		return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * math::pow(srgb, 1 / 2.4f) - ALPHA;
+	};
+
+	template<typename T>
+	inline Vector3t<T> srgb2linear(const Vector3t<T>& rgb)
+	{
+		const float ALPHA = 0.055f;
+		return rgb < 0.04045f ? rgb / 12.92f : math::pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
 	}
 }
 

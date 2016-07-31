@@ -225,19 +225,23 @@ Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTe
 RenderQueue
 Geometry::stringToRenderQueue(const std::string& techName) noexcept
 {
-	if (techName == "Custom")				return RenderQueue::RenderQueueCustom;
-	if (techName == "Shadow")				return RenderQueue::RenderQueueShadow;
-	if (techName == "ReflectiveShadow")		return RenderQueue::RenderQueueReflectiveShadow;
-	if (techName == "Opaque")				return RenderQueue::RenderQueueOpaque;
-	if (techName == "OpaqueBatch")			return RenderQueue::RenderQueueOpaqueBatch;
-	if (techName == "OpaqueSpecific")		return RenderQueue::RenderQueueOpaqueSpecific;
-	if (techName == "OpaqueShading")		return RenderQueue::RenderQueueOpaqueShading;
-	if (techName == "Transparent")			return RenderQueue::RenderQueueTransparent;
-	if (techName == "TransparentBatch")     return RenderQueue::RenderQueueTransparentBatch;	
-	if (techName == "TransparentShading")	return RenderQueue::RenderQueueTransparentShading;
-	if (techName == "TransparentSpecific")	return RenderQueue::RenderQueueTransparentSpecific;
-	if (techName == "Lighting")				return RenderQueue::RenderQueueLighting;
-	if (techName == "Postprocess")			return RenderQueue::RenderQueuePostprocess;
+	if (techName == "Custom")					return RenderQueue::RenderQueueCustom;
+	if (techName == "Shadow")					return RenderQueue::RenderQueueShadow;
+	if (techName == "ReflectiveShadow")			return RenderQueue::RenderQueueReflectiveShadow;
+	if (techName == "Opaque")					return RenderQueue::RenderQueueOpaque;
+	if (techName == "OpaqueBatch")				return RenderQueue::RenderQueueOpaqueBatch;
+	if (techName == "OpaqueSpecific")			return RenderQueue::RenderQueueOpaqueSpecific;
+	if (techName == "OpaqueShading")			return RenderQueue::RenderQueueOpaqueShading;
+	if (techName == "TransparentBack")			return RenderQueue::RenderQueueTransparentBack;
+	if (techName == "TransparentBatchBack")     return RenderQueue::RenderQueueTransparentBatchBack;
+	if (techName == "TransparentShadingBack")	return RenderQueue::RenderQueueTransparentShadingBack;
+	if (techName == "TransparentSpecificBack")	return RenderQueue::RenderQueueTransparentSpecificBack;
+	if (techName == "TransparentFront")			return RenderQueue::RenderQueueTransparentFront;
+	if (techName == "TransparentBatchFront")    return RenderQueue::RenderQueueTransparentBatchFront;
+	if (techName == "TransparentShadingFront")	return RenderQueue::RenderQueueTransparentShadingFront;
+	if (techName == "TransparentSpecificFront")	return RenderQueue::RenderQueueTransparentSpecificFront;
+	if (techName == "Lighting")					return RenderQueue::RenderQueueLighting;
+	if (techName == "Postprocess")				return RenderQueue::RenderQueuePostprocess;
 
 	assert(false);
 	return RenderQueue::RenderQueueMaxEnum;

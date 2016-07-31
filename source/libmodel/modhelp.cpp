@@ -1147,9 +1147,9 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 			float v = (float)(y) / heightSegments;
 
 			Vector3 vertex;
-			vertex.x = -radius * cos(phiStart + u * phiLength) * sin(thetaStart + v * thetaLength);
-			vertex.y = radius * cos(thetaStart + v * thetaLength);
-			vertex.z = radius * sin(phiStart + u * phiLength) * sin(thetaStart + v * thetaLength);
+			vertex.x = -radius * sin(thetaStart + v * thetaLength) * cos(phiStart + u * phiLength);
+			vertex.y =  radius * cos(thetaStart + v * thetaLength);
+			vertex.z =  radius * sin(thetaStart + v * thetaLength) * sin(phiStart + u * phiLength);
 
 			_vertices.push_back(vertex);
 			_normals.push_back(math::normalize(vertex));
@@ -1163,31 +1163,31 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 	{
 		for (std::uint32_t x = 0; x < widthSegments; x++)
 		{
-			std::uint32_t v1 = vertices[y * (widthSegments + 1) + x + 1];
-			std::uint32_t v2 = vertices[y * (widthSegments + 1) + x];
+			std::uint32_t v1 = vertices[y * (widthSegments + 1) + x];
+			std::uint32_t v2 = vertices[y * (widthSegments + 1) + x + 1];
 			std::uint32_t v3 = vertices[(y + 1) * (widthSegments + 1) + x];
 			std::uint32_t v4 = vertices[(y + 1) * (widthSegments + 1) + x + 1];
 
-			if (math::abs((_vertices)[v1].y) == radius)
+			if (math::abs((_vertices)[v2].y) == radius)
 			{
-				_faces.push_back(v1);
+				_faces.push_back(v2);
 				_faces.push_back(v3);
 				_faces.push_back(v4);
 			}
 			else if (math::abs((_vertices)[v3].y) == radius)
 			{
-				_faces.push_back(v1);
 				_faces.push_back(v2);
+				_faces.push_back(v1);
 				_faces.push_back(v3);
 			}
 			else
 			{
-				_faces.push_back(v1);
+				_faces.push_back(v2);
 				_faces.push_back(v3);
 				_faces.push_back(v4);
 
-				_faces.push_back(v1);
 				_faces.push_back(v2);
+				_faces.push_back(v1);
 				_faces.push_back(v3);
 			}
 		}

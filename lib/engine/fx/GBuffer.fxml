@@ -18,6 +18,7 @@
                 float3 specular;
                 float3 transmittance;
                 float smoothness;
+                float occlusion;
                 int lightModel;
             };
 
@@ -82,7 +83,7 @@
                 // http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf
                 GbufferParam gbuffer;
                 gbuffer.buffer1.rgb = material.albedo;
-                gbuffer.buffer1.w = 0;
+                gbuffer.buffer1.w = material.occlusion;
 
                 gbuffer.buffer2.xyz = EncodeNormal(material.normal);
                 gbuffer.buffer2.w = material.smoothness;
@@ -101,11 +102,23 @@
                 return gbuffer;
             }
 
+            GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float alphaDiffuse, float alphaNormals, float alphaSpecular)
+            {
+                GbufferParam gbuffer;
+                gbuffer = EncodeGbuffer(material);
+                gbuffer.buffer1.w = alphaDiffuse;
+                gbuffer.buffer2.w = alphaNormals;
+                gbuffer.buffer3.w = alphaSpecular;
+                return gbuffer;
+            }
+
             void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialParam material)
             {
                 material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
 
                 material.albedo = buffer1.rgb;
+                material.occlusion = buffer1.a;
+
                 material.normal = DecodeNormal(buffer2.xyz);
                 material.smoothness = buffer2.w;
 
@@ -121,44 +134,14 @@
                 }
             }
 
-            float4 StoreGBufferRT0(float3 diffuse, float3 specular)
-            {
-                return float4(diffuse, luminance(specular));
-            }
-
-            float4 StoreGBufferRT0(float3 diffuse, float specular)
-            {
-                return float4(diffuse, specular);
-            }
-
-            float4 StoreGBufferRT1(float3 n, float smoothness)
-            {
-                return float4(EncodeNormal(n), smoothness);
-            }
-
-            float4 StoreGBufferRT2(float weight, float alpha)
-            {
-                return float4(float3(weight,weight,weight), alpha);
-            }
-
-            float4 StoreGBufferRT3(float3 transmittance, float profile)
-            {
-                return float4(transmittance, profile);
-            }
-
-            float3 restoreDiffuse(texture2D mrt0, float2 coord)
+            float3 DecodeDiffuse(texture2D mrt0, float2 coord)
             {
                 return mrt0.Sample(PointClamp, coord).rgb;
             }
 
-            float3 restoreDiffuse(float4 mrt0)
+            float3 DecodeDiffuse(float4 mrt0)
             {
                 return mrt0.rgb;
-            }
-
-            float restoreSpecular(float4 mrt0)
-            {
-                return mrt0.a;
             }
 
             float3 DecodeGBufferNormal(float4 buffer2)
@@ -166,7 +149,12 @@
                 return DecodeNormal(buffer2.xyz);
             }
 
-            float restoreShininess(float4 mrt1)
+            float DecodeSpecular(float4 mrt0)
+            {
+                return mrt0.a;
+            }
+
+            float DecodeSmoothness(float4 mrt1)
             {
                 return mrt1.w;
             }

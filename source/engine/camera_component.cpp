@@ -315,10 +315,12 @@ CameraComponent::load(iarchive& reader) noexcept
 				flags |= CameraRenderFlagBits::CameraRenderScreenBit;
 			else if (flag == "render_to_texture")
 				flags |= CameraRenderFlagBits::CameraRenderTextureBit;
-			else if (flag == "gbuffer_diffuse")
-				flags |= CameraRenderFlagBits::CameraRenderGbufferDiffuseBit;
-			else if (flag == "gbuffer_normal")
-				flags |= CameraRenderFlagBits::CameraRenderGbufferNormalBit;
+			else if (flag == "gbuffer1")
+				flags |= CameraRenderFlagBits::CameraRenderGbuffer1Bit;
+			else if (flag == "gbuffer2")
+				flags |= CameraRenderFlagBits::CameraRenderGbuffer2Bit;
+			else if (flag == "gbuffer3")
+				flags |= CameraRenderFlagBits::CameraRenderGbuffer3Bit;
 			else if (flag == "lighting")
 				flags |= CameraRenderFlagBits::CameraRenderLightingBit;
 			else if (flag == "shading")

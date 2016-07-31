@@ -6,7 +6,7 @@
         <attribute position="0,0,-15" />
         <attribute active="true"/>
         <component class="Camera">
-            <attribute aperture="45.0"/>
+            <attribute aperture="75.0"/>
             <attribute znear="0.1"/>
             <attribute zfar="1000.0"/>
         </component>

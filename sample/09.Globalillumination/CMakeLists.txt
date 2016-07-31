@@ -1,0 +1,12 @@
+PROJECT("09.Globalillumination")
+
+SET(LIB_NAME "09.Globalillumination")
+
+FILE(GLOB HEADER_LIST *.h)
+FILE(GLOB SOURCE_LIST *.cpp)
+
+SOURCE_GROUP("Globalillumination" FILES ${HEADER_LIST})
+SOURCE_GROUP("Globalillumination" FILES ${SOURCE_LIST})
+
+ADD_EXECUTABLE(${LIB_NAME} ${HEADER_LIST} ${SOURCE_LIST})
+TARGET_LINK_LIBRARIES(${LIB_NAME} "ray-c")

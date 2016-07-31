@@ -200,9 +200,9 @@
 
                 float4 lighting;
                 lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
-                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular.r));
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
-                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, P);
+                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, lightAttenuation, P);
 
                 return lighting;
             }
@@ -227,10 +227,9 @@
 
                 float4 lighting;
                 lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
-                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular.r));
-                lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
-                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, P);
+                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, lightAttenuation, P);
 
                 return lighting;
             }
@@ -261,10 +260,15 @@
             float4 DeferredShadingOpaquesPS(in float2 coord : TEXCOORD0) : SV_Target
             {
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
                 float4 lighting = texLight.Sample(PointClamp, coord);
 
-                float3 diffuse = restoreDiffuse(MRT0);
-                float3 shading = shadingLight(diffuse, lighting);
+                float3 shading = shadingLight(material.albedo, lighting);
 
                 return float4(shading, 1.0);
             }
@@ -272,14 +276,18 @@
             float4 DeferredShadingTransparentsPS(in float2 coord : TEXCOORD0) : SV_Target
             {
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT2 = texMRT2.Sample(PointClamp, coord);
-                float3 source = texOpaque.Sample(PointClamp, coord).rgb;
+
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
+                float4 source = texOpaque.Sample(PointClamp, coord);
                 float4 lighting = texLight.Sample(PointClamp, coord);
 
-                float3 diffuse = restoreDiffuse(MRT0) / max(MRT2.a, 0.00001);
-                float3 shading = shadingLight(diffuse, lighting);
+                float3 shading = shadingLight(material.albedo, lighting);
 
-                return float4(PremultipliedBlend(source, shading, MRT2.x), 1.0);
+                return float4(shading, 1.0);
             }
         ]]>
     </shader>
@@ -527,6 +535,12 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
         </pass>
     </technique>
 </effect>

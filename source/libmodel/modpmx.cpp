@@ -800,9 +800,9 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			}
 		}
 
-		material->set(MATKEY_COLOR_DIFFUSE, it.Diffuse);
-		material->set(MATKEY_COLOR_AMBIENT, it.Ambient);
-		material->set(MATKEY_COLOR_SPECULAR, it.Specular);
+		material->set(MATKEY_COLOR_DIFFUSE, ray::math::srgb2linear(it.Diffuse));
+		material->set(MATKEY_COLOR_AMBIENT, ray::math::srgb2linear(it.Ambient));
+		material->set(MATKEY_COLOR_SPECULAR, ray::math::srgb2linear(it.Specular));
 		material->set(MATKEY_OPACITY, it.Opacity);
 		material->set(MATKEY_SHININESS, it.Shininess / 256.0f);
 

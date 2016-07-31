@@ -107,14 +107,14 @@
             GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 iTexcoord : TEXCOORD2)
             {
                 MaterialParam material;
-                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : srgb2linear(diffuse.rgb);
+                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse.rgb;
                 material.normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : normalize(iNormal);
 
                 if (quality.b > 0.0)
                 {
                     float4 specularTex = texSpecular.Sample(PointClamp, iTexcoord);
                     material.specular = specularTex.r;
-                    material.smoothness = specularTex.a;
+                    material.smoothness = specularTex.g;
                 }
                 else
                 {
@@ -122,7 +122,14 @@
                     material.smoothness = smoothness;
                 }
 
+                float3 dielectricColor = float3(0.04, 0.04, 0.04);
+                float3 diffColor = material.albedo * (1.0 - material.specular);
+                float3 specColor = lerp(dielectricColor.rgb, material.albedo, material.specular);
+
+                material.albedo = diffColor;
+                material.specular = specColor;
                 material.transmittance = 0;
+                material.occlusion = 1;
                 material.lightModel = LIGHTINGMODEL_NORMAL;
 
                 return EncodeGbuffer(material);

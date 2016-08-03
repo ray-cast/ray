@@ -218,38 +218,38 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 			std::match_results<std::string::const_iterator> result;
 			std::string errorString((char*)error->GetBufferPointer(), error->GetBufferSize());
 			
-			if (std::regex_search(errorString, result, pattern))
+			if (!std::regex_search(errorString, result, pattern))
+				throw failure((char*)error->GetBufferPointer());
+
+			std::istringstream patternResult(result.str());
+
+			std::size_t row;
+			patternResult.ignore(1);
+			patternResult >> row;
+
+			std::string line;
+			std::ostringstream ostream;
+			std::istringstream istream(_hlslCodes);
+			ostream << (const char*)error->GetBufferPointer() << std::endl;
+
+			std::size_t start = std::max<std::size_t>(0, row - 10);
+
+			for (std::size_t i = 0; i < row + 10; i++)
 			{
-				std::istringstream patternResult(result.str());
+				if (!std::getline(istream, line))
+					break;
 
-				std::size_t row;
-				patternResult.ignore(1);
-				patternResult >> row;
-
-				std::string line;
-				std::ostringstream ostream;
-				std::istringstream istream(_hlslCodes);
-				ostream << (const char*)error->GetBufferPointer() << std::endl;
-
-				std::size_t start = std::max<std::size_t>(0, row - 10);
-
-				for (std::size_t i = 0; i < row + 10; i++)
-				{
-					if (!std::getline(istream, line))
-						break;
-
-					if (i >= start)
-						ostream << i << '\t' << line << std::endl;
-				}
-
-				if (binary)
-					binary->Release();
-
-				if (error)
-					error->Release();
-
-				throw ray::failure(ostream.str().c_str());
+				if (i >= start)
+					ostream << i << '\t' << line << std::endl;
 			}
+
+			if (binary)
+				binary->Release();
+
+			if (error)
+				error->Release();
+
+			throw failure(ostream.str().c_str());
 		}
 
 		shaderDesc.setStage(shaderStage);

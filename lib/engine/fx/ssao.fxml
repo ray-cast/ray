@@ -5,7 +5,7 @@
     <include name="sys:fx/inputlayout.fxml"/>
     <macro name="NUM_SAMPLES" type="int" value="10"/>
     <macro name="NUM_SAMPLES_INV" type="float" value="0.1"/>
-    <macro name="BLUR_RADIUS" type="int" value="6"/>
+    <macro name="BLUR_RADIUS" type="int" value="8"/>
     <parameter name="projScale" type="float"/>
     <parameter name="radius" type="float"/>
     <parameter name="radius2" type="float"/>
@@ -80,6 +80,7 @@
                 float sampleAngle = (3 * ssC.x ^ ssC.y + 10 * ssC.x * ssC.y) * 10;
                 float sampleRadius = projScale * radius / viewPosition.z;
                 float sampleAmbient = 0.0f;
+                float sampleWeight = 0.0f;
 
                 float2 sampleNoise;
                 sincos(sampleAngle, sampleNoise.x, sampleNoise.y);
@@ -93,8 +94,12 @@
                     float sampleAngle = dot(sampleDirection, viewNormal);
                     float sampleLength2 = dot(sampleDirection, sampleDirection);
 
-                    float epsilon = 0.0001f;
-                    sampleAmbient += max(0.0f, (sampleAngle - viewPosition.z * bias) * rsqrt(sampleLength2 + epsilon));
+                    if (sampleLength2 <= radius)
+                    {
+                        float epsilon = 0.0001f;
+                        sampleWeight += 1.0f;
+                        sampleAmbient += max(0.0f, (sampleAngle - viewPosition.z * bias) * rsqrt(sampleLength2));
+                    }
                 }
 
                 return max(0.0f, 1 - sampleAmbient * intensity * NUM_SAMPLES_INV);
@@ -133,7 +138,7 @@
             float4 ApplyPS(in float4 coord : TEXCOORD) : SV_Target
             {
                 float ao = texSource.Sample(PointClamp, coord).r;
-                return float4(ao,ao,ao,ao);
+                return ao;
             }
         ]]>
     </shader>

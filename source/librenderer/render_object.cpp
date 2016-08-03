@@ -221,7 +221,7 @@ RenderObject::onSceneChangeAfter() noexcept
 bool
 RenderObject::onVisiableTest(const Frustum& fru) noexcept
 {
-	return fru.contains(this->getBoundingBoxInWorld().aabb());
+	return true;// fru.contains(this->getBoundingBox().aabb());
 }
 
 void

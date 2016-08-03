@@ -169,11 +169,13 @@ struct PMX_Material
 	PMX_uint8_t Flag;
 	PMX_Vector4 EdgeColor;
 	PMX_Float   EdgeSize;
-	PMX_uint8_t TextureIndex;
-	PMX_uint8_t SphereTextureIndex;
+	PMX_uint16_t TextureIndex;
+	PMX_uint16_t SphereTextureIndex;
 	PMX_uint16_t ToonIndex;
-	PMX_uint8_t ToonFlag;
+	PMX_uint16_t ToonFlag;
 	PMX_uint32_t SphereMode;
+	PMX_uint8_t  Unknown1;
+	PMX_uint16_t Unknown2;
 	PMX_uint32_t FaceVertexCount;
 };
 
@@ -533,11 +535,20 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			if (!stream.read((char*)&material.Flag, sizeof(material.Flag))) return false;
 			if (!stream.read((char*)&material.EdgeColor, sizeof(material.EdgeColor))) return false;
 			if (!stream.read((char*)&material.EdgeSize, sizeof(material.EdgeSize))) return false;
-			if (!stream.read((char*)&material.TextureIndex, sizeof(material.TextureIndex))) return false;
-			if (!stream.read((char*)&material.SphereTextureIndex, sizeof(material.SphereTextureIndex))) return false;
-			if (!stream.read((char*)&material.ToonIndex, sizeof(material.ToonIndex))) return false;
+			if (!stream.read((char*)&material.TextureIndex, pmx.header.sizeOfTexture)) return false;
+			if (!stream.read((char*)&material.SphereTextureIndex, pmx.header.sizeOfTexture)) return false;
+			if (!stream.read((char*)&material.ToonIndex, pmx.header.sizeOfTexture)) return false;
 			if (!stream.read((char*)&material.ToonFlag, sizeof(material.ToonFlag))) return false;
-			if (!stream.read((char*)&material.SphereMode, sizeof(material.SphereMode))) return false;
+			if (material.ToonFlag != 0)
+			{
+				if (!stream.read((char*)&material.SphereMode, sizeof(material.SphereMode))) return false;
+			}
+			else
+			{
+				if (!stream.read((char*)&material.Unknown1, sizeof(material.Unknown1))) return false;
+				if (!stream.read((char*)&material.Unknown2, sizeof(material.Unknown2))) return false;
+			}
+
 			if (!stream.read((char*)&material.FaceVertexCount, sizeof(material.FaceVertexCount))) return false;
 		}
 	}
@@ -806,7 +817,15 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		material->set(MATKEY_OPACITY, it.Opacity);
 		material->set(MATKEY_SHININESS, it.Shininess / 256.0f);
 
-		if (it.TextureIndex != std::numeric_limits<PMX_uint8_t>::max())
+		std::uint32_t limits = 0;
+		if (pmx.header.sizeOfTexture == 1)
+			limits = std::numeric_limits<PMX_uint8_t>::max();
+		else if (pmx.header.sizeOfTexture == 2)
+			limits = std::numeric_limits<PMX_uint16_t>::max();
+		else if (pmx.header.sizeOfTexture == 4)
+			limits = std::numeric_limits<PMX_uint32_t>::max();
+
+		if (it.TextureIndex < limits)
 		{
 			PMX_Name& texture = pmx.textures[it.TextureIndex];
 			if ((texture.length >> 1) < MAX_PATH)
@@ -820,7 +839,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			}
 		}
 
-		if (it.SphereTextureIndex != std::numeric_limits<PMX_uint8_t>::max())
+		if (it.SphereTextureIndex < limits)
 		{
 			PMX_Name& texture = pmx.textures[it.SphereTextureIndex];
 			if ((texture.length >> 1) < MAX_PATH)
@@ -829,7 +848,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 				wcstombs(name, texture.name, MAX_PATH);
 
-				material->set(MATKEY_TEXTURE_NORMALS(0), name);
+				material->set(MATKEY_EFFECT(0), name);
 			}
 		}
 

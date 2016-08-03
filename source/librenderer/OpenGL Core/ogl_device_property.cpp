@@ -38,6 +38,11 @@
 
 _NAME_BEGIN
 
+extern "C" 
+{
+	EXPORT DWORD NvOptimusEnablement = 0x00000001;
+}
+
 OGLDeviceProperty::OGLDeviceProperty() noexcept
 {
 }
@@ -53,6 +58,7 @@ OGLDeviceProperty::setup() noexcept
 
 	if (!setupGLEnvironment(param))
 	{
+		GL_PLATFORM_LOG("setupGLEnvironment fail");
 		closeGLEnvironment(param);
 		return false;
 	}
@@ -211,7 +217,7 @@ OGLDeviceProperty::setupGLEnvironment(CreateParam& param) noexcept
 	contextAttrs[2] = GLX_CONTEXT_MINOR_VERSION_ARB;
 	contextAttrs[3] = 3;
 	contextAttrs[4] = GLX_CONTEXT_PROFILE_MASK_ARB;
-	contextAttrs[5] = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+	contextAttrs[5] = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
 	contextAttrs[6] = GL_NONE;
 
 	param.ctx = glXCreateContextAttribsARB(param.dpy, *param.config, 0, true, contextAttrs);

@@ -121,9 +121,9 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		if (hdr.pixel_size == 8)
 			format = ImageFormat::ImageFormatR8UNorm;
 		else if (hdr.pixel_size == 24)
-			format = ImageFormat::ImageFormatB8G8R8UNorm;
+			format = ImageFormat::ImageFormatR8G8B8UNorm;
 		else if (hdr.pixel_size == 32)
-			format = ImageFormat::ImageFormatB8G8R8A8UNorm;
+			format = ImageFormat::ImageFormatR8G8B8A8UNorm;
 		else
 			return false;
 
@@ -151,7 +151,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 		case 24:
 		{
-			if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8UNorm))
+			if (!image.create(columns, rows, ImageFormat::ImageFormatR8G8B8UNorm))
 				return false;
 
 			RGB* rgb = (RGB*)image.data();
@@ -194,7 +194,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		break;
 		case 32:
 		{
-			if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8A8UNorm))
+			if (!image.create(columns, rows, ImageFormat::ImageFormatR8G8B8A8UNorm))
 				return false;
 
 			std::uint32_t* rgba = (std::uint32_t*)image.data();

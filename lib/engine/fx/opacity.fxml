@@ -6,6 +6,7 @@
     <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
     <parameter name="quality" type="float4"/>
     <parameter name="diffuse" type="float3"/>
+    <parameter name="transmittance" type="float3"/>
     <parameter name="metalness" type="float"/>
     <parameter name="smoothness" type="float"/>
     <parameter name="texDiffuse" type="texture2D"/>
@@ -127,11 +128,6 @@
                 oPosition = mul(matModelViewProject, Position);
             }
 
-            float3 SkinTransmittance(float translucency)
-            {
-                return exp((1 - saturate(translucency)) * float3(-8, -40, -64));
-            }
-
             GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 coord : TEXCOORD2)
             {
                 MaterialParam material;
@@ -156,7 +152,7 @@
 
                 material.albedo = diffColor;
                 material.specular = specColor;
-                material.transmittance = 0;
+                material.transmittance = transmittance;
                 material.occlusion = 1;
                 material.lightModel = LIGHTINGMODEL_NORMAL;
 

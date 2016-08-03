@@ -1147,12 +1147,12 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 			float v = (float)(y) / heightSegments;
 
 			Vector3 vertex;
-			vertex.x = -sin(thetaStart + v * thetaLength) * cos(phiStart + u * phiLength);
-			vertex.y =  cos(thetaStart + v * thetaLength);
-			vertex.z =  sin(thetaStart + v * thetaLength) * sin(phiStart + u * phiLength);
+			vertex.x = -radius * sin(thetaStart + v * thetaLength) * cos(phiStart + u * phiLength);
+			vertex.y =  radius * cos(thetaStart + v * thetaLength);
+			vertex.z =  radius * sin(thetaStart + v * thetaLength) * sin(phiStart + u * phiLength);
 
-			_vertices.push_back(vertex * radius);
-			_normals.push_back(vertex);
+			_vertices.push_back(vertex);
+			_normals.push_back(math::normalize(vertex));
 			_texcoords.emplace_back(u, 1 - v);
 
 			vertices.push_back((std::uint32_t)_vertices.size() - 1);
@@ -1267,7 +1267,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		v.z = 0;
 
 		_vertices.push_back(v);
-		_normals.push_back(v);
+		_normals.push_back(math::normalize(v));
 
 		_texcoords.emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
 	}

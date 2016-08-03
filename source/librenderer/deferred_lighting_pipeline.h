@@ -191,6 +191,8 @@ private:
 	MaterialTechPtr _deferredAmbientLight;
 	MaterialTechPtr _deferredShadingOpaques;
 	MaterialTechPtr _deferredShadingTransparents;
+	MaterialTechPtr _deferredShadingOpaquesWithSkyLighting;
+	MaterialTechPtr _deferredShadingTransparentsWithSkyLighting;
 	MaterialTechPtr _deferredDebugLayer;
 	MaterialTechPtr _deferredCopyOnly;
 
@@ -217,6 +219,13 @@ private:
 	MaterialParamPtr _lightEyeDirection;
 	MaterialParamPtr _lightAttenuation;
 	MaterialParamPtr _lightOuterInner;
+
+	MaterialParamPtr _envBoxMax;
+	MaterialParamPtr _envBoxMin;
+	MaterialParamPtr _envBoxCenter;
+	MaterialParamPtr _envDiffuse;
+	MaterialParamPtr _envSpecular;
+	MaterialParamPtr _envFactor;
 
 	MaterialSemanticPtr _materialDeferredDepthMap;
 	MaterialSemanticPtr _materialDeferredDepthLinearMap;

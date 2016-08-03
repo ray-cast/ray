@@ -54,6 +54,7 @@ _NAME_BEGIN
 #define MATKEY_REFLECTIVITY       "$mat.reflectivity",0,0
 #define MATKEY_SHININESS_STRENGTH "$mat.shinpercent",0,0
 #define MATKEY_REFRACTI           "$mat.refracti",0,0
+#define MATKEY_EFFECT             "$mat.effect",0,0
 #define MATKEY_COLOR_DIFFUSE      "$clr.diffuse",0,0
 #define MATKEY_COLOR_AMBIENT      "$clr.ambient",0,0
 #define MATKEY_COLOR_SPECULAR     "$clr.specular",0,0

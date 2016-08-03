@@ -83,8 +83,8 @@ public:
 	void setClearColor(const float4& color) noexcept;
 	const float4& getClearColor() const noexcept;
 
-	void setClearFlags(GraphicsClearFlags flags) noexcept;
-	GraphicsClearFlags getClearFlags() const noexcept;
+	void setClearFlags(CameraClearFlags flags) noexcept;
+	CameraClearFlags getClearFlags() const noexcept;
 
 	void setCameraType(CameraType type) noexcept;
 	CameraType getCameraType() const noexcept;
@@ -94,6 +94,18 @@ public:
 
 	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
+
+	void setSkyBox(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getSkyBox() const noexcept;
+
+	void setSkyLighting(bool enable) noexcept;
+	bool getSkyLighting() const noexcept;
+
+	void setSkyLightingDiffuse(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getSkyLightingDiffuse() const noexcept;
+
+	void setSkyLightingSpecular(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getSkyLightingSpecular() const noexcept;
 
 	void setSwapchain(GraphicsSwapchainPtr swapchin) noexcept;
 	const GraphicsSwapchainPtr& getSwapchain() const noexcept;
@@ -134,17 +146,23 @@ private:
 
 	float4 _viewport;
 	float4 _clearColor;
-	GraphicsClearFlags _clearFlags;
 
 	CameraType   _cameraType;
 	CameraOrder  _cameraOrder;
+	CameraClearFlags _cameraClearType;
 	CameraRenderFlags _cameraRenderFlags;
+
+	GraphicsTexturePtr _skybox;
+	GraphicsTexturePtr _skyDiffuseIBL;
+	GraphicsTexturePtr _skySpecularIBL;
 
 	GraphicsSwapchainPtr _swapchain;
 	GraphicsFramebufferPtr _framebuffer;
 	GraphicsFramebufferPtr _depthLinearFramebuffer;
 
 	RenderDataManagerPtr _dataManager;
+
+	bool _enableSkyLighting;
 
 	mutable bool _needUpdateViewProject;
 

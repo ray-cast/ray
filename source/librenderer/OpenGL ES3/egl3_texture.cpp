@@ -111,7 +111,6 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		if (EGL3Types::isCompressedTexture(textureDesc.getTexFormat()))
 		{
 			GLsizei offset = 0;
-			GLsizei blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
 			GLint oldPackStore = 1;
 			glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
@@ -121,7 +120,7 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			{
 				GLsizei w = std::max(width / (1 << mip), 1);
 				GLsizei h = std::max(height / (1 << mip), 1);
-				GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
+				GLsizei mipSize = EGL3Types::getCompressedTextureSize(w, h, 1, internalFormat);
 
 				glCompressedTexSubImage2D(target, mip, 0, 0, w, h, internalFormat, mipSize, (char*)stream + offset);
 

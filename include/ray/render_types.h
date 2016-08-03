@@ -131,6 +131,18 @@ enum CameraOrder
 	CameraOrderMaxEnum = 0x7FFFFFFF
 };
 
+enum CameraClearFlagBits
+{
+	CameraClearColorBit,
+	CameraClearDepthBit,
+	CameraClearStencilBit,
+	CameraClearSkyboxBit,
+	CameraClearDepthStencilBit = CameraClearDepthBit | CameraClearStencilBit,
+	CameraClearMaxBit = 0x7FFFFFFF
+};
+
+typedef std::uint32_t CameraClearFlags;
+
 enum CameraRenderFlagBits
 {
 	CameraRenderScreenBit = 0x00000001,

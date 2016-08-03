@@ -1036,6 +1036,29 @@ EGL3Types::getFormatNum(GLenum format, GLenum type) noexcept
 	}
 }
 
+GLsizei
+EGL3Types::getCompressedTextureSize(GLsizei width, GLsizei height, GLsizei depth, GLenum internalFormat) noexcept
+{
+	switch (internalFormat)
+	{
+	case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+	case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+		width = (width + 3) & ~3;
+		height = (height + 3) & ~3;
+		return std::max(8, width * height / 2);
+	case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+	case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+		width = (width + 3) & ~3;
+		height = (height + 3) & ~3;
+		return std::max(16, width * height);
+	default:
+	{
+		GL_PLATFORM_ASSERT(false, "bad texformat in compressed_texture_size");
+		return 0;
+	}
+	}
+}
+
 GLboolean
 EGL3Types::isNormFormat(GraphicsFormat format) noexcept
 {

@@ -249,34 +249,39 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 	for (auto& materialProp : model.getMaterialsList())
 	{
 		float opacity = 1.0;
-		materialProp->get(MATKEY_OPACITY, opacity);
-
 		std::string defaultMaterial;
-		if (opacity == 1.0)
+
+		materialProp->get(MATKEY_OPACITY, opacity);
+		materialProp->get(MATKEY_EFFECT, defaultMaterial);
+
+		if (defaultMaterial.empty())
 		{
-			if (numBones == 0)
-				defaultMaterial = "sys:fx/opacity_skinning0.fxml";
-			else if (numBones <= 64)
-				defaultMaterial = "sys:fx/opacity_skinning64.fxml";
-			else if (numBones <= 128)
-				defaultMaterial = "sys:fx/opacity_skinning128.fxml";
-			else if (numBones <= 256)
-				defaultMaterial = "sys:fx/opacity_skinning256.fxml";
+			if (opacity == 1.0)
+			{
+				if (numBones == 0)
+					defaultMaterial = "sys:fx/opacity_skinning0.fxml";
+				else if (numBones <= 64)
+					defaultMaterial = "sys:fx/opacity_skinning64.fxml";
+				else if (numBones <= 128)
+					defaultMaterial = "sys:fx/opacity_skinning128.fxml";
+				else if (numBones <= 256)
+					defaultMaterial = "sys:fx/opacity_skinning256.fxml";
+				else
+					defaultMaterial = "sys:fx/opacity_skinning0.fxml";
+			}
 			else
-				defaultMaterial = "sys:fx/opacity_skinning0.fxml";
-		}
-		else
-		{
-			if (numBones == 0)
-				defaultMaterial = "sys:fx/transparent_skinning0.fxml";
-			else if (numBones <= 64)
-				defaultMaterial = "sys:fx/transparent_skinning64.fxml";
-			else if (numBones <= 128)
-				defaultMaterial = "sys:fx/transparent_skinning128.fxml";
-			else if (numBones <= 256)
-				defaultMaterial = "sys:fx/transparent_skinning256.fxml";
-			else
-				defaultMaterial = "sys:fx/transparent_skinning0.fxml";
+			{
+				if (numBones == 0)
+					defaultMaterial = "sys:fx/transparent_skinning0.fxml";
+				else if (numBones <= 64)
+					defaultMaterial = "sys:fx/transparent_skinning64.fxml";
+				else if (numBones <= 128)
+					defaultMaterial = "sys:fx/transparent_skinning128.fxml";
+				else if (numBones <= 256)
+					defaultMaterial = "sys:fx/transparent_skinning256.fxml";
+				else
+					defaultMaterial = "sys:fx/transparent_skinning0.fxml";
+			}
 		}
 
 		MaterialPtr material;
@@ -368,41 +373,6 @@ ResManager::createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, G
 
 		rigidbodys.push_back(std::move(gameObject));
 	}
-
-	/*if (!bones.empty())
-	{
-		std::size_t index = 0;
-
-		auto& bodys = model.getRigidbodyList();
-		auto& joints = model.getJointList();
-
-		for (auto& it : bodys)
-		{
-			if (it->bone > 0 && it->bone < model.getBonesList().size())
-				rigidbodys[index]->setParent(bones[it->bone]);
-			else
-			{
-				for (auto& joint : joints)
-				{
-					std::size_t jointRigidbodyA = joint->bodyIndexA;
-					std::size_t jointRigidbodyB = joint->bodyIndexB;
-
-					if (jointRigidbodyB == index)
-					{
-						std::size_t targetBone = bodys.at(jointRigidbodyA)->bone;
-						rigidbodys[index]->setParent(bones[targetBone]);
-					}
-					else if (jointRigidbodyA == index)
-					{
-						std::size_t targetBone = bodys.at(jointRigidbodyB)->bone;
-						rigidbodys[index]->setParent(bones[targetBone]);
-					}
-				}
-			}
-
-			++index;
-		}
-	}*/
 #endif
 }
 
@@ -451,6 +421,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 {
 	float3 metalness(0.5f);
 	float3 diffuseColor(1.0f);
+	float3 translucency;
 	float4 quality(0.0f);
 	float smoothness = 0.0;
 	float opacity = 1.0;
@@ -461,6 +432,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 	material.get(MATKEY_SHININESS, smoothness);
 	material.get(MATKEY_COLOR_DIFFUSE, diffuseColor);
 	material.get(MATKEY_COLOR_SPECULAR, metalness);
+	material.get(MATKEY_COLOR_AMBIENT, translucency);
 	material.get(MATKEY_TEXTURE_DIFFUSE(0), diffuseTexture);
 	material.get(MATKEY_TEXTURE_NORMALS(0), normalTexture);
 
@@ -477,7 +449,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 
 	if (!diffuseTexture.empty())
 	{
-		auto texture = RenderSystem::instance()->createTexture(directory + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+		auto texture = RenderSystem::instance()->createTexture(directory + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 		if (texture)
 		{
 			quality.x = 1.0f;
@@ -496,13 +468,18 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 	}
 
 	effect->getParameter("quality")->uniform4f(quality);
-	if (opacity < 1.0f)
-		effect->getParameter("diffuse")->uniform4f(float4(diffuseColor, opacity));
-	else
-		effect->getParameter("diffuse")->uniform3f(diffuseColor);
-
+	effect->getParameter("diffuse")->uniform3f(diffuseColor);
 	effect->getParameter("metalness")->uniform1f(metalness.x);
 	effect->getParameter("smoothness")->uniform1f(smoothness);
+
+	auto transmittance = effect->getParameter("transmittance"); 
+	if (transmittance)
+		transmittance->uniform3f(translucency);
+
+	if (opacity < 1.0f)
+	{
+		effect->getParameter("opacity")->uniform1f(opacity);
+	}
 
 	return effect;
 }

@@ -72,18 +72,18 @@ ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 
 	pipeline.setFramebuffer(pipeline.getCamera()->getFramebuffer());
 
-	if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
-		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+	if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
+		pipeline.clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
 
-	if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagDepthBit ||
-		pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
+	if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
+		pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
 	{
-		if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit)
-			pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-		else if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
-			pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-		else if (pipeline.getCamera()->getClearFlags() & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
-			pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+		if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
+			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+		else if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
+			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+		else if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	}
 		
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);

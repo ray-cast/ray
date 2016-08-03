@@ -273,6 +273,33 @@ SphereMakerComponent::onActivate() except
 	if (!materialTemp)
 		return;
 
+	auto stage = ray::ResManager::instance()->createGameObject("dlc:common/bunny.pmx");
+	if (!stage)
+		return;
+
+	stage->setScale(ray::float3(2.0, 2.0, 2.0));
+	stage->setTranslate(ray::float3(0, -0.25, 30));
+	stage->setActive(true);
+	_objects.push_back(stage);
+
+	materialTemp->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
+	materialTemp->getParameter("diffuse")->uniform3f(0.25, 0.25, 0.25);
+	materialTemp->getParameter("metalness")->uniform1f(1.0f);
+	materialTemp->getParameter("smoothness")->uniform1f(0.2);
+	materialTemp->getParameter("texDiffuse")->uniformTexture(diffuseMap);
+	materialTemp->getParameter("texNormal")->uniformTexture(normalMap);
+
+	auto planeMesh = std::make_shared<ray::MeshProperty>();
+	planeMesh->makeFloor(1.0, 1.0);
+
+	auto planeObject = std::make_shared<ray::GameObject>();
+	planeObject->setActive(true);
+	planeObject->addComponent(std::make_shared<ray::MeshComponent>(planeMesh));
+	planeObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
+	planeObject->setScale(ray::float3(80.0f));
+	planeObject->setTranslate(ray::float3(0.0, 0.1, 0.0));
+	_objects.push_back(planeObject);
+
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
 	sphereMesh->makeSphere(1.0, 64, 48);
 
@@ -284,13 +311,31 @@ SphereMakerComponent::onActivate() except
 			gameObject->setActive(true);
 			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
 			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
-			gameObject->setScale(ray::float3(0.9));
-			gameObject->setTranslate(ray::float3(-10.0f + i * 2.0f, 0, j * 2.0f));
+			gameObject->setScale(ray::float3(2.5));
+			gameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0 + j * 5.5f));
 
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
-			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
-			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
-			material->getParameter("metalness")->uniform1f(diff_spec_parametes[i * 10 + j].w);
+
+			if (shininess_parametes[j * 10 + i] > 0.8)
+			{
+				material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
+				material->getParameter("diffuse")->uniform3f(1.0, 1.0, 1.0);
+				material->getParameter("metalness")->uniform1f(shininess_parametes[j * 10 + i]);
+			}				
+			else
+			{
+				material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
+				material->getParameter("diffuse")->uniform3f(diff_spec_parametes[(9 - i) * 10 + (9-j)].xyz());
+				material->getParameter("metalness")->uniform1f(diff_spec_parametes[j * 10 + i].w);
+			}
+
+			if (shininess_parametes[i * 10 + j] > 0.6 && 
+				shininess_parametes[i * 10 + j] < 0.8 ||
+				shininess_parametes[i * 10 + j] > 0.95)
+			{
+				material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
+			}
+				
 			material->getParameter("smoothness")->uniform1f(shininess_parametes[i * 10 + j]);
 			material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
 			material->getParameter("texNormal")->uniformTexture(normalMap);
@@ -298,7 +343,7 @@ SphereMakerComponent::onActivate() except
 			_objects.push_back(gameObject);
 		}
 	}
-}
+} 
 
 void
 SphereMakerComponent::onDeactivate() noexcept

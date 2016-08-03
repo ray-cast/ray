@@ -188,9 +188,36 @@ DeferredLightingPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, Gra
 void
 DeferredLightingPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
+	auto camera = pipeline.getCamera();
+
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-	pipeline.drawScreenQuad(*_deferredShadingOpaques);
+
+	if (camera->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
+		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, camera->getClearColor(), 1.0, 0);
+	else
+		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+
+	if (camera->getSkyLighting() && camera->getSkyLightingDiffuse() && camera->getSkyLightingSpecular())
+	{
+		float3 factor;
+		factor.x = camera->getSkyLightingSpecular()->getGraphicsTextureDesc().getMipLevel();
+		factor.y = 1.0f;
+		factor.z = 1.0f;
+		_envFactor->uniform3f(factor);
+		
+		_envBoxMin->uniform3f(float3(-camera->getFar()));
+		_envBoxMax->uniform3f(float3(camera->getFar()));
+		_envBoxCenter->uniform3f(camera->getTranslate());
+		_envDiffuse->uniformTexture(camera->getSkyLightingDiffuse());
+		_envSpecular->uniformTexture(camera->getSkyLightingSpecular());
+
+		pipeline.drawScreenQuad(*_deferredShadingOpaquesWithSkyLighting);
+	}
+	else
+	{
+		pipeline.drawScreenQuad(*_deferredShadingOpaques);
+	}
+
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueShading);
 	pipeline.drawPostProcess(RenderQueue::RenderQueueOpaqueShading, target, target);
 }
@@ -228,8 +255,32 @@ DeferredLightingPipeline::renderTransparentDepthLinearBack(RenderPipeline& pipel
 void
 DeferredLightingPipeline::renderTransparentShadingBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
-	pipeline.setFramebuffer(target);
-	pipeline.drawScreenQuad(*_deferredShadingTransparents);
+	auto camera = pipeline.getCamera();
+	if (camera->getSkyLighting() && camera->getSkyLightingDiffuse() && camera->getSkyLightingSpecular())
+	{
+		float3 factor;
+		factor.x = camera->getSkyLightingSpecular()->getGraphicsTextureDesc().getMipLevel();
+		factor.y = 1.0f;
+		factor.z = 1.0f;
+		_envFactor->uniform3f(factor);
+
+		_envBoxMin->uniform3f(float3(-camera->getFar()));
+		_envBoxMax->uniform3f(float3(camera->getFar()));
+		_envBoxCenter->uniform3f(camera->getTranslate());
+		_envDiffuse->uniformTexture(camera->getSkyLightingDiffuse());
+		_envSpecular->uniformTexture(camera->getSkyLightingSpecular());
+
+		pipeline.setFramebuffer(target);
+		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+		pipeline.drawScreenQuad(*_deferredShadingTransparents);
+	}
+	else
+	{
+		pipeline.setFramebuffer(target);
+		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+		pipeline.drawScreenQuad(*_deferredShadingTransparents);
+	}
+
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentShadingBack);
 	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentShadingBack, target, target);
 }
@@ -267,8 +318,30 @@ DeferredLightingPipeline::renderTransparentDepthLinearFront(RenderPipeline& pipe
 void
 DeferredLightingPipeline::renderTransparentShadingFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
-	pipeline.setFramebuffer(target);
-	pipeline.drawScreenQuad(*_deferredShadingTransparents);
+	auto camera = pipeline.getCamera();
+	if (camera->getSkyLighting() && camera->getSkyLightingDiffuse() && camera->getSkyLightingSpecular())
+	{
+		float3 factor;
+		factor.x = camera->getSkyLightingSpecular()->getGraphicsTextureDesc().getMipLevel();
+		factor.y = 1.0f;
+		factor.z = 1.0f;
+		_envFactor->uniform3f(factor);
+
+		_envBoxMin->uniform3f(float3(-camera->getFar()));
+		_envBoxMax->uniform3f(float3(camera->getFar()));
+		_envBoxCenter->uniform3f(camera->getTranslate());
+		_envDiffuse->uniformTexture(camera->getSkyLightingDiffuse());
+		_envSpecular->uniformTexture(camera->getSkyLightingSpecular());
+
+		pipeline.setFramebuffer(target);
+		pipeline.drawScreenQuad(*_deferredShadingTransparentsWithSkyLighting);
+	}
+	else
+	{
+		pipeline.setFramebuffer(target);
+		pipeline.drawScreenQuad(*_deferredShadingTransparents);
+	}
+
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentShadingFront);
 	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentShadingFront, target, target);
 }
@@ -752,6 +825,8 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_deferredSpotLightShadow = _deferredLighting->getTech("DeferredSpotLightShadow"); if (!_deferredSpotLightShadow) return false;
 	_deferredShadingOpaques = _deferredLighting->getTech("DeferredShadingOpaques"); if (!_deferredShadingOpaques) return false;
 	_deferredShadingTransparents = _deferredLighting->getTech("DeferredShadingTransparents"); if (!_deferredShadingTransparents) return false;
+	_deferredShadingOpaquesWithSkyLighting = _deferredLighting->getTech("DeferredShadingOpaquesWithSkyLighting"); if (!_deferredShadingOpaquesWithSkyLighting) return false;
+	_deferredShadingTransparentsWithSkyLighting = _deferredLighting->getTech("DeferredShadingTransparentsWithSkyLighting"); if (!_deferredShadingTransparentsWithSkyLighting) return false;
 	_deferredCopyOnly = _deferredLighting->getTech("DeferredCopyOnly"); if (!_deferredCopyOnly) return false;
 
 	_texMRT0 = _deferredLighting->getParameter("texMRT0"); if (!_texMRT0) return false;
@@ -775,6 +850,13 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_shadowFactor = _deferredLighting->getParameter("shadowFactor"); if (!_shadowFactor) return false;
 	_shadowView2LightView = _deferredLighting->getParameter("shadowView2LightView"); if (!_shadowView2LightView) return false;
 	_shadowView2LightViewProject = _deferredLighting->getParameter("shadowView2LightViewProject"); if (!_shadowView2LightViewProject) return false;
+
+	_envDiffuse = _deferredLighting->getParameter("envDiffuse");
+	_envSpecular = _deferredLighting->getParameter("envSpecular");
+	_envFactor = _deferredLighting->getParameter("envFactor");
+	_envBoxMax = _deferredLighting->getParameter("envBoxMax");
+	_envBoxMin = _deferredLighting->getParameter("envBoxMin");
+	_envBoxCenter = _deferredLighting->getParameter("envBoxCenter");
 
 	if (pipeline.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
 		_scaleY->uniform1f(-1.0f);

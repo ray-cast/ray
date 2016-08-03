@@ -976,7 +976,7 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		case 24:
 		{
 			if (DDS_MaskCmp(info.format.mask, DDS_Format::FORMAT_RGB8_UNORM))
-				format = ImageFormat::ImageFormatR8G8B8UNorm;
+				format = ImageFormat::ImageFormatB8G8R8UNorm;
 			break;
 		}
 		case 32:

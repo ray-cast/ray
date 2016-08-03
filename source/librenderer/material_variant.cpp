@@ -41,6 +41,7 @@ _NAME_BEGIN
 MaterialVariant::MaterialVariant() noexcept
 	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
 {
+	std::memset(&_value, 0, sizeof(_value));
 }
 
 MaterialVariant::MaterialVariant(GraphicsUniformType type) noexcept
@@ -217,6 +218,10 @@ MaterialVariant::setType(GraphicsUniformType type) noexcept
 				_value.texture->image = nullptr;
 				_value.texture->sampler = nullptr;
 			}
+		}
+		else
+		{
+			std::memset(&_value, 0, sizeof(_value));
 		}
 
 		_type = type;

@@ -414,6 +414,7 @@ public:
 	static GLenum asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept;
 
 	static GLsizei getFormatNum(GLenum format, GLenum type) noexcept;
+	static GLsizei getCompressedTextureSize(GLsizei width, GLsizei height, GLsizei depth, GLenum internalFormat) noexcept;
 
 	static GLboolean isNormFormat(GraphicsFormat format) noexcept;
 	static GLboolean isSupportFeature(EGL3Features features) noexcept;

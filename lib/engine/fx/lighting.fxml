@@ -91,8 +91,11 @@
             float s = lv - nl * nv;
             float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
 
-            float A = 1 - 0.5 * (sigma2 / (sigma2 + 0.57));
-            float B = 0.45 * (sigma2 / (sigma2 + 0.09));
+            // float A = 1 - 0.5 * (sigma2 / (sigma2 + 0.57));
+            // float B = 0.45 * (sigma2 / (sigma2 + 0.09));
+
+            float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PIE)) * sigma2);
+            float B = A * sigma2;
 
             return max(0, nl) * max(A + B * (s / t), 0);
         }
@@ -151,22 +154,34 @@
             return D * F * G * nl;
         }
 
-        float brdfEnvironmentEnvMip(float gloss, int numMip)
+        void CubemapBoxParallaxCorrection(inout float3 R, in float3 P, in float3 envBoxCenter, in float3 envBoxMin, in float3 envBoxMax)
         {
-            return lerp(numMip, 0, gloss);
+            float3 R2 = normalize(R.xyz);
+
+            float3 rbmax = ((envBoxCenter + envBoxMax) - P) / R2;
+            float3 rbmin = ((envBoxCenter + envBoxMin) - P) / R2;
+            float3 rbminmax = (R2 > 0.0f) ? rbmax : rbmin;
+            float3 posonbox = P + R * min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+
+            R = normalize(posonbox - envBoxCenter);
         }
 
-        float3 brdfEnvironmentEnvVec(float3 normal, float3 view)
+        float EnvironmentMip(float gloss, int miplevel)
+        {
+            return lerp(miplevel, 0, gloss);
+        }
+
+        float3 EnvironmentReflect(float3 normal, float3 view)
         {
             return reflect(-view, normal);
         }
 
-        float3 brdfEnvironmentDiffuse(float3 prefilteredColor, float3 diff)
+        float3 EnvironmentDiffuse(float3 prefilteredColor, float3 diff)
         {
             return prefilteredColor * diff;
         }
 
-        float3 brdfEnvironmentSpecularBlackOpsII(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
+        float3 EnvironmentSpecularBlackOpsII(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
         {
             float4 t = float4(1 / 0.96, 0.475, (0.0275 - 0.25 * 0.04) / 0.96, 0.25) * gloss;
             t += float4(0, 0, (0.015 - 0.75 * 0.04) / 0.96, 0.75);
@@ -175,7 +190,7 @@
             return prefilteredColor * saturate(lerp(a0, a1, specular));
         }
 
-        float3 brdfEnvironmentSpecularUnreal4(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
+        float3 EnvironmentSpecularUnreal4(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
         {
             float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
             float4 c1 = float4(1, 0.0425, 1.04, -0.04);
@@ -185,26 +200,7 @@
             return prefilteredColor * (specular * AB.x + AB.y);
         }
 
-        float3 brdfEnvironmentSpecularKlayge(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
-        {
-            float NdotV = max(0, dot(N, V));
-            gloss = max(0.5f / 16.0f, gloss);
-            float2 envBRDF;
-            float4 tmp = ((float4(-4.996914762f, 7.253111161f, -1.963867075f, -0.170416225f) * gloss
-                + float4(8.993475061f, -15.42473953f, 4.712593001f, 0.448102365f)) * gloss
-                + float4(-4.928234727f, 10.95286522f, -3.852980973f, -0.389332014f)) * gloss
-                + float4(0.846124834f, -1.596815751f, 1.005729748f, 0.113484128f);
-            envBRDF.x = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
-            tmp = ((float4(-0.684077741f, 1.316163916f, -0.70869252f, 0.073264505f) * gloss
-                + float4(0.719315865f, -1.384932814f, 0.775880046f, -0.105818706f)) * gloss
-                + float4(-0.101034049f, 0.18680998f, -0.117919199f, 0.030727381f)) * gloss
-                + float4(0.001922126f, 0.006697305f, -0.015741592f, 0.007229544f);
-            envBRDF.y = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
-            envBRDF = saturate(envBRDF);
-            return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
-        }
-
-        float3 brdfEnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float3 specular)
+        float3 EnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float3 specular)
         {
             float NdotV = saturate(dot(N, V));
             float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, gloss)).rg;
@@ -246,7 +242,7 @@
             return shadow;
         }
 
-        float3 shadingLight(float3 albedo, float4 lighting)
+        float3 ShadingLight(float3 albedo, float4 lighting)
         {
             return lighting.rgb * (albedo + lighting.a / (luminance(lighting.rgb) + 1e-6f));
         }

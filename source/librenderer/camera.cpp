@@ -54,11 +54,12 @@ Camera::Camera() noexcept
 	, _znear(1.0f)
 	, _zfar(100.0f)
 	, _viewport(0.0f, 0.0f, 1.0f, 1.0f)
-	, _clearFlags(GraphicsClearFlagBits::GraphicsClearFlagAllBit)
 	, _clearColor(float4(0.0f, 0.0f, 0.0f, 1.0f))
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)
+	, _cameraClearType(CameraClearFlagBits::CameraClearColorBit)
 	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
+	, _enableSkyLighting(false)
 	, _needUpdateViewProject(true)
 {
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
@@ -266,15 +267,15 @@ Camera::getClearColor() const noexcept
 }
 
 void 
-Camera::setClearFlags(GraphicsClearFlags flags) noexcept
+Camera::setClearFlags(CameraClearFlags flags) noexcept
 {
-	_clearFlags = flags;
+	_cameraClearType = flags;
 }
 
-GraphicsClearFlags
+CameraClearFlags
 Camera::getClearFlags() const noexcept
 {
-	return _clearFlags;
+	return _cameraClearType;
 }
 
 void
@@ -360,6 +361,57 @@ CameraRenderFlags
 Camera::getCameraRenderFlags() const noexcept
 {
 	return _cameraRenderFlags;
+}
+
+void 
+Camera::setSkyBox(GraphicsTexturePtr texture) noexcept
+{
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDim2D);
+	_skybox = texture;
+}
+
+const GraphicsTexturePtr& 
+Camera::getSkyBox() const noexcept
+{
+	return _skybox;
+}
+
+void 
+Camera::setSkyLighting(bool enable) noexcept
+{
+	_enableSkyLighting = enable;
+}
+
+bool 
+Camera::getSkyLighting() const noexcept
+{
+	return _enableSkyLighting;
+}
+
+void 
+Camera::setSkyLightingDiffuse(GraphicsTexturePtr texture) noexcept
+{
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
+	_skyDiffuseIBL = texture;
+}
+
+const GraphicsTexturePtr& 
+Camera::getSkyLightingDiffuse() const noexcept
+{
+	return _skyDiffuseIBL;
+}
+
+void 
+Camera::setSkyLightingSpecular(GraphicsTexturePtr texture) noexcept
+{
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
+	_skySpecularIBL = texture;
+}
+
+const GraphicsTexturePtr& 
+Camera::getSkyLightingSpecular() const noexcept
+{
+	return _skySpecularIBL;
 }
 
 void

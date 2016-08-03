@@ -46,20 +46,19 @@ class EXPORT SkyboxComponent final : public MeshRenderComponent
 	__DeclareSubClass(SkyboxComponent, MeshRenderComponent)
 public:
 	SkyboxComponent() noexcept;
-	SkyboxComponent(MaterialPtr material) noexcept;
 	~SkyboxComponent() noexcept;
 
 	void setSkyboxSize(float size) noexcept;
 	float getSkyboxSize() const noexcept;
 
-	void setSkyLightMap(const std::string& texture) noexcept;
-	const std::string& getSkyLightMap() const noexcept;
+	void setSkyBox(GraphicsTexturePtr texture) noexcept;
+	GraphicsTexturePtr getSkyBox() const noexcept;
 
-	void setSkyLightDiffuse(const std::string& diffuse) noexcept;
-	const std::string& getSkyLightDiffuse() const noexcept;
+	void setSkyLightDiffuse(GraphicsTexturePtr texture) noexcept;
+	GraphicsTexturePtr getSkyLightDiffuse() const noexcept;
 
-	void setSkyLightSpecular(const std::string& specular) noexcept;
-	const std::string& getSkyLightSpecular() const noexcept;
+	void setSkyLightSpecular(GraphicsTexturePtr texture) noexcept;
+	GraphicsTexturePtr getSkyLightSpecular() const noexcept;
 
 	void setSkyboxEnable(bool enable) noexcept;
 	bool getSkyboxEnable() const noexcept;
@@ -67,8 +66,23 @@ public:
 	void setSkyLightingEnable(bool enable) noexcept;
 	bool getSkyLightingEnable() const noexcept;
 
-	void setSkyLightingIntensity(const float2& intensity) noexcept;
-	const float2& getSkyLightingIntensity() const noexcept;
+	void setSkyDiffuseIntensity(float intensity) noexcept;
+	float getSkyDiffuseIntensity() const noexcept;
+
+	void setSkySpecularIntensity(float intensity) noexcept;
+	float getSkySpecularIntensity() const noexcept;
+
+	void addSkyBoxChangeListener(std::function<void()>* func) noexcept;
+	void addSkyLightingDiffuseChangeListener(std::function<void()>* func) noexcept;
+	void addSkyLightingSpecularChangeListener(std::function<void()>* func) noexcept;
+	void addEnableSkyBoxListener(std::function<void(bool)>* func) noexcept;
+	void addEnableSkyLightingListener(std::function<void(bool)>* func) noexcept;
+
+	void removeSkyBoxChangeListener(std::function<void()>* func) noexcept;
+	void removeSkyLightingDiffuseChangeListener(std::function<void()>* func) noexcept;
+	void removeSkyLightingSpecularChangeListener(std::function<void()>* func) noexcept;
+	void removeEnableSkyBoxListener(std::function<void(bool)>* func) noexcept;
+	void removeEnableSkyLightingListener(std::function<void(bool)>* func) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
@@ -107,8 +121,6 @@ private:
 	void onActivate() noexcept;
 	void onDeactivate() noexcept;
 
-	void onFrameEnd() noexcept;
-
 	void onMoveAfter() noexcept;
 
 private:
@@ -119,10 +131,6 @@ private:
 	bool _enableSkyBox;
 	bool _enableSkyLighting;
 
-	bool _needUpdateSkybox;
-	bool _needUpdateSkyDiffuse;
-	bool _needUpdateSkySpecular;
-
 	float _skyboxSize;
 
 	float2 _skyLightingIntensity;
@@ -132,10 +140,6 @@ private:
 	std::string _skySpecular;
 
 	MaterialPtr _skyBoxMaterial;
-	MaterialPtr _skyLightingMaterial;
-	MaterialParamPtr _envBoxMax;
-	MaterialParamPtr _envBoxMin;
-	MaterialParamPtr _envBoxCenter;
 
 	GraphicsTexturePtr _skyTexture;
 	GraphicsTexturePtr _skyDiffTexture;
@@ -149,6 +153,12 @@ private:
 
 	GeometryPtr _quadObject;
 	GeometryPtr _sphereObject;
+
+	delegate<void()> _onSkyBoxChange;
+	delegate<void()> _onSkyLightingDiffuseChange;
+	delegate<void()> _onSkyLightingSpecularChange;
+	delegate<void(bool)> _onEnableSkyBox;
+	delegate<void(bool)> _onEnableSkyLighting;
 };
 
 _NAME_END

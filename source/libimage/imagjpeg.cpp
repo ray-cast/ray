@@ -212,7 +212,7 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 		while (cinfo.output_scanline < cinfo.image_height)
 		{
-			::jpeg_read_scanlines(&cinfo, (JSAMPARRAY)data, 1);
+			::jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&data, 1);
 			data += cinfo.image_width;
 		}
 	}

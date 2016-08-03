@@ -8,11 +8,10 @@
         <![CDATA[
             void SkyVS(
                 in float4 Position : POSITION,
-                in float4 TangentQuat : TANGENT0,
                 out float3 oNormal : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
-                oNormal = QuaternionToNormal(TangentQuat * 2 - 1);
+                oNormal = Position;
                 oPosition = mul(matModelViewProject, Position);
             }
 
@@ -24,7 +23,7 @@
     </shader>
     <technique name="OpaqueSpecific">
         <pass name="SkyboxRender">
-            <state name="inputlayout" value="POS3F_T4F"/>
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="SkyVS"/>
             <state name="fragment" value="SkyPS"/>
             <state name="cullmode" value="front"/>

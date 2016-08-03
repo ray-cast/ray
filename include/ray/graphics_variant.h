@@ -45,35 +45,6 @@ class EXPORT GraphicsVariant final
 {
 public:
 	GraphicsVariant() noexcept;
-	GraphicsVariant(bool value) noexcept;
-	GraphicsVariant(int value) noexcept;
-	GraphicsVariant(const int2& value) noexcept;
-	GraphicsVariant(const int3& value) noexcept;
-	GraphicsVariant(const int4& value) noexcept;
-	GraphicsVariant(uint1 value) noexcept;
-	GraphicsVariant(const uint2& value) noexcept;
-	GraphicsVariant(const uint3& value) noexcept;
-	GraphicsVariant(const uint4& value) noexcept;
-	GraphicsVariant(float value) noexcept;
-	GraphicsVariant(const float2& value) noexcept;
-	GraphicsVariant(const float3& value) noexcept;
-	GraphicsVariant(const float4& value) noexcept;
-	GraphicsVariant(const float2x2& value) noexcept;
-	GraphicsVariant(const float3x3& value) noexcept;
-	GraphicsVariant(const float4x4& value) noexcept;
-	GraphicsVariant(const std::vector<int1>& value) noexcept;
-	GraphicsVariant(const std::vector<int2>& value) noexcept;
-	GraphicsVariant(const std::vector<int3>& value) noexcept;
-	GraphicsVariant(const std::vector<int4>& value) noexcept;
-	GraphicsVariant(const std::vector<uint1>& value) noexcept;
-	GraphicsVariant(const std::vector<uint2>& value) noexcept;
-	GraphicsVariant(const std::vector<uint3>& value) noexcept;
-	GraphicsVariant(const std::vector<uint4>& value) noexcept;
-	GraphicsVariant(const std::vector<float1>& value) noexcept;
-	GraphicsVariant(const std::vector<float2>& value) noexcept;
-	GraphicsVariant(const std::vector<float3>& value) noexcept;
-	GraphicsVariant(const std::vector<float4>& value) noexcept;
-	GraphicsVariant(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 	virtual ~GraphicsVariant() noexcept;
 
 	void setType(GraphicsUniformType type) noexcept;

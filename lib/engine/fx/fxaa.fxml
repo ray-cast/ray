@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<effect version="1270" language="hlsl">
-    <include name="sys:fx/common.fxml"/>
+<effect language="hlsl">
+    <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="texelStep" type="float2" />

@@ -49,19 +49,11 @@ __ImplementSubClass(SkyboxComponent, MeshRenderComponent, "Skybox")
 SkyboxComponent::SkyboxComponent() noexcept
 	: _enableSkyBox(false)
 	, _enableSkyLighting(false)
-	, _needUpdateSkybox(true)
-	, _needUpdateSkyDiffuse(true)
-	, _needUpdateSkySpecular(true)
 	, _skyboxSize(1000.0f)
 	, _skyLightingIntensity(1.0f, 1.0f)
 {
 	this->setCastShadow(false);
 	this->setReceiveShadow(false);
-}
-
-SkyboxComponent::SkyboxComponent(MaterialPtr material) noexcept
-{
-	this->setMaterial(material);
 }
 
 SkyboxComponent::~SkyboxComponent() noexcept
@@ -82,51 +74,51 @@ SkyboxComponent::getSkyboxSize() const noexcept
 }
 
 void
-SkyboxComponent::setSkyLightMap(const std::string& texture) noexcept
+SkyboxComponent::setSkyBox(GraphicsTexturePtr texture) noexcept
 {
-	if (_skyMap != texture)
+	if (_skyTexture != texture)
 	{
-		_needUpdateSkybox = true;
-		_skyMap = texture;
+		_skyTexture = texture;
+		_onSkyBoxChange.run();
 	}
 }
 
-const std::string&
-SkyboxComponent::getSkyLightMap() const noexcept
+GraphicsTexturePtr
+SkyboxComponent::getSkyBox() const noexcept
 {
-	return _skyMap;
+	return _skyTexture;
 }
 
 void
-SkyboxComponent::setSkyLightDiffuse(const std::string& diffuse) noexcept
+SkyboxComponent::setSkyLightDiffuse(GraphicsTexturePtr diffuse) noexcept
 {
-	if (_skyDiffuse != diffuse)
+	if (_skyDiffTexture != diffuse)
 	{
-		_needUpdateSkyDiffuse = true;
-		_skyDiffuse = diffuse;
+		_skyDiffTexture = diffuse;
+		_onSkyLightingDiffuseChange.run();
 	}
 }
 
-const std::string&
+GraphicsTexturePtr
 SkyboxComponent::getSkyLightDiffuse() const noexcept
 {
-	return _skyDiffuse;
+	return _skyDiffTexture;
 }
 
 void
-SkyboxComponent::setSkyLightSpecular(const std::string& specular) noexcept
+SkyboxComponent::setSkyLightSpecular(GraphicsTexturePtr specular) noexcept
 {
-	if (_skySpecular != specular)
+	if (_skySpecTexture != specular)
 	{
-		_needUpdateSkySpecular = true;
-		_skySpecular = specular;
+		_skySpecTexture = specular;
+		_onSkyLightingSpecularChange.run();
 	}
 }
 
-const std::string&
+GraphicsTexturePtr
 SkyboxComponent::getSkyLightSpecular() const noexcept
 {
-	return _skySpecular;
+	return _skySpecTexture;
 }
 
 void 
@@ -174,16 +166,99 @@ SkyboxComponent::getSkyLightingEnable() const noexcept
 }
 
 void
-SkyboxComponent::setSkyLightingIntensity(const float2& intensity) noexcept
+SkyboxComponent::setSkyDiffuseIntensity(float intensity) noexcept
 {
-	_skyLightingIntensity = intensity;
+	_skyLightingIntensity.x = intensity;
 	_updateMaterial();
 }
 
-const float2& 
-SkyboxComponent::getSkyLightingIntensity() const noexcept
+float 
+SkyboxComponent::getSkyDiffuseIntensity() const noexcept
 {
-	return _skyLightingIntensity;
+	return _skyLightingIntensity.x;
+}
+
+void
+SkyboxComponent::setSkySpecularIntensity(float intensity) noexcept
+{
+	_skyLightingIntensity.y = intensity;
+	_updateMaterial();
+}
+
+float
+SkyboxComponent::getSkySpecularIntensity() const noexcept
+{
+	return _skyLightingIntensity.y;
+}
+
+void 
+SkyboxComponent::addSkyBoxChangeListener(std::function<void()>* func) noexcept
+{
+	assert(!_onSkyBoxChange.find(func));
+	_onSkyBoxChange.attach(func);
+}
+
+void 
+SkyboxComponent::addSkyLightingDiffuseChangeListener(std::function<void()>* func) noexcept
+{
+	assert(!_onSkyLightingDiffuseChange.find(func));
+	_onSkyLightingDiffuseChange.attach(func);
+}
+
+void 
+SkyboxComponent::addSkyLightingSpecularChangeListener(std::function<void()>* func) noexcept
+{
+	assert(!_onSkyLightingSpecularChange.find(func));
+	_onSkyLightingSpecularChange.attach(func);
+}
+
+void 
+SkyboxComponent::addEnableSkyBoxListener(std::function<void(bool)>* func) noexcept
+{
+	assert(!_onEnableSkyBox.find(func));
+	_onEnableSkyBox.attach(func);
+}
+
+void 
+SkyboxComponent::addEnableSkyLightingListener(std::function<void(bool)>* func) noexcept
+{
+	assert(!_onEnableSkyLighting.find(func));
+	_onEnableSkyLighting.attach(func);
+}
+
+void
+SkyboxComponent::removeSkyBoxChangeListener(std::function<void()>* func) noexcept
+{
+	assert(_onSkyBoxChange.find(func));
+	_onSkyBoxChange.remove(func);
+}
+
+void
+SkyboxComponent::removeSkyLightingDiffuseChangeListener(std::function<void()>* func) noexcept
+{
+	assert(_onSkyLightingDiffuseChange.find(func));
+	_onSkyLightingDiffuseChange.remove(func);
+}
+
+void
+SkyboxComponent::removeSkyLightingSpecularChangeListener(std::function<void()>* func) noexcept
+{
+	assert(_onSkyLightingSpecularChange.find(func));
+	_onSkyLightingSpecularChange.remove(func);
+}
+
+void
+SkyboxComponent::removeEnableSkyBoxListener(std::function<void(bool)>* func) noexcept
+{
+	assert(_onEnableSkyBox.find(func));
+	_onEnableSkyBox.remove(func);
+}
+
+void
+SkyboxComponent::removeEnableSkyLightingListener(std::function<void(bool)>* func) noexcept
+{
+	assert(_onEnableSkyLighting.find(func));
+	_onEnableSkyLighting.remove(func);
 }
 
 void
@@ -243,7 +318,7 @@ SkyboxComponent::_loadSkybox(const std::string& texture) noexcept
 	if (!skyTexture)
 		return false;
 
-	_skyTexture = skyTexture;
+	this->setSkyBox(skyTexture);
 	return true;
 }
 
@@ -258,7 +333,7 @@ SkyboxComponent::_loadSkyDiffuse(const std::string& texture) noexcept
 	if (!skyDiffTexture)
 		return false;
 
-	_skyDiffTexture = skyDiffTexture;
+	this->setSkyLightDiffuse(skyDiffTexture);
 	return true;
 }
 
@@ -273,7 +348,7 @@ SkyboxComponent::_loadSkySpecular(const std::string& texture) noexcept
 	if (!skySpecTexture)
 		return false;
 
-	_skySpecTexture = skySpecTexture;
+	this->setSkyLightSpecular(skySpecTexture);
 	return true;
 }
 
@@ -281,8 +356,6 @@ bool
 SkyboxComponent::_buildSphereMesh(MeshProperty& mesh) noexcept
 {
 	mesh.makeSphere(1, 16, 12);
-	mesh.computeTangents();
-	mesh.computeTangentQuats();
 	return true;
 }
 
@@ -322,7 +395,7 @@ SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr te
 bool 
 SkyboxComponent::_buildSphereRenderMesh(const MeshProperty& mesh) noexcept
 {
-	_renderSphereVbo = RenderSystem::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitTangent);
+	_renderSphereVbo = RenderSystem::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 	if (!_renderSphereVbo)
 		return true;
 
@@ -349,10 +422,6 @@ SkyboxComponent::_setupMaterial() noexcept
 	if (!_skyBoxMaterial)
 		return false;
 
-	_skyLightingMaterial = RenderSystem::instance()->createMaterial("sys:fx/skylighting.fxml");
-	if (!_skyLightingMaterial)
-		return false;
-
 	return true;
 }
 
@@ -376,16 +445,13 @@ SkyboxComponent::_setupSkybox() noexcept
 bool 
 SkyboxComponent::_setupSkyLighting() noexcept
 {
-	if (!_skyDiffuse.empty() && !_skySpecular.empty() && _skyLightingMaterial)
+	if (!_skyDiffuse.empty() && !_skySpecular.empty())
 	{
 		if (_loadSkyDiffuse(_skyDiffuse) && _loadSkySpecular(_skySpecular))
 		{
 			MeshProperty quadMesh;
 			_buildQuadMesh(quadMesh);
 			_buildQuadRenderMesh(quadMesh);
-			_buildQuadRenderObject(quadMesh, _skyLightingMaterial);
-
-			this->_attacRenderObject(_quadObject);
 
 			return true;
 		}
@@ -452,19 +518,13 @@ SkyboxComponent::_updateTransform() noexcept
 {
 	float4x4 transforam;
 	transforam.makeScale(_skyboxSize, _skyboxSize, _skyboxSize);
-	transforam.setTranslate(this->getGameObject()->getWorldTranslate());
+	//transforam.setTranslate(this->getGameObject()->getWorldTranslate());
 	
 	if (_sphereObject)
 		_sphereObject->setTransform(transforam);
 	
 	if (_quadObject)
 		_quadObject->setTransform(transforam);
-
-	if (_enableSkyLighting)
-	{
-		if (_envBoxCenter)
-			_envBoxCenter->uniform3f(this->getGameObject()->getWorldTranslate());
-	}
 }
 
 void
@@ -476,58 +536,24 @@ SkyboxComponent::_updateMaterial() noexcept
 		if (texSkybox)
 			texSkybox->uniformTexture(_skyTexture);
 	}
-
-	if (_enableSkyLighting && _skyLightingMaterial)
-	{
-		auto texEnvDiffuse = _skyLightingMaterial->getParameter("texEnvDiffuse");
-		if (texEnvDiffuse)
-			texEnvDiffuse->uniformTexture(_skyDiffTexture);
-
-		auto texEnvSpecular = _skyLightingMaterial->getParameter("texEnvSpecular");
-		if (texEnvSpecular)
-			texEnvSpecular->uniformTexture(_skySpecTexture);
-
-		auto texEnvFactor = _skyLightingMaterial->getParameter("texEnvFactor");
-		if (texEnvFactor && _skySpecTexture)
-		{
-			float3 factor;
-			factor.x = _skySpecTexture->getGraphicsTextureDesc().getMipLevel();
-			factor.y = _skyLightingIntensity.x;
-			factor.z = _skyLightingIntensity.y;
-			texEnvFactor->uniform3f(factor);
-		}
-
-		_envBoxMax = _skyLightingMaterial->getParameter("envBoxMax");
-		if (_envBoxMax)
-			_envBoxMax->uniform3f(float3(_skyboxSize));
-
-		_envBoxMin = _skyLightingMaterial->getParameter("envBoxMin");
-		if (_envBoxMin)
-			_envBoxMin->uniform3f(float3(-_skyboxSize));
-
-		_envBoxCenter = _skyLightingMaterial->getParameter("envBoxCenter");
-		if (_envBoxCenter)
-			_envBoxCenter->uniform3f(0.0, 0.0, 0.0);
-	}
 }
 
 void
 SkyboxComponent::onActivate() noexcept
 {
 	if (_enableSkyBox || _enableSkyLighting)
-		this->_setupMaterial();
-
-	if (_enableSkyBox && _needUpdateSkybox)
 	{
-		this->_setupSkybox();
-		_needUpdateSkybox = false;
+		this->_setupMaterial();
 	}
 
-	if (_enableSkyLighting && (_needUpdateSkyDiffuse || _needUpdateSkySpecular))
+	if (_enableSkyBox)
+	{
+		this->_setupSkybox();
+	}
+
+	if (_enableSkyLighting)
 	{
 		this->_setupSkyLighting();
-		_needUpdateSkyDiffuse = false;
-		_needUpdateSkySpecular = false;
 	}
 
 	if (_enableSkyBox || _enableSkyLighting)
@@ -549,28 +575,6 @@ SkyboxComponent::onDeactivate() noexcept
 	this->_destroyMaterial();
 	this->_destroySkybox();
 	this->_destroySkyLighting();
-}
-
-void
-SkyboxComponent::onFrameEnd() noexcept
-{
-	if (_needUpdateSkybox)
-	{
-		_reloadSkybox(_skyMap);
-		_needUpdateSkybox = false;
-	}
-
-	if (_needUpdateSkyDiffuse)
-	{
-		_reloadSkyDiffuse(_skyDiffuse);
-		_needUpdateSkyDiffuse = false;
-	}
-
-	if (_needUpdateSkySpecular)
-	{
-		_reloadSkySpecular(_skySpecular);
-		_needUpdateSkySpecular = false;
-	}
 }
 
 void

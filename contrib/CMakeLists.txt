@@ -47,6 +47,9 @@ IF(BUILD_PHYSIC)
     ENDIF()
 ENDIF()
 
+ADD_SUBDIRECTORY(glew)
+SET_TARGET_ATTRIBUTE(glew "contrib")
+
 IF(BUILD_PLATFORM_ANDROID)
   ADD_SUBDIRECTORY(android_native_app_glue)
   SET_TARGET_ATTRIBUTE(AndroidNativeAppGlue "contrib")
@@ -56,11 +59,6 @@ ELSE()
 
     IF(BUILD_OPENGL_ES2 OR BUILD_OPENGL_ES3)
         ADD_SUBDIRECTORY(gles)
-    ENDIF()
-
-    IF(BUILD_OPENGL_CORE OR BUILD_OPENGL)
-        ADD_SUBDIRECTORY(glew)
-        SET_TARGET_ATTRIBUTE(glew "contrib")
     ENDIF()
 
     IF(BUILD_VULKAN)

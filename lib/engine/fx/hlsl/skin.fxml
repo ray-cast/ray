@@ -6,8 +6,8 @@
     <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
     <parameter name="quality" type="float4"/>
     <parameter name="diffuse" type="float4"/>
-    <parameter name="specular" type="float"/>
-    <parameter name="shininess" type="float"/>
+    <parameter name="metalness" type="float"/>
+    <parameter name="smoothness" type="float"/>
     <parameter name="translucency" type="float"/>
     <parameter name="texDiffuse" type="texture2D"/>
     <parameter name="texNormal" type="texture2D" />
@@ -55,9 +55,9 @@
                 return normalize(highNormal);
             }
 
-            float2 GetSpecular(Texture2D specularMap, float2 coord, float specular, float shininess)
+            float2 GetSpecular(Texture2D specularMap, float2 coord)
             {
-                return specularMap.Sample(PointClamp, coord).rg * float2(specular, shininess);
+                return specularMap.Sample(PointClamp, coord).rg;
             }
 
             void DepthVS(
@@ -86,17 +86,37 @@
                 oPosition = mul(matModelViewProject, Position);
             }
 
-            void ReflectiveShadowPS(
+            GbufferParam ReflectiveShadowPS(
                 in float3 normal : TEXCOORD0,
-                in float2 coord : TEXCOORD1,
-                out float4 fragData0 : SV_Target0,
-                out float4 fragData1 : SV_Target1)
+                in float2 coord : TEXCOORD1)
             {
-                float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : srgb2linear(diffuse.rgb);
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord, specular, shininess) : float2(specular, shininess);
+                MaterialParam material;
+                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : diffuse.rgb;
+                material.normal = normalize(normal);
 
-                fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
-                fragData1 = StoreGBufferRT1(normalize(normal), brdfParm.g);
+                if (quality.b > 0.0)
+                {
+                    float4 specularTex = texSpecular.Sample(PointClamp, coord);
+                    material.specular = specularTex.r;
+                    material.smoothness = specularTex.g;
+                }
+                else
+                {
+                    material.specular = metalness;
+                    material.smoothness = smoothness;
+                }
+
+                float3 dielectricColor = float3(0.04, 0.04, 0.04);
+                float3 diffColor = material.albedo * (1.0 - material.specular);
+                float3 specColor = lerp(dielectricColor.rgb, material.albedo, material.specular);
+
+                material.albedo = diffColor;
+                material.specular = specColor;
+                material.transmittance = 0;
+                material.occlusion = 1;
+                material.lightModel = LIGHTINGMODEL_NORMAL;
+
+                return EncodeGbuffer(material);
             }
 
             void OpaqueVS(
@@ -124,7 +144,7 @@
                 MaterialParam material;
                 if (quality.r > 0.0)
                 {
-                    material.albedo = srgb2linear(texDiffuse.Sample(PointClamp, iTexcoord).rgb * diffuse.rgb);
+                    material.albedo = srgb2linear(texDiffuse.Sample(PointClamp, iTexcoord).rgb);
                     material.albedo = SkinSynthesis(material.albedo, diffuse.w);
                 }
                 else
@@ -144,15 +164,22 @@
                 if (quality.b > 0.0)
                 {
                     float4 specularTex = texSpecular.Sample(PointClamp, iTexcoord);
-                    material.specular = specularTex.rgb * specular;
-                    material.smoothness = specularTex.a * shininess;
+                    material.specular = specularTex.r;
+                    material.smoothness = specularTex.g;
                 }
                 else
                 {
-                    material.specular = specular;
-                    material.smoothness = shininess;
+                    material.specular = metalness;
+                    material.smoothness = smoothness;
                 }
 
+                float3 dielectricColor = float3(0.04, 0.04, 0.04);
+                float3 diffColor = material.albedo * (1.0 - material.specular);
+                float3 specColor = lerp(dielectricColor.rgb, material.albedo, material.specular);
+
+                material.albedo = diffColor;
+                material.specular = specColor;
+                material.occlusion = 1;
                 material.transmittance = SkinTransmittance(translucency);
                 material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
 

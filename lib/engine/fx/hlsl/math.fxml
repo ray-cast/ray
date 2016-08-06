@@ -35,18 +35,18 @@
 		float3 rgb2ycbcr(float3 rgb)
 		{
 			// rgb2ycbcr
-			float Y  = dot(rgb, float3(0.299, 0.587, 0.114));
-			float Cb = dot(rgb, float3(-0.1687, -0.3312, 0.5)) + 0.5;
-			float Cr = dot(rgb, float3(0.5, -0.4186, -0.0813)) + 0.5;
+			float Y = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+			float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
+			float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
 			return float3(Y, Cb, Cr);
 		}
 
-		float3 ycbcr2rgb(float3 ycbcr)
+		float3 ycbcr2rgb(float3 YCbCr)
 		{
 			// ycbcr2rgb
-			float R = ycbcr.r + 1.402 * (ycbcr.b - 0.5);
-			float G = ycbcr.r - 0.344 * (ycbcr.g - 0.5) - 0.714 * (ycbcr.b - 0.5);
-			float B = ycbcr.r + 1.772 * (ycbcr.g - 0.5);
+			float R = YCbCr.r + 1.402 * (YCbCr.b - 0.5);
+			float G = YCbCr.r - 0.344 * (YCbCr.g - 0.5) - 0.714 * (YCbCr.b - 0.5);
+			float B = YCbCr.r + 1.772 * (YCbCr.g - 0.5);
 			return float3(R, G, B);
 		}
 
@@ -308,13 +308,6 @@
             // clipConstant.y = zfar + znear;
             // clipConstant.z = zfar - znear;
             return clipConstant.x / (clipConstant.y - clipConstant.z * depth);
-        }
-
-        float3 derivative(float3 p0, float3 p1, float3 p2)
-        {
-            float3 v1 = p1 - p0;
-            float3 v2 = p0 - p2;
-            return dot(v1, v1) < dot(v2, v2) ? v1 : v2;
         }
 
         float3 computeTangent(float3 viewdir, float2 coord)

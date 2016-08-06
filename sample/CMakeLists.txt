@@ -10,7 +10,7 @@ FOREACH(mySamples
     "05.SSSSS"
     "06.CubeWorld"
     "07.Skinning"
-    "08.SSR"
+    "08.Water"
 	"09.Globalillumination"
     "10.AtmosphericScattering"
 )

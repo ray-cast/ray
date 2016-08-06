@@ -181,30 +181,36 @@
             return prefilteredColor * diff;
         }
 
-        float3 EnvironmentSpecularBlackOpsII(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
+        float3 EnvironmentSpecularBlackOpsII(float3 N, float3 V, float gloss, float3 specular)
         {
             float4 t = float4(1 / 0.96, 0.475, (0.0275 - 0.25 * 0.04) / 0.96, 0.25) * gloss;
             t += float4(0, 0, (0.015 - 0.75 * 0.04) / 0.96, 0.75);
             float a0 = t.x * min(t.y, exp2(-9.28 * dot(N, V))) + t.z;
             float a1 = t.w;
-            return prefilteredColor * saturate(lerp(a0, a1, specular));
+            return saturate(lerp(a0, a1, specular));
         }
 
-        float3 EnvironmentSpecularUnreal4(float3 prefilteredColor, float3 N, float3 V, float gloss, float3 specular)
+        float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float gloss, float3 specular)
         {
             float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
             float4 c1 = float4(1, 0.0425, 1.04, -0.04);
             float4 r = (1 - gloss) * c0 + c1;
             float a004 = min(r.x * r.x, exp2(-9.28 * dot(N, V))) * r.x + r.y;
             float2 AB = float2(-1.04, 1.04) * a004 + r.zw;
-            return prefilteredColor * (specular * AB.x + AB.y);
+            return specular * AB.x + AB.y;
         }
 
-        float3 EnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float3 specular)
+        float3 EnvironmentSpecularCrytek(float3 N, float3 V, float gloss, float3 specular)
+        {
+            const float3 specCol90 = float3( 1, 1, 1 );
+            return lerp(specular, specCol90, pow(1 - saturate(dot(N, V)), 5) / (40 - 39 * gloss));
+        }
+
+        float3 EnvironmentSpecularLUT(Texture2D texLUT, float3 N, float3 V, float gloss, float3 specular)
         {
             float NdotV = saturate(dot(N, V));
             float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, gloss)).rg;
-            return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
+            return specular * envBRDF.x + envBRDF.y;
         }
 
         float attenuationTerm(float3 lightPosition, float3 P, float3 atten)

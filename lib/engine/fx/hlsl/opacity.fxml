@@ -6,8 +6,9 @@
     <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
     <parameter name="quality" type="float4"/>
     <parameter name="diffuse" type="float3"/>
-    <parameter name="specular" type="float"/>
-    <parameter name="shininess" type="float"/>
+    <parameter name="transmittance" type="float3"/>
+    <parameter name="metalness" type="float"/>
+    <parameter name="smoothness" type="float"/>
     <parameter name="texDiffuse" type="texture2D"/>
     <parameter name="texNormal" type="texture2D" />
     <parameter name="texSpecular" type="texture2D" />
@@ -23,7 +24,7 @@
 
             float3 GetDiffuse(Texture2D diffuseMap, float3 diffuse, float2 coord)
             {
-                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb * diffuse);
+                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb) * diffuse;
             }
 
             float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
@@ -43,9 +44,9 @@
                 return normalize(highNormal);
             }
 
-            float2 GetSpecular(Texture2D specularMap, float2 coord, float specular, float shininess)
+            float2 GetSpecular(Texture2D specularMap, float2 coord)
             {
-                return specularMap.Sample(PointClamp, coord).rg * float2(specular, shininess);
+                return specularMap.Sample(PointClamp, coord).rg;
             }
 
             void DepthVS(
@@ -74,17 +75,37 @@
                 oPosition = mul(matModelViewProject, Position);
             }
 
-            void ReflectiveShadowPS(
+            GbufferParam ReflectiveShadowPS(
                 in float3 normal : TEXCOORD0,
-                in float2 coord : TEXCOORD1,
-                out float4 fragData0 : SV_Target0,
-                out float4 fragData1 : SV_Target1)
+                in float2 coord : TEXCOORD1)
             {
-                float3 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : srgb2linear(diffuse);
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, coord, specular, shininess) : float2(specular, shininess);
+                MaterialParam material;
+                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : diffuse.rgb;
+                material.normal = normalize(normal);
 
-                fragData0 = StoreGBufferRT0(albedo, brdfParm.r);
-                fragData1 = StoreGBufferRT1(normalize(normal), brdfParm.g);
+                if (quality.b > 0.0)
+                {
+                    float4 specularTex = texSpecular.Sample(PointClamp, coord);
+                    material.specular = specularTex.r;
+                    material.smoothness = specularTex.g;
+                }
+                else
+                {
+                    material.specular = metalness;
+                    material.smoothness = smoothness;
+                }
+
+                float3 dielectricColor = float3(0.04, 0.04, 0.04);
+                float3 diffColor = material.albedo * (1.0 - material.specular);
+                float3 specColor = lerp(dielectricColor.rgb, material.albedo, material.specular);
+
+                material.albedo = diffColor;
+                material.specular = specColor;
+                material.transmittance = float3(1,0,0);
+                material.occlusion = 1;
+                material.lightModel = 1;
+
+                return EncodeGbuffer(material);
             }
 
             void OpaqueVS(
@@ -107,25 +128,32 @@
                 oPosition = mul(matModelViewProject, Position);
             }
 
-            GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 iTexcoord : TEXCOORD2)
+            GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 coord : TEXCOORD2)
             {
                 MaterialParam material;
-                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : srgb2linear(diffuse.rgb);
-                material.normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : normalize(iNormal);
+                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : diffuse.rgb;
+                material.normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, coord, quality.g) : normalize(iNormal);
 
                 if (quality.b > 0.0)
                 {
-                    float4 specularTex = texSpecular.Sample(PointClamp, iTexcoord);
-                    material.specular = specularTex.rgb * specular;
-                    material.smoothness = specularTex.a * shininess;
+                    float4 specularTex = texSpecular.Sample(PointClamp, coord);
+                    material.specular = specularTex.r;
+                    material.smoothness = specularTex.g;
                 }
                 else
                 {
-                    material.specular = specular;
-                    material.smoothness = shininess;
+                    material.specular = metalness;
+                    material.smoothness = smoothness;
                 }
 
-                material.transmittance = 0;
+                float3 dielectricColor = float3(0.04, 0.04, 0.04);
+                float3 diffColor = material.albedo * (1.0 - material.specular);
+                float3 specColor = lerp(dielectricColor.rgb, material.albedo, material.specular);
+
+                material.albedo = diffColor;
+                material.specular = specColor;
+                material.transmittance = transmittance;
+                material.occlusion = 1;
                 material.lightModel = LIGHTINGMODEL_NORMAL;
 
                 return EncodeGbuffer(material);

@@ -469,7 +469,12 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 
 	effect->getParameter("quality")->uniform4f(quality);
 	effect->getParameter("diffuse")->uniform3f(diffuseColor);
-	effect->getParameter("metalness")->uniform1f(metalness.x);
+
+	if (effect->getParameter("metalness"))
+		effect->getParameter("metalness")->uniform1f(metalness.x);
+	else if (effect->getParameter("specular"))
+		effect->getParameter("specular")->uniform3f(metalness);
+
 	effect->getParameter("smoothness")->uniform1f(smoothness);
 
 	auto transmittance = effect->getParameter("transmittance"); 
@@ -478,7 +483,8 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 
 	if (opacity < 1.0f)
 	{
-		effect->getParameter("opacity")->uniform1f(opacity);
+		if (effect->getParameter("opacity"))
+			effect->getParameter("opacity")->uniform1f(opacity);
 	}
 
 	return effect;

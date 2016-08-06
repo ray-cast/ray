@@ -72,6 +72,14 @@
                 #endif
             }
 
+            float3 ColorGrading(float3 color, float4 balance)
+            {
+                float3 lum = luminance(color);
+                color = lerp(lum, color, balance.a);
+                color *= balance.rgb;
+                return color;
+            }
+
             float3 ToneBlueShift(float3 color, float lum)
             {
                 // martin's modified blue shift

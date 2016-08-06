@@ -14,9 +14,9 @@
         </component>
         <component class="Skybox">
             <attribute flags="skybox|skylighting"/>
-            <attribute skymap="dlc:common/textures/output_skybox.dds"/>
-            <attribute skydiffuse="dlc:common/textures/output_iem.dds"/>
-            <attribute skyspecular="dlc:common/textures/output_pmrem.dds"/>
+            <attribute skymap="dlc:common/textures/uffizi_sky.dds"/>
+            <attribute skydiffuse="dlc:common/textures/uffizi_diff.dds"/>
+            <attribute skyspecular="dlc:common/textures/uffizi_spec.dds"/>
         </component>
     </object>
     <object>

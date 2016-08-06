@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="Water"/>
+    <object>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,20,0"/>
+        <attribute rotate="0,0,0"/>
+        <attribute active="true"/>
+        <component class="Camera">
+            <attribute aperture="65.0"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="2000.0"/>
+        </component>
+        <component class="FirstPersonCamera">
+        </component>
+        <component class="Skybox">
+            <attribute flags="skybox|skylighting"/>
+            <attribute skymap="dlc:common/textures/dfh_hdrfin_sky.dds"/>
+            <attribute skydiffuse="dlc:common/textures/dfh_hdrfin_diff.dds"/>
+            <attribute skyspecular="dlc:common/textures/dfh_hdrfin_spec.dds"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sun"/>
+        <attribute position="-50, 50, 0"/>
+        <attribute rotate="165, 10, 0"/>
+        <attribute active="true"/>
+        <component class="Light">
+            <attribute type="sun"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="60.0"/>
+            <attribute intensity="1.0"/>
+            <attribute shadow="none"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="model_loader"/>
+        <attribute active="true"/>
+        <component class="Model">
+        </component>
+    </object>
+</scene>

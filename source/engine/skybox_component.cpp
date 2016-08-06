@@ -418,7 +418,7 @@ SkyboxComponent::_buildSphereRenderObject(const MeshProperty& mesh, MaterialPtr 
 bool
 SkyboxComponent::_setupMaterial() noexcept
 {
-	_skyBoxMaterial = RenderSystem::instance()->createMaterial("sys:fx/skybox.fxml");
+	_skyBoxMaterial = RenderSystem::instance()->createMaterial("sys:fx/skydome.fxml");
 	if (!_skyBoxMaterial)
 		return false;
 

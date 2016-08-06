@@ -5,6 +5,7 @@
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matModelView" type="float4x4" semantic="matModelView"/>
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
+    <parameter name="matViewInverse" type="float4x4" semantic="matViewInverse" />
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <parameter name="texMRT0" type="texture2D"/>
     <parameter name="texMRT1" type="texture2D"/>
@@ -25,6 +26,12 @@
     <parameter name="shadowFactor" type="float2"/>
     <parameter name="shadowView2LightView" type="float4"/>
     <parameter name="shadowView2LightViewProject" type="float4x4" />
+    <parameter name="envDiffuse" type="textureCUBE"/>
+    <parameter name="envSpecular" type="textureCUBE"/>
+    <parameter name="envFactor" type="float3"/>
+    <parameter name="envBoxMax" type="float3"/>
+    <parameter name="envBoxMin" type="float3"/>
+    <parameter name="envBoxCenter" type="float3"/>
     <shader>
         <![CDATA[
             void DeferredDepthOnlyVS(
@@ -100,40 +107,40 @@
 
             float4 DeferredSunLightPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
             {
-                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, coord);
 
-                float smoothness = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT0);
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
                 float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
-                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 
                 return lighting;
             }
 
             float4 DeferredSunLightShadowPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
             {
-                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, coord);
 
-                float smoothness = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT0);
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
                 float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
-                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 
                 return lighting;
@@ -141,40 +148,40 @@
 
             float4 DeferredDirectionalLightPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
             {
-                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, coord);
 
-                float smoothness = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT0);
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
                 float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
-                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 
                 return lighting;
             }
 
             float4 DeferredDirectionalLightShadowPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
             {
-                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, coord);
 
-                float smoothness = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT0);
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
                 float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
-                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 
                 return lighting;
@@ -184,22 +191,25 @@
             {
                 float2 texcoord = coord.xy / coord.z;
 
-                float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, texcoord);
 
-                float smoothness = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT0);
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
 
-                float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
-                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
+                float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+
+                float4 lighting;
+                lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
-                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, P);
+                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, lightAttenuation, P);
 
                 return lighting;
             }
@@ -210,21 +220,23 @@
 
                 float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
                 float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, texcoord);
 
-                float smoothness = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT0);
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
 
-                float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
-                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
-                lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
+                float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
+                float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+
+                float4 lighting;
+                lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
-                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, P);
+                lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, lightAttenuation, P);
 
                 return lighting;
             }
@@ -233,20 +245,20 @@
             {
                 float2 texcoord = coord.xy / coord.z;
 
-                float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, texcoord);
 
-                float smoothness = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT0);
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-                float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = normalize(viewdir);
                 float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
 
                 float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(N, L, V, smoothness, lightColor);
-                lighting.a = SpecularBRDF(N, L, V, smoothness, specular);
+                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
 
                 return lighting;
@@ -255,10 +267,15 @@
             float4 DeferredShadingOpaquesPS(in float2 coord : TEXCOORD0) : SV_Target
             {
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
                 float4 lighting = texLight.Sample(PointClamp, coord);
 
-                float3 diffuse = restoreDiffuse(MRT0);
-                float3 shading = shadingLight(diffuse, lighting);
+                float3 shading = ShadingLight(material.albedo, lighting) * material.occlusion;
 
                 return float4(shading, 1.0);
             }
@@ -266,14 +283,95 @@
             float4 DeferredShadingTransparentsPS(in float2 coord : TEXCOORD0) : SV_Target
             {
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT2 = texMRT2.Sample(PointClamp, coord);
-                float3 source = texOpaque.Sample(PointClamp, coord).rgb;
+
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
+                float4 source = texOpaque.Sample(PointClamp, coord);
                 float4 lighting = texLight.Sample(PointClamp, coord);
 
-                float3 diffuse = restoreDiffuse(MRT0) / max(MRT2.a, 0.00001);
-                float3 shading = shadingLight(diffuse, lighting);
+                float3 shading = ShadingLight(material.albedo, lighting);
 
-                return float4(PremultipliedBlend(source, shading, MRT2.x), 1.0);
+                return float4(lerp(source.xyz, shading, material.occlusion), source.w);
+            }
+
+            float4 DeferredShadingOpaquesWithSkyLightingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
+            {
+                float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
+                float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, coord, V);
+
+                float3 worldPosition = mul(matViewInverse, P);
+                float3 worldNormal = mul((float3x3)matViewInverse, material.normal);
+                float3 worldView = mul((float3x3)matViewInverse, V);
+
+                float mipLayer = EnvironmentMip(material.smoothness, envFactor.r);
+
+                float3 R = EnvironmentReflect(worldNormal, worldView);
+                CubemapBoxParallaxCorrection(R, worldPosition, envBoxCenter, envBoxMin, envBoxMax);
+
+                float3 prefilteredDiffuse = envDiffuse.Sample(PointClamp, worldNormal).rgb;
+                float3 prefilteredSpeculr = envSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
+                float3 prefilteredTransmittance = envDiffuse.Sample(PointClamp, -worldNormal).rgb;
+
+                float4 lighting = texLight.Sample(PointClamp, coord);
+
+                float3 shading = EnvironmentDiffuse(prefilteredDiffuse, material.albedo) * envFactor.g;
+                shading += EnvironmentDiffuse(prefilteredTransmittance, material.transmittance) * envFactor.g;
+                shading += EnvironmentSpecularBlackOpsII(prefilteredSpeculr, worldNormal, worldView, material.smoothness, material.specular) * envFactor.b;
+                shading += ShadingLight(material.albedo, lighting);
+                shading *= material.occlusion;
+
+                return float4(shading, 0.0);
+            }
+
+            float4 DeferredShadingTransparentsWithSkyLightingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
+            {
+                float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
+                float4 source = texOpaque.Sample(PointClamp, coord);
+                if (!any(material.occlusion))
+                {
+                    return source;
+                }
+
+                float3 V = normalize(viewdir);
+                float3 P = restorePosition(texDepthLinear, coord, V);
+
+                float3 worldPosition = mul(matViewInverse, P);
+                float3 worldNormal = mul((float3x3)matViewInverse, material.normal);
+                float3 worldView = mul((float3x3)matViewInverse, V);
+
+                float mipLayer = EnvironmentMip(material.smoothness, envFactor.r);
+
+                float3 R = EnvironmentReflect(worldNormal, worldView);
+                CubemapBoxParallaxCorrection(R, worldPosition, envBoxCenter, envBoxMin, envBoxMax);
+
+                float3 prefilteredDiffuse = envDiffuse.Sample(PointClamp, worldNormal).rgb;
+                float3 prefilteredSpeculr = envSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
+                float3 prefilteredTransmittance = envDiffuse.Sample(PointClamp, -worldNormal).rgb;
+
+                float4 lighting = texLight.Sample(PointClamp, coord);
+
+                float3 shading = EnvironmentDiffuse(prefilteredDiffuse, material.albedo) * envFactor.g;
+                shading += EnvironmentDiffuse(prefilteredTransmittance, material.transmittance) * envFactor.g;
+                shading += EnvironmentSpecularBlackOpsII(prefilteredSpeculr, worldNormal, worldView, material.smoothness, material.specular) * envFactor.b;
+                shading += ShadingLight(material.albedo, lighting);
+
+                return float4(lerp(source.xyz, shading, material.occlusion), 0);
             }
         ]]>
     </shader>
@@ -521,6 +619,50 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="stencilTest" value="false"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
+        </pass>
+    </technique>
+    <technique name="DeferredShadingOpaquesWithSkyLighting">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="DeferredLightingVS"/>
+            <state name="fragment" value="DeferredShadingOpaquesWithSkyLightingPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
+        </pass>
+    </technique>
+    <technique name="DeferredShadingTransparentsWithSkyLighting">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="DeferredLightingVS"/>
+            <state name="fragment" value="DeferredShadingTransparentsWithSkyLightingPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="stencilTest" value="false"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
         </pass>
     </technique>
 </effect>

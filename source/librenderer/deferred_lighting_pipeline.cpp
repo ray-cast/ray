@@ -272,7 +272,7 @@ DeferredLightingPipeline::renderTransparentShadingBack(RenderPipeline& pipeline,
 
 		pipeline.setFramebuffer(target);
 		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-		pipeline.drawScreenQuad(*_deferredShadingTransparents);
+		pipeline.drawScreenQuad(*_deferredShadingTransparentsWithSkyLighting);
 	}
 	else
 	{

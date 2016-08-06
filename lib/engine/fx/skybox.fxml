@@ -8,19 +8,16 @@
         <![CDATA[
             void SkyVS(
                 in float4 Position : POSITION,
-                out float4 oNormal : TEXCOORD0,
+                out float3 oNormal : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
                 oNormal = Position;
-                oNormal.y = oNormal.y < -0.05 ? -0.05 : oNormal.y;
-                oNormal.y += 0.05;
-                oPosition = mul(matModelViewProject, oNormal);
-                oNormal.y -= 0.05f;
+                oPosition = mul(matModelViewProject, Position);
             }
 
             float4 SkyPS(in float3 normal : TEXCOORD0) : SV_Target
             {
-                return texSkybox.Sample(PointClamp, computeSphereCoord(normalize(normal)));
+                return srgb2linear(texSkybox.Sample(PointClamp, computeSphereCoord(normalize(normal))));
             }
         ]]>
     </shader>

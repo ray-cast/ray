@@ -2,16 +2,13 @@
 <effect language="hlsl">
     <include name="sys:fx/Gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <include name="sys:fx/lighting.fxml"/>
-    <parameter name="matModelView" type="float4x4" semantic="matModelView" />
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
     <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
-    <parameter name="matView" type="float4x4" semantic="matView"/>
     <parameter name="quality" type="float4"/>
-    <parameter name="diffuse" type="float4"/>
+    <parameter name="diffuse" type="float3"/>
     <parameter name="opacity" type="float"/>
-    <parameter name="specular" type="float"/>
-    <parameter name="shininess" type="float"/>
+    <parameter name="metalness" type="float"/>
+    <parameter name="smoothness" type="float"/>
     <parameter name="texDiffuse" type="texture2D"/>
     <parameter name="texNormal" type="texture2D" />
     <parameter name="texSpecular" type="texture2D" />
@@ -28,9 +25,9 @@
                 return normalize(bump);
             }
 
-            float4 GetDiffuse(Texture2D diffuseMap, float4 diffuse, float2 coord)
+            float3 GetDiffuse(Texture2D diffuseMap, float3 diffuse, float2 coord)
             {
-                return srgb2linear(diffuseMap.Sample(PointClamp, coord)) * diffuse;
+                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb) * diffuse;
             }
 
             float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
@@ -50,9 +47,9 @@
                 return normalize(highNormal);
             }
 
-            float2 GetSpecular(Texture2D specularMap, float2 coord, float specular, float shininess)
+            float2 GetSpecular(Texture2D specularMap, float2 coord)
             {
-                return specularMap.Sample(PointClamp, coord).rg * float2(specular, shininess);
+                return specularMap.Sample(PointClamp, coord).rg;
             }
 
             void DepthVS(
@@ -80,10 +77,9 @@
                 in float2 Texcoord : TEXCOORD,
                 in float4 BlendWeight : BLENDWEIGHT,
                 in float4 BlendIndice : BLENDINDICES,
-                out float3 oNormal   : TEXCOORD0,
-                out float3 oTangent  : TEXCOORD1,
+                out float3 oNormal : TEXCOORD0,
+                out float3 oTangent : TEXCOORD1,
                 out float2 oTexcoord : TEXCOORD2,
-                out float3 oViewDir  : TEXCOORD3,
                 out float4 oPosition : SV_Position)
             {
                 TangentQuat = TangentQuat * 2 - 1;
@@ -106,106 +102,78 @@
                 oNormal = mul(oNormal, (float3x3)matModelViewInverse);
 
                 oTexcoord = Texcoord;
-                oViewDir = -mul(matModelView, oPosition).xyz;
                 oPosition = mul(matModelViewProject, oPosition);
             }
 
-            void TransparentPS(
-                in float3 iNormal   : TEXCOORD0,
-                in float3 iTangent  : TEXCOORD1,
-                in float2 iTexcoord : TEXCOORD2,
-                in float3 iViewdir  : TEXCOORD3,
-                in float4 iPosition : SV_Position,
-                out float4 fragData0 : SV_Target0,
-                out float4 fragData1 : SV_Target1,
-                out float4 fragData2 : SV_Target2)
+            GbufferParam TransparentPS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 iTexcoord : TEXCOORD2)
             {
-                float4 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse;
-                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord, specular, shininess) : float2(specular, shininess);
+                MaterialParam material;
+                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse.rgb;
+                material.normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : normalize(iNormal);
 
-                float3 L = mul((float3x3)matView, float3(0,1,0));
+                if (quality.b > 0.0)
+                {
+                    float4 specularTex = texSpecular.Sample(PointClamp, iTexcoord);
+                    material.specular = specularTex.r;
+                    material.smoothness = specularTex.g;
+                }
+                else
+                {
+                    material.specular = metalness;
+                    material.smoothness = smoothness;
+                }
 
-                float viewDepth = abs(1.0 / iPosition.w) * 0.5;
-                float weight = computeWeightBlendOIT(viewDepth) * max(0, dot(normal,L));
+                float3 dielectricColor = float3(0.04, 0.04, 0.04);
+                float3 diffColor = material.albedo * (1.0 - material.specular);
+                float3 specColor = lerp(dielectricColor.rgb, material.albedo, material.specular);
 
-                fragData0 = StoreGBufferRT0(PremultipliedAlpha(albedo) * weight, brdfParm.r);
-                fragData2 = StoreGBufferRT2(albedo.a, albedo.a * weight);
-            }
+                material.albedo = diffColor;
+                material.specular = specColor;
+                material.transmittance = 0;
+                material.occlusion = 1;
+                material.lightModel = LIGHTINGMODEL_NORMAL;
 
-            void Transparent2PS(
-                in float3 iNormal : TEXCOORD0,
-                in float3 iTangent : TEXCOORD1,
-                in float2 iTexcoord : TEXCOORD2,
-                in float4 iPosition : SV_Position,
-                out float4 fragData0 : SV_Target0,
-                out float4 fragData1 : SV_Target1,
-                out float4 fragData2 : SV_Target2)
-            {
-                float4 albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, iTexcoord) : diffuse;
-                float3 normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, iTexcoord, quality.g) : iNormal;
-                float2 brdfParm = quality.b > 0.0 ? GetSpecular(texSpecular, iTexcoord, specular, shininess) : float2(specular, shininess);
-
-                fragData0 = StoreGBufferRT0(float3(0,0,0), brdfParm.r);
-                fragData1 = StoreGBufferRT1(normal, brdfParm.g);
+                return EncodeGbuffer(material);
             }
         ]]>
     </shader>
     <technique name="Shadow">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
+            <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
             <state name="vertex" value="DepthVS"/>
             <state name="fragment" value="DepthPS"/>
             <state name="primitive" value="triangle" />
-        </pass>
-    </technique>
-    <technique name="Transparent">
-        <pass name="p0">
-            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
-
-            <state name="vertex" value="TransparentVS"/>
-            <state name="fragment" value="TransparentPS"/>
-
-            <state name="primitive" value="triangle" />
-
             <state name="stencilTest" value="true"/>
             <state name="stencilPass" value="replace"/>
             <state name="stencilTwoPass" value="replace"/>
-
-            <state name="depthtest" value="true"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
-            <state name="colormask0" value="rgb"/>
-            <state name="colormask1" value="none"/>
-
-            <state name="blend0" value="true"/>
-            <state name="blendsrc0" value="one"/>
-            <state name="blenddst0" value="one"/>
-
-            <state name="blend2" value="true"/>
-            <state name="blendsrc2" value="zero"/>
-            <state name="blenddst2" value="invsrccol"/>
-            <state name="blendalphasrc2" value="one"/>
-            <state name="blendalphadst2" value="one"/>
         </pass>
     </technique>
-   <technique name="TransparentBatch">
-        <pass name="p1">
-            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
-
+    <technique name="TransparentBack">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
             <state name="vertex" value="TransparentVS"/>
-            <state name="fragment" value="Transparent2PS"/>
-
+            <state name="fragment" value="TransparentPS"/>
             <state name="primitive" value="triangle" />
-
+            <state name="cullmode" value="front" />
+            <state name="colormask0" value="rgba" />
+            <state name="colormask1" value="rgba" />
             <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
-            <state name="stencilTwoFunc" value="equal"/>
-
-            <state name="colormask0" value="alpha"/>
-            <state name="colormask1" value="rgba"/>
-            <state name="colormask2" value="none"/>
+            <state name="stencilPass" value="replace"/>
+            <state name="stencilTwoPass" value="replace"/>
+        </pass>
+    </technique>
+    <technique name="TransparentFront">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_T4F_UV2F_W4F_B4UI"/>
+            <state name="vertex" value="TransparentVS"/>
+            <state name="fragment" value="TransparentPS"/>
+            <state name="primitive" value="triangle" />
+            <state name="cullmode" value="back"/>
+            <state name="colormask0" value="rgba" />
+            <state name="colormask1" value="rgba" />
+            <state name="stencilTest" value="true"/>
+            <state name="stencilPass" value="replace"/>
+            <state name="stencilTwoPass" value="replace"/>
         </pass>
     </technique>
 </effect>

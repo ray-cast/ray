@@ -326,7 +326,7 @@
 
                 float3 shading = EnvironmentDiffuse(prefilteredDiffuse, material.albedo) * envFactor.g;
                 shading += EnvironmentDiffuse(prefilteredTransmittance, material.transmittance) * envFactor.g;
-                shading += EnvironmentSpecularBlackOpsII(prefilteredSpeculr, worldNormal, worldView, material.smoothness, material.specular) * envFactor.b;
+                shading += prefilteredSpeculr * EnvironmentSpecularBlackOpsII(worldNormal, worldView, material.smoothness, material.specular) * envFactor.b;
                 shading += ShadingLight(material.albedo, lighting);
                 shading *= material.occlusion;
 
@@ -355,23 +355,27 @@
                 float3 worldNormal = mul((float3x3)matViewInverse, material.normal);
                 float3 worldView = mul((float3x3)matViewInverse, V);
 
+                float4 lighting = texLight.Sample(PointClamp, coord);
+
+                material.smoothness *= clamp(1 - length(P) / 250, 0.5, 1);
                 float mipLayer = EnvironmentMip(material.smoothness, envFactor.r);
 
                 float3 R = EnvironmentReflect(worldNormal, worldView);
-                CubemapBoxParallaxCorrection(R, worldPosition, envBoxCenter, envBoxMin, envBoxMax);
+                float3 prefilteredRefract = texOpaque.Sample(PointClamp, coord + worldNormal.xy * 0.01);
+                prefilteredRefract.g = texOpaque.Sample(PointClamp, coord + worldNormal.xy * 0.02).g;
+                prefilteredRefract.b = texOpaque.Sample(PointClamp, coord + worldNormal.xy * 0.03).b;
 
-                float3 prefilteredDiffuse = envDiffuse.Sample(PointClamp, worldNormal).rgb;
                 float3 prefilteredSpeculr = envSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
-                float3 prefilteredTransmittance = envDiffuse.Sample(PointClamp, -worldNormal).rgb;
+                float3 prefilteredTransmittance = envSpecular.SampleLevel(PointClamp, -worldView, mipLayer).rgb;
 
-                float4 lighting = texLight.Sample(PointClamp, coord);
+                float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
 
-                float3 shading = EnvironmentDiffuse(prefilteredDiffuse, material.albedo) * envFactor.g;
-                shading += EnvironmentDiffuse(prefilteredTransmittance, material.transmittance) * envFactor.g;
-                shading += EnvironmentSpecularBlackOpsII(prefilteredSpeculr, worldNormal, worldView, material.smoothness, material.specular) * envFactor.b;
+                float3 refract = prefilteredRefract;
+                float3 specular = prefilteredSpeculr;
+                float3 shading = lerp(refract * material.transmittance, specular, fresnel * (1-material.smoothness));
                 shading += ShadingLight(material.albedo, lighting);
 
-                return float4(lerp(source.xyz, shading, material.occlusion), 0);
+                return float4(shading, 0.0);
             }
         ]]>
     </shader>

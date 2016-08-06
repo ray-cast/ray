@@ -88,7 +88,7 @@
                 float3 viewPosition = GetPosition(viewdir, coord);
 
                 float4 colors = traceScreenSpaceRay(coord, viewdir, viewPosition, viewNormal);
-                float fresnel = fresnelSchlick(dot(viewdir, viewNormal), specular);
+                float fresnel = fresnelSchlick(specular, 1 - specular, dot(viewdir, viewNormal));
 
                 return float4(colors.rgb, colors.a);
             }

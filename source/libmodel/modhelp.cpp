@@ -978,6 +978,7 @@ MeshProperty::makePlane(float width, float height, float depth, std::uint32_t wi
 
 			_vertices.push_back(vec);
 			_normals.push_back(n);
+			_texcoords.emplace_back((float)ix / gridX, 1.0f - (float)iy / gridY);
 		}
 	}
 
@@ -997,11 +998,6 @@ MeshProperty::makePlane(float width, float height, float depth, std::uint32_t wi
 			_faces.push_back((std::int32_t)(c + offset));
 			_faces.push_back((std::int32_t)(d + offset));
 			_faces.push_back((std::int32_t)(a + offset));
-
-			_texcoords.emplace_back((float)ix / gridX, (float)(1 - (iy + 1)) / gridY);
-			_texcoords.emplace_back((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY);
-			_texcoords.emplace_back((float)ix / gridX, (float)(1 - iy) / gridY);
-			_texcoords.emplace_back((float)(ix + 1) / gridX, (float)(1 - iy) / gridY);
 		}
 	}
 }

@@ -31,16 +31,16 @@
 
             float sigma2 = roughness * roughness;
 
-            float nl = dot(N, L);
-            float nv = dot(N, V);
-            float lv = dot(L, V);
+            float nl = saturate(dot(N, L));
+            float lv = saturate(dot(L, V));
+            float nv = abs(dot(N, V) + +1e-5);
 
             float s = lv - nl * nv;
             float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
             float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PIE)) * sigma2);
-            float B = A * sigma2;
+            float B = sigma2 * A;
 
-            return max(0, nl) * max(A + B * (s / t), 0);
+            return nl * (A + B * (s / t));
         }
 
         float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)

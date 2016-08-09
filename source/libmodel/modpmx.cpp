@@ -348,11 +348,6 @@ struct PMX
 	std::vector<PMX_Joint> joints;
 };
 
-float CalcSmoothness(float power)
-{
-	return math::clamp((log(power) / log(2) - 1) / 8.0 * 0.96 + 0.02, 0.0, 1.0);
-}
-
 PMXHandler::PMXHandler() noexcept
 {
 }
@@ -835,7 +830,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		material->set(MATKEY_COLOR_AMBIENT, ray::math::srgb2linear(it.Ambient));
 		material->set(MATKEY_COLOR_SPECULAR, ray::math::srgb2linear(it.Specular));
 		material->set(MATKEY_OPACITY, it.Opacity);
-		material->set(MATKEY_SHININESS, CalcSmoothness(it.Shininess));
+		material->set(MATKEY_SHININESS, it.Shininess / 255.0f);
 
 		std::uint32_t limits = 0;
 		if (pmx.header.sizeOfTexture == 1)

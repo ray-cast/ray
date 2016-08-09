@@ -475,7 +475,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 	else if (effect->getParameter("specular"))
 		effect->getParameter("specular")->uniform3f(metalness);
 
-	effect->getParameter("smoothness")->uniform1f(smoothness);
+	effect->getParameter("smoothness")->uniform1f(0.2);
 
 	auto transmittance = effect->getParameter("transmittance"); 
 	if (transmittance)

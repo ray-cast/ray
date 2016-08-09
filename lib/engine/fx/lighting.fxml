@@ -4,12 +4,6 @@
     <include name="sys:fx/sampler.fxml"/>
     <shader>
         <![CDATA[
-        // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
-        // http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_slides_v2.pdf
-        // http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf
-        // http://www.filmicworlds.com/2014/04/21/optimizing-ggx-shaders-with-dotlh/
-        // http://ruh.li/GraphicsOrenNayar.html
-
         float SmoothnessToRoughness(float smoothness)
         {
             return (1.0f - smoothness) * (1.0f - smoothness);
@@ -20,58 +14,10 @@
             return 1.0f - sqrt(roughness);
         }
 
-        float fresnelSchlick(float f0, float f9, float LdotH)
-        {
-            return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
-        }
-
         float3 fresnelSchlick(float3 f0, float f9, float LdotH)
         {
+            // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
             return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
-        }
-
-        float distributionTermBloackOpsII(float NdotH, float smoothness)
-        {
-            float alpha = pow(8192.0f, smoothness);
-            return ((alpha + 2) / 8) * exp2(alpha * InvLog2 * NdotH - alpha * InvLog2);
-        }
-
-        float distributionTermRyse(float NdotH, float smoothness)
-        {
-            float alpha = pow(1 - smoothness * 0.7, 6);
-            float alpha2 = alpha * alpha;
-            float denom = NdotH * NdotH * (alpha2 - 1.0) + 1.0f;
-            return alpha2 / (PIE * denom * denom);
-        }
-
-        float distributionTermGGX(float NdotH, float alpha2)
-        {
-            float spec = (alpha2 * NdotH - NdotH) * NdotH + 1;
-            return alpha2 / (spec * spec);
-        }
-
-        float geometricShadowingBlackOpsII(float gloss, float vh)
-        {
-            float k = min(1.0f, gloss + 0.545f);
-            return rcp(k * vh * vh + 1 - k);
-        }
-
-        float geometricShadowingRyse(float alpha, float LdotH)
-        {
-            float k = (0.8 + 0.5 * alpha) / 2.0f;
-            float k2 = k * k;
-            float k4 = k2 * k2;
-            float invK2 = 1.0f - k4;
-            return rcp(LdotH * LdotH * invK2 + k4);
-        }
-
-        float geometricShadowingGGX(float alpha, float LdotH)
-        {
-            float k = alpha / 2.0f;
-            float k2 = k * k;
-            float k4 = k2 * k2;
-            float invK2 = 1.0f - k4;
-            return rcp(LdotH * LdotH * invK2 + k4);
         }
 
         float LambertBRDF(float3 N, float3 L)
@@ -81,6 +27,8 @@
 
         float OrenNayarBRDF(float3 N, float3 L, float3 V, float roughness)
         {
+            // http://ruh.li/GraphicsOrenNayar.html
+
             float sigma2 = roughness * roughness;
 
             float nl = dot(N, L);
@@ -130,23 +78,80 @@
             return diffuse + transmittanceColor * transmittance;
         }
 
-        float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
+        float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3 f0)
+        {
+            // http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_slides_v2.pdf
+            // http://www.filmicworlds.com/2014/04/21/optimizing-ggx-shaders-with-dotlh/
+
+            float3 H = normalize(L + V);
+
+            float nh = saturate(dot(N, H));
+            float nl = saturate(dot(N, L));
+            float lh = saturate(dot(L, H));
+
+            float alpha = pow(8192.0f, gloss);
+            float D =  ((alpha + 2) / 8) * exp2(alpha * InvLog2 * nh - alpha * InvLog2);
+
+            float k = min(1.0f, gloss + 0.545f);
+            float G = rcp(k * lh * lh + 1 - k);
+
+            float3 F = fresnelSchlick(f0, 1.0, lh);
+
+            return D * F * G * nl;
+        }
+
+        float3 SpecularBRDF_Ryse(float3 N, float3 L, float3 V, float gloss, float3 f0)
+        {
+            // http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf
+
+            float3 H = normalize(L + V);
+
+            float alpha = pow(1 - gloss * 0.7, 6);
+
+            float nh = saturate(dot(N, H));
+            float nl = saturate(dot(N, L));
+            float lh = saturate(dot(L, H));
+
+            float alpha2 = alpha * alpha;
+            float denom = (alpha2 * nh - nh) * nh + 1.0f;
+            float D = alpha2 / (PIE * denom * denom);
+
+            float k = (0.8 + 0.5 * alpha) / 2.0f;
+            float k2 = k * k;
+            float k4 = k2 * k2;
+            float invK2 = 1.0f - k4;
+            float G = rcp(lh * lh * invK2 + k4);
+
+            float3 F = fresnelSchlick(f0, 1.0, lh);
+
+            return D * F * G * nl;
+        }
+
+        float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float gloss, float3 f0, float NormalizationFactor)
         {
             float3 H = normalize(L + V);
 
             float roughness = max(SmoothnessToRoughness(gloss), 0.001);
             float alpha = roughness * roughness;
 
-            float nh = saturate(dot(H, N));
+            float nh = saturate(dot(N, H));
             float nl = saturate(dot(N, L));
             float lh = saturate(dot(L, H));
-            float nv = abs(dot(N, V)) + 1e-5h;
 
-            float D = distributionTermGGX(nh, alpha);
-            float G = geometricShadowingGGX(alpha, lh);
+            float denom = (alpha * nh - nh) * nh + 1.0f;
+            float D = alpha / (denom * denom) * NormalizationFactor;
+
+            float k2 = alpha * alpha * 0.25;
+            float G = 0.25 / (lh * lh * (1 - k2) + k2);
+
             float3 F = fresnelSchlick(f0, saturate(dot(f0, 0.33333h) / 0.02h), lh);
 
             return D * F * G * nl;
+        }
+
+        float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
+        {
+            return SpecularBRDF_GGX(N, L, V, gloss, f0, 1.0);
         }
 
         void CubemapBoxParallaxCorrection(inout float3 R, in float3 P, in float3 envBoxCenter, in float3 envBoxMin, in float3 envBoxMax)

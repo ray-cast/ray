@@ -59,6 +59,7 @@ _NAME_BEGIN
 #define MATKEY_COLOR_AMBIENT      "$clr.ambient",0,0
 #define MATKEY_COLOR_SPECULAR     "$clr.specular",0,0
 #define MATKEY_COLOR_EMISSIVE     "$clr.emissive",0,0
+#define MATKEY_COLOR_SPHEREMAP    "$clr.spheremap",0,0
 #define MATKEY_COLOR_TRANSPARENT  "$clr.transparent",0,0
 #define MATKEY_COLOR_REFLECTIVE   "$clr.reflective",0,0
 

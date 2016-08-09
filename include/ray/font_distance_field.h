@@ -107,7 +107,7 @@ private:
 
 	static void computeEdge(const FT_BitmapGlyph bitmapGlyph, std::size_t fontSize, std::size_t internalSize, KdimensionTree<short2>& nodes);
 	static void computeDistance(const FT_BitmapGlyph bitmapGlyph, KdimensionTree<short2>& nodes, std::size_t fontSize, std::size_t internalSize, std::size_t distanceSize, std::vector<float>& distance);
-	static void computeDistanceField(const std::vector<float>& distanceArray, std::vector<std::uint8_t>& bitmap, std::size_t bitmapSize, std::size_t distanceSize, std::size_t offsetX, std::size_t offsetY);
+	static void computeDistanceField(const std::vector<float>& distanceArray, std::vector<std::uint8_t>& bitmap, std::size_t fontSize, std::size_t bitmapSize, std::size_t distanceSize, std::size_t offsetX, std::size_t offsetY);
 };
 
 _NAME_END

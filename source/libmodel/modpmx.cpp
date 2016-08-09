@@ -171,11 +171,11 @@ struct PMX_Material
 	PMX_Float   EdgeSize;
 	PMX_uint16_t TextureIndex;
 	PMX_uint16_t SphereTextureIndex;
-	PMX_uint16_t ToonIndex;
-	PMX_uint16_t ToonFlag;
-	PMX_uint32_t SphereMode;
-	PMX_uint8_t  Unknown1;
-	PMX_uint16_t Unknown2;
+	PMX_uint8_t  SphereMode;
+	PMX_uint8_t  ToonIndex;
+	PMX_uint16_t ToneTexture;
+	PMX_uint32_t memLength;
+	PMX_char	 mem[MAX_PATH];
 	PMX_uint32_t FaceVertexCount;
 };
 
@@ -231,8 +231,8 @@ struct PMX_MorphBone
 struct PMX_MorphMaterial
 {
 	PMX_uint32_t index;
-	PMX_Float opacity;
-	PMX_Color3  diffuse;
+	PMX_uint8_t offset;
+	PMX_Color4  diffuse;
 	PMX_Float   shininess;
 	PMX_Color3  specular;
 	PMX_Color3  ambient;
@@ -313,6 +313,9 @@ struct PMX_Morph
 	PMX_uint8_t  morphType;
 	PMX_uint32_t morphCount;
 
+	PMX_uint16_t morphIndex;
+	PMX_Float	 morphRate;
+
 	std::vector<PMX_MorphVertex>  vertexList;
 	std::vector<PMX_MorphBone> boneList;
 	std::vector<PMX_MorphTexcoord> texcoordList;
@@ -344,6 +347,11 @@ struct PMX
 	std::vector<PMX_Rigidbody> rigidbodys;
 	std::vector<PMX_Joint> joints;
 };
+
+float CalcSmoothness(float power)
+{
+	return math::clamp((log(power) / log(2) - 1) / 8.0 * 0.96 + 0.02, 0.0, 1.0);
+}
 
 PMXHandler::PMXHandler() noexcept
 {
@@ -537,17 +545,24 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			if (!stream.read((char*)&material.EdgeSize, sizeof(material.EdgeSize))) return false;
 			if (!stream.read((char*)&material.TextureIndex, pmx.header.sizeOfTexture)) return false;
 			if (!stream.read((char*)&material.SphereTextureIndex, pmx.header.sizeOfTexture)) return false;
-			if (!stream.read((char*)&material.ToonIndex, pmx.header.sizeOfTexture)) return false;
-			if (!stream.read((char*)&material.ToonFlag, sizeof(material.ToonFlag))) return false;
-			if (material.ToonFlag != 0)
+			if (!stream.read((char*)&material.SphereMode, sizeof(material.SphereMode))) return false;
+			if (!stream.read((char*)&material.ToonIndex, sizeof(material.ToonIndex))) return false;
+
+			if (material.ToonIndex == 1)
 			{
-				if (!stream.read((char*)&material.SphereMode, sizeof(material.SphereMode))) return false;
+				if (!stream.read((char*)&material.ToneTexture, 1)) return false;
 			}
 			else
 			{
-				if (!stream.read((char*)&material.Unknown1, sizeof(material.Unknown1))) return false;
-				if (!stream.read((char*)&material.Unknown2, sizeof(material.Unknown2))) return false;
+				if (!stream.read((char*)&material.ToneTexture, pmx.header.sizeOfTexture)) return false;
 			}
+			
+			if (!stream.read((char*)&material.memLength, sizeof(material.memLength))) return false;
+			if (material.memLength > 0)
+			{
+				if (!stream.read((char*)&material.mem, material.memLength)) return false;
+			}
+
 
 			if (!stream.read((char*)&material.FaceVertexCount, sizeof(material.FaceVertexCount))) return false;
 		}
@@ -639,7 +654,12 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			if (!stream.read((char*)&morph.morphType, sizeof(morph.morphType))) return false;
 			if (!stream.read((char*)&morph.morphCount, sizeof(morph.morphCount))) return false;
 
-			if (morph.morphType == MorphType::MorphTypeVertex)
+			if (morph.morphType == MorphType::MorphTypeGroup)
+			{
+				if (!stream.read((char*)&morph.morphIndex, pmx.header.sizeOfMorph)) return false;
+				if (!stream.read((char*)&morph.morphRate, sizeof(morph.morphRate))) return false;
+			}
+			else if (morph.morphType == MorphType::MorphTypeVertex)
 			{
 				morph.vertexList.resize(morph.morphCount);
 
@@ -678,9 +698,9 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 				for (auto& material : morph.materialList)
 				{
-					if (!stream.read((char*)&material.index, pmx.header.sizeOfMorph)) return false;
+					if (!stream.read((char*)&material.index, pmx.header.sizeOfMaterial)) return false;
+					if (!stream.read((char*)&material.offset, sizeof(material.offset))) return false;
 					if (!stream.read((char*)&material.diffuse, sizeof(material.diffuse))) return false;
-					if (!stream.read((char*)&material.opacity, sizeof(material.opacity))) return false;
 					if (!stream.read((char*)&material.specular, sizeof(material.specular))) return false;
 					if (!stream.read((char*)&material.shininess, sizeof(material.shininess))) return false;
 					if (!stream.read((char*)&material.ambient, sizeof(material.ambient))) return false;
@@ -815,7 +835,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		material->set(MATKEY_COLOR_AMBIENT, ray::math::srgb2linear(it.Ambient));
 		material->set(MATKEY_COLOR_SPECULAR, ray::math::srgb2linear(it.Specular));
 		material->set(MATKEY_OPACITY, it.Opacity);
-		material->set(MATKEY_SHININESS, it.Shininess / 256.0f);
+		material->set(MATKEY_SHININESS, CalcSmoothness(it.Shininess));
 
 		std::uint32_t limits = 0;
 		if (pmx.header.sizeOfTexture == 1)
@@ -848,7 +868,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 				wcstombs(name, texture.name, MAX_PATH);
 
-				material->set(MATKEY_EFFECT(0), name);
+				material->set(MATKEY_COLOR_SPHEREMAP(0), name);
 			}
 		}
 

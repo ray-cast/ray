@@ -273,13 +273,29 @@ SphereMakerComponent::onActivate() except
 	if (!materialTemp)
 		return;
 
+	materialTemp->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 1.0));
+	materialTemp->getParameter("diffuse")->uniform3f(0.25, 0.25, 0.25);
+	materialTemp->getParameter("metalness")->uniform1f(0.0f);
+	materialTemp->getParameter("smoothness")->uniform1f(0.9);
+	materialTemp->getParameter("transmittance")->uniform3f(0.1,0.0,0.0);
+	materialTemp->getParameter("texDiffuse")->uniformTexture(diffuseMap);
+	materialTemp->getParameter("texNormal")->uniformTexture(normalMap);
+
 	auto stage = ray::ResManager::instance()->createGameObject("dlc:common/bunny.pmx");
 	if (!stage)
 		return;
 
+	auto stage1 = stage->clone();
+	stage1->setScale(ray::float3(2.0, 2.0, 2.0));
+	stage1->setTranslate(ray::float3(3, -0.25, 30));
+	stage1->setActive(true);
+	_objects.push_back(stage1);
+
+	stage->getComponent<ray::MeshRenderComponent>()->setMaterial(materialTemp->clone());
 	stage->setScale(ray::float3(2.0, 2.0, 2.0));
 	stage->setTranslate(ray::float3(0, -0.25, 30));
 	stage->setActive(true);
+
 	_objects.push_back(stage);
 
 	materialTemp->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));

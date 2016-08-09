@@ -403,7 +403,7 @@ FontDistanceField::computeBitmaps(FT_Library library, FT_Face face, std::size_t 
 
 			computeEdge(bitmapGlyph, _fontSize, internalSize, nodes);
 			computeDistance(bitmapGlyph, nodes, _fontSize, internalSize, _distanceSize, distance);
-			computeDistanceField(distance, _bitmap, _bitmapSize, _distanceSize, offsetX, offsetY);
+			computeDistanceField(distance, _bitmap, _fontSize, _bitmapSize, _distanceSize, offsetX, offsetY);
 		}
 
 		FT_Done_Glyph(glyph);
@@ -470,7 +470,7 @@ FontDistanceField::computeDistance(const FT_BitmapGlyph bitmapGlyph, KdimensionT
 }
 
 void
-FontDistanceField::computeDistanceField(const std::vector<float>& distanceArray, std::vector<std::uint8_t>& bitmap, std::size_t bitmapSize, std::size_t distanceSize, std::size_t offsetX, std::size_t offsetY)
+FontDistanceField::computeDistanceField(const std::vector<float>& distanceArray, std::vector<std::uint8_t>& bitmap, std::size_t fontSize, std::size_t bitmapSize, std::size_t distanceSize, std::size_t offsetX, std::size_t offsetY)
 {
 	float total = 0;
 	for (auto& distance : distanceArray)
@@ -491,8 +491,8 @@ FontDistanceField::computeDistanceField(const std::vector<float>& distanceArray,
 
 			float value = distanceArray[index];
 
-			if (value > 0)
-				value = math::lerp(255, 255, math::clamp((value * invSqr), 0.0f, 1.0f));
+			if (value >= 0)
+				value = 255;
 			else if (value == 0)
 				value = 0;
 			else

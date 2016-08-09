@@ -44,11 +44,10 @@
             return alpha2 / (PIE * denom * denom);
         }
 
-        float distributionTermGGX(float NdotH, float roughness)
+        float distributionTermGGX(float NdotH, float alpha2)
         {
-            float alpha2 = roughness * roughness;
             float spec = (alpha2 * NdotH - NdotH) * NdotH + 1;
-            return alpha2 / (PIE * spec * spec);
+            return alpha2 / (spec * spec);
         }
 
         float geometricShadowingBlackOpsII(float gloss, float vh)
@@ -90,10 +89,6 @@
 
             float s = lv - nl * nv;
             float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
-
-            // float A = 1 - 0.5 * (sigma2 / (sigma2 + 0.57));
-            // float B = 0.45 * (sigma2 / (sigma2 + 0.09));
-
             float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PIE)) * sigma2);
             float B = A * sigma2;
 
@@ -139,7 +134,7 @@
         {
             float3 H = normalize(L + V);
 
-            float roughness = SmoothnessToRoughness(gloss);
+            float roughness = max(SmoothnessToRoughness(gloss), 0.001);
             float alpha = roughness * roughness;
 
             float nh = saturate(dot(H, N));

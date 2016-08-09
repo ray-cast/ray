@@ -5,18 +5,24 @@
     <parameter name="texSource" type="texture2D" />
     <parameter name="texDepthLinear" type="texture2D" semantic="DepthLinearMap"/>
     <parameter name="blurFactor" type="float3"/>
+    <parameter name="texMRT0" type="texture2D" semantic="DiffuseMap" />
+    <parameter name="texMRT1" type="texture2D" semantic="NormalMap" />
+    <parameter name="texMRT2" type="texture2D" semantic="Gbuffer3Map" />
+    <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <shader name="vertex">
         <![CDATA[
         void PostProcessVS(
-            in float4 Position : POSITION0,
-            out float4 oTexcoord : TEXCOORD0,
+            in float4 Position : POSITION,
+            out float2 oTexcoord : TEXCOORD0,
+            out float3 oViewDir  : TEXCOORD1,
             out float4 oPosition : SV_Position)
         {
             oPosition = Position;
-            oTexcoord = PosToCoord(Position);
+            oViewDir  = -mul(matProjectInverse, Position).xyz;
+            oTexcoord = PosToCoord(Position.xy);
         }
 
-        float3 GuassBlurPS(in float4 coord : TEXCOORD0) : SV_Target
+        float3 GuassBlurPS(in float4 coord : TEXCOORD0, in float4 viewdir : TEXCOORD1) : SV_Target
         {
             const float offsets[6] = { 0.352, 0.719, 1.117, 1.579, 2.177, 3.213 };
 
@@ -32,50 +38,60 @@
                 float4( 0.015, 0.020, 0.025, 1.0) // skin
             };
 
+            float4 MRT0 = texMRT0.Sample(PointClamp, coord.xy);
+            float4 MRT1 = texMRT1.Sample(PointClamp, coord.xy);
+            float4 MRT2 = texMRT2.Sample(PointClamp, coord.xy);
+
+            MaterialParam material;
+            DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
+            float3 V = normalize(viewdir);
+            float3 P = restorePosition(texDepthLinear, coord.xy, V);
+
             float4 colorM = texSource.Sample(PointClamp, coord.xy);
             float depthM = texDepthLinear.Sample(PointClamp, coord.xy).r;
 
-            float radius = 0.0015 * profileSpikeRadArr[0].w;
-            float2 finalStep = blurFactor.xy * radius / (depthM * blurFactor.z);
+            if (material.lightModel == LIGHTINGMODEL_NORMAL)
+            {
+                return colorM;
+            }
+
+            float perspectiveScale = max((blurFactor.x > 0.001) ? dot( normalize( material.normal.xz ), normalize(-P.xz )) :
+                                                                dot( normalize( material.normal.yz ), normalize(-P.yz ) ), 0.3 );
+
+            float radius = 0.0055 * profileSpikeRadArr[0].w;
+            float2 finalStep = blurFactor.xy * perspectiveScale * radius / (depthM * blurFactor.z);
 
             float3 blurFalloff = -1.0f / (2 * profileVarArr[0]);
 
-            float3 totalWeight = 1;
-            float4 totalColor = colorM * 0.382f;
+            float3 totalWeight = 0;
+            float4 totalColor = colorM;
 
             [unroll]
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 2; i++)
             {
-                float2 offset = coord.xy + offsets[i] / 5.5 * finalStep;
+                [unroll]
+                for (int j = 0; j < 6; j++)
+                {
+                    float2 offset = coord.xy + offsets[j] / 5.5 * finalStep;
 
-                float sampleDepth = texDepthLinear.Sample(PointClamp, offset).r;
-                float3 sampleColor = texSource.Sample(PointClamp, offset).rgb;
+                    float sampleDepth = texDepthLinear.Sample(PointClamp, offset).r;
+                    float3 sampleColor = texSource.Sample(PointClamp, offset).rgb;
 
-                float depthDiff = abs(sampleDepth - depthM) * 1000 * blurFactor.z;
+                    float depthDiff = abs(sampleDepth - depthM) * 1000 * blurFactor.z;
 
-                float3 weight = exp((offsets[i] * offsets[i] + depthDiff * depthDiff) * blurFalloff);
+                    float3 weight = max(0, exp((offsets[j] * offsets[j] + depthDiff * depthDiff) * blurFalloff));
 
-                totalWeight += weight;
-                totalColor.rgb += weight * sampleColor;
+                    totalWeight += weight;
+                    totalColor.rgb += weight * sampleColor;
+                }
+
+                finalStep *= -1;
             }
 
-            [unroll]
-            for (int i = 0; i < 6; i++)
-            {
-                float2 offset = coord.xy - offsets[i] / 5.5 * finalStep;
+            totalColor.rgb /= totalWeight;
 
-                float sampleDepth = texDepthLinear.Sample(PointClamp, offset).r;
-                float3 sampleColor = texSource.Sample(PointClamp, offset).rgb;
-
-                float depthDiff = abs(sampleDepth - depthM) * 1000 * blurFactor.z;
-
-                float3 weight = exp((offsets[i] * offsets[i] + depthDiff * depthDiff) * blurFalloff);
-
-                totalWeight += weight;
-                totalColor.rgb += weight * sampleColor;
-            }
-
-            return lerp(totalColor.rgb / totalWeight, colorM.rgb, profileSpikeRadArr[0].rgb * 10);
+            return lerp(totalColor, colorM.rgb, profileSpikeRadArr[0].rgb * 10);
         }
         ]]>
     </shader>

@@ -59,8 +59,9 @@ SkinningComponent::onActivate() except
 	stage->setTranslate(ray::float3(0, 0, -2.5));
 	stage->setActive(true);
 
-	//auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/miku/miku.pmd", "dlc:Skinning/animotion/愛言葉.vmd");
-	auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/PDF 活动小丑/活动小丑.pmx", "dlc:Skinning/animotion/愛言葉.vmd");
+	//auto gameObject = ray::ResManager::instance()->createGameObject("E:/resources/model/TDA China Dress Yue Zhengling Canary Ver1.00 [Silver]/TDA China Dress Yue Zhengling Canary Ver1.00 [Silver].pmx", "dlc:Skinning/animotion/愛言葉.vmd");
+	//auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/miku/miku.pmd", "E:/resources/model/極楽浄土/極楽上半身ボーンが長い用.vmd");
+	auto gameObject = ray::ResManager::instance()->createGameObject("dlc:Skinning/models/PDF 活动小丑/活动小丑.pmx", "E:/resources/model/極楽浄土/極楽上半身ボーンが長い用.vmd");
 	gameObject->setActive(true);
 
 	_objects.push_back(stage);

@@ -101,7 +101,7 @@
 
                 material.albedo = diffColor;
                 material.specular = specColor;
-                material.transmittance = float3(1,0,0);
+                material.transmittance = transmittance;
                 material.occlusion = 1;
                 material.lightModel = 1;
 
@@ -154,7 +154,15 @@
                 material.specular = specColor;
                 material.transmittance = transmittance;
                 material.occlusion = 1;
-                material.lightModel = LIGHTINGMODEL_NORMAL;
+
+                if (quality.w > 0.0)
+                {
+                    material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+                }
+                else
+                {
+                    material.lightModel = LIGHTINGMODEL_NORMAL;
+                }
 
                 return EncodeGbuffer(material);
             }

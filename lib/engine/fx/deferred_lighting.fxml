@@ -100,7 +100,7 @@
                 float3 L = -lightEyeDirection;
 
                 float4 lighting = 0;
-                lighting.rgb = saturate(dot(N, L) * 0.5 + 0.5) * lightColor;
+                lighting.rgb = max(0, dot(N, L) * 0.5 + 0.5) * lightColor;
                 lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
                 return lighting;
             }
@@ -118,8 +118,11 @@
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
-                float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
+                float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+
+                float4 lighting;
+                lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
                 lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 
                 return lighting;
@@ -138,8 +141,11 @@
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
-                float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
+                float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+
+                float4 lighting;
+                lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
                 lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 
@@ -159,8 +165,11 @@
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
-                float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
+                float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+
+                float4 lighting;
+                lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
                 lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 
                 return lighting;
@@ -179,8 +188,11 @@
                 float3 P = restorePosition(texDepthLinear, coord, V);
                 float3 L = -lightEyeDirection;
 
-                float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
+                float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+
+                float4 lighting;
+                lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
                 lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 
@@ -256,8 +268,11 @@
                 float3 P = restorePosition(texDepthLinear, texcoord, V);
                 float3 L = normalize(lightEyePosition - P);
 
-                float4 lighting = 0;
-                lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness) * lightColor;
+                float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
+                float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+
+                float4 lighting;
+                lighting.rgb = lerp(diffuse, transmittance, material.lightModel) * lightColor;
                 lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
                 lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
 
@@ -324,8 +339,9 @@
 
                 float4 lighting = texLight.Sample(PointClamp, coord);
 
-                float3 shading = EnvironmentDiffuse(prefilteredDiffuse, material.albedo) * envFactor.g;
-                shading += EnvironmentDiffuse(prefilteredTransmittance, material.transmittance) * envFactor.g;
+                float3 shading = 0.0;
+                shading += prefilteredDiffuse * material.albedo * envFactor.g;
+                shading += prefilteredTransmittance * material.transmittance * envFactor.g;
                 shading += prefilteredSpeculr * EnvironmentSpecularBlackOpsII(worldNormal, worldView, material.smoothness, material.specular) * envFactor.b;
                 shading += ShadingLight(material.albedo, lighting);
                 shading *= material.occlusion;

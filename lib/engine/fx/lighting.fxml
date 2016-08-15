@@ -14,6 +14,18 @@
             return 1.0f - sqrt(roughness);
         }
 
+        float ShininessToSmoothness(float spec)
+        {
+            // http://simonstechblog.blogspot.de/2011/12/microfacet-brdf.html
+            return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
+        }
+
+        float SmoothnessToShininess(float smoothness)
+        {
+            float roughness = SmoothnessToRoughness(smoothness);
+            return 2.0f / (roughness * roughness) - 2.0f;
+        }
+
         float3 fresnelSchlick(float3 f0, float f9, float LdotH)
         {
             // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
@@ -62,12 +74,6 @@
             return FL * FV * energyFactor * nl;
         }
 
-        float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
-        {
-            float roughness = SmoothnessToRoughness(gloss);
-            return BurleyBRDF(N, L, V, roughness);
-        }
-
         float3 TranslucencyBRDF(float3 N, float3 L, float3 transmittanceColor)
         {
             float w = lerp(0, 0.5, luminance(transmittanceColor));
@@ -75,6 +81,24 @@
             float nl = dot(N, L);
             float transmittance = saturate((-nl + w) * wn);
             float diffuse = saturate((nl + w) * wn);
+            return diffuse + transmittanceColor * transmittance;
+        }
+
+        float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
+        {
+            float roughness = SmoothnessToRoughness(gloss);
+            return BurleyBRDF(N, L, V, roughness);
+        }
+
+        float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float3 transmittanceColor)
+        {
+            float roughness = SmoothnessToRoughness(gloss);
+            float w = lerp(0, 0.5, luminance(transmittanceColor));
+            float wn = rcp((1 + w) * (1 + w));
+            float nl = dot(N, L);
+            float transmittance = saturate((-nl + w) * wn);
+            float brdf = BurleyBRDF(N, L, V, roughness);
+            float diffuse = saturate((brdf + w) * wn);
             return diffuse + transmittanceColor * transmittance;
         }
 
@@ -89,7 +113,7 @@
             float nl = saturate(dot(N, L));
             float lh = saturate(dot(L, H));
 
-            float alpha = pow(8192.0f, gloss);
+            float alpha = exp2(10 * gloss + 1); // 2 - 2048
             float D =  ((alpha + 2) / 8) * exp2(alpha * InvLog2 * nh - alpha * InvLog2);
 
             float k = min(1.0f, gloss + 0.545f);

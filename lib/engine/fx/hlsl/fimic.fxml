@@ -72,7 +72,7 @@
                 #endif
             }
 
-            float3 ColorGrading(float3 color, float4 balance)
+            float3 ColorBalance(float3 color, float4 balance)
             {
                 float3 lum = luminance(color);
                 color = lerp(lum, color, balance.a);

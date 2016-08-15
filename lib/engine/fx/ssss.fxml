@@ -51,20 +51,21 @@
             float4 colorM = texSource.Sample(PointClamp, coord.xy);
             float depthM = texDepthLinear.Sample(PointClamp, coord.xy).r;
 
-            if (material.lightModel == LIGHTINGMODEL_NORMAL)
+            if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
             {
                 return colorM;
             }
 
-            float perspectiveScale = max((blurFactor.x > 0.001) ? dot( normalize( material.normal.xz ), normalize(-P.xz )) :
-                                                                dot( normalize( material.normal.yz ), normalize(-P.yz ) ), 0.3 );
+            float perspectiveScaleX = dot(normalize(material.normal.xz), normalize(-P.xz));
+            float perspectiveScaleY = dot(normalize(material.normal.yz), normalize(-P.yz));
+            float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
 
             float radius = 0.0055 * profileSpikeRadArr[0].w;
             float2 finalStep = blurFactor.xy * perspectiveScale * radius / (depthM * blurFactor.z);
 
             float3 blurFalloff = -1.0f / (2 * profileVarArr[0]);
 
-            float3 totalWeight = 0;
+            float3 totalWeight = 1.0;
             float4 totalColor = colorM;
 
             [unroll]

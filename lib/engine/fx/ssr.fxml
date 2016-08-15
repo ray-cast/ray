@@ -37,7 +37,7 @@
 
             float4 traceScreenSpaceRay(float2 coord, float3 viewdir, float3 viewPosition, float3 viewNormal)
             {
-                float3 R = normalize(reflect(viewPosition, viewNormal));
+                float3 R = normalize(reflect(viewdir, viewNormal));
 
                 float4 proj = mul(matProject, float4(viewPosition + R * rayStep, 1.0));
                 proj /= proj.w;

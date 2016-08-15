@@ -76,20 +76,20 @@
                 float3 normal;
                 normal.xy = fenc * g;
                 normal.z = f / 2 - 1;
-                return normal;
+                return normalize(normal);
             }
 
             GbufferParam EncodeGbuffer(MaterialParam material)
             {
                 // http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf
                 GbufferParam gbuffer;
-                gbuffer.buffer1.rgb = material.albedo;
+                gbuffer.buffer1.xyz = material.albedo;
                 gbuffer.buffer1.w = material.occlusion;
 
                 gbuffer.buffer2.xyz = EncodeNormal(material.normal);
                 gbuffer.buffer2.w = material.smoothness;
 
-                gbuffer.buffer3.rgb = rgb2ycbcr(material.specular);
+                gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
                 gbuffer.buffer3.w = 0;
 
                 if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
@@ -117,8 +117,8 @@
             {
                 material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
 
-                material.albedo = buffer1.rgb;
-                material.occlusion = buffer1.a;
+                material.albedo = buffer1.xyz;
+                material.occlusion = buffer1.w;
 
                 material.normal = DecodeNormal(buffer2.xyz);
                 material.smoothness = buffer2.w;
@@ -126,7 +126,7 @@
                 if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
                 {
                     material.specular = buffer3.xxx;
-                    material.transmittance = ycbcr2rgb(buffer3.wyz);
+                    material.transmittance = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
                 }
                 else
                 {

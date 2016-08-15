@@ -89,6 +89,8 @@
 
             float ComputeExposureISO(float avgLum)
             {
+                //http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
+
                 // Compute EV with ISO 100 and standard camera settings
                 float EV100 = log2(avgLum * LIGHT_UNIT_SCALE * 100.0 / 330.0);
 

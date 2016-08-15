@@ -74,7 +74,7 @@ RenderSetting::RenderSetting() noexcept
 	, enableSSGI(false)
 	, enableAtmospheric(false)
 	, enableSSR(false)
-	, enableSSSS(true)
+	, enableSSSS(false)
 	, enableFog(false)
 	, enableLightShaft(false)
 	, enableDOF(false)

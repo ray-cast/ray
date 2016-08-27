@@ -36,8 +36,13 @@
 // +----------------------------------------------------------------------
 #include <ray/font_distance_field.h>
 
+#include <ray/image.h>
+
 int main(int argc, char *argv[])
 {
+	ray::Image image;
+	image.load("C:\\Users\\ray\\Desktop\\skydome.dds");
+
 	ray::FontDistanceField font;
 
 	std::string fontpath = "C:\\Windows\\Fonts\\msyh.ttc";

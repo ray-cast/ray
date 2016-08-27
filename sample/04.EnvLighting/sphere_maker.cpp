@@ -295,7 +295,7 @@ SphereMakerComponent::onActivate() except
 
 	auto bunny1Material = materialTemp->clone();
 	bunny1Material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
-	bunny1Material->getParameter("diffuse")->uniform3f(1.0, 1.0, 1.0);
+	bunny1Material->getParameter("diffuse")->uniform3f(0.5, 0.5, 0.5);
 	bunny1Material->getParameter("metalness")->uniform1f(0.0f);
 	bunny1Material->getParameter("smoothness")->uniform1f(0.9);
 	bunny1Material->getParameter("transmittance")->uniform3f(0.0, 0.0, 0.0);

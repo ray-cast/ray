@@ -132,7 +132,7 @@
             float4 ApplyPS(in float4 coord : TEXCOORD) : SV_Target
             {
                 float ao = texSource.Sample(PointClamp, coord).r;
-                return ao;
+                return ao * ao;
             }
         ]]>
     </shader>

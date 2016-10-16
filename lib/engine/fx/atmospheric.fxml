@@ -155,9 +155,9 @@
         void ComputePhaseFunctions(float3 inscatteringRayleigh, float3 inscatteringMie, float3 viewdir, float3 lightDirection, inout float3 inscattering)
         {
             // http://www.cescg.org/CESCG-2009/papers/PragueCUNI-Elek-Oskar.pdf
-            // aerosolPhaseFuncG4.x = 3 x (1 - g2) / 2 x (2 + g2)
+            // aerosolPhaseFuncG4.x = 3 * (1 - g2) / 2 * (2 + g2)
             // aerosolPhaseFuncG4.y = 1 + g2;
-            // aerosolPhaseFuncG4.z = -2g
+            // aerosolPhaseFuncG4.z = -g2
 
             float cosTheta = dot(lightDirection, -viewdir);
             float cosTheta2 = cosTheta * cosTheta;

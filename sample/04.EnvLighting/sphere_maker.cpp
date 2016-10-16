@@ -273,7 +273,7 @@ SphereMakerComponent::onActivate() except
 	if (!materialTemp)
 		return;
 
-	auto bunny = ray::ResManager::instance()->createGameObject("dlc:common/bunny.pmx");
+	/*auto bunny = ray::ResManager::instance()->createGameObject("dlc:common/bunny.pmx");
 	if (!bunny)
 		return;
 
@@ -307,7 +307,7 @@ SphereMakerComponent::onActivate() except
 	bunny1->setTranslate(ray::float3(3, -0.25, 30));
 	bunny1->getComponent<ray::MeshRenderComponent>()->setMaterial(bunny1Material->clone());
 	bunny1->setActive(true);
-	_objects.push_back(bunny1);
+	_objects.push_back(bunny1);*/
 
 	materialTemp->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
 	materialTemp->getParameter("diffuse")->uniform3f(0.25, 0.25, 0.25);

@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_RENDERER)
 #include <ray/light_component.h>
+#include <ray/skybox_component.h>
 #include <ray/game_server.h>
 #include <ray/render_feature.h>
 
@@ -44,6 +45,11 @@ _NAME_BEGIN
 __ImplementSubClass(LightComponent, RenderComponent, "Light")
 
 LightComponent::LightComponent() noexcept
+	: _onSkyBoxChange(std::bind(&LightComponent::onSkyBoxChange, this))
+	, _onSkyLightingDiffuseChange(std::bind(&LightComponent::onSkyLightingDiffuseChange, this))
+	, _onSkyLightingSpecularChange(std::bind(&LightComponent::onSkyLightingSpecularChange, this))
+	, _onEnableSkyBox(std::bind(&LightComponent::onEnableSkyBox, this, std::placeholders::_1))
+	, _onEnableSkyLighting(std::bind(&LightComponent::onEnableSkyLighting, this, std::placeholders::_1))
 {
 	_light = std::make_shared<Light>();
 	_light->setOwnerListener(this);
@@ -212,6 +218,8 @@ LightComponent::load(iarchive& reader) noexcept
 		this->setLightType(LightType::LightTypeSpot);
 	else if (lightType == "ambient")
 		this->setLightType(LightType::LightTypeAmbient);
+	else if (lightType == "environment")
+		this->setLightType(LightType::LightTypeEnvironment);
 	else
 		this->setLightType(LightType::LightTypePoint);
 
@@ -251,7 +259,6 @@ LightComponent::onActivate() noexcept
 {
 	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
 
-
 	_light->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
 	_light->setTransform(this->getGameObject()->getWorldTransform());
 }
@@ -265,9 +272,101 @@ LightComponent::onDeactivate() noexcept
 }
 
 void
+LightComponent::onAttachComponent(GameComponentPtr& component) noexcept
+{
+	if (component->isInstanceOf<SkyboxComponent>())
+	{
+		auto skyboxComponent = component->downcast<SkyboxComponent>();
+		skyboxComponent->addSkyBoxChangeListener(&_onSkyBoxChange);
+		skyboxComponent->addSkyLightingDiffuseChangeListener(&_onSkyLightingDiffuseChange);
+		skyboxComponent->addSkyLightingSpecularChangeListener(&_onSkyLightingSpecularChange);
+		skyboxComponent->addEnableSkyBoxListener(&_onEnableSkyBox);
+		skyboxComponent->addEnableSkyLightingListener(&_onEnableSkyLighting);
+
+		if (skyboxComponent->getSkyboxEnable())
+		{
+			_light->setLightVisible(skyboxComponent->getSkyLightingEnable());
+			_light->setSkyBox(skyboxComponent->getSkyBox());
+			_light->setSkyLightingDiffuse(skyboxComponent->getSkyLightDiffuse());
+			_light->setSkyLightingSpecular(skyboxComponent->getSkyLightSpecular());
+		}
+		else
+		{
+			_light->setSkyBox(nullptr);
+		}
+	}
+}
+
+void
+LightComponent::onDetachComponent(GameComponentPtr& component) noexcept
+{
+	if (component->isInstanceOf<SkyboxComponent>())
+	{
+		auto skyboxComponent = component->downcast<SkyboxComponent>();
+		skyboxComponent->removeSkyBoxChangeListener(&_onSkyBoxChange);
+		skyboxComponent->removeSkyLightingDiffuseChangeListener(&_onSkyLightingDiffuseChange);
+		skyboxComponent->removeSkyLightingSpecularChangeListener(&_onSkyLightingSpecularChange);
+		skyboxComponent->removeEnableSkyBoxListener(&_onEnableSkyBox);
+		skyboxComponent->removeEnableSkyLightingListener(&_onEnableSkyLighting);
+
+		_light->setLightVisible(false);
+		_light->setSkyBox(nullptr);
+		_light->setSkyLightingDiffuse(nullptr);
+		_light->setSkyLightingSpecular(nullptr);
+	}
+}
+
+void
 LightComponent::onMoveAfter() noexcept
 {
 	_light->setTransform(this->getGameObject()->getWorldTransform());
+}
+
+void
+LightComponent::onEnableSkyBox(bool enable) noexcept
+{
+}
+
+void
+LightComponent::onEnableSkyLighting(bool enable) noexcept
+{
+	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
+	if (component)
+	{
+		_light->setLightVisible(enable);
+		_light->setSkyLightingDiffuse(component->getSkyLightDiffuse());
+		_light->setSkyLightingSpecular(component->getSkyLightSpecular());
+	}
+	else
+	{
+		_light->setLightVisible(false);
+		_light->setSkyLightingDiffuse(nullptr);
+		_light->setSkyLightingSpecular(nullptr);
+	}
+}
+
+void
+LightComponent::onSkyBoxChange() noexcept
+{
+	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
+	if (component)
+		_light->setSkyBox(component->getSkyBox());
+}
+
+void
+LightComponent::onSkyLightingDiffuseChange() noexcept
+{
+	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
+	if (component)
+		_light->setSkyLightingDiffuse(component->getSkyLightDiffuse());
+}
+
+void
+LightComponent::onSkyLightingSpecularChange() noexcept
+{
+	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
+	if (component)
+		_light->setSkyLightingSpecular(component->getSkyLightSpecular());
 }
 
 _NAME_END

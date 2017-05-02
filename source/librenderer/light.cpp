@@ -53,6 +53,7 @@ Light::Light() noexcept
 	, _lightAttenuation(float3::UnitX)
 	, _spotInnerCone(5.0f, math::cos(math::deg2rad(5.0f)))
 	, _spotOuterCone(40.0f, math::cos(math::deg2rad(40.0f)))
+	, _enableLighting(false)
 	, _enableSoftShadow(false)
 	, _enableGlobalIllumination(false)
 	, _shadowMode(ShadowMode::ShadowModeNone)
@@ -209,6 +210,18 @@ Light::getGlobalIllumination() const noexcept
 	return _enableGlobalIllumination;
 }
 
+void
+Light::setLightVisible(bool enable) noexcept
+{
+	_enableLighting = enable;
+}
+
+bool
+Light::getLightVisible() const noexcept
+{
+	return _enableLighting;
+}
+
 const Cameras&
 Light::getCameras() const noexcept
 {
@@ -244,6 +257,45 @@ float
 Light::getShadowFactor() const noexcept
 {
 	return _shadowFactor;
+}
+
+void
+Light::setSkyBox(GraphicsTexturePtr texture) noexcept
+{
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDim2D);
+	_skybox = texture;
+}
+
+const GraphicsTexturePtr&
+Light::getSkyBox() const noexcept
+{
+	return _skybox;
+}
+
+void
+Light::setSkyLightingDiffuse(GraphicsTexturePtr texture) noexcept
+{
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
+	_skyDiffuseIBL = texture;
+}
+
+const GraphicsTexturePtr&
+Light::getSkyLightingDiffuse() const noexcept
+{
+	return _skyDiffuseIBL;
+}
+
+void
+Light::setSkyLightingSpecular(GraphicsTexturePtr texture) noexcept
+{
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
+	_skySpecularIBL = texture;
+}
+
+const GraphicsTexturePtr&
+Light::getSkyLightingSpecular() const noexcept
+{
+	return _skySpecularIBL;
 }
 
 void

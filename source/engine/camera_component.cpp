@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/camera_component.h>
-#include <ray/skybox_component.h>
 #include <ray/render_feature.h>
 #include <ray/game_server.h>
 
@@ -44,11 +43,6 @@ _NAME_BEGIN
 __ImplementSubClass(CameraComponent, GameComponent, "Camera")
 
 CameraComponent::CameraComponent() noexcept
-	: _onSkyBoxChange(std::bind(&CameraComponent::onSkyBoxChange, this))
-	, _onSkyLightingDiffuseChange(std::bind(&CameraComponent::onSkyLightingDiffuseChange, this))
-	, _onSkyLightingSpecularChange(std::bind(&CameraComponent::onSkyLightingSpecularChange, this))
-	, _onEnableSkyBox(std::bind(&CameraComponent::onEnableSkyBox, this, std::placeholders::_1))
-	, _onEnableSkyLighting(std::bind(&CameraComponent::onEnableSkyLighting, this, std::placeholders::_1))
 {
 	_camera = std::make_shared<Camera>();
 	_camera->setOwnerListener(this);
@@ -363,108 +357,6 @@ void
 CameraComponent::onMoveAfter() noexcept
 {
 	_camera->setTransform(this->getGameObject()->getWorldTransform());
-}
-
-void 
-CameraComponent::onAttachComponent(GameComponentPtr& component) noexcept
-{
-	if (component->isInstanceOf<SkyboxComponent>())
-	{
-		auto skyboxComponent = component->downcast<SkyboxComponent>();
-		skyboxComponent->addSkyBoxChangeListener(&_onSkyBoxChange);
-		skyboxComponent->addSkyLightingDiffuseChangeListener(&_onSkyLightingDiffuseChange);
-		skyboxComponent->addSkyLightingSpecularChangeListener(&_onSkyLightingSpecularChange);
-		skyboxComponent->addEnableSkyBoxListener(&_onEnableSkyBox);
-		skyboxComponent->addEnableSkyLightingListener(&_onEnableSkyLighting);
-
-		if (skyboxComponent->getSkyboxEnable())
-		{
-			_camera->setSkyBox(skyboxComponent->getSkyBox());
-			_camera->setClearFlags(_camera->getClearFlags() | CameraClearFlagBits::CameraClearSkyboxBit);
-		}
-			
-		else
-		{
-			_camera->setSkyBox(nullptr);
-			_camera->setClearFlags(_camera->getClearFlags() & ~CameraClearFlagBits::CameraClearSkyboxBit);
-		}
-		
-		_camera->setSkyLighting(skyboxComponent->getSkyLightingEnable());
-		_camera->setSkyLightingDiffuse(skyboxComponent->getSkyLightDiffuse());
-		_camera->setSkyLightingSpecular(skyboxComponent->getSkyLightSpecular());
-	}
-}
-
-void 
-CameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
-{
-	if (component->isInstanceOf<SkyboxComponent>())
-	{
-		auto skyboxComponent = component->downcast<SkyboxComponent>();
-		skyboxComponent->removeSkyBoxChangeListener(&_onSkyBoxChange);
-		skyboxComponent->removeSkyLightingDiffuseChangeListener(&_onSkyLightingDiffuseChange);
-		skyboxComponent->removeSkyLightingSpecularChangeListener(&_onSkyLightingSpecularChange);
-		skyboxComponent->removeEnableSkyBoxListener(&_onEnableSkyBox);
-		skyboxComponent->removeEnableSkyLightingListener(&_onEnableSkyLighting);
-
-		_camera->setClearFlags(_camera->getClearFlags() & ~CameraClearFlagBits::CameraClearSkyboxBit);
-
-		_camera->setSkyBox(nullptr);
-		_camera->setSkyLighting(false);
-		_camera->setSkyLightingDiffuse(nullptr);
-		_camera->setSkyLightingSpecular(nullptr);
-	}
-}
-
-void 
-CameraComponent::onEnableSkyBox(bool enable) noexcept
-{
-	if (enable)
-		_camera->setClearFlags(_camera->getClearFlags() | CameraClearFlagBits::CameraClearSkyboxBit);
-	else
-		_camera->setClearFlags(_camera->getClearFlags() & ~CameraClearFlagBits::CameraClearSkyboxBit);
-}
-
-void 
-CameraComponent::onEnableSkyLighting(bool enable) noexcept
-{
-	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
-	if (component)
-	{
-		_camera->setSkyLighting(enable);
-		_camera->setSkyLightingDiffuse(component->getSkyLightDiffuse());
-		_camera->setSkyLightingSpecular(component->getSkyLightSpecular());
-	}
-	else
-	{
-		_camera->setSkyLighting(false);
-		_camera->setSkyLightingDiffuse(nullptr);
-		_camera->setSkyLightingSpecular(nullptr);
-	}
-}
-
-void 
-CameraComponent::onSkyBoxChange() noexcept
-{
-	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
-	if (component)
-		_camera->setSkyBox(component->getSkyBox());
-}
-
-void 
-CameraComponent::onSkyLightingDiffuseChange() noexcept
-{
-	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
-	if (component)
-		_camera->setSkyLightingDiffuse(component->getSkyLightDiffuse());
-}
-
-void 
-CameraComponent::onSkyLightingSpecularChange() noexcept
-{
-	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
-	if (component)
-		_camera->setSkyLightingSpecular(component->getSkyLightSpecular());
 }
 
 GameComponentPtr

@@ -14,7 +14,7 @@
     </object>
     <object>
         <attribute name="spot"/>
-        <attribute position="1.0, 2, -2.795"/>
+        <attribute position="1.0, 2, -2"/>
         <attribute rotate="30,-45,0"/>
         <attribute active="true"/>
         <component class="Light">

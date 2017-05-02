@@ -64,6 +64,9 @@ public:
 	void setGlobalIllumination(bool enable) noexcept;	
 	bool getGlobalIllumination() const noexcept;
 
+	void setLightVisible(bool enable) noexcept;
+	bool getLightVisible() const noexcept;
+
 	float getLightRange() const noexcept;
 	float getLightIntensity() const noexcept;
 	LightType getLightType() const noexcept;
@@ -77,6 +80,15 @@ public:
 
 	const float3& getLightColor() const noexcept;
 	const float3& getLightAttenuation() const noexcept;
+
+	void setSkyBox(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getSkyBox() const noexcept;
+
+	void setSkyLightingDiffuse(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getSkyLightingDiffuse() const noexcept;
+
+	void setSkyLightingSpecular(GraphicsTexturePtr texture) noexcept;
+	const GraphicsTexturePtr& getSkyLightingSpecular() const noexcept;
 
 	void setColorTexture(GraphicsTexturePtr texture) noexcept;
 	const GraphicsTexturePtr& getColorTexture() const noexcept;
@@ -129,6 +141,7 @@ private:
 	float2 _spotInnerCone;
 	float2 _spotOuterCone;
 
+	bool _enableLighting;
 	bool _enableSoftShadow;
 	bool _enableGlobalIllumination;
 
@@ -136,6 +149,10 @@ private:
 	float _shadowFactor;
 	Cameras _shadowCameras;
 	ShadowMode _shadowMode;
+
+	GraphicsTexturePtr _skybox;
+	GraphicsTexturePtr _skyDiffuseIBL;
+	GraphicsTexturePtr _skySpecularIBL;
 
 	GraphicsTexturePtr _shadowDepthMap;
 	GraphicsTexturePtr _shadowColorMap;

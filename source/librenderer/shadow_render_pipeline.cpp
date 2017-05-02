@@ -129,6 +129,10 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& mainCamera) noexcept
 		if (light->getShadowMode() == ShadowMode::ShadowModeNone)
 			continue;
 
+		if (light->getLightType() == LightType::LightTypeAmbient ||
+			light->getLightType() == LightType::LightTypeEnvironment)
+			continue;
+
 		if (!light->getGlobalIllumination())
 			this->renderShadowMap(*light, RenderQueue::RenderQueueShadow);
 		else

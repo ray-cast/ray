@@ -81,10 +81,20 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 private:
-	void onActivate() noexcept;
-	void onDeactivate() noexcept;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
 
-	void onMoveAfter() noexcept;
+	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
+	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
+
+	virtual void onMoveAfter() noexcept;
+
+	virtual void onEnableSkyBox(bool enable) noexcept;
+	virtual void onEnableSkyLighting(bool enable) noexcept;
+
+	virtual void onSkyBoxChange() noexcept;
+	virtual void onSkyLightingDiffuseChange() noexcept;
+	virtual void onSkyLightingSpecularChange() noexcept;
 
 private:
 	LightComponent(const LightComponent&) = delete;
@@ -92,6 +102,12 @@ private:
 
 private:
 	LightPtr _light;
+
+	std::function<void()> _onSkyBoxChange;
+	std::function<void()> _onSkyLightingDiffuseChange;
+	std::function<void()> _onSkyLightingSpecularChange;
+	std::function<void(bool)> _onEnableSkyBox;
+	std::function<void(bool)> _onEnableSkyLighting;
 };
 
 _NAME_END

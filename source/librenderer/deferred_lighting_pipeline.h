@@ -68,12 +68,15 @@ public:
 	void renderTransparentSpecificShadingFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
 	void renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
-	void renderDirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 	void renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderDirectionalLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderPointLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderEnvironmentLight(RenderPipeline& pipeline, const Light& light) noexcept;
+
+	void renderAmbientLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
+	void renderDirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 	void renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderIndirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept;
 
@@ -87,8 +90,6 @@ private:
 	void computeSubsplatStencil(RenderPipeline& pipeline, const GraphicsTexturePtr& depth, const GraphicsTexturePtr& normal, const GraphicsFramebuffers& dst);
 	void computeUpsamplingMultiresBuffer(RenderPipeline& pipeline, GraphicsTexturePtr src, const GraphicsFramebuffers& srcviews, GraphicsFramebufferPtr dst);
 
-	void computeSunColor(const float3& L, float3& sunColor, float3& ambientColor) noexcept;
-
 private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
 
@@ -98,6 +99,7 @@ private:
 	bool setupDeferredRenderTextures(RenderPipeline& pipeline) noexcept;
 	bool setupDeferredRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
 
+	bool setupMRSII(RenderPipeline& pipeline) noexcept;
 	bool setupMRSIIMaterials(RenderPipeline& pipeline) noexcept;
 	bool setupMRSIITextures(RenderPipeline& pipeline) noexcept;
 	bool setupMRSIIRenderTextures(RenderPipeline& pipeline) noexcept;
@@ -125,6 +127,8 @@ private:
 
 	std::uint32_t _mrsiiDerivMipBase;
 	std::uint32_t _mrsiiDerivMipCount;
+
+	bool _enabledMRSSI;
 
 	MaterialPtr _mrsii;
 	MaterialTechPtr _mrsiiRsm2VPLsSpot;
@@ -189,10 +193,9 @@ private:
 	MaterialTechPtr _deferredSpotLightShadow;
 	MaterialTechPtr _deferredPointLight;
 	MaterialTechPtr _deferredAmbientLight;
+	MaterialTechPtr _deferredEnvironmentLighting;
 	MaterialTechPtr _deferredShadingOpaques;
 	MaterialTechPtr _deferredShadingTransparents;
-	MaterialTechPtr _deferredShadingOpaquesWithSkyLighting;
-	MaterialTechPtr _deferredShadingTransparentsWithSkyLighting;
 	MaterialTechPtr _deferredDebugLayer;
 	MaterialTechPtr _deferredCopyOnly;
 

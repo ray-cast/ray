@@ -59,7 +59,6 @@ Camera::Camera() noexcept
 	, _cameraOrder(CameraOrder::CameraOrder3D)
 	, _cameraClearType(CameraClearFlagBits::CameraClearColorBit)
 	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
-	, _enableSkyLighting(false)
 	, _needUpdateViewProject(true)
 {
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
@@ -180,11 +179,28 @@ Camera::getViewProjectInverse() const noexcept
 	return _viewProjectInverse;
 }
 
-const float4&
+float4
 Camera::getClipConstant() const noexcept
 {
 	_updateViewProject();
-	return _clipConstant;
+
+	float4 clipConstant;
+	if (_cameraType == CameraType::CameraTypeOrtho)
+	{
+		clipConstant.x = _znear;
+		clipConstant.y = (_zfar - _znear);
+		clipConstant.z = _znear;
+		clipConstant.w = _zfar;
+	}
+	else
+	{
+		clipConstant.x = _znear * (_zfar / (_zfar - _znear));
+		clipConstant.y = _zfar / (_zfar - _znear);
+		clipConstant.z = _znear;
+		clipConstant.w = _zfar;
+	}
+
+	return clipConstant;
 }
 
 float3
@@ -363,57 +379,6 @@ Camera::getCameraRenderFlags() const noexcept
 	return _cameraRenderFlags;
 }
 
-void 
-Camera::setSkyBox(GraphicsTexturePtr texture) noexcept
-{
-	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDim2D);
-	_skybox = texture;
-}
-
-const GraphicsTexturePtr& 
-Camera::getSkyBox() const noexcept
-{
-	return _skybox;
-}
-
-void 
-Camera::setSkyLighting(bool enable) noexcept
-{
-	_enableSkyLighting = enable;
-}
-
-bool 
-Camera::getSkyLighting() const noexcept
-{
-	return _enableSkyLighting;
-}
-
-void 
-Camera::setSkyLightingDiffuse(GraphicsTexturePtr texture) noexcept
-{
-	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
-	_skyDiffuseIBL = texture;
-}
-
-const GraphicsTexturePtr& 
-Camera::getSkyLightingDiffuse() const noexcept
-{
-	return _skyDiffuseIBL;
-}
-
-void 
-Camera::setSkyLightingSpecular(GraphicsTexturePtr texture) noexcept
-{
-	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
-	_skySpecularIBL = texture;
-}
-
-const GraphicsTexturePtr& 
-Camera::getSkyLightingSpecular() const noexcept
-{
-	return _skySpecularIBL;
-}
-
 void
 Camera::setSwapchain(GraphicsSwapchainPtr swapchin) noexcept
 {
@@ -468,11 +433,6 @@ Camera::_updateOrtho() const noexcept
 {
 	_project.makeOrtho_lh(_left, _right, _bottom, _top, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
-
-	_clipConstant.x = _znear;
-	_clipConstant.y = (_zfar - _znear);
-	_clipConstant.z = _znear;
-	_clipConstant.w = _zfar;
 }
 
 void
@@ -490,11 +450,6 @@ Camera::_updatePerspective() const noexcept
 
 	_project.makePerspective_fov_lh(_aperture, _ratio * ratio, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
-
-	_clipConstant.x = _znear * (_zfar / (_zfar - _znear));
-	_clipConstant.y = _zfar / (_zfar - _znear);
-	_clipConstant.z = _znear;
-	_clipConstant.w = _zfar;
 }
 
 void

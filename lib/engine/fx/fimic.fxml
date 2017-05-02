@@ -9,6 +9,7 @@
     <macro name="TONEMAP_REINHARD" value="3"/>
     <macro name="TONEMAP_FILMIC" value="4"/>
     <macro name="TONEMAP_UNCHARTED2" value="5"/>
+    <macro name="TONEMAP_ACES" value="6"/>
     <macro name="TONEMAP_OPERATOR" value="TONEMAP_UNCHARTED2"/>
     <macro name="LIGHT_UNIT_SCALE" value="10000.0f"/>
     <parameter name="texSource" type="texture2D" />
@@ -35,6 +36,16 @@
                 const float W = 11.2; // Linear White Point Value
                 return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
             }
+
+			float3 TonemapACES(float3 x)
+			{
+				const float A = 2.51f;
+				const float B = 0.03f;
+				const float C = 2.43f;
+				const float D = 0.59f;
+				const float E = 0.14f;
+				return (x * (A * x + B)) / (x * (C * x + D) + E);
+			}
 
             float TonemappingUncharted2Inverse(float x) 
             {
@@ -73,14 +84,16 @@
                     return color;
                 #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
                     color = 2 * Uncharted2Tonemap(exposure * color);
-                    float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
+                    float3 whiteScale = 1.0f / Uncharted2Tonemap(8.0);
                     color *= whiteScale;
                     return color;
                 #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
                     color = Uncharted2Tonemap(exposure * color);
-                    float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
+                    float3 whiteScale = 1.0f / Uncharted2Tonemap(8.0);
                     color *= whiteScale;
                     return color;
+                #elif TONEMAP_OPERATOR == TONEMAP_ACES
+                	return TonemapACES(color * exposure);
                 #else
                     return color;
                 #endif
@@ -92,13 +105,6 @@
                 color = lerp(lum, color, balance.a);
                 color *= balance.rgb;
                 return color;
-            }
-
-            float3 ToneBlueShift(float3 color, float lum)
-            {
-                // martin's modified blue shift
-                const float3 BLUE_SHIFT = float3(0.4f, 0.4f, 0.7f);
-                return lerp(lum * BLUE_SHIFT, color, saturate(16.0f * lum));
             }
 
             float ComputeExposureISO(float avgLum)
@@ -149,7 +155,6 @@
             float3 ToneMapping(float3 color, float3 bloom, float avgLum, float exposure)
             {
                 color += bloom;
-                color += ToneBlueShift(color, luminance(color));
                 color = FilmicTonemap(color, exposure * ComputeExposure(avgLum));
                 color = saturate(color);
                 color = linear2srgb(color);

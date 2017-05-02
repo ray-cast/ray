@@ -25,11 +25,21 @@
             float roughness = SmoothnessToRoughness(smoothness);
             return 2.0f / (roughness * roughness) - 2.0f;
         }
+        
+		float ComputeSpecularMicroOcclusion(float f0)
+		{
+			return saturate(dot(f0, 0.33333h) * 50);
+		}
+
+		float ComputeSpecularMicroOcclusion(float3 f0)
+		{
+			return saturate(dot(f0, 0.33333h) * 50);
+		}
 
         float3 fresnelSchlick(float3 f0, float f9, float LdotH)
         {
             // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
-            return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
+            return lerp(f0, f9, pow(1 - LdotH, 5));
         }
 
         float LambertBRDF(float3 N, float3 L)
@@ -86,7 +96,7 @@
 
         float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
         {
-            float roughness = SmoothnessToRoughness(gloss);
+            float roughness = max(SmoothnessToRoughness(gloss), 0.001);
             return BurleyBRDF(N, L, V, roughness);
         }
 
@@ -124,53 +134,28 @@
             return D * F * G * nl;
         }
 
-        float3 SpecularBRDF_Ryse(float3 N, float3 L, float3 V, float gloss, float3 f0)
-        {
-            // http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf
-
-            float3 H = normalize(L + V);
-
-            float alpha = pow(1 - gloss * 0.7, 6);
-
-            float nh = saturate(dot(N, H));
-            float nl = saturate(dot(N, L));
-            float lh = saturate(dot(L, H));
-
-            float alpha2 = alpha * alpha;
-            float denom = (alpha2 * nh - nh) * nh + 1.0f;
-            float D = alpha2 / (PIE * denom * denom);
-
-            float k = (0.8 + 0.5 * alpha) / 2.0f;
-            float k2 = k * k;
-            float k4 = k2 * k2;
-            float invK2 = 1.0f - k4;
-            float G = rcp(lh * lh * invK2 + k4);
-
-            float3 F = fresnelSchlick(f0, 1.0, lh);
-
-            return D * F * G * nl;
-        }
-
         float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float gloss, float3 f0, float NormalizationFactor)
         {
             float3 H = normalize(L + V);
 
-            float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-            float alpha = roughness * roughness;
-
             float nh = saturate(dot(N, H));
             float nl = saturate(dot(N, L));
-            float lh = saturate(dot(L, H));
+            float nv = saturate(dot(N, V));
+            float vh = saturate(dot(V, H));
+            float roughness = max(SmoothnessToRoughness(gloss), 0.001);
 
-            float denom = (alpha * nh - nh) * nh + 1.0f;
-            float D = alpha / (denom * denom) * NormalizationFactor;
+			float m2 = roughness * roughness;
+			float spec = (nh * m2 - nh) * nh + 1;
+			spec = m2 / (spec * spec) * NormalizationFactor;
 
-            float k2 = alpha * alpha * 0.25;
-            float G = 0.25 / (lh * lh * (1 - k2) + k2);
+			float Gv = nl * (nv * (1 - m2) + m2);
+			float Gl = nv * (nl * (1 - m2) + m2);
+			spec *= 0.5 / (Gv + Gl);
 
-            float3 F = fresnelSchlick(f0, saturate(dot(f0, 0.33333h) / 0.02h), lh);
+			float3 f90 = ComputeSpecularMicroOcclusion(f0);
+            float3 fresnel = fresnelSchlick(f0, f90, vh);
 
-            return D * F * G * nl;
+            return spec * fresnel * nl;
         }
 
         float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
@@ -270,11 +255,6 @@
             float shadow = saturate(d);
 
             return shadow;
-        }
-
-        float3 ShadingLight(float3 albedo, float4 lighting)
-        {
-            return lighting.rgb * (albedo + lighting.a / (luminance(lighting.rgb) + 1e-6f));
         }
         ]]>
     </shader>

@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "ssao.h"
+#include "ssdo.h"
 #include <ray/camera.h>
 #include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
@@ -43,7 +43,7 @@
 
 _NAME_BEGIN
 
-SSAO::Setting::Setting() noexcept
+SSDO::Setting::Setting() noexcept
 	: radius(10.0f)
 	, bias(0.002f)
 	, intensity(1)
@@ -54,16 +54,16 @@ SSAO::Setting::Setting() noexcept
 {
 }
 
-SSAO::SSAO() noexcept
+SSDO::SSDO() noexcept
 {
 }
 
-SSAO::~SSAO() noexcept
+SSDO::~SSDO() noexcept
 {
 }
 
 void
-SSAO::setSetting(const Setting& setting) noexcept
+SSDO::setSetting(const Setting& setting) noexcept
 {
 	const float blurSigma = _setting.blurRadius * 0.5f;
 	const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
@@ -78,14 +78,14 @@ SSAO::setSetting(const Setting& setting) noexcept
 	_setting = setting;
 }
 
-const SSAO::Setting&
-SSAO::getSetting() const noexcept
+const SSDO::Setting&
+SSDO::getSetting() const noexcept
 {
 	return _setting;
 }
 
 void
-SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSDO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
@@ -99,7 +99,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
-SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSDO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
@@ -115,7 +115,7 @@ SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 }
 
 void
-SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSDO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
@@ -131,7 +131,7 @@ SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
-SSAO::applySSAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSDO::applySSDO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	_blurSource->uniformTexture(source);
 
@@ -140,7 +140,7 @@ SSAO::applySSAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFra
 }
 
 void
-SSAO::createSphereNoise() noexcept
+SSDO::createSphereNoise() noexcept
 {
 	std::vector<float2> sphere;
 	std::size_t numSample = _occlusionSampleNumber->getInt();
@@ -160,13 +160,10 @@ SSAO::createSphereNoise() noexcept
 }
 
 void
-SSAO::onActivate(RenderPipeline& pipeline) noexcept
+SSDO::onActivate(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
-
-	//width *= 0.5;
-	//height *= 0.5;
 
 	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
 	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
@@ -189,7 +186,7 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
 
-	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml");
+	_ambientOcclusion = pipeline.createMaterial("sys:fx\\SSDO.fxml");
 	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeAO");
 	_ambientOcclusionBlurXPass = _ambientOcclusion->getTech("BlurXAO");
 	_ambientOcclusionBlurYPass = _ambientOcclusion->getTech("BlurYAO");
@@ -220,7 +217,7 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 }
 
 void
-SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
+SSDO::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 	_ambientOcclusion.reset();
 
@@ -255,9 +252,9 @@ SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
+SSDO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
-	if (queue != RenderQueue::RenderQueueOpaqueShading)
+	if (queue != RenderQueue::RenderQueueOpaqueLighting)
 		return false;
 
 	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
@@ -270,7 +267,7 @@ SSAO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 		this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
 	}
 
-	this->applySSAO(pipeline, _texAmbientMap, source);
+	this->applySSDO(pipeline, _texAmbientMap, source);
 
 	return false;
 }

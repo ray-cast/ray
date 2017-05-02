@@ -58,8 +58,7 @@ struct EXPORT RenderSetting
 
 	RenderPipelineType pipelineType;
 
-	bool enableSSAO;
-	bool enableSSGI;
+	bool enableSSDO;
 	bool enableAtmospheric;
 	bool enableSSR;
 	bool enableSSSS;

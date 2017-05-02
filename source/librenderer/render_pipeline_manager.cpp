@@ -46,8 +46,7 @@
 #include "shadow_render_pipeline.h"
 
 #include "atmospheric.h"
-#include "ssao.h"
-#include "ssgi.h"
+#include "ssdo.h"
 #include "ssss.h"
 #include "ssr.h"
 #include "dof.h"
@@ -108,7 +107,7 @@ RenderPipelineManager::close() noexcept
 	this->destroyShadowRenderer();
 
 	_atmospheric.reset();
-	_SSAO.reset();
+	_SSDO.reset();
 	_SSGI.reset();
 	_SSR.reset();
 	_SSSS.reset();
@@ -164,17 +163,17 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		}
 	}
 
-	if (_setting.enableSSAO != setting.enableSSAO)
+	if (_setting.enableSSDO != setting.enableSSDO)
 	{
-		if (setting.enableSSAO)
+		if (setting.enableSSDO)
 		{
-			_SSAO = std::make_shared<SSAO>();
-			this->addPostProcess(_SSAO);
+			_SSDO = std::make_shared<SSDO>();
+			this->addPostProcess(_SSDO);
 		}
-		else if (_SSAO)
+		else if (_SSDO)
 		{
-			this->removePostProcess(_SSAO);
-			_SSAO.reset();
+			this->removePostProcess(_SSDO);
+			_SSDO.reset();
 		}
 	}
 
@@ -189,20 +188,6 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		{
 			this->removePostProcess(_fog);
 			_fog.reset();
-		}
-	}
-
-	if (_setting.enableSSGI != setting.enableSSGI)
-	{
-		if (setting.enableSSGI)
-		{
-			_SSGI = std::make_shared<SSGI>();
-			this->addPostProcess(_SSGI);
-		}
-		else if (_SSGI)
-		{
-			this->removePostProcess(_SSGI);
-			_SSGI.reset();
 		}
 	}
 

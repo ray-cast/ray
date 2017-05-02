@@ -136,7 +136,7 @@ private:
 private:
 	RenderSetting _setting;
 	RenderPostProcessPtr _SSGI;
-	RenderPostProcessPtr _SSAO;
+	RenderPostProcessPtr _SSDO;
 	RenderPostProcessPtr _SSSS;
 	RenderPostProcessPtr _atmospheric;
 	RenderPostProcessPtr _SSR;

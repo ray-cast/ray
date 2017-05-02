@@ -93,6 +93,26 @@
             <attribute intensity="0.1"/>
         </component>
     </object>
+	<object>
+		<attribute name="sky"/>
+		<attribute position="0, 50, 0"/>
+		<attribute rotate="90, 0, 0"/>
+		<attribute active="true"/>
+		<component class="Light">
+			<attribute type="environment"/>
+			<attribute color="1.0,1.0,1.0"/>
+			<attribute range="60.0"/>
+			<attribute intensity="1.0"/>
+			<attribute shadow="none"/>
+		</component>
+		<component class="Skybox">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute flags="skybox"/>
+            <attribute skysize="1000"/>
+            <attribute skymap="dlc:EnvLighting/texture/skybox.dds"/>
+        </component>
+	</object>
     <object>
         <attribute name="first_person_camera"/>
         <attribute position="0,62,0" />
@@ -109,13 +129,6 @@
         <component class="PhysicsCharacter">
             <attribute radius="1"/>
             <attribute height="4"/>
-        </component>
-        <component class="Skybox">
-            <attribute castshadow="false"/>
-            <attribute receiveshadow="false"/>
-            <attribute flags="skybox"/>
-            <attribute skysize="1000"/>
-            <attribute skymap="dlc:EnvLighting/texture/skybox.dds"/>
         </component>
     </object>
 </scene>

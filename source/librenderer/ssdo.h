@@ -34,14 +34,14 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SSGI_H_
-#define _H_SSGI_H_
+#ifndef _H_SSDO_H_
+#define _H_SSDO_H_
 
 #include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
-class SSGI : public RenderPostProcess
+class SSDO : public RenderPostProcess
 {
 public:
 	struct Setting
@@ -59,16 +59,17 @@ public:
 	};
 
 public:
-	SSGI() noexcept;
-	~SSGI() noexcept;
+	SSDO() noexcept;
+	~SSDO() noexcept;
 
 	void setSetting(const Setting& set) noexcept;
 	const Setting& getSetting() const noexcept;
 
 private:
-	void computeRawGI(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void applySSDO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 	void createSphereNoise() noexcept;
 
@@ -87,11 +88,11 @@ private:
 	MaterialTechPtr _ambientOcclusionPass;
 	MaterialTechPtr _ambientOcclusionBlurXPass;
 	MaterialTechPtr _ambientOcclusionBlurYPass;
+	MaterialTechPtr _ambientOcclusionApply;
 
 	MaterialParamPtr _cameraProjScale;
 
 	MaterialParamPtr _occlusionRadius;
-	MaterialParamPtr _occlusionRadius2;
 	MaterialParamPtr _occlusionBias;
 	MaterialParamPtr _occlusionIntensity;
 	MaterialParamPtr _occlusionAmbient;

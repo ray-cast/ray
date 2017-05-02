@@ -136,7 +136,6 @@ enum CameraClearFlagBits
 	CameraClearColorBit,
 	CameraClearDepthBit,
 	CameraClearStencilBit,
-	CameraClearSkyboxBit,
 	CameraClearDepthStencilBit = CameraClearDepthBit | CameraClearStencilBit,
 	CameraClearMaxBit = 0x7FFFFFFF
 };
@@ -166,8 +165,12 @@ enum LightType
 	LightTypeAmbient,
 	LightTypePoint,
 	LightTypeSpot,
+	LightTypeRectangle,
+	LightTypeDisk,
+	LightTypeTube,
+	LightTypeEnvironment,
 	LightTypeBeginRange = LightTypeSun,
-	LightTypeEndRange = LightTypeSpot,
+	LightTypeEndRange = LightTypeEnvironment,
 	LightTypeRangeSize = (LightTypeEndRange - LightTypeBeginRange + 1),
 	LightTypeMaxEnum = 0x7FFFFFFF
 };
@@ -226,6 +229,7 @@ enum RenderQueue
 	RenderQueueOpaqueSpecific,
 	RenderQueueOpaqueSpecificBatch,
 	RenderQueueOpaqueShading,
+	RenderQueueOpaqueLighting,
 	RenderQueueTransparentBack,
 	RenderQueueTransparentBatchBack,
 	RenderQueueTransparentSpecificBack,

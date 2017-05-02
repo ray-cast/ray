@@ -73,7 +73,7 @@ public:
 	const float4x4& getViewProject() const noexcept;
 	const float4x4& getViewProjectInverse() const noexcept;
 
-	const float4& getClipConstant() const noexcept;
+	float4 getClipConstant() const noexcept;
 
 	float3 worldToScreen(const float3& pos) const noexcept;
 	float3 worldToProject(const float3& pos) const noexcept;
@@ -94,18 +94,6 @@ public:
 
 	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
-
-	void setSkyBox(GraphicsTexturePtr texture) noexcept;
-	const GraphicsTexturePtr& getSkyBox() const noexcept;
-
-	void setSkyLighting(bool enable) noexcept;
-	bool getSkyLighting() const noexcept;
-
-	void setSkyLightingDiffuse(GraphicsTexturePtr texture) noexcept;
-	const GraphicsTexturePtr& getSkyLightingDiffuse() const noexcept;
-
-	void setSkyLightingSpecular(GraphicsTexturePtr texture) noexcept;
-	const GraphicsTexturePtr& getSkyLightingSpecular() const noexcept;
 
 	void setSwapchain(GraphicsSwapchainPtr swapchin) noexcept;
 	const GraphicsSwapchainPtr& getSwapchain() const noexcept;
@@ -152,21 +140,13 @@ private:
 	CameraClearFlags _cameraClearType;
 	CameraRenderFlags _cameraRenderFlags;
 
-	GraphicsTexturePtr _skybox;
-	GraphicsTexturePtr _skyDiffuseIBL;
-	GraphicsTexturePtr _skySpecularIBL;
-
 	GraphicsSwapchainPtr _swapchain;
 	GraphicsFramebufferPtr _framebuffer;
 	GraphicsFramebufferPtr _depthLinearFramebuffer;
 
 	RenderDataManagerPtr _dataManager;
 
-	bool _enableSkyLighting;
-
 	mutable bool _needUpdateViewProject;
-
-	mutable float4 _clipConstant;
 
 	mutable float4x4 _project;
 	mutable float4x4 _projectInverse;

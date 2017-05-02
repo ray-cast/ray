@@ -128,8 +128,7 @@
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord.xy);
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord.xy);
 
-                float specular = DecodeSpecular(MRT0);
-                float shininess = DecodeSmoothness(MRT1);
+                float3 albedo = MRT0.rgb;
 
                 float3 V = normalize(viewdir);
                 float3 viewNormal = DecodeGBufferNormal(MRT1);
@@ -154,7 +153,7 @@
                     shading += lighting;
                 }
 
-                return float4(shading, 1.0);
+                return float4(shading * albedo, 1.0);
             }
 
             void GatherIndirectDebugVS(

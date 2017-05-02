@@ -101,28 +101,12 @@ private:
 
 	virtual void onMoveAfter() noexcept;
 
-	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
-
-	virtual void onEnableSkyBox(bool enable) noexcept;
-	virtual void onEnableSkyLighting(bool enable) noexcept;
-
-	virtual void onSkyBoxChange() noexcept;
-	virtual void onSkyLightingDiffuseChange() noexcept;
-	virtual void onSkyLightingSpecularChange() noexcept;
-
 private:
 	CameraComponent(const CameraComponent&) noexcept = delete;
 	CameraComponent& operator=(const CameraComponent&) noexcept = delete;
 
 private:
 	CameraPtr _camera;
-
-	std::function<void()> _onSkyBoxChange;
-	std::function<void()> _onSkyLightingDiffuseChange;
-	std::function<void()> _onSkyLightingSpecularChange;
-	std::function<void(bool)> _onEnableSkyBox;
-	std::function<void(bool)> _onEnableSkyLighting;
 };
 
 _NAME_END

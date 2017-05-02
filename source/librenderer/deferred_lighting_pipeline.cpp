@@ -51,6 +51,7 @@ _NAME_BEGIN
 DeferredLightingPipeline::DeferredLightingPipeline() noexcept
 	: _mrsiiDerivMipBase(0)
 	, _mrsiiDerivMipCount(4)
+	, _enabledMRSSI(false)
 {
 }
 
@@ -84,21 +85,6 @@ DeferredLightingPipeline::setup(RenderPipelineManagerPtr pipelineManager) noexce
 
 	if (!this->setupDeferredRenderTextures(*_pipeline))
 		return false;
-
-	if (_pipelineManager->getRenderSetting().enableGlobalIllumination)
-	{
-		if (!this->setupMRSIIMaterials(*_pipeline))
-			return false;
-
-		if (!this->setupMRSIITextures(*_pipeline))
-			return false;
-
-		if (!this->setupMRSIIRenderTextureLayouts(*_pipeline))
-			return false;
-
-		if (!this->setupMRSIIRenderTextures(*_pipeline))
-			return false;
-	}
 
 	return true;
 }
@@ -197,27 +183,7 @@ DeferredLightingPipeline::renderOpaquesShading(RenderPipeline& pipeline, Graphic
 	else
 		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 
-	if (camera->getSkyLighting() && camera->getSkyLightingDiffuse() && camera->getSkyLightingSpecular())
-	{
-		float3 factor;
-		factor.x = camera->getSkyLightingSpecular()->getGraphicsTextureDesc().getMipLevel();
-		factor.y = 1.0f;
-		factor.z = 1.0f;
-		_envFactor->uniform3f(factor);
-		
-		_envBoxMin->uniform3f(float3(-camera->getFar()));
-		_envBoxMax->uniform3f(float3(camera->getFar()));
-		_envBoxCenter->uniform3f(camera->getTranslate());
-		_envDiffuse->uniformTexture(camera->getSkyLightingDiffuse());
-		_envSpecular->uniformTexture(camera->getSkyLightingSpecular());
-
-		pipeline.drawScreenQuad(*_deferredShadingOpaquesWithSkyLighting);
-	}
-	else
-	{
-		pipeline.drawScreenQuad(*_deferredShadingOpaques);
-	}
-
+	pipeline.drawScreenQuad(*_deferredShadingOpaques);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueShading);
 	pipeline.drawPostProcess(RenderQueue::RenderQueueOpaqueShading, target, target);
 }
@@ -255,32 +221,9 @@ DeferredLightingPipeline::renderTransparentDepthLinearBack(RenderPipeline& pipel
 void
 DeferredLightingPipeline::renderTransparentShadingBack(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
-	auto camera = pipeline.getCamera();
-	if (camera->getSkyLighting() && camera->getSkyLightingDiffuse() && camera->getSkyLightingSpecular())
-	{
-		float3 factor;
-		factor.x = camera->getSkyLightingSpecular()->getGraphicsTextureDesc().getMipLevel();
-		factor.y = 1.0f;
-		factor.z = 1.0f;
-		_envFactor->uniform3f(factor);
-
-		_envBoxMin->uniform3f(float3(-camera->getFar()));
-		_envBoxMax->uniform3f(float3(camera->getFar()));
-		_envBoxCenter->uniform3f(camera->getTranslate());
-		_envDiffuse->uniformTexture(camera->getSkyLightingDiffuse());
-		_envSpecular->uniformTexture(camera->getSkyLightingSpecular());
-
-		pipeline.setFramebuffer(target);
-		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-		pipeline.drawScreenQuad(*_deferredShadingTransparentsWithSkyLighting);
-	}
-	else
-	{
-		pipeline.setFramebuffer(target);
-		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-		pipeline.drawScreenQuad(*_deferredShadingTransparents);
-	}
-
+	pipeline.setFramebuffer(target);
+	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.drawScreenQuad(*_deferredShadingTransparents);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentShadingBack);
 	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentShadingBack, target, target);
 }
@@ -318,30 +261,8 @@ DeferredLightingPipeline::renderTransparentDepthLinearFront(RenderPipeline& pipe
 void
 DeferredLightingPipeline::renderTransparentShadingFront(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
-	auto camera = pipeline.getCamera();
-	if (camera->getSkyLighting() && camera->getSkyLightingDiffuse() && camera->getSkyLightingSpecular())
-	{
-		float3 factor;
-		factor.x = camera->getSkyLightingSpecular()->getGraphicsTextureDesc().getMipLevel();
-		factor.y = 1.0f;
-		factor.z = 1.0f;
-		_envFactor->uniform3f(factor);
-
-		_envBoxMin->uniform3f(float3(-camera->getFar()));
-		_envBoxMax->uniform3f(float3(camera->getFar()));
-		_envBoxCenter->uniform3f(camera->getTranslate());
-		_envDiffuse->uniformTexture(camera->getSkyLightingDiffuse());
-		_envSpecular->uniformTexture(camera->getSkyLightingSpecular());
-
-		pipeline.setFramebuffer(target);
-		pipeline.drawScreenQuad(*_deferredShadingTransparentsWithSkyLighting);
-	}
-	else
-	{
-		pipeline.setFramebuffer(target);
-		pipeline.drawScreenQuad(*_deferredShadingTransparents);
-	}
-
+	pipeline.setFramebuffer(target);
+	pipeline.drawScreenQuad(*_deferredShadingTransparents);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentShadingFront);
 	pipeline.drawPostProcess(RenderQueue::RenderQueueTransparentShadingFront, target, target);
 }
@@ -360,12 +281,34 @@ DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebu
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 
-	if (_pipelineManager->getRenderSetting().enableGlobalIllumination)
+	this->renderAmbientLights(pipeline, target);
+	this->renderDirectLights(pipeline, target);
+	this->renderIndirectLights(pipeline, target);
+}
+
+void 
+DeferredLightingPipeline::renderAmbientLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
+{
+	pipeline.setFramebuffer(target);
+
+	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
+	for (auto& it : lights)
 	{
-		this->renderIndirectLights(pipeline, target);
+		auto light = it->downcast<Light>();
+		switch (light->getLightType())
+		{
+		case LightType::LightTypeAmbient:
+			this->renderAmbientLight(pipeline, *light);
+			break;
+		case LightType::LightTypeEnvironment:
+			this->renderEnvironmentLight(pipeline, *light);
+			break;
+		default:
+			break;
+		}
 	}
 
-	this->renderDirectLights(pipeline, target);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueOpaqueLighting, target, target);
 }
 
 void
@@ -391,24 +334,16 @@ DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, GraphicsF
 		case LightType::LightTypeSpot:
 			this->renderSpotLight(pipeline, *light);
 			break;
-		case LightType::LightTypeAmbient:
-			this->renderAmbientLight(pipeline, *light);
-			break;
 		default:
 			break;
 		}
 	}
-
-	pipeline.drawPostProcess(RenderQueue::RenderQueueLighting, target, target);
 }
 
 void
 DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
-	float3 sunColor, ambientColor;
-	this->computeSunColor(-light.getForward(), sunColor, ambientColor);
-
-	_lightColor->uniform3f(sunColor * light.getLightColor() * light.getLightIntensity());
+	_lightColor->uniform3f(light.getLightColor() * light.getLightIntensity());
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
@@ -517,6 +452,28 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 }
 
 void
+DeferredLightingPipeline::renderEnvironmentLight(RenderPipeline& pipeline, const Light& light) noexcept
+{
+	auto camera = pipeline.getCamera();
+	if (light.getSkyLightingDiffuse() && light.getSkyLightingSpecular())
+	{
+		float3 factor;
+		factor.x = light.getSkyLightingSpecular()->getGraphicsTextureDesc().getMipLevel();
+		factor.y = 1.0f;
+		factor.z = 1.0f;
+		_envFactor->uniform3f(factor);
+
+		_envBoxMin->uniform3f(float3(-camera->getFar()));
+		_envBoxMax->uniform3f(float3(camera->getFar()));
+		_envBoxCenter->uniform3f(camera->getTranslate());
+		_envDiffuse->uniformTexture(light.getSkyLightingDiffuse());
+		_envSpecular->uniformTexture(light.getSkyLightingSpecular());
+
+		pipeline.drawScreenQuadLayer(*_deferredEnvironmentLighting, light.getLayer());
+	}
+}
+
+void
 DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_mrsiiMRT0->uniformTexture(_deferredGbuffer1Map);
@@ -530,13 +487,39 @@ DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, cons
 void
 DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
+	if (!_pipelineManager->getRenderSetting().enableGlobalIllumination)
+		return;
+
 	bool hasIndirectLight = false;
 
 	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
-		if (light->getLightType() == LightType::LightTypeAmbient)
+		if (light->getGlobalIllumination() &&
+			light->getLightType() != LightType::LightTypeAmbient &&
+			light->getLightType() != LightType::LightTypeEnvironment)
+		{
+			hasIndirectLight = true;
+			break;
+		}
+	}
+
+	if (!hasIndirectLight)
+		return;
+
+	if (!_enabledMRSSI)
+	{
+		_enabledMRSSI = this->setupMRSII(pipeline);
+		if (!_enabledMRSSI)
+			return;
+	}
+
+	for (auto& it : lights)
+	{
+		auto light = it->downcast<Light>();
+		if (light->getLightType() == LightType::LightTypeAmbient ||
+			light->getLightType() == LightType::LightTypeEnvironment)
 			continue;
 
 		if (!light->getGlobalIllumination())
@@ -553,9 +536,6 @@ DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, Graphic
 			break;
 		}
 	}
-
-	if (!hasIndirectLight)
-		return;
 
 	this->computeDepthDerivBuffer(pipeline, _deferredDepthLinearMap, _mrsiiDepthDerivViews);
 	this->computeNormalDerivBuffer(pipeline, _deferredGbuffer2Map, _mrsiiNormalDerivViews);
@@ -735,67 +715,6 @@ DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const Grap
 	pipeline.drawScreenQuad(*_deferredCopyOnly);
 }
 
-void
-DeferredLightingPipeline::computeSunColor(const float3& L, float3& sunColor, float3& ambientColor) noexcept
-{
-	const auto& setting = _pipelineManager->getRenderSetting();
-
-	auto VerticalAirMass = [](const float2& scaleHeight, float height) -> float2
-	{
-		return scaleHeight * math::exp(-height / scaleHeight);
-	};
-
-	auto ChapmanOrtho = [](const float2 &x2) noexcept -> float2
-	{
-		static const float sqrPI_2 = (std::sqrt(M_PI / 2));
-		float2 sqrtX = math::sqrt(x2);
-		return sqrPI_2 * (float2::One / (2.f * sqrtX) + sqrtX);
-	};
-
-	auto ChapmanRising = [ChapmanOrtho](const float2 &x2, float cosChi) noexcept -> float2
-	{
-		float2 chOrtho = ChapmanOrtho(x2);
-		return chOrtho / ((chOrtho - float2::One) * cosChi + float2::One);
-	};
-
-	auto ChapmanFunction = [&](float radius, const float2& scaleHeight, float height, const float3& up, const float3 &L) -> float2
-	{
-		float cosTheta = math::dot(up, L);
-		if (cosTheta >= 0.f)
-		{
-			float2 x2 = (height + radius) / scaleHeight;
-			return VerticalAirMass(scaleHeight, height) * ChapmanRising(x2, cosTheta);
-		}
-		else
-		{
-			float sinTheta = std::sqrt(1.f - cosTheta * cosTheta);
-			float h0 = (height + radius) * sinTheta - radius;
-			float2 x0 = float2(h0 + radius) / scaleHeight;
-			float2 x2 = (height + radius) / scaleHeight;
-			float2 ch = ChapmanRising(x2, -cosTheta);
-			float2 orthox0 = ChapmanOrtho(x0);
-			return VerticalAirMass(scaleHeight, h0) * (2.f * orthox0) - VerticalAirMass(scaleHeight, height) * ch;
-		}
-	};
-
-	float2 opticalDepthAtmosp = ChapmanFunction(setting.earthRadius.x, setting.earthScaleHeight, 0, float3::UnitY, L);
-
-	float3 rlghExtCoeff = math::max((float3&)setting.rayleighExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
-	float3 rlghOpticalDepth = rlghExtCoeff * opticalDepthAtmosp.x;
-
-	float3 mieExtCoeff = math::max((float3&)setting.mieExtinctionCoeff, float3(1e-8f, 1e-8f, 1e-8f));
-	float3 mieOpticalDepth = mieExtCoeff * opticalDepthAtmosp.y;
-
-	float3 totalExtinction = math::exp(-(rlghOpticalDepth + mieOpticalDepth));
-
-	sunColor = totalExtinction;
-
-	float zenithFactor = std::min(std::max(L.y, 0.0f), 1.0f);
-	ambientColor.x = zenithFactor * 0.15f;
-	ambientColor.y = zenithFactor * 0.1f;
-	ambientColor.z = std::max(0.05f, zenithFactor * 0.25f);
-}
-
 bool
 DeferredLightingPipeline::setupSemantic(RenderPipeline& pipeline) noexcept
 {
@@ -823,10 +742,9 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_deferredDirectionalLightShadow = _deferredLighting->getTech("DeferredDirectionalLightShadow"); if (!_deferredDirectionalLightShadow) return false;
 	_deferredSpotLight = _deferredLighting->getTech("DeferredSpotLight"); if (!_deferredSpotLight) return false;
 	_deferredSpotLightShadow = _deferredLighting->getTech("DeferredSpotLightShadow"); if (!_deferredSpotLightShadow) return false;
+	_deferredEnvironmentLighting = _deferredLighting->getTech("DeferredEnvironmentLighting"); if (!_deferredEnvironmentLighting) return false;
 	_deferredShadingOpaques = _deferredLighting->getTech("DeferredShadingOpaques"); if (!_deferredShadingOpaques) return false;
 	_deferredShadingTransparents = _deferredLighting->getTech("DeferredShadingTransparents"); if (!_deferredShadingTransparents) return false;
-	_deferredShadingOpaquesWithSkyLighting = _deferredLighting->getTech("DeferredShadingOpaquesWithSkyLighting"); if (!_deferredShadingOpaquesWithSkyLighting) return false;
-	_deferredShadingTransparentsWithSkyLighting = _deferredLighting->getTech("DeferredShadingTransparentsWithSkyLighting"); if (!_deferredShadingTransparentsWithSkyLighting) return false;
 	_deferredCopyOnly = _deferredLighting->getTech("DeferredCopyOnly"); if (!_deferredCopyOnly) return false;
 
 	_texMRT0 = _deferredLighting->getParameter("texMRT0"); if (!_texMRT0) return false;
@@ -1230,6 +1148,24 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 	deferredSwapDesc.setGraphicsFramebufferLayout(_deferredShadingImageLayout);
 	_deferredSwapView = pipeline.createFramebuffer(deferredSwapDesc);
 	if (!_deferredSwapView)
+		return false;
+
+	return true;
+}
+
+bool 
+DeferredLightingPipeline::setupMRSII(RenderPipeline& pipeline) noexcept
+{
+	if (!this->setupMRSIIMaterials(*_pipeline))
+		return false;
+
+	if (!this->setupMRSIITextures(*_pipeline))
+		return false;
+
+	if (!this->setupMRSIIRenderTextureLayouts(*_pipeline))
+		return false;
+
+	if (!this->setupMRSIIRenderTextures(*_pipeline))
 		return false;
 
 	return true;

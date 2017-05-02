@@ -206,8 +206,8 @@ SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/fimic.cpp
     ${SOURCE_PATH}/light_shaft.h
     ${SOURCE_PATH}/light_shaft.cpp
-    ${SOURCE_PATH}/ssao.h
-    ${SOURCE_PATH}/ssao.cpp
+    ${SOURCE_PATH}/ssdo.h
+    ${SOURCE_PATH}/ssdo.cpp
     ${SOURCE_PATH}/ssr.h
     ${SOURCE_PATH}/ssr.cpp
     ${SOURCE_PATH}/ssss.h

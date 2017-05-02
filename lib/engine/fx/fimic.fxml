@@ -36,6 +36,20 @@
                 return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
             }
 
+            float TonemappingUncharted2Inverse(float x) 
+            {
+                float A = 0.22;
+                float B = 0.30;
+                float C = 0.10;
+                float D = 0.20;
+                float E = 0.01;
+                float F = 0.30;
+                float W = 11.2;
+                float q = B*(F*(C-x) - E);
+                float d = A*(F*(x - 1.0) + E);
+                return (q -sqrt(q*q - 4.0*D*F*F*x*d)) / (2.0*d);
+            }
+
             float3 FilmicTonemap(float3 color, float exposure)
             {
                 #if TONEMAP_OPERATOR == TONEMAP_LINEAR

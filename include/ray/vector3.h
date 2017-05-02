@@ -591,6 +591,15 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector3t<T> randomVector3()
+	{
+		float z = 2.0f * std::rand() / RAND_MAX - 1.0f;
+		float t = 2.0f * std::rand() / RAND_MAX * M_PI;
+		float r = std::sqrt(1.0f - z * z);
+		return Vector3t<T>(r * cos(t), r * sin(t), z);
+	}
+
+	template<typename T>
 	inline Vector3t<T> linear2srgb(const Vector3t<T>& srgb)
 	{
 		const float ALPHA = 0.055f;

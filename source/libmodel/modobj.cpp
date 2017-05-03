@@ -103,6 +103,12 @@ ObjHandler::doCanRead(StreamReader& stream) const noexcept
 	return SearchFileHeaderForToken(&stream, pTokens, 2);
 }
 
+bool 
+ObjHandler::doCanSave(ModelType type) const noexcept
+{
+	return false;
+}
+
 bool
 ObjHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {

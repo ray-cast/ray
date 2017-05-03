@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,30 +34,31 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MODVMD_H_
-#define _H_MODVMD_H_
+#include "modpmx.h"
+#include <ray/fstream.h>
 
-#include <ray/model.h>
-
-_NAME_BEGIN
-
-class VMDHandler final : public ModelHandler
+int main(int argc, char** argv)
 {
-public:
-	VMDHandler() noexcept;
-	~VMDHandler() noexcept;
+	std::string filepath = argv[1];
+	if (filepath.empty())
+		return 0;
 
-	bool doCanRead(StreamReader& stream) const noexcept;
-	bool doCanSave(ModelType type) const noexcept;
+	ray::ifstream fileRead;
+	if (!fileRead.open(filepath))
+		return 0;
 
-	bool doLoad(Model& image, StreamReader& stream) noexcept;
-	bool doSave(Model& image, StreamWrite& stream) noexcept;
+	ray::PMXHandler model;
+	if (model.doCanRead(fileRead))
+	{
+		model.doLoad(fileRead);
+		model.computePlanarUnwrap();
 
-private:
-	VMDHandler(const VMDHandler&) = delete;
-	VMDHandler& operator=(const VMDHandler&) = delete;
-};
+		ray::ofstream fileWrite;
+		if (!fileWrite.open(filepath + ".pmx"))
+			return 0;
 
-_NAME_END
+		model.doSave(fileWrite);
+	}
 
-#endif
+	return 0;
+}

@@ -380,6 +380,15 @@ PMDHandler::doCanRead(StreamReader& stream) const noexcept
 	return false;
 }
 
+bool 
+PMDHandler::doCanSave(ModelType type) const noexcept
+{
+	if (type == ModelType::MT_PMD)
+		return true;
+	else
+		return false;
+}
+
 bool
 PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {

@@ -225,7 +225,7 @@ public:
 	void setColorArray(const Float4Array& array) noexcept;
 	void setTangentArray(const Float4Array& array) noexcept;
 	void setTangentQuatArray(const Float4Array& array) noexcept;
-	void setTexcoordArray(const Float2Array& array) noexcept;
+	void setTexcoordArray(const Float2Array& array, std::size_t n = 0) noexcept;
 	void setWeightArray(const VertexWeights& array) noexcept;
 	void setFaceArray(const UintArray& array) noexcept;
 	void setBindposes(const Float4x4Array& array) noexcept;
@@ -235,7 +235,7 @@ public:
 	void setColorArray(Float4Array&& array) noexcept;
 	void setTangentArray(Float4Array&& array) noexcept;
 	void setTangentQuatArray(Float4Array&& array) noexcept;
-	void setTexcoordArray(Float2Array&& array) noexcept;
+	void setTexcoordArray(Float2Array&& array, std::size_t n = 0) noexcept;
 	void setWeightArray(VertexWeights&& array) noexcept;
 	void setFaceArray(UintArray&& array) noexcept;
 	void setBindposes(Float4x4Array&& array) noexcept;
@@ -245,7 +245,7 @@ public:
 	Float4Array& getTangentArray() noexcept;
 	Float4Array& getTangentQuatArray() noexcept;
 	Float4Array& getColorArray() noexcept;
-	Float2Array& getTexcoordArray() noexcept;
+	Float2Array& getTexcoordArray(std::size_t n = 0) noexcept;
 	VertexWeights& getWeightArray() noexcept;
 	UintArray& getFaceArray() noexcept;
 	Float4x4Array& getBindposes() noexcept;
@@ -255,12 +255,12 @@ public:
 	const Float4Array& getTangentArray() const noexcept;
 	const Float4Array& getTangentQuatArray() const noexcept;
 	const Float4Array& getColorArray() const noexcept;
-	const Float2Array& getTexcoordArray() const noexcept;
+	const Float2Array& getTexcoordArray(std::size_t n = 0) const noexcept;
 	const VertexWeights& getWeightArray() const noexcept;
 	const Bones& getBoneArray(const Bones& array) const noexcept;
-	const InverseKinematics& getInverseKinematics() const noexcept;
 	const UintArray& getFaceArray() const noexcept;
 	const Float4x4Array& getBindposes() const noexcept;
+	const std::size_t getTexcoordNums() const noexcept;
 
 	void makeCircle(float radius, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
 	void makePlane(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
@@ -285,6 +285,7 @@ public:
 	void computeTangents() noexcept;
 	void computeTangentQuats() noexcept;
 	void computeBoundingBox() noexcept;
+	void computePlanarUnwrap(std::vector<float2>& lightmap) noexcept;
 
 	const Bound& getBoundingBox() const noexcept;
 	const Bound& getBoundingBoxDownwards() const noexcept;
@@ -298,7 +299,7 @@ private:
 	Float3Array _vertices;
 	Float3Array _normals;
 	Float4Array _colors;
-	Float2Array _texcoords;
+	Float2Array _texcoords[8];
 	Float4Array _tangent;
 	Float4Array _tangentQuat;
 	Float3Array _facesNormal;

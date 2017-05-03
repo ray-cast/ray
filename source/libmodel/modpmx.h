@@ -48,6 +48,7 @@ public:
 	~PMXHandler() noexcept;
 
 	virtual bool doCanRead(StreamReader& stream) const noexcept;
+	virtual bool doCanSave(ModelType type) const noexcept;
 
 	virtual bool doLoad(Model& model, StreamReader& stream) noexcept;
 	virtual bool doSave(Model& model, StreamWrite& stream) noexcept;

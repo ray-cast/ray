@@ -48,6 +48,7 @@ public:
 	virtual ~ModelHandler() noexcept {};
 
 	virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
+	virtual bool doCanSave(ModelType type) const noexcept = 0;
 
 	virtual bool doLoad(Model& image, StreamReader& stream) noexcept = 0;
 	virtual bool doSave(Model& image, StreamWrite& stream) noexcept = 0;

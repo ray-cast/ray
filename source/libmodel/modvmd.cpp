@@ -181,6 +181,12 @@ VMDHandler::doCanRead(StreamReader& stream) const noexcept
 	return false;
 }
 
+bool 
+VMDHandler::doCanSave(ModelType type) const noexcept
+{
+	return false;
+}
+
 bool
 VMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {

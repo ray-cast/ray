@@ -588,9 +588,9 @@ MeshProperty::setTangentQuatArray(const Float4Array& array) noexcept
 }
 
 void
-MeshProperty::setTexcoordArray(const Float2Array& array) noexcept
+MeshProperty::setTexcoordArray(const Float2Array& array, std::size_t n) noexcept
 {
-	_texcoords = array;
+	_texcoords[n] = array;
 }
 
 void
@@ -642,9 +642,9 @@ MeshProperty::setTangentQuatArray(Float4Array&& array) noexcept
 }
 
 void
-MeshProperty::setTexcoordArray(Float2Array&& array) noexcept
+MeshProperty::setTexcoordArray(Float2Array&& array, std::size_t n) noexcept
 {
-	_texcoords = std::move(array);
+	_texcoords[n] = std::move(array);
 }
 
 void
@@ -696,9 +696,9 @@ MeshProperty::getColorArray() noexcept
 }
 
 std::vector<Vector2>&
-MeshProperty::getTexcoordArray() noexcept
+MeshProperty::getTexcoordArray(std::size_t n) noexcept
 {
-	return _texcoords;
+	return _texcoords[n];
 }
 
 VertexWeights&
@@ -750,9 +750,9 @@ MeshProperty::getColorArray() const noexcept
 }
 
 const Float2Array&
-MeshProperty::getTexcoordArray() const noexcept
+MeshProperty::getTexcoordArray(std::size_t n) const noexcept
 {
-	return _texcoords;
+	return _texcoords[n];
 }
 
 const VertexWeights&
@@ -765,6 +765,19 @@ const Float4x4Array&
 MeshProperty::getBindposes() const noexcept
 {
 	return _bindposes;
+}
+
+const std::size_t 
+MeshProperty::getTexcoordNums() const noexcept
+{
+	std::size_t count = 0;
+	for (auto& it : _texcoords)
+	{
+		if (!it.empty())
+			count++;
+	}
+
+	return count;
 }
 
 const Bones&
@@ -797,10 +810,12 @@ MeshProperty::clear() noexcept
 	_vertices = Float3Array();
 	_normals = Float3Array();
 	_colors = Float4Array();
-	_texcoords = Float2Array();
 	_tangent = Float4Array();
 	_facesNormal = Float3Array();
 	_faces = UintArray();
+
+	for (std::size_t i = 0; i < 8; i++)
+		_texcoords[i] = Float2Array();
 }
 
 MeshPropertyPtr
@@ -844,7 +859,7 @@ MeshProperty::makeCircle(float radius, std::uint32_t segments, float thetaStart,
 
 		_vertices.push_back(v);
 
-		_texcoords.emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
+		_texcoords[0].emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
 	}
 
 	for (std::uint32_t i = 1; i <= segments; i++)
@@ -901,10 +916,10 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 	{
 		for (std::uint32_t ix = 0; ix < gridX; ix++)
 		{
-			_texcoords.emplace_back((float)ix / gridX, (float)(1 - (iy + 1)) / gridY);
-			_texcoords.emplace_back((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY);
-			_texcoords.emplace_back((float)ix / gridX, (float)(1 - iy) / gridY);
-			_texcoords.emplace_back((float)(ix + 1) / gridX, (float)(1 - iy) / gridY);
+			_texcoords[0].emplace_back((float)ix / gridX, (float)(1 - (iy + 1)) / gridY);
+			_texcoords[0].emplace_back((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY);
+			_texcoords[0].emplace_back((float)ix / gridX, (float)(1 - iy) / gridY);
+			_texcoords[0].emplace_back((float)(ix + 1) / gridX, (float)(1 - iy) / gridY);
 
 			std::int32_t a = static_cast<std::int32_t>(ix + gridX1 * iy);
 			std::int32_t b = static_cast<std::int32_t>(ix + gridX1 * (iy + 1));
@@ -978,7 +993,7 @@ MeshProperty::makePlane(float width, float height, float depth, std::uint32_t wi
 
 			_vertices.push_back(vec);
 			_normals.push_back(n);
-			_texcoords.emplace_back((float)ix / gridX, 1.0f - (float)iy / gridY);
+			_texcoords[0].emplace_back((float)ix / gridX, 1.0f - (float)iy / gridY);
 		}
 	}
 
@@ -1061,7 +1076,7 @@ MeshProperty::makeNoise(float width, float height, std::uint32_t widthSegments, 
 			accum -= heightHalf;
 
 			_vertices.push_back(makePosition((float)x, accum, (float)y));
-			_texcoords.push_back(Vector2((float)x, (float)y));
+			_texcoords[0].push_back(Vector2((float)x, (float)y));
 		}
 	}
 
@@ -1149,7 +1164,7 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 
 			_vertices.push_back(vertex);
 			_normals.push_back(math::normalize(vertex));
-			_texcoords.emplace_back(u, 1 - v);
+			_texcoords[0].emplace_back(u, 1 - v);
 
 			vertices.push_back((std::uint32_t)_vertices.size() - 1);
 		}
@@ -1245,8 +1260,8 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 	_normals.emplace_back(0.0f, 0.0f, 0.0f);
 	_normals.emplace_back(0.0f, 0.0f, -1.0f);
 
-	_texcoords.emplace_back(0.0f, 0.0f);
-	_texcoords.emplace_back(1.0f, 1.0f);
+	_texcoords[0].emplace_back(0.0f, 0.0f);
+	_texcoords[0].emplace_back(1.0f, 1.0f);
 
 	float segment = thetaLength / segments;
 
@@ -1265,7 +1280,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		_vertices.push_back(v);
 		_normals.push_back(math::normalize(v));
 
-		_texcoords.emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
+		_texcoords[0].emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
 	}
 
 	for (std::uint32_t i = 2; i <= segments + 1; i++)
@@ -1347,7 +1362,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 		this->_tangentQuat.resize(maxVertices);
 
 	if (hasTexcoord)
-		this->_texcoords.resize(maxVertices);
+		this->_texcoords[0].resize(maxVertices);
 
 	if (hasWeight)
 		this->_weights.resize(maxVertices);
@@ -1395,7 +1410,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			tangent_ = &child->_tangent;
 			tangentQuat_ = &child->_tangentQuat;
 			colors_ = &child->_colors;
-			texcoords_ = &child->_texcoords;
+			texcoords_ = &child->_texcoords[0];
 			weights_ = &child->_weights;
 			bindposes_ = &child->_bindposes;
 			faces_ = &child->_faces;
@@ -1407,7 +1422,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			tangent_ = &this->_tangent;
 			tangentQuat_ = &this->_tangentQuat;
 			colors_ = &this->_colors;
-			texcoords_ = &this->_texcoords;
+			texcoords_ = &this->_texcoords[0];
 			weights_ = &this->_weights;
 			bindposes_ = &this->_bindposes;
 			faces_ = &this->_faces;
@@ -1704,7 +1719,7 @@ MeshProperty::computeMorphNormals() noexcept
 void
 MeshProperty::computeTangents() noexcept
 {
-	if (!_texcoords.empty())
+	if (!_texcoords[0].empty())
 	{
 		std::vector<Vector3> tan1;
 		std::vector<Vector3> tan2;
@@ -1723,9 +1738,9 @@ MeshProperty::computeTangents() noexcept
 			auto& v2 = _vertices[f2];
 			auto& v3 = _vertices[f3];
 
-			auto& w1 = _texcoords[f1];
-			auto& w2 = _texcoords[f2];
-			auto& w3 = _texcoords[f3];
+			auto& w1 = _texcoords[0][f1];
+			auto& w2 = _texcoords[0][f2];
+			auto& w3 = _texcoords[0][f3];
 
 			auto x1 = v2.x - v1.x;
 			auto x2 = v3.x - v1.x;
@@ -1834,6 +1849,80 @@ MeshProperty::computeBoundingBox() noexcept
 		it->computeBoundingBox();
 
 		_boundingBoxChildren.encapsulate(it->getBoundingBox());
+	}
+}
+
+void 
+MeshProperty::computePlanarUnwrap(std::vector<float2>& lightmap) noexcept
+{
+	this->computeFaceNormals();
+
+	std::size_t size = _faces.size();
+
+	lightmap.resize(_vertices.size());
+
+	for (size_t i = 0; i < size; i += 3)
+	{
+		std::uint32_t a = (_faces)[i];
+		std::uint32_t b = (_faces)[i + 1];
+		std::uint32_t c = (_faces)[i + 2];
+
+		float3 polyNormal = math::abs(_facesNormal[i]);
+
+		float2 uv[3];
+
+		if (polyNormal.x > polyNormal.y &&
+			polyNormal.x > polyNormal.z)
+		{
+			uv[0].x = _vertices[a].y;
+			uv[0].y = _vertices[a].z;
+			uv[1].x = _vertices[b].y;
+			uv[1].y = _vertices[b].z;
+			uv[2].x = _vertices[c].y;
+			uv[2].y = _vertices[c].z;
+		}
+		else if (polyNormal.y > polyNormal.x &&
+				 polyNormal.y > polyNormal.z)
+		{
+			uv[0].x = _vertices[a].x;
+			uv[0].y = _vertices[a].z;
+			uv[1].x = _vertices[b].x;
+			uv[1].y = _vertices[b].z;
+			uv[2].x = _vertices[c].x;
+			uv[2].y = _vertices[c].z;
+		}
+		else
+		{
+			uv[0].x = _vertices[a].x;
+			uv[0].y = _vertices[a].y;
+			uv[1].x = _vertices[b].x;
+			uv[1].y = _vertices[b].y;
+			uv[2].x = _vertices[c].x;
+			uv[2].y = _vertices[c].y;
+		}
+
+		float2 minUV = uv[0];
+		float2 maxUV = uv[0];
+
+		for (int i = 0; i < 3; i++)
+		{
+			minUV = math::min(minUV, uv[i]);
+			maxUV = math::max(maxUV, uv[i]);
+		}
+
+		float2 delteUV = maxUV - minUV;
+
+		uv[0] -= minUV;
+		uv[1] -= minUV;
+		uv[2] -= minUV;
+
+		uv[0] /= delteUV;
+		uv[1] /= delteUV;
+		uv[2] /= delteUV;
+
+		lightmap[a] = uv[0];
+		lightmap[b] = uv[1];
+		lightmap[c] = uv[2];
 	}
 }
 

@@ -48,6 +48,7 @@ public:
 	~SDKMeshHandler() noexcept;
 
 	bool doCanRead(StreamReader& stream) const noexcept;
+	bool doCanSave(ModelType type) const noexcept;
 
 	bool doLoad(Model& model, StreamReader& stream) noexcept;
 	bool doSave(Model& model, StreamWrite& stream) noexcept;

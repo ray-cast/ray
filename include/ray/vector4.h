@@ -448,6 +448,12 @@ public:
 		return *this;
 	}
 
+	Vector4t<T>& set(const Vector2t<T>& v)
+	{
+		x = v.x; y = v.y;
+		return *this;
+	}
+
 	Vector4t<T>& set(const Vector3t<T>& v)
 	{
 		x = v.x; y = v.y; z = v.z;

@@ -64,6 +64,13 @@ Model::load(StreamReader& stream, ModelType type) noexcept
 bool
 Model::save(StreamWrite& stream, ModelType type) noexcept
 {
+	if (emptyHandler())
+		GetModelInstanceList(*this);
+
+	_Myhandler impl;
+	if (this->find(type, impl))
+		return impl->doSave(*this, stream);
+
 	return false;
 }
 
@@ -437,11 +444,13 @@ Model::removeHandler(_Myhandler handler) noexcept
 bool
 Model::find(ModelType type, _Myhandler& out) const noexcept
 {
-	std::size_t index = (std::size_t)type;
-	if (_handlers.size() < index)
+	for (auto& it : _handlers)
 	{
-		out = _handlers[index];
-		return true;
+		if (it->doCanSave(type))
+		{
+			out = it;
+			return true;
+		}
 	}
 
 	return false;

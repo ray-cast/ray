@@ -407,9 +407,9 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 	if (pmx.description.englishModelLength > 0)
 	{
-		pmx.description.englishCommentName.resize(pmx.description.englishModelLength);
+		pmx.description.englishModelName.resize(pmx.description.englishModelLength);
 
-		if (!stream.read((char*)&pmx.description.englishCommentName[0], pmx.description.englishModelLength)) return false;
+		if (!stream.read((char*)&pmx.description.englishModelName[0], pmx.description.englishModelLength)) return false;
 	}
 
 	if (!stream.read((char*)&pmx.description.japanCommentLength, sizeof(pmx.description.japanCommentLength))) return false;
@@ -1058,7 +1058,7 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 
 	if (!stream.write((char*)&pmx.description.englishModelLength, sizeof(pmx.description.englishModelLength))) return false;
 	if (pmx.description.englishModelLength)
-		if (!stream.write((char*)&pmx.description.englishCommentName[0], pmx.description.englishModelLength)) return false;
+		if (!stream.write((char*)&pmx.description.englishModelName[0], pmx.description.englishModelLength)) return false;
 
 	if (!stream.write((char*)&pmx.description.japanCommentLength, sizeof(pmx.description.japanCommentLength))) return false;
 	if (pmx.description.japanCommentLength)
@@ -1204,9 +1204,11 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 		for (auto& bone : pmx.bones)
 		{
 			if (!stream.write((char*)&bone.name.length, sizeof(bone.name.length))) return false;
-			if (!stream.write((char*)&bone.name.name, bone.name.length)) return false;
+			if (bone.name.length)
+				if (!stream.write((char*)&bone.name.name, bone.name.length)) return false;
 			if (!stream.write((char*)&bone.nameEng.length, sizeof(bone.nameEng.length))) return false;
-			if (!stream.write((char*)&bone.nameEng.name, bone.nameEng.length)) return false;
+			if (bone.nameEng.length)
+				if (!stream.write((char*)&bone.nameEng.name, bone.nameEng.length)) return false;
 
 			if (!stream.write((char*)&bone.position, sizeof(bone.position))) return false;
 			if (!stream.write((char*)&bone.Parent, pmx.header.sizeOfBone)) return false;
@@ -1270,10 +1272,12 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 	{
 		for (auto& morph : pmx.morphs)
 		{
-			if (!stream.write((char*)&morph.name.length, sizeof(morph.name.length))) return false;
+			if (morph.name.length)
+				if (!stream.write((char*)&morph.name.length, sizeof(morph.name.length))) return false;
 			if (!stream.write((char*)&morph.name.name, morph.name.length)) return false;
 			if (!stream.write((char*)&morph.nameEng.length, sizeof(morph.nameEng.length))) return false;
-			if (!stream.write((char*)&morph.nameEng.name, morph.nameEng.length)) return false;
+			if (morph.nameEng.length)
+				if (!stream.write((char*)&morph.nameEng.name, morph.nameEng.length)) return false;
 			if (!stream.write((char*)&morph.control, sizeof(morph.control))) return false;
 			if (!stream.write((char*)&morph.morphType, sizeof(morph.morphType))) return false;
 			if (!stream.write((char*)&morph.morphCount, sizeof(morph.morphCount))) return false;
@@ -1344,9 +1348,11 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 		for (auto& displayFrame : pmx.displayFrames)
 		{
 			if (!stream.write((char*)&displayFrame.name.length, sizeof(displayFrame.name.length))) return false;
-			if (!stream.write((char*)&displayFrame.name.name, displayFrame.name.length)) return false;
+			if (displayFrame.name.length)
+				if (!stream.write((char*)&displayFrame.name.name, displayFrame.name.length)) return false;
 			if (!stream.write((char*)&displayFrame.nameEng.length, sizeof(displayFrame.nameEng.length))) return false;
-			if (!stream.write((char*)&displayFrame.nameEng.name, displayFrame.nameEng.length)) return false;
+			if (displayFrame.nameEng.length)
+				if (!stream.write((char*)&displayFrame.nameEng.name, displayFrame.nameEng.length)) return false;
 			if (!stream.write((char*)&displayFrame.type, sizeof(displayFrame.type))) return false;
 			if (!stream.write((char*)&displayFrame.elementsWithinFrame, sizeof(displayFrame.elementsWithinFrame))) return false;
 
@@ -1375,9 +1381,11 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 		for (auto& rigidbody : pmx.rigidbodys)
 		{
 			if (!stream.write((char*)&rigidbody.name.length, sizeof(rigidbody.name.length))) return false;
-			if (!stream.write((char*)&rigidbody.name.name, rigidbody.name.length)) return false;
+			if (rigidbody.name.length)
+				if (!stream.write((char*)&rigidbody.name.name, rigidbody.name.length)) return false;
 			if (!stream.write((char*)&rigidbody.nameEng.length, sizeof(rigidbody.nameEng.length))) return false;
-			if (!stream.write((char*)&rigidbody.nameEng.name, rigidbody.nameEng.length)) return false;
+			if (rigidbody.nameEng.length)
+				if (!stream.write((char*)&rigidbody.nameEng.name, rigidbody.nameEng.length)) return false;
 
 			if (!stream.write((char*)&rigidbody.bone, pmx.header.sizeOfBone)) return false;
 			if (!stream.write((char*)&rigidbody.group, sizeof(rigidbody.group))) return false;
@@ -1404,9 +1412,11 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 		for (auto& joint : pmx.joints)
 		{
 			if (!stream.write((char*)&joint.name.length, sizeof(joint.name.length))) return false;
-			if (!stream.write((char*)&joint.name.name, joint.name.length)) return false;
+			if (joint.name.length)
+				if (!stream.write((char*)&joint.name.name, joint.name.length)) return false;
 			if (!stream.write((char*)&joint.nameEng.length, sizeof(joint.nameEng.length))) return false;
-			if (!stream.write((char*)&joint.nameEng.name, joint.nameEng.length)) return false;
+			if (joint.nameEng.length)
+				if (!stream.write((char*)&joint.nameEng.name, joint.nameEng.length)) return false;
 
 			if (!stream.write((char*)&joint.type, sizeof(joint.type))) return false;
 

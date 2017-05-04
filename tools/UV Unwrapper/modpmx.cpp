@@ -97,9 +97,9 @@ PMXHandler::doLoad(StreamReader& stream) noexcept
 
 	if (pmx.description.englishModelLength > 0)
 	{
-		pmx.description.englishCommentName.resize(pmx.description.englishModelLength);
+		pmx.description.englishModelName.resize(pmx.description.englishModelLength);
 
-		if (!stream.read((char*)&pmx.description.englishCommentName[0], pmx.description.englishModelLength)) return false;
+		if (!stream.read((char*)&pmx.description.englishModelName[0], pmx.description.englishModelLength)) return false;
 	}
 
 	if (!stream.read((char*)&pmx.description.japanCommentLength, sizeof(pmx.description.japanCommentLength))) return false;
@@ -523,7 +523,7 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 
 	if (!stream.write((char*)&pmx.description.englishModelLength, sizeof(pmx.description.englishModelLength))) return false;
 	if (pmx.description.englishModelLength)
-		if (!stream.write((char*)&pmx.description.englishCommentName[0], pmx.description.englishModelLength)) return false;
+		if (!stream.write((char*)&pmx.description.englishModelName[0], pmx.description.englishModelLength)) return false;
 
 	if (!stream.write((char*)&pmx.description.japanCommentLength, sizeof(pmx.description.japanCommentLength))) return false;
 	if (pmx.description.japanCommentLength)
@@ -669,9 +669,11 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 		for (auto& bone : pmx.bones)
 		{
 			if (!stream.write((char*)&bone.name.length, sizeof(bone.name.length))) return false;
-			if (!stream.write((char*)&bone.name.name, bone.name.length)) return false;
+			if (bone.name.length)
+				if (!stream.write((char*)&bone.name.name, bone.name.length)) return false;
 			if (!stream.write((char*)&bone.nameEng.length, sizeof(bone.nameEng.length))) return false;
-			if (!stream.write((char*)&bone.nameEng.name, bone.nameEng.length)) return false;
+			if (bone.nameEng.length)
+				if (!stream.write((char*)&bone.nameEng.name, bone.nameEng.length)) return false;
 
 			if (!stream.write((char*)&bone.position, sizeof(bone.position))) return false;
 			if (!stream.write((char*)&bone.Parent, pmx.header.sizeOfBone)) return false;
@@ -735,10 +737,12 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 	{
 		for (auto& morph : pmx.morphs)
 		{
+			if (morph.name.length)
 			if (!stream.write((char*)&morph.name.length, sizeof(morph.name.length))) return false;
 			if (!stream.write((char*)&morph.name.name, morph.name.length)) return false;
 			if (!stream.write((char*)&morph.nameEng.length, sizeof(morph.nameEng.length))) return false;
-			if (!stream.write((char*)&morph.nameEng.name, morph.nameEng.length)) return false;
+			if (morph.nameEng.length)
+				if (!stream.write((char*)&morph.nameEng.name, morph.nameEng.length)) return false;
 			if (!stream.write((char*)&morph.control, sizeof(morph.control))) return false;
 			if (!stream.write((char*)&morph.morphType, sizeof(morph.morphType))) return false;
 			if (!stream.write((char*)&morph.morphCount, sizeof(morph.morphCount))) return false;
@@ -809,9 +813,11 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 		for (auto& displayFrame : pmx.displayFrames)
 		{
 			if (!stream.write((char*)&displayFrame.name.length, sizeof(displayFrame.name.length))) return false;
-			if (!stream.write((char*)&displayFrame.name.name, displayFrame.name.length)) return false;
+			if (displayFrame.name.length)
+				if (!stream.write((char*)&displayFrame.name.name, displayFrame.name.length)) return false;
 			if (!stream.write((char*)&displayFrame.nameEng.length, sizeof(displayFrame.nameEng.length))) return false;
-			if (!stream.write((char*)&displayFrame.nameEng.name, displayFrame.nameEng.length)) return false;
+			if (displayFrame.nameEng.length)
+				if (!stream.write((char*)&displayFrame.nameEng.name, displayFrame.nameEng.length)) return false;
 			if (!stream.write((char*)&displayFrame.type, sizeof(displayFrame.type))) return false;
 			if (!stream.write((char*)&displayFrame.elementsWithinFrame, sizeof(displayFrame.elementsWithinFrame))) return false;
 
@@ -840,9 +846,11 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 		for (auto& rigidbody : pmx.rigidbodys)
 		{
 			if (!stream.write((char*)&rigidbody.name.length, sizeof(rigidbody.name.length))) return false;
-			if (!stream.write((char*)&rigidbody.name.name, rigidbody.name.length)) return false;
+			if (rigidbody.name.length)
+				if (!stream.write((char*)&rigidbody.name.name, rigidbody.name.length)) return false;
 			if (!stream.write((char*)&rigidbody.nameEng.length, sizeof(rigidbody.nameEng.length))) return false;
-			if (!stream.write((char*)&rigidbody.nameEng.name, rigidbody.nameEng.length)) return false;
+			if (rigidbody.nameEng.length)
+				if (!stream.write((char*)&rigidbody.nameEng.name, rigidbody.nameEng.length)) return false;
 
 			if (!stream.write((char*)&rigidbody.bone, pmx.header.sizeOfBone)) return false;
 			if (!stream.write((char*)&rigidbody.group, sizeof(rigidbody.group))) return false;
@@ -869,9 +877,11 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 		for (auto& joint : pmx.joints)
 		{
 			if (!stream.write((char*)&joint.name.length, sizeof(joint.name.length))) return false;
-			if (!stream.write((char*)&joint.name.name, joint.name.length)) return false;
+			if (joint.name.length)
+				if (!stream.write((char*)&joint.name.name, joint.name.length)) return false;
 			if (!stream.write((char*)&joint.nameEng.length, sizeof(joint.nameEng.length))) return false;
-			if (!stream.write((char*)&joint.nameEng.name, joint.nameEng.length)) return false;
+			if (joint.nameEng.length)
+				if (!stream.write((char*)&joint.nameEng.name, joint.nameEng.length)) return false;
 
 			if (!stream.write((char*)&joint.type, sizeof(joint.type))) return false;
 
@@ -916,8 +926,7 @@ PMXHandler::computeFaceNormals() noexcept
 {
 	_facesNormal.resize(pmx.numIndices / 3);
 
-	std::size_t size = pmx.numIndices;
-	for (std::size_t i = 0; i < size; i += 3)
+	for (std::size_t i = 0; i < pmx.numIndices; i += 3)
 	{
 		std::size_t f1 = getFace(i);
 		std::size_t f2 = getFace(i + 1);
@@ -937,9 +946,46 @@ PMXHandler::computeFaceNormals() noexcept
 }
 
 void
+PMXHandler::computeVertricesNormals() noexcept
+{
+	for (size_t i = 0; i < pmx.numVertices; i++)
+	{
+		pmx.vertices[i].normal = ray::float3::Zero;
+	}
+
+	for (size_t i = 0; i < pmx.numIndices; i += 3)
+	{
+		std::uint32_t a = getFace(i);
+		std::uint32_t b = getFace(i + 1);
+		std::uint32_t c = getFace(i + 2);
+
+		pmx.vertices[a].normal += _facesNormal[i / 3];
+		pmx.vertices[b].normal += _facesNormal[i / 3];
+		pmx.vertices[c].normal += _facesNormal[i / 3];
+	}
+
+	for (size_t i = 0; i < pmx.numVertices; i++)
+	{
+		pmx.vertices[i].normal = math::normalize(pmx.vertices[i].normal);
+	}
+}
+
+void
+PMXHandler::computeBoundingBox(Bound& boundingBox) noexcept
+{
+	boundingBox.reset();
+
+	for (size_t i = 0; i < pmx.numVertices; i++)
+		boundingBox.encapsulate(pmx.vertices[i].position);
+}
+
+void
 PMXHandler::computePlanarUnwrap() noexcept
 {
 	this->computeFaceNormals();
+
+	Bound boundingBox;
+	this->computeBoundingBox(boundingBox);
 
 	pmx.header.addUVCount = 1;
 
@@ -955,30 +1001,21 @@ PMXHandler::computePlanarUnwrap() noexcept
 
 		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
 		{
-			uv[0].x = pmx.vertices[a].position.y;
-			uv[0].y = pmx.vertices[a].position.z;
-			uv[1].x = pmx.vertices[b].position.y;
-			uv[1].y = pmx.vertices[b].position.z;
-			uv[2].x = pmx.vertices[c].position.y;
-			uv[2].y = pmx.vertices[c].position.z;
+			uv[0] = pmx.vertices[a].position.yz();
+			uv[1] = pmx.vertices[b].position.yz();
+			uv[2] = pmx.vertices[c].position.yz();
 		}
 		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
 		{
-			uv[0].x = pmx.vertices[a].position.x;
-			uv[0].y = pmx.vertices[a].position.z;
-			uv[1].x = pmx.vertices[b].position.x;
-			uv[1].y = pmx.vertices[b].position.z;
-			uv[2].x = pmx.vertices[c].position.x;
-			uv[2].y = pmx.vertices[c].position.z;
+			uv[0] = pmx.vertices[a].position.xz();
+			uv[1] = pmx.vertices[b].position.xz();
+			uv[2] = pmx.vertices[c].position.xz();
 		}
 		else
 		{
-			uv[0].x = pmx.vertices[a].position.x;
-			uv[0].y = pmx.vertices[a].position.y;
-			uv[1].x = pmx.vertices[b].position.x;
-			uv[1].y = pmx.vertices[b].position.y;
-			uv[2].x = pmx.vertices[c].position.x;
-			uv[2].y = pmx.vertices[c].position.y;
+			uv[0] = pmx.vertices[a].position.xy();
+			uv[1] = pmx.vertices[b].position.xy();
+			uv[2] = pmx.vertices[c].position.xy();
 		}
 
 		float2 minUV = uv[0];
@@ -990,15 +1027,15 @@ PMXHandler::computePlanarUnwrap() noexcept
 			maxUV = math::max(maxUV, uv[i]);
 		}
 
-		float2 delteUV = maxUV - minUV;
+		float2 deltaUV = maxUV - minUV;
 
 		uv[0] -= minUV;
 		uv[1] -= minUV;
 		uv[2] -= minUV;
 
-		uv[0] /= delteUV;
-		uv[1] /= delteUV;
-		uv[2] /= delteUV;
+		uv[0] /= deltaUV;
+		uv[1] /= deltaUV;
+		uv[2] /= deltaUV;
 
 		pmx.vertices[a].addCoord.set(uv[0]);
 		pmx.vertices[b].addCoord.set(uv[1]);

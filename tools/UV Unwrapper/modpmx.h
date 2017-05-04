@@ -351,6 +351,22 @@ struct PMX
 	std::vector<PMX_Joint> joints;
 };
 
+struct Quadrilateral
+{
+	float2 edge;
+	float2 *p1, *p2, *p3, *p4;
+
+	float getArea() const
+	{
+		return edge.x*edge.y;
+	}
+
+	bool operator < (const Quadrilateral& a) const
+	{
+		return getArea() > a.getArea();
+	}
+};
+
 class PMXHandler
 {
 public:
@@ -364,7 +380,9 @@ public:
 	bool doSave(StreamWrite& stream) noexcept;
 
 	void computeFaceNormals() noexcept;
+	void computeVertricesNormals() noexcept;
 	void computePlanarUnwrap() noexcept;
+	void computeBoundingBox(Bound& boundingBox) noexcept;
 
 	std::size_t getFace(std::size_t n) noexcept;
 

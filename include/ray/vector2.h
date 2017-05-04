@@ -87,6 +87,7 @@ public:
 
     void set(T val) noexcept { x = y = val; }
     void set(T xx, T yy) noexcept { x = xx; y = yy; }
+	void set(const Vector2t<T>& v) noexcept { x = v.x; y = v.y; }
 
     reference getComponent(unsigned char index) noexcept
     {

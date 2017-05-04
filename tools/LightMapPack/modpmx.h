@@ -93,18 +93,18 @@ enum MorphType
 
 struct PMX_Header
 {
-	PMX_uint8_t magic[3];  // 始终为PMX
-	PMX_uint8_t offset;    // 始终为 0x20
-	PMX_Float   version;   // 版本
-	PMX_uint8_t dataSize;  // 始终 0x08
-	PMX_uint8_t encode;    // 0x00 UTF-16(LE) 0x01 UTF-8
-	PMX_uint8_t addUVCount;     // 追加的UV ( 1 ~ 4 )
-	PMX_uint8_t sizeOfVertex;   // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfTexture;  // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfMaterial; // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfBone;     // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfMorph;    // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfBody;     // ( 1 or 2 or 4 )
+	PMX_uint8_t magic[3];
+	PMX_uint8_t offset;
+	PMX_Float   version;
+	PMX_uint8_t dataSize;
+	PMX_uint8_t encode;
+	PMX_uint8_t addUVCount;
+	PMX_uint8_t sizeOfVertex;
+	PMX_uint8_t sizeOfTexture;
+	PMX_uint8_t sizeOfMaterial;
+	PMX_uint8_t sizeOfBone;
+	PMX_uint8_t sizeOfMorph;
+	PMX_uint8_t sizeOfBody;
 };
 
 #pragma pack(pop)
@@ -143,13 +143,13 @@ struct PMX_BoneWeight
 
 struct PMX_Vertex
 {
-	PMX_Vector3 position;  // 顶点坐标
-	PMX_Vector3 normal;    // 顶点法线
-	PMX_Vector2 coord;     // 顶点贴图坐标
-	PMX_Vector4 addCoord;  // 附加纹理坐标
-	PMX_uint8_t type;      // 变形方式 0:BDEF1 1:BDEF2 2:BDEF4 3:SDEF
-	PMX_BoneWeight weight; // 骨骼
-	PMX_Float   edge;      // 倍率
+	PMX_Vector3 position;
+	PMX_Vector3 normal;
+	PMX_Vector2 coord;
+	PMX_Vector4 addCoord[4];
+	PMX_uint8_t type;
+	PMX_BoneWeight weight;
+	PMX_Float   edge;
 };
 
 typedef PMX_uint8_t PMX_Index; //顶点索引
@@ -351,9 +351,9 @@ struct PMX
 	std::vector<PMX_Joint> joints;
 };
 
-struct Quadrilateral
+struct LightMapQuad
 {
-	float2 edge;
+	float2 edge, offset;
 	float2 *p1, *p2, *p3, *p4;
 
 	float getArea() const
@@ -361,9 +361,28 @@ struct Quadrilateral
 		return edge.x*edge.y;
 	}
 
-	bool operator < (const Quadrilateral& a) const
+	bool operator < (const LightMapQuad& a) const
 	{
 		return getArea() > a.getArea();
+	}
+};
+
+
+struct LightMapNode
+{
+	LightMapNode *child[2];
+	float4 rect;
+
+	LightMapNode()
+	{
+		child[0] = nullptr;
+		child[1] = nullptr;
+		rect = float4(0.0, 0.0, 1.0, 1.0);
+	}
+	~LightMapNode()
+	{
+		delete child[0];
+		delete child[1];
 	}
 };
 
@@ -382,6 +401,7 @@ public:
 	void computeFaceNormals() noexcept;
 	void computeVertricesNormals() noexcept;
 	void computePlanarUnwrap() noexcept;
+	void computeLightmapPack() noexcept;
 	void computeBoundingBox(Bound& boundingBox) noexcept;
 
 	std::size_t getFace(std::size_t n) noexcept;

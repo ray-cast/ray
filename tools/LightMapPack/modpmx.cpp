@@ -540,7 +540,7 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 		{
 			if (pmx.header.addUVCount > 0)
 			{
-				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord);
+				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord[0]) * pmx.header.addUVCount;
 				if (!stream.write((char*)&vertex.position, size)) return false;
 			}
 			else
@@ -989,6 +989,16 @@ PMXHandler::computePlanarUnwrap() noexcept
 
 	pmx.header.addUVCount = 1;
 
+	float2 minUV[3];
+	float2 maxUV[3];
+
+	minUV[0].set(FLT_MAX);
+	minUV[1].set(FLT_MAX);
+	minUV[2].set(FLT_MAX);
+	maxUV[0].set(-FLT_MAX);
+	maxUV[1].set(-FLT_MAX);
+	maxUV[2].set(-FLT_MAX);
+
 	for (size_t i = 0; i < pmx.numIndices; i += 3)
 	{
 		std::uint32_t a = getFace(i);
@@ -999,14 +1009,17 @@ PMXHandler::computePlanarUnwrap() noexcept
 
 		float2 uv[3];
 
+		int flag = 0;
 		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
 		{
+			flag = 1;
 			uv[0] = pmx.vertices[a].position.yz();
 			uv[1] = pmx.vertices[b].position.yz();
 			uv[2] = pmx.vertices[c].position.yz();
 		}
 		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
 		{
+			flag = 2;
 			uv[0] = pmx.vertices[a].position.xz();
 			uv[1] = pmx.vertices[b].position.xz();
 			uv[2] = pmx.vertices[c].position.xz();
@@ -1018,29 +1031,65 @@ PMXHandler::computePlanarUnwrap() noexcept
 			uv[2] = pmx.vertices[c].position.xy();
 		}
 
-		float2 minUV = uv[0];
-		float2 maxUV = uv[0];
-
 		for (int i = 0; i < 3; i++)
 		{
-			minUV = math::min(minUV, uv[i]);
-			maxUV = math::max(maxUV, uv[i]);
+			minUV[flag] = math::min(minUV[flag], uv[i]);
+			maxUV[flag] = math::max(maxUV[flag], uv[i]);
+		}
+	}
+
+	for (size_t i = 0; i < pmx.numIndices; i += 3)
+	{
+		std::uint32_t a = getFace(i);
+		std::uint32_t b = getFace(i + 1);
+		std::uint32_t c = getFace(i + 2);
+
+		float3 polyNormal = math::abs(_facesNormal[i / 3]);
+
+		float2 uv[3];
+
+		int flag = 0;
+		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
+		{
+			flag = 1;
+			uv[0] = pmx.vertices[a].position.yz();
+			uv[1] = pmx.vertices[b].position.yz();
+			uv[2] = pmx.vertices[c].position.yz();
+		}
+		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
+		{
+			flag = 2;
+			uv[0] = pmx.vertices[a].position.xz();
+			uv[1] = pmx.vertices[b].position.xz();
+			uv[2] = pmx.vertices[c].position.xz();
+		}
+		else
+		{
+			uv[0] = pmx.vertices[a].position.xy();
+			uv[1] = pmx.vertices[b].position.xy();
+			uv[2] = pmx.vertices[c].position.xy();
 		}
 
-		float2 deltaUV = maxUV - minUV;
+		float2 deltaUV = maxUV[flag] - minUV[flag];
 
-		uv[0] -= minUV;
-		uv[1] -= minUV;
-		uv[2] -= minUV;
+		uv[0] -= minUV[flag];
+		uv[1] -= minUV[flag];
+		uv[2] -= minUV[flag];
 
 		uv[0] /= deltaUV;
 		uv[1] /= deltaUV;
 		uv[2] /= deltaUV;
 
-		pmx.vertices[a].addCoord.set(uv[0]);
-		pmx.vertices[b].addCoord.set(uv[1]);
-		pmx.vertices[c].addCoord.set(uv[2]);
+		pmx.vertices[a].addCoord[0].set(uv[0]);
+		pmx.vertices[b].addCoord[0].set(uv[1]);
+		pmx.vertices[c].addCoord[0].set(uv[2]);
 	}
+}
+
+void 
+PMXHandler::computeLightmapPack() noexcept
+{
+
 }
 
 _NAME_END

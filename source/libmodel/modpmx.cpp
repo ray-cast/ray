@@ -1046,8 +1046,6 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 bool
 PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 {
-	return false;
-
 	PMX pmx;
 
 	if (!stream.write((char*)&pmx.header, sizeof(pmx.header))) return false;

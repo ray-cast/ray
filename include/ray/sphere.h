@@ -200,6 +200,11 @@ public:
 		return d.length2() - _radius * _radius;
 	}
 
+	AABBt<T>& aabb() noexcept
+	{
+		return _box;
+	}
+
 	const AABBt<T>& aabb() const noexcept
 	{
 		return _box;

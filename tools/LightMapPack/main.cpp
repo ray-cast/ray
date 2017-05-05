@@ -37,6 +37,8 @@
 #include "modpmx.h"
 #include <ray/fstream.h>
 
+#include "lightmapper.h"
+
 int main(int argc, char** argv)
 {
 	std::string filepath = argv[1];
@@ -51,7 +53,7 @@ int main(int argc, char** argv)
 	if (model.doCanRead(fileRead))
 	{
 		model.doLoad(fileRead);
-		model.computePlanarUnwrap();
+		model.computeLightmapPack();
 
 		ray::ofstream fileWrite;
 		if (!fileWrite.open(filepath + ".pmx"))

@@ -351,7 +351,7 @@ struct PMX
 	std::vector<PMX_Joint> joints;
 };
 
-struct LightMapQuad
+struct LightMapItem
 {
 	float2 edge, offset;
 	float2 *p1, *p2, *p3, *p4;
@@ -361,7 +361,7 @@ struct LightMapQuad
 		return edge.x*edge.y;
 	}
 
-	bool operator < (const LightMapQuad& a) const
+	bool operator < (const LightMapItem& a) const
 	{
 		return getArea() > a.getArea();
 	}
@@ -370,19 +370,20 @@ struct LightMapQuad
 
 struct LightMapNode
 {
-	LightMapNode *child[2];
+	LightMapNode* left;
+	LightMapNode* right;
 	float4 rect;
 
 	LightMapNode()
 	{
-		child[0] = nullptr;
-		child[1] = nullptr;
+		left = nullptr;
+		right = nullptr;
 		rect = float4(0.0, 0.0, 1.0, 1.0);
 	}
 	~LightMapNode()
 	{
-		delete child[0];
-		delete child[1];
+		delete left;
+		delete right;
 	}
 };
 
@@ -400,11 +401,13 @@ public:
 
 	void computeFaceNormals() noexcept;
 	void computeVertricesNormals() noexcept;
-	void computePlanarUnwrap() noexcept;
 	void computeLightmapPack() noexcept;
 	void computeBoundingBox(Bound& boundingBox) noexcept;
 
 	std::size_t getFace(std::size_t n) noexcept;
+
+private:
+	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;
 
 private:
 	PMXHandler(const PMXHandler&) = delete;

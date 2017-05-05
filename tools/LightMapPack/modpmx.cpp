@@ -980,7 +980,7 @@ PMXHandler::computeBoundingBox(Bound& boundingBox) noexcept
 }
 
 void
-PMXHandler::computePlanarUnwrap() noexcept
+PMXHandler::computeLightmapPack() noexcept
 {
 	this->computeFaceNormals();
 
@@ -1086,10 +1086,57 @@ PMXHandler::computePlanarUnwrap() noexcept
 	}
 }
 
-void 
-PMXHandler::computeLightmapPack() noexcept
+LightMapNode*
+PMXHandler::insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept
 {
+	if (node->left && node->right)
+	{
+		auto next = this->insertLightMapItem(node->left, item);
+		return next ? next : insertLightMapItem(node->right, item);
+	}
+	else
+	{
+		if (item.edge.x > node->rect.z || item.edge.y > node->rect.w)
+		{
+			return nullptr;
+		}
 
+		if (item.edge.x == node->rect.z && item.edge.y == node->rect.w)
+		{
+			float2 offset(node->rect.x, node->rect.y);
+			*item.p1 += offset;
+			*item.p2 += offset;
+			*item.p3 += offset;
+			*item.p4 += offset;
+			return node;
+		}
+
+		node->left = new LightMapNode;
+		node->right = new LightMapNode;
+
+		float dw = node->rect.z - item.edge.x;
+		float dh = node->rect.w - item.edge.y;
+
+		if (dw > dh)
+		{
+			node->left->rect = float4(node->rect.x, node->rect.y + item.edge.y, item.edge.x, node->rect.w - item.edge.y);
+			node->right->rect = float4(node->rect.x + item.edge.x, node->rect.y, node->rect.z - item.edge.x, node->rect.w);
+		}
+		else
+		{
+			node->left->rect = float4(node->rect.x + item.edge.x, node->rect.y, node->rect.z - item.edge.x, item.edge.y);
+			node->right->rect = float4(node->rect.x, node->rect.y + item.edge.y, node->rect.z, node->rect.w - item.edge.y);
+		}
+	}
+
+	float2 offset(node->rect.x, node->rect.y);
+	item.offset = offset;
+	*(item.p1) += offset;
+	*(item.p2) += offset;
+	*(item.p3) += offset;
+	*(item.p4) += offset;
+
+	return node;
 }
 
 _NAME_END

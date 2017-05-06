@@ -35,6 +35,15 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "modpmx.h"
+#include <chrono>
+#include <ctime>
+#include <cinttypes>
+#include <iomanip>
+#include <sstream>
+
+#define LIGHTMAPPER_IMPLEMENTATION
+#include <gl\glew.h>
+#include "lightmapper.h"
 
 _NAME_BEGIN
 
@@ -1031,10 +1040,10 @@ PMXHandler::computeLightmapPack() noexcept
 			uv[2] = pmx.vertices[c].position.xy();
 		}
 
-		for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
 		{
-			minUV[flag] = math::min(minUV[flag], uv[i]);
-			maxUV[flag] = math::max(maxUV[flag], uv[i]);
+			minUV[flag] = math::min(minUV[flag], uv[j]);
+			maxUV[flag] = math::max(maxUV[flag], uv[j]);
 		}
 	}
 
@@ -1137,6 +1146,297 @@ PMXHandler::insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept
 	*(item.p4) += offset;
 
 	return node;
+}
+
+static GLuint loadShader(GLenum type, const char *source)
+{
+	GLuint shader = glCreateShader(type);
+	if (shader == 0)
+	{
+		fprintf(stderr, "Could not create shader!\n");
+		return 0;
+	}
+	glShaderSource(shader, 1, &source, NULL);
+	glCompileShader(shader);
+	GLint compiled;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+	if (!compiled)
+	{
+		fprintf(stderr, "Could not compile shader!\n");
+		GLint infoLen = 0;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
+		if (infoLen)
+		{
+			char* infoLog = (char*)malloc(infoLen);
+			glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+			fprintf(stderr, "%s\n", infoLog);
+			free(infoLog);
+		}
+		glDeleteShader(shader);
+		return 0;
+	}
+	return shader;
+}
+
+static GLuint loadProgram(const char *vp, const char *fp, const char **attributes, int attributeCount)
+{
+	GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vp);
+	if (!vertexShader)
+		return 0;
+	GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fp);
+	if (!fragmentShader)
+	{
+		glDeleteShader(vertexShader);
+		return 0;
+	}
+
+	GLuint program = glCreateProgram();
+	if (program == 0)
+	{
+		fprintf(stderr, "Could not create program!\n");
+		return 0;
+	}
+	glAttachShader(program, vertexShader);
+	glAttachShader(program, fragmentShader);
+
+	for (int i = 0; i < attributeCount; i++)
+		glBindAttribLocation(program, i, attributes[i]);
+
+	glLinkProgram(program);
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+	GLint linked;
+	glGetProgramiv(program, GL_LINK_STATUS, &linked);
+	if (!linked)
+	{
+		fprintf(stderr, "Could not link program!\n");
+		GLint infoLen = 0;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
+		if (infoLen)
+		{
+			char* infoLog = (char*)malloc(sizeof(char) * infoLen);
+			glGetProgramInfoLog(program, infoLen, NULL, infoLog);
+			fprintf(stderr, "%s\n", infoLog);
+			free(infoLog);
+		}
+		glDeleteProgram(program);
+		return 0;
+	}
+	return program;
+}
+
+typedef struct
+{
+	GLuint program;
+	GLint u_lightmap;
+	GLint u_projection;
+	GLint u_view;
+
+	GLuint lightmap;
+	int w, h;
+
+	GLuint vao, vbo, ibo;
+} scene_t;
+
+void CreateScene(PMX* pmx, scene_t* scene)
+{
+	glGenBuffers(1, &scene->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, scene->vbo);
+	glBufferData(GL_ARRAY_BUFFER, pmx->vertices.size() * sizeof(PMX_Vertex), pmx->vertices.data(), GL_STATIC_DRAW);
+
+	glGenBuffers(1, &scene->ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scene->ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, pmx->indices.size(), pmx->indices.data(), GL_STATIC_DRAW);
+
+	glGenVertexArrays(1, &scene->vao);
+	glBindVertexArray(scene->vao);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PMX_Vertex), (void*)offsetof(PMX_Vertex, position));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(PMX_Vertex), (void*)offsetof(PMX_Vertex, coord));
+
+	glBindBuffer(GL_ARRAY_BUFFER, scene->vbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scene->ibo);
+
+	glBindVertexArray(0);
+
+	// create lightmap texture
+
+	glGenTextures(1, &scene->lightmap);
+	glBindTexture(GL_TEXTURE_2D, scene->lightmap);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	unsigned char emissive[] = { 0, 0, 0, 255 };
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, emissive);
+
+	// load shader
+	const char *vp =
+		"#version 150 core\n"
+		"in vec3 a_position;\n"
+		"in vec2 a_texcoord;\n"
+		"uniform mat4 u_view;\n"
+		"uniform mat4 u_projection;\n"
+		"out vec2 v_texcoord;\n"
+
+		"void main()\n"
+		"{\n"
+		"gl_Position = u_projection * (u_view * vec4(a_position, 1.0));\n"
+		"v_texcoord = a_texcoord;\n"
+		"}\n";
+
+	const char *fp =
+		"#version 150 core\n"
+		"in vec2 v_texcoord;\n"
+		"uniform sampler2D u_lightmap;\n"
+		"out vec4 o_color;\n"
+
+		"void main()\n"
+		"{\n"
+		"o_color = vec4(texture(u_lightmap, v_texcoord).rgb, gl_FrontFacing ? 1.0 : 0.0);\n"
+		"}\n";
+
+	const char *attribs[] =
+	{
+		"a_position",
+		"a_texcoord"
+	};
+
+	scene->program = loadProgram(vp, fp, attribs, 2);
+	if (!scene->program)
+	{
+		fprintf(stderr, "Error loading shader\n");
+		return;
+	}
+
+	scene->u_view = glGetUniformLocation(scene->program, "u_view");
+	scene->u_projection = glGetUniformLocation(scene->program, "u_projection");
+	scene->u_lightmap = glGetUniformLocation(scene->program, "u_lightmap");
+}
+
+void
+PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::uint8_t channel, int bounces, int margin) noexcept
+{
+	if (glewInit() != GLEW_OK)
+	{
+		std::cout << "glewInit() failed.";
+		return;
+	}
+
+	scene_t scene;
+	CreateScene(&pmx, &scene);
+
+	lm_context *ctx = lmCreate(64, 0.1f, 100.0f, 1.0, 1.0, 1.0, 1, 1e-5);
+	if (!ctx)
+	{
+		std::cout << "Could not initialize lightmapper." << std::endl;
+		exit(-1);
+	}
+
+	std::vector<std::vector<float>> lightmap;
+	std::vector<std::vector<float>> lightmapTemp;
+
+	lightmap.resize(pmx.materials.size());
+	lightmapTemp.resize(pmx.materials.size());
+
+	for (int i = 0; i < pmx.materials.size(); i++)
+	{
+		lightmap[i].resize(w * h * channel, 0);
+		lightmapTemp[i].resize(w * h * channel, 0);
+	}
+
+	for (int b = 0; b < bounces; b++)
+	{
+		std::size_t offsetFace = 0;
+		std::size_t offsetVertices = offsetof(PMX_Vertex, position);
+		std::size_t offsetTexcoord = offsetof(PMX_Vertex, coord);
+
+		for (int i = 0; i < pmx.materials.size(); i++)
+		{
+			lm_type faceType = pmx.header.sizeOfVertex == 1;
+			if (pmx.header.sizeOfVertex == 1)
+				faceType = LM_UNSIGNED_BYTE;
+			else if (pmx.header.sizeOfVertex == 2)
+				faceType = LM_UNSIGNED_SHORT;
+			else if (pmx.header.sizeOfVertex == 4)
+				faceType = LM_UNSIGNED_INT;
+
+			lmSetTargetLightmap(ctx, lightmap[i].data(), w, h, channel);
+			lmSetGeometry(ctx, float4x4::One.data(),
+				LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetVertices, sizeof(PMX_Vertex),
+				LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetTexcoord, sizeof(PMX_Vertex),
+				pmx.materials[i].FaceVertexCount, LM_UNSIGNED_SHORT, pmx.indices.data() + offsetFace);
+
+			float4x4 view, proj;
+			Viewportt<int> vp;
+
+			std::size_t baseIndex = -1;
+
+			std::time_t t1 = std::time(nullptr);
+			std::cout << "start time : "<< std::put_time(std::localtime(&t1), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
+
+			while (lmBegin(ctx, vp.ptr(), view.data(), proj.data()))
+			{
+				glViewport(vp.left, vp.top, vp.width, vp.height);
+
+				glEnable(GL_DEPTH_TEST);
+				glEnable(GL_CULL_FACE);
+
+				glUseProgram(scene.program);
+				glUniform1i(scene.u_lightmap, 0);
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, scene.lightmap);
+
+				glBindVertexArray(scene.vao);
+
+				glUniformMatrix4fv(scene.u_projection, 1, GL_FALSE, proj.ptr());
+				glUniformMatrix4fv(scene.u_view, 1, GL_FALSE, view.ptr());
+
+				glDrawElements(GL_TRIANGLES, pmx.materials[i].FaceVertexCount, GL_UNSIGNED_SHORT, 0);
+
+				lmEnd(ctx);
+
+				if (baseIndex != ctx->meshPosition.triangle.baseIndex)
+				{
+					std::cout.precision(2);
+					float processing = float(ctx->meshPosition.triangle.baseIndex + ctx->mesh.count * ctx->meshPosition.pass * bounces) / (ctx->mesh.count * ctx->meshPosition.passCount * bounces);
+					std::cout << "processing : " << processing * 100 << "%" << std::fixed;
+					std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+
+					baseIndex = ctx->meshPosition.triangle.baseIndex;
+				}
+			}
+
+			if (margin > 0)
+			{
+				lmImageSmooth(lightmap[i].data(), lightmapTemp[i].data(), w, h, channel);
+				lmImageDilate(lightmapTemp[i].data(), lightmap[i].data(), w, h, channel);
+
+				for (int j = 0; j < margin - 1; j++)
+				{
+					lmImageSmooth(lightmap[i].data(), lightmapTemp[i].data(), w, h, channel);
+					lmImageDilate(lightmapTemp[i].data(), lightmap[i].data(), w, h, channel);
+				}
+			}
+
+			std::time_t t2 = std::time(nullptr);
+			std::cout << "processing : " << "100.00%" << std::fixed << std::endl;
+			std::cout << "end time : " << std::put_time(std::localtime(&t2), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
+
+			std::ostringstream oss;
+			oss << "C:/Users/ray/Desktop/" << i << ".tga";
+
+			lmImagePower(lightmap[i].data(), w, h, channel, 1.0f / 2.2f);
+			lmImageSaveTGAf(oss.str().c_str(), lightmap[i].data(), w, h, channel);
+
+			offsetFace += pmx.materials[i].FaceVertexCount;
+		}
+	}
+
+	lmDestroy(ctx);
 }
 
 _NAME_END

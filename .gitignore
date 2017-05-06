@@ -8,6 +8,8 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
+CMakeSettings.json
+
 lib/_redist
 lib/binaries/
 contrib/gles/lib

@@ -402,6 +402,7 @@ public:
 	void computeFaceNormals() noexcept;
 	void computeVertricesNormals() noexcept;
 	void computeLightmapPack() noexcept;
+	void computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::uint8_t channel, int bounces, int margin) noexcept;
 	void computeBoundingBox(Bound& boundingBox) noexcept;
 
 	std::size_t getFace(std::size_t n) noexcept;

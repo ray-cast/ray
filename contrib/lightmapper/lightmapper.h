@@ -93,7 +93,7 @@ float lmImageMin(const float *image, int w, int h, int c, int m LM_DEFAULT_VALUE
 float lmImageMax(const float *image, int w, int h, int c, int m LM_DEFAULT_VALUE(LM_ALL_CHANNELS));                    // find the maximum value (across the specified channels)
 void lmImageAdd(float *image, int w, int h, int c, float value, int m LM_DEFAULT_VALUE(LM_ALL_CHANNELS));              // in-place add to the specified channels
 void lmImageScale(float *image, int w, int h, int c, float factor, int m LM_DEFAULT_VALUE(LM_ALL_CHANNELS));           // in-place scaling of the specified channels
-void lmImagePower(float *image, int w, int h, int c, float exponent, int m LM_DEFAULT_VALUE(LM_ALL_CHANNELS));         // in-place powf(v, exponent) of the specified channels (for gamma)
+void lmImagePower(float *image, int w, int h, int c, float exponent, int m);         // in-place powf(v, exponent) of the specified channels (for gamma)
 void lmImageDilate(const float *image, float *outImage, int w, int h, int c);                                          // widen the populated non-zero areas by 1 pixel.
 void lmImageSmooth(const float *image, float *outImage, int w, int h, int c);                                          // simple box filter on only the non-zero values.
 void lmImageDownsample(const float *image, float *outImage, int w, int h, int c);                                      // downsamples [0..w]x[0..h] to [0..w/2]x[0..h/2] by avereging only the non-zero values
@@ -1412,7 +1412,7 @@ lm_bool lmBegin(lm_context *ctx, int* outViewport4, float* outView4x4, float* ou
 					printf("%10d %6.2f%% rendered hemicubes integrated to lightmap texels.\n", rendered, 100.0f * (float)rendered / (float)total);
 					printf("%10d %6.2f%% interpolated lightmap texels.\n", interpolated, 100.0f * (float)interpolated / (float)total);
 					printf("%10d %6.2f%% wasted lightmap texels.\n", wasted, 100.0f * (float)wasted / (float)total);
-					printf("\n%17.2f%% of used texels were rendered.\n", 100.0f * (float)rendered / (float)used);
+					printf("\n%17.2f%% of used texels were rendered.\n", 100.0f * (float)rendered / (float)(used + 1e-5));
 					printf("#######################################################################\n");
 #endif
 
@@ -1485,6 +1485,15 @@ void lmImagePower(float *image, int w, int h, int c, float exponent, int m)
 		for (int j = 0; j < c; j++)
 			if (m & (1 << j))
 				image[i * c + j] = powf(image[i * c + j], exponent);
+}
+
+void lmImagePower(float *image, int w, int h, int c, float exponent)
+{
+	assert(c > 0);
+	int mask = 0;
+	for (int i = 0; i < c; i++)
+		mask |= 1 << i;
+	lmImagePower(image, w, h, c, exponent, mask);
 }
 
 void lmImageDilate(const float *image, float *outImage, int w, int h, int c)

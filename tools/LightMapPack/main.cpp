@@ -37,30 +37,48 @@
 #include "modpmx.h"
 #include <ray/fstream.h>
 
-#include "lightmapper.h"
+#include <glfw/glfw3.h>
 
 int main(int argc, char** argv)
 {
-	std::string filepath = argv[1];
-	if (filepath.empty())
-		return 0;
+	if (::glfwInit() == GL_FALSE)
+		return false;
 
-	ray::ifstream fileRead;
-	if (!fileRead.open(filepath))
-		return 0;
+#if defined(GLFW_EXPOSE_NATIVE_X11)
+	::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	::glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#else
+	::glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+#endif
+	::glfwSwapInterval(0);
 
-	ray::PMXHandler model;
-	if (model.doCanRead(fileRead))
+	auto window = ::glfwCreateWindow(800, 600, "LightMap Pack", nullptr, nullptr);
+	if (window)
 	{
-		model.doLoad(fileRead);
-		model.computeLightmapPack();
+		::glfwMakeContextCurrent(window);
 
-		ray::ofstream fileWrite;
-		if (!fileWrite.open(filepath + ".pmx"))
+		std::string filepath = argv[1];
+		if (filepath.empty())
 			return 0;
 
-		model.doSave(fileWrite);
-	}
+		ray::ifstream fileRead;
+		if (!fileRead.open(filepath))
+			return 0;
 
-	return 0;
+		ray::PMXHandler model;
+		if (model.doCanRead(fileRead))
+		{
+			model.doLoad(fileRead);
+			model.computeLightmapPackByLightmapper(2048, 2048, 1, 1, 1);
+
+			ray::ofstream fileWrite;
+			if (!fileWrite.open(filepath + ".pmx"))
+				return 0;
+
+			model.doSave(fileWrite);
+		}
+
+		return 0;
+	}
 }

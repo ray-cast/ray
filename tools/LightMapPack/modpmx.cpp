@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -76,15 +76,6 @@ PMXHandler::doCanRead(StreamReader& stream) const noexcept
 
 	stream.seekg(0, std::ios_base::beg);
 	return false;
-}
-
-bool 
-PMXHandler::doCanSave(ModelType type) const noexcept
-{
-	if (type == ModelType::MT_PMX)
-		return true;
-	else
-		return false;
 }
 
 bool
@@ -1261,8 +1252,6 @@ void CreateScene(PMX* pmx, scene_t* scene)
 
 	glBindVertexArray(0);
 
-	// create lightmap texture
-
 	glGenTextures(1, &scene->lightmap);
 	glBindTexture(GL_TEXTURE_2D, scene->lightmap);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1272,7 +1261,6 @@ void CreateScene(PMX* pmx, scene_t* scene)
 	unsigned char emissive[] = { 0, 0, 0, 255 };
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, emissive);
 
-	// load shader
 	const char *vp =
 		"#version 150 core\n"
 		"in vec3 a_position;\n"
@@ -1295,7 +1283,7 @@ void CreateScene(PMX* pmx, scene_t* scene)
 
 		"void main()\n"
 		"{\n"
-		"o_color = vec4(texture(u_lightmap, v_texcoord).rgb, gl_FrontFacing ? 1.0 : 0.0);\n"
+			"o_color = vec4(texture(u_lightmap, v_texcoord).rgb, gl_FrontFacing ? 1.0 : 0.0);\n"
 		"}\n";
 
 	const char *attribs[] =
@@ -1328,7 +1316,7 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 	scene_t scene;
 	CreateScene(&pmx, &scene);
 
-	lm_context *ctx = lmCreate(64, 0.1f, 100.0f, 1.0, 1.0, 1.0, 1, 1e-5);
+	lm_context *ctx = lmCreate(64, 0.1f, 100.0f, 1.0, 1.0, 1.0, 1, 1e-4);
 	if (!ctx)
 	{
 		std::cout << "Could not initialize lightmapper." << std::endl;
@@ -1347,93 +1335,97 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 		lightmapTemp[i].resize(w * h * channel, 0);
 	}
 
-	for (int b = 0; b < bounces; b++)
+	for (int i = 1; i < pmx.materials.size(); i++)
 	{
 		std::size_t offsetFace = 0;
 		std::size_t offsetVertices = offsetof(PMX_Vertex, position);
 		std::size_t offsetTexcoord = offsetof(PMX_Vertex, coord);
 
-		for (int i = 0; i < pmx.materials.size(); i++)
+		for (int j = 0; j < i; j++)
+			offsetFace += pmx.materials[j].FaceVertexCount * pmx.header.sizeOfVertex;
+
+		lm_type faceType;
+		if (pmx.header.sizeOfVertex == 1)
+			faceType = LM_UNSIGNED_BYTE;
+		else if (pmx.header.sizeOfVertex == 2)
+			faceType = LM_UNSIGNED_SHORT;
+		else
+			faceType = LM_UNSIGNED_INT;
+
+		GLenum glType = pmx.header.sizeOfVertex == 1;
+		if (pmx.header.sizeOfVertex == 1)
+			glType = GL_UNSIGNED_BYTE;
+		else if (pmx.header.sizeOfVertex == 2)
+			glType = GL_UNSIGNED_SHORT;
+		else
+			glType = GL_UNSIGNED_INT;
+
+		lmSetTargetLightmap(ctx, lightmap[i].data(), w, h, channel);
+		lmSetGeometry(ctx, float4x4::One.data(),
+			LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetVertices, sizeof(PMX_Vertex),
+			LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetTexcoord, sizeof(PMX_Vertex),
+			pmx.materials[i].FaceVertexCount, faceType, pmx.indices.data() + offsetFace);
+
+		float4x4 view, proj;
+		Viewportt<int> vp;
+
+		std::size_t baseIndex = -1;
+
+		std::time_t t1 = std::time(nullptr);
+		std::cout << "start time : "<< std::put_time(std::localtime(&t1), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
+
+		while (lmBegin(ctx, vp.ptr(), view.data(), proj.data()))
 		{
-			lm_type faceType = pmx.header.sizeOfVertex == 1;
-			if (pmx.header.sizeOfVertex == 1)
-				faceType = LM_UNSIGNED_BYTE;
-			else if (pmx.header.sizeOfVertex == 2)
-				faceType = LM_UNSIGNED_SHORT;
-			else if (pmx.header.sizeOfVertex == 4)
-				faceType = LM_UNSIGNED_INT;
+			glViewport(vp.left, vp.top, vp.width, vp.height);
 
-			lmSetTargetLightmap(ctx, lightmap[i].data(), w, h, channel);
-			lmSetGeometry(ctx, float4x4::One.data(),
-				LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetVertices, sizeof(PMX_Vertex),
-				LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetTexcoord, sizeof(PMX_Vertex),
-				pmx.materials[i].FaceVertexCount, LM_UNSIGNED_SHORT, pmx.indices.data() + offsetFace);
+			glEnable(GL_DEPTH_TEST);
 
-			float4x4 view, proj;
-			Viewportt<int> vp;
+			glUseProgram(scene.program);
+			glUniform1i(scene.u_lightmap, 0);
 
-			std::size_t baseIndex = -1;
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, scene.lightmap);
 
-			std::time_t t1 = std::time(nullptr);
-			std::cout << "start time : "<< std::put_time(std::localtime(&t1), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
+			glBindVertexArray(scene.vao);
 
-			while (lmBegin(ctx, vp.ptr(), view.data(), proj.data()))
+			glUniformMatrix4fv(scene.u_projection, 1, GL_FALSE, proj.ptr());
+			glUniformMatrix4fv(scene.u_view, 1, GL_FALSE, view.ptr());
+
+			glDrawElements(GL_TRIANGLES, pmx.materials[i].FaceVertexCount, glType, 0);
+
+			lmEnd(ctx);
+
+			if (baseIndex != ctx->meshPosition.triangle.baseIndex)
 			{
-				glViewport(vp.left, vp.top, vp.width, vp.height);
+				std::cout.precision(2);
+				float processing = float(ctx->meshPosition.triangle.baseIndex + ctx->mesh.count * ctx->meshPosition.pass * bounces) / (ctx->mesh.count * ctx->meshPosition.passCount * bounces);
+				std::cout << "processing : " << processing * 100 << "%" << std::fixed;
+				std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
 
-				glEnable(GL_DEPTH_TEST);
-				glEnable(GL_CULL_FACE);
-
-				glUseProgram(scene.program);
-				glUniform1i(scene.u_lightmap, 0);
-
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, scene.lightmap);
-
-				glBindVertexArray(scene.vao);
-
-				glUniformMatrix4fv(scene.u_projection, 1, GL_FALSE, proj.ptr());
-				glUniformMatrix4fv(scene.u_view, 1, GL_FALSE, view.ptr());
-
-				glDrawElements(GL_TRIANGLES, pmx.materials[i].FaceVertexCount, GL_UNSIGNED_SHORT, 0);
-
-				lmEnd(ctx);
-
-				if (baseIndex != ctx->meshPosition.triangle.baseIndex)
-				{
-					std::cout.precision(2);
-					float processing = float(ctx->meshPosition.triangle.baseIndex + ctx->mesh.count * ctx->meshPosition.pass * bounces) / (ctx->mesh.count * ctx->meshPosition.passCount * bounces);
-					std::cout << "processing : " << processing * 100 << "%" << std::fixed;
-					std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
-
-					baseIndex = ctx->meshPosition.triangle.baseIndex;
-				}
+				baseIndex = ctx->meshPosition.triangle.baseIndex;
 			}
+		}
 
-			if (margin > 0)
+		if (margin > 0)
+		{
+			lmImageSmooth(lightmap[i].data(), lightmapTemp[i].data(), w, h, channel);
+			lmImageDilate(lightmapTemp[i].data(), lightmap[i].data(), w, h, channel);
+
+			for (int j = 0; j < margin - 1; j++)
 			{
 				lmImageSmooth(lightmap[i].data(), lightmapTemp[i].data(), w, h, channel);
 				lmImageDilate(lightmapTemp[i].data(), lightmap[i].data(), w, h, channel);
-
-				for (int j = 0; j < margin - 1; j++)
-				{
-					lmImageSmooth(lightmap[i].data(), lightmapTemp[i].data(), w, h, channel);
-					lmImageDilate(lightmapTemp[i].data(), lightmap[i].data(), w, h, channel);
-				}
 			}
-
-			std::time_t t2 = std::time(nullptr);
-			std::cout << "processing : " << "100.00%" << std::fixed << std::endl;
-			std::cout << "end time : " << std::put_time(std::localtime(&t2), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
-
-			std::ostringstream oss;
-			oss << "C:/Users/ray/Desktop/" << i << ".tga";
-
-			lmImagePower(lightmap[i].data(), w, h, channel, 1.0f / 2.2f);
-			lmImageSaveTGAf(oss.str().c_str(), lightmap[i].data(), w, h, channel);
-
-			offsetFace += pmx.materials[i].FaceVertexCount;
 		}
+
+		std::time_t t2 = std::time(nullptr);
+		std::cout << "processing : " << "100.00%" << std::fixed << std::endl;
+		std::cout << "end time : " << std::put_time(std::localtime(&t2), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
+
+		std::ostringstream oss;
+		oss << "C:/Users/ray/Desktop/" << i << ".tga";
+
+		lmImageSaveTGAf(oss.str().c_str(), lightmap[i].data(), w, h, channel);
 	}
 
 	lmDestroy(ctx);

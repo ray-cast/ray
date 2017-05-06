@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,7 +37,8 @@
 #ifndef _H_MODEL_PMX_H_
 #define _H_MODEL_PMX_H_
 
-#include <ray/model.h>
+#include <ray/math.h>
+#include <ray/fstream.h>
 
 _NAME_BEGIN
 
@@ -394,7 +395,6 @@ public:
 	~PMXHandler() noexcept;
 
 	bool doCanRead(StreamReader& stream) const noexcept;
-	bool doCanSave(ModelType type) const noexcept;
 
 	bool doLoad(StreamReader& stream) noexcept;
 	bool doSave(StreamWrite& stream) noexcept;

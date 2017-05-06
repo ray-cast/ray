@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 		if (model.doCanRead(fileRead))
 		{
 			model.doLoad(fileRead);
-			model.computeLightmapPackByLightmapper(2048, 2048, 1, 1, 1);
+			model.computeLightmapPackByLightmapper(2048, 2048, 4, 1, 1);
 
 			ray::ofstream fileWrite;
 			if (!fileWrite.open(filepath + ".pmx"))
@@ -79,6 +79,7 @@ int main(int argc, char** argv)
 			model.doSave(fileWrite);
 		}
 
+		std::system("pause");
 		return 0;
 	}
 }

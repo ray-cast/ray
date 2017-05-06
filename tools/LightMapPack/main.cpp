@@ -39,10 +39,36 @@
 
 #include <glfw/glfw3.h>
 
+bool domain_main(int argc, char** argv)
+{
+	std::string filepath = argv[1];
+	if (filepath.empty())
+		return false;
+
+	ray::ifstream fileRead;
+	if (!fileRead.open(filepath))
+		return false;
+
+	ray::PMXHandler model;
+	if (model.doCanRead(fileRead))
+	{
+		model.doLoad(fileRead);
+		model.computeLightmapPackByLightmapper(2048, 2048, 4, 1, 1);
+
+		/*ray::ofstream fileWrite;
+		if (!fileWrite.open(filepath + ".pmx"))
+			return 0;
+
+		model.doSave(fileWrite);*/
+	}
+
+	return true;
+}
+
 int main(int argc, char** argv)
 {
 	if (::glfwInit() == GL_FALSE)
-		return false;
+		return 1;
 
 #if defined(GLFW_EXPOSE_NATIVE_X11)
 	::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -50,6 +76,7 @@ int main(int argc, char** argv)
 	::glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #else
 	::glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+	::glfwWindowHint(GLFW_VISIBLE, false);
 #endif
 	::glfwSwapInterval(0);
 
@@ -57,29 +84,16 @@ int main(int argc, char** argv)
 	if (window)
 	{
 		::glfwMakeContextCurrent(window);
+		
+		int code = domain_main(argc, argv);
 
-		std::string filepath = argv[1];
-		if (filepath.empty())
-			return 0;
-
-		ray::ifstream fileRead;
-		if (!fileRead.open(filepath))
-			return 0;
-
-		ray::PMXHandler model;
-		if (model.doCanRead(fileRead))
-		{
-			model.doLoad(fileRead);
-			model.computeLightmapPackByLightmapper(2048, 2048, 4, 1, 1);
-
-			ray::ofstream fileWrite;
-			if (!fileWrite.open(filepath + ".pmx"))
-				return 0;
-
-			model.doSave(fileWrite);
-		}
+		::glfwDestroyWindow(window);
+		::glfwTerminate();
 
 		std::system("pause");
-		return 0;
+
+		return code;
 	}
+
+	return 1;
 }

@@ -258,7 +258,7 @@ PMXHandler::doLoad(StreamReader& stream) noexcept
 			}
 
 
-			if (!stream.read((char*)&material.FaceVertexCount, sizeof(material.FaceVertexCount))) return false;
+			if (!stream.read((char*)&material.FaceCount, sizeof(material.FaceCount))) return false;
 		}
 	}
 
@@ -659,7 +659,7 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 			}
 
 
-			if (!stream.write((char*)&material.FaceVertexCount, sizeof(material.FaceVertexCount))) return false;
+			if (!stream.write((char*)&material.FaceCount, sizeof(material.FaceCount))) return false;
 		}
 	}
 
@@ -1342,7 +1342,7 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 		std::size_t offsetTexcoord = offsetof(PMX_Vertex, coord);
 
 		for (int j = 0; j < i; j++)
-			offsetFace += pmx.materials[j].FaceVertexCount * pmx.header.sizeOfVertex;
+			offsetFace += pmx.materials[j].FaceCount * pmx.header.sizeOfVertex;
 
 		lm_type faceType;
 		if (pmx.header.sizeOfVertex == 1)
@@ -1364,7 +1364,7 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 		lmSetGeometry(ctx, float4x4::One.data(),
 			LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetVertices, sizeof(PMX_Vertex),
 			LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetTexcoord, sizeof(PMX_Vertex),
-			pmx.materials[i].FaceVertexCount, faceType, pmx.indices.data() + offsetFace);
+			pmx.materials[i].FaceCount, faceType, (char*)pmx.indices.data() + offsetFace);
 
 		float4x4 view, proj;
 		Viewportt<int> vp;
@@ -1381,17 +1381,15 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 			glEnable(GL_DEPTH_TEST);
 
 			glUseProgram(scene.program);
+
 			glUniform1i(scene.u_lightmap, 0);
-
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, scene.lightmap);
-
-			glBindVertexArray(scene.vao);
-
 			glUniformMatrix4fv(scene.u_projection, 1, GL_FALSE, proj.ptr());
 			glUniformMatrix4fv(scene.u_view, 1, GL_FALSE, view.ptr());
 
-			glDrawElements(GL_TRIANGLES, pmx.materials[i].FaceVertexCount, glType, 0);
+			glBindVertexArray(scene.vao);
+			glBindTextureUnit(0, scene.lightmap);
+
+			glDrawElementsInstancedBaseVertex(GL_TRIANGLES, pmx.materials[i].FaceCount, glType, (char*)nullptr + offsetFace, 1, 0);
 
 			lmEnd(ctx);
 

@@ -180,7 +180,7 @@ struct PMX_Material
 	PMX_uint16_t ToneTexture;
 	PMX_uint32_t memLength;
 	PMX_char	 mem[MAX_PATH];
-	PMX_uint32_t FaceVertexCount;
+	PMX_uint32_t FaceCount;
 };
 
 struct PMX_IK

@@ -1059,12 +1059,9 @@ static float lm_defaultWeights(float cos_theta, void *userdata)
 	return 1.0f;
 }
 
-lm_context *lmCreate(int hemisphereSize, float zNear, float zFar,
-	float clearR, float clearG, float clearB,
-	int interpolationPasses, float interpolationThreshold)
+lm_context *lmCreate(int hemisphereSize, float zNear, float zFar, float clearR, float clearG, float clearB,int interpolationPasses, float interpolationThreshold)
 {
-	assert(hemisphereSize == 512 || hemisphereSize == 256 || hemisphereSize == 128 ||
-		   hemisphereSize ==  64 || hemisphereSize ==  32 || hemisphereSize ==  16);
+	assert(hemisphereSize == 512 || hemisphereSize == 256 || hemisphereSize == 128 || hemisphereSize ==  64 || hemisphereSize ==  32 || hemisphereSize ==  16);
 	assert(zNear < zFar && zNear > 0.0f);
 	assert(interpolationPasses >= 0 && interpolationPasses <= 8);
 	assert(interpolationThreshold >= 0.0f);

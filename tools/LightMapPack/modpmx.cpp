@@ -1310,32 +1310,26 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 		return;
 	}
 
-	scene_t scene;
-	CreateScene(&pmx, &scene);
-
-	lm_context *ctx = lmCreate(64, 0.1f, 100.0f, 1.0, 1.0, 1.0, 1, 1e-4);
+	lm_context *ctx = lmCreate(64, 0.1f, 100.0f, 1.0, 1.0, 1.0, 1, 1e-3);
 	if (!ctx)
 	{
 		std::cout << "Could not initialize lightmapper." << std::endl;
 		exit(-1);
 	}
 
-	std::vector<std::vector<float>> lightmap;
-	std::vector<std::vector<float>> lightmapTemp;
+	scene_t scene;
+	CreateScene(&pmx, &scene);
 
-	lightmap.resize(pmx.numMaterials);
-	lightmapTemp.resize(pmx.numMaterials);
+	std::vector<float> lightmap;
+	std::vector<float> lightmapTemp;
 
-	for (int i = 0; i < pmx.numMaterials; i++)
-	{
-		lightmap[i].resize(w * h * channel, 0);
-		lightmapTemp[i].resize(w * h * channel, 0);
-	}
+	lightmap.resize(w * h * channel);
+	lightmapTemp.resize(w * h * channel);
 
-	std::vector<GLsizei> vertexCount;
-	vertexCount.resize(pmx.numMaterials);
+	std::memset(lightmap.data(), 0, sizeof(lightmap.size()) * sizeof(float));
+	std::memset(lightmapTemp.data(), 0, sizeof(lightmapTemp.size()) * sizeof(float));
 
-	std::vector<GLsizei> offsetsFace;
+	std::vector<std::uint32_t> offsetsFace;
 	offsetsFace.resize(pmx.numMaterials);
 
 	for (int i = 0; i < pmx.numMaterials; i++)
@@ -1345,100 +1339,88 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 		for (int j = 0; j < i; j++)
 			offsetFace += pmx.materials[j].FaceCount * pmx.header.sizeOfVertex;
 
-		vertexCount[i] = pmx.materials[i].FaceCount;
 		offsetsFace[i] = offsetFace;
 	}
 
-	for (int i = 0; i < pmx.numMaterials; i++)
+	std::size_t offsetVertices = offsetof(PMX_Vertex, position);
+	std::size_t offsetTexcoord = offsetof(PMX_Vertex, coord);
+
+	lm_type faceType;
+	if (pmx.header.sizeOfVertex == 1)
+		faceType = LM_UNSIGNED_BYTE;
+	else if (pmx.header.sizeOfVertex == 2)
+		faceType = LM_UNSIGNED_SHORT;
+	else
+		faceType = LM_UNSIGNED_INT;
+
+	GLenum glType = pmx.header.sizeOfVertex == 1;
+	if (pmx.header.sizeOfVertex == 1)
+		glType = GL_UNSIGNED_BYTE;
+	else if (pmx.header.sizeOfVertex == 2)
+		glType = GL_UNSIGNED_SHORT;
+	else
+		glType = GL_UNSIGNED_INT;
+
+	std::time_t t1 = std::time(nullptr);
+	std::cout << "start time : " << std::put_time(std::localtime(&t1), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
+
+	lmSetTargetLightmap(ctx, lightmap.data(), w, h, channel);
+	lmSetGeometry(ctx, float4x4::One.data(),
+		LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetVertices, sizeof(PMX_Vertex),
+		LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetTexcoord, sizeof(PMX_Vertex),
+		pmx.numIndices, faceType, (char*)pmx.indices.data());
+
+	float4x4 view, proj;
+	Viewportt<int> vp;
+
+	std::size_t baseIndex = -1;
+
+	while (lmBegin(ctx, vp.ptr(), view.data(), proj.data()))
 	{
-		std::size_t offsetVertices = offsetof(PMX_Vertex, position);
-		std::size_t offsetTexcoord = offsetof(PMX_Vertex, coord);
+		glViewport(vp.left, vp.top, vp.width, vp.height);
 
-		lm_type faceType;
-		if (pmx.header.sizeOfVertex == 1)
-			faceType = LM_UNSIGNED_BYTE;
-		else if (pmx.header.sizeOfVertex == 2)
-			faceType = LM_UNSIGNED_SHORT;
-		else
-			faceType = LM_UNSIGNED_INT;
+		glEnable(GL_DEPTH_TEST);
 
-		GLenum glType = pmx.header.sizeOfVertex == 1;
-		if (pmx.header.sizeOfVertex == 1)
-			glType = GL_UNSIGNED_BYTE;
-		else if (pmx.header.sizeOfVertex == 2)
-			glType = GL_UNSIGNED_SHORT;
-		else
-			glType = GL_UNSIGNED_INT;
+		glUseProgram(scene.program);
 
-		lmSetTargetLightmap(ctx, lightmap[i].data(), w, h, channel);
-		lmSetGeometry(ctx, float4x4::One.data(),
-			LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetVertices, sizeof(PMX_Vertex),
-			LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetTexcoord, sizeof(PMX_Vertex),
-			pmx.materials[i].FaceCount, faceType, (char*)pmx.indices.data() + offsetsFace[i]);
+		glUniform1i(scene.u_lightmap, 0);
+		glUniformMatrix4fv(scene.u_mvp, 1, GL_FALSE, (proj * view).ptr());
 
-		Viewportt<int> vp;
-		float4x4 view, proj;
-
-		std::size_t baseIndex = -1;
-
-		std::time_t t1 = std::time(nullptr);
-		std::cout << "start time : "<< std::put_time(std::localtime(&t1), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
-
-		while (lmBegin(ctx, vp.ptr(), view.data(), proj.data()))
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, scene.lightmap);
+		glBindVertexArray(scene.vao);
+			
+		for (int i = 0; i < pmx.numMaterials; i++)
 		{
-			glViewport(vp.left, vp.top, vp.width, vp.height);
-
-			glEnable(GL_DEPTH_TEST);
-
-			glUseProgram(scene.program);
-
-			glUniform1i(scene.u_lightmap, 0);
-			glUniformMatrix4fv(scene.u_mvp, 1, GL_FALSE, (proj * view).ptr());
-
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, scene.lightmap);
-			glBindVertexArray(scene.vao);
-
-			if (!bakeScene)
-				glDrawElements(GL_TRIANGLES, pmx.materials[i].FaceCount, glType, (char*)nullptr + offsetsFace[i]);
-			else
-			{
-				if (glMultiDrawElements)
-					glMultiDrawElements(GL_TRIANGLES, vertexCount.data(), glType, (const void* const*)offsetsFace.data(), pmx.numMaterials);
-				else
-				{
-					for (int j = 0; j < pmx.numMaterials; j++)
-						glDrawElements(GL_TRIANGLES, pmx.materials[j].FaceCount, glType, (char*)nullptr + offsetsFace[j]);
-				}
-			}
-
-			if (baseIndex != ctx->meshPosition.triangle.baseIndex)
-			{
-				std::cout.precision(2);
-				std::cout << "processing : " << lmProgress(ctx) * 100 << "%" << std::fixed;
-				std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
-
-				baseIndex = ctx->meshPosition.triangle.baseIndex;
-			}
-
-			lmEnd(ctx);
+			glDrawElements(GL_TRIANGLES, pmx.materials[i].FaceCount, glType, (char*)nullptr + offsetsFace[i]);
 		}
 
-		for (int j = 0; j < margin; j++)
+		if (baseIndex != ctx->meshPosition.triangle.baseIndex)
 		{
-			lmImageSmooth(lightmap[i].data(), lightmapTemp[i].data(), w, h, channel);
-			lmImageDilate(lightmapTemp[i].data(), lightmap[i].data(), w, h, channel);
+			std::cout.precision(2);
+			std::cout << "processing : " << lmProgress(ctx) * 100 << "%" << std::fixed;
+			std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+
+			baseIndex = ctx->meshPosition.triangle.baseIndex;
 		}
 
-		std::time_t t2 = std::time(nullptr);
-		std::cout << "processing : " << "100.00%" << std::fixed << std::endl;
-		std::cout << "end time : " << std::put_time(std::localtime(&t2), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
-
-		std::ostringstream oss;
-		oss << "C:/Users/ray/Desktop/" << i << ".tga";
-
-		lmImageSaveTGAf(oss.str().c_str(), lightmap[i].data(), w, h, channel);
+		lmEnd(ctx);
 	}
+
+	for (int j = 0; j < margin; j++)
+	{
+		lmImageSmooth(lightmap.data(), lightmapTemp.data(), w, h, channel);
+		lmImageDilate(lightmapTemp.data(), lightmap.data(), w, h, channel);
+	}
+
+	std::time_t t2 = std::time(nullptr);
+	std::cout << "processing : " << "100.00%" << std::fixed << std::endl;
+	std::cout << "end time : " << std::put_time(std::localtime(&t2), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
+
+	std::ostringstream oss;
+	oss << "C:/Users/ray/Desktop/1.tga";
+
+	lmImageSaveTGAf(oss.str().c_str(), lightmap.data(), w, h, channel);
 
 	lmDestroy(ctx);
 }

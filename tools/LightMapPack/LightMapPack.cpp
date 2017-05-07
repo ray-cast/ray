@@ -34,66 +34,16 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "modpmx.h"
-#include <ray/fstream.h>
+#include "LightMapPack.h"
 
-#include <glfw/glfw3.h>
+_NAME_BEGIN
 
-bool domain_main(int argc, char** argv)
+LightMapPack::LightMapPack() noexcept
 {
-	std::string filepath = argv[1];
-	if (filepath.empty())
-		return false;
-
-	ray::ifstream fileRead;
-	if (!fileRead.open(filepath))
-		return false;
-
-	ray::PMXHandler model;
-	if (model.doCanRead(fileRead))
-	{
-		model.doLoad(fileRead);
-		model.computeLightmapPackByLightmapper(2048, 2048, 4, true, 1, 1);
-
-		/*ray::ofstream fileWrite;
-		if (!fileWrite.open(filepath + ".pmx"))
-			return 0;
-
-		model.doSave(fileWrite);*/
-	}
-
-	return true;
 }
 
-int main(int argc, char** argv)
+LightMapPack::~LightMapPack()
 {
-	if (::glfwInit() == GL_FALSE)
-		return 1;
-
-#if defined(GLFW_EXPOSE_NATIVE_X11)
-	::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	::glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#else
-	::glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-	::glfwWindowHint(GLFW_VISIBLE, false);
-#endif
-	::glfwSwapInterval(0);
-
-	auto window = ::glfwCreateWindow(800, 600, "LightMap Pack", nullptr, nullptr);
-	if (window)
-	{
-		::glfwMakeContextCurrent(window);
-		
-		int code = domain_main(argc, argv);
-
-		::glfwDestroyWindow(window);
-		::glfwTerminate();
-
-		std::system("pause");
-
-		return code;
-	}
-
-	return 1;
 }
+
+_NAME_END

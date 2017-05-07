@@ -1220,8 +1220,7 @@ typedef struct
 {
 	GLuint program;
 	GLint u_lightmap;
-	GLint u_projection;
-	GLint u_view;
+	GLint u_mvp;
 
 	GLuint lightmap;
 	int w, h;
@@ -1265,14 +1264,13 @@ void CreateScene(PMX* pmx, scene_t* scene)
 		"#version 150 core\n"
 		"in vec3 a_position;\n"
 		"in vec2 a_texcoord;\n"
-		"uniform mat4 u_view;\n"
-		"uniform mat4 u_projection;\n"
+		"uniform mat4 u_mvp;\n"
 		"out vec2 v_texcoord;\n"
 
 		"void main()\n"
 		"{\n"
-		"gl_Position = u_projection * (u_view * vec4(a_position, 1.0));\n"
-		"v_texcoord = a_texcoord;\n"
+			"v_texcoord = a_texcoord;\n"
+			"gl_Position = u_mvp * vec4(a_position, 1.0);\n"
 		"}\n";
 
 	const char *fp =
@@ -1299,13 +1297,12 @@ void CreateScene(PMX* pmx, scene_t* scene)
 		return;
 	}
 
-	scene->u_view = glGetUniformLocation(scene->program, "u_view");
-	scene->u_projection = glGetUniformLocation(scene->program, "u_projection");
+	scene->u_mvp = glGetUniformLocation(scene->program, "u_mvp");
 	scene->u_lightmap = glGetUniformLocation(scene->program, "u_lightmap");
 }
 
 void
-PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::uint8_t channel, int bounces, int margin) noexcept
+PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::uint8_t channel, bool bakeScene, int bounces, int margin) noexcept
 {
 	if (glewInit() != GLEW_OK)
 	{
@@ -1326,23 +1323,36 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 	std::vector<std::vector<float>> lightmap;
 	std::vector<std::vector<float>> lightmapTemp;
 
-	lightmap.resize(pmx.materials.size());
-	lightmapTemp.resize(pmx.materials.size());
+	lightmap.resize(pmx.numMaterials);
+	lightmapTemp.resize(pmx.numMaterials);
 
-	for (int i = 0; i < pmx.materials.size(); i++)
+	for (int i = 0; i < pmx.numMaterials; i++)
 	{
 		lightmap[i].resize(w * h * channel, 0);
 		lightmapTemp[i].resize(w * h * channel, 0);
 	}
 
-	for (int i = 1; i < pmx.materials.size(); i++)
+	std::vector<GLsizei> vertexCount;
+	vertexCount.resize(pmx.numMaterials);
+
+	std::vector<GLsizei> offsetsFace;
+	offsetsFace.resize(pmx.numMaterials);
+
+	for (int i = 0; i < pmx.numMaterials; i++)
 	{
-		std::size_t offsetFace = 0;
-		std::size_t offsetVertices = offsetof(PMX_Vertex, position);
-		std::size_t offsetTexcoord = offsetof(PMX_Vertex, coord);
+		std::uint32_t offsetFace = 0;
 
 		for (int j = 0; j < i; j++)
 			offsetFace += pmx.materials[j].FaceCount * pmx.header.sizeOfVertex;
+
+		vertexCount[i] = pmx.materials[i].FaceCount;
+		offsetsFace[i] = offsetFace;
+	}
+
+	for (int i = 0; i < pmx.numMaterials; i++)
+	{
+		std::size_t offsetVertices = offsetof(PMX_Vertex, position);
+		std::size_t offsetTexcoord = offsetof(PMX_Vertex, coord);
 
 		lm_type faceType;
 		if (pmx.header.sizeOfVertex == 1)
@@ -1364,10 +1374,10 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 		lmSetGeometry(ctx, float4x4::One.data(),
 			LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetVertices, sizeof(PMX_Vertex),
 			LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetTexcoord, sizeof(PMX_Vertex),
-			pmx.materials[i].FaceCount, faceType, (char*)pmx.indices.data() + offsetFace);
+			pmx.materials[i].FaceCount, faceType, (char*)pmx.indices.data() + offsetsFace[i]);
 
-		float4x4 view, proj;
 		Viewportt<int> vp;
+		float4x4 view, proj;
 
 		std::size_t baseIndex = -1;
 
@@ -1383,37 +1393,41 @@ PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::
 			glUseProgram(scene.program);
 
 			glUniform1i(scene.u_lightmap, 0);
-			glUniformMatrix4fv(scene.u_projection, 1, GL_FALSE, proj.ptr());
-			glUniformMatrix4fv(scene.u_view, 1, GL_FALSE, view.ptr());
+			glUniformMatrix4fv(scene.u_mvp, 1, GL_FALSE, (proj * view).ptr());
 
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, scene.lightmap);
 			glBindVertexArray(scene.vao);
-			glBindTextureUnit(0, scene.lightmap);
 
-			glDrawElementsInstancedBaseVertex(GL_TRIANGLES, pmx.materials[i].FaceCount, glType, (char*)nullptr + offsetFace, 1, 0);
-
-			lmEnd(ctx);
+			if (!bakeScene)
+				glDrawElements(GL_TRIANGLES, pmx.materials[i].FaceCount, glType, (char*)nullptr + offsetsFace[i]);
+			else
+			{
+				if (glMultiDrawElements)
+					glMultiDrawElements(GL_TRIANGLES, vertexCount.data(), glType, (const void* const*)offsetsFace.data(), pmx.numMaterials);
+				else
+				{
+					for (int j = 0; j < pmx.numMaterials; j++)
+						glDrawElements(GL_TRIANGLES, pmx.materials[j].FaceCount, glType, (char*)nullptr + offsetsFace[j]);
+				}
+			}
 
 			if (baseIndex != ctx->meshPosition.triangle.baseIndex)
 			{
 				std::cout.precision(2);
-				float processing = float(ctx->meshPosition.triangle.baseIndex + ctx->mesh.count * ctx->meshPosition.pass * bounces) / (ctx->mesh.count * ctx->meshPosition.passCount * bounces);
-				std::cout << "processing : " << processing * 100 << "%" << std::fixed;
+				std::cout << "processing : " << lmProgress(ctx) * 100 << "%" << std::fixed;
 				std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
 
 				baseIndex = ctx->meshPosition.triangle.baseIndex;
 			}
+
+			lmEnd(ctx);
 		}
 
-		if (margin > 0)
+		for (int j = 0; j < margin; j++)
 		{
 			lmImageSmooth(lightmap[i].data(), lightmapTemp[i].data(), w, h, channel);
 			lmImageDilate(lightmapTemp[i].data(), lightmap[i].data(), w, h, channel);
-
-			for (int j = 0; j < margin - 1; j++)
-			{
-				lmImageSmooth(lightmap[i].data(), lightmapTemp[i].data(), w, h, channel);
-				lmImageDilate(lightmapTemp[i].data(), lightmap[i].data(), w, h, channel);
-			}
 		}
 
 		std::time_t t2 = std::time(nullptr);

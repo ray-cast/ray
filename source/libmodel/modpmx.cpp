@@ -140,13 +140,13 @@ struct PMX_BoneWeight
 
 struct PMX_Vertex
 {
-	PMX_Vector3 position;  // 顶点坐标
-	PMX_Vector3 normal;    // 顶点法线
-	PMX_Vector2 coord;     // 顶点贴图坐标
-	PMX_Vector4 addCoord;  // 附加纹理坐标
-	PMX_uint8_t type;      // 变形方式 0:BDEF1 1:BDEF2 2:BDEF4 3:SDEF
-	PMX_BoneWeight weight; // 骨骼
-	PMX_Float   edge;      // 倍率
+	PMX_Vector3 position;
+	PMX_Vector3 normal;
+	PMX_Vector2 coord;
+	PMX_Vector4 addCoord[4];
+	PMX_uint8_t type;	// 0:BDEF1 1:BDEF2 2:BDEF4 3:SDEF
+	PMX_BoneWeight weight;
+	PMX_Float   edge;
 };
 
 typedef PMX_uint8_t PMX_Index; //顶点索引
@@ -176,7 +176,7 @@ struct PMX_Material
 	PMX_uint16_t ToneTexture;
 	PMX_uint32_t memLength;
 	PMX_char	 mem[MAX_PATH];
-	PMX_uint32_t FaceVertexCount;
+	PMX_uint32_t FaceCount;
 };
 
 struct PMX_IK
@@ -445,7 +445,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			}
 			else
 			{
-				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + pmx.header.addUVCount;
+				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord[0]) * pmx.header.addUVCount;
 				if (!stream.read((char*)&vertex.position, size)) return false;
 			}
 
@@ -568,7 +568,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			}
 
 
-			if (!stream.read((char*)&material.FaceVertexCount, sizeof(material.FaceVertexCount))) return false;
+			if (!stream.read((char*)&material.FaceCount, sizeof(material.FaceCount))) return false;
 		}
 	}
 
@@ -891,7 +891,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		VertexWeights weights;
 		UintArray faces;
 
-		for (std::uint32_t i = 0; i < it.FaceVertexCount; i++, indices += pmx.header.sizeOfVertex)
+		for (std::uint32_t i = 0; i < it.FaceCount; i++, indices += pmx.header.sizeOfVertex)
 		{
 			std::uint32_t index = 0;
 
@@ -1073,7 +1073,7 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 		{
 			if (pmx.header.addUVCount > 0)
 			{
-				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord);
+				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord[0]) * pmx.header.addUVCount;
 				if (!stream.write((char*)&vertex.position, size)) return false;
 			}
 			else
@@ -1141,8 +1141,6 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 	if (!stream.write((char*)&pmx.numTextures, sizeof(pmx.numTextures))) return false;
 	if (pmx.numTextures)
 	{
-		pmx.textures.resize(pmx.numTextures);
-
 		for (auto& texture : pmx.textures)
 		{
 			if (!stream.write((char*)&texture.length, sizeof(texture.length))) return false;
@@ -1153,16 +1151,18 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 	if (!stream.write((char*)&pmx.numMaterials, sizeof(pmx.numMaterials))) return false;
 	if (pmx.numMaterials)
 	{
-		pmx.materials.resize(pmx.numMaterials);
-
 		for (auto& material : pmx.materials)
 		{
 			if (!stream.write((char*)&material.name.length, sizeof(material.name.length))) return false;
+
 			if (material.name.length)
 				if (!stream.write((char*)&material.name.name, material.name.length)) return false;
+
 			if (!stream.write((char*)&material.nameEng.length, sizeof(material.nameEng.length))) return false;
+
 			if (material.nameEng.length)
 				if (!stream.write((char*)&material.nameEng.name, material.nameEng.length)) return false;
+
 			if (!stream.write((char*)&material.Diffuse, sizeof(material.Diffuse))) return false;
 			if (!stream.write((char*)&material.Opacity, sizeof(material.Opacity))) return false;
 			if (!stream.write((char*)&material.Specular, sizeof(material.Specular))) return false;
@@ -1192,7 +1192,7 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 			}
 
 
-			if (!stream.write((char*)&material.FaceVertexCount, sizeof(material.FaceVertexCount))) return false;
+			if (!stream.write((char*)&material.FaceCount, sizeof(material.FaceCount))) return false;
 		}
 	}
 
@@ -1248,8 +1248,6 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 
 				if (bone.IKLinkCount > 0)
 				{
-					bone.IKList.resize(bone.IKLinkCount);
-
 					for (std::size_t j = 0; j < bone.IKLinkCount; j++)
 					{
 						if (!stream.write((char*)&bone.IKList[j].BoneIndex, pmx.header.sizeOfBone)) return false;
@@ -1287,8 +1285,6 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 			}
 			else if (morph.morphType == MorphType::MorphTypeVertex)
 			{
-				morph.vertexList.resize(morph.morphCount);
-
 				for (auto& vertex : morph.vertexList)
 				{
 					if (!stream.write((char*)&vertex.index, pmx.header.sizeOfVertex)) return false;
@@ -1297,8 +1293,6 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 			}
 			else if (morph.morphType == MorphType::MorphTypeBone)
 			{
-				morph.boneList.resize(morph.morphCount);
-
 				for (auto& bone : morph.boneList)
 				{
 					if (!stream.write((char*)&bone.boneIndex, pmx.header.sizeOfBone)) return false;
@@ -1310,8 +1304,6 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 				morph.morphType == MorphType::MorphTypeExtraUV2 || morph.morphType == MorphType::MorphTypeExtraUV3 ||
 				morph.morphType == MorphType::MorphTypeExtraUV4)
 			{
-				morph.texcoordList.resize(morph.morphCount);
-
 				for (auto& texcoord : morph.texcoordList)
 				{
 					if (!stream.write((char*)&texcoord.index, pmx.header.sizeOfVertex)) return false;
@@ -1320,8 +1312,6 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 			}
 			else if (morph.morphType == MorphType::MorphTypeMaterial)
 			{
-				morph.materialList.resize(morph.morphCount);
-
 				for (auto& material : morph.materialList)
 				{
 					if (!stream.write((char*)&material.index, pmx.header.sizeOfMaterial)) return false;
@@ -1354,7 +1344,6 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 			if (!stream.write((char*)&displayFrame.type, sizeof(displayFrame.type))) return false;
 			if (!stream.write((char*)&displayFrame.elementsWithinFrame, sizeof(displayFrame.elementsWithinFrame))) return false;
 
-			displayFrame.elements.resize(displayFrame.elementsWithinFrame);
 			for (auto& element : displayFrame.elements)
 			{
 				if (!stream.write((char*)&element.target, sizeof(element.target))) return false;

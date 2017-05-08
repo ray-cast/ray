@@ -97,6 +97,36 @@ public:
 		_radius = math::length(_box.size()) * 0.5f;
 	}
 
+	void encapsulate(const Vector3t<T> pt[], const std::uint8_t* indices, std::size_t indicesCount) noexcept
+	{
+		assert(pt);
+		assert(indices && indicesCount > 0);
+
+		_box.encapsulate(pt, indices, indicesCount);
+		_center = _box.center();
+		_radius = math::length(_box.size()) * 0.5f;
+	}
+
+	void encapsulate(const Vector3t<T> pt[], const std::uint16_t* indices, std::size_t indicesCount) noexcept
+	{
+		assert(pt);
+		assert(indices && indicesCount > 0);
+
+		_box.encapsulate(pt, indices, indicesCount);
+		_center = _box.center();
+		_radius = math::length(_box.size()) * 0.5f;
+	}
+
+	void encapsulate(const Vector3t<T> pt[], const std::uint32_t* indices, std::size_t indicesCount) noexcept
+	{
+		assert(pt);
+		assert(indices && indicesCount > 0);
+
+		_box.encapsulate(pt, indices, indicesCount);
+		_center = _box.center();
+		_radius = math::length(_box.size()) * 0.5f;
+	}
+
 	void encapsulate(const Spheret<T>& sphere) noexcept
 	{
 		_box.encapsulate(sphere._box);

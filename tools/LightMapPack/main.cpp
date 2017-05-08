@@ -34,35 +34,143 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "modpmx.h"
-#include <ray/fstream.h>
+#include "LightMass.h"
+
+#include <chrono>
+#include <ctime>
+#include <cinttypes>
+#include <iomanip>
+#include <sstream>
+#include <ios>
 
 #include <glfw/glfw3.h>
 
-bool domain_main(int argc, char** argv)
+class AppListener : public ray::LightMassListener
 {
-	std::string filepath = argv[1];
-	if (filepath.empty())
-		return false;
+public:
+	AppListener() noexcept {}
+	~AppListener() noexcept {}
 
-	ray::ifstream fileRead;
-	if (!fileRead.open(filepath))
-		return false;
-
-	ray::PMXHandler model;
-	if (model.doCanRead(fileRead))
+	virtual void onBakingStart() noexcept
 	{
-		model.doLoad(fileRead);
-		model.computeLightmapPackByLightmapper(2048, 2048, 4, true, 1, 1);
-
-		/*ray::ofstream fileWrite;
-		if (!fileWrite.open(filepath + ".pmx"))
-			return 0;
-
-		model.doSave(fileWrite);*/
+		_startTime = std::time(nullptr);
+		std::cout << "Calculating the ambient occlusion of the model : ";
+		std::cout << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
 
-	return true;
+	virtual void onBakingEnd() noexcept
+	{
+		_endTime = std::time(nullptr);
+		std::cout << "Processing : " << "100.00%" << std::fixed << std::endl;
+		std::cout << "Calculated the ambient occlusion of the model : ";
+		std::cout << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	virtual void onBakingProgressing(float progress) noexcept
+	{
+		std::cout.precision(2);
+		std::cout << "Processing : " << progress * 100 << "%" << std::fixed;
+		std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+	}
+
+	virtual void onMessage(const std::string& message) noexcept
+	{
+		std::cout << message << std::endl;
+	}
+
+private:
+	std::time_t _startTime;
+	std::time_t _endTime;
+};
+
+class Application
+{
+public:
+	Application() noexcept
+	{
+	}
+
+	Application::~Application() noexcept
+	{
+	}
+
+	std::uint32_t GetImageSize()
+	{
+		std::uint32_t size = 0;
+		while (!size)
+		{
+			std::cout << "Input the image size (512, 1024, 2048, 4096): ";
+			char paths[MAX_PATH];
+			std::cin.getline(paths, MAX_PATH);
+			size = atoi(paths);
+		}
+
+		return std::floor(size / 2) * 2;
+	}
+
+	std::uint32_t GetImageChannel()
+	{
+		std::uint32_t channel = 0;
+		while (!channel)
+		{
+			std::cout << "Enable Backface Culling (Y/N, 1/0) :";
+			char c;
+			std::cin.get(c);
+			if (c == 'y' || c == 'Y' || c == '1')
+				channel = 4;
+			if (c == 'n' || c == 'N' || c == '0')
+				channel = 1;
+		}
+
+		return channel;
+	}
+
+	bool baking(std::string path)
+	{
+		while (path.empty())
+		{
+			std::cout << "Input the path to your pmx model : ";
+			char paths[PATHLIMIT];
+			std::cin.getline(paths, PATHLIMIT);
+			path.append(paths);
+		}
+
+		std::uint32_t imageSize = GetImageSize();
+		std::uint32_t imagechannel = GetImageChannel();
+
+		std::unique_ptr<float[]> lightmap = std::make_unique<float[]>(imageSize * imageSize * imagechannel);
+		std::memset(lightmap.get(), 0, imageSize * imageSize * imagechannel * sizeof(float));
+
+		ray::LightMassParams params;
+		params.lightMap.width = params.lightMap.height = imageSize;
+		params.lightMap.channel = imagechannel;
+		params.lightMap.data = lightmap.get();
+
+		_lightMass = std::make_shared<ray::LightMass>();
+		_lightMass->setLightMassListener(std::make_shared<AppListener>());
+		if (!_lightMass->load(path))
+			return false;
+
+		if (!_lightMass->baking(params))
+			return false;
+
+		std::string outputPath = ray::util::directory(path) + "ao.tga";
+		std::cout << "Save as image : " << outputPath << std::endl;
+		
+		if (!_lightMass->saveAsTGA(outputPath, params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel))
+			std::cout << "Failed to save image : " << outputPath << std::endl;
+
+		return true;
+	}
+
+private:
+	ray::LightMassPtr _lightMass;
+};
+
+bool domain_main(int argc, char** argv)
+{
+	auto app = std::make_shared<Application>();
+	return app->baking(argc > 1 ? argv[1] : "");
 }
 
 int main(int argc, char** argv)
@@ -80,7 +188,7 @@ int main(int argc, char** argv)
 #endif
 	::glfwSwapInterval(0);
 
-	auto window = ::glfwCreateWindow(800, 600, "LightMap Pack", nullptr, nullptr);
+	auto window = ::glfwCreateWindow(800, 600, "LightMass", nullptr, nullptr);
 	if (window)
 	{
 		::glfwMakeContextCurrent(window);

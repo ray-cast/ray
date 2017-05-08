@@ -34,15 +34,45 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "LightMapPack.h"
+#include "LightMassListener.h"
 
 _NAME_BEGIN
 
-LightMapPack::LightMapPack() noexcept
+LightMassListener::LightMassListener() noexcept
 {
 }
 
-LightMapPack::~LightMapPack()
+LightMassListener::~LightMassListener() noexcept
+{
+}
+
+void 
+LightMassListener::onListenerChangeBefore()
+{
+}
+
+void 
+LightMassListener::onListenerChangeAfter()
+{
+}
+
+void 
+LightMassListener::onBakingStart()
+{
+}
+
+void 
+LightMassListener::onBakingEnd()
+{
+}
+
+void 
+LightMassListener::onBakingProgressing(float progress)
+{
+}
+
+void 
+LightMassListener::onMessage(const std::string& message)
 {
 }
 

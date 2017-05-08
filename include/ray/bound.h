@@ -148,9 +148,24 @@ public:
 		_sp.encapsulate(pt);
 	}
 
-	void encapsulate(const Vector3t<T> pt[], std::size_t n) noexcept
+	void encapsulate(const Vector3t<T>* pt, std::size_t n) noexcept
 	{
 		_sp.encapsulate(pt, n);
+	}
+
+	void encapsulate(const Vector3t<T>* pt, const std::uint8_t* indices, std::size_t indicesCount) noexcept
+	{
+		_sp.encapsulate(pt, indices, indicesCount);
+	}
+
+	void encapsulate(const Vector3t<T>* pt, const std::uint16_t* indices, std::size_t indicesCount) noexcept
+	{
+		_sp.encapsulate(pt, indices, indicesCount);
+	}
+
+	void encapsulate(const Vector3t<T>* pt, const std::uint32_t* indices, std::size_t indicesCount) noexcept
+	{
+		_sp.encapsulate(pt, indices, indicesCount);
 	}
 
 	void encapsulate(const Boundt<T>& bound) noexcept

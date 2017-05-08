@@ -269,19 +269,6 @@ public:
 		return *this;
 	}
 
-	AABBt<T>& encapsulate(const Vector3t<T>& pt) noexcept
-	{
-		if (pt.x < min.x) min.x = pt.x;
-		if (pt.y < min.y) min.y = pt.y;
-		if (pt.z < min.z) min.z = pt.z;
-
-		if (pt.x > max.x) max.x = pt.x;
-		if (pt.y > max.y) max.y = pt.y;
-		if (pt.z > max.z) max.z = pt.z;
-
-		return *this;
-	}
-
 	AABBt<T>& encapsulate(const AABBt<T>& box) noexcept
 	{
 		if (box.min.x < min.x) min.x = box.min.x;
@@ -295,7 +282,20 @@ public:
 		return *this;
 	}
 
-	AABBt<T>& encapsulate(const Vector3t<T> pt[], std::size_t n) noexcept
+	AABBt<T>& encapsulate(const Vector3t<T>& pt) noexcept
+	{
+		if (pt.x < min.x) min.x = pt.x;
+		if (pt.y < min.y) min.y = pt.y;
+		if (pt.z < min.z) min.z = pt.z;
+
+		if (pt.x > max.x) max.x = pt.x;
+		if (pt.y > max.y) max.y = pt.y;
+		if (pt.z > max.z) max.z = pt.z;
+
+		return *this;
+	}
+
+	AABBt<T>& encapsulate(const Vector3t<T>* pt, std::size_t n) noexcept
 	{
 		assert(pt && n);
 
@@ -304,6 +304,39 @@ public:
 			encapsulate(*pt);
 			pt++;
 		}
+
+		return *this;
+	}
+
+	AABBt<T>& encapsulate(const Vector3t<T>* pt, const std::uint8_t* indices, std::size_t indicesCount) noexcept
+	{
+		assert(pt);
+		assert(indices && indicesCount > 0);
+
+		for (size_t i = 0; i < indicesCount; i++)
+			this->encapsulate(pt[indices[i]]);
+
+		return *this;
+	}
+
+	AABBt<T>& encapsulate(const Vector3t<T>* pt, const std::uint16_t* indices, std::size_t indicesCount) noexcept
+	{
+		assert(pt);
+		assert(indices && indicesCount > 0);
+
+		for (size_t i = 0; i < indicesCount; i++)
+			this->encapsulate(pt[indices[i]]);
+
+		return *this;
+	}
+
+	AABBt<T>& encapsulate(const Vector3t<T>* pt, const std::uint32_t* indices, std::size_t indicesCount) noexcept
+	{
+		assert(pt);
+		assert(indices && indicesCount > 0);
+
+		for (size_t i = 0; i < indicesCount; i++)
+			this->encapsulate(pt[indices[i]]);
 
 		return *this;
 	}

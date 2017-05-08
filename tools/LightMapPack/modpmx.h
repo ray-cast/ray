@@ -59,7 +59,7 @@ typedef Vector4 PMX_Color4;
 typedef float3x3 PMX_Float3x3;
 typedef float4x4 PMX_Float4x4;
 
-typedef wchar_t       PMX_char;
+typedef wchar_t       PMX_char; // unicode encoding
 typedef std::int8_t   PMX_int8_t;
 typedef std::uint8_t  PMX_uint8_t;
 typedef std::uint16_t PMX_uint16_t;
@@ -100,7 +100,7 @@ struct PMX_Header
 	PMX_uint8_t dataSize;
 	PMX_uint8_t encode;
 	PMX_uint8_t addUVCount;
-	PMX_uint8_t sizeOfVertex;
+	PMX_uint8_t sizeOfIndices;
 	PMX_uint8_t sizeOfTexture;
 	PMX_uint8_t sizeOfMaterial;
 	PMX_uint8_t sizeOfBone;
@@ -153,7 +153,7 @@ struct PMX_Vertex
 	PMX_Float   edge;
 };
 
-typedef PMX_uint8_t PMX_Index; //¶¥µãË÷Òý
+typedef PMX_uint8_t PMX_Index;
 
 struct PMX_Name
 {
@@ -352,43 +352,7 @@ struct PMX
 	std::vector<PMX_Joint> joints;
 };
 
-struct LightMapItem
-{
-	float2 edge, offset;
-	float2 *p1, *p2, *p3, *p4;
-
-	float getArea() const
-	{
-		return edge.x*edge.y;
-	}
-
-	bool operator < (const LightMapItem& a) const
-	{
-		return getArea() > a.getArea();
-	}
-};
-
-
-struct LightMapNode
-{
-	LightMapNode* left;
-	LightMapNode* right;
-	float4 rect;
-
-	LightMapNode()
-	{
-		left = nullptr;
-		right = nullptr;
-		rect = float4(0.0, 0.0, 1.0, 1.0);
-	}
-	~LightMapNode()
-	{
-		delete left;
-		delete right;
-	}
-};
-
-class PMXHandler
+class PMXHandler final
 {
 public:
 	PMXHandler() noexcept;
@@ -396,28 +360,12 @@ public:
 
 	bool doCanRead(StreamReader& stream) const noexcept;
 
-	bool doLoad(StreamReader& stream) noexcept;
-	bool doSave(StreamWrite& stream) noexcept;
-
-	void computeFaceNormals() noexcept;
-	void computeVertricesNormals() noexcept;
-	void computeLightmapPack() noexcept;
-	void computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::uint8_t channel, bool bakeScene, int bounces, int margin) noexcept;
-	void computeBoundingBox(Bound& boundingBox) noexcept;
-
-	std::size_t getFace(std::size_t n) noexcept;
-
-private:
-	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;
+	bool doLoad(StreamReader& stream, PMX& pmx) noexcept;
+	bool doSave(StreamWrite& stream, const PMX& pmx) noexcept;
 
 private:
 	PMXHandler(const PMXHandler&) = delete;
 	PMXHandler& operator=(const PMXHandler&) = delete;
-
-private:
-	PMX pmx;
-
-	Float3Array _facesNormal;
 };
 
 _NAME_END

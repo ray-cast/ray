@@ -34,22 +34,27 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHTMAP_PACK_H_
-#define _H_LIGHTMAP_PACK_H_
+#ifndef _H_LIGHTMASS_LISTENER_H_
+#define _H_LIGHTMASS_LISTENER_H_
 
-#include <ray/platform.h>
+#include "LightMassTypes.h"
 
 _NAME_BEGIN
 
-class LightMapPack
+class LightMassListener
 {
 public:
-	LightMapPack() noexcept;
-	~LightMapPack() noexcept;
+	LightMassListener() noexcept;
+	virtual ~LightMassListener() noexcept;
 
+	virtual void onListenerChangeBefore();
+	virtual void onListenerChangeAfter();
 
-private:
+	virtual void onBakingStart();
+	virtual void onBakingEnd();
+	virtual void onBakingProgressing(float progress);
 
+	virtual void onMessage(const std::string& message);
 };
 
 _NAME_END

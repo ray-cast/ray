@@ -209,21 +209,6 @@ public:
 		return false;
 	}
 
-	bool contains(const Spheret<T>& sphere) const  noexcept
-	{
-		if ((_left.getDistance(sphere.center()) < -sphere.radius()) ||
-			(_right.getDistance(sphere.center()) < -sphere.radius()) ||
-			(_top.getDistance(sphere.center()) < -sphere.radius()) ||
-			(_bottom.getDistance(sphere.center()) < -sphere.radius()) ||
-			(_near.getDistance(sphere.center()) < -sphere.radius()) ||
-			(_far.getDistance(sphere.center()) < -sphere.radius()))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
 	bool contains(const Vector3t<T>& p, float radius) const  noexcept
 	{
 		if ((_left.getDistance(p) < -radius) ||
@@ -237,6 +222,11 @@ public:
 		}
 
 		return true;
+	}
+
+	bool contains(const Spheret<T>& sphere) const  noexcept
+	{
+		return this->contains(sphere.center(), sphere.radius());
 	}
 
 	int classify(const Vector3t<T>& pt) const  noexcept

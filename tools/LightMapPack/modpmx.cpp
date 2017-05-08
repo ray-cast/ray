@@ -35,15 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "modpmx.h"
-#include <chrono>
-#include <ctime>
-#include <cinttypes>
-#include <iomanip>
-#include <sstream>
-
-#define LIGHTMAPPER_IMPLEMENTATION
-#include <gl\glew.h>
-#include "lightmapper.h"
 
 _NAME_BEGIN
 
@@ -79,7 +70,7 @@ PMXHandler::doCanRead(StreamReader& stream) const noexcept
 }
 
 bool
-PMXHandler::doLoad(StreamReader& stream) noexcept
+PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 {
 	setlocale(LC_ALL, "");
 
@@ -135,7 +126,7 @@ PMXHandler::doLoad(StreamReader& stream) noexcept
 			}
 			else
 			{
-				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord);
+				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord[0]) * pmx.header.addUVCount;
 				if (!stream.read((char*)&vertex.position, size)) return false;
 			}
 
@@ -200,7 +191,7 @@ PMXHandler::doLoad(StreamReader& stream) noexcept
 
 	if (pmx.numIndices > 0)
 	{
-		pmx.indices.resize(pmx.numIndices * pmx.header.sizeOfVertex);
+		pmx.indices.resize(pmx.numIndices * pmx.header.sizeOfIndices);
 		if (!stream.read((char*)pmx.indices.data(), pmx.indices.size())) return false;
 	}
 
@@ -359,7 +350,7 @@ PMXHandler::doLoad(StreamReader& stream) noexcept
 
 				for (auto& vertex : morph.vertexList)
 				{
-					if (!stream.read((char*)&vertex.index, pmx.header.sizeOfVertex)) return false;
+					if (!stream.read((char*)&vertex.index, pmx.header.sizeOfIndices)) return false;
 					if (!stream.read((char*)&vertex.offset, sizeof(vertex.offset))) return false;
 				}
 			}
@@ -382,7 +373,7 @@ PMXHandler::doLoad(StreamReader& stream) noexcept
 
 				for (auto& texcoord : morph.texcoordList)
 				{
-					if (!stream.read((char*)&texcoord.index, pmx.header.sizeOfVertex)) return false;
+					if (!stream.read((char*)&texcoord.index, pmx.header.sizeOfIndices)) return false;
 					if (!stream.read((char*)&texcoord.offset, sizeof(texcoord.offset))) return false;
 				}
 			}
@@ -513,7 +504,7 @@ PMXHandler::doLoad(StreamReader& stream) noexcept
 }
 
 bool
-PMXHandler::doSave(StreamWrite& stream) noexcept
+PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 {
 	if (!stream.write((char*)&pmx.header, sizeof(pmx.header))) return false;
 
@@ -608,8 +599,6 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 	if (!stream.write((char*)&pmx.numTextures, sizeof(pmx.numTextures))) return false;
 	if (pmx.numTextures)
 	{
-		pmx.textures.resize(pmx.numTextures);
-
 		for (auto& texture : pmx.textures)
 		{
 			if (!stream.write((char*)&texture.length, sizeof(texture.length))) return false;
@@ -620,16 +609,18 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 	if (!stream.write((char*)&pmx.numMaterials, sizeof(pmx.numMaterials))) return false;
 	if (pmx.numMaterials)
 	{
-		pmx.materials.resize(pmx.numMaterials);
-
 		for (auto& material : pmx.materials)
 		{
 			if (!stream.write((char*)&material.name.length, sizeof(material.name.length))) return false;
+
 			if (material.name.length)
 				if (!stream.write((char*)&material.name.name, material.name.length)) return false;
+
 			if (!stream.write((char*)&material.nameEng.length, sizeof(material.nameEng.length))) return false;
+
 			if (material.nameEng.length)
 				if (!stream.write((char*)&material.nameEng.name, material.nameEng.length)) return false;
+
 			if (!stream.write((char*)&material.Diffuse, sizeof(material.Diffuse))) return false;
 			if (!stream.write((char*)&material.Opacity, sizeof(material.Opacity))) return false;
 			if (!stream.write((char*)&material.Specular, sizeof(material.Specular))) return false;
@@ -715,8 +706,6 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 
 				if (bone.IKLinkCount > 0)
 				{
-					bone.IKList.resize(bone.IKLinkCount);
-
 					for (std::size_t j = 0; j < bone.IKLinkCount; j++)
 					{
 						if (!stream.write((char*)&bone.IKList[j].BoneIndex, pmx.header.sizeOfBone)) return false;
@@ -754,18 +743,14 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 			}
 			else if (morph.morphType == MorphType::MorphTypeVertex)
 			{
-				morph.vertexList.resize(morph.morphCount);
-
 				for (auto& vertex : morph.vertexList)
 				{
-					if (!stream.write((char*)&vertex.index, pmx.header.sizeOfVertex)) return false;
+					if (!stream.write((char*)&vertex.index, pmx.header.sizeOfIndices)) return false;
 					if (!stream.write((char*)&vertex.offset, sizeof(vertex.offset))) return false;
 				}
 			}
 			else if (morph.morphType == MorphType::MorphTypeBone)
 			{
-				morph.boneList.resize(morph.morphCount);
-
 				for (auto& bone : morph.boneList)
 				{
 					if (!stream.write((char*)&bone.boneIndex, pmx.header.sizeOfBone)) return false;
@@ -777,18 +762,14 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 				morph.morphType == MorphType::MorphTypeExtraUV2 || morph.morphType == MorphType::MorphTypeExtraUV3 ||
 				morph.morphType == MorphType::MorphTypeExtraUV4)
 			{
-				morph.texcoordList.resize(morph.morphCount);
-
 				for (auto& texcoord : morph.texcoordList)
 				{
-					if (!stream.write((char*)&texcoord.index, pmx.header.sizeOfVertex)) return false;
+					if (!stream.write((char*)&texcoord.index, pmx.header.sizeOfIndices)) return false;
 					if (!stream.write((char*)&texcoord.offset, sizeof(texcoord.offset))) return false;
 				}
 			}
 			else if (morph.morphType == MorphType::MorphTypeMaterial)
 			{
-				morph.materialList.resize(morph.morphCount);
-
 				for (auto& material : morph.materialList)
 				{
 					if (!stream.write((char*)&material.index, pmx.header.sizeOfMaterial)) return false;
@@ -821,7 +802,6 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 			if (!stream.write((char*)&displayFrame.type, sizeof(displayFrame.type))) return false;
 			if (!stream.write((char*)&displayFrame.elementsWithinFrame, sizeof(displayFrame.elementsWithinFrame))) return false;
 
-			displayFrame.elements.resize(displayFrame.elementsWithinFrame);
 			for (auto& element : displayFrame.elements)
 			{
 				if (!stream.write((char*)&element.target, sizeof(element.target))) return false;
@@ -906,523 +886,6 @@ PMXHandler::doSave(StreamWrite& stream) noexcept
 	}
 
 	return true;
-}
-
-std::size_t
-PMXHandler::getFace(std::size_t n) noexcept
-{
-	if (pmx.header.sizeOfVertex == 1)
-		return *(std::uint8_t*)(pmx.indices.data() + n * pmx.header.sizeOfVertex);
-	else if (pmx.header.sizeOfVertex == 2)
-		return *(std::uint16_t*)(pmx.indices.data() + n * pmx.header.sizeOfVertex);
-	else if (pmx.header.sizeOfVertex == 4)
-		return *(std::uint32_t*)(pmx.indices.data() + n * pmx.header.sizeOfVertex);
-	else
-		return false;
-}
-
-void
-PMXHandler::computeFaceNormals() noexcept
-{
-	_facesNormal.resize(pmx.numIndices / 3);
-
-	for (std::size_t i = 0; i < pmx.numIndices; i += 3)
-	{
-		std::size_t f1 = getFace(i);
-		std::size_t f2 = getFace(i + 1);
-		std::size_t f3 = getFace(i + 2);
-
-		const Vector3& a = pmx.vertices[f1].position;
-		const Vector3& b = pmx.vertices[f2].position;
-		const Vector3& c = pmx.vertices[f3].position;
-
-		Vector3 edge1 = c - b;
-		Vector3 edge2 = a - b;
-
-		Vector3 normal = math::normalize(math::cross(edge1, edge2));
-
-		_facesNormal[i / 3] = normal;
-	}
-}
-
-void
-PMXHandler::computeVertricesNormals() noexcept
-{
-	for (size_t i = 0; i < pmx.numVertices; i++)
-	{
-		pmx.vertices[i].normal = ray::float3::Zero;
-	}
-
-	for (size_t i = 0; i < pmx.numIndices; i += 3)
-	{
-		std::uint32_t a = getFace(i);
-		std::uint32_t b = getFace(i + 1);
-		std::uint32_t c = getFace(i + 2);
-
-		pmx.vertices[a].normal += _facesNormal[i / 3];
-		pmx.vertices[b].normal += _facesNormal[i / 3];
-		pmx.vertices[c].normal += _facesNormal[i / 3];
-	}
-
-	for (size_t i = 0; i < pmx.numVertices; i++)
-	{
-		pmx.vertices[i].normal = math::normalize(pmx.vertices[i].normal);
-	}
-}
-
-void
-PMXHandler::computeBoundingBox(Bound& boundingBox) noexcept
-{
-	boundingBox.reset();
-
-	for (size_t i = 0; i < pmx.numVertices; i++)
-		boundingBox.encapsulate(pmx.vertices[i].position);
-}
-
-void
-PMXHandler::computeLightmapPack() noexcept
-{
-	this->computeFaceNormals();
-
-	Bound boundingBox;
-	this->computeBoundingBox(boundingBox);
-
-	pmx.header.addUVCount = 1;
-
-	float2 minUV[3];
-	float2 maxUV[3];
-
-	minUV[0].set(FLT_MAX);
-	minUV[1].set(FLT_MAX);
-	minUV[2].set(FLT_MAX);
-	maxUV[0].set(-FLT_MAX);
-	maxUV[1].set(-FLT_MAX);
-	maxUV[2].set(-FLT_MAX);
-
-	for (size_t i = 0; i < pmx.numIndices; i += 3)
-	{
-		std::uint32_t a = getFace(i);
-		std::uint32_t b = getFace(i + 1);
-		std::uint32_t c = getFace(i + 2);
-
-		float3 polyNormal = math::abs(_facesNormal[i / 3]);
-
-		float2 uv[3];
-
-		int flag = 0;
-		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
-		{
-			flag = 1;
-			uv[0] = pmx.vertices[a].position.yz();
-			uv[1] = pmx.vertices[b].position.yz();
-			uv[2] = pmx.vertices[c].position.yz();
-		}
-		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
-		{
-			flag = 2;
-			uv[0] = pmx.vertices[a].position.xz();
-			uv[1] = pmx.vertices[b].position.xz();
-			uv[2] = pmx.vertices[c].position.xz();
-		}
-		else
-		{
-			uv[0] = pmx.vertices[a].position.xy();
-			uv[1] = pmx.vertices[b].position.xy();
-			uv[2] = pmx.vertices[c].position.xy();
-		}
-
-		for (int j = 0; j < 3; j++)
-		{
-			minUV[flag] = math::min(minUV[flag], uv[j]);
-			maxUV[flag] = math::max(maxUV[flag], uv[j]);
-		}
-	}
-
-	for (size_t i = 0; i < pmx.numIndices; i += 3)
-	{
-		std::uint32_t a = getFace(i);
-		std::uint32_t b = getFace(i + 1);
-		std::uint32_t c = getFace(i + 2);
-
-		float3 polyNormal = math::abs(_facesNormal[i / 3]);
-
-		float2 uv[3];
-
-		int flag = 0;
-		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
-		{
-			flag = 1;
-			uv[0] = pmx.vertices[a].position.yz();
-			uv[1] = pmx.vertices[b].position.yz();
-			uv[2] = pmx.vertices[c].position.yz();
-		}
-		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
-		{
-			flag = 2;
-			uv[0] = pmx.vertices[a].position.xz();
-			uv[1] = pmx.vertices[b].position.xz();
-			uv[2] = pmx.vertices[c].position.xz();
-		}
-		else
-		{
-			uv[0] = pmx.vertices[a].position.xy();
-			uv[1] = pmx.vertices[b].position.xy();
-			uv[2] = pmx.vertices[c].position.xy();
-		}
-
-		float2 deltaUV = maxUV[flag] - minUV[flag];
-
-		uv[0] -= minUV[flag];
-		uv[1] -= minUV[flag];
-		uv[2] -= minUV[flag];
-
-		uv[0] /= deltaUV;
-		uv[1] /= deltaUV;
-		uv[2] /= deltaUV;
-
-		pmx.vertices[a].addCoord[0].set(uv[0]);
-		pmx.vertices[b].addCoord[0].set(uv[1]);
-		pmx.vertices[c].addCoord[0].set(uv[2]);
-	}
-}
-
-LightMapNode*
-PMXHandler::insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept
-{
-	if (node->left && node->right)
-	{
-		auto next = this->insertLightMapItem(node->left, item);
-		return next ? next : insertLightMapItem(node->right, item);
-	}
-	else
-	{
-		if (item.edge.x > node->rect.z || item.edge.y > node->rect.w)
-		{
-			return nullptr;
-		}
-
-		if (item.edge.x == node->rect.z && item.edge.y == node->rect.w)
-		{
-			float2 offset(node->rect.x, node->rect.y);
-			*item.p1 += offset;
-			*item.p2 += offset;
-			*item.p3 += offset;
-			*item.p4 += offset;
-			return node;
-		}
-
-		node->left = new LightMapNode;
-		node->right = new LightMapNode;
-
-		float dw = node->rect.z - item.edge.x;
-		float dh = node->rect.w - item.edge.y;
-
-		if (dw > dh)
-		{
-			node->left->rect = float4(node->rect.x, node->rect.y + item.edge.y, item.edge.x, node->rect.w - item.edge.y);
-			node->right->rect = float4(node->rect.x + item.edge.x, node->rect.y, node->rect.z - item.edge.x, node->rect.w);
-		}
-		else
-		{
-			node->left->rect = float4(node->rect.x + item.edge.x, node->rect.y, node->rect.z - item.edge.x, item.edge.y);
-			node->right->rect = float4(node->rect.x, node->rect.y + item.edge.y, node->rect.z, node->rect.w - item.edge.y);
-		}
-	}
-
-	float2 offset(node->rect.x, node->rect.y);
-	item.offset = offset;
-	*(item.p1) += offset;
-	*(item.p2) += offset;
-	*(item.p3) += offset;
-	*(item.p4) += offset;
-
-	return node;
-}
-
-static GLuint loadShader(GLenum type, const char *source)
-{
-	GLuint shader = glCreateShader(type);
-	if (shader == 0)
-	{
-		fprintf(stderr, "Could not create shader!\n");
-		return 0;
-	}
-	glShaderSource(shader, 1, &source, NULL);
-	glCompileShader(shader);
-	GLint compiled;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-	if (!compiled)
-	{
-		fprintf(stderr, "Could not compile shader!\n");
-		GLint infoLen = 0;
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-		if (infoLen)
-		{
-			char* infoLog = (char*)malloc(infoLen);
-			glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-			fprintf(stderr, "%s\n", infoLog);
-			free(infoLog);
-		}
-		glDeleteShader(shader);
-		return 0;
-	}
-	return shader;
-}
-
-static GLuint loadProgram(const char *vp, const char *fp, const char **attributes, int attributeCount)
-{
-	GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vp);
-	if (!vertexShader)
-		return 0;
-	GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fp);
-	if (!fragmentShader)
-	{
-		glDeleteShader(vertexShader);
-		return 0;
-	}
-
-	GLuint program = glCreateProgram();
-	if (program == 0)
-	{
-		fprintf(stderr, "Could not create program!\n");
-		return 0;
-	}
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, fragmentShader);
-
-	for (int i = 0; i < attributeCount; i++)
-		glBindAttribLocation(program, i, attributes[i]);
-
-	glLinkProgram(program);
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	GLint linked;
-	glGetProgramiv(program, GL_LINK_STATUS, &linked);
-	if (!linked)
-	{
-		fprintf(stderr, "Could not link program!\n");
-		GLint infoLen = 0;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
-		if (infoLen)
-		{
-			char* infoLog = (char*)malloc(sizeof(char) * infoLen);
-			glGetProgramInfoLog(program, infoLen, NULL, infoLog);
-			fprintf(stderr, "%s\n", infoLog);
-			free(infoLog);
-		}
-		glDeleteProgram(program);
-		return 0;
-	}
-	return program;
-}
-
-typedef struct
-{
-	GLuint program;
-	GLint u_lightmap;
-	GLint u_mvp;
-
-	GLuint lightmap;
-	int w, h;
-
-	GLuint vao, vbo, ibo;
-} scene_t;
-
-void CreateScene(PMX* pmx, scene_t* scene)
-{
-	glGenBuffers(1, &scene->vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, scene->vbo);
-	glBufferData(GL_ARRAY_BUFFER, pmx->vertices.size() * sizeof(PMX_Vertex), pmx->vertices.data(), GL_STATIC_DRAW);
-
-	glGenBuffers(1, &scene->ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scene->ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, pmx->indices.size(), pmx->indices.data(), GL_STATIC_DRAW);
-
-	glGenVertexArrays(1, &scene->vao);
-	glBindVertexArray(scene->vao);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PMX_Vertex), (void*)offsetof(PMX_Vertex, position));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(PMX_Vertex), (void*)offsetof(PMX_Vertex, coord));
-
-	glBindBuffer(GL_ARRAY_BUFFER, scene->vbo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scene->ibo);
-
-	glBindVertexArray(0);
-
-	glGenTextures(1, &scene->lightmap);
-	glBindTexture(GL_TEXTURE_2D, scene->lightmap);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	unsigned char emissive[] = { 0, 0, 0, 255 };
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, emissive);
-
-	const char *vp =
-		"#version 150 core\n"
-		"in vec3 a_position;\n"
-		"in vec2 a_texcoord;\n"
-		"uniform mat4 u_mvp;\n"
-		"out vec2 v_texcoord;\n"
-
-		"void main()\n"
-		"{\n"
-			"v_texcoord = a_texcoord;\n"
-			"gl_Position = u_mvp * vec4(a_position, 1.0);\n"
-		"}\n";
-
-	const char *fp =
-		"#version 150 core\n"
-		"in vec2 v_texcoord;\n"
-		"uniform sampler2D u_lightmap;\n"
-		"out vec4 o_color;\n"
-
-		"void main()\n"
-		"{\n"
-			"o_color = vec4(texture(u_lightmap, v_texcoord).rgb, gl_FrontFacing ? 1.0 : 0.0);\n"
-		"}\n";
-
-	const char *attribs[] =
-	{
-		"a_position",
-		"a_texcoord"
-	};
-
-	scene->program = loadProgram(vp, fp, attribs, 2);
-	if (!scene->program)
-	{
-		fprintf(stderr, "Error loading shader\n");
-		return;
-	}
-
-	scene->u_mvp = glGetUniformLocation(scene->program, "u_mvp");
-	scene->u_lightmap = glGetUniformLocation(scene->program, "u_lightmap");
-}
-
-void
-PMXHandler::computeLightmapPackByLightmapper(std::size_t w, std::size_t h, std::uint8_t channel, bool bakeScene, int bounces, int margin) noexcept
-{
-	if (glewInit() != GLEW_OK)
-	{
-		std::cout << "glewInit() failed.";
-		return;
-	}
-
-	lm_context *ctx = lmCreate(64, 0.1f, 100.0f, 1.0, 1.0, 1.0, 1, 1e-3);
-	if (!ctx)
-	{
-		std::cout << "Could not initialize lightmapper." << std::endl;
-		exit(-1);
-	}
-
-	scene_t scene;
-	CreateScene(&pmx, &scene);
-
-	std::vector<float> lightmap;
-	std::vector<float> lightmapTemp;
-
-	lightmap.resize(w * h * channel);
-	lightmapTemp.resize(w * h * channel);
-
-	std::memset(lightmap.data(), 0, sizeof(lightmap.size()) * sizeof(float));
-	std::memset(lightmapTemp.data(), 0, sizeof(lightmapTemp.size()) * sizeof(float));
-
-	std::vector<std::uint32_t> offsetsFace;
-	offsetsFace.resize(pmx.numMaterials);
-
-	for (int i = 0; i < pmx.numMaterials; i++)
-	{
-		std::uint32_t offsetFace = 0;
-
-		for (int j = 0; j < i; j++)
-			offsetFace += pmx.materials[j].FaceCount * pmx.header.sizeOfVertex;
-
-		offsetsFace[i] = offsetFace;
-	}
-
-	std::size_t offsetVertices = offsetof(PMX_Vertex, position);
-	std::size_t offsetTexcoord = offsetof(PMX_Vertex, coord);
-
-	lm_type faceType;
-	if (pmx.header.sizeOfVertex == 1)
-		faceType = LM_UNSIGNED_BYTE;
-	else if (pmx.header.sizeOfVertex == 2)
-		faceType = LM_UNSIGNED_SHORT;
-	else
-		faceType = LM_UNSIGNED_INT;
-
-	GLenum glType = pmx.header.sizeOfVertex == 1;
-	if (pmx.header.sizeOfVertex == 1)
-		glType = GL_UNSIGNED_BYTE;
-	else if (pmx.header.sizeOfVertex == 2)
-		glType = GL_UNSIGNED_SHORT;
-	else
-		glType = GL_UNSIGNED_INT;
-
-	std::time_t t1 = std::time(nullptr);
-	std::cout << "start time : " << std::put_time(std::localtime(&t1), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
-
-	lmSetTargetLightmap(ctx, lightmap.data(), w, h, channel);
-	lmSetGeometry(ctx, float4x4::One.data(),
-		LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetVertices, sizeof(PMX_Vertex),
-		LM_FLOAT, (unsigned char*)pmx.vertices.data() + offsetTexcoord, sizeof(PMX_Vertex),
-		pmx.numIndices, faceType, (char*)pmx.indices.data());
-
-	float4x4 view, proj;
-	Viewportt<int> vp;
-
-	std::size_t baseIndex = -1;
-
-	while (lmBegin(ctx, vp.ptr(), view.data(), proj.data()))
-	{
-		glViewport(vp.left, vp.top, vp.width, vp.height);
-
-		glEnable(GL_DEPTH_TEST);
-
-		glUseProgram(scene.program);
-
-		glUniform1i(scene.u_lightmap, 0);
-		glUniformMatrix4fv(scene.u_mvp, 1, GL_FALSE, (proj * view).ptr());
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, scene.lightmap);
-		glBindVertexArray(scene.vao);
-			
-		for (int i = 0; i < pmx.numMaterials; i++)
-		{
-			glDrawElements(GL_TRIANGLES, pmx.materials[i].FaceCount, glType, (char*)nullptr + offsetsFace[i]);
-		}
-
-		if (baseIndex != ctx->meshPosition.triangle.baseIndex)
-		{
-			std::cout.precision(2);
-			std::cout << "processing : " << lmProgress(ctx) * 100 << "%" << std::fixed;
-			std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
-
-			baseIndex = ctx->meshPosition.triangle.baseIndex;
-		}
-
-		lmEnd(ctx);
-	}
-
-	for (int j = 0; j < margin; j++)
-	{
-		lmImageSmooth(lightmap.data(), lightmapTemp.data(), w, h, channel);
-		lmImageDilate(lightmapTemp.data(), lightmap.data(), w, h, channel);
-	}
-
-	std::time_t t2 = std::time(nullptr);
-	std::cout << "processing : " << "100.00%" << std::fixed << std::endl;
-	std::cout << "end time : " << std::put_time(std::localtime(&t2), "%Y-%m-%d %H.%M.%S") << "." << std::endl;
-
-	std::ostringstream oss;
-	oss << "C:/Users/ray/Desktop/1.tga";
-
-	lmImageSaveTGAf(oss.str().c_str(), lightmap.data(), w, h, channel);
-
-	lmDestroy(ctx);
 }
 
 _NAME_END

@@ -1617,6 +1617,14 @@ void lmImageFtoUB(const float *image, unsigned char *outImage, int w, int h, int
 }
 
 // TGA output helpers
+static void lm_swapImage(unsigned char *image, int w, int h, int c)
+{
+	assert(c > 0);
+	for (int j = 0; j < h / 2; j++)
+		for (int i = 0; i < w * c; i++)
+			LM_SWAP(unsigned char, image[i + j * (w * c)], image[(h - j - 1) * (w * c) + i]);
+}
+
 static void lm_swapRandBub(unsigned char *image, int w, int h, int c)
 {
 	assert(c >= 3);
@@ -1654,9 +1662,10 @@ lm_bool lmImageSaveTGAf(const char *filename, const float *image, int w, int h, 
 {
 	unsigned char *temp = (unsigned char*)LM_CALLOC(w * h * c, sizeof(unsigned char));
 	lmImageFtoUB(image, temp, w, h, c, max);
+	lm_swapImage(temp, w, h, c);
 	lm_bool success = lmImageSaveTGAub(filename, temp, w, h, c);
 	LM_FREE(temp);
 	return success;
 }
 
-#endif // LIGHTMAPPER_IMPLEMENTATION
+#endif

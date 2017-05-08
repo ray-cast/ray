@@ -57,7 +57,7 @@ _NAME_BEGIN
 #   define M_PI_3 1.047197551196597746f
 #endif
 #ifndef M_TWO_PI
-#   define M_TWO_PI 3.14159265358979323846f * 2.0
+#   define M_TWO_PI (3.14159265358979323846f * 2.0)
 #endif
 
 #ifndef DEG_TO_RAD

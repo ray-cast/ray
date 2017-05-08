@@ -350,7 +350,6 @@ static bool lm_trySamplingConservativeTriangleRasterizerPosition(lm_context *ctx
 		}
 	}
 
-	// could not interpolate. must render a hemisphere:
 	float2 pixel[16];
 	pixel[0].set(ctx->meshPosition.rasterizer.x, ctx->meshPosition.rasterizer.y);
 	pixel[1].set(ctx->meshPosition.rasterizer.x + 1, ctx->meshPosition.rasterizer.y);
@@ -361,7 +360,6 @@ static bool lm_trySamplingConservativeTriangleRasterizerPosition(lm_context *ctx
 	int nRes = lm_convexClip(pixel, 4, ctx->meshPosition.triangle.uv, 3, res);
 	if (nRes > 0)
 	{
-		// do centroid sampling
 		float2 centroid = res[0];
 		float area = res[nRes - 1].x * res[0].y - res[nRes - 1].y * res[0].x;
 		for (int i = 1; i < nRes; i++)
@@ -376,7 +374,6 @@ static bool lm_trySamplingConservativeTriangleRasterizerPosition(lm_context *ctx
 		{
 			float2 uv = math::barycentric(ctx->meshPosition.triangle.uv[0], ctx->meshPosition.triangle.uv[1], ctx->meshPosition.triangle.uv[2], centroid);
 
-			// sample it only if its's not degenerate
 			if (math::isfinite(uv))
 			{
 				float3 p0 = ctx->meshPosition.triangle.p[0];
@@ -399,14 +396,14 @@ static bool lm_trySamplingConservativeTriangleRasterizerPosition(lm_context *ctx
 					up = math::normalize(math::cross(side, ctx->meshPosition.sample.direction));
 					int rx = ctx->meshPosition.rasterizer.x % 3;
 					int ry = ctx->meshPosition.rasterizer.y % 3;
-					const float pi = 3.14159265358979f; // no c++ M_PI?
-					const float baseAngle = 0.03f * pi;
+
+					const float baseAngle = 0.03f * M_PI;
 					const float baseAngles[3][3] = {
 						{ baseAngle, baseAngle + 1.0f / 3.0f, baseAngle + 2.0f / 3.0f },
 						{ baseAngle + 1.0f / 3.0f, baseAngle + 2.0f / 3.0f, baseAngle },
 						{ baseAngle + 2.0f / 3.0f, baseAngle, baseAngle + 1.0f / 3.0f }
 					};
-					float phi = 2.0f * pi * baseAngles[ry][rx] + 0.1f * ((float)rand() / (float)RAND_MAX);
+					float phi = 2.0f * M_PI * baseAngles[ry][rx] + 0.1f * ((float)rand() / (float)RAND_MAX);
 					ctx->meshPosition.sample.up = math::normalize(side * cosf(phi) + up * sinf(phi));
 
 					return true;
@@ -578,11 +575,9 @@ done:
 	ctx->hemisphere.transfer.pboTransferStarted = false;
 }
 
-static void lm_setView(int* viewport, int x, int y, int w, int h, float* view, float3 pos, float3 dir, float3 up, float* proj, float l, float r, float b, float t, float n, float f)
+void 
+LightMassBaking::updateSampleMatrices(float* view, float3 pos, float3 dir, const float3& up, float* proj, float l, float r, float b, float t, float n, float f)
 {
-	// viewport
-	viewport[0] = x; viewport[1] = y; viewport[2] = w; viewport[3] = h;
-
 	// view matrix: lookAt(pos, pos + dir, up)
 	float3 side = math::cross(dir, up);
 	//up = cross(side, dir);
@@ -597,55 +592,76 @@ static void lm_setView(int* viewport, int x, int y, int w, int h, float* view, f
 	proj[0] = n2 * ilr;      proj[1] = 0.0f;          proj[2] = 0.0f;           proj[3] = 0.0f;
 	proj[4] = 0.0f;          proj[5] = n2 * ibt;      proj[6] = 0.0f;           proj[7] = 0.0f;
 	proj[8] = (r + l) * ilr; proj[9] = (t + b) * ibt; proj[10] = (f + n) * ninf; proj[11] = -1.0f;
-	proj[12] = 0.0f;          proj[13] = 0.0f;          proj[14] = f * n2 * ninf;  proj[15] = 0.0f;
+	proj[12] = 0.0f;         proj[13] = 0.0f;         proj[14] = f * n2 * ninf;  proj[15] = 0.0f;
 }
 
-static bool lm_beginSampleHemisphere(lm_context *ctx, int* viewport, float* view, float* proj)
+bool 
+LightMassBaking::updateSampleHemisphere(int* viewport, float* view, float* proj)
 {
-	if (ctx->meshPosition.hemisphere.side >= 5)
+	if (_ctx->meshPosition.hemisphere.side >= 5)
 		return false;
 
-	if (ctx->meshPosition.hemisphere.side == 0)
+	if (_ctx->meshPosition.hemisphere.side == 0)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, ctx->hemisphere.fb[0]);
+		glBindFramebuffer(GL_FRAMEBUFFER, _ctx->hemisphere.fb[0]);
 
-		if (ctx->hemisphere.fbHemiIndex == 0)
+		if (_ctx->hemisphere.fbHemiIndex == 0)
 		{
-			glClearColor(ctx->hemisphere.clearColor.r, ctx->hemisphere.clearColor.g, ctx->hemisphere.clearColor.b, 1.0f);
+			glClearColor(_ctx->hemisphere.clearColor.r, _ctx->hemisphere.clearColor.g, _ctx->hemisphere.clearColor.b, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 
-		ctx->hemisphere.fbHemiToLightmapLocation[ctx->hemisphere.fbHemiIndex] = int2(ctx->meshPosition.rasterizer.x, ctx->meshPosition.rasterizer.y);
+		_ctx->hemisphere.fbHemiToLightmapLocation[_ctx->hemisphere.fbHemiIndex].set(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y);
 	}
 
-	int x = (ctx->hemisphere.fbHemiIndex % ctx->hemisphere.fbHemiCountX) * ctx->hemisphere.size * 3;
-	int y = (ctx->hemisphere.fbHemiIndex / ctx->hemisphere.fbHemiCountX) * ctx->hemisphere.size;
+	int x = (_ctx->hemisphere.fbHemiIndex % _ctx->hemisphere.fbHemiCountX) * _ctx->hemisphere.size * 3;
+	int y = (_ctx->hemisphere.fbHemiIndex / _ctx->hemisphere.fbHemiCountX) * _ctx->hemisphere.size;
 
-	int size = ctx->hemisphere.size;
-	float zNear = ctx->hemisphere.zNear;
-	float zFar = ctx->hemisphere.zFar;
+	int size = _ctx->hemisphere.size;
+	float zNear = _ctx->hemisphere.zNear;
+	float zFar = _ctx->hemisphere.zFar;
 
-	float3 pos = ctx->meshPosition.sample.position;
-	float3 dir = ctx->meshPosition.sample.direction;
-	float3 up = ctx->meshPosition.sample.up;
+	const float3& pos = _ctx->meshPosition.sample.position;
+	const float3& dir = _ctx->meshPosition.sample.direction;
+	const float3& up = _ctx->meshPosition.sample.up;
 	float3 right = math::cross(dir, up);
 
-	switch (ctx->meshPosition.hemisphere.side)
+	switch (_ctx->meshPosition.hemisphere.side)
 	{
 	case 0: // center
-		lm_setView(viewport, x, y, size, size, view, pos, dir, up, proj, -zNear, zNear, -zNear, zNear, zNear, zFar);
+		viewport[0] = x;
+		viewport[1] = y;
+		viewport[2] = size;
+		viewport[3] = size;
+		this->updateSampleMatrices(view, pos, dir, up, proj, -zNear, zNear, -zNear, zNear, zNear, zFar);
 		break;
 	case 1: // right
-		lm_setView(viewport, size + x, y, size / 2, size, view, pos, right, up, proj, -zNear, 0.0f, -zNear, zNear, zNear, zFar);
+		viewport[0] = size + x;
+		viewport[1] = y;
+		viewport[2] = size / 2;
+		viewport[3] = size;
+		this->updateSampleMatrices(view, pos, right, up, proj, -zNear, 0.0f, -zNear, zNear, zNear, zFar);
 		break;
 	case 2: // left
-		lm_setView(viewport, size + x + size / 2, y, size / 2, size, view, pos, -right, up, proj, 0.0f, zNear, -zNear, zNear, zNear, zFar);
+		viewport[0] = size + x + size / 2;
+		viewport[1] = y;
+		viewport[2] = size / 2;
+		viewport[3] = size;
+		this->updateSampleMatrices(view, pos, -right, up, proj, 0.0f, zNear, -zNear, zNear, zNear, zFar);
 		break;
 	case 3: // down
-		lm_setView(viewport, 2 * size + x, y + size / 2, size, size / 2, view, pos, -up, dir, proj, -zNear, zNear, 0.0f, zNear, zNear, zFar);
+		viewport[0] = 2 * size + x;
+		viewport[1] = y + size / 2;
+		viewport[2] = size;
+		viewport[3] = size / 2;
+		this->updateSampleMatrices(view, pos, -up, dir, proj, -zNear, zNear, 0.0f, zNear, zNear, zFar);
 		break;
 	case 4: // up
-		lm_setView(viewport, 2 * size + x, y, size, size / 2, view, pos, up, -dir, proj, -zNear, zNear, -zNear, 0.0f, zNear, zFar);
+		viewport[0] = 2 * size + x;
+		viewport[1] = y;
+		viewport[2] = size;
+		viewport[3] = size / 2;
+		this->updateSampleMatrices(view, pos, up, -dir, proj, -zNear, zNear, -zNear, 0.0f, zNear, zFar);
 		break;
 	default:
 		assert(false);
@@ -1464,7 +1480,7 @@ LightMassBaking::beginSampleHemisphere(int* outViewport4, float* outView4x4, flo
 {
 	assert(_ctx->meshPosition.triangle.baseIndex < _ctx->mesh.count);
 
-	while (!lm_beginSampleHemisphere(_ctx.get(), outViewport4, outView4x4, outProjection4x4))
+	while (!this->updateSampleHemisphere(outViewport4, outView4x4, outProjection4x4))
 	{
 		if (lm_findNextConservativeTriangleRasterizerPosition(_ctx.get()))
 		{

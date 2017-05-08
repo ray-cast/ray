@@ -164,6 +164,9 @@ protected:
 	virtual void setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
 	virtual void setMeshPosition(std::uint32_t indicesTriangleBaseIndex);
 
+	void updateSampleMatrices(float* view, float3 pos, float3 dir, const float3& up, float* proj, float l, float r, float b, float t, float n, float f);
+	bool updateSampleHemisphere(int* viewport, float* view, float* proj);
+
 	virtual bool beginSampleHemisphere(int* outViewport4, float* outView4x4, float* outProjection4x4);
 	virtual void doSampleHemisphere(const struct LightMassContextGL& ctxGL, const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp);
 	virtual void endSampleHemisphere();

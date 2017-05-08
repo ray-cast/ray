@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -47,23 +47,23 @@ template<typename T>
 class Vector2t
 {
 public:
-    typedef typename trait::_typeaddition<T>::value_type value_type;
-    typedef typename trait::_typeaddition<T>::pointer pointer;
-    typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
-    typedef typename trait::_typeaddition<T>::reference reference;
-    typedef typename trait::_typeaddition<T>::const_reference const_reference;
+	typedef typename trait::_typeaddition<T>::value_type value_type;
+	typedef typename trait::_typeaddition<T>::pointer pointer;
+	typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+	typedef typename trait::_typeaddition<T>::reference reference;
+	typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
 	T x, y;
 
-    static const Vector2t<T> Zero;
-    static const Vector2t<T> One;
-    static const Vector2t<T> UnitX;
-    static const Vector2t<T> UnitY;
+	static const Vector2t<T> Zero;
+	static const Vector2t<T> One;
+	static const Vector2t<T> UnitX;
+	static const Vector2t<T> UnitY;
 	static const Vector2t<T> Right;
 	static const Vector2t<T> Forward;
 
-    Vector2t() noexcept {}
-    Vector2t(T xx, T yy) noexcept : x(xx), y(yy) {}
+	Vector2t() noexcept {}
+	Vector2t(T xx, T yy) noexcept : x(xx), y(yy) {}
 	explicit Vector2t(T xy) noexcept : x(xy), y(xy) {}
 
 	Vector2t<T>& operator+=(T scale) noexcept { x += scale; y += scale; return *this; }
@@ -71,10 +71,10 @@ public:
 	Vector2t<T>& operator*=(T scale) noexcept { x *= scale; y *= scale; return *this; }
 	Vector2t<T>& operator/=(T scale) noexcept { x /= scale; y /= scale; return *this; }
 
-    Vector2t<T>& operator+=(const Vector2t<T>& v) noexcept { x += v.x; y += v.y; return *this; }
-    Vector2t<T>& operator-=(const Vector2t<T>& v) noexcept { x -= v.x; y -= v.y; return *this; }
-    Vector2t<T>& operator*=(const Vector2t<T>& v) noexcept { x *= v.x; y *= v.y; return *this; }
-    Vector2t<T>& operator/=(const Vector2t<T>& v) noexcept { x /= v.x; y /= v.y; return *this; }
+	Vector2t<T>& operator+=(const Vector2t<T>& v) noexcept { x += v.x; y += v.y; return *this; }
+	Vector2t<T>& operator-=(const Vector2t<T>& v) noexcept { x -= v.x; y -= v.y; return *this; }
+	Vector2t<T>& operator*=(const Vector2t<T>& v) noexcept { x *= v.x; y *= v.y; return *this; }
+	Vector2t<T>& operator/=(const Vector2t<T>& v) noexcept { x /= v.x; y /= v.y; return *this; }
 
 	template <typename S>
 	explicit operator Vector2t<S>() const
@@ -82,46 +82,46 @@ public:
 		return Vector2t<S>(static_cast<S>(x), static_cast<S>(y));
 	}
 
-    T operator[](unsigned int i) const noexcept { return *(&x + i); }
-    reference operator[](unsigned int i) noexcept { return *(&x + i); }
+	T operator[](unsigned int i) const noexcept { return *(&x + i); }
+	reference operator[](unsigned int i) noexcept { return *(&x + i); }
 
-    void set(T val) noexcept { x = y = val; }
-    void set(T xx, T yy) noexcept { x = xx; y = yy; }
+	void set(T val) noexcept { x = y = val; }
+	void set(T xx, T yy) noexcept { x = xx; y = yy; }
 	void set(const Vector2t<T>& v) noexcept { x = v.x; y = v.y; }
 
-    reference getComponent(unsigned char index) noexcept
-    {
-        switch (index)
-        {
-        case 0: return x;
-        case 1: return y;
-        case 'x': return x;
-        case 'y': return y;
-        default:
-            assert(false);
-        }
-    }
+	reference getComponent(unsigned char index) noexcept
+	{
+		switch (index)
+		{
+		case 0: return x;
+		case 1: return y;
+		case 'x': return x;
+		case 'y': return y;
+		default:
+			assert(false);
+		}
+	}
 
-    pointer ptr() noexcept { return (pointer)this; }
-    const_pointer ptr() const noexcept { return (const_pointer)this;}
-    pointer data() noexcept { return (pointer)this; }
-    const_pointer data() const noexcept { return (const_pointer)this; }
+	pointer ptr() noexcept { return (pointer)this; }
+	const_pointer ptr() const noexcept { return (const_pointer)this; }
+	pointer data() noexcept { return (pointer)this; }
+	const_pointer data() const noexcept { return (const_pointer)this; }
 
-    template<typename ostream>
-    ostream& operator << (ostream& os)
-    {
-        os << x << ", " << y;
-        return os;
-    }
+	template<typename ostream>
+	ostream& operator << (ostream& os)
+	{
+		os << x << ", " << y;
+		return os;
+	}
 
-    template<typename istream>
-    istream& operator >> (istream& is)
-    {
-        is >> x;
-        is.ignore(2);
-        is >> y;
-        return is;
-    }
+	template<typename istream>
+	istream& operator >> (istream& is)
+	{
+		is >> x;
+		is.ignore(2);
+		is >> y;
+		return is;
+	}
 };
 
 template<typename T> const Vector2t<T> Vector2t<T>::Zero = Vector2t<T>((T)0, (T)0);
@@ -146,37 +146,37 @@ inline bool operator!=(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 template <typename T>
 inline Vector2t<T> operator*(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 {
-    return Vector2t<T>(v1.x * v2.x, v1.y * v2.y);
+	return Vector2t<T>(v1.x * v2.x, v1.y * v2.y);
 }
 
 template <typename T>
 inline Vector2t<T> operator+(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 {
-    return Vector2t<T>(v1.x + v2.x, v1.y + v2.y);
+	return Vector2t<T>(v1.x + v2.x, v1.y + v2.y);
 }
 
 template <typename T>
 inline Vector2t<T> operator-(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 {
-    return Vector2t<T>(v1.x - v2.x, v1.y - v2.y);
+	return Vector2t<T>(v1.x - v2.x, v1.y - v2.y);
 }
 
 template <typename T>
 inline Vector2t<T> operator*(T f, const Vector2t<T>& v) noexcept
 {
-    return Vector2t<T>(f*v.x, f*v.y);
+	return Vector2t<T>(f*v.x, f*v.y);
 }
 
 template <typename T>
 inline Vector2t<T> operator*(const Vector2t<T>& v, T f) noexcept
 {
-    return Vector2t<T>(f*v.x, f*v.y);
+	return Vector2t<T>(f*v.x, f*v.y);
 }
 
 template <typename T>
 inline Vector2t<T> operator/(T f, const Vector2t<T>& v) noexcept
 {
-    return Vector2t<T>(f / v.x, f / v.y);
+	return Vector2t<T>(f / v.x, f / v.y);
 }
 
 template <typename T>
@@ -188,43 +188,43 @@ inline Vector2t<T> operator/(const Vector2t<T>& v, T f) noexcept
 template <typename T>
 inline Vector2t<T> operator/(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 {
-    return Vector2t<T>(v1.x / v2.x, v1.y / v2.y);
+	return Vector2t<T>(v1.x / v2.x, v1.y / v2.y);
 }
 
 template <typename T>
 inline Vector2t<T> operator-(const Vector2t<T>& v) noexcept
 {
-    return Vector2t<T>(-v.x, -v.y);
+	return Vector2t<T>(-v.x, -v.y);
 }
 
 template <typename T>
 inline Vector2t<T> operator~(const Vector2t<T>& v) noexcept
 {
-    return Vector2t<T>(v).normalize();
+	return Vector2t<T>(v).normalize();
 }
 
 template <typename T>
 inline Vector2t<T> operator*(unsigned char scale, const Vector2t<T>& v) noexcept
 {
-    return Vector2t<T>(v.x * scale, v.y * scale);
+	return Vector2t<T>(v.x * scale, v.y * scale);
 }
 
 template <typename T>
 inline Vector2t<T> operator/(unsigned char scale, const Vector2t<T>& v) noexcept
 {
-    return Vector2t<T>(v.x / scale, v.y / scale);
+	return Vector2t<T>(v.x / scale, v.y / scale);
 }
 
 template <typename T>
 inline Vector2t<T> operator*(unsigned scale, const Vector2t<T>& v) noexcept
 {
-    return Vector2t<T>(v.x * scale, v.y * scale);
+	return Vector2t<T>(v.x * scale, v.y * scale);
 }
 
 template <typename T>
 inline Vector2t<T> operator/(unsigned scale, const Vector2t<T>& v) noexcept
 {
-    return Vector2t<T>(v.x / scale, v.y / scale);
+	return Vector2t<T>(v.x / scale, v.y / scale);
 }
 
 template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
@@ -287,6 +287,33 @@ namespace math
 	inline bool equal(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 	{
 		return math::equal<T>(v1.x, v2.x) && math::equal<T>(v1.y, v2.y);
+	}
+
+	template<typename T>
+	inline bool isfinite(const Vector2t<T>& v)
+	{
+		return std::isfinite(v.x) && std::isfinite(v.y);
+	}
+
+	template<typename T>
+	inline bool lineIntersection(const Vector2t<T>& x0, const Vector2t<T>& x1, const Vector2t<T>& y0, const Vector2t<T>& y1, Vector2t<T>& res)
+	{
+		Vector2t<T> dx = x1 - x0;
+		Vector2t<T> dy = y1 - y0;
+
+		T dyx = dy.x * dx.y - dy.y * dx.x;
+		if (dyx == 0.0f)
+			return false;
+
+		Vector2t<T> d = x0 - y0;
+		dyx = (d.x * dx.y - d.y * dx.x) / dyx;
+		if (dyx <= 0 || dyx >= 1)
+			return false;
+
+		res.x = y0.x + dyx * dy.x;
+		res.y = y0.y + dyx * dy.y;
+
+		return true;
 	}
 
 	template<typename T>
@@ -441,6 +468,40 @@ namespace math
 	inline Vector2t<T> random(const Vector2t<T>& min, const Vector2t<T>& max)
 	{
 		return Vector2t<T>(random(min.x, max.x), random(min.y, max.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> ceil(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::ceil(v.x), std::ceil(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> floor(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::floor(v.x), std::floor(v.y));
+	}
+
+	template<typename T>
+	static Vector2t<T> barycentric(const Vector2t<T>& p1, const Vector2t<T>& p2, const Vector2t<T>& p3, const Vector2t<T>& p)
+	{
+		// http://www.blackpawn.com/texts/pointinpoly/
+
+		float2 v0 = p3 - p1;
+		float2 v1 = p2 - p1;
+		float2 v2 = p - p1;
+
+		float dot00 = math::dot(v0, v0);
+		float dot01 = math::dot(v0, v1);
+		float dot02 = math::dot(v0, v2);
+		float dot11 = math::dot(v1, v1);
+		float dot12 = math::dot(v1, v2);
+
+		float invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
+		float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+		float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+
+		return float2(u, v);
 	}
 }
 

@@ -153,12 +153,12 @@ public:
 
 		std::uint32_t imageSize = GetImageSize();
 
-		std::unique_ptr<float[]> lightmap = std::make_unique<float[]>(imageSize * imageSize * 4);
-		std::memset(lightmap.get(), 0, imageSize * imageSize * sizeof(float) * 4);
+		std::unique_ptr<float[]> lightmap = std::make_unique<float[]>(imageSize * imageSize);
+		std::memset(lightmap.get(), 0, imageSize * imageSize * sizeof(float));
 
 		ray::LightMassParams params;
 		params.lightMap.width = params.lightMap.height = imageSize;
-		params.lightMap.channel = 4;
+		params.lightMap.channel = 1;
 		params.lightMap.data = lightmap.get();
 		params.baking.hemisphereSize = GetSampleCount();
 

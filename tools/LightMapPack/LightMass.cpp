@@ -38,6 +38,27 @@
 
 _NAME_BEGIN
 
+#pragma pack(push)
+#pragma pack(1)
+
+struct TGAHeader
+{
+	std::uint8_t  id_length;
+	std::uint8_t  colormap_type;
+	std::uint8_t  image_type;
+	std::uint16_t colormap_index;
+	std::uint16_t colormap_length;
+	std::uint8_t  colormap_size;
+	std::uint16_t x_origin;
+	std::uint16_t y_origin;
+	std::uint16_t width;
+	std::uint16_t height;
+	std::uint8_t  pixel_size;
+	std::uint8_t  attributes;
+};
+
+#pragma pack(pop)
+
 LightMass::LightMass() noexcept
 	: _lightMassListener(std::make_shared<LightMassListener>())
 {
@@ -378,9 +399,54 @@ LightMass::save(const std::string& path) noexcept
 bool 
 LightMass::saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c)
 {
-	if (_lightMassBaking)
-		return _lightMassBaking->saveAsTGA(path, data, w, h, c);
-	return false;
+	assert(c == 1 || c == 3 || c == 4);
+
+	bool isGreyscale = c == 1;
+	bool hasAlpha = c == 4;
+
+	TGAHeader header;
+	header.id_length = 0;
+	header.colormap_type = 0;
+	header.image_type = isGreyscale ? 3 : 2;
+	header.colormap_index = 0;
+	header.colormap_length = 0;
+	header.colormap_size = 0;
+	header.x_origin = 0;
+	header.y_origin = 0;
+	header.width = w;
+	header.height = h;
+	header.pixel_size = c * 8;
+	header.attributes = hasAlpha ? 8 : 0;
+
+	auto temp = std::make_unique<std::uint8_t[]>(w * h * c);
+	auto image = temp.get();
+
+	float maxValue = 0.0f;
+	for (int i = 0; i < w * h; i++)
+		for (int j = 0; j < c; j++)
+				maxValue = std::max(maxValue, data[i * c + j]);
+
+	for (int i = 0; i < w * h * c; i++)
+		image[i] = math::clamp<std::uint8_t>(std::round(data[i] * 255 / maxValue), 0, 255);
+
+	for (int j = 0; j < h / 2; j++)
+		for (int i = 0; i < w * c; i++)
+			std::swap(image[i + j * (w * c)], image[(h - j - 1) * (w * c) + i]);
+
+	if (!isGreyscale)
+	{
+		for (int i = 0; i < w * h * c; i += c)
+			std::swap(image[i], image[i + 2]);
+	}
+
+	ofstream stream;
+	if (stream.open(path))
+	{
+		stream.write((char*)&header, sizeof(header));
+		stream.write((char*)image, w * h * c);
+	}
+
+	return true;
 }
 
 bool 

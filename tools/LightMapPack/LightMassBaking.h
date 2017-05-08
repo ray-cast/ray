@@ -41,6 +41,8 @@
 
 _NAME_BEGIN
 
+struct lm_context;
+
 struct LightMapItem
 {
 	float2 edge, offset;
@@ -145,18 +147,40 @@ class LightMassBaking
 {
 public:
 	LightMassBaking() noexcept;
-	~LightMassBaking() noexcept;
+	virtual ~LightMassBaking() noexcept;
 
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
+	virtual void setLightMassListener(LightMassListenerPtr pointer) noexcept;
+	virtual LightMassListenerPtr getLightMassListener() const noexcept;
 
-	bool baking(const LightBakingOptions& options) noexcept;
-	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c);
+	virtual bool baking(const LightBakingOptions& options) noexcept;
+
+protected:
+	virtual bool setupOpenGL(const LightModelData& params) noexcept;
+
+	virtual bool setupBakeTools(const LightBakingParams& params);
+	virtual void closeBakeTools();
+
+	virtual void setRenderTarget(float *outLightmap, int w, int h, int c);
+	virtual void setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
+	virtual void setMeshPosition(std::uint32_t indicesTriangleBaseIndex);
+
+	virtual bool beginSampleHemisphere(int* outViewport4, float* outView4x4, float* outProjection4x4);
+	virtual void doSampleHemisphere(const struct LightMassContextGL& ctxGL, const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp);
+	virtual void endSampleHemisphere();
+
+	virtual float getSampleProcess() noexcept;
+
+	std::uint32_t loadShader(std::uint32_t type, const char *source);
+	std::uint32_t loadProgram(std::uint32_t vs, std::uint32_t fs, const char **attributes, int attributeCount);
 
 private:
-	bool initialize(const LightBakingOptions& options, struct LightMassContextGL&) noexcept;
+	float4x4 _view;
+	float4x4 _project;
+	float4x4 _viewProject;
 
-private:
+	std::unique_ptr<lm_context> _ctx;
+	std::unique_ptr<LightMassContextGL> _ctxGL;
+
 	LightMassListenerPtr _lightMassListener;
 };
 

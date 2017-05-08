@@ -125,6 +125,22 @@ public:
 		return channel;
 	}
 
+	std::uint32_t GetSampleCount()
+	{
+		std::uint32_t size = 0;
+		while (!size)
+		{
+			std::cout << "Input the sample size (16, 32, 64, 128, 256, 512): ";
+			char paths[MAX_PATH];
+			std::cin.getline(paths, MAX_PATH);
+			size = atoi(paths);
+			if (size == 16 || size == 32 || size == 64 || size == 128 || size == 256, size == 512)
+				break;
+		}
+
+		return size;
+	}
+
 	bool baking(std::string path)
 	{
 		while (path.empty())
@@ -136,15 +152,15 @@ public:
 		}
 
 		std::uint32_t imageSize = GetImageSize();
-		std::uint32_t imagechannel = GetImageChannel();
 
-		std::unique_ptr<float[]> lightmap = std::make_unique<float[]>(imageSize * imageSize * imagechannel);
-		std::memset(lightmap.get(), 0, imageSize * imageSize * imagechannel * sizeof(float));
+		std::unique_ptr<float[]> lightmap = std::make_unique<float[]>(imageSize * imageSize * 4);
+		std::memset(lightmap.get(), 0, imageSize * imageSize * sizeof(float) * 4);
 
 		ray::LightMassParams params;
 		params.lightMap.width = params.lightMap.height = imageSize;
-		params.lightMap.channel = imagechannel;
+		params.lightMap.channel = 4;
 		params.lightMap.data = lightmap.get();
+		params.baking.hemisphereSize = GetSampleCount();
 
 		_lightMass = std::make_shared<ray::LightMass>();
 		_lightMass->setLightMassListener(std::make_shared<AppListener>());

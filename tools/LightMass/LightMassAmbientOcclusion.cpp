@@ -61,7 +61,6 @@ R"(#version 150 core
 	};
 )";
 
-
 const char* BakeOcclusionAttribs[] =
 {
 	"a_position",

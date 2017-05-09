@@ -66,10 +66,10 @@ protected:
 	virtual void beginProcessHemisphereBatch();
 	virtual bool finishProcessHemisphereBatch();
 
-	virtual void updateSampleMatrices(float* view, float3 pos, float3 dir, const float3& up, float* proj, float l, float r, float b, float t, float n, float f);
-	virtual bool updateSampleHemisphere(int* viewport, float* view, float* proj);
+	virtual void updateSampleMatrices(float4x4& view, float3 pos, float3 dir, const float3& up, float4x4& proj, float l, float r, float b, float t, float n, float f);
+	virtual bool updateSampleHemisphere(int* viewport, float4x4& view, float4x4& proj);
 
-	virtual bool beginSampleHemisphere(int* outViewport4, float* outView4x4, float* outProjection4x4);
+	virtual bool beginSampleHemisphere(int* outViewport4, float4x4& view, float4x4& proj);
 	virtual void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp) = 0;
 	virtual bool endSampleHemisphere();
 

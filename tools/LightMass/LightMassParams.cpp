@@ -73,6 +73,7 @@ LightBakingParams::LightBakingParams() noexcept
 	: hemisphereSize(64)
 	, hemisphereNear(0.1)
 	, hemisphereFar(100)
+	, hemisphereWeights(nullptr)
 	, clearColor(float3::One)
 	, interpolationPasses(1)
 	, interpolationThreshold(1e-4)

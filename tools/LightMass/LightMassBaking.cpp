@@ -42,11 +42,6 @@ _NAME_BEGIN
 
 LightMassBaking::HemiContext::HemiContext() noexcept
 {
-	camera.view = float4x4::One;
-	camera.project = float4x4::One;
-	camera.viewProject = float4x4::One;
-	camera.transform = float4x4::One;
-
 	interpolationThreshold = 0;
 
 	std::memset(&mesh, 0, sizeof(mesh));
@@ -76,6 +71,10 @@ LightMassBaking::HemiContext::~HemiContext() noexcept
 
 LightMassBaking::LightMassBaking() noexcept
 {
+	_camera.view = float4x4::One;
+	_camera.project = float4x4::One;
+	_camera.viewProject = float4x4::One;
+	_camera.world = float4x4::One;
 }
 
 LightMassBaking::~LightMassBaking() noexcept
@@ -92,6 +91,18 @@ LightMassListenerPtr
 LightMassBaking::getLightMassListener() const noexcept
 {
 	return _lightMassListener;
+}
+
+void
+LightMassBaking::setWorldTransform(const float4x4& transform) noexcept
+{
+	_camera.world = transform;
+}
+
+const float4x4&
+LightMassBaking::getWorldTransform() const noexcept
+{
+	return _camera.world;
 }
 
 bool
@@ -132,7 +143,7 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 
 		while (this->beginSampleHemisphere(vp.ptr()))
 		{
-			this->doSampleHemisphere(params, vp, _ctx->camera.viewProject);
+			this->doSampleHemisphere(params, vp, _camera.viewProject);
 
 			if (baseIndex != _ctx->meshPosition.triangle.baseIndex)
 			{
@@ -166,6 +177,7 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 	assert(params.hemisphereNear < params.hemisphereFar && params.hemisphereNear > 0.0f);
 	assert(params.interpolationPasses >= 0 && params.interpolationPasses <= 8);
 	assert(params.interpolationThreshold >= 0.0f);
+	assert(params.hemisphereWeights);
 
 	auto context = std::make_unique<HemiContext>();
 
@@ -338,7 +350,7 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 
 	_ctx = std::move(context);
 
-	this->updateHemisphereWeights(0);
+	this->updateHemisphereWeights(params.hemisphereWeights);
 
 	return true;
 }
@@ -384,18 +396,6 @@ LightMassBaking::setGeometry(int positionsType, const void *positionsXYZ, int po
 	this->setSamplePosition(0);
 }
 
-void 
-LightMassBaking::setWorldTransform(const float4x4& transform) noexcept
-{
-	_ctx->camera.transform = transform;
-}
-
-const float4x4& 
-LightMassBaking::getWorldTransform() const noexcept
-{
-	return _ctx->camera.transform;
-}
-
 void
 LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 {
@@ -438,7 +438,7 @@ LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 			uv = float2((const std::uint8_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint8_t>::max();
 
 		_ctx->meshPosition.triangle.uv[i] = uv * uvScale;
-		_ctx->meshPosition.triangle.p[i] = _ctx->camera.transform * p;
+		_ctx->meshPosition.triangle.p[i] = _camera.world * p;
 
 		uvMin = math::min(uvMin, _ctx->meshPosition.triangle.uv[i]);
 		uvMax = math::max(uvMax, _ctx->meshPosition.triangle.uv[i]);
@@ -736,44 +736,9 @@ LightMassBaking::findNextConservativeTriangleRasterizerPosition()
 }
 
 bool
-LightMassBaking::updateHemisphereWeights(void* userdata)
+LightMassBaking::updateHemisphereWeights(const HemisphereWeight<float>* weights)
 {
-	assert(_ctx);
-
-	auto weights = std::make_unique<HemisphereWeight<float>[]>(_ctx->hemisphere.size * _ctx->hemisphere.size);
-	float center = (_ctx->hemisphere.size - 1) * 0.5f;
-
-	double sum = 0.0;
-
-	for (std::uint32_t y = 0; y < _ctx->hemisphere.size; y++)
-	{
-		float dy = 2.0f * (y - center) / (float)_ctx->hemisphere.size;
-
-		for (std::uint32_t x = 0; x < _ctx->hemisphere.size; x++)
-		{
-			float dx = 2.0f * (x - center) / (float)_ctx->hemisphere.size;
-			float3 v = math::normalize(float3(dx, dy, 1.0f));
-
-			float solidAngle = v.z * v.z * v.z;
-
-			auto& weight = weights[_ctx->hemisphere.size * y + x];
-
-			weight.center1 = solidAngle * this->doGetHemisphereWeights(v.z, userdata);
-			weight.center2 = solidAngle;
-
-			weight.left = solidAngle * this->doGetHemisphereWeights(std::abs(v.x), userdata);
-			weight.right = solidAngle;
-
-			weight.up = solidAngle * this->doGetHemisphereWeights(std::abs(v.y), userdata);
-			weight.down = solidAngle;
-
-			sum += 3.0 * (double)solidAngle;
-		}
-	}
-
-	float weightScale = (float)(1.0 / sum);
-	for (std::size_t i = 0; i < _ctx->hemisphere.size * _ctx->hemisphere.size; i++)
-		weights[i] *= weightScale;
+	assert(_ctx && weights);
 
 	if (_ctx->hemisphere.firstPass.weightsTexture == GL_NONE)
 	{
@@ -791,23 +756,17 @@ LightMassBaking::updateHemisphereWeights(void* userdata)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, _ctx->hemisphere.size * 3, _ctx->hemisphere.size, 0, GL_RG, GL_FLOAT, weights.get());
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, _ctx->hemisphere.size * 3, _ctx->hemisphere.size, 0, GL_RG, GL_FLOAT, weights);
 		glBindTexture(GL_TEXTURE_2D, GL_NONE);
 	}
 	else
 	{
 		glBindTexture(GL_TEXTURE_2D, _ctx->hemisphere.firstPass.weightsTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, _ctx->hemisphere.size * 3, _ctx->hemisphere.size, 0, GL_RG, GL_FLOAT, weights.get());
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, _ctx->hemisphere.size * 3, _ctx->hemisphere.size, 0, GL_RG, GL_FLOAT, weights);
 		glBindTexture(GL_TEXTURE_2D, GL_NONE);
 	}
 
 	return true;
-}
-
-float 
-LightMassBaking::doGetHemisphereWeights(float cosTheta, void* userdata)
-{
-	return 1.0;
 }
 
 void
@@ -968,21 +927,21 @@ LightMassBaking::updateSampleCamera(float3 pos, float3 dir, const float3& up, fl
 	//up = cross(side, dir);
 	dir = -dir; pos = -pos;
 
-	float4x4& view = _ctx->camera.view;
+	float4x4& view = _camera.view;
 	view.a1 = side.x; view.a2 = up.x; view.a3 = dir.x; view.a4 = 0.0f;
 	view.b1 = side.y; view.b2 = up.y; view.b3 = dir.y; view.b4 = 0.0f;
 	view.c1 = side.z; view.c2 = up.z; view.c3 = dir.z; view.c4 = 0.0f;
 	view.d1 = math::dot(side, pos); view.d2 = math::dot(up, pos); view.d3 = math::dot(dir, pos); view.d4 = 1.0f;
 
 	// projection matrix: frustum(l, r, b, t, n, f)
-	float4x4& proj = _ctx->camera.project;
+	float4x4& proj = _camera.project;
 	float ilr = 1.0f / (r - l), ibt = 1.0f / (t - b), ninf = -1.0f / (f - n), n2 = 2.0f * n;
 	proj.a1 = n2 * ilr;      proj.a2 = 0.0f;          proj.a3 = 0.0f;           proj.a4 = 0.0f;
 	proj.b1 = 0.0f;          proj.b2 = n2 * ibt;      proj.b3 = 0.0f;           proj.b4 = 0.0f;
 	proj.c1 = (r + l) * ilr; proj.c2 = (t + b) * ibt; proj.c3 = (f + n) * ninf; proj.c4 = -1.0f;
 	proj.d1 = 0.0f;         proj.d2 = 0.0f;         proj.d3 = f * n2 * ninf;  proj.d4 = 0.0f;
 
-	_ctx->camera.viewProject = proj * view;
+	_camera.viewProject = proj * view;
 }
 
 bool

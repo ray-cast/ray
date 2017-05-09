@@ -37,7 +37,7 @@
 #ifndef _H_LIGHTMASS_PARAMS_H_
 #define _H_LIGHTMASS_PARAMS_H_
 
-#include <ray/math.h>
+#include "HemisphereWeight.h"
 
 _NAME_BEGIN
 
@@ -92,10 +92,11 @@ struct LightBakingParams
 {
 	LightBakingParams() noexcept;
 
-	int hemisphereSize;
+	std::uint32_t hemisphereSize;
 
 	float hemisphereNear;
 	float hemisphereFar;
+	const HemisphereWeight<float>* hemisphereWeights;
 
 	float3 clearColor;
 	int interpolationPasses;

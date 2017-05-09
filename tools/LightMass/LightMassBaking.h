@@ -39,7 +39,6 @@
 
 #include "LightMassParams.h"
 #include "LightMassListener.h"
-#include "HemisphereWeight.h"
 
 _NAME_BEGIN
 
@@ -49,24 +48,21 @@ public:
 	LightMassBaking() noexcept;
 	virtual ~LightMassBaking() noexcept;
 
-	virtual void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	virtual LightMassListenerPtr getLightMassListener() const noexcept;
-
-	virtual bool baking(const LightBakingOptions& options) noexcept;
-
-protected:
-	virtual bool setupBakeTools(const LightBakingParams& params);
-	virtual void closeBakeTools();
-
-	void setRenderTarget(float* lightmap, int w, int h, int channels);
-	void setGeometry(int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
-	void setSamplePosition(std::uint32_t indicesTriangleBaseIndex);
+	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
+	LightMassListenerPtr getLightMassListener() const noexcept;
 
 	void setWorldTransform(const float4x4& transform) noexcept;
 	const float4x4& getWorldTransform() const noexcept;
 
-	bool updateHemisphereWeights(void* userdata);
-	virtual float doGetHemisphereWeights(float cosTheta, void* userdata);
+	virtual bool baking(const LightBakingOptions& options) noexcept;
+
+protected:
+	bool setupBakeTools(const LightBakingParams& params);
+	void closeBakeTools();
+
+	void setRenderTarget(float* lightmap, int w, int h, int channels);
+	void setGeometry(int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
+	void setSamplePosition(std::uint32_t indicesTriangleBaseIndex);
 
 	int leftOf(const float2& a, const float2& b, const float2& c);
 	int convexClip(float2* poly, int nPoly, const float2* clip, int nClip, float2* res);
@@ -84,32 +80,34 @@ protected:
 	bool findFirstConservativeTriangleRasterizerPosition();
 	bool findNextConservativeTriangleRasterizerPosition();
 
-	virtual void beginProcessHemisphereBatch();
-	virtual bool finishProcessHemisphereBatch();
+	void beginProcessHemisphereBatch();
+	bool finishProcessHemisphereBatch();
 
-	virtual void updateSampleCamera(float3 pos, float3 dir, const float3& up, float l, float r, float b, float t, float n, float f);
-	virtual bool updateSampleHemisphere(int* viewport);
+	bool updateHemisphereWeights(const HemisphereWeight<float>* weights);
+	void updateSampleCamera(float3 pos, float3 dir, const float3& up, float l, float r, float b, float t, float n, float f);
+	bool updateSampleHemisphere(int* viewport);
 
-	virtual bool beginSampleHemisphere(int* outViewport4);
+	bool beginSampleHemisphere(int* outViewport4);
+	bool endSampleHemisphere();
+
 	virtual void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp) = 0;
-	virtual bool endSampleHemisphere();
 
-	virtual float getSampleProcess() noexcept;
+	float getSampleProcess() noexcept;
 
 	std::uint32_t loadShader(std::uint32_t type, const char *source);
 	std::uint32_t loadProgram(std::uint32_t vs, std::uint32_t fs, const char **attributes, int attributeCount);
 
 private:
+	struct HemiCamera
+	{
+		float4x4 world;
+		float4x4 view;
+		float4x4 project;
+		float4x4 viewProject;
+	};
+
 	struct HemiContext
 	{
-		struct
-		{
-			float4x4 view;
-			float4x4 project;
-			float4x4 viewProject;
-			float4x4 transform;
-		} camera;
-
 		struct
 		{
 			const std::uint8_t* positions;
@@ -207,6 +205,8 @@ private:
 		HemiContext() noexcept;
 		~HemiContext() noexcept;
 	};
+
+	HemiCamera _camera;
 
 	std::unique_ptr<HemiContext> _ctx;
 

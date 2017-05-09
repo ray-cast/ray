@@ -37,7 +37,7 @@
 #ifndef _H_HEMISPHERE_WEIGHT_H_
 #define _H_HEMISPHERE_WEIGHT_H_
 
-#include <ray/vector4.h>
+#include <ray/math.h>
 
 _NAME_BEGIN
 
@@ -51,39 +51,37 @@ public:
 	typedef typename trait::_typeaddition<T>::reference reference;
 	typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
-	T center1;
-	T center2;
+	T front;
+	T back;
 	T left;
 	T right;
 	T up;
 	T down;
 
 	HemisphereWeight() noexcept {}
-	HemisphereWeight(float c1, float c2, float l, float r, float u, float b) : center1(c1), center2(c2), left(l), right(r), up(u), down(b) noexcept {}
-	HemisphereWeight(const Vector2t<T>& c, const Vector2t<T>& lr, const Vector2t<T>& ub) : center1(c.x), center2(c.y), left(lr.x), right(lr.y), up(ub.x), down(ub.y) noexcept {}
-	HemisphereWeight(const Vector3t<T>& c, const Vector3t<T>& rub) : center1(c.x), center2(c.y), left(c.z), right(rub.x), up(rub.y), down(rub.z) noexcept {}
-	HemisphereWeight(const Vector2t<T>& c, const Vector4t<T>& lrub) : center1(c.x), center2(c.y), left(lrub.x), right(lrub.y), up(lrub.z), down(lrub.w) noexcept {}
-	HemisphereWeight(const Vector4t<T>& clr, const Vector2t<T>& ub) : center1(clr.x), center2(clr.y), left(clr.z), right(clr.w), up(ub.x), down(ub.y) noexcept {}
+	HemisphereWeight(float c1, float c2, float l, float r, float u, float b) noexcept : front(c1), back(c2), left(l), right(r), up(u), down(b) {}
+	HemisphereWeight(const Vector2t<T>& c, const Vector2t<T>& lr, const Vector2t<T>& ub) noexcept : front(c.x), back(c.y), left(lr.x), right(lr.y), up(ub.x), down(ub.y) {}
+	HemisphereWeight(const Vector3t<T>& c, const Vector3t<T>& rub) noexcept : front(c.x), back(c.y), left(c.z), right(rub.x), up(rub.y), down(rub.z) {}
+	HemisphereWeight(const Vector2t<T>& c, const Vector4t<T>& lrub) noexcept : front(c.x), back(c.y), left(lrub.x), right(lrub.y), up(lrub.z), down(lrub.w) {}
+	HemisphereWeight(const Vector4t<T>& clr, const Vector2t<T>& ub) noexcept : front(clr.x), back(clr.y), left(clr.z), right(clr.w), up(ub.x), down(ub.y) {}
+	explicit HemisphereWeight(float w) noexcept : front(w), back(w), left(w), right(w), up(w), down(w) {}
 
-	template<typename S>
-	explicit HemisphereWeight(S* w) : center1(w[0]), center2(w[1]), left(w[2]), right(w[3]), up(w[4]), down(w[5]) {}
-	
-	HemisphereWeight<T>& operator+=(const T sz) { center1 += sz; center2 += sz; left += sz; right += sz; up += sz; down += sz; return *this; }
-	HemisphereWeight<T>& operator-=(const T sz) { center1 -= sz; center2 -= sz; left -= sz; right -= sz; up -= sz; down -= sz; return *this; }
-	HemisphereWeight<T>& operator*=(const T sz) { center1 *= sz; center2 *= sz; left *= sz; right *= sz; up *= sz; down *= sz; return *this; }
-	HemisphereWeight<T>& operator/=(const T sz) { center1 /= sz; center2 /= sz; left /= sz; right /= sz; up /= sz; down /= sz; return *this; }
+	HemisphereWeight<T>& operator+=(const T sz) { front += sz; back += sz; left += sz; right += sz; up += sz; down += sz; return *this; }
+	HemisphereWeight<T>& operator-=(const T sz) { front -= sz; back -= sz; left -= sz; right -= sz; up -= sz; down -= sz; return *this; }
+	HemisphereWeight<T>& operator*=(const T sz) { front *= sz; back *= sz; left *= sz; right *= sz; up *= sz; down *= sz; return *this; }
+	HemisphereWeight<T>& operator/=(const T sz) { front /= sz; back /= sz; left /= sz; right /= sz; up /= sz; down /= sz; return *this; }
 
-	HemisphereWeight<T>& operator+=(const HemisphereWeight<T>& w) { center1 += w.center1; center2 += w.center2; left += w.left; right += w.right; up += w.up; down += w.down; return *this; }
-	HemisphereWeight<T>& operator-=(const HemisphereWeight<T>& w) { center1 -= w.center1; center2 -= w.center2; left -= w.left; right -= w.right; up -= w.up; down -= w.down; return *this; }
-	HemisphereWeight<T>& operator*=(const HemisphereWeight<T>& w) { center1 *= w.center1; center2 *= w.center2; left *= w.left; right *= w.right; up *= w.up; down *= w.down; return *this; }
-	HemisphereWeight<T>& operator/=(const HemisphereWeight<T>& w) { center1 /= w.center1; center2 /= w.center2; left /= w.left; right /= w.right; up /= w.up; down /= w.down; return *this; }
+	HemisphereWeight<T>& operator+=(const HemisphereWeight<T>& w) { front += w.front; back += w.back; left += w.left; right += w.right; up += w.up; down += w.down; return *this; }
+	HemisphereWeight<T>& operator-=(const HemisphereWeight<T>& w) { front -= w.front; back -= w.back; left -= w.left; right -= w.right; up -= w.up; down -= w.down; return *this; }
+	HemisphereWeight<T>& operator*=(const HemisphereWeight<T>& w) { front *= w.front; back *= w.back; left *= w.left; right *= w.right; up *= w.up; down *= w.down; return *this; }
+	HemisphereWeight<T>& operator/=(const HemisphereWeight<T>& w) { front /= w.front; back /= w.back; left /= w.left; right /= w.right; up /= w.up; down /= w.down; return *this; }
 
 	template <typename S>
 	explicit operator HemisphereWeight<S>() const
 	{
 		return HemisphereWeight<S>(
-			HemisphereWeight<S>(center1), 
-			HemisphereWeight<S>(center2), 
+			HemisphereWeight<S>(front), 
+			HemisphereWeight<S>(back), 
 			HemisphereWeight<S>(left),
 			HemisphereWeight<S>(right),
 			HemisphereWeight<S>(up),
@@ -92,12 +90,12 @@ public:
 	
 	T operator[](std::size_t i) const
 	{
-		return *(&center1 + i);
+		return *(&front + i);
 	}
 
 	T& operator[](std::size_t i)
 	{
-		return *(&center1 + i);
+		return *(&front + i);
 	}
 	
 	T* ptr() { return (T*)this; }
@@ -109,28 +107,63 @@ public:
 template<typename T>
 HemisphereWeight<T> operator+=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
 { 
-	return HemisphereWeight<T>(w1.center1 += w2.center1, w1.center2 += w2.center2, w1.left += w2.left, w1.right += w2.right, w1.up += w2.up, w1.down += w2.down);
+	return HemisphereWeight<T>(w1.front += w2.front, w1.back += w2.back, w1.left += w2.left, w1.right += w2.right, w1.up += w2.up, w1.down += w2.down);
 }
 template<typename T>
 HemisphereWeight<T> operator-=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
 { 
-	return HemisphereWeight<T>(w1.center1 -= w2.center1, w1.center2 -= w2.center2, w1.left -= w2.left, w1.right -= w2.right, w1.up -= w2.up, w1.down -= w2.down);
+	return HemisphereWeight<T>(w1.front -= w2.front, w1.back -= w2.back, w1.left -= w2.left, w1.right -= w2.right, w1.up -= w2.up, w1.down -= w2.down);
 }
 template<typename T>
 HemisphereWeight<T> operator*=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
 { 
-	return HemisphereWeight<T>(w1.center1 *= w2.center1, w1.center2 *= w2.center2, w1.left *= w2.left, w1.right *= w2.right, w1.up *= w2.up, w1.down *= w2.down);
+	return HemisphereWeight<T>(w1.front *= w2.front, w1.back *= w2.back, w1.left *= w2.left, w1.right *= w2.right, w1.up *= w2.up, w1.down *= w2.down);
 }
 template<typename T>
 HemisphereWeight<T> operator/=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
 { 
-	return HemisphereWeight<T>(w1.center1 /= w2.center1, w1.center2 /= w2.center2, w1.left /= w2.left, w1.right /= w2.right, w1.up /= w2.up, w1.down /= w2.down);
+	return HemisphereWeight<T>(w1.front /= w2.front, w1.back /= w2.back, w1.left /= w2.left, w1.right /= w2.right, w1.up /= w2.up, w1.down /= w2.down);
 }
 
 template<typename T>
 inline HemisphereWeight<T> operator-(const HemisphereWeight<T>& w)
 {
-	return HemisphereWeight<T>(-w.center1, -w.center2, -w.left, -w.right, -w.up, -w.down);
+	return HemisphereWeight<T>(-w.front, -w.back, -w.left, -w.right, -w.up, -w.down);
+}
+
+namespace math
+{
+	template<typename T>
+	HemisphereWeight<T>* makeHemisphereWeights(std::size_t size)
+	{
+		double sum = 0.0;
+		T center = (size - 1) * 0.5f;
+
+		auto weights = std::make_unique<HemisphereWeight<T>[]>(size * size);
+
+		for (std::uint32_t y = 0; y < size; y++)
+		{
+			for (std::uint32_t x = 0; x < size; x++)
+			{
+				float dy = 2.0f * (y - center) / (T)size;
+				float dx = 2.0f * (x - center) / (T)size;
+
+				float3 v = math::normalize(float3(dx, dy, 1.0f));
+
+				float solidAngle = v.z * v.z * v.z;
+
+				weights[size * y + x] = HemisphereWeight<T>(solidAngle);
+
+				sum += 3.0 * (double)solidAngle;
+			}
+		}
+
+		T weightScale = (T)(1.0 / sum);
+		for (std::size_t i = 0; i < size * size; i++)
+			weights[i] *= weightScale;
+		
+		return weights.release();
+	}
 }
 
 _NAME_END

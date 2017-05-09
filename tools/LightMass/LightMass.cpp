@@ -485,7 +485,10 @@ LightMass::baking(const LightMassParams& params) noexcept
 
 	LightBakingOptions option;
 
+	auto weights = std::auto_ptr<HemisphereWeight<float>>(math::makeHemisphereWeights<float>(option.baking.hemisphereSize));
+
 	option.baking = params.baking;
+	option.baking.hemisphereWeights = weights.get();
 	option.lightMap = params.lightMap;
 
 	option.model.vertices = (std::uint8_t*)_model->vertices.data();
@@ -506,7 +509,7 @@ LightMass::baking(const LightMassParams& params) noexcept
 	{
 		std::uint32_t offsetFace = 0;
 
-		for (int j = 0; j < i; j++)
+		for (std::uint32_t j = 0; j < i; j++)
 			offsetFace += _model->materials[j].FaceCount;
 
 		option.model.subsets[i].drawcall.count = _model->materials[i].FaceCount;

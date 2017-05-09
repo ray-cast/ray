@@ -46,7 +46,7 @@ struct lm_context
 {
 	struct
 	{
-		const float *transform;
+		float4x4 transform;
 		const unsigned char *positions;
 		int positionsType;
 		int positionsStride;
@@ -111,7 +111,7 @@ struct lm_context
 		unsigned int fbHemiCountX;
 		unsigned int fbHemiCountY;
 		unsigned int fbHemiIndex;
-		int2* fbHemiToLightmapLocation;
+		std::unique_ptr<int2[]> fbHemiToLightmapLocation;
 		GLuint fbTexture[2];
 		GLuint fb[2];
 		GLuint fbDepth;
@@ -137,7 +137,7 @@ struct lm_context
 			GLuint pbo;
 			bool pboTransferStarted;
 			unsigned int fbHemiCount;
-			int2* fbHemiToLightmapLocation;
+			std::unique_ptr<int2[]> fbHemiToLightmapLocation;
 		} transfer;
 	} hemisphere;
 
@@ -164,9 +164,6 @@ struct lm_context
 #ifdef LM_DEBUG_INTERPOLATION
 		LM_FREE(ctx->lightmap.debug);
 #endif
-
-		free(hemisphere.transfer.fbHemiToLightmapLocation);
-		free(hemisphere.fbHemiToLightmapLocation);
 	}
 };
 
@@ -431,40 +428,41 @@ static bool lm_findNextConservativeTriangleRasterizerPosition(lm_context *ctx)
 	return lm_findFirstConservativeTriangleRasterizerPosition(ctx);
 }
 
-static void lm_beginProcessHemisphereBatch(lm_context *ctx)
+void 
+LightMassBaking::beginProcessHemisphereBatch()
 {
-	if (!ctx->hemisphere.fbHemiIndex)
+	if (!_ctx->hemisphere.fbHemiIndex)
 		return;
 
 	glDisable(GL_DEPTH_TEST);
-	glBindVertexArray(ctx->hemisphere.vao);
+	glBindVertexArray(_ctx->hemisphere.vao);
 
 	int fbRead = 0;
 	int fbWrite = 1;
 
-	int outHemiSize = ctx->hemisphere.size / 2;
-	glBindFramebuffer(GL_FRAMEBUFFER, ctx->hemisphere.fb[fbWrite]);
-	glViewport(0, 0, outHemiSize * ctx->hemisphere.fbHemiCountX, outHemiSize * ctx->hemisphere.fbHemiCountY);
-	glUseProgram(ctx->hemisphere.firstPass.programID);
-	glUniform1i(ctx->hemisphere.firstPass.hemispheresTextureID, 0);
+	int outHemiSize = _ctx->hemisphere.size / 2;
+	glBindFramebuffer(GL_FRAMEBUFFER, _ctx->hemisphere.fb[fbWrite]);
+	glViewport(0, 0, outHemiSize * _ctx->hemisphere.fbHemiCountX, outHemiSize * _ctx->hemisphere.fbHemiCountY);
+	glUseProgram(_ctx->hemisphere.firstPass.programID);
+	glUniform1i(_ctx->hemisphere.firstPass.hemispheresTextureID, 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, ctx->hemisphere.fbTexture[fbRead]);
-	glUniform1i(ctx->hemisphere.firstPass.weightsTextureID, 1);
+	glBindTexture(GL_TEXTURE_2D, _ctx->hemisphere.fbTexture[fbRead]);
+	glUniform1i(_ctx->hemisphere.firstPass.weightsTextureID, 1);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, ctx->hemisphere.firstPass.weightsTexture);
+	glBindTexture(GL_TEXTURE_2D, _ctx->hemisphere.firstPass.weightsTexture);
 	glActiveTexture(GL_TEXTURE0);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glUseProgram(ctx->hemisphere.downsamplePass.programID);
-	glUniform1i(ctx->hemisphere.downsamplePass.hemispheresTextureID, 0);
+	glUseProgram(_ctx->hemisphere.downsamplePass.programID);
+	glUniform1i(_ctx->hemisphere.downsamplePass.hemispheresTextureID, 0);
 	while (outHemiSize > 1)
 	{
 		std::swap(fbRead, fbWrite);
 		outHemiSize /= 2;
-		glBindFramebuffer(GL_FRAMEBUFFER, ctx->hemisphere.fb[fbWrite]);
-		glViewport(0, 0, outHemiSize * ctx->hemisphere.fbHemiCountX, outHemiSize * ctx->hemisphere.fbHemiCountY);
-		glBindTexture(GL_TEXTURE_2D, ctx->hemisphere.fbTexture[fbRead]);
+		glBindFramebuffer(GL_FRAMEBUFFER, _ctx->hemisphere.fb[fbWrite]);
+		glViewport(0, 0, outHemiSize * _ctx->hemisphere.fbHemiCountX, outHemiSize * _ctx->hemisphere.fbHemiCountY);
+		glBindTexture(GL_TEXTURE_2D, _ctx->hemisphere.fbTexture[fbRead]);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
@@ -474,69 +472,71 @@ static void lm_beginProcessHemisphereBatch(lm_context *ctx)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		std::swap(fbRead, fbWrite);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->hemisphere.fb[fbRead]);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, _ctx->hemisphere.fb[fbRead]);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->hemisphere.fb[fbWrite]);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _ctx->hemisphere.fb[fbWrite]);
 		glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		glBlitFramebuffer(
-			0, 0, ctx->hemisphere.fbHemiCountX, ctx->hemisphere.fbHemiCountY,
-			0, 0, ctx->hemisphere.fbHemiCountX, ctx->hemisphere.fbHemiCountY,
+			0, 0, _ctx->hemisphere.fbHemiCountX, _ctx->hemisphere.fbHemiCountY,
+			0, 0, _ctx->hemisphere.fbHemiCountX, _ctx->hemisphere.fbHemiCountY,
 			GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, ctx->hemisphere.fb[fbWrite]);
+		glBindFramebuffer(GL_FRAMEBUFFER, _ctx->hemisphere.fb[fbWrite]);
 	}
 
 	// start GPU->CPU transfer of downsampled hemispheres
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, ctx->hemisphere.transfer.pbo);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->hemisphere.fb[1]);
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, _ctx->hemisphere.transfer.pbo);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, _ctx->hemisphere.fb[1]);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
-	glReadPixels(0, 0, ctx->hemisphere.fbHemiCountX, ctx->hemisphere.fbHemiCountY, GL_RGBA, GL_FLOAT, 0);
+	glReadPixels(0, 0, _ctx->hemisphere.fbHemiCountX, _ctx->hemisphere.fbHemiCountY, GL_RGBA, GL_FLOAT, 0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
-	std::swap(ctx->hemisphere.transfer.fbHemiToLightmapLocation, ctx->hemisphere.fbHemiToLightmapLocation);
+	std::swap(_ctx->hemisphere.transfer.fbHemiToLightmapLocation, _ctx->hemisphere.fbHemiToLightmapLocation);
 
-	ctx->hemisphere.transfer.fbHemiCount = ctx->hemisphere.fbHemiIndex;
-	ctx->hemisphere.transfer.pboTransferStarted = true;
+	_ctx->hemisphere.transfer.fbHemiCount = _ctx->hemisphere.fbHemiIndex;
+	_ctx->hemisphere.transfer.pboTransferStarted = true;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindVertexArray(0);
 	glEnable(GL_DEPTH_TEST);
 
-	ctx->hemisphere.fbHemiIndex = 0;
+	_ctx->hemisphere.fbHemiIndex = 0;
 }
 
-static void lm_finishProcessHemisphereBatch(lm_context *ctx)
+bool
+LightMassBaking::finishProcessHemisphereBatch()
 {
-	if (!ctx->hemisphere.transfer.pboTransferStarted)
-		return;
+	if (!_ctx->hemisphere.transfer.pboTransferStarted)
+		return true;
 
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, ctx->hemisphere.transfer.pbo);
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, _ctx->hemisphere.transfer.pbo);
 	float *hemi = (float*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
-	assert(hemi);
 	if (!hemi)
 	{
-		fprintf(stderr, "Fatal error! Could not map hemisphere buffer!\n");
-		exit(-1);
+		if (_lightMassListener)
+			_lightMassListener->onMessage("Could not map hemisphere buffer.");
+
+		return false;
 	}
 
 	unsigned int hemiIndex = 0;
-	for (unsigned int hy = 0; hy < ctx->hemisphere.fbHemiCountY; hy++)
+	for (unsigned int hy = 0; hy < _ctx->hemisphere.fbHemiCountY; hy++)
 	{
-		for (unsigned int hx = 0; hx < ctx->hemisphere.fbHemiCountX; hx++)
+		for (unsigned int hx = 0; hx < _ctx->hemisphere.fbHemiCountX; hx++)
 		{
-			float *c = hemi + (hy * ctx->hemisphere.fbHemiCountX + hx) * 4;
+			float *c = hemi + (hy * _ctx->hemisphere.fbHemiCountX + hx) * 4;
 			float validity = c[3];
 
-			int2 lmUV = ctx->hemisphere.transfer.fbHemiToLightmapLocation[hy * ctx->hemisphere.fbHemiCountX + hx];
-			float *lm = ctx->lightmap.data + (lmUV.y * ctx->lightmap.width + lmUV.x) * ctx->lightmap.channels;
+			int2 lmUV = _ctx->hemisphere.transfer.fbHemiToLightmapLocation[hy * _ctx->hemisphere.fbHemiCountX + hx];
+			float *lm = _ctx->lightmap.data + (lmUV.y * _ctx->lightmap.width + lmUV.x) * _ctx->lightmap.channels;
 			if (!lm[0] && validity > 0.9)
 			{
 				float scale = 1.0f / validity;
-				switch (ctx->lightmap.channels)
+				switch (_ctx->lightmap.channels)
 				{
 				case 1:
 					lm[0] = std::max((c[0] + c[1] + c[2]) * scale / 3.0f, FLT_MIN);
@@ -566,13 +566,15 @@ static void lm_finishProcessHemisphereBatch(lm_context *ctx)
 #endif
 			}
 
-			if (++hemiIndex == ctx->hemisphere.transfer.fbHemiCount)
+			if (++hemiIndex == _ctx->hemisphere.transfer.fbHemiCount)
 				goto done;
 		}
 	}
 done:
 	glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-	ctx->hemisphere.transfer.pboTransferStarted = false;
+	_ctx->hemisphere.transfer.pboTransferStarted = false;
+
+	return true;
 }
 
 void 
@@ -671,19 +673,6 @@ LightMassBaking::updateSampleHemisphere(int* viewport, float* view, float* proj)
 	return true;
 }
 
-static float3 lm_transform(const float *m, float3 v)
-{
-	if (!m)
-		return v;
-	float3 r;
-	r.x = m[0] * v.x + m[4] * v.y + m[8] * v.z + m[12];
-	r.y = m[1] * v.x + m[5] * v.y + m[9] * v.z + m[13];
-	r.z = m[2] * v.x + m[6] * v.y + m[10] * v.z + m[14];
-	float d = m[3] * v.x + m[7] * v.y + m[11] * v.z + m[15];
-	assert(std::abs(d - 1.0f) < 0.00001f); // could divide by d, but this shouldn't be a projection transform!
-	return r;
-}
-
 static float lm_defaultWeights(float cos_theta, void *userdata)
 {
 	return 1.0f;
@@ -691,7 +680,6 @@ static float lm_defaultWeights(float cos_theta, void *userdata)
 
 void lmSetHemisphereWeights(lm_context *ctx, lm_weight_func f, void *userdata)
 {
-	// hemisphere weights texture. bakes in material dependent attenuation behaviour.
 	float *weights = (float*)calloc(2 * 3 * ctx->hemisphere.size * ctx->hemisphere.size, sizeof(float));
 	float center = (ctx->hemisphere.size - 1) * 0.5f;
 	double sum = 0.0;
@@ -737,7 +725,7 @@ void lmSetHemisphereWeights(lm_context *ctx, lm_weight_func f, void *userdata)
 }
 
 void
-LightMassBaking::setMeshPosition(std::uint32_t indicesTriangleBaseIndex)
+LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 {
 	_ctx->meshPosition.triangle.baseIndex = indicesTriangleBaseIndex;
 
@@ -790,7 +778,7 @@ LightMassBaking::setMeshPosition(std::uint32_t indicesTriangleBaseIndex)
 			assert(false);
 		} break;
 		}
-		_ctx->meshPosition.triangle.p[i] = lm_transform(_ctx->mesh.transform, p);
+		_ctx->meshPosition.triangle.p[i] = _ctx->mesh.transform * p;
 
 		// decode and scale (to lightmap resolution) vertex lightmap texture coords
 		const void *uvPtr = _ctx->mesh.uvs + vIndex * _ctx->mesh.uvsStride;
@@ -932,43 +920,6 @@ void lmImageSmooth(const float *image, float *outImage, int w, int h, int c)
 	}
 }
 
-struct LightMassContextGL
-{
-	LightMassContextGL() noexcept
-		: program(0)
-		, vs(0)
-		, fs(0)
-		, u_lightmap(0)
-		, u_mvp(0)
-		, lightmap(0)
-		, vao(0)
-		, vbo(0)
-		, ibo(0)
-	{
-	}
-
-	~LightMassContextGL() noexcept
-	{
-		glDeleteShader(vs);
-		glDeleteShader(fs);
-		glDeleteProgram(program);
-		glDeleteTextures(1, &lightmap);
-		glDeleteVertexArrays(1, &vao);
-		glDeleteBuffers(1, &vbo);
-		glDeleteBuffers(1, &ibo);
-	}
-
-	GLuint vs;
-	GLuint fs;
-	GLuint program;
-	
-	GLint u_lightmap;
-	GLint u_mvp;
-
-	GLuint lightmap;
-	GLuint vao, vbo, ibo;
-};
-
 LightMassBaking::LightMassBaking() noexcept
 {
 }
@@ -1039,7 +990,8 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 				baseIndex = _ctx->meshPosition.triangle.baseIndex;
 			}
 
-			this->endSampleHemisphere();
+			if (!this->endSampleHemisphere())
+				return false;
 		}
 
 		if (params.lightMap.margin > 0)
@@ -1263,8 +1215,8 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	context->hemisphere.fbHemiToLightmapLocation = (int2*)calloc(context->hemisphere.fbHemiCountX * context->hemisphere.fbHemiCountY, sizeof(int2));
-	context->hemisphere.transfer.fbHemiToLightmapLocation = (int2*)calloc(context->hemisphere.fbHemiCountX * context->hemisphere.fbHemiCountY, sizeof(int2));
+	context->hemisphere.fbHemiToLightmapLocation = std::make_unique<int2[]>(context->hemisphere.fbHemiCountX * context->hemisphere.fbHemiCountY);
+	context->hemisphere.transfer.fbHemiToLightmapLocation = std::make_unique<int2[]>(context->hemisphere.fbHemiCountX * context->hemisphere.fbHemiCountY);
 
 	_ctx = std::move(context);
 
@@ -1303,7 +1255,7 @@ LightMassBaking::setRenderTarget(float *outLightmap, int w, int h, int c)
 void 
 LightMassBaking::setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices)
 {
-	_ctx->mesh.transform = world.data();
+	_ctx->mesh.transform = world;
 	_ctx->mesh.positions = (const unsigned char*)positionsXYZ;
 	_ctx->mesh.positionsType = positionsType;
 	_ctx->mesh.positionsStride = positionsStride == 0 ? sizeof(float3) : positionsStride;
@@ -1316,7 +1268,7 @@ LightMassBaking::setGeometry(const float4x4& world, int positionsType, const voi
 
 	_ctx->meshPosition.pass = 0;
 
-	this->setMeshPosition(0);
+	this->setSamplePosition(0);
 }
 
 bool
@@ -1334,13 +1286,17 @@ LightMassBaking::beginSampleHemisphere(int* outViewport4, float* outView4x4, flo
 		{
 			if (_ctx->meshPosition.triangle.baseIndex + 3 < _ctx->mesh.count)
 			{
-				this->setMeshPosition(_ctx->meshPosition.triangle.baseIndex + 3);
+				this->setSamplePosition(_ctx->meshPosition.triangle.baseIndex + 3);
 			}
 			else
 			{
-				lm_finishProcessHemisphereBatch(_ctx.get());
-				lm_beginProcessHemisphereBatch(_ctx.get());
-				lm_finishProcessHemisphereBatch(_ctx.get());
+				if (!this->finishProcessHemisphereBatch())
+					return false;
+
+				this->beginProcessHemisphereBatch();
+
+				if (!this->finishProcessHemisphereBatch())
+					return false;
 
 				if (++_ctx->meshPosition.pass == _ctx->meshPosition.passCount)
 				{
@@ -1350,7 +1306,7 @@ LightMassBaking::beginSampleHemisphere(int* outViewport4, float* outView4x4, flo
 					return false;
 				}
 
-				this->setMeshPosition(0);
+				this->setSamplePosition(0);
 			}
 		}
 	}
@@ -1358,7 +1314,7 @@ LightMassBaking::beginSampleHemisphere(int* outViewport4, float* outView4x4, flo
 	return true;
 }
 
-void
+bool
 LightMassBaking::endSampleHemisphere()
 {
 	if (++_ctx->meshPosition.hemisphere.side == 5)
@@ -1367,10 +1323,14 @@ LightMassBaking::endSampleHemisphere()
 
 		if (++_ctx->hemisphere.fbHemiIndex == _ctx->hemisphere.fbHemiCountX * _ctx->hemisphere.fbHemiCountY)
 		{
-			lm_finishProcessHemisphereBatch(_ctx.get());
-			lm_beginProcessHemisphereBatch(_ctx.get());
+			if (!finishProcessHemisphereBatch())
+				return false;
+
+			beginProcessHemisphereBatch();
 		}
 	}
+
+	return true;
 }
 
 float

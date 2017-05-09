@@ -59,16 +59,19 @@ protected:
 	virtual bool setupBakeTools(const LightBakingParams& params);
 	virtual void closeBakeTools();
 
-	virtual void setRenderTarget(float *outLightmap, int w, int h, int c);
+	virtual void setRenderTarget(float* lightmap, int w, int h, int channels);
 	virtual void setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
-	virtual void setMeshPosition(std::uint32_t indicesTriangleBaseIndex);
+	virtual void setSamplePosition(std::uint32_t indicesTriangleBaseIndex);
 
-	void updateSampleMatrices(float* view, float3 pos, float3 dir, const float3& up, float* proj, float l, float r, float b, float t, float n, float f);
-	bool updateSampleHemisphere(int* viewport, float* view, float* proj);
+	virtual void beginProcessHemisphereBatch();
+	virtual bool finishProcessHemisphereBatch();
+
+	virtual void updateSampleMatrices(float* view, float3 pos, float3 dir, const float3& up, float* proj, float l, float r, float b, float t, float n, float f);
+	virtual bool updateSampleHemisphere(int* viewport, float* view, float* proj);
 
 	virtual bool beginSampleHemisphere(int* outViewport4, float* outView4x4, float* outProjection4x4);
 	virtual void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp) = 0;
-	virtual void endSampleHemisphere();
+	virtual bool endSampleHemisphere();
 
 	virtual float getSampleProcess() noexcept;
 
@@ -81,6 +84,8 @@ private:
 	float4x4 _viewProject;
 
 	std::unique_ptr<lm_context> _ctx;
+
+	std::vector<LightModelDrawCall> _drawcalls;
 
 	LightMassListenerPtr _lightMassListener;
 };

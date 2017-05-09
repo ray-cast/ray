@@ -256,6 +256,7 @@ IF(CMAKE_GENERATOR MATCHES "Visual Studio")
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4514") # “func” 未引用的内联函数已移除
         #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4548")
         #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4571")
+        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4623") # 已将默认构造函数隐式定义为“已删除
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4625") #未能生成复制构造函数，因为基类复制构造函数不可访问或已被删除
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4626") #未能生成赋值运算符，因为基类赋值运算符不可访问或已被删除
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4640") #本地静态对象的结构是非线程安全的
@@ -265,7 +266,10 @@ IF(CMAKE_GENERATOR MATCHES "Visual Studio")
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4820") # “bytes”字节填充添加在构造“member_name”之后
         #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4836")
         #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4986") # 异常规范与前面的声明不匹配
+        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4987") # 使用了非标准扩展
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4996") # _CRT_SECURE_NO_WARNINGS
+        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd5026") # 已将移动构造函数隐式定义为“已删除”
+        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd5027") # 已将移动赋值运算符隐式定义为“已删除”
     ENDIF()
 ENDIF()
 

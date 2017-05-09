@@ -35,6 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "LightMass.h"
+#include "LightMassAmbientOcclusion.h"
+#include "LightMassGlobalIllumination.h"
+
+#include <GL\glew.h>
 
 _NAME_BEGIN
 
@@ -422,15 +426,15 @@ LightMass::saveAsTGA(const std::string& path, float* data, std::uint32_t w, std:
 	auto image = temp.get();
 
 	float maxValue = 0.0f;
-	for (int i = 0; i < w * h; i++)
-		for (int j = 0; j < c; j++)
+	for (std::uint32_t i = 0; i < w * h; i++)
+		for (std::uint32_t j = 0; j < c; j++)
 				maxValue = std::max(maxValue, data[i * c + j]);
 
-	for (int i = 0; i < w * h * c; i++)
-		image[i] = math::clamp<std::uint8_t>(std::round(data[i] * 255 / maxValue), 0, 255);
+	for (std::uint32_t i = 0; i < w * h * c; i++)
+		image[i] = math::clamp<std::uint8_t>(data[i] * 255 / maxValue, 0, 255);
 
-	for (int j = 0; j < h / 2; j++)
-		for (int i = 0; i < w * c; i++)
+	for (std::uint32_t j = 0; j < h / 2; j++)
+		for (std::uint32_t i = 0; i < w * c; i++)
 			std::swap(image[i + j * (w * c)], image[(h - j - 1) * (w * c) + i]);
 
 	if (!isGreyscale)
@@ -457,6 +461,15 @@ LightMass::baking(const LightMassParams& params) noexcept
 	assert(params.lightMap.data);
 	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
 	assert(params.lightMap.channel == 1 || params.lightMap.channel == 2 || params.lightMap.channel == 3 || params.lightMap.channel == 4);
+
+	if (glewInit() != GLEW_OK)
+	{
+		auto listener = this->getLightMassListener();
+		if (listener)
+			listener->onMessage("Could not initialize with OpenGL.");
+
+		return false;
+	}
 
 	LightBakingOptions option;
 
@@ -497,17 +510,18 @@ LightMass::baking(const LightMassParams& params) noexcept
 	for (std::uint32_t i = 0; i < _model->numMaterials; i++)
 	{
 		Bound bound;
-		this->computeBoundingBox(bound, option.model.subsets[i].drawcall.firstIndex * _model->header.sizeOfIndices, option.model.subsets[i].drawcall.count);
+		this->computeBoundingBox(bound, option.model.subsets[i].drawcall.firstIndex * option.model.sizeofIndices, option.model.subsets[i].drawcall.count);
 		option.model.subsets[i].boundingBox = bound;
 	}
 
 	if (_lightMassListener)
 		_lightMassListener->onMessage("Calculated the bounding box of the model.");
 
-	_lightMassBaking = std::make_shared<LightMassBaking>();
-	_lightMassBaking->setLightMassListener(_lightMassListener);
+	auto lightMassBaking = std::make_shared<LightBakingAO>();
+	lightMassBaking->open(option.model);
+	lightMassBaking->setLightMassListener(_lightMassListener);
 
-	if (!_lightMassBaking->baking(option))
+	if (!lightMassBaking->baking(option))
 	{
 		if (_lightMassListener)
 			_lightMassListener->onMessage("Failed to baking the model");

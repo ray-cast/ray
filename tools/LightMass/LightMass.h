@@ -38,7 +38,7 @@
 #define _H_LIGHT_MASS_H_
 
 #include "LightMapPack.h"
-#include "LightMassBaking.h"
+#include "LightMassParams.h"
 #include "LightMassListener.h"
 
 #include "modpmx.h"
@@ -76,7 +76,6 @@ private:
 
 	Float3Array _facesNormal;
 
-	LightMassBakingPtr _lightMassBaking;
 	LightMassListenerPtr _lightMassListener;
 };
 

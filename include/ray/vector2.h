@@ -66,6 +66,9 @@ public:
 	Vector2t(T xx, T yy) noexcept : x(xx), y(yy) {}
 	explicit Vector2t(T xy) noexcept : x(xy), y(xy) {}
 
+	template<typename S>
+	explicit Vector2t(S* xy) noexcept : x(xy[0]), y(xy[1]) {}
+
 	Vector2t<T>& operator+=(T scale) noexcept { x += scale; y += scale; return *this; }
 	Vector2t<T>& operator-=(T scale) noexcept { x -= scale; y -= scale; return *this; }
 	Vector2t<T>& operator*=(T scale) noexcept { x *= scale; y *= scale; return *this; }

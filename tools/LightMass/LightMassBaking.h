@@ -56,8 +56,6 @@ public:
 	virtual bool baking(const LightBakingOptions& options) noexcept;
 
 protected:
-	virtual bool setupOpenGL(const LightModelData& params) noexcept;
-
 	virtual bool setupBakeTools(const LightBakingParams& params);
 	virtual void closeBakeTools();
 
@@ -69,7 +67,7 @@ protected:
 	bool updateSampleHemisphere(int* viewport, float* view, float* proj);
 
 	virtual bool beginSampleHemisphere(int* outViewport4, float* outView4x4, float* outProjection4x4);
-	virtual void doSampleHemisphere(const struct LightMassContextGL& ctxGL, const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp);
+	virtual void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp) = 0;
 	virtual void endSampleHemisphere();
 
 	virtual float getSampleProcess() noexcept;
@@ -83,7 +81,6 @@ private:
 	float4x4 _viewProject;
 
 	std::unique_ptr<lm_context> _ctx;
-	std::unique_ptr<LightMassContextGL> _ctxGL;
 
 	LightMassListenerPtr _lightMassListener;
 };

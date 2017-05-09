@@ -66,10 +66,11 @@ public:
 	Vector3t(T xx, T yy, T zz) :x(xx), y(yy), z(zz) { }
 	Vector3t(T xx, const Vector2t<T>& yz) :x(xx), y(yz.x), z(yz.y) {}
 	Vector3t(const Vector2t<T>& xy, T zz) :x(xy.x), y(xy.y), z(zz) {}
-	Vector3t(Vector2t<T>&& xy, T zz) :x(xy.x), y(xy.y), z(zz) {}
 	explicit Vector3t(const Vector4t<T>& v) :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
-	explicit Vector3t(Vector4t<T>&& v) :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
 	explicit Vector3t(T xyz) :x(xyz), y(xyz), z(xyz) {}
+	
+	template<typename S>
+	explicit Vector3t(S* xyz) :x(xyz[0]), y(xyz[1]), z(xyz[2]) {}
 
 	Vector3t<T>& operator+=(const T sz) { x += sz; y += sz; z += sz; return *this; }
 	Vector3t<T>& operator-=(const T sz) { x -= sz; y -= sz; z -= sz; return *this; }
@@ -141,6 +142,12 @@ public:
 
 	Vector3t<T>& set(T val) { x = y = z = val; return *this; }
 	Vector3t<T>& set(T xx, T yy, T zz) { x = xx; y = yy; z = zz; return *this; }
+	Vector3t<T>& set(T xx, const Vector2t<T>& yz) { x = xx; y = yz.x; z = yz.y; return *this; }
+	Vector3t<T>& set(const Vector2t<T>& xy, T zz) { x = xy.x; y = xy.y; z = zz; return *this; }
+	Vector3t<T>& set(const Vector4t<T>& v) { x = v.x / v.w; y = v.y / v.w; z = v.z / v.w; return *this; }
+
+	template<typename S>
+	Vector3t<T>& set(S* xyz) { x = xyz[0]; y = xyz[1]; z = xyz[2]; return *this; }
 
 	T& getComponent(unsigned char index)
 	{

@@ -998,14 +998,6 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 
 	try
 	{
-		if (!this->setupOpenGL(params.model))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Could not initialize with OpenGL.");
-
-			return false;
-		}
-
 		if (!this->setupBakeTools(params.baking))
 		{
 			if (_lightMassListener)
@@ -1037,7 +1029,7 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 		while (this->beginSampleHemisphere(vp.ptr(), view.data(), proj.data()))
 		{
 			float4x4 mvp = proj * view;
-			this->doSampleHemisphere(*_ctxGL, params, vp, mvp);
+			this->doSampleHemisphere(params, vp, mvp);
 
 			if (baseIndex != _ctx->meshPosition.triangle.baseIndex)
 			{
@@ -1071,112 +1063,6 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 	{
 		this->closeBakeTools();
 	}
-
-	return true;
-}
-
-bool 
-LightMassBaking::setupOpenGL(const LightModelData& params) noexcept
-{
-	assert(params.vertices >= 0 && params.indices >= 0);
-	assert(params.numVertices > 0 && params.numIndices > 0);
-	assert(params.subsets.size() >= 1);
-	assert(params.strideVertices < params.sizeofVertices && params.strideTexcoord < params.sizeofVertices);
-	assert(params.sizeofVertices > 0);
-	assert(params.sizeofIndices == 1 || params.sizeofIndices == 2 || params.sizeofIndices == 3);
-
-	if (glewInit() != GLEW_OK)
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("Could not initialize with OpenGL.");
-
-		return false;
-	}
-
-	auto glcontext = std::make_unique<LightMassContextGL>();
-
-	glGenBuffers(1, &glcontext->vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, glcontext->vbo);
-	glBufferData(GL_ARRAY_BUFFER, params.numVertices * params.sizeofVertices, params.vertices, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &glcontext->ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glcontext->ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, params.numIndices * params.sizeofIndices, params.indices, GL_STATIC_DRAW);
-
-	glGenVertexArrays(1, &glcontext->vao);
-	glBindVertexArray(glcontext->vao);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, params.sizeofVertices, (char*)nullptr + params.strideVertices);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, params.sizeofVertices, (char*)nullptr + params.strideTexcoord);
-
-	glBindBuffer(GL_ARRAY_BUFFER, glcontext->vbo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glcontext->ibo);
-
-	glBindVertexArray(0);
-
-	std::uint8_t emissive[] = { 0, 0, 0, 255 };
-
-	glGenTextures(1, &glcontext->lightmap);
-	glBindTexture(GL_TEXTURE_2D, glcontext->lightmap);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, emissive);
-
-	const char *vp =
-		"#version 150 core\n"
-		"in vec3 a_position;\n"
-		"in vec2 a_texcoord;\n"
-		"uniform mat4 u_mvp;\n"
-		"out vec2 v_texcoord;\n"
-
-		"void main()\n"
-		"{\n"
-		"v_texcoord = a_texcoord;\n"
-		"gl_Position = u_mvp * vec4(a_position, 1.0);\n"
-		"}\n";
-
-	const char *fp =
-		"#version 150 core\n"
-		"in vec2 v_texcoord;\n"
-		"uniform sampler2D u_lightmap;\n"
-		"out vec4 o_color;\n"
-
-		"void main()\n"
-		"{\n"
-		"o_color = vec4(texture(u_lightmap, v_texcoord).rgb, gl_FrontFacing ? 1.0 : 0.0);\n"
-		"}\n";
-
-	const char *attribs[] =
-	{
-		"a_position",
-		"a_texcoord"
-	};
-
-	glcontext->vs = loadShader(GL_VERTEX_SHADER, vp);
-	if (!glcontext->vs)
-		return GL_NONE;
-
-	glcontext->fs = loadShader(GL_FRAGMENT_SHADER, fp);
-	if (!glcontext->fs)
-		return GL_NONE;
-
-	glcontext->program = loadProgram(glcontext->vs, glcontext->fs, attribs, 2);
-	if (!glcontext->program)
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("Failed to loading shader.");
-
-		return false;
-	}
-
-	glcontext->u_mvp = glGetUniformLocation(glcontext->program, "u_mvp");
-	glcontext->u_lightmap = glGetUniformLocation(glcontext->program, "u_lightmap");
-
-	_ctxGL = std::move(glcontext);
 
 	return true;
 }
@@ -1483,55 +1369,6 @@ LightMassBaking::endSampleHemisphere()
 		{
 			lm_finishProcessHemisphereBatch(_ctx.get());
 			lm_beginProcessHemisphereBatch(_ctx.get());
-		}
-	}
-}
-
-void 
-LightMassBaking::doSampleHemisphere(const LightMassContextGL& ctxGL, const LightBakingOptions& params, const Viewportt<int>& vp, const float4x4& mvp)
-{
-	GLenum faceType = GL_UNSIGNED_INT;
-	if (params.model.sizeofIndices == 1)
-		faceType = GL_UNSIGNED_BYTE;
-	else if (params.model.sizeofIndices == 2)
-		faceType = GL_UNSIGNED_SHORT;
-
-	glViewport(vp.left, vp.top, vp.width, vp.height);
-
-	glEnable(GL_DEPTH_TEST);
-
-	glUseProgram(ctxGL.program);
-
-	glUniform1i(ctxGL.u_lightmap, 0);
-	glUniformMatrix4fv(ctxGL.u_mvp, 1, GL_FALSE, mvp.ptr());
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, ctxGL.lightmap);
-	glBindVertexArray(ctxGL.vao);
-
-	Frustum fru;
-	fru.extract(mvp);
-
-	for (auto& subset : params.model.subsets)
-	{
-		if (!fru.contains(subset.boundingBox.aabb()))
-			continue;
-
-		if (glDrawElementsInstancedBaseVertexBaseInstance)
-		{
-			glDrawElementsInstancedBaseVertexBaseInstance(
-				GL_TRIANGLES,
-				subset.drawcall.count,
-				faceType,
-				(char*)nullptr + subset.drawcall.firstIndex * params.model.sizeofIndices,
-				subset.drawcall.instanceCount,
-				subset.drawcall.baseVertex,
-				subset.drawcall.baseInstance
-			);
-		}
-		else
-		{
-			glDrawElements(GL_TRIANGLES, subset.drawcall.count, faceType, (char*)nullptr + subset.drawcall.firstIndex * params.model.sizeofIndices);
 		}
 	}
 }

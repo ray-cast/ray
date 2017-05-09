@@ -66,7 +66,7 @@ const char* BakeOcclusionAttribs[] =
 	"a_position",
 };
 
-LightBakingAO::LightMassContextGL::LightMassContextGL() noexcept
+LightBakingAO::GLContext::GLContext() noexcept
 	: program(0)
 	, vs(0)
 	, fs(0)
@@ -77,7 +77,7 @@ LightBakingAO::LightMassContextGL::LightMassContextGL() noexcept
 {
 }
 
-LightBakingAO::LightMassContextGL::~LightMassContextGL() noexcept
+LightBakingAO::GLContext::~GLContext() noexcept
 {
 	glDeleteShader(vs);
 	glDeleteShader(fs);
@@ -104,9 +104,9 @@ LightBakingAO::open(const LightModelData& params) noexcept
 	assert(params.subsets.size() >= 1);
 	assert(params.strideVertices < params.sizeofVertices && params.strideTexcoord < params.sizeofVertices);
 	assert(params.sizeofVertices > 0);
-	assert(params.sizeofIndices == 1 || params.sizeofIndices == 2 || params.sizeofIndices == 3);
+	assert(params.sizeofIndices == 1 || params.sizeofIndices == 2 || params.sizeofIndices == 4);
 
-	auto glcontext = std::make_unique<LightMassContextGL>();
+	auto glcontext = std::make_unique<GLContext>();
 
 	glGenBuffers(1, &glcontext->vbo);
 	if (glcontext->vbo == GL_NONE)
@@ -225,14 +225,14 @@ LightBakingAO::doSampleHemisphere(const LightBakingOptions& params, const Viewpo
 			if (!fru.contains(it.boundingBox.aabb()))
 				continue;
 
-			LightModelDrawCall drawcall;
-			drawcall.baseInstance = it.drawcall.baseInstance;
-			drawcall.baseVertex = it.drawcall.baseVertex;
-			drawcall.count = it.drawcall.count;
-			drawcall.firstIndex = it.drawcall.firstIndex;
-			drawcall.instanceCount = it.drawcall.instanceCount;
+			GLDrawElementsIndirectCommand command;
+			command.baseInstance = it.drawcall.baseInstance;
+			command.baseVertex = it.drawcall.baseVertex;
+			command.count = it.drawcall.count;
+			command.firstIndex = it.drawcall.firstIndex;
+			command.instanceCount = it.drawcall.instanceCount;
 
-			_drawcalls.push_back(drawcall);
+			_drawcalls.push_back(command);
 		}
 
 		glMultiDrawElementsIndirect(GL_TRIANGLES, faceType, _drawcalls.data(), _drawcalls.size(), 0);

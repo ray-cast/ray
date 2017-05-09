@@ -53,10 +53,10 @@ public:
 	void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp);
 
 private:
-	struct LightMassContextGL
+	struct GLContext
 	{
-		LightMassContextGL() noexcept;
-		~LightMassContextGL() noexcept;
+		GLContext() noexcept;
+		~GLContext() noexcept;
 
 		std::uint32_t vs;
 		std::uint32_t fs;
@@ -64,11 +64,22 @@ private:
 
 		std::uint32_t mvp;
 
+		std::uint32_t lightmap;
 		std::uint32_t vao, vbo, ibo;
 	};
 
-	std::unique_ptr<LightMassContextGL> _glcontext;
-	std::vector<LightModelDrawCall> _drawcalls;
+	struct GLDrawElementsIndirectCommand
+	{
+		std::uint32_t count;
+		std::uint32_t instanceCount;
+		std::uint32_t firstIndex;
+		std::uint32_t baseVertex;
+		std::uint32_t baseInstance;
+	};
+
+	std::unique_ptr<GLContext> _glcontext;
+
+	std::vector<GLDrawElementsIndirectCommand> _drawcalls;
 };
 
 _NAME_END

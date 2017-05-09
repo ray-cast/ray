@@ -63,6 +63,22 @@ protected:
 	virtual void setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
 	virtual void setSamplePosition(std::uint32_t indicesTriangleBaseIndex);
 
+	int leftOf(const float2& a, const float2& b, const float2& c);
+	int convexClip(float2* poly, int nPoly, const float2* clip, int nClip, float2* res);
+
+	std::size_t passStepSize();
+	std::size_t passOffsetX();
+	std::size_t passOffsetY();
+
+	float* getLightmapPixel(int x, int y);
+	void setLightmapPixel(int x, int y, float* in);
+
+	bool hasConservativeTriangleRasterizerFinished();
+	void moveToNextPotentialConservativeTriangleRasterizerPosition();
+	bool trySamplingConservativeTriangleRasterizerPosition();
+	bool findFirstConservativeTriangleRasterizerPosition();
+	bool findNextConservativeTriangleRasterizerPosition();
+
 	virtual void beginProcessHemisphereBatch();
 	virtual bool finishProcessHemisphereBatch();
 

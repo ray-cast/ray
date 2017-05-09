@@ -854,11 +854,11 @@ LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 		if (_ctx->mesh.uvsType == GL_FLOAT)
 			uv = *(const float2*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride);
 		else if (_ctx->mesh.uvsType == GL_UNSIGNED_INT)
-			uv = float2((const std::uint32_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)UINT_MAX;
+			uv = float2((const std::uint32_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint32_t>::max();
 		else if (_ctx->mesh.uvsType == GL_UNSIGNED_SHORT)
-			uv = float2((const std::uint16_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)USHRT_MAX;
+			uv = float2((const std::uint16_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint16_t>::max();
 		else
-			uv = float2((const std::uint8_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)UCHAR_MAX;
+			uv = float2((const std::uint8_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint8_t>::max();
 
 		_ctx->meshPosition.triangle.uv[i] = uv * uvScale;
 		_ctx->meshPosition.triangle.p[i] = _ctx->mesh.transform * p;
@@ -871,9 +871,9 @@ LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 	int2 bbMax((int2)math::ceil(uvMax));
 
 	_ctx->meshPosition.rasterizer.minx = math::max(bbMin.x - 1, 0);
-	_ctx->meshPosition.rasterizer.miny = std::max(bbMin.y - 1, 0);
-	_ctx->meshPosition.rasterizer.maxx = std::min(bbMax.x + 1, _ctx->lightmap.width);
-	_ctx->meshPosition.rasterizer.maxy = std::min(bbMax.y + 1, _ctx->lightmap.height);
+	_ctx->meshPosition.rasterizer.miny = math::max(bbMin.y - 1, 0);
+	_ctx->meshPosition.rasterizer.maxx = math::min(bbMax.x + 1, _ctx->lightmap.width);
+	_ctx->meshPosition.rasterizer.maxy = math::min(bbMax.y + 1, _ctx->lightmap.height);
 	_ctx->meshPosition.rasterizer.x = _ctx->meshPosition.rasterizer.minx + this->passOffsetX();
 	_ctx->meshPosition.rasterizer.y = _ctx->meshPosition.rasterizer.miny + this->passOffsetY();
 
@@ -1203,7 +1203,7 @@ LightMassBaking::getSampleProcess() noexcept
 }
 
 std::uint32_t
-LightMassBaking::loadShader(std::uint32_t type, const char *source)
+LightMassBaking::loadShader(std::uint32_t type, const char* source)
 {
 	GLuint shader = glCreateShader(type);
 	if (shader == GL_NONE)
@@ -1245,7 +1245,7 @@ LightMassBaking::loadShader(std::uint32_t type, const char *source)
 }
 
 std::uint32_t
-LightMassBaking::loadProgram(std::uint32_t vs, std::uint32_t fs, const char **attributes, int attributeCount)
+LightMassBaking::loadProgram(std::uint32_t vs, std::uint32_t fs, const char** attributes, int attributeCount)
 {
 	assert(vs && fs);
 

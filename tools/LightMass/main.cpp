@@ -99,7 +99,7 @@ public:
 		std::uint32_t size = 0;
 		while (!size)
 		{
-			std::cout << "Input the image size (512, 1024, 2048, 4096): ";
+			std::cout << "Input the image size (512, 1024, 2048, 4096, 8192): ";
 			char paths[MAX_PATH];
 			std::cin.getline(paths, MAX_PATH);
 			size = atoi(paths);
@@ -141,6 +141,38 @@ public:
 		return size;
 	}
 
+	std::uint32_t GetSampleScale()
+	{
+		std::uint32_t size = 0;
+		while (!size)
+		{
+			std::cout << "Input the sample scale (1, 2, 3, 4, 5): ";
+			char paths[MAX_PATH];
+			std::cin.getline(paths, MAX_PATH);
+			size = atoi(paths);
+			if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5)
+				break;
+		}
+
+		return size;
+	}
+
+	std::uint32_t GetSamplePrecision()
+	{
+		std::uint32_t size = 0;
+		while (!size)
+		{
+			std::cout << "Input the sample precision (1, 2, 3, 4, 5): ";
+			char paths[MAX_PATH];
+			std::cin.getline(paths, MAX_PATH);
+			size = atoi(paths);
+			if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5)
+				break;
+		}
+
+		return size;
+	}
+
 	bool baking(std::string path)
 	{
 		while (path.empty())
@@ -161,6 +193,8 @@ public:
 		params.lightMap.channel = 1;
 		params.lightMap.data = lightmap.get();
 		params.baking.hemisphereSize = GetSampleCount();
+		params.baking.interpolationPasses = GetSampleScale();
+		params.baking.interpolationThreshold = pow(0.1, 1 + GetSamplePrecision());
 
 		_lightMass = std::make_shared<ray::LightMass>();
 		_lightMass->setLightMassListener(std::make_shared<AppListener>());

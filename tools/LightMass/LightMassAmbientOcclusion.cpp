@@ -222,6 +222,9 @@ LightBakingAO::doSampleHemisphere(const LightBakingOptions& params, const Viewpo
 
 		for (auto& it : params.model.subsets)
 		{
+			if (!fru.contains(it.boundingBox.aabb()))
+				continue;
+
 			LightModelDrawCall drawcall;
 			drawcall.baseInstance = it.drawcall.baseInstance;
 			drawcall.baseVertex = it.drawcall.baseVertex;

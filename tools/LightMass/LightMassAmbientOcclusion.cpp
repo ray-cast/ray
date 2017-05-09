@@ -42,28 +42,26 @@ _NAME_BEGIN
 
 const char* BakeOcclusionVS =
 R"(#version 150 core
-	in vec3 a_position;
+	in vec3 position;
 	uniform mat4 mvp;
 
 	void main()
 	{
-		gl_Position = mvp * vec4(a_position, 1.0);
+		gl_Position = mvp * vec4(position, 1.0);
 	};
 )";
 
 const char* BakeOcclusionPS =
 R"(#version 150 core
-	out vec4 o_color;
-
 	void main()
 	{
-		o_color = vec4(0,0,0, gl_FrontFacing ? 1.0 : 0.0);
+		gl_FragColor = vec4(0,0,0, gl_FrontFacing ? 1.0 : 0.0);
 	};
 )";
 
 const char* BakeOcclusionAttribs[] =
 {
-	"a_position",
+	"position",
 };
 
 LightBakingAO::GLContext::GLContext() noexcept

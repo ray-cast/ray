@@ -79,105 +79,17 @@ LightMassBaking::LightMassBaking() noexcept
 
 LightMassBaking::~LightMassBaking() noexcept
 {
-}
-
-void
-LightMassBaking::setLightMassListener(LightMassListenerPtr pointer) noexcept
-{
-	_lightMassListener = pointer;
-}
-
-LightMassListenerPtr
-LightMassBaking::getLightMassListener() const noexcept
-{
-	return _lightMassListener;
-}
-
-void
-LightMassBaking::setWorldTransform(const float4x4& transform) noexcept
-{
-	_camera.world = transform;
-}
-
-const float4x4&
-LightMassBaking::getWorldTransform() const noexcept
-{
-	return _camera.world;
+	this->close();
 }
 
 bool
-LightMassBaking::baking(const LightBakingOptions& params) noexcept
+LightMassBaking::setup(const LightBakingParams& params) noexcept
 {
-	assert(params.lightMap.data);
-	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
-	assert(params.lightMap.channel == 1 || params.lightMap.channel == 2 || params.lightMap.channel == 3 || params.lightMap.channel == 4);
-
-	try
-	{
-		if (!this->setupBakeTools(params.baking))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Could not initialize with BakeTools.");
-
-			return false;
-		}
-
-		if (_lightMassListener)
-			_lightMassListener->onBakingStart();
-
-		GLenum faceType = GL_UNSIGNED_INT;
-		if (params.model.sizeofIndices == 1)
-			faceType = GL_UNSIGNED_BYTE;
-		else if (params.model.sizeofIndices == 2)
-			faceType = GL_UNSIGNED_SHORT;
-
-		this->setRenderTarget(params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel);
-		this->setGeometry(
-			GL_FLOAT, params.model.vertices + params.model.strideVertices, params.model.sizeofVertices,
-			GL_FLOAT, params.model.vertices + params.model.strideTexcoord, params.model.sizeofVertices,
-			params.model.numIndices, faceType, params.model.indices);
-
-		Viewportt<int> vp;
-
-		std::uint32_t baseIndex = 0;
-
-		while (this->beginSampleHemisphere(vp.ptr()))
-		{
-			this->doSampleHemisphere(params, vp, _camera.viewProject);
-
-			if (baseIndex != _ctx->meshPosition.triangle.baseIndex)
-			{
-				if (_lightMassListener)
-					_lightMassListener->onBakingProgressing(this->getSampleProcess());
-
-				baseIndex = _ctx->meshPosition.triangle.baseIndex;
-			}
-
-			if (!this->endSampleHemisphere())
-				return false;
-		}
-
-		if (_lightMassListener)
-			_lightMassListener->onBakingEnd();
-
-		this->closeBakeTools();
-	}
-	catch (...)
-	{
-		this->closeBakeTools();
-	}
-
-	return true;
-}
-
-bool
-LightMassBaking::setupBakeTools(const LightBakingParams& params)
-{
-	assert(params.hemisphereSize == 16 || params.hemisphereSize == 32 || params.hemisphereSize == 64 || params.hemisphereSize == 128 || params.hemisphereSize == 256 || params.hemisphereSize == 512);
+	assert(params.hemisphereWeights);
 	assert(params.hemisphereNear < params.hemisphereFar && params.hemisphereNear > 0.0f);
+	assert(params.hemisphereSize == 16 || params.hemisphereSize == 32 || params.hemisphereSize == 64 || params.hemisphereSize == 128 || params.hemisphereSize == 256 || params.hemisphereSize == 512);
 	assert(params.interpolationPasses >= 0 && params.interpolationPasses <= 8);
 	assert(params.interpolationThreshold >= 0.0f);
-	assert(params.hemisphereWeights);
 
 	auto context = std::make_unique<HemiContext>();
 
@@ -288,7 +200,7 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 		{
 			if (_lightMassListener)
 				_lightMassListener->onMessage("Failed to loading the hemisphere first pass shader program.");
-		
+
 			return false;
 		}
 
@@ -302,7 +214,7 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 			"const vec2 ps[4] = vec2[](vec2(1, -1), vec2(1, 1), vec2(-1, -1), vec2(-1, 1));\n"
 			"void main()\n"
 			"{\n"
-				"gl_Position = vec4(ps[gl_VertexID], 0, 1);\n"
+			"gl_Position = vec4(ps[gl_VertexID], 0, 1);\n"
 			"}\n";
 		const char *fs =
 			"#version 150 core\n"
@@ -312,12 +224,12 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 
 			"void main()\n"
 			"{\n"
-				"ivec2 h_uv = ivec2((gl_FragCoord.xy - vec2(0.5)) * 2.0 + vec2(0.01));\n"
-				"vec4 lb = texelFetch(hemispheres, h_uv + ivec2(0, 0), 0);\n"
-				"vec4 rb = texelFetch(hemispheres, h_uv + ivec2(1, 0), 0);\n"
-				"vec4 lt = texelFetch(hemispheres, h_uv + ivec2(0, 1), 0);\n"
-				"vec4 rt = texelFetch(hemispheres, h_uv + ivec2(1, 1), 0);\n"
-				"outColor = lb + rb + lt + rt;\n"
+			"ivec2 h_uv = ivec2((gl_FragCoord.xy - vec2(0.5)) * 2.0 + vec2(0.01));\n"
+			"vec4 lb = texelFetch(hemispheres, h_uv + ivec2(0, 0), 0);\n"
+			"vec4 rb = texelFetch(hemispheres, h_uv + ivec2(1, 0), 0);\n"
+			"vec4 lt = texelFetch(hemispheres, h_uv + ivec2(0, 1), 0);\n"
+			"vec4 rt = texelFetch(hemispheres, h_uv + ivec2(1, 1), 0);\n"
+			"outColor = lb + rb + lt + rt;\n"
 			"}\n";
 
 		context->hemisphere.downsamplePass.vs = loadShader(GL_VERTEX_SHADER, vs);
@@ -355,8 +267,8 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 	return true;
 }
 
-void 
-LightMassBaking::closeBakeTools()
+void
+LightMassBaking::close() noexcept
 {
 	glUseProgram(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -367,6 +279,95 @@ LightMassBaking::closeBakeTools()
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	_ctx.reset();
+}
+
+void
+LightMassBaking::setLightMassListener(LightMassListenerPtr pointer) noexcept
+{
+	_lightMassListener = pointer;
+}
+
+LightMassListenerPtr
+LightMassBaking::getLightMassListener() const noexcept
+{
+	return _lightMassListener;
+}
+
+void
+LightMassBaking::setWorldTransform(const float4x4& transform) noexcept
+{
+	_camera.world = transform;
+}
+
+const float4x4&
+LightMassBaking::getWorldTransform() const noexcept
+{
+	return _camera.world;
+}
+
+bool
+LightMassBaking::baking(const LightBakingOptions& params) noexcept
+{
+	assert(params.lightMap.data);
+	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
+	assert(params.lightMap.channel == 1 || params.lightMap.channel == 2 || params.lightMap.channel == 3 || params.lightMap.channel == 4);
+
+	try
+	{
+		if (!this->setup(params.baking))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage("Could not initialize with BakeTools.");
+
+			return false;
+		}
+
+		if (_lightMassListener)
+			_lightMassListener->onBakingStart();
+
+		GLenum faceType = GL_UNSIGNED_INT;
+		if (params.model.sizeofIndices == 1)
+			faceType = GL_UNSIGNED_BYTE;
+		else if (params.model.sizeofIndices == 2)
+			faceType = GL_UNSIGNED_SHORT;
+
+		this->setRenderTarget(params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel);
+		this->setGeometry(
+			GL_FLOAT, params.model.vertices + params.model.strideVertices, params.model.sizeofVertices,
+			GL_FLOAT, params.model.vertices + params.model.strideTexcoord, params.model.sizeofVertices,
+			params.model.numIndices, faceType, params.model.indices);
+
+		Viewportt<int> vp;
+
+		std::uint32_t baseIndex = 0;
+
+		while (this->beginSampleHemisphere(vp.ptr()))
+		{
+			this->doSampleHemisphere(params, vp, _camera.viewProject);
+
+			if (baseIndex != _ctx->meshPosition.triangle.baseIndex)
+			{
+				if (_lightMassListener)
+					_lightMassListener->onBakingProgressing(this->getSampleProcess());
+
+				baseIndex = _ctx->meshPosition.triangle.baseIndex;
+			}
+
+			if (!this->endSampleHemisphere())
+				return false;
+		}
+
+		if (_lightMassListener)
+			_lightMassListener->onBakingEnd();
+
+		this->close();
+	}
+	catch (...)
+	{
+		this->close();
+	}
+
+	return true;
 }
 
 void

@@ -54,11 +54,11 @@ public:
 	void setWorldTransform(const float4x4& transform) noexcept;
 	const float4x4& getWorldTransform() const noexcept;
 
-	virtual bool baking(const LightBakingOptions& options) noexcept;
+	bool baking(const LightBakingOptions& options) noexcept;
 
 protected:
-	bool setupBakeTools(const LightBakingParams& params);
-	void closeBakeTools();
+	bool setup(const LightBakingParams& params) noexcept;
+	void close() noexcept;
 
 	void setRenderTarget(float* lightmap, int w, int h, int channels);
 	void setGeometry(int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);

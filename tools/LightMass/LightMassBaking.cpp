@@ -472,94 +472,6 @@ void lmSetHemisphereWeights(lm_context *ctx, lm_weight_func f, void *userdata)
 	free(weights);
 }
 
-void lmImageDilate(const float *image, float *outImage, int w, int h, int c)
-{
-	assert(c > 0 && c <= 4);
-	for (int y = 0; y < h; y++)
-	{
-		for (int x = 0; x < w; x++)
-		{
-			float color[4];
-			bool valid = false;
-			for (int i = 0; i < c; i++)
-			{
-				color[i] = image[(y * w + x) * c + i];
-				valid |= color[i] > 0.0f;
-			}
-			if (!valid)
-			{
-				int n = 0;
-				const int dx[] = { -1, 0, 1,  0 };
-				const int dy[] = { 0, 1, 0, -1 };
-				for (int d = 0; d < 4; d++)
-				{
-					int cx = x + dx[d];
-					int cy = y + dy[d];
-					if (cx >= 0 && cx < w && cy >= 0 && cy < h)
-					{
-						float dcolor[4];
-						bool dvalid = false;
-						for (int i = 0; i < c; i++)
-						{
-							dcolor[i] = image[(cy * w + cx) * c + i];
-							dvalid |= dcolor[i] > 0.0f;
-						}
-						if (dvalid)
-						{
-							for (int i = 0; i < c; i++)
-								color[i] += dcolor[i];
-							n++;
-						}
-					}
-				}
-				if (n)
-				{
-					float in = 1.0f / n;
-					for (int i = 0; i < c; i++)
-						color[i] *= in;
-				}
-			}
-			for (int i = 0; i < c; i++)
-				outImage[(y * w + x) * c + i] = color[i];
-		}
-	}
-}
-
-void lmImageSmooth(const float *image, float *outImage, int w, int h, int c)
-{
-	assert(c > 0 && c <= 4);
-	for (int y = 0; y < h; y++)
-	{
-		for (int x = 0; x < w; x++)
-		{
-			float color[4] = { 0 };
-			int n = 0;
-			for (int dy = -1; dy <= 1; dy++)
-			{
-				int cy = y + dy;
-				for (int dx = -1; dx <= 1; dx++)
-				{
-					int cx = x + dx;
-					if (cx >= 0 && cx < w && cy >= 0 && cy < h)
-					{
-						bool valid = false;
-						for (int i = 0; i < c; i++)
-							valid |= image[(cy * w + cx) * c + i] > 0.0f;
-						if (valid)
-						{
-							for (int i = 0; i < c; i++)
-								color[i] += image[(cy * w + cx) * c + i];
-							n++;
-						}
-					}
-				}
-			}
-			for (int i = 0; i < c; i++)
-				outImage[(y * w + x) * c + i] = n ? color[i] / n : 0.0f;
-		}
-	}
-}
-
 LightMassBaking::LightMassBaking() noexcept
 {
 }
@@ -632,18 +544,6 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 
 			if (!this->endSampleHemisphere())
 				return false;
-		}
-
-		if (params.lightMap.margin > 0)
-		{
-			std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(params.lightMap.width * params.lightMap.height * params.lightMap.channel);
-			std::memset(lightmapTemp.get(), 0, params.lightMap.width * params.lightMap.height * params.lightMap.channel * sizeof(float));
-
-			for (int j = 0; j < params.lightMap.margin; j++)
-			{
-				lmImageSmooth(params.lightMap.data, lightmapTemp.get(), params.lightMap.width, params.lightMap.height, params.lightMap.channel);
-				lmImageDilate(lightmapTemp.get(), params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel);
-			}
 		}
 
 		if (_lightMassListener)

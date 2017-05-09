@@ -161,7 +161,6 @@ public:
 		params.lightMap.channel = 1;
 		params.lightMap.data = lightmap.get();
 		params.baking.hemisphereSize = GetSampleCount();
-		params.lightMap.margin = 1;
 
 		_lightMass = std::make_shared<ray::LightMass>();
 		_lightMass->setLightMassListener(std::make_shared<AppListener>());
@@ -174,7 +173,7 @@ public:
 		std::string outputPath = ray::util::directory(path) + "ao.tga";
 		std::cout << "Save as image : " << outputPath << std::endl;
 		
-		if (!_lightMass->saveAsTGA(outputPath, params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel))
+		if (!_lightMass->saveAsTGA(outputPath, params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel, 1))
 			std::cout << "Failed to save image : " << outputPath << std::endl;
 
 		return true;

@@ -401,7 +401,7 @@ LightMass::save(const std::string& path) noexcept
 }
 
 bool 
-LightMass::saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c)
+LightMass::saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin)
 {
 	assert(c == 1 || c == 3 || c == 4);
 
@@ -422,6 +422,18 @@ LightMass::saveAsTGA(const std::string& path, float* data, std::uint32_t w, std:
 	header.pixel_size = c * 8;
 	header.attributes = hasAlpha ? 8 : 0;
 
+	if (margin > 0)
+	{
+		std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * c);
+		std::memset(lightmapTemp.get(), 0, w * h * c * sizeof(float));
+
+		for (std::uint32_t j = 0; j < margin; j++)
+		{
+			ImageSmooth(data, lightmapTemp.get(), w, h, c);
+			ImageDilate(lightmapTemp.get(), data, w, h, c);
+		}
+	}
+
 	auto temp = std::make_unique<std::uint8_t[]>(w * h * c);
 	auto image = temp.get();
 
@@ -439,7 +451,7 @@ LightMass::saveAsTGA(const std::string& path, float* data, std::uint32_t w, std:
 
 	if (!isGreyscale)
 	{
-		for (int i = 0; i < w * h * c; i += c)
+		for (std::size_t i = 0; i < w * h * c; i += c)
 			std::swap(image[i], image[i + 2]);
 	}
 
@@ -549,6 +561,96 @@ LightMassListenerPtr
 LightMass::getLightMassListener() const noexcept
 {
 	return _lightMassListener;
+}
+
+void 
+LightMass::ImageDilate(const float *image, float *outImage, int w, int h, int c) noexcept
+{
+	assert(c > 0 && c <= 4);
+	for (int y = 0; y < h; y++)
+	{
+		for (int x = 0; x < w; x++)
+		{
+			float color[4];
+			bool valid = false;
+			for (int i = 0; i < c; i++)
+			{
+				color[i] = image[(y * w + x) * c + i];
+				valid |= color[i] > 0.0f;
+			}
+			if (!valid)
+			{
+				int n = 0;
+				const int dx[] = { -1, 0, 1,  0 };
+				const int dy[] = { 0, 1, 0, -1 };
+				for (int d = 0; d < 4; d++)
+				{
+					int cx = x + dx[d];
+					int cy = y + dy[d];
+					if (cx >= 0 && cx < w && cy >= 0 && cy < h)
+					{
+						float dcolor[4];
+						bool dvalid = false;
+						for (int i = 0; i < c; i++)
+						{
+							dcolor[i] = image[(cy * w + cx) * c + i];
+							dvalid |= dcolor[i] > 0.0f;
+						}
+						if (dvalid)
+						{
+							for (int i = 0; i < c; i++)
+								color[i] += dcolor[i];
+							n++;
+						}
+					}
+				}
+				if (n)
+				{
+					float in = 1.0f / n;
+					for (int i = 0; i < c; i++)
+						color[i] *= in;
+				}
+			}
+			for (int i = 0; i < c; i++)
+				outImage[(y * w + x) * c + i] = color[i];
+		}
+	}
+}
+
+void 
+LightMass::ImageSmooth(const float *image, float *outImage, int w, int h, int c) noexcept
+{
+	assert(c > 0 && c <= 4);
+	for (int y = 0; y < h; y++)
+	{
+		for (int x = 0; x < w; x++)
+		{
+			float color[4] = { 0 };
+			int n = 0;
+			for (int dy = -1; dy <= 1; dy++)
+			{
+				int cy = y + dy;
+				for (int dx = -1; dx <= 1; dx++)
+				{
+					int cx = x + dx;
+					if (cx >= 0 && cx < w && cy >= 0 && cy < h)
+					{
+						bool valid = false;
+						for (int i = 0; i < c; i++)
+							valid |= image[(cy * w + cx) * c + i] > 0.0f;
+						if (valid)
+						{
+							for (int i = 0; i < c; i++)
+								color[i] += image[(cy * w + cx) * c + i];
+							n++;
+						}
+					}
+				}
+			}
+			for (int i = 0; i < c; i++)
+				outImage[(y * w + x) * c + i] = n ? color[i] / n : 0.0f;
+		}
+	}
 }
 
 _NAME_END

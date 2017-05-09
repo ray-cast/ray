@@ -44,7 +44,6 @@ LightMapData::LightMapData() noexcept
 	: width(1024)
 	, height(1024)
 	, channel(1)
-	, margin(1)
 	, data(nullptr)
 {
 }

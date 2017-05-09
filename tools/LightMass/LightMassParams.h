@@ -48,7 +48,6 @@ struct LightMapData
 	std::uint16_t width;
 	std::uint16_t height;
 	std::uint8_t channel;
-	std::uint8_t margin;
 
 	float* data;
 };

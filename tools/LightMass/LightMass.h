@@ -53,7 +53,7 @@ public:
 
 	bool load(const std::string& path) noexcept;
 	bool save(const std::string& path) noexcept;
-	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c);
+	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin);
 
 	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
 	LightMassListenerPtr getLightMassListener() const noexcept;
@@ -67,6 +67,9 @@ public:
 
 	std::uint32_t getFace(std::size_t n) noexcept;
 	std::uint32_t getFace(std::size_t n, std::uint32_t firstIndex) noexcept;
+	
+	void ImageDilate(const float *image, float *outImage, int w, int h, int c) noexcept;
+	void ImageSmooth(const float *image, float *outImage, int w, int h, int c) noexcept;
 
 private:
 	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;

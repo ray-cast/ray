@@ -961,7 +961,7 @@ struct LightMassContextGL
 	GLuint vs;
 	GLuint fs;
 	GLuint program;
-
+	
 	GLint u_lightmap;
 	GLint u_mvp;
 

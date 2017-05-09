@@ -161,6 +161,7 @@ public:
 		params.lightMap.channel = 1;
 		params.lightMap.data = lightmap.get();
 		params.baking.hemisphereSize = GetSampleCount();
+		params.lightMap.margin = 1;
 
 		_lightMass = std::make_shared<ray::LightMass>();
 		_lightMass->setLightMassListener(std::make_shared<AppListener>());

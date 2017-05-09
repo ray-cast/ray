@@ -34,50 +34,44 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
+#ifndef _H_LIGHTMASS_GI_H_
+#define _H_LIGHTMASS_GI_H_
 
-#include "LightMapPack.h"
 #include "LightMassBaking.h"
-#include "LightMassListener.h"
-
-#include "modpmx.h"
 
 _NAME_BEGIN
 
-class LightMass
+class LightBakingGI : public LightMassBaking
 {
 public:
-	LightMass() noexcept;
-	~LightMass() noexcept;
+	LightBakingGI() noexcept;
+	~LightBakingGI() noexcept;
 
-	bool load(const std::string& path) noexcept;
-	bool save(const std::string& path) noexcept;
-	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c);
+	bool open(const LightModelData& params) noexcept;
+	void close() noexcept;
 
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
-
-	bool baking(const LightMassParams& params) noexcept;
-
-	void computeFaceNormals() noexcept;
-	void computeVertricesNormals() noexcept;
-	void computeLightmapPack() noexcept;
-	void computeBoundingBox(Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
-
-	std::uint32_t getFace(std::size_t n) noexcept;
-	std::uint32_t getFace(std::size_t n, std::uint32_t firstIndex) noexcept;
+	void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp);
 
 private:
-	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;
+	struct LightMassContextGL
+	{
+		LightMassContextGL() noexcept;
+		~LightMassContextGL() noexcept;
 
-private:
-	std::unique_ptr<PMX> _model;
+		std::uint32_t vs;
+		std::uint32_t fs;
+		std::uint32_t program;
 
-	Float3Array _facesNormal;
+		std::uint32_t u_lightmap;
+		std::uint32_t u_mvp;
 
-	LightMassBakingPtr _lightMassBaking;
-	LightMassListenerPtr _lightMassListener;
+		std::uint32_t lightmap;
+		std::uint32_t vao, vbo, ibo;
+	};
+
+	std::unique_ptr<LightMassContextGL> _glcontext;
+
+	std::vector<LightModelDrawCall> _drawcalls;
 };
 
 _NAME_END

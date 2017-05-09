@@ -969,46 +969,6 @@ struct LightMassContextGL
 	GLuint vao, vbo, ibo;
 };
 
-LightMapData::LightMapData() noexcept
-	: width(1024)
-	, height(1024)
-	, channel(1)
-	, margin(1)
-	, data(nullptr)
-{
-}
-
-LightModelDrawCall::LightModelDrawCall() noexcept
-	: count(0)
-	, instanceCount(1)
-	, firstIndex(0)
-	, baseVertex(0)
-	, baseInstance(0)
-{
-}
-
-LightModelData::LightModelData() noexcept
-	: vertices(nullptr)
-	, indices(nullptr)
-	, sizeofIndices(2)
-	, sizeofVertices(0)
-	, strideVertices(0)
-	, strideTexcoord(0)
-	, numVertices(0)
-	, numIndices(0)
-{
-}
-
-LightBakingParams::LightBakingParams() noexcept
-	: hemisphereSize(64)
-	, hemisphereNear(0.1)
-	, hemisphereFar(100)
-	, clearColor(float3::One)
-	, interpolationPasses(1)
-	, interpolationThreshold(1e-4)
-{
-}
-
 LightMassBaking::LightMassBaking() noexcept
 {
 }
@@ -1120,12 +1080,10 @@ LightMassBaking::setupOpenGL(const LightModelData& params) noexcept
 {
 	assert(params.vertices >= 0 && params.indices >= 0);
 	assert(params.numVertices > 0 && params.numIndices > 0);
-	assert(params.drawcalls.size() >= 1);
+	assert(params.subsets.size() >= 1);
 	assert(params.strideVertices < params.sizeofVertices && params.strideTexcoord < params.sizeofVertices);
 	assert(params.sizeofVertices > 0);
 	assert(params.sizeofIndices == 1 || params.sizeofIndices == 2 || params.sizeofIndices == 3);
-
-	assert(params.boundingBoxs.empty() || params.boundingBoxs.size() == params.drawcalls.size());
 
 	if (glewInit() != GLEW_OK)
 	{
@@ -1551,63 +1509,29 @@ LightMassBaking::doSampleHemisphere(const LightMassContextGL& ctxGL, const Light
 	glBindTexture(GL_TEXTURE_2D, ctxGL.lightmap);
 	glBindVertexArray(ctxGL.vao);
 
-	if (params.model.boundingBoxs.empty())
+	Frustum fru;
+	fru.extract(mvp);
+
+	for (auto& subset : params.model.subsets)
 	{
-		if (glMultiDrawElementsIndirect)
+		if (!fru.contains(subset.boundingBox.aabb()))
+			continue;
+
+		if (glDrawElementsInstancedBaseVertexBaseInstance)
 		{
-			glMultiDrawElementsIndirect(GL_TRIANGLES, faceType, params.model.drawcalls.data(), params.model.drawcalls.size(), 0);
+			glDrawElementsInstancedBaseVertexBaseInstance(
+				GL_TRIANGLES,
+				subset.drawcall.count,
+				faceType,
+				(char*)nullptr + subset.drawcall.firstIndex * params.model.sizeofIndices,
+				subset.drawcall.instanceCount,
+				subset.drawcall.baseVertex,
+				subset.drawcall.baseInstance
+			);
 		}
 		else
 		{
-			for (auto& drawcall : params.model.drawcalls)
-			{
-				if (glDrawElementsInstancedBaseVertexBaseInstance)
-				{
-					glDrawElementsInstancedBaseVertexBaseInstance(
-						GL_TRIANGLES,
-						drawcall.count,
-						faceType,
-						(char*)nullptr + drawcall.firstIndex,
-						drawcall.instanceCount,
-						drawcall.baseVertex,
-						drawcall.baseInstance
-					);
-				}
-				else
-				{
-					glDrawElements(GL_TRIANGLES, drawcall.count, faceType, (char*)nullptr + drawcall.firstIndex);
-				}
-			}
-		}
-	}
-	else
-	{
-		Frustum fru;
-		fru.extract(mvp);
-
-		std::size_t drawCount = params.model.drawcalls.size();
-
-		for (std::size_t i = 0; i < drawCount; i++)
-		{
-			if (!fru.contains(params.model.boundingBoxs[i].aabb()))
-				continue;
-
-			if (glDrawElementsInstancedBaseVertexBaseInstance)
-			{
-				glDrawElementsInstancedBaseVertexBaseInstance(
-					GL_TRIANGLES,
-					params.model.drawcalls[i].count,
-					faceType,
-					(char*)nullptr + params.model.drawcalls[i].firstIndex,
-					params.model.drawcalls[i].instanceCount,
-					params.model.drawcalls[i].baseVertex,
-					params.model.drawcalls[i].baseInstance
-				);
-			}
-			else
-			{
-				glDrawElements(GL_TRIANGLES, params.model.drawcalls[i].count, faceType, (char*)nullptr + params.model.drawcalls[i].firstIndex);
-			}
+			glDrawElements(GL_TRIANGLES, subset.drawcall.count, faceType, (char*)nullptr + subset.drawcall.firstIndex * params.model.sizeofIndices);
 		}
 	}
 }

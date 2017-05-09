@@ -34,52 +34,50 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
+#include "LightMassParams.h"
 
-#include "LightMapPack.h"
-#include "LightMassBaking.h"
-#include "LightMassListener.h"
-
-#include "modpmx.h"
+#include <GL\glew.h>
 
 _NAME_BEGIN
 
-class LightMass
+LightMapData::LightMapData() noexcept
+	: width(1024)
+	, height(1024)
+	, channel(1)
+	, margin(1)
+	, data(nullptr)
 {
-public:
-	LightMass() noexcept;
-	~LightMass() noexcept;
+}
 
-	bool load(const std::string& path) noexcept;
-	bool save(const std::string& path) noexcept;
-	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c);
+LightModelDrawCall::LightModelDrawCall() noexcept
+	: count(0)
+	, instanceCount(1)
+	, firstIndex(0)
+	, baseVertex(0)
+	, baseInstance(0)
+{
+}
 
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
+LightModelData::LightModelData() noexcept
+	: vertices(nullptr)
+	, indices(nullptr)
+	, sizeofIndices(2)
+	, sizeofVertices(0)
+	, strideVertices(0)
+	, strideTexcoord(0)
+	, numVertices(0)
+	, numIndices(0)
+{
+}
 
-	bool baking(const LightMassParams& params) noexcept;
-
-	void computeFaceNormals() noexcept;
-	void computeVertricesNormals() noexcept;
-	void computeLightmapPack() noexcept;
-	void computeBoundingBox(Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
-
-	std::uint32_t getFace(std::size_t n) noexcept;
-	std::uint32_t getFace(std::size_t n, std::uint32_t firstIndex) noexcept;
-
-private:
-	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;
-
-private:
-	std::unique_ptr<PMX> _model;
-
-	Float3Array _facesNormal;
-
-	LightMassBakingPtr _lightMassBaking;
-	LightMassListenerPtr _lightMassListener;
-};
+LightBakingParams::LightBakingParams() noexcept
+	: hemisphereSize(64)
+	, hemisphereNear(0.1)
+	, hemisphereFar(100)
+	, clearColor(float3::One)
+	, interpolationPasses(1)
+	, interpolationThreshold(1e-4)
+{
+}
 
 _NAME_END
-
-#endif

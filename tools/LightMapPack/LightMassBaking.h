@@ -37,111 +37,12 @@
 #ifndef _H_LIGHTMASS_BAKING_H_
 #define _H_LIGHTMASS_BAKING_H_
 
+#include "LightMassParams.h"
 #include "LightMassListener.h"
 
 _NAME_BEGIN
 
 struct lm_context;
-
-struct LightMapItem
-{
-	float2 edge, offset;
-	float2 *p1, *p2, *p3, *p4;
-
-	float getArea() const
-	{
-		return edge.x*edge.y;
-	}
-
-	bool operator < (const LightMapItem& a) const
-	{
-		return getArea() > a.getArea();
-	}
-};
-
-
-struct LightMapNode
-{
-	LightMapNode* left;
-	LightMapNode* right;
-	float4 rect;
-
-	LightMapNode()
-	{
-		left = nullptr;
-		right = nullptr;
-		rect = float4(0.0, 0.0, 1.0, 1.0);
-	}
-	~LightMapNode()
-	{
-		delete left;
-		delete right;
-	}
-};
-
-struct LightMapData
-{
-	LightMapData() noexcept;
-
-	std::uint16_t width;
-	std::uint16_t height;
-	std::uint8_t channel;
-	std::uint8_t margin;
-
-	float* data;
-};
-
-struct LightModelDrawCall
-{
-	LightModelDrawCall() noexcept;
-
-	std::uint32_t count;
-	std::uint32_t instanceCount;
-	std::uint32_t firstIndex;
-	std::uint32_t baseVertex;
-	std::uint32_t baseInstance;
-};
-
-struct LightModelData
-{
-	LightModelData() noexcept;
-
-	std::uint8_t* vertices;
-	std::uint8_t* indices;
-
-	std::uint8_t sizeofIndices;
-	std::uint16_t sizeofVertices;
-
-	std::uint32_t strideVertices;
-	std::uint32_t strideTexcoord;
-
-	std::uint32_t numVertices;
-	std::uint32_t numIndices;
-
-	std::vector<Bound> boundingBoxs;
-	std::vector<LightModelDrawCall> drawcalls; // first : offset, second faceCount
-};
-
-struct LightBakingParams
-{
-	LightBakingParams() noexcept;
-
-	int hemisphereSize;
-
-	float hemisphereNear;
-	float hemisphereFar;
-
-	float3 clearColor;
-	int interpolationPasses;
-	float interpolationThreshold;
-};
-
-struct LightBakingOptions
-{
-	LightMapData lightMap;
-	LightModelData model;
-	LightBakingParams baking;
-};
 
 class LightMassBaking
 {

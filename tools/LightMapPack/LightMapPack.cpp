@@ -34,52 +34,9 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
-
 #include "LightMapPack.h"
-#include "LightMassBaking.h"
-#include "LightMassListener.h"
-
-#include "modpmx.h"
 
 _NAME_BEGIN
 
-class LightMass
-{
-public:
-	LightMass() noexcept;
-	~LightMass() noexcept;
-
-	bool load(const std::string& path) noexcept;
-	bool save(const std::string& path) noexcept;
-	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c);
-
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
-
-	bool baking(const LightMassParams& params) noexcept;
-
-	void computeFaceNormals() noexcept;
-	void computeVertricesNormals() noexcept;
-	void computeLightmapPack() noexcept;
-	void computeBoundingBox(Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
-
-	std::uint32_t getFace(std::size_t n) noexcept;
-	std::uint32_t getFace(std::size_t n, std::uint32_t firstIndex) noexcept;
-
-private:
-	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;
-
-private:
-	std::unique_ptr<PMX> _model;
-
-	Float3Array _facesNormal;
-
-	LightMassBakingPtr _lightMassBaking;
-	LightMassListenerPtr _lightMassListener;
-};
 
 _NAME_END
-
-#endif

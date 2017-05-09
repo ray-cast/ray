@@ -34,50 +34,86 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
+#ifndef _H_LIGHTMASS_PARAMS_H_
+#define _H_LIGHTMASS_PARAMS_H_
 
-#include "LightMapPack.h"
-#include "LightMassBaking.h"
-#include "LightMassListener.h"
-
-#include "modpmx.h"
+#include <ray/math.h>
 
 _NAME_BEGIN
 
-class LightMass
+struct LightMapData
 {
-public:
-	LightMass() noexcept;
-	~LightMass() noexcept;
+	LightMapData() noexcept;
 
-	bool load(const std::string& path) noexcept;
-	bool save(const std::string& path) noexcept;
-	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c);
+	std::uint16_t width;
+	std::uint16_t height;
+	std::uint8_t channel;
+	std::uint8_t margin;
 
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
+	float* data;
+};
 
-	bool baking(const LightMassParams& params) noexcept;
+struct LightModelDrawCall
+{
+	LightModelDrawCall() noexcept;
 
-	void computeFaceNormals() noexcept;
-	void computeVertricesNormals() noexcept;
-	void computeLightmapPack() noexcept;
-	void computeBoundingBox(Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
+	std::uint32_t count;
+	std::uint32_t instanceCount;
+	std::uint32_t firstIndex;
+	std::uint32_t baseVertex;
+	std::uint32_t baseInstance;
+};
 
-	std::uint32_t getFace(std::size_t n) noexcept;
-	std::uint32_t getFace(std::size_t n, std::uint32_t firstIndex) noexcept;
+struct LightModelSubset
+{
+	Bound boundingBox;
+	LightModelDrawCall drawcall;
+};
 
-private:
-	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;
+struct LightModelData
+{
+	LightModelData() noexcept;
 
-private:
-	std::unique_ptr<PMX> _model;
+	std::uint8_t* vertices;
+	std::uint8_t* indices;
 
-	Float3Array _facesNormal;
+	std::uint8_t sizeofIndices;
+	std::uint16_t sizeofVertices;
 
-	LightMassBakingPtr _lightMassBaking;
-	LightMassListenerPtr _lightMassListener;
+	std::uint32_t strideVertices;
+	std::uint32_t strideTexcoord;
+
+	std::uint32_t numVertices;
+	std::uint32_t numIndices;
+
+	std::vector<LightModelSubset> subsets;
+};
+
+struct LightBakingParams
+{
+	LightBakingParams() noexcept;
+
+	int hemisphereSize;
+
+	float hemisphereNear;
+	float hemisphereFar;
+
+	float3 clearColor;
+	int interpolationPasses;
+	float interpolationThreshold;
+};
+
+struct LightBakingOptions
+{
+	LightMapData lightMap;
+	LightModelData model;
+	LightBakingParams baking;
+};
+
+struct LightMassParams
+{
+	LightMapData lightMap;
+	LightBakingParams baking;
 };
 
 _NAME_END

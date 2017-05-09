@@ -34,50 +34,47 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
+#ifndef _H_LIGHTMAP_PACK_H_
+#define _H_LIGHTMAP_PACK_H_
 
-#include "LightMapPack.h"
-#include "LightMassBaking.h"
-#include "LightMassListener.h"
-
-#include "modpmx.h"
+#include "LightMassTypes.h"
 
 _NAME_BEGIN
 
-class LightMass
+struct LightMapItem
 {
-public:
-	LightMass() noexcept;
-	~LightMass() noexcept;
+	float2 edge, offset;
+	float2 *p1, *p2, *p3, *p4;
 
-	bool load(const std::string& path) noexcept;
-	bool save(const std::string& path) noexcept;
-	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c);
+	float getArea() const
+	{
+		return edge.x*edge.y;
+	}
 
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
+	bool operator < (const LightMapItem& a) const
+	{
+		return getArea() > a.getArea();
+	}
+};
 
-	bool baking(const LightMassParams& params) noexcept;
 
-	void computeFaceNormals() noexcept;
-	void computeVertricesNormals() noexcept;
-	void computeLightmapPack() noexcept;
-	void computeBoundingBox(Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
+struct LightMapNode
+{
+	LightMapNode* left;
+	LightMapNode* right;
+	float4 rect;
 
-	std::uint32_t getFace(std::size_t n) noexcept;
-	std::uint32_t getFace(std::size_t n, std::uint32_t firstIndex) noexcept;
-
-private:
-	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;
-
-private:
-	std::unique_ptr<PMX> _model;
-
-	Float3Array _facesNormal;
-
-	LightMassBakingPtr _lightMassBaking;
-	LightMassListenerPtr _lightMassListener;
+	LightMapNode()
+	{
+		left = nullptr;
+		right = nullptr;
+		rect = float4(0.0, 0.0, 1.0, 1.0);
+	}
+	~LightMapNode()
+	{
+		delete left;
+		delete right;
+	}
 };
 
 _NAME_END

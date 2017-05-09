@@ -475,21 +475,20 @@ LightMass::baking(const LightMassParams& params) noexcept
 	option.model.numVertices = _model->numVertices;
 	option.model.numIndices = _model->numIndices;
 
-	option.model.drawcalls.resize(_model->numMaterials);
-	option.model.boundingBoxs.resize(_model->numMaterials);
+	option.model.subsets.resize(_model->numMaterials);
 
 	for (std::uint32_t i = 0; i < _model->numMaterials; i++)
 	{
 		std::uint32_t offsetFace = 0;
 
 		for (int j = 0; j < i; j++)
-			offsetFace += _model->materials[j].FaceCount * _model->header.sizeOfIndices;
+			offsetFace += _model->materials[j].FaceCount;
 
-		option.model.drawcalls[i].count = _model->materials[i].FaceCount;
-		option.model.drawcalls[i].instanceCount = 1;
-		option.model.drawcalls[i].firstIndex = offsetFace;
-		option.model.drawcalls[i].baseInstance = 0;
-		option.model.drawcalls[i].baseVertex = 0;
+		option.model.subsets[i].drawcall.count = _model->materials[i].FaceCount;
+		option.model.subsets[i].drawcall.instanceCount = 1;
+		option.model.subsets[i].drawcall.firstIndex = offsetFace;
+		option.model.subsets[i].drawcall.baseInstance = 0;
+		option.model.subsets[i].drawcall.baseVertex = 0;
 	}
 
 	if (_lightMassListener)
@@ -498,8 +497,8 @@ LightMass::baking(const LightMassParams& params) noexcept
 	for (std::uint32_t i = 0; i < _model->numMaterials; i++)
 	{
 		Bound bound;
-		this->computeBoundingBox(bound, option.model.drawcalls[i].firstIndex, option.model.drawcalls[i].count);
-		option.model.boundingBoxs[i] = bound;
+		this->computeBoundingBox(bound, option.model.subsets[i].drawcall.firstIndex * _model->header.sizeOfIndices, option.model.subsets[i].drawcall.count);
+		option.model.subsets[i].boundingBox = bound;
 	}
 
 	if (_lightMassListener)

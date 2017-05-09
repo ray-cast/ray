@@ -59,8 +59,11 @@ protected:
 	virtual void closeBakeTools();
 
 	void setRenderTarget(float* lightmap, int w, int h, int channels);
-	void setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
+	void setGeometry(int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
 	void setSamplePosition(std::uint32_t indicesTriangleBaseIndex);
+
+	void setWorldTransform(const float4x4& transform) noexcept;
+	const float4x4& getWorldTransform() const noexcept;
 
 	bool updateHemisphereWeights(void* userdata);
 	virtual float doGetHemisphereWeights(float cosTheta, void* userdata);
@@ -84,10 +87,10 @@ protected:
 	virtual void beginProcessHemisphereBatch();
 	virtual bool finishProcessHemisphereBatch();
 
-	virtual void updateSampleMatrices(float4x4& view, float3 pos, float3 dir, const float3& up, float4x4& proj, float l, float r, float b, float t, float n, float f);
-	virtual bool updateSampleHemisphere(int* viewport, float4x4& view, float4x4& proj);
+	virtual void updateSampleCamera(float3 pos, float3 dir, const float3& up, float l, float r, float b, float t, float n, float f);
+	virtual bool updateSampleHemisphere(int* viewport);
 
-	virtual bool beginSampleHemisphere(int* outViewport4, float4x4& view, float4x4& proj);
+	virtual bool beginSampleHemisphere(int* outViewport4);
 	virtual void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp) = 0;
 	virtual bool endSampleHemisphere();
 
@@ -97,22 +100,25 @@ protected:
 	std::uint32_t loadProgram(std::uint32_t vs, std::uint32_t fs, const char **attributes, int attributeCount);
 
 private:
-	float4x4 _view;
-	float4x4 _project;
-	float4x4 _viewProject;
-
 	struct HemiContext
 	{
 		struct
 		{
+			float4x4 view;
+			float4x4 project;
+			float4x4 viewProject;
 			float4x4 transform;
-			const unsigned char* positions;
+		} camera;
+
+		struct
+		{
+			const std::uint8_t* positions;
 			int positionsType;
 			int positionsStride;
-			const unsigned char* uvs;
+			const std::uint8_t* uvs;
 			int uvsType;
 			int uvsStride;
-			const unsigned char* indices;
+			const std::uint8_t* indices;
 			int indicesType;
 			std::size_t count;
 		} mesh;

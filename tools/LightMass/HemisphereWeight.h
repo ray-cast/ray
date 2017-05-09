@@ -106,6 +106,33 @@ public:
 	const T* data() const { return (const T*)this; }
 };
 
+template<typename T>
+HemisphereWeight<T> operator+=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
+{ 
+	return HemisphereWeight<T>(w1.center1 += w2.center1, w1.center2 += w2.center2, w1.left += w2.left, w1.right += w2.right, w1.up += w2.up, w1.down += w2.down);
+}
+template<typename T>
+HemisphereWeight<T> operator-=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
+{ 
+	return HemisphereWeight<T>(w1.center1 -= w2.center1, w1.center2 -= w2.center2, w1.left -= w2.left, w1.right -= w2.right, w1.up -= w2.up, w1.down -= w2.down);
+}
+template<typename T>
+HemisphereWeight<T> operator*=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
+{ 
+	return HemisphereWeight<T>(w1.center1 *= w2.center1, w1.center2 *= w2.center2, w1.left *= w2.left, w1.right *= w2.right, w1.up *= w2.up, w1.down *= w2.down);
+}
+template<typename T>
+HemisphereWeight<T> operator/=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
+{ 
+	return HemisphereWeight<T>(w1.center1 /= w2.center1, w1.center2 /= w2.center2, w1.left /= w2.left, w1.right /= w2.right, w1.up /= w2.up, w1.down /= w2.down);
+}
+
+template<typename T>
+inline HemisphereWeight<T> operator-(const HemisphereWeight<T>& w)
+{
+	return HemisphereWeight<T>(-w.center1, -w.center2, -w.left, -w.right, -w.up, -w.down);
+}
+
 _NAME_END
 
 #endif

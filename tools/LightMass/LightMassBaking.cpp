@@ -42,22 +42,17 @@ _NAME_BEGIN
 
 LightMassBaking::HemiContext::HemiContext() noexcept
 {
-	mesh.transform = float4x4::One;
-	mesh.positions = nullptr;
-	mesh.positionsType = 0;
-	mesh.positionsStride = 0;
-	mesh.uvs = 0;
-	mesh.uvsType = 0;
-	mesh.uvsStride = 0;
-	mesh.indices = 0;
-	mesh.indicesType = 0;
-	mesh.count = 0;
+	camera.view = float4x4::One;
+	camera.project = float4x4::One;
+	camera.viewProject = float4x4::One;
+	camera.transform = float4x4::One;
 
+	interpolationThreshold = 0;
+
+	std::memset(&mesh, 0, sizeof(mesh));
 	std::memset(&meshPosition, 0, sizeof(meshPosition));
 	std::memset(&lightmap, 0, sizeof(lightmap));
 	std::memset(&hemisphere, 0, sizeof(hemisphere));
-	
-	interpolationThreshold = 0;
 }
 
 LightMassBaking::HemiContext::~HemiContext() noexcept
@@ -126,7 +121,7 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 			faceType = GL_UNSIGNED_SHORT;
 
 		this->setRenderTarget(params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel);
-		this->setGeometry(float4x4::One,
+		this->setGeometry(
 			GL_FLOAT, params.model.vertices + params.model.strideVertices, params.model.sizeofVertices,
 			GL_FLOAT, params.model.vertices + params.model.strideTexcoord, params.model.sizeofVertices,
 			params.model.numIndices, faceType, params.model.indices);
@@ -135,11 +130,9 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 
 		std::uint32_t baseIndex = 0;
 
-		while (this->beginSampleHemisphere(vp.ptr(), _view, _project))
+		while (this->beginSampleHemisphere(vp.ptr()))
 		{
-			_viewProject = _project * _view;
-
-			this->doSampleHemisphere(params, vp, _viewProject);
+			this->doSampleHemisphere(params, vp, _ctx->camera.viewProject);
 
 			if (baseIndex != _ctx->meshPosition.triangle.baseIndex)
 			{
@@ -215,10 +208,6 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 		{
 			if (_lightMassListener)
 				_lightMassListener->onMessage("Could not create framebuffer!");
-
-			glDeleteRenderbuffers(1, &context->hemisphere.fbDepth);
-			glDeleteFramebuffers(2, context->hemisphere.fb);
-			glDeleteTextures(2, context->hemisphere.fbTexture);
 
 			return false;
 		}
@@ -378,22 +367,33 @@ LightMassBaking::setRenderTarget(float *outLightmap, int w, int h, int c)
 }
 
 void 
-LightMassBaking::setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices)
+LightMassBaking::setGeometry(int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices)
 {
-	_ctx->mesh.transform = world;
-	_ctx->mesh.positions = (const unsigned char*)positionsXYZ;
+	_ctx->mesh.positions = (const std::uint8_t*)positionsXYZ;
 	_ctx->mesh.positionsType = positionsType;
 	_ctx->mesh.positionsStride = positionsStride == 0 ? sizeof(float3) : positionsStride;
-	_ctx->mesh.uvs = (const unsigned char*)lightmapCoordsUV;
+	_ctx->mesh.uvs = (const std::uint8_t*)lightmapCoordsUV;
 	_ctx->mesh.uvsType = lightmapCoordsType;
 	_ctx->mesh.uvsStride = lightmapCoordsStride == 0 ? sizeof(float2) : lightmapCoordsStride;
 	_ctx->mesh.indicesType = indicesType;
-	_ctx->mesh.indices = (const unsigned char*)indices;
+	_ctx->mesh.indices = (const std::uint8_t*)indices;
 	_ctx->mesh.count = count;
 
 	_ctx->meshPosition.pass = 0;
 
 	this->setSamplePosition(0);
+}
+
+void 
+LightMassBaking::setWorldTransform(const float4x4& transform) noexcept
+{
+	_ctx->camera.transform = transform;
+}
+
+const float4x4& 
+LightMassBaking::getWorldTransform() const noexcept
+{
+	return _ctx->camera.transform;
 }
 
 void
@@ -438,7 +438,7 @@ LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 			uv = float2((const std::uint8_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint8_t>::max();
 
 		_ctx->meshPosition.triangle.uv[i] = uv * uvScale;
-		_ctx->meshPosition.triangle.p[i] = _ctx->mesh.transform * p;
+		_ctx->meshPosition.triangle.p[i] = _ctx->camera.transform * p;
 
 		uvMin = math::min(uvMin, _ctx->meshPosition.triangle.uv[i]);
 		uvMax = math::max(uvMax, _ctx->meshPosition.triangle.uv[i]);
@@ -961,27 +961,32 @@ done:
 }
 
 void
-LightMassBaking::updateSampleMatrices(float4x4& view, float3 pos, float3 dir, const float3& up, float4x4& proj, float l, float r, float b, float t, float n, float f)
+LightMassBaking::updateSampleCamera(float3 pos, float3 dir, const float3& up, float l, float r, float b, float t, float n, float f)
 {
 	// view matrix: lookAt(pos, pos + dir, up)
 	float3 side = math::cross(dir, up);
 	//up = cross(side, dir);
 	dir = -dir; pos = -pos;
+
+	float4x4& view = _ctx->camera.view;
 	view.a1 = side.x; view.a2 = up.x; view.a3 = dir.x; view.a4 = 0.0f;
 	view.b1 = side.y; view.b2 = up.y; view.b3 = dir.y; view.b4 = 0.0f;
 	view.c1 = side.z; view.c2 = up.z; view.c3 = dir.z; view.c4 = 0.0f;
 	view.d1 = math::dot(side, pos); view.d2 = math::dot(up, pos); view.d3 = math::dot(dir, pos); view.d4 = 1.0f;
 
 	// projection matrix: frustum(l, r, b, t, n, f)
+	float4x4& proj = _ctx->camera.project;
 	float ilr = 1.0f / (r - l), ibt = 1.0f / (t - b), ninf = -1.0f / (f - n), n2 = 2.0f * n;
 	proj.a1 = n2 * ilr;      proj.a2 = 0.0f;          proj.a3 = 0.0f;           proj.a4 = 0.0f;
 	proj.b1 = 0.0f;          proj.b2 = n2 * ibt;      proj.b3 = 0.0f;           proj.b4 = 0.0f;
 	proj.c1 = (r + l) * ilr; proj.c2 = (t + b) * ibt; proj.c3 = (f + n) * ninf; proj.c4 = -1.0f;
 	proj.d1 = 0.0f;         proj.d2 = 0.0f;         proj.d3 = f * n2 * ninf;  proj.d4 = 0.0f;
+
+	_ctx->camera.viewProject = proj * view;
 }
 
 bool
-LightMassBaking::updateSampleHemisphere(int* viewport, float4x4& view, float4x4& proj)
+LightMassBaking::updateSampleHemisphere(int* viewport)
 {
 	if (_ctx->meshPosition.hemisphere.side >= 5)
 		return false;
@@ -1018,35 +1023,35 @@ LightMassBaking::updateSampleHemisphere(int* viewport, float4x4& view, float4x4&
 		viewport[1] = y;
 		viewport[2] = size;
 		viewport[3] = size;
-		this->updateSampleMatrices(view, pos, dir, up, proj, -znear, znear, -znear, znear, znear, zfar);
+		this->updateSampleCamera(pos, dir, up, -znear, znear, -znear, znear, znear, zfar);
 		break;
 	case 1: // right
 		viewport[0] = size + x;
 		viewport[1] = y;
 		viewport[2] = size / 2;
 		viewport[3] = size;
-		this->updateSampleMatrices(view, pos, right, up, proj, -znear, 0.0f, -znear, znear, znear, zfar);
+		this->updateSampleCamera(pos, right, up, -znear, 0.0f, -znear, znear, znear, zfar);
 		break;
 	case 2: // left
 		viewport[0] = size + x + size / 2;
 		viewport[1] = y;
 		viewport[2] = size / 2;
 		viewport[3] = size;
-		this->updateSampleMatrices(view, pos, -right, up, proj, 0.0f, znear, -znear, znear, znear, zfar);
+		this->updateSampleCamera(pos, -right, up, 0.0f, znear, -znear, znear, znear, zfar);
 		break;
 	case 3: // down
 		viewport[0] = 2 * size + x;
 		viewport[1] = y + size / 2;
 		viewport[2] = size;
 		viewport[3] = size / 2;
-		this->updateSampleMatrices(view, pos, -up, dir, proj, -znear, znear, 0.0f, znear, znear, zfar);
+		this->updateSampleCamera(pos, -up, dir, -znear, znear, 0.0f, znear, znear, zfar);
 		break;
 	case 4: // up
 		viewport[0] = 2 * size + x;
 		viewport[1] = y;
 		viewport[2] = size;
 		viewport[3] = size / 2;
-		this->updateSampleMatrices(view, pos, up, -dir, proj, -znear, znear, -znear, 0.0f, znear, zfar);
+		this->updateSampleCamera(pos, up, -dir, -znear, znear, -znear, 0.0f, znear, zfar);
 		break;
 	default:
 		assert(false);
@@ -1057,11 +1062,11 @@ LightMassBaking::updateSampleHemisphere(int* viewport, float4x4& view, float4x4&
 }
 
 bool
-LightMassBaking::beginSampleHemisphere(int* outViewport4, float4x4& view, float4x4& proj)
+LightMassBaking::beginSampleHemisphere(int* outViewport4)
 {
 	assert(_ctx->meshPosition.triangle.baseIndex < _ctx->mesh.count);
 
-	while (!this->updateSampleHemisphere(outViewport4, view, proj))
+	while (!this->updateSampleHemisphere(outViewport4))
 	{
 		if (this->findNextConservativeTriangleRasterizerPosition())
 		{

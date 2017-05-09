@@ -39,10 +39,9 @@
 
 #include "LightMassParams.h"
 #include "LightMassListener.h"
+#include "HemisphereWeight.h"
 
 _NAME_BEGIN
-
-struct lm_context;
 
 class LightMassBaking
 {
@@ -59,9 +58,12 @@ protected:
 	virtual bool setupBakeTools(const LightBakingParams& params);
 	virtual void closeBakeTools();
 
-	virtual void setRenderTarget(float* lightmap, int w, int h, int channels);
-	virtual void setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
-	virtual void setSamplePosition(std::uint32_t indicesTriangleBaseIndex);
+	void setRenderTarget(float* lightmap, int w, int h, int channels);
+	void setGeometry(const float4x4& world, int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
+	void setSamplePosition(std::uint32_t indicesTriangleBaseIndex);
+
+	bool updateHemisphereWeights(void* userdata);
+	virtual float doGetHemisphereWeights(float cosTheta, void* userdata);
 
 	int leftOf(const float2& a, const float2& b, const float2& c);
 	int convexClip(float2* poly, int nPoly, const float2* clip, int nClip, float2* res);
@@ -99,7 +101,108 @@ private:
 	float4x4 _project;
 	float4x4 _viewProject;
 
-	std::unique_ptr<lm_context> _ctx;
+	struct HemiContext
+	{
+		struct
+		{
+			float4x4 transform;
+			const unsigned char* positions;
+			int positionsType;
+			int positionsStride;
+			const unsigned char* uvs;
+			int uvsType;
+			int uvsStride;
+			const unsigned char* indices;
+			int indicesType;
+			std::size_t count;
+		} mesh;
+
+		struct
+		{
+			int pass;
+			int passCount;
+
+			struct
+			{
+				std::uint32_t baseIndex;
+				float3 p[3];
+				float2 uv[3];
+			} triangle;
+
+			struct
+			{
+				int minx, miny;
+				int maxx, maxy;
+				int x, y;
+			} rasterizer;
+
+			struct
+			{
+				float3 position;
+				float3 direction;
+				float3 up;
+			} sample;
+
+			struct
+			{
+				int side;
+			} hemisphere;
+		} meshPosition;
+
+		struct
+		{
+			std::int32_t width;
+			std::int32_t height;
+			std::uint8_t channels;
+			float *data;
+		} lightmap;
+
+		struct
+		{
+			std::size_t size;
+			float znear, zfar;
+			struct { float r, g, b; } clearColor;
+
+			std::size_t fbHemiCountX;
+			std::size_t fbHemiCountY;
+			std::size_t fbHemiIndex;
+			std::unique_ptr<int2[]> fbHemiToLightmapLocation;
+			std::uint32_t fbTexture[2];
+			std::uint32_t fb[2];
+			std::uint32_t fbDepth;
+			std::uint32_t vao;
+			struct
+			{
+				std::uint32_t vs;
+				std::uint32_t fs;
+				std::uint32_t programID;
+				std::uint32_t hemispheresTextureID;
+				std::uint32_t weightsTextureID;
+				std::uint32_t weightsTexture;
+			} firstPass;
+			struct
+			{
+				std::uint32_t vs;
+				std::uint32_t fs;
+				std::uint32_t programID;
+				std::uint32_t hemispheresTextureID;
+			} downsamplePass;
+			struct
+			{
+				std::uint32_t pbo;
+				bool pboTransferStarted;
+				std::size_t fbHemiCount;
+				std::unique_ptr<int2[]> fbHemiToLightmapLocation;
+			} transfer;
+		} hemisphere;
+
+		float interpolationThreshold;
+
+		HemiContext() noexcept;
+		~HemiContext() noexcept;
+	};
+
+	std::unique_ptr<HemiContext> _ctx;
 
 	std::vector<LightModelDrawCall> _drawcalls;
 

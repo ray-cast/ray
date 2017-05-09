@@ -40,450 +40,43 @@
 
 _NAME_BEGIN
 
-typedef float(*lm_weight_func)(float cos_theta, void *userdata);
-
-struct lm_context
+LightMassBaking::HemiContext::HemiContext() noexcept
 {
-	struct
-	{
-		float4x4 transform;
-		const unsigned char* positions;
-		int positionsType;
-		int positionsStride;
-		const unsigned char* uvs;
-		int uvsType;
-		int uvsStride;
-		const unsigned char* indices;
-		int indicesType;
-		unsigned int count;
-	} mesh;
+	mesh.transform = float4x4::One;
+	mesh.positions = nullptr;
+	mesh.positionsType = 0;
+	mesh.positionsStride = 0;
+	mesh.uvs = 0;
+	mesh.uvsType = 0;
+	mesh.uvsStride = 0;
+	mesh.indices = 0;
+	mesh.indicesType = 0;
+	mesh.count = 0;
 
-	struct
-	{
-		int pass;
-		int passCount;
-
-		struct
-		{
-			std::uint32_t baseIndex;
-			float3 p[3];
-			float2 uv[3];
-		} triangle;
-
-		struct
-		{
-			int minx, miny;
-			int maxx, maxy;
-			int x, y;
-		} rasterizer;
-
-		struct
-		{
-			float3 position;
-			float3 direction;
-			float3 up;
-		} sample;
-
-		struct
-		{
-			int side;
-		} hemisphere;
-	} meshPosition;
-
-	struct
-	{
-		std::int32_t width;
-		std::int32_t height;
-		std::uint8_t channels;
-		float *data;
-	} lightmap;
-
-	struct
-	{
-		unsigned int size;
-		float zNear, zFar;
-		struct { float r, g, b; } clearColor;
-
-		unsigned int fbHemiCountX;
-		unsigned int fbHemiCountY;
-		unsigned int fbHemiIndex;
-		std::unique_ptr<int2[]> fbHemiToLightmapLocation;
-		GLuint fbTexture[2];
-		GLuint fb[2];
-		GLuint fbDepth;
-		GLuint vao;
-		struct
-		{
-			GLuint vs;
-			GLuint fs;
-			GLuint programID;
-			GLuint hemispheresTextureID;
-			GLuint weightsTextureID;
-			GLuint weightsTexture;
-		} firstPass;
-		struct
-		{
-			GLuint vs;
-			GLuint fs;
-			GLuint programID;
-			GLuint hemispheresTextureID;
-		} downsamplePass;
-		struct
-		{
-			GLuint pbo;
-			bool pboTransferStarted;
-			unsigned int fbHemiCount;
-			std::unique_ptr<int2[]> fbHemiToLightmapLocation;
-		} transfer;
-	} hemisphere;
-
-	float interpolationThreshold;
-
-	~lm_context()
-	{
-		glDeleteTextures(1, &hemisphere.firstPass.weightsTexture);
-		glDeleteBuffers(1, &hemisphere.transfer.pbo);
-
-		glDeleteShader(hemisphere.downsamplePass.vs);
-		glDeleteShader(hemisphere.downsamplePass.fs);
-		glDeleteProgram(hemisphere.downsamplePass.programID);
-
-		glDeleteShader(hemisphere.firstPass.vs);
-		glDeleteShader(hemisphere.firstPass.fs);
-		glDeleteProgram(hemisphere.firstPass.programID);
-
-		glDeleteVertexArrays(1, &hemisphere.vao);
-		glDeleteRenderbuffers(1, &hemisphere.fbDepth);
-		glDeleteFramebuffers(2, hemisphere.fb);
-		glDeleteTextures(2, hemisphere.fbTexture);
-	}
-};
-
-int 
-LightMassBaking::leftOf(const float2& a, const float2& b, const float2& c)
-{
-	float2 lv = b - a;
-	float2 rv = c - b;
-
-	float x = lv.x * rv.y - lv.y * rv.x;
-	return x < 0 ? -1 : x > 0;
-}
-
-int 
-LightMassBaking::convexClip(float2* poly, int nPoly, const float2* clip, int nClip, float2* res)
-{
-	int nRes = nPoly;
-	int dir = leftOf(clip[0], clip[1], clip[2]);
-	for (int i = 0, j = nClip - 1; i < nClip && nRes; j = i++)
-	{
-		if (i != 0)
-			for (nPoly = 0; nPoly < nRes; nPoly++)
-				poly[nPoly] = res[nPoly];
-		nRes = 0;
-		float2 v0 = poly[nPoly - 1];
-		int side0 = leftOf(clip[j], clip[i], v0);
-		if (side0 != -dir)
-			res[nRes++] = v0;
-		for (int k = 0; k < nPoly; k++)
-		{
-			float2 v1 = poly[k], x;
-			int side1 = leftOf(clip[j], clip[i], v1);
-			if (side0 + side1 == 0 && side0 && math::lineIntersection(clip[j], clip[i], v0, v1, x))
-				res[nRes++] = x;
-			if (k == nPoly - 1)
-				break;
-			if (side1 != -dir)
-				res[nRes++] = v1;
-			v0 = v1;
-			side0 = side1;
-		}
-	}
-
-	return nRes;
-}
-
-std::size_t
-LightMassBaking::passStepSize()
-{
-	std::size_t shift = _ctx->meshPosition.passCount / 3 - (_ctx->meshPosition.pass - 1) / 3;
-	std::size_t step = (1 << shift);
-	assert(step > 0);
-	return step;
-}
-
-std::size_t
-LightMassBaking::passOffsetX()
-{
-	if (!_ctx->meshPosition.pass)
-		return 0;
-	int passType = (_ctx->meshPosition.pass - 1) % 3;
-	unsigned int halfStep = passStepSize() >> 1;
-	return passType != 1 ? halfStep : 0;
-}
-
-std::size_t
-LightMassBaking::passOffsetY()
-{
-	if (!_ctx->meshPosition.pass)
-		return 0;
-
-	int passType = (_ctx->meshPosition.pass - 1) % 3;
-	std::size_t halfStep = passStepSize() >> 1;
-	return passType != 0 ? halfStep : 0;
-}
-
-bool 
-LightMassBaking::hasConservativeTriangleRasterizerFinished()
-{
-	return _ctx->meshPosition.rasterizer.y >= _ctx->meshPosition.rasterizer.maxy;
-}
-
-void 
-LightMassBaking::moveToNextPotentialConservativeTriangleRasterizerPosition()
-{
-	unsigned int step = passStepSize();
-
-	_ctx->meshPosition.rasterizer.x += step;
-
-	while (_ctx->meshPosition.rasterizer.x >= _ctx->meshPosition.rasterizer.maxx)
-	{
-		_ctx->meshPosition.rasterizer.x = _ctx->meshPosition.rasterizer.minx + this->passOffsetX();
-		_ctx->meshPosition.rasterizer.y += step;
-
-		if (this->hasConservativeTriangleRasterizerFinished())
-			break;
-	}
-}
-
-float*
-LightMassBaking::getLightmapPixel(int x, int y)
-{
-	assert(x >= 0 && x < _ctx->lightmap.width && y >= 0 && y < _ctx->lightmap.height);
-	return _ctx->lightmap.data + (y * _ctx->lightmap.width + x) * _ctx->lightmap.channels;
-}
-
-void 
-LightMassBaking::setLightmapPixel(int x, int y, float* in)
-{
-	assert(x >= 0 && x < _ctx->lightmap.width && y >= 0 && y < _ctx->lightmap.height);
-	float *p = _ctx->lightmap.data + (y * _ctx->lightmap.width + x) * _ctx->lightmap.channels;
-	for (int j = 0; j < _ctx->lightmap.channels; j++)
-		*p++ = *in++;
-}
-
-bool 
-LightMassBaking::trySamplingConservativeTriangleRasterizerPosition()
-{
-	if (hasConservativeTriangleRasterizerFinished())
-		return false;
-
-	// check if lightmap pixel was already set
-	float *pixelValue = getLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y);
-	for (int j = 0; j < _ctx->lightmap.channels; j++)
-		if (pixelValue[j] != 0.0f)
-			return false;
-
-	// try to interpolate from neighbors:
-	if (_ctx->meshPosition.pass > 0)
-	{
-		float *neighbors[4];
-		int neighborCount = 0;
-		int neighborsExpected = 0;
-		int d = (int)this->passStepSize() / 2;
-		int dirs = ((_ctx->meshPosition.pass - 1) % 3) + 1;
-		if (dirs & 1) // check x-neighbors with distance d
-		{
-			neighborsExpected += 2;
-			if (_ctx->meshPosition.rasterizer.x - d >= _ctx->meshPosition.rasterizer.minx &&
-				_ctx->meshPosition.rasterizer.x + d <  _ctx->meshPosition.rasterizer.maxx)
-			{
-				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x - d, _ctx->meshPosition.rasterizer.y);
-				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x + d, _ctx->meshPosition.rasterizer.y);
-			}
-		}
-		if (dirs & 2) // check y-neighbors with distance d
-		{
-			neighborsExpected += 2;
-			if (_ctx->meshPosition.rasterizer.y - d >= _ctx->meshPosition.rasterizer.miny &&
-				_ctx->meshPosition.rasterizer.y + d <  _ctx->meshPosition.rasterizer.maxy)
-			{
-				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y - d);
-				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y + d);
-			}
-		}
-		if (neighborCount == neighborsExpected) // are all interpolation neighbors available?
-		{
-			// calculate average neighbor pixel value
-			float avg[4] = { 0 };
-			for (int i = 0; i < neighborCount; i++)
-				for (int j = 0; j < _ctx->lightmap.channels; j++)
-					avg[j] += neighbors[i][j];
-			float ni = 1.0f / neighborCount;
-			for (int j = 0; j < _ctx->lightmap.channels; j++)
-				avg[j] *= ni;
-
-			// check if error from average pixel to neighbors is above the interpolation threshold
-			bool interpolate = true;
-			for (int i = 0; i < neighborCount; i++)
-			{
-				bool zero = true;
-				for (int j = 0; j < _ctx->lightmap.channels; j++)
-				{
-					if (neighbors[i][j] != 0.0f)
-						zero = false;
-					if (fabs(neighbors[i][j] - avg[j]) > _ctx->interpolationThreshold)
-						interpolate = false;
-				}
-				if (zero)
-					interpolate = false;
-				if (!interpolate)
-					break;
-			}
-
-			// set interpolated value and return if interpolation is acceptable
-			if (interpolate)
-			{
-				setLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y, avg);
-				return false;
-			}
-		}
-	}
-
-	float2 pixel[16];
-	pixel[0].set(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y);
-	pixel[1].set(_ctx->meshPosition.rasterizer.x + 1, _ctx->meshPosition.rasterizer.y);
-	pixel[2].set(_ctx->meshPosition.rasterizer.x + 1, _ctx->meshPosition.rasterizer.y + 1);
-	pixel[3].set(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y + 1);
-
-	float2 res[16];
-	int nRes = convexClip(pixel, 4, _ctx->meshPosition.triangle.uv, 3, res);
-	if (nRes > 0)
-	{
-		float2 centroid = res[0];
-		float area = res[nRes - 1].x * res[0].y - res[nRes - 1].y * res[0].x;
-		for (int i = 1; i < nRes; i++)
-		{
-			centroid = centroid + res[i];
-			area += res[i - 1].x * res[i].y - res[i - 1].y * res[i].x;
-		}
-		centroid = centroid / (float)nRes;
-		area = std::abs(area / 2.0f);
-
-		if (area > 0.0f)
-		{
-			float2 uv = math::barycentric(_ctx->meshPosition.triangle.uv[0], _ctx->meshPosition.triangle.uv[1], _ctx->meshPosition.triangle.uv[2], centroid);
-
-			if (math::isfinite(uv))
-			{
-				float3 p0 = _ctx->meshPosition.triangle.p[0];
-				float3 p1 = _ctx->meshPosition.triangle.p[1];
-				float3 p2 = _ctx->meshPosition.triangle.p[2];
-				float3 v1 = p1 - p0;
-				float3 v2 = p2 - p0;
-				_ctx->meshPosition.sample.position = p0 + v2 * uv.x + v1 * uv.y;
-				_ctx->meshPosition.sample.direction = math::normalize(math::cross(v1, v2));
-
-				if (math::isfinite(_ctx->meshPosition.sample.position) &&
-					math::isfinite(_ctx->meshPosition.sample.direction) &&
-					math::length2(_ctx->meshPosition.sample.direction) > 0.5f) // don't allow 0.0f. should always be ~1.0f
-				{
-					float3 up = float3::UnitY;
-					if (std::abs(math::dot(up, _ctx->meshPosition.sample.direction)) > 0.8f)
-						up = float3::UnitZ;
-
-					float3 side = math::normalize(math::cross(up, _ctx->meshPosition.sample.direction));
-					up = math::normalize(math::cross(side, _ctx->meshPosition.sample.direction));
-					int rx = _ctx->meshPosition.rasterizer.x % 3;
-					int ry = _ctx->meshPosition.rasterizer.y % 3;
-
-					const float baseAngle = 0.03f * M_PI;
-					const float baseAngles[3][3] = {
-						{ baseAngle, baseAngle + 1.0f / 3.0f, baseAngle + 2.0f / 3.0f },
-						{ baseAngle + 1.0f / 3.0f, baseAngle + 2.0f / 3.0f, baseAngle },
-						{ baseAngle + 2.0f / 3.0f, baseAngle, baseAngle + 1.0f / 3.0f }
-					};
-					float phi = 2.0f * M_PI * baseAngles[ry][rx] + 0.1f * ((float)rand() / (float)RAND_MAX);
-					_ctx->meshPosition.sample.up = math::normalize(side * cosf(phi) + up * sinf(phi));
-
-					return true;
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-bool 
-LightMassBaking::findFirstConservativeTriangleRasterizerPosition()
-{
-	while (!this->trySamplingConservativeTriangleRasterizerPosition())
-	{
-		this->moveToNextPotentialConservativeTriangleRasterizerPosition();
-		if (this->hasConservativeTriangleRasterizerFinished())
-			return false;
-	}
-
-	return true;
-}
-
-bool
-LightMassBaking::findNextConservativeTriangleRasterizerPosition()
-{
-	this->moveToNextPotentialConservativeTriangleRasterizerPosition();
-	return this->findFirstConservativeTriangleRasterizerPosition();
-}
-
-static float lm_defaultWeights(float cos_theta, void *userdata)
-{
-	return 1.0f;
-}
-
-void lmSetHemisphereWeights(lm_context *ctx, lm_weight_func f, void *userdata)
-{
-	float *weights = (float*)calloc(2 * 3 * ctx->hemisphere.size * ctx->hemisphere.size, sizeof(float));
-	float center = (ctx->hemisphere.size - 1) * 0.5f;
+	std::memset(&meshPosition, 0, sizeof(meshPosition));
+	std::memset(&lightmap, 0, sizeof(lightmap));
+	std::memset(&hemisphere, 0, sizeof(hemisphere));
 	
-	double sum = 0.0;
+	interpolationThreshold = 0;
+}
 
-	for (std::uint32_t y = 0; y < ctx->hemisphere.size; y++)
-	{
-		float dy = 2.0f * (y - center) / (float)ctx->hemisphere.size;
-		for (std::uint32_t x = 0; x < ctx->hemisphere.size; x++)
-		{
-			float dx = 2.0f * (x - center) / (float)ctx->hemisphere.size;
-			float3 v = math::normalize(float3(dx, dy, 1.0f));
+LightMassBaking::HemiContext::~HemiContext() noexcept
+{
+	glDeleteTextures(1, &hemisphere.firstPass.weightsTexture);
+	glDeleteBuffers(1, &hemisphere.transfer.pbo);
 
-			float solidAngle = v.z * v.z * v.z;
+	glDeleteShader(hemisphere.downsamplePass.vs);
+	glDeleteShader(hemisphere.downsamplePass.fs);
+	glDeleteProgram(hemisphere.downsamplePass.programID);
 
-			float *w0 = weights + 2 * (y * (3 * ctx->hemisphere.size) + x);
-			float *w1 = w0 + 2 * ctx->hemisphere.size;
-			float *w2 = w1 + 2 * ctx->hemisphere.size;
+	glDeleteShader(hemisphere.firstPass.vs);
+	glDeleteShader(hemisphere.firstPass.fs);
+	glDeleteProgram(hemisphere.firstPass.programID);
 
-			// center weights
-			w0[0] = solidAngle * f(v.z, userdata);
-			w0[1] = solidAngle;
-
-			// left/right side weights
-			w1[0] = solidAngle * f(std::abs(v.x), userdata);
-			w1[1] = solidAngle;
-
-			// up/down side weights
-			w2[0] = solidAngle * f(std::abs(v.y), userdata);
-			w2[1] = solidAngle;
-
-			sum += 3.0 * (double)solidAngle;
-		}
-	}
-
-	float weightScale = (float)(1.0 / sum);
-	for (unsigned int i = 0; i < 2 * 3 * ctx->hemisphere.size * ctx->hemisphere.size; i++)
-		weights[i] *= weightScale;
-
-	glBindTexture(GL_TEXTURE_2D, ctx->hemisphere.firstPass.weightsTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, 3 * ctx->hemisphere.size, ctx->hemisphere.size, 0, GL_RG, GL_FLOAT, weights);
-
-	free(weights);
+	glDeleteVertexArrays(1, &hemisphere.vao);
+	glDeleteRenderbuffers(1, &hemisphere.fbDepth);
+	glDeleteFramebuffers(2, hemisphere.fb);
+	glDeleteTextures(2, hemisphere.fbTexture);
 }
 
 LightMassBaking::LightMassBaking() noexcept
@@ -581,13 +174,13 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 	assert(params.interpolationPasses >= 0 && params.interpolationPasses <= 8);
 	assert(params.interpolationThreshold >= 0.0f);
 
-	auto context = std::make_unique<lm_context>();
+	auto context = std::make_unique<HemiContext>();
 
 	context->meshPosition.passCount = 1 + 3 * params.interpolationPasses;
 	context->interpolationThreshold = params.interpolationThreshold;
 	context->hemisphere.size = params.hemisphereSize;
-	context->hemisphere.zNear = params.hemisphereNear;
-	context->hemisphere.zFar = params.hemisphereFar;
+	context->hemisphere.znear = params.hemisphereNear;
+	context->hemisphere.zfar = params.hemisphereFar;
 	context->hemisphere.clearColor.r = params.clearColor.x;
 	context->hemisphere.clearColor.g = params.clearColor.y;
 	context->hemisphere.clearColor.b = params.clearColor.z;
@@ -648,7 +241,7 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 			"uniform sampler2D hemispheres;\n"
 			"uniform sampler2D weights;\n"
 
-			"layout(pixel_center_integer) in vec4 gl_FragCoord;\n" // whole integer values represent pixel centers, GL_ARB_fragment_coord_conventions
+			"layout(pixel_center_integer) in vec4 gl_FragCoord;\n"
 
 			"out vec4 outColor;\n"
 
@@ -660,7 +253,7 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 			"}\n"
 
 			"vec4 threeWeightedSamples(ivec2 h_uv, ivec2 w_uv, ivec2 offset)\n"
-			"{\n" // horizontal triple sum
+			"{\n"
 			"vec4 sum = weightedSample(h_uv, w_uv, offset);\n"
 			"offset.x += 2;\n"
 			"sum += weightedSample(h_uv, w_uv, offset);\n"
@@ -670,10 +263,10 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 			"}\n"
 
 			"void main()\n"
-			"{\n" // this is a weighted sum downsampling pass (alpha component contains the weighted valid sample count)
+			"{\n"
 			"vec2 in_uv = (gl_FragCoord.xy - vec2(0.5)) * vec2(6.0, 2.0) + vec2(0.01);\n"
 			"ivec2 h_uv = ivec2(in_uv);\n"
-			"ivec2 w_uv = ivec2(mod(in_uv, vec2(textureSize(weights, 0))));\n" // there's no integer modulo :(
+			"ivec2 w_uv = ivec2(mod(in_uv, vec2(textureSize(weights, 0))));\n"
 			"vec4 lb = threeWeightedSamples(h_uv, w_uv, ivec2(0, 0));\n"
 			"vec4 rb = threeWeightedSamples(h_uv, w_uv, ivec2(1, 0));\n"
 			"vec4 lt = threeWeightedSamples(h_uv, w_uv, ivec2(0, 1));\n"
@@ -683,23 +276,18 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 
 		context->hemisphere.firstPass.vs = loadShader(GL_VERTEX_SHADER, vs);
 		if (!context->hemisphere.firstPass.vs)
-			return GL_NONE;
+			return false;
 
 		context->hemisphere.firstPass.fs = loadShader(GL_FRAGMENT_SHADER, fs);
 		if (!context->hemisphere.firstPass.fs)
-			return GL_NONE;
+			return false;
 
 		context->hemisphere.firstPass.programID = loadProgram(context->hemisphere.firstPass.vs, context->hemisphere.firstPass.fs, 0, 0);
 		if (!context->hemisphere.firstPass.programID)
 		{
 			if (_lightMassListener)
-				_lightMassListener->onMessage("Error loading the hemisphere first pass shader program... leaving!");
-
-			glDeleteVertexArrays(1, &context->hemisphere.vao);
-			glDeleteRenderbuffers(1, &context->hemisphere.fbDepth);
-			glDeleteFramebuffers(2, context->hemisphere.fb);
-			glDeleteTextures(2, context->hemisphere.fbTexture);
-			
+				_lightMassListener->onMessage("Failed to loading the hemisphere first pass shader program.");
+		
 			return false;
 		}
 
@@ -713,7 +301,7 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 			"const vec2 ps[4] = vec2[](vec2(1, -1), vec2(1, 1), vec2(-1, -1), vec2(-1, 1));\n"
 			"void main()\n"
 			"{\n"
-			"gl_Position = vec4(ps[gl_VertexID], 0, 1);\n"
+				"gl_Position = vec4(ps[gl_VertexID], 0, 1);\n"
 			"}\n";
 		const char *fs =
 			"#version 150 core\n"
@@ -723,35 +311,29 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 
 			"void main()\n"
 			"{\n"
-			"ivec2 h_uv = ivec2((gl_FragCoord.xy - vec2(0.5)) * 2.0 + vec2(0.01));\n"
-			"vec4 lb = texelFetch(hemispheres, h_uv + ivec2(0, 0), 0);\n"
-			"vec4 rb = texelFetch(hemispheres, h_uv + ivec2(1, 0), 0);\n"
-			"vec4 lt = texelFetch(hemispheres, h_uv + ivec2(0, 1), 0);\n"
-			"vec4 rt = texelFetch(hemispheres, h_uv + ivec2(1, 1), 0);\n"
-			"outColor = lb + rb + lt + rt;\n"
+				"ivec2 h_uv = ivec2((gl_FragCoord.xy - vec2(0.5)) * 2.0 + vec2(0.01));\n"
+				"vec4 lb = texelFetch(hemispheres, h_uv + ivec2(0, 0), 0);\n"
+				"vec4 rb = texelFetch(hemispheres, h_uv + ivec2(1, 0), 0);\n"
+				"vec4 lt = texelFetch(hemispheres, h_uv + ivec2(0, 1), 0);\n"
+				"vec4 rt = texelFetch(hemispheres, h_uv + ivec2(1, 1), 0);\n"
+				"outColor = lb + rb + lt + rt;\n"
 			"}\n";
 
 		context->hemisphere.downsamplePass.vs = loadShader(GL_VERTEX_SHADER, vs);
 		if (!context->hemisphere.downsamplePass.vs)
-			return GL_NONE;
+			return false;
 
 		context->hemisphere.downsamplePass.fs = loadShader(GL_FRAGMENT_SHADER, fs);
 		if (!context->hemisphere.downsamplePass.fs)
-			return GL_NONE;
+			return false;
 
 		context->hemisphere.downsamplePass.programID = loadProgram(context->hemisphere.downsamplePass.vs, context->hemisphere.downsamplePass.fs, 0, 0);
 		if (!context->hemisphere.downsamplePass.programID)
 		{
 			if (_lightMassListener)
-				_lightMassListener->onMessage("Error loading the hemisphere downsample pass shader program... leaving!");
+				_lightMassListener->onMessage("Error loading the hemisphere downsample pass shader program.");
 
-			glDeleteProgram(context->hemisphere.firstPass.programID);
-			glDeleteVertexArrays(1, &context->hemisphere.vao);
-			glDeleteRenderbuffers(1, &context->hemisphere.fbDepth);
-			glDeleteFramebuffers(2, context->hemisphere.fb);
-			glDeleteTextures(2, context->hemisphere.fbTexture);
-			
-			return NULL;
+			return false;
 		}
 
 		context->hemisphere.downsamplePass.hemispheresTextureID = glGetUniformLocation(context->hemisphere.downsamplePass.programID, "hemispheres");
@@ -762,17 +344,12 @@ LightMassBaking::setupBakeTools(const LightBakingParams& params)
 	glBufferData(GL_PIXEL_PACK_BUFFER, context->hemisphere.fbHemiCountX * context->hemisphere.fbHemiCountY * 4 * sizeof(float), 0, GL_STREAM_READ);
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-	glGenTextures(1, &context->hemisphere.firstPass.weightsTexture);
-	lmSetHemisphereWeights(context.get(), lm_defaultWeights, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
 	context->hemisphere.fbHemiToLightmapLocation = std::make_unique<int2[]>(context->hemisphere.fbHemiCountX * context->hemisphere.fbHemiCountY);
 	context->hemisphere.transfer.fbHemiToLightmapLocation = std::make_unique<int2[]>(context->hemisphere.fbHemiCountX * context->hemisphere.fbHemiCountY);
 
 	_ctx = std::move(context);
+
+	this->updateHemisphereWeights(0);
 
 	return true;
 }
@@ -885,6 +462,352 @@ LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 		_ctx->meshPosition.hemisphere.side = 0;
 	else
 		_ctx->meshPosition.hemisphere.side = 5;
+}
+
+int
+LightMassBaking::leftOf(const float2& a, const float2& b, const float2& c)
+{
+	float2 lv = b - a;
+	float2 rv = c - b;
+
+	float x = lv.x * rv.y - lv.y * rv.x;
+	return x < 0 ? -1 : x > 0;
+}
+
+int
+LightMassBaking::convexClip(float2* poly, int nPoly, const float2* clip, int nClip, float2* res)
+{
+	int nRes = nPoly;
+	int dir = leftOf(clip[0], clip[1], clip[2]);
+	for (int i = 0, j = nClip - 1; i < nClip && nRes; j = i++)
+	{
+		if (i != 0)
+			for (nPoly = 0; nPoly < nRes; nPoly++)
+				poly[nPoly] = res[nPoly];
+		nRes = 0;
+		float2 v0 = poly[nPoly - 1];
+		int side0 = leftOf(clip[j], clip[i], v0);
+		if (side0 != -dir)
+			res[nRes++] = v0;
+		for (int k = 0; k < nPoly; k++)
+		{
+			float2 v1 = poly[k], x;
+			int side1 = leftOf(clip[j], clip[i], v1);
+			if (side0 + side1 == 0 && side0 && math::lineIntersection(clip[j], clip[i], v0, v1, x))
+				res[nRes++] = x;
+			if (k == nPoly - 1)
+				break;
+			if (side1 != -dir)
+				res[nRes++] = v1;
+			v0 = v1;
+			side0 = side1;
+		}
+	}
+
+	return nRes;
+}
+
+std::size_t
+LightMassBaking::passStepSize()
+{
+	std::size_t shift = _ctx->meshPosition.passCount / 3 - (_ctx->meshPosition.pass - 1) / 3;
+	std::size_t step = (1 << shift);
+	assert(step > 0);
+	return step;
+}
+
+std::size_t
+LightMassBaking::passOffsetX()
+{
+	if (!_ctx->meshPosition.pass)
+		return 0;
+	int passType = (_ctx->meshPosition.pass - 1) % 3;
+	std::size_t halfStep = passStepSize() >> 1;
+	return passType != 1 ? halfStep : 0;
+}
+
+std::size_t
+LightMassBaking::passOffsetY()
+{
+	if (!_ctx->meshPosition.pass)
+		return 0;
+
+	int passType = (_ctx->meshPosition.pass - 1) % 3;
+	std::size_t halfStep = passStepSize() >> 1;
+	return passType != 0 ? halfStep : 0;
+}
+
+bool
+LightMassBaking::hasConservativeTriangleRasterizerFinished()
+{
+	return _ctx->meshPosition.rasterizer.y >= _ctx->meshPosition.rasterizer.maxy;
+}
+
+void
+LightMassBaking::moveToNextPotentialConservativeTriangleRasterizerPosition()
+{
+	std::size_t step = passStepSize();
+
+	_ctx->meshPosition.rasterizer.x += step;
+
+	while (_ctx->meshPosition.rasterizer.x >= _ctx->meshPosition.rasterizer.maxx)
+	{
+		_ctx->meshPosition.rasterizer.x = _ctx->meshPosition.rasterizer.minx + this->passOffsetX();
+		_ctx->meshPosition.rasterizer.y += step;
+
+		if (this->hasConservativeTriangleRasterizerFinished())
+			break;
+	}
+}
+
+float*
+LightMassBaking::getLightmapPixel(int x, int y)
+{
+	assert(x >= 0 && x < _ctx->lightmap.width && y >= 0 && y < _ctx->lightmap.height);
+	return _ctx->lightmap.data + (y * _ctx->lightmap.width + x) * _ctx->lightmap.channels;
+}
+
+void
+LightMassBaking::setLightmapPixel(int x, int y, float* in)
+{
+	assert(x >= 0 && x < _ctx->lightmap.width && y >= 0 && y < _ctx->lightmap.height);
+	float *p = _ctx->lightmap.data + (y * _ctx->lightmap.width + x) * _ctx->lightmap.channels;
+	for (int j = 0; j < _ctx->lightmap.channels; j++)
+		*p++ = *in++;
+}
+
+bool
+LightMassBaking::trySamplingConservativeTriangleRasterizerPosition()
+{
+	if (hasConservativeTriangleRasterizerFinished())
+		return false;
+
+	float *pixelValue = getLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y);
+	for (int j = 0; j < _ctx->lightmap.channels; j++)
+		if (pixelValue[j] != 0.0f)
+			return false;
+
+	if (_ctx->meshPosition.pass > 0)
+	{
+		float *neighbors[4];
+		int neighborCount = 0;
+		int neighborsExpected = 0;
+		int d = (int)this->passStepSize() / 2;
+		int dirs = ((_ctx->meshPosition.pass - 1) % 3) + 1;
+		if (dirs & 1)
+		{
+			neighborsExpected += 2;
+			if (_ctx->meshPosition.rasterizer.x - d >= _ctx->meshPosition.rasterizer.minx &&
+				_ctx->meshPosition.rasterizer.x + d <  _ctx->meshPosition.rasterizer.maxx)
+			{
+				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x - d, _ctx->meshPosition.rasterizer.y);
+				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x + d, _ctx->meshPosition.rasterizer.y);
+			}
+		}
+		if (dirs & 2)
+		{
+			neighborsExpected += 2;
+			if (_ctx->meshPosition.rasterizer.y - d >= _ctx->meshPosition.rasterizer.miny &&
+				_ctx->meshPosition.rasterizer.y + d <  _ctx->meshPosition.rasterizer.maxy)
+			{
+				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y - d);
+				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y + d);
+			}
+		}
+
+		if (neighborCount == neighborsExpected)
+		{
+			float avg[4] = { 0 };
+			for (int i = 0; i < neighborCount; i++)
+				for (int j = 0; j < _ctx->lightmap.channels; j++)
+					avg[j] += neighbors[i][j];
+			float ni = 1.0f / neighborCount;
+			for (int j = 0; j < _ctx->lightmap.channels; j++)
+				avg[j] *= ni;
+
+			bool interpolate = true;
+			for (int i = 0; i < neighborCount; i++)
+			{
+				bool zero = true;
+				for (int j = 0; j < _ctx->lightmap.channels; j++)
+				{
+					if (neighbors[i][j] != 0.0f)
+						zero = false;
+					if (fabs(neighbors[i][j] - avg[j]) > _ctx->interpolationThreshold)
+						interpolate = false;
+				}
+				if (zero)
+					interpolate = false;
+				if (!interpolate)
+					break;
+			}
+
+			if (interpolate)
+			{
+				setLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y, avg);
+				return false;
+			}
+		}
+	}
+
+	float2 pixel[16];
+	pixel[0].set(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y);
+	pixel[1].set(_ctx->meshPosition.rasterizer.x + 1, _ctx->meshPosition.rasterizer.y);
+	pixel[2].set(_ctx->meshPosition.rasterizer.x + 1, _ctx->meshPosition.rasterizer.y + 1);
+	pixel[3].set(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y + 1);
+
+	float2 res[16];
+	int nRes = convexClip(pixel, 4, _ctx->meshPosition.triangle.uv, 3, res);
+	if (nRes > 0)
+	{
+		float2 centroid = res[0];
+		float area = res[nRes - 1].x * res[0].y - res[nRes - 1].y * res[0].x;
+		for (int i = 1; i < nRes; i++)
+		{
+			centroid = centroid + res[i];
+			area += res[i - 1].x * res[i].y - res[i - 1].y * res[i].x;
+		}
+		centroid = centroid / (float)nRes;
+		area = std::abs(area / 2.0f);
+
+		if (area > 0.0f)
+		{
+			float2 uv = math::barycentric(_ctx->meshPosition.triangle.uv[0], _ctx->meshPosition.triangle.uv[1], _ctx->meshPosition.triangle.uv[2], centroid);
+
+			if (math::isfinite(uv))
+			{
+				float3 p0 = _ctx->meshPosition.triangle.p[0];
+				float3 p1 = _ctx->meshPosition.triangle.p[1];
+				float3 p2 = _ctx->meshPosition.triangle.p[2];
+				float3 v1 = p1 - p0;
+				float3 v2 = p2 - p0;
+				_ctx->meshPosition.sample.position = p0 + v2 * uv.x + v1 * uv.y;
+				_ctx->meshPosition.sample.direction = math::normalize(math::cross(v1, v2));
+
+				if (math::isfinite(_ctx->meshPosition.sample.position) &&
+					math::isfinite(_ctx->meshPosition.sample.direction) &&
+					math::length2(_ctx->meshPosition.sample.direction) > 0.5f) // don't allow 0.0f. should always be ~1.0f
+				{
+					float3 up = float3::UnitY;
+					if (std::abs(math::dot(up, _ctx->meshPosition.sample.direction)) > 0.8f)
+						up = float3::UnitZ;
+
+					float3 side = math::normalize(math::cross(up, _ctx->meshPosition.sample.direction));
+					up = math::normalize(math::cross(side, _ctx->meshPosition.sample.direction));
+					int rx = _ctx->meshPosition.rasterizer.x % 3;
+					int ry = _ctx->meshPosition.rasterizer.y % 3;
+
+					const float baseAngle = 0.03f * M_PI;
+					const float baseAngles[3][3] = {
+						{ baseAngle, baseAngle + 1.0f / 3.0f, baseAngle + 2.0f / 3.0f },
+						{ baseAngle + 1.0f / 3.0f, baseAngle + 2.0f / 3.0f, baseAngle },
+						{ baseAngle + 2.0f / 3.0f, baseAngle, baseAngle + 1.0f / 3.0f }
+					};
+					float phi = 2.0f * M_PI * baseAngles[ry][rx] + 0.1f * ((float)rand() / (float)RAND_MAX);
+					_ctx->meshPosition.sample.up = math::normalize(side * cosf(phi) + up * sinf(phi));
+
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool
+LightMassBaking::findFirstConservativeTriangleRasterizerPosition()
+{
+	while (!this->trySamplingConservativeTriangleRasterizerPosition())
+	{
+		this->moveToNextPotentialConservativeTriangleRasterizerPosition();
+		if (this->hasConservativeTriangleRasterizerFinished())
+			return false;
+	}
+
+	return true;
+}
+
+bool
+LightMassBaking::findNextConservativeTriangleRasterizerPosition()
+{
+	this->moveToNextPotentialConservativeTriangleRasterizerPosition();
+	return this->findFirstConservativeTriangleRasterizerPosition();
+}
+
+bool
+LightMassBaking::updateHemisphereWeights(void* userdata)
+{
+	assert(_ctx);
+
+	auto weights = std::make_unique<HemisphereWeight<float>[]>(_ctx->hemisphere.size * _ctx->hemisphere.size);
+	float center = (_ctx->hemisphere.size - 1) * 0.5f;
+
+	double sum = 0.0;
+
+	for (std::uint32_t y = 0; y < _ctx->hemisphere.size; y++)
+	{
+		float dy = 2.0f * (y - center) / (float)_ctx->hemisphere.size;
+
+		for (std::uint32_t x = 0; x < _ctx->hemisphere.size; x++)
+		{
+			float dx = 2.0f * (x - center) / (float)_ctx->hemisphere.size;
+			float3 v = math::normalize(float3(dx, dy, 1.0f));
+
+			float solidAngle = v.z * v.z * v.z;
+
+			auto& weight = weights[_ctx->hemisphere.size * y + x];
+
+			weight.center1 = solidAngle * this->doGetHemisphereWeights(v.z, userdata);
+			weight.center2 = solidAngle;
+
+			weight.left = solidAngle * this->doGetHemisphereWeights(std::abs(v.x), userdata);
+			weight.right = solidAngle;
+
+			weight.up = solidAngle * this->doGetHemisphereWeights(std::abs(v.y), userdata);
+			weight.down = solidAngle;
+
+			sum += 3.0 * (double)solidAngle;
+		}
+	}
+
+	float weightScale = (float)(1.0 / sum);
+	for (std::size_t i = 0; i < _ctx->hemisphere.size * _ctx->hemisphere.size; i++)
+		weights[i] *= weightScale;
+
+	if (_ctx->hemisphere.firstPass.weightsTexture == GL_NONE)
+	{
+		glGenTextures(1, &_ctx->hemisphere.firstPass.weightsTexture);
+		if (!_ctx->hemisphere.firstPass.weightsTexture)
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage("Failed to create texture with hemisphere weights");
+
+			return false;
+		}
+
+		glBindTexture(GL_TEXTURE_2D, _ctx->hemisphere.firstPass.weightsTexture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, _ctx->hemisphere.size * 3, _ctx->hemisphere.size, 0, GL_RG, GL_FLOAT, weights.get());
+		glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	}
+	else
+	{
+		glBindTexture(GL_TEXTURE_2D, _ctx->hemisphere.firstPass.weightsTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, _ctx->hemisphere.size * 3, _ctx->hemisphere.size, 0, GL_RG, GL_FLOAT, weights.get());
+		glBindTexture(GL_TEXTURE_2D, GL_NONE);
+	}
+
+	return true;
+}
+
+float 
+LightMassBaking::doGetHemisphereWeights(float cosTheta, void* userdata)
+{
+	return 1.0;
 }
 
 void
@@ -1080,8 +1003,8 @@ LightMassBaking::updateSampleHemisphere(int* viewport, float4x4& view, float4x4&
 	int y = (_ctx->hemisphere.fbHemiIndex / _ctx->hemisphere.fbHemiCountX) * _ctx->hemisphere.size;
 
 	int size = _ctx->hemisphere.size;
-	float zNear = _ctx->hemisphere.zNear;
-	float zFar = _ctx->hemisphere.zFar;
+	float znear = _ctx->hemisphere.znear;
+	float zfar = _ctx->hemisphere.zfar;
 
 	const float3& pos = _ctx->meshPosition.sample.position;
 	const float3& dir = _ctx->meshPosition.sample.direction;
@@ -1095,35 +1018,35 @@ LightMassBaking::updateSampleHemisphere(int* viewport, float4x4& view, float4x4&
 		viewport[1] = y;
 		viewport[2] = size;
 		viewport[3] = size;
-		this->updateSampleMatrices(view, pos, dir, up, proj, -zNear, zNear, -zNear, zNear, zNear, zFar);
+		this->updateSampleMatrices(view, pos, dir, up, proj, -znear, znear, -znear, znear, znear, zfar);
 		break;
 	case 1: // right
 		viewport[0] = size + x;
 		viewport[1] = y;
 		viewport[2] = size / 2;
 		viewport[3] = size;
-		this->updateSampleMatrices(view, pos, right, up, proj, -zNear, 0.0f, -zNear, zNear, zNear, zFar);
+		this->updateSampleMatrices(view, pos, right, up, proj, -znear, 0.0f, -znear, znear, znear, zfar);
 		break;
 	case 2: // left
 		viewport[0] = size + x + size / 2;
 		viewport[1] = y;
 		viewport[2] = size / 2;
 		viewport[3] = size;
-		this->updateSampleMatrices(view, pos, -right, up, proj, 0.0f, zNear, -zNear, zNear, zNear, zFar);
+		this->updateSampleMatrices(view, pos, -right, up, proj, 0.0f, znear, -znear, znear, znear, zfar);
 		break;
 	case 3: // down
 		viewport[0] = 2 * size + x;
 		viewport[1] = y + size / 2;
 		viewport[2] = size;
 		viewport[3] = size / 2;
-		this->updateSampleMatrices(view, pos, -up, dir, proj, -zNear, zNear, 0.0f, zNear, zNear, zFar);
+		this->updateSampleMatrices(view, pos, -up, dir, proj, -znear, znear, 0.0f, znear, znear, zfar);
 		break;
 	case 4: // up
 		viewport[0] = 2 * size + x;
 		viewport[1] = y;
 		viewport[2] = size;
 		viewport[3] = size / 2;
-		this->updateSampleMatrices(view, pos, up, -dir, proj, -zNear, zNear, -zNear, 0.0f, zNear, zFar);
+		this->updateSampleMatrices(view, pos, up, -dir, proj, -znear, znear, -znear, 0.0f, znear, zfar);
 		break;
 	default:
 		assert(false);

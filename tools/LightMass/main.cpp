@@ -193,8 +193,8 @@ public:
 		params.lightMap.channel = 1;
 		params.lightMap.data = lightmap.get();
 		params.baking.hemisphereSize = GetSampleCount();
-		params.baking.interpolationPasses = GetSampleScale();
-		params.baking.interpolationThreshold = pow(0.1, 1 + GetSamplePrecision());
+		//params.baking.interpolationPasses = GetSampleScale();
+		//params.baking.interpolationThreshold = pow(0.1, 1 + GetSamplePrecision());
 
 		_lightMass = std::make_shared<ray::LightMass>();
 		_lightMass->setLightMassListener(std::make_shared<AppListener>());

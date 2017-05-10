@@ -266,6 +266,7 @@ LightMassBaking::setup(const LightBakingParams& params) noexcept
 	else
 	{
 		auto weights = std::make_unique<HemisphereWeight<float>[]>(params.hemisphereSize * params.hemisphereSize);
+		math::makeHemisphereWeights(weights.get(), params.hemisphereSize);
 		this->updateHemisphereWeights(weights.get());
 	}
 

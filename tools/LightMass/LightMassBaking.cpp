@@ -85,7 +85,6 @@ LightMassBaking::~LightMassBaking() noexcept
 bool
 LightMassBaking::setup(const LightBakingParams& params) noexcept
 {
-	assert(params.hemisphereWeights);
 	assert(params.hemisphereNear < params.hemisphereFar && params.hemisphereNear > 0.0f);
 	assert(params.hemisphereSize == 16 || params.hemisphereSize == 32 || params.hemisphereSize == 64 || params.hemisphereSize == 128 || params.hemisphereSize == 256 || params.hemisphereSize == 512);
 	assert(params.interpolationPasses >= 0 && params.interpolationPasses <= 8);
@@ -262,7 +261,13 @@ LightMassBaking::setup(const LightBakingParams& params) noexcept
 
 	_ctx = std::move(context);
 
-	this->updateHemisphereWeights(params.hemisphereWeights);
+	if (params.hemisphereWeights)
+		this->updateHemisphereWeights(params.hemisphereWeights);
+	else
+	{
+		auto weights = std::make_unique<HemisphereWeight<float>[]>(params.hemisphereSize * params.hemisphereSize);
+		this->updateHemisphereWeights(weights.get());
+	}
 
 	return true;
 }

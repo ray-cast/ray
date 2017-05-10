@@ -39,6 +39,8 @@
 #include "LightMassGlobalIllumination.h"
 
 #include <GL\glew.h>
+#include <thekla/thekla_atlas.h>
+#include <sstream>
 
 _NAME_BEGIN
 
@@ -88,7 +90,6 @@ LightMass::getFace(std::size_t n) noexcept
 	else
 		return false;
 }
-
 
 std::uint32_t 
 LightMass::getFace(std::size_t n, std::uint32_t firstIndex) noexcept
@@ -401,7 +402,7 @@ LightMass::save(const std::string& path) noexcept
 }
 
 bool 
-LightMass::saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin)
+LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin)
 {
 	assert(c == 1 || c == 3 || c == 4);
 
@@ -465,6 +466,100 @@ LightMass::saveAsTGA(const std::string& path, float* data, std::uint32_t w, std:
 	return true;
 }
 
+bool
+LightMass::pack(const LightMassParams& params) noexcept
+{
+	if (_lightMassListener)
+		_lightMassListener->onUvmapperStart();
+
+	std::vector<Thekla::Atlas_Input_Vertex> vertices;
+
+	for (std::size_t i = 0; i < _model->numVertices; i++)
+	{
+		Thekla::Atlas_Input_Vertex v;
+		v.position[0] = _model->vertices[i].position.x;
+		v.position[1] = _model->vertices[i].position.y;
+		v.position[2] = _model->vertices[i].position.z;
+		v.normal[0] = _model->vertices[i].normal.x;
+		v.normal[1] = _model->vertices[i].normal.y;
+		v.normal[2] = _model->vertices[i].normal.z;
+		v.uv[0] = _model->vertices[i].coord.x;
+		v.uv[1] = _model->vertices[i].coord.y;
+		v.first_colocal = i;
+
+		vertices.push_back(v);
+	}
+
+	std::vector<Thekla::Atlas_Input_Face> faces;
+	for (std::size_t i = 0; i < _model->numIndices; i += 3)
+	{
+		Thekla::Atlas_Input_Face face;
+
+		std::uint32_t f1 = getFace(i);
+		std::uint32_t f2 = getFace(i + 1);
+		std::uint32_t f3 = getFace(i + 2);
+
+		const Vector3& a = _model->vertices[f1].position;
+		const Vector3& b = _model->vertices[f2].position;
+		const Vector3& c = _model->vertices[f3].position;
+
+		Vector3 edge1 = c - b;
+		Vector3 edge2 = a - b;
+
+		Vector3 normal = math::normalize(math::cross(edge1, edge2));
+
+		if (math::dot(normal, normal) > 0)
+		{
+			face.vertex_index[0] = f1;
+			face.vertex_index[1] = f2;
+			face.vertex_index[2] = f3;
+			face.material_index = 0;
+
+			faces.push_back(face);
+		}
+		else
+		{
+			if (_lightMassListener)
+			{
+				std::ostringstream stream;
+				stream << "WARNING : Input mesh has zero-length edges. check faces " << i / 3;
+				_lightMassListener->onMessage(stream.str());
+			}
+		}
+	}
+
+	Thekla::Atlas_Input_Mesh input_mesh;
+	input_mesh.vertex_count = vertices.size();
+	input_mesh.vertex_array = vertices.data();
+	input_mesh.face_count = faces.size();
+	input_mesh.face_array = faces.data();
+
+	Thekla::Atlas_Options atlas_options;
+	atlas_set_default_options(&atlas_options);
+
+	atlas_options.packer_options.witness.packing_quality = 0;
+	atlas_options.packer_options.witness.block_align = true;
+	atlas_options.packer_options.witness.conservative = true;
+	atlas_options.packer_options.witness.texel_area = 1;
+
+	Thekla::Atlas_Error error = Thekla::Atlas_Error_Success;
+	Thekla::Atlas_Output_Mesh * output_mesh = atlas_generate(&input_mesh, &atlas_options, &error);
+
+	_model->header.addUVCount = 1;
+
+	for (std::size_t i = 0; i < output_mesh->vertex_count; i++)
+	{
+		std::uint32_t n = output_mesh->vertex_array[i].xref;
+		_model->vertices[n].addCoord[0].x = output_mesh->vertex_array[i].uv[0] / output_mesh->atlas_width;
+		_model->vertices[n].addCoord[0].y = output_mesh->vertex_array[i].uv[1] / output_mesh->atlas_height;
+	}
+
+	if (_lightMassListener)
+		_lightMassListener->onUvmapperEnd();
+
+	return true;
+}
+
 bool 
 LightMass::baking(const LightMassParams& params) noexcept
 {
@@ -483,12 +578,13 @@ LightMass::baking(const LightMassParams& params) noexcept
 		return false;
 	}
 
+	if (_model->header.addUVCount == 0)
+	{
+		this->pack(params);
+	}
+
 	LightBakingOptions option;
-
-	auto weights = std::auto_ptr<HemisphereWeight<float>>(math::makeHemisphereWeights<float>(option.baking.hemisphereSize));
-
 	option.baking = params.baking;
-	option.baking.hemisphereWeights = weights.get();
 	option.lightMap = params.lightMap;
 
 	option.model.vertices = (std::uint8_t*)_model->vertices.data();
@@ -498,7 +594,7 @@ LightMass::baking(const LightMassParams& params) noexcept
 	option.model.sizeofIndices = _model->header.sizeOfIndices;
 
 	option.model.strideVertices = offsetof(PMX_Vertex, position);
-	option.model.strideTexcoord = offsetof(PMX_Vertex, coord);
+	option.model.strideTexcoord = offsetof(PMX_Vertex, addCoord[0]);
 
 	option.model.numVertices = _model->numVertices;
 	option.model.numIndices = _model->numIndices;

@@ -53,11 +53,12 @@ public:
 
 	bool load(const std::string& path) noexcept;
 	bool save(const std::string& path) noexcept;
-	bool saveAsTGA(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin);
+	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin);
 
 	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
 	LightMassListenerPtr getLightMassListener() const noexcept;
 
+	bool pack(const LightMassParams& params) noexcept;
 	bool baking(const LightMassParams& params) noexcept;
 
 	void computeFaceNormals() noexcept;

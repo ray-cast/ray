@@ -51,6 +51,20 @@ public:
 	AppListener() noexcept {}
 	~AppListener() noexcept {}
 
+	void onUvmapperStart()
+	{
+		_startTime = std::time(nullptr);
+		std::cout << "Calculating the Light map pack of the model : ";
+		std::cout << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	void onUvmapperEnd()
+	{
+		_endTime = std::time(nullptr);
+		std::cout << "Calculated the Light map pack of the model : ";
+		std::cout << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
 	virtual void onBakingStart() noexcept
 	{
 		_startTime = std::time(nullptr);
@@ -207,8 +221,20 @@ public:
 		std::string outputPath = ray::util::directory(path) + "ao.tga";
 		std::cout << "Save as image : " << outputPath << std::endl;
 		
-		if (!_lightMass->saveAsTGA(outputPath, params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel, 1))
+		if (!_lightMass->saveLightMass(outputPath, params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel, 1))
+		{
 			std::cout << "Failed to save image : " << outputPath << std::endl;
+			return false;
+		}
+
+		std::string outputModel = ray::util::directory(path) + "stage.pmx";
+		std::cout << "Save as model : " << outputModel << std::endl;
+
+		if (!_lightMass->save(outputModel))
+		{
+			std::cout << "Failed to save model : " << outputModel << std::endl;
+			return false;
+		}
 
 		return true;
 	}

@@ -57,6 +57,16 @@ LightMassListener::onListenerChangeAfter()
 }
 
 void 
+LightMassListener::onUvmapperStart()
+{
+}
+
+void 
+LightMassListener::onUvmapperEnd()
+{
+}
+
+void 
 LightMassListener::onBakingStart()
 {
 }

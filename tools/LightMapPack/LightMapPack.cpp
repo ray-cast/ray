@@ -251,6 +251,112 @@ LightMapPack::getFace(std::size_t n, std::uint32_t firstIndex) noexcept
 		return false;
 }
 
+void
+LightMass::computeLightmapPack() noexcept
+{
+	assert(_model);
+
+	this->computeFaceNormals();
+
+	_model->header.addUVCount = 1;
+
+	float2 minUV[3];
+	float2 maxUV[3];
+
+	minUV[0].set(FLT_MAX);
+	minUV[1].set(FLT_MAX);
+	minUV[2].set(FLT_MAX);
+	maxUV[0].set(-FLT_MAX);
+	maxUV[1].set(-FLT_MAX);
+	maxUV[2].set(-FLT_MAX);
+
+	for (size_t i = 0; i < _model->numIndices; i += 3)
+	{
+		std::uint32_t a = getFace(i);
+		std::uint32_t b = getFace(i + 1);
+		std::uint32_t c = getFace(i + 2);
+
+		float3 polyNormal = math::abs(_facesNormal[i / 3]);
+
+		float2 uv[3];
+
+		int flag = 0;
+		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
+		{
+			flag = 1;
+			uv[0] = _model->vertices[a].position.yz();
+			uv[1] = _model->vertices[b].position.yz();
+			uv[2] = _model->vertices[c].position.yz();
+		}
+		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
+		{
+			flag = 2;
+			uv[0] = _model->vertices[a].position.xz();
+			uv[1] = _model->vertices[b].position.xz();
+			uv[2] = _model->vertices[c].position.xz();
+		}
+		else
+		{
+			uv[0] = _model->vertices[a].position.xy();
+			uv[1] = _model->vertices[b].position.xy();
+			uv[2] = _model->vertices[c].position.xy();
+		}
+
+		for (int j = 0; j < 3; j++)
+		{
+			minUV[flag] = math::min(minUV[flag], uv[j]);
+			maxUV[flag] = math::max(maxUV[flag], uv[j]);
+		}
+	}
+
+	for (size_t i = 0; i < _model->numIndices; i += 3)
+	{
+		std::uint32_t a = getFace(i);
+		std::uint32_t b = getFace(i + 1);
+		std::uint32_t c = getFace(i + 2);
+
+		float3 polyNormal = math::abs(_facesNormal[i / 3]);
+
+		float2 uv[3];
+
+		int flag = 0;
+		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
+		{
+			flag = 1;
+			uv[0] = _model->vertices[a].position.yz();
+			uv[1] = _model->vertices[b].position.yz();
+			uv[2] = _model->vertices[c].position.yz();
+		}
+		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
+		{
+			flag = 2;
+			uv[0] = _model->vertices[a].position.xz();
+			uv[1] = _model->vertices[b].position.xz();
+			uv[2] = _model->vertices[c].position.xz();
+		}
+		else
+		{
+			uv[0] = _model->vertices[a].position.xy();
+			uv[1] = _model->vertices[b].position.xy();
+			uv[2] = _model->vertices[c].position.xy();
+		}
+
+		float2 deltaUV = maxUV[flag] - minUV[flag];
+
+		uv[0] -= minUV[flag];
+		uv[1] -= minUV[flag];
+		uv[2] -= minUV[flag];
+
+		uv[0] /= deltaUV;
+		uv[1] /= deltaUV;
+		uv[2] /= deltaUV;
+
+		_model->vertices[a].addCoord[0].set(uv[0]);
+		_model->vertices[b].addCoord[0].set(uv[1]);
+		_model->vertices[c].addCoord[0].set(uv[2]);
+	}
+}
+
 /*
 bool
 LightMass::pack(const LightMassParams& params) noexcept

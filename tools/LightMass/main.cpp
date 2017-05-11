@@ -68,6 +68,7 @@ public:
 	void onUvmapperEnd()
 	{
 		_endTime = std::time(nullptr);
+		std::cout << "Processing : " << "100.00%" << std::fixed << std::endl;
 		std::cout << "Calculated the Light map pack of the model : ";
 		std::cout << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
@@ -146,6 +147,22 @@ public:
 		return channel;
 	}
 
+	std::uint32_t GetImageMargin()
+	{
+		std::uint32_t size = 0;
+		while (!size)
+		{
+			std::cout << "Input the image margin (1, 2, 3, 4, 5 and above): ";
+			char paths[MAX_PATH];
+			std::cin.getline(paths, MAX_PATH);
+			size = atoi(paths);
+			if (size > 1)
+				break;
+		}
+
+		return size;
+	}
+
 	std::uint32_t GetSampleCount()
 	{
 		std::uint32_t size = 0;
@@ -178,22 +195,6 @@ public:
 		return size;
 	}
 
-	std::uint32_t GetSamplePrecision()
-	{
-		std::uint32_t size = 0;
-		while (!size)
-		{
-			std::cout << "Input the sample precision (1, 2, 3, 4, 5): ";
-			char paths[MAX_PATH];
-			std::cin.getline(paths, MAX_PATH);
-			size = atoi(paths);
-			if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5)
-				break;
-		}
-
-		return size;
-	}
-
 	bool baking(std::string path)
 	{
 		while (path.empty())
@@ -212,6 +213,7 @@ public:
 		ray::LightMassParams params;
 		params.lightMap.width = params.lightMap.height = imageSize;
 		params.lightMap.channel = 1;
+		params.lightMap.margin = GetImageMargin();
 		params.lightMap.data = lightmap.get();
 		params.baking.hemisphereSize = GetSampleCount();
 
@@ -243,7 +245,7 @@ public:
 		std::string outputPath = ray::util::directory(path) + "ao.tga";
 		std::cout << "Save as image : " << outputPath << std::endl;
 		
-		if (!_lightMass->saveLightMass(outputPath, params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel, 1))
+		if (!_lightMass->saveLightMass(outputPath, params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel, params.lightMap.margin))
 		{
 			std::cout << "Failed to save image : " << outputPath << std::endl;
 			return false;

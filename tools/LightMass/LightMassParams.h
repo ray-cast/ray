@@ -48,6 +48,7 @@ struct LightMapData
 	std::uint16_t width;
 	std::uint16_t height;
 	std::uint8_t channel;
+	std::uint8_t margin;
 
 	float* data;
 };
@@ -114,6 +115,14 @@ struct LightMassParams
 {
 	LightMapData lightMap;
 	LightBakingParams baking;
+};
+
+struct LightMapParams
+{
+	float gutter;
+	float maxStretch;
+	std::size_t maxChartNumber;
+	LightMapData lightMap;
 };
 
 _NAME_END

@@ -259,14 +259,34 @@ LightMass::pack(const LightMassParams& params, PMX& model) noexcept
 	for (std::size_t i = 0; i < model.numVertices; i++)
 		atlasVertices.push_back(model.vertices[i].position);
 
-	std::unique_ptr<uint32_t[]> adj(new uint32_t[model.numIndices]);
+	std::vector<uint32_t> adj(model.numIndices);
 
 	if (model.header.sizeOfIndices == 1)
+	{
+		if (_lightMassListener)
+			_lightMassListener->onMessage("Failed to GenerateAdjacencyAndPointReps.");
 		return false;
+	}
 	else if (model.header.sizeOfIndices == 2)
-		DirectX::GenerateAdjacencyAndPointReps((std::uint16_t*)model.indices.data(), model.numIndices / 3, (DirectX::XMFLOAT3*)atlasVertices.data(), model.numVertices, 0.0, nullptr, adj.get());
+	{
+		HRESULT hr = DirectX::GenerateAdjacencyAndPointReps((std::uint16_t*)model.indices.data(), model.numIndices / 3, (DirectX::XMFLOAT3*)atlasVertices.data(), model.numVertices, 0.0, nullptr, adj.data());
+		if (FAILED(hr))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage("Failed to GenerateAdjacencyAndPointReps.");
+			return false;
+		}
+	}
 	else
-		DirectX::GenerateAdjacencyAndPointReps((std::uint32_t*)model.indices.data(), model.numIndices / 3, (DirectX::XMFLOAT3*)atlasVertices.data(), model.numVertices, 0.0, nullptr, adj.get());
+	{
+		HRESULT hr = DirectX::GenerateAdjacencyAndPointReps((std::uint32_t*)model.indices.data(), model.numIndices / 3, (DirectX::XMFLOAT3*)atlasVertices.data(), model.numVertices, 0.0, nullptr, adj.data());
+		if (FAILED(hr))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage("Failed to GenerateAdjacencyAndPointReps.");
+			return false;
+		}
+	}
 
 	std::vector<DirectX::UVAtlasVertex> vb;
 	std::vector<uint8_t> ib;
@@ -289,9 +309,9 @@ LightMass::pack(const LightMassParams& params, PMX& model) noexcept
 			atlasVertices.size(),
 			model.indices.data(),
 			DXGI_FORMAT::DXGI_FORMAT_R16_UINT,
-			model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, 2.0, adj.get(), 0, 0, 
+			model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, params.lightMap.margin, adj.data(), 0, 0,
 			callback, 
-			0.1,
+			0.5,
 			DirectX::UVATLAS_GEODESIC_QUALITY,
 			vb, ib, 0, &remap);
 		if (FAILED(hr))
@@ -308,9 +328,9 @@ LightMass::pack(const LightMassParams& params, PMX& model) noexcept
 			atlasVertices.size(),
 			model.indices.data(),
 			DXGI_FORMAT::DXGI_FORMAT_R32_UINT,
-			model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, 2.0, adj.get(), 0, 0, 
+			model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, 2.0, adj.data(), 0, 0,
 			callback,
-			0.1,
+			0.5,
 			DirectX::UVATLAS_GEODESIC_QUALITY,
 			vb, ib, 0, &remap);
 		if (FAILED(hr))
@@ -337,6 +357,9 @@ LightMass::pack(const LightMassParams& params, PMX& model) noexcept
 	model.numVertices = newVertices.size();
 	model.vertices = newVertices;
 	model.indices = ib;
+
+	if (_lightMassListener)
+		_lightMassListener->onUvmapperEnd();
 
 	return true;
 }

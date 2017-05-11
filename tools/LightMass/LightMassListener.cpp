@@ -62,6 +62,11 @@ LightMassListener::onUvmapperStart()
 }
 
 void 
+LightMassListener::onUvmapperProgressing(float progress)
+{
+}
+
+void 
 LightMassListener::onUvmapperEnd()
 {
 }

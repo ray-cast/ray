@@ -649,7 +649,6 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 				if (!stream.write((char*)&material.mem, material.memLength)) return false;
 			}
 
-
 			if (!stream.write((char*)&material.IndicesCount, sizeof(material.IndicesCount))) return false;
 		}
 	}

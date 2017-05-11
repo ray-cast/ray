@@ -71,7 +71,6 @@ namespace
 
             if ( pReverseRemapArray[uInVert] == uint32_t(-1) )
             {
-                // take this vertex
                 pReverseRemapArray[uInVert] = uInVert;
                 pForwardRemapArray[uInVert] = uOutVert;
                 pNewIndexData[i] = static_cast<IndexType>(uInVert);

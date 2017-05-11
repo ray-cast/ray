@@ -51,7 +51,7 @@ public:
 	~LightMass() noexcept;
 
 	bool load(const std::string& path, PMX& pmx) noexcept;
-	bool save(const std::string& path, PMX& pmx) noexcept;
+	bool save(const std::string& path, const PMX& pmx) noexcept;
 	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin);
 
 	void setLightMassListener(LightMassListenerPtr pointer) noexcept;

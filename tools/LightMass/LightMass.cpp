@@ -165,7 +165,7 @@ LightMass::load(const std::string& path, PMX& pmx) noexcept
 }
 
 bool
-LightMass::save(const std::string& path, PMX& pmx) noexcept
+LightMass::save(const std::string& path, const PMX& pmx) noexcept
 {
 	ofstream stream;
 	if (!stream.open(path))
@@ -257,10 +257,7 @@ LightMass::pack(const LightMassParams& params, PMX& model) noexcept
 	std::vector<std::uint32_t> atlasIndices;
 
 	for (std::size_t i = 0; i < model.numVertices; i++)
-	{
-		float3 v = model.vertices[i].position;
-		atlasVertices.push_back(v);
-	}
+		atlasVertices.push_back(model.vertices[i].position);
 
 	std::unique_ptr<uint32_t[]> adj(new uint32_t[model.numIndices]);
 
@@ -275,17 +272,54 @@ LightMass::pack(const LightMassParams& params, PMX& model) noexcept
 	std::vector<uint8_t> ib;
 	std::vector<uint32_t> remap;
 
-	HRESULT hr = DirectX::UVAtlasCreate(
-		(DirectX::XMFLOAT3*)atlasVertices.data(),
-		atlasVertices.size(),
-		model.indices.data(),
-		DXGI_FORMAT::DXGI_FORMAT_R16_UINT,
-		model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, 2.0, adj.get(), 0, 0, 0,
-		DirectX::UVATLAS_DEFAULT_CALLBACK_FREQUENCY,
-		DirectX::UVATLAS_GEODESIC_QUALITY,
-		vb, ib, 0, &remap);
-	if (!hr)
+	auto callback = [&](float percentComplete) -> HRESULT
+	{
+		if (_lightMassListener)
+			_lightMassListener->onUvmapperProgressing(percentComplete);
+
+		return true;
+	};
+
+	if (model.header.sizeOfIndices == 1)
 		return false;
+	else if (model.header.sizeOfIndices == 2)
+	{
+		HRESULT hr = DirectX::UVAtlasCreate(
+			(DirectX::XMFLOAT3*)atlasVertices.data(),
+			atlasVertices.size(),
+			model.indices.data(),
+			DXGI_FORMAT::DXGI_FORMAT_R16_UINT,
+			model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, 2.0, adj.get(), 0, 0, 
+			callback, 
+			0.1,
+			DirectX::UVATLAS_GEODESIC_QUALITY,
+			vb, ib, 0, &remap);
+		if (FAILED(hr))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage("Failed to UV Atlas.");
+			return false;
+		}
+	}
+	else
+	{
+		HRESULT hr = DirectX::UVAtlasCreate(
+			(DirectX::XMFLOAT3*)atlasVertices.data(),
+			atlasVertices.size(),
+			model.indices.data(),
+			DXGI_FORMAT::DXGI_FORMAT_R32_UINT,
+			model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, 2.0, adj.get(), 0, 0, 
+			callback,
+			0.1,
+			DirectX::UVATLAS_GEODESIC_QUALITY,
+			vb, ib, 0, &remap);
+		if (FAILED(hr))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage("Failed to UV Atlas.");
+			return false;
+		}
+	}
 
 	std::vector<PMX_Vertex> newVertices;
 	newVertices.resize(vb.size());

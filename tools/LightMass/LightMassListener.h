@@ -51,6 +51,7 @@ public:
 	virtual void onListenerChangeAfter();
 
 	virtual void onUvmapperStart();
+	virtual void onUvmapperProgressing(float progress);
 	virtual void onUvmapperEnd();
 
 	virtual void onBakingStart();

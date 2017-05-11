@@ -58,6 +58,13 @@ public:
 		std::cout << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
 
+	void onUvmapperProgressing(float progress)
+	{
+		std::cout.precision(2);
+		std::cout << "Processing : " << progress * 100 << "%" << std::fixed;
+		std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+	}
+
 	void onUvmapperEnd()
 	{
 		_endTime = std::time(nullptr);
@@ -217,16 +224,16 @@ public:
 
 		if (model.header.addUVCount == 0)
 		{
-			if (_lightMass->pack(params, model))
-			{
-				std::string outputModel = ray::util::directory(path) + "stage.pmx";
-				std::cout << "Save as model : " << outputModel << std::endl;
+			if (!_lightMass->pack(params, model))
+				return false;
 
-				if (!_lightMass->save(outputModel, model))
-				{
-					std::cout << "Failed to save model : " << outputModel << std::endl;
-					return false;
-				}
+			std::string outputModel = ray::util::directory(path) + "stage.pmx";
+			std::cout << "Save as model : " << outputModel << std::endl;
+
+			if (!_lightMass->save(outputModel, model))
+			{
+				std::cout << "Failed to save model : " << outputModel << std::endl;
+				return false;
 			}
 		}
 

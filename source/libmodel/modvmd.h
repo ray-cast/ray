@@ -50,8 +50,8 @@ public:
 	bool doCanRead(StreamReader& stream) const noexcept;
 	bool doCanSave(ModelType type) const noexcept;
 
-	bool doLoad(Model& image, StreamReader& stream) noexcept;
-	bool doSave(Model& image, StreamWrite& stream) noexcept;
+	bool doLoad(StreamReader& stream, Model& model) noexcept;
+	bool doSave(StreamWrite& stream, const Model& model) noexcept;
 
 private:
 	VMDHandler(const VMDHandler&) = delete;

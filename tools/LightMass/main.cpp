@@ -207,15 +207,30 @@ public:
 		params.lightMap.channel = 1;
 		params.lightMap.data = lightmap.get();
 		params.baking.hemisphereSize = GetSampleCount();
-		//params.baking.interpolationPasses = GetSampleScale();
-		//params.baking.interpolationThreshold = pow(0.1, 1 + GetSamplePrecision());
 
 		_lightMass = std::make_shared<ray::LightMass>();
 		_lightMass->setLightMassListener(std::make_shared<AppListener>());
-		if (!_lightMass->load(path))
+
+		ray::PMX model;
+		if (!_lightMass->load(path, model))
 			return false;
 
-		if (!_lightMass->baking(params))
+		if (model.header.addUVCount == 0)
+		{
+			if (_lightMass->pack(params, model))
+			{
+				std::string outputModel = ray::util::directory(path) + "stage.pmx";
+				std::cout << "Save as model : " << outputModel << std::endl;
+
+				if (!_lightMass->save(outputModel, model))
+				{
+					std::cout << "Failed to save model : " << outputModel << std::endl;
+					return false;
+				}
+			}
+		}
+
+		if (!_lightMass->baking(params, model))
 			return false;
 
 		std::string outputPath = ray::util::directory(path) + "ao.tga";
@@ -224,15 +239,6 @@ public:
 		if (!_lightMass->saveLightMass(outputPath, params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel, 1))
 		{
 			std::cout << "Failed to save image : " << outputPath << std::endl;
-			return false;
-		}
-
-		std::string outputModel = ray::util::directory(path) + "stage.pmx";
-		std::cout << "Save as model : " << outputModel << std::endl;
-
-		if (!_lightMass->save(outputModel))
-		{
-			std::cout << "Failed to save model : " << outputModel << std::endl;
 			return false;
 		}
 

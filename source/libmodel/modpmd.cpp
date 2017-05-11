@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+ï»¿// +----------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -39,318 +39,6 @@
 
 _NAME_BEGIN
 
-#define BONE_TYPE_ROTATE      0
-#define BONE_TYPE_ROTATE_MOVE 1
-#define BONE_TYPE_IK          2
-#define BONE_TYPE_UNKNOWN     3
-#define BONE_TYPE_LINK_HEAD   6
-#define BONE_TYPE_NONE        7
-
-#define PMD_NUM_TOON 10
-
-enum Tex_Type
-{
-	TEXFLAG_NONE,
-	TEXFLAG_TEXTURE,
-	TEXFLAG_MAP,
-	TEXFLAG_ADD
-};
-
-#pragma pack(push)
-#pragma pack(push,1)
-
-typedef Vector2 PMD_Vector2;
-typedef Vector3 PMD_Vector3;
-typedef Vector4 PMD_Vector4;
-
-typedef Vector3 PMD_Color3;
-typedef Vector4 PMD_Color4;
-
-typedef char          PMD_char;
-typedef std::int8_t   PMD_int8_t;
-typedef std::uint8_t  PMD_uint8_t;
-typedef std::uint16_t PMD_uint16_t;
-typedef std::uint32_t PMD_uint32_t;
-
-typedef float PMD_Float;
-
-struct PMD_Header
-{
-	PMD_uint8_t Magic[3];      // Ê¼ÖÕÎªPmd
-
-	PMD_Float   Version;       // °æ±¾ 1.0f
-
-	PMD_uint8_t ModelName[20]; // Ä£ÐÍÃû³Æ
-
-	PMD_uint8_t Comment[256];  // Ä£ÐÍËµÃ÷
-};
-
-struct PMD_BoneIndex
-{
-	PMD_uint16_t Bone1; // ¹Ç÷À1
-
-	PMD_uint16_t Bone2; // ¹Ç÷À2
-};
-
-typedef PMD_uint32_t PMD_VertexCount;
-
-struct PMD_Vertex
-{
-	PMD_Vector3 Position;     // ¶¥µã×ø±ê
-
-	PMD_Vector3 Normal;       // ¶¥µã·¨Ïß
-
-	PMD_Vector2 UV;           // ¶¥µãÌùÍ¼×ø±ê
-
-	PMD_BoneIndex Bone;       // ¹Ç÷ÀË÷Òý
-
-	PMD_uint8_t  Weight;      // È¨ÖØ
-
-	PMD_uint8_t  NonEdgeFlag; // ÎÞ±ß±êÖ¾£¨ËµÃ÷£ºµ±Õâ¸ö×Ö½Ú²»Îª0Ê±NonEdgeFlag=true£©
-};
-
-typedef PMD_uint32_t PMD_IndexCount;
-
-typedef PMD_uint16_t PMD_Index; //¶¥µãË÷Òý
-
-typedef PMD_uint32_t PMD_MaterialCount;
-
-struct PMD_Material
-{
-	PMD_Color3   Diffuse;         // ÂþÉä¹â
-
-	PMD_Float    Opacity;         // ²»Í¸Ã÷¶È
-
-	PMD_Float    Shininess;       // ·¢¹â¶È
-
-	PMD_Color3   Specular;        // ¾µÃæ¹â
-
-	PMD_Color3   Ambient;         // »·¾³¹â
-
-	PMD_uint8_t  ToonIndex;       // ÓÐ·ûºÅ£¬¿¨Í¨×ÅÉ«ÎÆÀí±àºÅ
-
-	PMD_uint8_t  Edge;            // ÊÇ·ñ´ø±ß£¬µ±¸Ã×Ö½Ú > 0Ê±Îªtrue
-
-	PMD_uint32_t FaceVertexCount; // ¶¥µãË÷ÒýÊý
-
-	PMD_char     TextureName[20]; // °üº¬ÁËÎÆÀíÃû³Æ£¬Ê¹ÓÃ*·Ö¸î  Ã¶¾Ù£ºNONE¡¢ADD¡¢MUL
-};
-
-struct PMD_BoneName
-{
-	PMD_uint8_t Name[20];
-};
-
-typedef PMD_uint16_t PMD_BoneCount;
-
-struct PMD_Bone
-{
-	PMD_BoneName Name;     // ¹Ç÷ÀÃû×Ö
-
-	PMD_uint16_t Parent;   // ¸¸Ç×¹Ç÷À
-
-	PMD_uint16_t Child;    // Á¬½Óµ½
-
-	PMD_uint8_t  Type;     // ÀàÐÍ£¨Ã¶¾Ù£ºRotate,RotateMove,IK, Unknown, IKLink, RotateEffect, IKTo, Unvisible, Twist,RotateRatio£©
-
-	PMD_uint16_t IKCount;  // IK£¨·´ÏòÔË¶¯Ñ§£©ÊýÖµ
-
-	PMD_Vector3  Position; // ¹Ç÷ÀÎ»ÖÃ
-};
-
-typedef PMD_uint16_t PMD_Link;
-typedef PMD_uint16_t PMD_IKCount;
-
-struct PMD_IK
-{
-	PMD_uint16_t IK;
-
-	PMD_uint16_t Target;
-
-	PMD_uint8_t  LinkCount;
-
-	PMD_uint16_t LoopCount;
-
-	PMD_Float    Weight;
-
-	std::vector<PMD_Link> LinkList; // LinkList[LinkCount];
-};
-
-struct PMD_MorphVertex
-{
-	PMD_uint32_t Index;    // Æ¤·ô¶ÔÓ¦µÄ×é³É¶¥µã
-
-	PMD_Vector3  Offset;   // ¶¥µãÎ»ÒÆ
-};
-
-struct PMD_MorphName
-{
-	PMD_uint8_t Name[20];
-};
-
-typedef PMD_uint16_t PMD_MorphCount;
-
-struct PMD_Morph
-{
-	PMD_MorphName Name;        // ±íÇéÃû×Ö
-
-	PMD_uint32_t VertexCount; // ±íÇéº¬ÓÐµÄ¶¥µãÊýÁ¿
-
-	PMD_uint8_t  Category;    // ·ÖÀà
-
-	std::vector<PMD_MorphVertex>  VertexList;    // FaceVertex[VertexCount];  // ±íÇé°üº¬µÄËùÓÐ¶¥µãÐÅÏ¢
-};
-
-struct PMD_NodeName
-{
-	PMD_uint8_t Name[50];
-};
-
-struct PMD_BoneToNode
-{
-	PMD_uint16_t Bone;
-
-	PMD_uint8_t  Node;
-};
-
-typedef PMD_uint16_t PMD_Expression;
-
-struct PMD_FrameWindow
-{
-	PMD_uint8_t                 ExpressionListCount;
-
-	std::vector<PMD_Expression> ExpressionList;   // ExpressionList[ExpressionListCount]; // ¶ÁÈ¡ºó¼õ1£¬¶ÔÓ¦Æ¤·ôÊýÁ¿
-
-	PMD_uint8_t                 NodeNameCount;
-
-	std::vector<PMD_NodeName>   NodeNameList;     // NodeNameList[NodeNameCount];
-
-	PMD_uint32_t                BoneToNodeCount;
-
-	std::vector<PMD_BoneToNode> BoneToNodeList;   // BoneToNodeList[BoneToNodeCount];
-};
-
-struct PMD_ToonName
-{
-	PMD_uint8_t Name[20];
-};
-
-struct PMD_Description
-{
-	PMD_uint8_t ModelName[20];
-
-	PMD_uint8_t Comment[256];
-
-	std::vector<PMD_BoneName> BoneName;  // Name[BoneCount];
-
-	std::vector<PMD_MorphName> FaceName;  // Name[PMD_FrameWindow.ExpressionListCount];
-
-	std::vector<PMD_NodeName> FrameName; // Name[PMD_FrameWindow.NodeNameCount];
-};
-
-typedef PMD_uint16_t PMD_ToonCount;
-
-struct PMD_Toon
-{
-	PMD_uint8_t Name[100];
-};
-
-typedef PMD_uint32_t PMD_BodyCount;
-
-struct PMD_Body
-{
-	PMD_uint8_t  Name[20];
-
-	PMD_uint16_t bone;
-
-	PMD_uint8_t group;
-	PMD_uint16_t groupMask;
-	PMD_uint8_t shape; // 0:Circle 1:Square 2:Capsule
-
-	PMD_Vector3 scale;
-	PMD_Vector3 position;
-	PMD_Vector3 rotate;
-
-	PMD_Float mass;
-	PMD_Float movementDecay; // movement reduction
-	PMD_Float rotationDecay; // rotation reduction
-	PMD_Float elasticity;    // recoil
-	PMD_Float friction;      // strength of friction
-
-	PMD_uint8_t physicsOperation; //0:Follow Bone (static), 1:Physics Calc. (dynamic), 2: Physics Calc. + Bone position matching
-};
-
-typedef PMD_uint32_t PMD_JointCount;
-
-struct PMD_Joint
-{
-	PMD_uint8_t  Name[20];
-
-	PMD_uint32_t relatedRigidBodyIndexA; //-1 if irrelevant
-	PMD_uint32_t relatedRigidBodyIndexB;
-
-	PMD_Vector3 position;
-	PMD_Vector3 rotation;
-
-	PMD_Vector3 movementLowerLimit;
-	PMD_Vector3 movementUpperLimit;
-
-	PMD_Vector3 rotationLowerLimit; //-> radian angle
-	PMD_Vector3 rotationUpperLimit; //-> radian angle
-
-	PMD_Vector3 springMovementConstant;
-	PMD_Vector3 springRotationConstant;
-};
-
-#pragma pack(pop)
-
-struct PMD
-{
-	PMD_Header                Header;
-
-	PMD_VertexCount           VertexCount;
-
-	std::vector<PMD_Vertex>   VertexList;
-
-	PMD_IndexCount            IndexCount;
-
-	std::vector<PMD_Index>    IndexList;
-
-	PMD_MaterialCount         MaterialCount;
-
-	std::vector<PMD_Material> MaterialList;
-
-	PMD_BoneCount             BoneCount;
-
-	std::vector<PMD_Bone>     BoneList;
-
-	PMD_IKCount               IkCount;
-
-	std::vector<PMD_IK>       IkList;
-
-	PMD_MorphCount            MorphCount;
-
-	std::vector<PMD_Morph>    MorphList;
-
-	PMD_FrameWindow           FrameWindow;
-
-	PMD_uint8_t               HasDescription;
-
-	PMD_Description           Description;
-
-	PMD_ToonCount             ToonCount;
-
-	std::vector<PMD_Toon>     ToonList;
-
-	PMD_BodyCount             BodyCount;
-
-	std::vector<PMD_Body>     rigidbodys;
-
-	PMD_JointCount            JointCount;
-
-	std::vector<PMD_Joint>    joints;
-};
-
 PMDHandler::PMDHandler() noexcept
 {
 }
@@ -380,7 +68,7 @@ PMDHandler::doCanRead(StreamReader& stream) const noexcept
 	return false;
 }
 
-bool 
+bool
 PMDHandler::doCanSave(ModelType type) const noexcept
 {
 	if (type == ModelType::MT_PMD)
@@ -390,59 +78,52 @@ PMDHandler::doCanSave(ModelType type) const noexcept
 }
 
 bool
-PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
+PMDHandler::doLoad(StreamReader& stream, PMD& pmd) noexcept
 {
-	PMD pmd;
 	if (!stream.read((char*)&pmd.Header, sizeof(pmd.Header))) return false;
 
-	// vertex
-	if (!stream.read((char*)&pmd.VertexCount, sizeof(pmd.VertexCount))) return false;
-
-	if (pmd.VertexCount > 0)
+	if (!stream.read((char*)&pmd.numVertices, sizeof(pmd.numVertices))) return false;
+	if (pmd.numVertices > 0)
 	{
-		pmd.VertexList.resize(pmd.VertexCount);
+		pmd.VertexList.resize(pmd.numVertices);
 
-		if (!stream.read((char*)&pmd.VertexList[0], (std::streamsize)(sizeof(PMD_Vertex)* pmd.VertexCount))) return false;
+		if (!stream.read((char*)&pmd.VertexList[0], (std::streamsize)(sizeof(PMD_Vertex)* pmd.numVertices))) return false;
 	}
 
-	// index
-	if (!stream.read((char*)&pmd.IndexCount, sizeof(pmd.IndexCount))) return false;
+	if (!stream.read((char*)&pmd.numIndices, sizeof(pmd.numIndices))) return false;
 
-	if (pmd.IndexCount > 0)
+	if (pmd.numIndices > 0)
 	{
-		pmd.IndexList.resize(pmd.IndexCount);
+		pmd.IndexList.resize(pmd.numIndices);
 
-		if (!stream.read((char*)&pmd.IndexList[0], (std::streamsize)(sizeof(PMD_Index)* pmd.IndexCount))) return false;
+		if (!stream.read((char*)&pmd.IndexList[0], (std::streamsize)(sizeof(PMD_Index)* pmd.numIndices))) return false;
 	}
 
-	// materal
-	if (!stream.read((char*)&pmd.MaterialCount, sizeof(pmd.MaterialCount))) return false;
+	if (!stream.read((char*)&pmd.numMaterials, sizeof(pmd.numMaterials))) return false;
 
-	if (pmd.MaterialCount > 0)
+	if (pmd.numMaterials > 0)
 	{
-		pmd.MaterialList.resize(pmd.MaterialCount);
+		pmd.MaterialList.resize(pmd.numMaterials);
 
-		if (!stream.read((char*)&pmd.MaterialList[0], (std::streamsize)(sizeof(PMD_Material)* pmd.MaterialCount))) return false;
+		if (!stream.read((char*)&pmd.MaterialList[0], (std::streamsize)(sizeof(PMD_Material)* pmd.numMaterials))) return false;
 	}
 
-	// bone
-	if (!stream.read((char*)&pmd.BoneCount, sizeof(pmd.BoneCount))) return false;
+	if (!stream.read((char*)&pmd.numBones, sizeof(pmd.numBones))) return false;
 
-	if (pmd.BoneCount > 0)
+	if (pmd.numBones > 0)
 	{
-		pmd.BoneList.resize(pmd.BoneCount);
+		pmd.BoneList.resize(pmd.numBones);
 
-		if (!stream.read((char*)&pmd.BoneList[0], (std::streamsize)(sizeof(PMD_Bone)* pmd.BoneCount))) return false;
+		if (!stream.read((char*)&pmd.BoneList[0], (std::streamsize)(sizeof(PMD_Bone)* pmd.numBones))) return false;
 	}
 
-	// IK
-	if (!stream.read((char*)&pmd.IkCount, sizeof(pmd.IkCount))) return false;
+	if (!stream.read((char*)&pmd.numIKs, sizeof(pmd.numIKs))) return false;
 
-	if (pmd.IkCount > 0)
+	if (pmd.numIKs > 0)
 	{
-		pmd.IkList.resize(pmd.IkCount);
+		pmd.IkList.resize(pmd.numIKs);
 
-		for (std::size_t i = 0; i < (std::size_t)pmd.IkCount; i++)
+		for (std::size_t i = 0; i < (std::size_t)pmd.numIKs; i++)
 		{
 			if (!stream.read((char*)&pmd.IkList[i].IK, sizeof(pmd.IkList[i].IK))) return false;
 			if (!stream.read((char*)&pmd.IkList[i].Target, sizeof(pmd.IkList[i].Target))) return false;
@@ -456,14 +137,13 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		}
 	}
 
-	// Morph
-	if (!stream.read((char*)&pmd.MorphCount, sizeof(pmd.MorphCount))) return false;
+	if (!stream.read((char*)&pmd.numMorphs, sizeof(pmd.numMorphs))) return false;
 
-	if (pmd.MorphCount > 0)
+	if (pmd.numMorphs > 0)
 	{
-		pmd.MorphList.resize(pmd.MorphCount);
+		pmd.MorphList.resize(pmd.numMorphs);
 
-		for (std::size_t i = 0; i < (std::size_t)pmd.MorphCount; i++)
+		for (std::size_t i = 0; i < (std::size_t)pmd.numMorphs; i++)
 		{
 			if (!stream.read((char*)&pmd.MorphList[i].Name, sizeof(pmd.MorphList[i].Name))) return false;
 			if (!stream.read((char*)&pmd.MorphList[i].VertexCount, sizeof(pmd.MorphList[i].VertexCount))) return false;
@@ -478,35 +158,33 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		}
 	}
 
-	// frame window
-	if (!stream.read((char*)&pmd.FrameWindow.ExpressionListCount, sizeof(pmd.FrameWindow.ExpressionListCount))) return false;
+	if (!stream.read((char*)&pmd.numExpression, sizeof(pmd.numExpression))) return false;
 
-	if (pmd.FrameWindow.ExpressionListCount > 0)
+	if (pmd.numExpression > 0)
 	{
-		pmd.FrameWindow.ExpressionList.resize(pmd.FrameWindow.ExpressionListCount);
+		pmd.ExpressionList.resize(pmd.numExpression);
 
-		if (!stream.read((char*)&pmd.FrameWindow.ExpressionList[0], (std::streamsize)(sizeof(PMD_Expression)* pmd.FrameWindow.ExpressionListCount))) return false;
+		if (!stream.read((char*)&pmd.ExpressionList[0], (std::streamsize)(sizeof(PMD_Expression)* pmd.numExpression))) return false;
 	}
 
-	if (!stream.read((char*)&pmd.FrameWindow.NodeNameCount, sizeof(pmd.FrameWindow.NodeNameCount))) return false;
+	if (!stream.read((char*)&pmd.numNodeNames, sizeof(pmd.numNodeNames))) return false;
 
-	if (pmd.FrameWindow.NodeNameCount > 0)
+	if (pmd.numNodeNames > 0)
 	{
-		pmd.FrameWindow.NodeNameList.resize(pmd.FrameWindow.NodeNameCount);
+		pmd.NodeNameList.resize(pmd.numNodeNames);
 
-		if (!stream.read((char*)&pmd.FrameWindow.NodeNameList[0].Name, (std::streamsize)(sizeof(PMD_NodeName)* pmd.FrameWindow.NodeNameCount))) return false;
+		if (!stream.read((char*)&pmd.NodeNameList[0].Name, (std::streamsize)(sizeof(PMD_NodeName)* pmd.numNodeNames))) return false;
 	}
 
-	if (!stream.read((char*)&pmd.FrameWindow.BoneToNodeCount, sizeof(pmd.FrameWindow.BoneToNodeCount))) return false;
+	if (!stream.read((char*)&pmd.numNodeBones, sizeof(pmd.numNodeBones))) return false;
 
-	if (pmd.FrameWindow.BoneToNodeCount > 0)
+	if (pmd.numNodeBones > 0)
 	{
-		pmd.FrameWindow.BoneToNodeList.resize(pmd.FrameWindow.BoneToNodeCount);
+		pmd.BoneToNodeList.resize(pmd.numNodeBones);
 
-		if (!stream.read((char*)&pmd.FrameWindow.BoneToNodeList[0].Bone, (std::streamsize)(sizeof(PMD_BoneToNode)* pmd.FrameWindow.BoneToNodeCount))) return false;
+		if (!stream.read((char*)&pmd.BoneToNodeList[0].Bone, (std::streamsize)(sizeof(PMD_BoneToNode) * pmd.numNodeBones))) return false;
 	}
 
-	// description
 	if (!stream.read((char*)&pmd.HasDescription, sizeof(pmd.HasDescription))) return false;
 
 	if (pmd.HasDescription)
@@ -515,7 +193,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 		if (!stream.read((char*)&pmd.Description.Comment, sizeof(pmd.Description.Comment))) return false;
 
-		for (PMD_BoneCount i = 0; i < pmd.BoneCount; i++)
+		for (PMD_BoneCount i = 0; i < pmd.numBones; i++)
 		{
 			PMD_BoneName name;
 
@@ -524,7 +202,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			pmd.Description.BoneName.push_back(name);
 		}
 
-		for (PMD_uint8_t i = 0; i < pmd.FrameWindow.ExpressionListCount; i++)
+		for (PMD_uint8_t i = 0; i < pmd.numExpression; i++)
 		{
 			PMD_MorphName name;
 
@@ -533,7 +211,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			pmd.Description.FaceName.push_back(name);
 		}
 
-		for (PMD_uint8_t i = 0; i < pmd.FrameWindow.NodeNameCount; i++)
+		for (PMD_uint8_t i = 0; i < pmd.numNodeNames; i++)
 		{
 			PMD_NodeName name;
 
@@ -543,32 +221,39 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		}
 	}
 
-	// toon
-	pmd.ToonCount = PMD_NUM_TOON;
+	pmd.numToons = PMD_NUM_TOON;
 
-	pmd.ToonList.resize(pmd.ToonCount);
+	pmd.ToonList.resize(pmd.numToons);
 
-	if (!stream.read((char*)&pmd.ToonList[0].Name, (std::streamsize)(sizeof(PMD_Toon) * pmd.ToonCount))) return false;
+	if (!stream.read((char*)&pmd.ToonList[0].Name, (std::streamsize)(sizeof(PMD_Toon) * pmd.numToons))) return false;
 
-	// rigidbody
-	if (!stream.read((char*)&pmd.BodyCount, sizeof(pmd.BodyCount))) return false;
+	if (!stream.read((char*)&pmd.numRigidbodys, sizeof(pmd.numRigidbodys))) return false;
 
-	if (pmd.BodyCount > 0)
+	if (pmd.numRigidbodys > 0)
 	{
-		pmd.rigidbodys.resize(pmd.BodyCount);
+		pmd.rigidbodys.resize(pmd.numRigidbodys);
 
-		if (!stream.read((char*)&pmd.rigidbodys[0], (std::streamsize)(sizeof(PMD_Body)* pmd.BodyCount))) return false;
+		if (!stream.read((char*)&pmd.rigidbodys[0], (std::streamsize)(sizeof(PMD_Body)* pmd.numRigidbodys))) return false;
 	}
 
-	// joint
-	if (!stream.read((char*)&pmd.JointCount, sizeof(pmd.JointCount))) return false;
+	if (!stream.read((char*)&pmd.numJoints, sizeof(pmd.numJoints))) return false;
 
-	if (pmd.JointCount > 0)
+	if (pmd.numJoints > 0)
 	{
-		pmd.joints.resize(pmd.JointCount);
+		pmd.joints.resize(pmd.numJoints);
 
-		if (!stream.read((char*)&pmd.joints[0], (std::streamsize)(sizeof(PMD_Joint) * pmd.JointCount))) return false;
+		if (!stream.read((char*)&pmd.joints[0], (std::streamsize)(sizeof(PMD_Joint) * pmd.numJoints))) return false;
 	}
+
+	return true;
+}
+
+bool
+PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
+{
+	PMD pmd;
+	if (!this->doLoad(stream, pmd))
+		return false;
 
 	for (std::size_t index = 0; index < pmd.MaterialList.size(); index++)
 	{
@@ -641,7 +326,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		model.addMesh(mesh);
 	}
 
-	if (pmd.BoneCount > 1)
+	if (pmd.numBones > 1)
 	{
 		Bones bones;
 		InverseKinematics iks;
@@ -691,7 +376,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 				child.angleWeight = it.Weight;
 				child.minimumDegrees = RAD_TO_DEG(Vector3(-0.002f, 0.0f, 0.0f));
 				child.maximumDegrees = RAD_TO_DEG(Vector3(-M_PI, 0.0f, 0.0f));
-				child.rotateLimited = model.getBonesList()[bone]->getName().find("¤Ò¤¶") != std::string::npos;
+				child.rotateLimited = model.getBonesList()[bone]->getName().find("Â¤Ã’Â¤Â¶") != std::string::npos;
 
 				attr.child.push_back(child);
 			}
@@ -777,7 +462,13 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 }
 
 bool
-PMDHandler::doSave(Model& model, StreamWrite& stream) noexcept
+PMDHandler::doSave(StreamWrite& stream, const PMD& model) noexcept
+{
+	return false;
+}
+
+bool
+PMDHandler::doSave(StreamWrite& stream, const Model& model) noexcept
 {
 	return false;
 }

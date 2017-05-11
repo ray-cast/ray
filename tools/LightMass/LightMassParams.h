@@ -73,8 +73,8 @@ struct LightModelData
 {
 	LightModelData() noexcept;
 
-	std::uint8_t* vertices;
-	std::uint8_t* indices;
+	std::uint32_t numVertices;
+	std::uint32_t numIndices;
 
 	std::uint8_t sizeofIndices;
 	std::uint16_t sizeofVertices;
@@ -82,8 +82,8 @@ struct LightModelData
 	std::uint32_t strideVertices;
 	std::uint32_t strideTexcoord;
 
-	std::uint32_t numVertices;
-	std::uint32_t numIndices;
+	const std::uint8_t* vertices;
+	const std::uint8_t* indices;
 
 	std::vector<LightModelSubset> subsets;
 };

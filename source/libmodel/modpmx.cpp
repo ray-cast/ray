@@ -38,316 +38,6 @@
 
 _NAME_BEGIN
 
-#define PMX_VERSION_2_0   2.0
-#define PMX_BONE_INDEX    1 << 0
-#define PMX_BONE_MOVE     1 << 1
-#define PMX_BONE_IK       1 << 5
-#define PMX_BONE_PARENT   1 << 8
-#define PMX_BONE_AXIS     1 << 10
-#define PMX_BONE_ROTATE   1 << 11
-
-typedef Vector2 PMX_Vector2;
-typedef Vector3 PMX_Vector3;
-typedef Vector4 PMX_Vector4;
-
-typedef Vector3 PMX_Color3;
-typedef Vector4 PMX_Color4;
-typedef float3x3 PMX_Float3x3;
-typedef float4x4 PMX_Float4x4;
-
-typedef wchar_t       PMX_char;
-typedef std::int8_t   PMX_int8_t;
-typedef std::uint8_t  PMX_uint8_t;
-typedef std::uint16_t PMX_uint16_t;
-typedef std::uint32_t PMX_uint32_t;
-
-typedef float PMX_Float;
-
-enum
-{
-	PMX_BDEF1,
-	PMX_BDEF2,
-	PMX_BDEF4,
-	PMX_SDEF,
-	PMX_QDEF
-};
-
-enum MorphType
-{
-	MorphTypeGroup = 0,
-	MorphTypeVertex = 1,
-	MorphTypeBone = 2,
-	MorphTypeUV = 3,
-	MorphTypeExtraUV1 = 4,
-	MorphTypeExtraUV2 = 5,
-	MorphTypeExtraUV3 = 6,
-	MorphTypeExtraUV4 = 7,
-	MorphTypeMaterial = 8
-};
-
-#pragma pack(push)
-#pragma pack(push,1)
-
-struct PMX_Header
-{
-	PMX_uint8_t magic[3];  // 始终为PMX
-	PMX_uint8_t offset;    // 始终为 0x20
-	PMX_Float   version;   // 版本
-	PMX_uint8_t dataSize;  // 始终 0x08
-	PMX_uint8_t encode;    // 0x00 UTF-16(LE) 0x01 UTF-8
-	PMX_uint8_t addUVCount;     // 追加的UV ( 1 ~ 4 )
-	PMX_uint8_t sizeOfVertex;   // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfTexture;  // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfMaterial; // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfBone;     // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfMorph;    // ( 1 or 2 or 4 )
-	PMX_uint8_t sizeOfBody;     // ( 1 or 2 or 4 )
-};
-
-#pragma pack(pop)
-
-struct PMX_Description
-{
-	PMX_uint32_t japanModelLength;
-	PMX_uint32_t japanCommentLength;
-
-	PMX_uint32_t englishModelLength;
-	PMX_uint32_t englishCommentLength;
-
-	std::vector<PMX_char> japanModelName;
-	std::vector<PMX_char> japanCommentName;
-
-	std::vector<PMX_char> englishModelName;
-	std::vector<PMX_char> englishCommentName;
-};
-
-struct PMX_BoneWeight
-{
-	PMX_uint16_t bone1;
-	PMX_uint16_t bone2;
-	PMX_uint16_t bone3;
-	PMX_uint16_t bone4;
-
-	PMX_Float weight1;
-	PMX_Float weight2;
-	PMX_Float weight3;
-	PMX_Float weight4;
-
-	PMX_Vector3 SDEF_C;
-	PMX_Vector3 SDEF_R0;
-	PMX_Vector3 SDEF_R1;
-};
-
-struct PMX_Vertex
-{
-	PMX_Vector3 position;
-	PMX_Vector3 normal;
-	PMX_Vector2 coord;
-	PMX_Vector4 addCoord[4];
-	PMX_uint8_t type;	// 0:BDEF1 1:BDEF2 2:BDEF4 3:SDEF
-	PMX_BoneWeight weight;
-	PMX_Float   edge;
-};
-
-typedef PMX_uint8_t PMX_Index; //顶点索引
-
-struct PMX_Name
-{
-	PMX_uint32_t length;
-	PMX_char name[MAX_PATH];
-};
-
-struct PMX_Material
-{
-	PMX_Name name;
-	PMX_Name nameEng;
-	PMX_Color3  Diffuse;
-	PMX_Float   Opacity;
-	PMX_Color3  Specular;
-	PMX_Float   Shininess;
-	PMX_Color3  Ambient;
-	PMX_uint8_t Flag;
-	PMX_Vector4 EdgeColor;
-	PMX_Float   EdgeSize;
-	PMX_uint16_t TextureIndex;
-	PMX_uint16_t SphereTextureIndex;
-	PMX_uint8_t  SphereMode;
-	PMX_uint8_t  ToonIndex;
-	PMX_uint16_t ToneTexture;
-	PMX_uint32_t memLength;
-	PMX_char	 mem[MAX_PATH];
-	PMX_uint32_t FaceCount;
-};
-
-struct PMX_IK
-{
-	PMX_uint16_t BoneIndex;
-	PMX_uint8_t rotateLimited;
-	PMX_Vector3 minimumRadian;
-	PMX_Vector3 maximumRadian;
-};
-
-struct PMX_Bone
-{
-	PMX_Name name;
-	PMX_Name nameEng;
-	PMX_Vector3 position;
-	PMX_uint16_t Parent;
-	PMX_uint32_t Level;
-	PMX_uint16_t Flag;
-	PMX_uint16_t ConnectedBoneIndex;
-	PMX_uint16_t ProvidedParentBoneIndex;
-	PMX_Float  ProvidedRatio;
-	PMX_Vector3 Offset;
-	PMX_Vector3 AxisDirection;
-	PMX_Vector3 DimentionXDirection;
-	PMX_Vector3 DimentionZDirection;
-	PMX_uint16_t IKTargetBoneIndex;
-	PMX_uint32_t IKLoopCount;
-	PMX_Float IKLimitedRadian;
-	PMX_uint32_t IKLinkCount;
-	std::vector<PMX_IK> IKList;
-};
-
-struct PMX_MorphVertex
-{
-	PMX_uint32_t index;
-	PMX_Vector3  offset;
-};
-
-struct PMX_MorphTexcoord
-{
-	PMX_uint32_t index;
-	PMX_Vector4  offset;
-};
-
-struct PMX_MorphBone
-{
-	PMX_uint32_t boneIndex;
-	PMX_Vector3 position;
-	PMX_Vector3 rotate;
-};
-
-struct PMX_MorphMaterial
-{
-	PMX_uint32_t index;
-	PMX_uint8_t offset;
-	PMX_Color4  diffuse;
-	PMX_Float   shininess;
-	PMX_Color3  specular;
-	PMX_Color3  ambient;
-	PMX_Color4  edgeColor;
-	PMX_Float   edgeSize;
-	PMX_Color4  tex;
-	PMX_Color4  sphere;
-	PMX_Color4  toon;
-};
-
-struct PMX_DisplayFrameElement
-{
-	PMX_uint8_t  target; // 1 : morph 0 : bone
-	PMX_uint32_t index;
-};
-
-struct PMX_DisplayFrame
-{
-	PMX_Name name;
-	PMX_Name nameEng;
-	PMX_uint8_t type;
-	PMX_uint32_t elementsWithinFrame;
-	std::vector<PMX_DisplayFrameElement> elements;
-};
-
-struct PMX_Rigidbody
-{
-	PMX_Name name;
-	PMX_Name nameEng;
-
-	PMX_uint32_t bone;
-
-	PMX_uint8_t group;
-	PMX_uint16_t groupMask;
-	PMX_uint8_t shape; // 0:Circle 1:Square 2:Capsule
-
-	PMX_Vector3 scale;
-	PMX_Vector3 position;
-	PMX_Vector3 rotate;
-
-	PMX_Float mass;
-	PMX_Float movementDecay; // movement reduction
-	PMX_Float rotationDecay; // rotation reduction
-	PMX_Float elasticity;    // recoil
-	PMX_Float friction;      // strength of friction
-
-	PMX_uint8_t physicsOperation; //0:Follow Bone (static), 1:Physics Calc. (dynamic), 2: Physics Calc. + Bone position matching
-};
-
-struct PMX_Joint
-{
-	PMX_Name name;
-	PMX_Name nameEng;
-
-	PMX_uint8_t type; //0 : Spring 6DOF; in PMX 2.0 always set to 0 (included to give room for expansion)
-
-	PMX_uint32_t relatedRigidBodyIndexA; //-1 if irrelevant
-	PMX_uint32_t relatedRigidBodyIndexB;
-
-	PMX_Vector3 position;
-	PMX_Vector3 rotation;
-
-	PMX_Vector3 movementLowerLimit;
-	PMX_Vector3 movementUpperLimit;
-	PMX_Vector3 rotationLowerLimit; //-> radian angle
-	PMX_Vector3 rotationUpperLimit; //-> radian angle
-
-	PMX_Vector3 springMovementConstant;
-	PMX_Vector3 springRotationConstant;
-};
-
-struct PMX_Morph
-{
-	PMX_Name name;
-	PMX_Name nameEng;
-
-	PMX_uint8_t  control;
-	PMX_uint8_t  morphType;
-	PMX_uint32_t morphCount;
-
-	PMX_uint16_t morphIndex;
-	PMX_Float	 morphRate;
-
-	std::vector<PMX_MorphVertex>  vertexList;
-	std::vector<PMX_MorphBone> boneList;
-	std::vector<PMX_MorphTexcoord> texcoordList;
-	std::vector<PMX_MorphMaterial> materialList;
-};
-
-struct PMX
-{
-	PMX_Header header;
-	PMX_Description description;
-
-	PMX_uint32_t numVertices;
-	PMX_uint32_t numIndices;
-	PMX_uint32_t numTextures;
-	PMX_uint32_t numMaterials;
-	PMX_uint32_t numBones;
-	PMX_uint32_t numMorphs;
-	PMX_uint32_t numDisplayFrames;
-	PMX_uint32_t numRigidbodys;
-	PMX_uint32_t numJoints;
-
-	std::vector<PMX_Vertex> vertices;
-	std::vector<PMX_Index> indices;
-	std::vector<PMX_Name> textures;
-	std::vector<PMX_Material> materials;
-	std::vector<PMX_Bone> bones;
-	std::vector<PMX_Morph> morphs;
-	std::vector<PMX_DisplayFrame> displayFrames;
-	std::vector<PMX_Rigidbody> rigidbodys;
-	std::vector<PMX_Joint> joints;
-};
-
 PMXHandler::PMXHandler() noexcept
 {
 }
@@ -377,7 +67,7 @@ PMXHandler::doCanRead(StreamReader& stream) const noexcept
 	return false;
 }
 
-bool 
+bool
 PMXHandler::doCanSave(ModelType type) const noexcept
 {
 	if (type == ModelType::MT_PMX)
@@ -387,10 +77,8 @@ PMXHandler::doCanSave(ModelType type) const noexcept
 }
 
 bool
-PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
+PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 {
-	PMX pmx;
-
 	setlocale(LC_ALL, "");
 
 	if (!stream.read((char*)&pmx.header, sizeof(pmx.header))) return false;
@@ -510,7 +198,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 	if (pmx.numIndices > 0)
 	{
-		pmx.indices.resize(pmx.numIndices * pmx.header.sizeOfVertex);
+		pmx.indices.resize(pmx.numIndices * pmx.header.sizeOfIndices);
 		if (!stream.read((char*)pmx.indices.data(), pmx.indices.size())) return false;
 	}
 
@@ -560,7 +248,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			{
 				if (!stream.read((char*)&material.ToneTexture, pmx.header.sizeOfTexture)) return false;
 			}
-			
+
 			if (!stream.read((char*)&material.memLength, sizeof(material.memLength))) return false;
 			if (material.memLength > 0)
 			{
@@ -669,7 +357,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 				for (auto& vertex : morph.vertexList)
 				{
-					if (!stream.read((char*)&vertex.index, pmx.header.sizeOfVertex)) return false;
+					if (!stream.read((char*)&vertex.index, pmx.header.sizeOfIndices)) return false;
 					if (!stream.read((char*)&vertex.offset, sizeof(vertex.offset))) return false;
 				}
 			}
@@ -692,7 +380,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 				for (auto& texcoord : morph.texcoordList)
 				{
-					if (!stream.read((char*)&texcoord.index, pmx.header.sizeOfVertex)) return false;
+					if (!stream.read((char*)&texcoord.index, pmx.header.sizeOfIndices)) return false;
 					if (!stream.read((char*)&texcoord.offset, sizeof(texcoord.offset))) return false;
 				}
 			}
@@ -819,6 +507,16 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		}
 	}
 
+	return true;
+}
+
+bool
+PMXHandler::doLoad(StreamReader& stream, Model& model) noexcept
+{
+	PMX pmx;
+	if (!this->doLoad(stream, pmx))
+		return false;
+
 	for (auto& it : pmx.materials)
 	{
 		auto material = std::make_shared<MaterialProperty>();
@@ -891,15 +589,15 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		VertexWeights weights;
 		UintArray faces;
 
-		for (std::uint32_t i = 0; i < it.FaceCount; i++, indices += pmx.header.sizeOfVertex)
+		for (std::uint32_t i = 0; i < it.FaceCount; i++, indices += pmx.header.sizeOfIndices)
 		{
 			std::uint32_t index = 0;
 
-			if (pmx.header.sizeOfVertex == 1)
+			if (pmx.header.sizeOfIndices == 1)
 				index = *(std::uint8_t*)indices;
-			else if (pmx.header.sizeOfVertex == 2)
+			else if (pmx.header.sizeOfIndices == 2)
 				index = *(std::uint16_t*)indices;
-			else if (pmx.header.sizeOfVertex == 4)
+			else if (pmx.header.sizeOfIndices == 4)
 				index = *(std::uint32_t*)indices;
 			else
 				return false;
@@ -1044,10 +742,8 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 }
 
 bool
-PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
+PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 {
-	PMX pmx;
-
 	if (!stream.write((char*)&pmx.header, sizeof(pmx.header))) return false;
 
 	if (!stream.write((char*)&pmx.description.japanModelLength, sizeof(pmx.description.japanModelLength))) return false;
@@ -1287,7 +983,7 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 			{
 				for (auto& vertex : morph.vertexList)
 				{
-					if (!stream.write((char*)&vertex.index, pmx.header.sizeOfVertex)) return false;
+					if (!stream.write((char*)&vertex.index, pmx.header.sizeOfIndices)) return false;
 					if (!stream.write((char*)&vertex.offset, sizeof(vertex.offset))) return false;
 				}
 			}
@@ -1306,7 +1002,7 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 			{
 				for (auto& texcoord : morph.texcoordList)
 				{
-					if (!stream.write((char*)&texcoord.index, pmx.header.sizeOfVertex)) return false;
+					if (!stream.write((char*)&texcoord.index, pmx.header.sizeOfIndices)) return false;
 					if (!stream.write((char*)&texcoord.offset, sizeof(texcoord.offset))) return false;
 				}
 			}
@@ -1428,6 +1124,12 @@ PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 	}
 
 	return true;
+}
+
+bool
+PMXHandler::doSave(StreamWrite& stream, const Model& model) noexcept
+{
+	return false;
 }
 
 _NAME_END

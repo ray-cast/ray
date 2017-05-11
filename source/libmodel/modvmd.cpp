@@ -188,7 +188,7 @@ VMDHandler::doCanSave(ModelType type) const noexcept
 }
 
 bool
-VMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
+VMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 {
 	VMD vmd;
 
@@ -290,7 +290,7 @@ VMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 }
 
 bool
-VMDHandler::doSave(Model& model, StreamWrite& stream) noexcept
+VMDHandler::doSave(StreamWrite& stream, const Model& model) noexcept
 {
 	VMD vmd;
 	std::memset(&vmd.Header, 0, sizeof(vmd.Header));

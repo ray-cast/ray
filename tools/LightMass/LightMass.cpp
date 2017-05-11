@@ -39,8 +39,10 @@
 #include "LightMassGlobalIllumination.h"
 
 #include <GL\glew.h>
-#include <thekla/thekla_atlas.h>
 #include <sstream>
+
+#include <UVAtlas/UVAtlas.h>
+#include <DirectXMesh/DirectXMesh.h>
 
 _NAME_BEGIN
 
@@ -75,267 +77,49 @@ LightMass::~LightMass() noexcept
 }
 
 std::uint32_t
-LightMass::getFace(std::size_t n) noexcept
+LightMass::getFace(const PMX& model, std::size_t n) noexcept
 {
-	assert(_model);
-	
-	std::uint8_t* data = (std::uint8_t*)_model->indices.data();
+	std::uint8_t* data = (std::uint8_t*)model.indices.data();
 
-	if (_model->header.sizeOfIndices == 1)
-		return *(std::uint8_t*)(data + n * _model->header.sizeOfIndices);
-	else if (_model->header.sizeOfIndices == 2)
-		return *(std::uint16_t*)(data + n * _model->header.sizeOfIndices);
-	else if (_model->header.sizeOfIndices == 4)
-		return *(std::uint32_t*)(data + n * _model->header.sizeOfIndices);
+	if (model.header.sizeOfIndices == 1)
+		return *(std::uint8_t*)(data + n * model.header.sizeOfIndices);
+	else if (model.header.sizeOfIndices == 2)
+		return *(std::uint16_t*)(data + n * model.header.sizeOfIndices);
+	else if (model.header.sizeOfIndices == 4)
+		return *(std::uint32_t*)(data + n * model.header.sizeOfIndices);
 	else
 		return false;
 }
 
 std::uint32_t 
-LightMass::getFace(std::size_t n, std::uint32_t firstIndex) noexcept
+LightMass::getFace(const PMX& model, std::size_t n, std::uint32_t firstIndex) noexcept
 {
-	assert(_model);
+	std::uint8_t* data = (std::uint8_t*)model.indices.data() + firstIndex;
 
-	std::uint8_t* data = (std::uint8_t*)_model->indices.data() + firstIndex;
-
-	if (_model->header.sizeOfIndices == 1)
-		return *(std::uint8_t*)(data + n * _model->header.sizeOfIndices);
-	else if (_model->header.sizeOfIndices == 2)
-		return *(std::uint16_t*)(data + n * _model->header.sizeOfIndices);
-	else if (_model->header.sizeOfIndices == 4)
-		return *(std::uint32_t*)(data + n * _model->header.sizeOfIndices);
+	if (model.header.sizeOfIndices == 1)
+		return *(std::uint8_t*)(data + n * model.header.sizeOfIndices);
+	else if (model.header.sizeOfIndices == 2)
+		return *(std::uint16_t*)(data + n * model.header.sizeOfIndices);
+	else if (model.header.sizeOfIndices == 4)
+		return *(std::uint32_t*)(data + n * model.header.sizeOfIndices);
 	else
 		return false;
 }
 
 void
-LightMass::computeFaceNormals() noexcept
+LightMass::computeBoundingBox(const PMX& model, Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept
 {
-	assert(_model);
-
-	_facesNormal.resize(_model->numIndices / 3);
-
-	for (std::size_t i = 0; i < _model->numIndices; i += 3)
-	{
-		std::size_t f1 = getFace(i);
-		std::size_t f2 = getFace(i + 1);
-		std::size_t f3 = getFace(i + 2);
-
-		const Vector3& a = _model->vertices[f1].position;
-		const Vector3& b = _model->vertices[f2].position;
-		const Vector3& c = _model->vertices[f3].position;
-
-		Vector3 edge1 = c - b;
-		Vector3 edge2 = a - b;
-
-		Vector3 normal = math::normalize(math::cross(edge1, edge2));
-
-		_facesNormal[i / 3] = normal;
-	}
-}
-
-void
-LightMass::computeVertricesNormals() noexcept
-{
-	assert(_model);
-
-	for (size_t i = 0; i < _model->numVertices; i++)
-	{
-		_model->vertices[i].normal = ray::float3::Zero;
-	}
-
-	for (size_t i = 0; i < _model->numIndices; i += 3)
-	{
-		std::uint32_t a = getFace(i);
-		std::uint32_t b = getFace(i + 1);
-		std::uint32_t c = getFace(i + 2);
-
-		_model->vertices[a].normal += _facesNormal[i / 3];
-		_model->vertices[b].normal += _facesNormal[i / 3];
-		_model->vertices[c].normal += _facesNormal[i / 3];
-	}
-
-	for (size_t i = 0; i < _model->numVertices; i++)
-	{
-		_model->vertices[i].normal = math::normalize(_model->vertices[i].normal);
-	}
-}
-
-void
-LightMass::computeBoundingBox(Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept
-{
-	assert(_model);
-
 	boundingBox.reset();
 
 	for (size_t i = 0; i < faceCount; i++)
 	{
-		std::uint32_t face = this->getFace(i, firstFace);
-		boundingBox.encapsulate(_model->vertices[face].position);
+		std::uint32_t face = this->getFace(model, i, firstFace);
+		boundingBox.encapsulate(model.vertices[face].position);
 	}
-}
-
-void
-LightMass::computeLightmapPack() noexcept
-{
-	assert(_model);
-
-	this->computeFaceNormals();
-
-	_model->header.addUVCount = 1;
-
-	float2 minUV[3];
-	float2 maxUV[3];
-
-	minUV[0].set(FLT_MAX);
-	minUV[1].set(FLT_MAX);
-	minUV[2].set(FLT_MAX);
-	maxUV[0].set(-FLT_MAX);
-	maxUV[1].set(-FLT_MAX);
-	maxUV[2].set(-FLT_MAX);
-
-	for (size_t i = 0; i < _model->numIndices; i += 3)
-	{
-		std::uint32_t a = getFace(i);
-		std::uint32_t b = getFace(i + 1);
-		std::uint32_t c = getFace(i + 2);
-
-		float3 polyNormal = math::abs(_facesNormal[i / 3]);
-
-		float2 uv[3];
-
-		int flag = 0;
-		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
-		{
-			flag = 1;
-			uv[0] = _model->vertices[a].position.yz();
-			uv[1] = _model->vertices[b].position.yz();
-			uv[2] = _model->vertices[c].position.yz();
-		}
-		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
-		{
-			flag = 2;
-			uv[0] = _model->vertices[a].position.xz();
-			uv[1] = _model->vertices[b].position.xz();
-			uv[2] = _model->vertices[c].position.xz();
-		}
-		else
-		{
-			uv[0] = _model->vertices[a].position.xy();
-			uv[1] = _model->vertices[b].position.xy();
-			uv[2] = _model->vertices[c].position.xy();
-		}
-
-		for (int j = 0; j < 3; j++)
-		{
-			minUV[flag] = math::min(minUV[flag], uv[j]);
-			maxUV[flag] = math::max(maxUV[flag], uv[j]);
-		}
-	}
-
-	for (size_t i = 0; i < _model->numIndices; i += 3)
-	{
-		std::uint32_t a = getFace(i);
-		std::uint32_t b = getFace(i + 1);
-		std::uint32_t c = getFace(i + 2);
-
-		float3 polyNormal = math::abs(_facesNormal[i / 3]);
-
-		float2 uv[3];
-
-		int flag = 0;
-		if (polyNormal.x > polyNormal.y && polyNormal.x > polyNormal.z)
-		{
-			flag = 1;
-			uv[0] = _model->vertices[a].position.yz();
-			uv[1] = _model->vertices[b].position.yz();
-			uv[2] = _model->vertices[c].position.yz();
-		}
-		else if (polyNormal.y > polyNormal.x && polyNormal.y > polyNormal.z)
-		{
-			flag = 2;
-			uv[0] = _model->vertices[a].position.xz();
-			uv[1] = _model->vertices[b].position.xz();
-			uv[2] = _model->vertices[c].position.xz();
-		}
-		else
-		{
-			uv[0] = _model->vertices[a].position.xy();
-			uv[1] = _model->vertices[b].position.xy();
-			uv[2] = _model->vertices[c].position.xy();
-		}
-
-		float2 deltaUV = maxUV[flag] - minUV[flag];
-
-		uv[0] -= minUV[flag];
-		uv[1] -= minUV[flag];
-		uv[2] -= minUV[flag];
-
-		uv[0] /= deltaUV;
-		uv[1] /= deltaUV;
-		uv[2] /= deltaUV;
-
-		_model->vertices[a].addCoord[0].set(uv[0]);
-		_model->vertices[b].addCoord[0].set(uv[1]);
-		_model->vertices[c].addCoord[0].set(uv[2]);
-	}
-}
-
-LightMapNode*
-LightMass::insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept
-{
-	if (node->left && node->right)
-	{
-		auto next = this->insertLightMapItem(node->left, item);
-		return next ? next : insertLightMapItem(node->right, item);
-	}
-	else
-	{
-		if (item.edge.x > node->rect.z || item.edge.y > node->rect.w)
-		{
-			return nullptr;
-		}
-
-		if (item.edge.x == node->rect.z && item.edge.y == node->rect.w)
-		{
-			float2 offset(node->rect.x, node->rect.y);
-			*item.p1 += offset;
-			*item.p2 += offset;
-			*item.p3 += offset;
-			*item.p4 += offset;
-			return node;
-		}
-
-		node->left = new LightMapNode;
-		node->right = new LightMapNode;
-
-		float dw = node->rect.z - item.edge.x;
-		float dh = node->rect.w - item.edge.y;
-
-		if (dw > dh)
-		{
-			node->left->rect = float4(node->rect.x, node->rect.y + item.edge.y, item.edge.x, node->rect.w - item.edge.y);
-			node->right->rect = float4(node->rect.x + item.edge.x, node->rect.y, node->rect.z - item.edge.x, node->rect.w);
-		}
-		else
-		{
-			node->left->rect = float4(node->rect.x + item.edge.x, node->rect.y, node->rect.z - item.edge.x, item.edge.y);
-			node->right->rect = float4(node->rect.x, node->rect.y + item.edge.y, node->rect.z, node->rect.w - item.edge.y);
-		}
-	}
-
-	float2 offset(node->rect.x, node->rect.y);
-	item.offset = offset;
-	*(item.p1) += offset;
-	*(item.p2) += offset;
-	*(item.p3) += offset;
-	*(item.p4) += offset;
-
-	return node;
 }
 
 bool 
-LightMass::load(const std::string& path) noexcept
+LightMass::load(const std::string& path, PMX& pmx) noexcept
 {
 	if (_lightMassListener)
 		_lightMassListener->onMessage("loading model : " + path);
@@ -366,8 +150,7 @@ LightMass::load(const std::string& path) noexcept
 		return false;
 	}
 
-	_model = std::make_unique<PMX>();
-	if (!model.doLoad(stream, *_model))
+	if (!model.doLoad(stream, pmx))
 	{
 		if (_lightMassListener)
 			_lightMassListener->onMessage("Non readable PMX file : " + path);
@@ -382,10 +165,8 @@ LightMass::load(const std::string& path) noexcept
 }
 
 bool
-LightMass::save(const std::string& path) noexcept
+LightMass::save(const std::string& path, PMX& pmx) noexcept
 {
-	assert(_model);
-
 	ofstream stream;
 	if (!stream.open(path))
 	{
@@ -395,7 +176,7 @@ LightMass::save(const std::string& path) noexcept
 	}
 
 	ray::PMXHandler model;
-	if (!model.doSave(stream, *_model))
+	if (!model.doSave(stream, pmx))
 		return false;
 
 	return true;
@@ -466,105 +247,69 @@ LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, 
 	return true;
 }
 
-bool
-LightMass::pack(const LightMassParams& params) noexcept
+bool 
+LightMass::pack(const LightMassParams& params, PMX& model) noexcept
 {
 	if (_lightMassListener)
 		_lightMassListener->onUvmapperStart();
 
-	std::vector<Thekla::Atlas_Input_Vertex> vertices;
+	std::vector<float3> atlasVertices;
+	std::vector<std::uint32_t> atlasIndices;
 
-	for (std::size_t i = 0; i < _model->numVertices; i++)
+	for (std::size_t i = 0; i < model.numVertices; i++)
 	{
-		Thekla::Atlas_Input_Vertex v;
-		v.position[0] = _model->vertices[i].position.x;
-		v.position[1] = _model->vertices[i].position.y;
-		v.position[2] = _model->vertices[i].position.z;
-		v.normal[0] = _model->vertices[i].normal.x;
-		v.normal[1] = _model->vertices[i].normal.y;
-		v.normal[2] = _model->vertices[i].normal.z;
-		v.uv[0] = _model->vertices[i].coord.x;
-		v.uv[1] = _model->vertices[i].coord.y;
-		v.first_colocal = i;
-
-		vertices.push_back(v);
+		float3 v = model.vertices[i].position;
+		atlasVertices.push_back(v);
 	}
 
-	std::vector<Thekla::Atlas_Input_Face> faces;
-	for (std::size_t i = 0; i < _model->numIndices; i += 3)
+	std::unique_ptr<uint32_t[]> adj(new uint32_t[model.numIndices]);
+
+	if (model.header.sizeOfIndices == 1)
+		return false;
+	else if (model.header.sizeOfIndices == 2)
+		DirectX::GenerateAdjacencyAndPointReps((std::uint16_t*)model.indices.data(), model.numIndices / 3, (DirectX::XMFLOAT3*)atlasVertices.data(), model.numVertices, 0.0, nullptr, adj.get());
+	else
+		DirectX::GenerateAdjacencyAndPointReps((std::uint32_t*)model.indices.data(), model.numIndices / 3, (DirectX::XMFLOAT3*)atlasVertices.data(), model.numVertices, 0.0, nullptr, adj.get());
+
+	std::vector<DirectX::UVAtlasVertex> vb;
+	std::vector<uint8_t> ib;
+	std::vector<uint32_t> remap;
+
+	HRESULT hr = DirectX::UVAtlasCreate(
+		(DirectX::XMFLOAT3*)atlasVertices.data(),
+		atlasVertices.size(),
+		model.indices.data(),
+		DXGI_FORMAT::DXGI_FORMAT_R16_UINT,
+		model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, 2.0, adj.get(), 0, 0, 0,
+		DirectX::UVATLAS_DEFAULT_CALLBACK_FREQUENCY,
+		DirectX::UVATLAS_GEODESIC_QUALITY,
+		vb, ib, 0, &remap);
+	if (!hr)
+		return false;
+
+	std::vector<PMX_Vertex> newVertices;
+	newVertices.resize(vb.size());
+
+	for (int i = 0; i < vb.size(); i++)
 	{
-		Thekla::Atlas_Input_Face face;
+		PMX_Vertex v = model.vertices[remap[i]];
+		v.addCoord->x = vb[i].uv.x;
+		v.addCoord->y = vb[i].uv.y;
 
-		std::uint32_t f1 = getFace(i);
-		std::uint32_t f2 = getFace(i + 1);
-		std::uint32_t f3 = getFace(i + 2);
-
-		const Vector3& a = _model->vertices[f1].position;
-		const Vector3& b = _model->vertices[f2].position;
-		const Vector3& c = _model->vertices[f3].position;
-
-		Vector3 edge1 = c - b;
-		Vector3 edge2 = a - b;
-
-		Vector3 normal = math::normalize(math::cross(edge1, edge2));
-
-		if (math::dot(normal, normal) > 0)
-		{
-			face.vertex_index[0] = f1;
-			face.vertex_index[1] = f2;
-			face.vertex_index[2] = f3;
-			face.material_index = 0;
-
-			faces.push_back(face);
-		}
-		else
-		{
-			if (_lightMassListener)
-			{
-				std::ostringstream stream;
-				stream << "WARNING : Input mesh has zero-length edges. check faces " << i / 3;
-				_lightMassListener->onMessage(stream.str());
-			}
-		}
+		newVertices[i] = v;
 	}
 
-	Thekla::Atlas_Input_Mesh input_mesh;
-	input_mesh.vertex_count = vertices.size();
-	input_mesh.vertex_array = vertices.data();
-	input_mesh.face_count = faces.size();
-	input_mesh.face_array = faces.data();
-
-	Thekla::Atlas_Options atlas_options;
-	atlas_set_default_options(&atlas_options);
-
-	atlas_options.packer_options.witness.packing_quality = 0;
-	atlas_options.packer_options.witness.block_align = true;
-	atlas_options.packer_options.witness.conservative = true;
-	atlas_options.packer_options.witness.texel_area = 1;
-
-	Thekla::Atlas_Error error = Thekla::Atlas_Error_Success;
-	Thekla::Atlas_Output_Mesh * output_mesh = atlas_generate(&input_mesh, &atlas_options, &error);
-
-	_model->header.addUVCount = 1;
-
-	for (std::size_t i = 0; i < output_mesh->vertex_count; i++)
-	{
-		std::uint32_t n = output_mesh->vertex_array[i].xref;
-		_model->vertices[n].addCoord[0].x = output_mesh->vertex_array[i].uv[0] / output_mesh->atlas_width;
-		_model->vertices[n].addCoord[0].y = output_mesh->vertex_array[i].uv[1] / output_mesh->atlas_height;
-	}
-
-	if (_lightMassListener)
-		_lightMassListener->onUvmapperEnd();
+	model.header.addUVCount = 1;
+	model.numVertices = newVertices.size();
+	model.vertices = newVertices;
+	model.indices = ib;
 
 	return true;
 }
 
 bool 
-LightMass::baking(const LightMassParams& params) noexcept
+LightMass::baking(const LightMassParams& params, const PMX& model) noexcept
 {
-	assert(_model);
-
 	assert(params.lightMap.data);
 	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
 	assert(params.lightMap.channel == 1 || params.lightMap.channel == 2 || params.lightMap.channel == 3 || params.lightMap.channel == 4);
@@ -578,39 +323,34 @@ LightMass::baking(const LightMassParams& params) noexcept
 		return false;
 	}
 
-	if (_model->header.addUVCount == 0)
-	{
-		this->pack(params);
-	}
-
 	LightBakingOptions option;
 	option.baking = params.baking;
 	option.lightMap = params.lightMap;
 
-	option.model.vertices = (std::uint8_t*)_model->vertices.data();
-	option.model.indices = _model->indices.data();
+	option.model.vertices = (std::uint8_t*)model.vertices.data();
+	option.model.indices = model.indices.data();
 
 	option.model.sizeofVertices = sizeof(PMX_Vertex);
-	option.model.sizeofIndices = _model->header.sizeOfIndices;
+	option.model.sizeofIndices = model.header.sizeOfIndices;
 
 	option.model.strideVertices = offsetof(PMX_Vertex, position);
 	option.model.strideTexcoord = offsetof(PMX_Vertex, addCoord[0]);
 
-	option.model.numVertices = _model->numVertices;
-	option.model.numIndices = _model->numIndices;
+	option.model.numVertices = model.numVertices;
+	option.model.numIndices = model.numIndices;
 
-	option.model.subsets.resize(_model->numMaterials);
+	option.model.subsets.resize(model.numMaterials);
 
-	for (std::uint32_t i = 0; i < _model->numMaterials; i++)
+	for (std::uint32_t i = 0; i < model.numMaterials; i++)
 	{
-		std::uint32_t offsetFace = 0;
+		std::uint32_t offset = 0;
 
 		for (std::uint32_t j = 0; j < i; j++)
-			offsetFace += _model->materials[j].FaceCount;
+			offset += model.materials[j].IndicesCount;
 
-		option.model.subsets[i].drawcall.count = _model->materials[i].FaceCount;
+		option.model.subsets[i].drawcall.count = model.materials[i].IndicesCount;
 		option.model.subsets[i].drawcall.instanceCount = 1;
-		option.model.subsets[i].drawcall.firstIndex = offsetFace;
+		option.model.subsets[i].drawcall.firstIndex = offset;
 		option.model.subsets[i].drawcall.baseInstance = 0;
 		option.model.subsets[i].drawcall.baseVertex = 0;
 	}
@@ -618,10 +358,10 @@ LightMass::baking(const LightMassParams& params) noexcept
 	if (_lightMassListener)
 		_lightMassListener->onMessage("Calculating the bounding box of the model.");
 
-	for (std::uint32_t i = 0; i < _model->numMaterials; i++)
+	for (std::uint32_t i = 0; i < model.numMaterials; i++)
 	{
 		Bound bound;
-		this->computeBoundingBox(bound, option.model.subsets[i].drawcall.firstIndex * option.model.sizeofIndices, option.model.subsets[i].drawcall.count);
+		this->computeBoundingBox(model, bound, option.model.subsets[i].drawcall.firstIndex * option.model.sizeofIndices, option.model.subsets[i].drawcall.count);
 		option.model.subsets[i].boundingBox = bound;
 	}
 

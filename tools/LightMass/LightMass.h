@@ -37,7 +37,6 @@
 #ifndef _H_LIGHT_MASS_H_
 #define _H_LIGHT_MASS_H_
 
-#include "LightMapPack.h"
 #include "LightMassParams.h"
 #include "LightMassListener.h"
 
@@ -51,35 +50,26 @@ public:
 	LightMass() noexcept;
 	~LightMass() noexcept;
 
-	bool load(const std::string& path) noexcept;
-	bool save(const std::string& path) noexcept;
+	bool load(const std::string& path, PMX& pmx) noexcept;
+	bool save(const std::string& path, PMX& pmx) noexcept;
 	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin);
 
 	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
 	LightMassListenerPtr getLightMassListener() const noexcept;
 
-	bool pack(const LightMassParams& params) noexcept;
-	bool baking(const LightMassParams& params) noexcept;
+	bool pack(const LightMassParams& params, PMX& pmx) noexcept;
 
-	void computeFaceNormals() noexcept;
-	void computeVertricesNormals() noexcept;
-	void computeLightmapPack() noexcept;
-	void computeBoundingBox(Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
+	bool baking(const LightMassParams& params, const PMX& model) noexcept;
 
-	std::uint32_t getFace(std::size_t n) noexcept;
-	std::uint32_t getFace(std::size_t n, std::uint32_t firstIndex) noexcept;
+	void computeBoundingBox(const PMX& model, Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
+
+	std::uint32_t getFace(const PMX& pmx, std::size_t n) noexcept;
+	std::uint32_t getFace(const PMX& pmx, std::size_t n, std::uint32_t firstIndex) noexcept;
 	
 	void ImageDilate(const float *image, float *outImage, int w, int h, int c) noexcept;
 	void ImageSmooth(const float *image, float *outImage, int w, int h, int c) noexcept;
 
 private:
-	LightMapNode* insertLightMapItem(LightMapNode* node, LightMapItem& item) noexcept;
-
-private:
-	std::unique_ptr<PMX> _model;
-
-	Float3Array _facesNormal;
-
 	LightMassListenerPtr _lightMassListener;
 };
 

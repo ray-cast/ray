@@ -110,7 +110,7 @@ ObjHandler::doCanSave(ModelType type) const noexcept
 }
 
 bool
-ObjHandler::doLoad(Model& model, StreamReader& stream) noexcept
+ObjHandler::doLoad(StreamReader& stream, Model& model) noexcept
 {
 	streamsize size = stream.gcount();
 	if (size < 16)
@@ -125,7 +125,7 @@ ObjHandler::doLoad(Model& model, StreamReader& stream) noexcept
 }
 
 bool
-ObjHandler::doSave(Model& model, StreamWrite& stream) noexcept
+ObjHandler::doSave(StreamWrite& stream, const Model& model) noexcept
 {
 	return false;
 }

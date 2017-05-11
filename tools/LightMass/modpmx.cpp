@@ -249,7 +249,7 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 			}
 
 
-			if (!stream.read((char*)&material.FaceCount, sizeof(material.FaceCount))) return false;
+			if (!stream.read((char*)&material.IndicesCount, sizeof(material.IndicesCount))) return false;
 		}
 	}
 
@@ -650,7 +650,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			}
 
 
-			if (!stream.write((char*)&material.FaceCount, sizeof(material.FaceCount))) return false;
+			if (!stream.write((char*)&material.IndicesCount, sizeof(material.IndicesCount))) return false;
 		}
 	}
 

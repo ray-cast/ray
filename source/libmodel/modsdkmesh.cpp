@@ -191,7 +191,7 @@ SDKMeshHandler::doCanSave(ModelType type) const noexcept
 }
 
 bool
-SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
+SDKMeshHandler::doLoad(StreamReader& stream, Model& model) noexcept
 {
 	SDKMESH_HEADER hdr;
 
@@ -332,7 +332,7 @@ SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 }
 
 bool
-SDKMeshHandler::doSave(Model& model, StreamWrite& stream) noexcept
+SDKMeshHandler::doSave(StreamWrite& stream, Model& model) noexcept
 {
 	return false;
 }

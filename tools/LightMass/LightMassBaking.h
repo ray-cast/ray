@@ -54,10 +54,10 @@ public:
 	void setWorldTransform(const float4x4& transform) noexcept;
 	const float4x4& getWorldTransform() const noexcept;
 
-	bool baking(const LightBakingOptions& options) noexcept;
+	bool baking(const LightBakingParams& options) noexcept;
 
 protected:
-	bool setup(const LightBakingParams& params) noexcept;
+	bool setup(const LightSampleParams& params) noexcept;
 	void close() noexcept;
 
 	void setRenderTarget(float* lightmap, int w, int h, int channels);
@@ -90,7 +90,7 @@ protected:
 	bool beginSampleHemisphere(int* outViewport4);
 	bool endSampleHemisphere();
 
-	virtual void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp) = 0;
+	virtual void doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& viewport, const float4x4& mvp) = 0;
 
 	float getSampleProcess() noexcept;
 

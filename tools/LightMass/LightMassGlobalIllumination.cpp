@@ -40,12 +40,45 @@
 
 _NAME_BEGIN
 
+const char* GlobalIlluminationVS =
+R"(#version 150 core
+	in vec3 position;
+	in vec2 texcoord;
+
+	uniform mat4 mvp;
+
+	out vec2 oTexcoord;
+
+	void main()
+	{
+		oTexcoord = texcoord;
+		gl_Position = mvp * vec4(position, 1.0);
+	};
+)";
+
+const char* GlobalIlluminationPS =
+R"(#version 150 core
+	in vec2 oTexcoord;
+	uniform vec3 emissive;
+	uniform sampler2D lightmap;
+	void main()
+	{
+		gl_FragColor = vec4(texture(lightmap, oTexcoord).rgb * emissive, gl_FrontFacing ? 1.0 : 0.0);
+	};
+)";
+
+const char* GlobalIlluminationAttribs[] =
+{
+	"position",
+	"texcoord"
+};
+
 LightBakingGI::GLContext::GLContext() noexcept
 	: program(0)
 	, vs(0)
 	, fs(0)
-	, u_lightmap(0)
-	, u_mvp(0)
+	, mvp(0)
+	, lightsamp(0)
 	, lightmap(0)
 	, vao(0)
 	, vbo(0)
@@ -106,7 +139,7 @@ LightBakingGI::open(const LightModelData& params) noexcept
 
 	glBindVertexArray(0);
 
-	std::uint8_t emissive[] = { 0, 0, 0, 255 };
+	std::uint8_t emissive[] = { 255, 255, 255, 255 };
 
 	glGenTextures(1, &glcontext->lightmap);
 	glBindTexture(GL_TEXTURE_2D, glcontext->lightmap);
@@ -116,45 +149,15 @@ LightBakingGI::open(const LightModelData& params) noexcept
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, emissive);
 
-	const char *vp =
-		"#version 150 core\n"
-		"in vec3 a_position;\n"
-		"in vec2 a_texcoord;\n"
-		"uniform mat4 u_mvp;\n"
-		"out vec2 v_texcoord;\n"
-
-		"void main()\n"
-		"{\n"
-		"v_texcoord = a_texcoord;\n"
-		"gl_Position = u_mvp * vec4(a_position, 1.0);\n"
-		"}\n";
-
-	const char *fp =
-		"#version 150 core\n"
-		"in vec2 v_texcoord;\n"
-		"uniform sampler2D u_lightmap;\n"
-		"out vec4 o_color;\n"
-
-		"void main()\n"
-		"{\n"
-		"o_color = vec4(texture(u_lightmap, v_texcoord).rgb, gl_FrontFacing ? 1.0 : 0.0);\n"
-		"}\n";
-
-	const char *attribs[] =
-	{
-		"a_position",
-		"a_texcoord"
-	};
-
-	glcontext->vs = loadShader(GL_VERTEX_SHADER, vp);
+	glcontext->vs = loadShader(GL_VERTEX_SHADER, GlobalIlluminationVS);
 	if (!glcontext->vs)
 		return false;
 
-	glcontext->fs = loadShader(GL_FRAGMENT_SHADER, fp);
+	glcontext->fs = loadShader(GL_FRAGMENT_SHADER, GlobalIlluminationPS);
 	if (!glcontext->fs)
 		return false;
 
-	glcontext->program = loadProgram(glcontext->vs, glcontext->fs, attribs, 2);
+	glcontext->program = loadProgram(glcontext->vs, glcontext->fs, GlobalIlluminationAttribs, 2);
 	if (!glcontext->program)
 	{
 		auto listener = this->getLightMassListener();
@@ -164,8 +167,9 @@ LightBakingGI::open(const LightModelData& params) noexcept
 		return false;
 	}
 
-	glcontext->u_mvp = glGetUniformLocation(glcontext->program, "u_mvp");
-	glcontext->u_lightmap = glGetUniformLocation(glcontext->program, "u_lightmap");
+	glcontext->mvp = glGetUniformLocation(glcontext->program, "mvp");
+	glcontext->lightsamp = glGetUniformLocation(glcontext->program, "lightmap");
+	glcontext->emissive = glGetUniformLocation(glcontext->program, "emissive");
 
 	_glcontext = std::move(glcontext);
 
@@ -179,7 +183,7 @@ LightBakingGI::close() noexcept
 }
 
 void
-LightBakingGI::doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& vp, const float4x4& mvp)
+LightBakingGI::doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& vp, const float4x4& mvp)
 {
 	assert(_glcontext);
 
@@ -194,57 +198,40 @@ LightBakingGI::doSampleHemisphere(const LightBakingOptions& params, const Viewpo
 	glEnable(GL_DEPTH_TEST);
 
 	glUseProgram(_glcontext->program);
-	glUniformMatrix4fv(_glcontext->u_mvp, 1, GL_FALSE, mvp.ptr());
+
+	glUniform1i(_glcontext->lightsamp, 0);
+	glUniformMatrix4fv(_glcontext->mvp, 1, GL_FALSE, mvp.ptr());
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, _glcontext->lightmap);
 
 	glBindVertexArray(_glcontext->vao);
 
 	Frustum fru;
 	fru.extract(mvp);
 
-	if (glMultiDrawElementsIndirect)
+	for (auto& it : params.model.subsets)
 	{
-		_drawcalls.clear();
+		if (!fru.contains(it.boundingBox.aabb()))
+			continue;
 
-		for (auto& it : params.model.subsets)
+		glUniform3f(_glcontext->emissive, it.emissive.x, it.emissive.y, it.emissive.z);
+
+		if (glDrawElementsInstancedBaseVertexBaseInstance)
 		{
-			if (!fru.contains(it.boundingBox.aabb()))
-				continue;
-
-			GLDrawElementsIndirectCommand command;
-			command.baseInstance = it.drawcall.baseInstance;
-			command.baseVertex = it.drawcall.baseVertex;
-			command.count = it.drawcall.count;
-			command.firstIndex = it.drawcall.firstIndex;
-			command.instanceCount = it.drawcall.instanceCount;
-
-			_drawcalls.push_back(command);
+			glDrawElementsInstancedBaseVertexBaseInstance(
+				GL_TRIANGLES,
+				it.drawcall.count,
+				faceType,
+				(char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices,
+				it.drawcall.instanceCount,
+				it.drawcall.baseVertex,
+				it.drawcall.baseInstance
+			);
 		}
-
-		glMultiDrawElementsIndirect(GL_TRIANGLES, faceType, _drawcalls.data(), _drawcalls.size(), 0);
-	}
-	else
-	{
-		for (auto& it : params.model.subsets)
+		else
 		{
-			if (!fru.contains(it.boundingBox.aabb()))
-				continue;
-
-			if (glDrawElementsInstancedBaseVertexBaseInstance)
-			{
-				glDrawElementsInstancedBaseVertexBaseInstance(
-					GL_TRIANGLES,
-					it.drawcall.count,
-					faceType,
-					(char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices,
-					it.drawcall.instanceCount,
-					it.drawcall.baseVertex,
-					it.drawcall.baseInstance
-				);
-			}
-			else
-			{
-				glDrawElements(GL_TRIANGLES, it.drawcall.count, faceType, (char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices);
-			}
+			glDrawElements(GL_TRIANGLES, it.drawcall.count, faceType, (char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices);
 		}
 	}
 }

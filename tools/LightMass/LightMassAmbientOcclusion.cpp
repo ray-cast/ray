@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-const char* BakeOcclusionVS =
+const char* OcclusionVS =
 R"(#version 150 core
 	in vec3 position;
 	uniform mat4 mvp;
@@ -51,7 +51,7 @@ R"(#version 150 core
 	};
 )";
 
-const char* BakeOcclusionPS =
+const char* OcclusionPS =
 R"(#version 150 core
 	void main()
 	{
@@ -59,7 +59,7 @@ R"(#version 150 core
 	};
 )";
 
-const char* BakeOcclusionAttribs[] =
+const char* OcclusionAttribs[] =
 {
 	"position",
 };
@@ -152,15 +152,15 @@ LightBakingAO::open(const LightModelData& params) noexcept
 
 	glBindVertexArray(GL_NONE);
 
-	glcontext->vs = loadShader(GL_VERTEX_SHADER, BakeOcclusionVS);
+	glcontext->vs = loadShader(GL_VERTEX_SHADER, OcclusionVS);
 	if (!glcontext->vs)
 		return false;
 
-	glcontext->fs = loadShader(GL_FRAGMENT_SHADER, BakeOcclusionPS);
+	glcontext->fs = loadShader(GL_FRAGMENT_SHADER, OcclusionPS);
 	if (!glcontext->fs)
 		return false;
 
-	glcontext->program = loadProgram(glcontext->vs, glcontext->fs, BakeOcclusionAttribs, 1);
+	glcontext->program = loadProgram(glcontext->vs, glcontext->fs, OcclusionAttribs, 1);
 	if (!glcontext->program)
 	{
 		auto listener = this->getLightMassListener();
@@ -192,7 +192,7 @@ LightBakingAO::close() noexcept
 }
 
 void 
-LightBakingAO::doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& vp, const float4x4& mvp)
+LightBakingAO::doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& vp, const float4x4& mvp)
 {
 	assert(_glcontext);
 

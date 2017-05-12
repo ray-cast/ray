@@ -628,14 +628,20 @@ namespace math
 	inline Vector3t<T> linear2srgb(const Vector3t<T>& srgb)
 	{
 		const float ALPHA = 0.055f;
-		return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * math::pow(srgb, 1 / 2.4f) - ALPHA;
+		return Vector3t<T>(
+			srgb.x < 0.0031308f ? 12.92f * srgb.x : (1 + ALPHA) * math::pow(srgb.x, 1 / 2.4f) - ALPHA,
+			srgb.y < 0.0031308f ? 12.92f * srgb.y : (1 + ALPHA) * math::pow(srgb.y, 1 / 2.4f) - ALPHA,
+			srgb.z < 0.0031308f ? 12.92f * srgb.z : (1 + ALPHA) * math::pow(srgb.z, 1 / 2.4f) - ALPHA);
 	};
 
 	template<typename T>
 	inline Vector3t<T> srgb2linear(const Vector3t<T>& rgb)
 	{
 		const float ALPHA = 0.055f;
-		return rgb < 0.04045f ? rgb / 12.92f : math::pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
+		return Vector3t<T>(
+			rgb.x < 0.04045f ? rgb.x / 12.92f : math::pow((rgb.x + ALPHA) / (1 + ALPHA), 2.4f),
+			rgb.y < 0.04045f ? rgb.y / 12.92f : math::pow((rgb.y + ALPHA) / (1 + ALPHA), 2.4f),
+			rgb.z < 0.04045f ? rgb.z / 12.92f : math::pow((rgb.z + ALPHA) / (1 + ALPHA), 2.4f));
 	}
 }
 

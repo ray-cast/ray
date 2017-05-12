@@ -34,45 +34,32 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
+#ifndef _H_LIGHTMAP_PACK_H_
+#define _H_LIGHTMAP_PACK_H_
 
-#include "LightMassParams.h"
-#include "LightMassListener.h"
-
+#include "LightMapListener.h"
 #include "modpmx.h"
 
 _NAME_BEGIN
 
-class LightMass
+class LightMapPack
 {
 public:
-	LightMass() noexcept;
-	LightMass(LightMassListenerPtr listener) noexcept;
-	~LightMass() noexcept;
+	LightMapPack() noexcept;
+	LightMapPack(LightMapListenerPtr listener) noexcept;
+	~LightMapPack() noexcept;
 
-	bool open() noexcept;
-	void close() noexcept;
+	void setLightMapListener(LightMapListenerPtr pointer) noexcept;
+	LightMapListenerPtr getLightMapListener() const noexcept;
 
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
-
-	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin);
-
-	bool baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept;
-
-	void computeBoundingBox(const PMX& model, Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
+	bool atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, float chart, float stretch, float margin) noexcept;
+	bool atlasUV2(PMX& pmx, std::uint32_t w, std::uint32_t h, std::uint32_t margin) noexcept;
 
 	std::uint32_t getFace(const PMX& pmx, std::size_t n) noexcept;
 	std::uint32_t getFace(const PMX& pmx, std::size_t n, std::uint32_t firstIndex) noexcept;
-	
-	void ImageDilate(const float *image, float *outImage, int w, int h, int c) noexcept;
-	void ImageSmooth(const float *image, float *outImage, int w, int h, int c) noexcept;
 
 private:
-	bool _initialize;
-
-	LightMassListenerPtr _lightMassListener;
+	LightMapListenerPtr _lightMapListener;
 };
 
 _NAME_END

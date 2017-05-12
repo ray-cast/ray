@@ -83,7 +83,7 @@ LightMassBaking::~LightMassBaking() noexcept
 }
 
 bool
-LightMassBaking::setup(const LightBakingParams& params) noexcept
+LightMassBaking::setup(const LightSampleParams& params) noexcept
 {
 	assert(params.hemisphereNear < params.hemisphereFar && params.hemisphereNear > 0.0f);
 	assert(params.hemisphereSize == 16 || params.hemisphereSize == 32 || params.hemisphereSize == 64 || params.hemisphereSize == 128 || params.hemisphereSize == 256 || params.hemisphereSize == 512);
@@ -312,7 +312,7 @@ LightMassBaking::getWorldTransform() const noexcept
 }
 
 bool
-LightMassBaking::baking(const LightBakingOptions& params) noexcept
+LightMassBaking::baking(const LightBakingParams& params) noexcept
 {
 	assert(params.lightMap.data);
 	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
@@ -337,7 +337,7 @@ LightMassBaking::baking(const LightBakingOptions& params) noexcept
 		else if (params.model.sizeofIndices == 2)
 			faceType = GL_UNSIGNED_SHORT;
 
-		this->setRenderTarget(params.lightMap.data, params.lightMap.width, params.lightMap.height, params.lightMap.channel);
+		this->setRenderTarget(params.lightMap.data.get(), params.lightMap.width, params.lightMap.height, params.lightMap.channel);
 		this->setGeometry(
 			GL_FLOAT, params.model.vertices + params.model.strideVertices, params.model.sizeofVertices,
 			GL_FLOAT, params.model.vertices + params.model.strideTexcoord, params.model.sizeofVertices,

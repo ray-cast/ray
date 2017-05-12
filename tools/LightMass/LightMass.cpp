@@ -41,9 +41,6 @@
 #include <GL\glew.h>
 #include <sstream>
 
-#include <UVAtlas/UVAtlas.h>
-#include <DirectXMesh/DirectXMesh.h>
-
 _NAME_BEGIN
 
 #pragma pack(push)
@@ -68,12 +65,150 @@ struct TGAHeader
 #pragma pack(pop)
 
 LightMass::LightMass() noexcept
-	: _lightMassListener(std::make_shared<LightMassListener>())
+	: _initialize(false)
+	, _lightMassListener(std::make_shared<LightMassListener>())
+{
+}
+
+LightMass::LightMass(LightMassListenerPtr listener) noexcept
+	: _initialize(false)
+	, _lightMassListener(listener)
 {
 }
 
 LightMass::~LightMass() noexcept
 {
+}
+
+bool
+LightMass::open() noexcept
+{
+	if (_initialize)
+		return true;
+
+	if (glewInit() != GLEW_OK)
+	{
+		auto listener = this->getLightMassListener();
+		if (listener)
+			listener->onMessage("Could not initialize with OpenGL.");
+
+		return false;
+	}
+
+	_initialize = true;
+
+	return true;
+}
+
+void 
+LightMass::close() noexcept
+{
+	_initialize = false;
+}
+
+void
+LightMass::setLightMassListener(LightMassListenerPtr pointer) noexcept
+{
+	if (_lightMassListener != pointer)
+	{
+		if (_lightMassListener)
+			_lightMassListener->onListenerChangeBefore();
+
+		_lightMassListener = pointer;
+
+		if (_lightMassListener)
+			_lightMassListener->onListenerChangeAfter();
+	}
+}
+
+LightMassListenerPtr
+LightMass::getLightMassListener() const noexcept
+{
+	return _lightMassListener;
+}
+
+bool 
+LightMass::baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept
+{
+	assert(_initialize);
+	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
+
+	LightBakingParams option;
+	option.baking = params.baking;
+	option.lightMap.width = map.width = params.lightMap.width;
+	option.lightMap.height = map.height = params.lightMap.height;
+	option.lightMap.channel = map.channel = params.enableGI ? 4 : 1;
+
+	auto lightmap = std::make_unique<float[]>(params.lightMap.width * params.lightMap.height * option.lightMap.channel);
+	std::memset(lightmap.get(), 0, params.lightMap.width * params.lightMap.height * sizeof(float));
+	option.lightMap.data = std::move(lightmap);
+
+	option.model.vertices = (std::uint8_t*)model.vertices.data();
+	option.model.indices = model.indices.data();
+	option.model.sizeofVertices = sizeof(PMX_Vertex);
+	option.model.sizeofIndices = model.header.sizeOfIndices;
+	option.model.strideVertices = offsetof(PMX_Vertex, position);
+	option.model.strideTexcoord = offsetof(PMX_Vertex, addCoord[0]);
+	option.model.numVertices = model.numVertices;
+	option.model.numIndices = model.numIndices;
+	option.model.subsets.resize(model.numMaterials);
+
+	for (std::uint32_t i = 0; i < model.numMaterials; i++)
+	{
+		std::uint32_t offset = 0;
+
+		for (std::uint32_t j = 0; j < i; j++)
+			offset += model.materials[j].IndicesCount;
+
+		option.model.subsets[i].emissive = math::srgb2linear(model.materials[i].Ambient) * model.materials[i].Shininess;
+
+		option.model.subsets[i].drawcall.count = model.materials[i].IndicesCount;
+		option.model.subsets[i].drawcall.instanceCount = 1;
+		option.model.subsets[i].drawcall.firstIndex = offset;
+		option.model.subsets[i].drawcall.baseInstance = 0;
+		option.model.subsets[i].drawcall.baseVertex = 0;
+	}
+
+	if (_lightMassListener)
+		_lightMassListener->onMessage("Calculating the bounding box of the model.");
+
+	for (std::uint32_t i = 0; i < model.numMaterials; i++)
+	{
+		Bound bound;
+		this->computeBoundingBox(model, bound, option.model.subsets[i].drawcall.firstIndex * option.model.sizeofIndices, option.model.subsets[i].drawcall.count);
+		option.model.subsets[i].boundingBox = bound;
+	}
+
+	if (_lightMassListener)
+		_lightMassListener->onMessage("Calculated the bounding box of the model.");
+
+	if (params.enableGI)
+	{
+		auto lightMassBaking = std::make_shared<LightBakingGI>();
+		lightMassBaking->open(option.model);
+		lightMassBaking->setLightMassListener(_lightMassListener);
+
+		if (!lightMassBaking->baking(option))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage("Failed to baking the model");
+		}
+	}
+	else
+	{
+		auto lightMassBaking = std::make_shared<LightBakingAO>();
+		lightMassBaking->open(option.model);
+		lightMassBaking->setLightMassListener(_lightMassListener);
+
+		if (!lightMassBaking->baking(option))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage("Failed to baking the model");
+		}
+	}
+
+	map.data = std::move(option.lightMap.data);
+	return true;
 }
 
 std::uint32_t
@@ -91,7 +226,7 @@ LightMass::getFace(const PMX& model, std::size_t n) noexcept
 		return false;
 }
 
-std::uint32_t 
+std::uint32_t
 LightMass::getFace(const PMX& model, std::size_t n, std::uint32_t firstIndex) noexcept
 {
 	std::uint8_t* data = (std::uint8_t*)model.indices.data() + firstIndex;
@@ -118,77 +253,31 @@ LightMass::computeBoundingBox(const PMX& model, Bound& boundingBox, std::uint32_
 	}
 }
 
-bool 
-LightMass::load(const std::string& path, PMX& pmx) noexcept
+void RGBTEncode(float r, float g, float b, float encode[4])
 {
-	if (_lightMassListener)
-		_lightMassListener->onMessage("loading model : " + path);
+	float range = 1024;
 
-	if (path.empty())
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("The input path cannot be empty");
+	float max = 0;
+	max = std::max(std::max(r, g), std::max(b, 1e-6f));
+	max = std::min(max, range);
 
-		return false;
-	}
+	encode[3] = (range + 1) / range *  max / (1 + max);
+	encode[3] = std::ceil(encode[3] * 255.0) / 255.0;
 
-	ray::ifstream stream;
-	if (!stream.open(path))
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("Failed to open the path : " + path);
+	float rcp = 1.0 / (encode[3] / (1.0 + 1.0 / range - encode[3]));
 
-		return false;
-	}
-
-	ray::PMXHandler model;
-	if (!model.doCanRead(stream))
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("File is not a valid model with : " + path);
-
-		return false;
-	}
-
-	if (!model.doLoad(stream, pmx))
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("Non readable PMX file : " + path);
-
-		return false;
-	}
-
-	if (_lightMassListener)
-		_lightMassListener->onMessage("loaded model : " + path);
-
-	return true;
+	encode[0] = r * rcp;
+	encode[1] = g * rcp;
+	encode[2] = b * rcp;
 }
 
 bool
-LightMass::save(const std::string& path, const PMX& pmx) noexcept
+LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
 {
-	ofstream stream;
-	if (!stream.open(path))
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("Failed to open the path : " + path);
-		return false;
-	}
+	assert(channel == 1 || channel == 3 || channel == 4);
 
-	ray::PMXHandler model;
-	if (!model.doSave(stream, pmx))
-		return false;
-
-	return true;
-}
-
-bool 
-LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin)
-{
-	assert(c == 1 || c == 3 || c == 4);
-
-	bool isGreyscale = c == 1;
-	bool hasAlpha = c == 4;
+	bool isGreyscale = channel == 1;
+	bool hasAlpha = channel == 1 ? false : true;
 
 	TGAHeader header;
 	header.id_length = 0;
@@ -201,39 +290,59 @@ LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, 
 	header.y_origin = 0;
 	header.width = w;
 	header.height = h;
-	header.pixel_size = c * 8;
+	header.pixel_size = channel * 8;
 	header.attributes = hasAlpha ? 8 : 0;
 
 	if (margin > 0)
 	{
-		std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * c);
-		std::memset(lightmapTemp.get(), 0, w * h * c * sizeof(float));
+		std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * channel);
+		std::memset(lightmapTemp.get(), 0, w * h * channel * sizeof(float));
 
-		for (std::uint32_t j = 0; j < margin; j++)
+		for (std::uint32_t j = 0; j < std::min<std::uint32_t>(margin >> 1, 1); j++)
 		{
-			ImageSmooth(data, lightmapTemp.get(), w, h, c);
-			ImageDilate(lightmapTemp.get(), data, w, h, c);
+			ImageSmooth(data, lightmapTemp.get(), w, h, channel);
+			ImageDilate(lightmapTemp.get(), data, w, h, channel);
 		}
 	}
 
-	auto temp = std::make_unique<std::uint8_t[]>(w * h * c);
+	auto temp = std::make_unique<std::uint8_t[]>(w * h * (channel == 1 ? 1 : 4));
 	auto image = temp.get();
 
-	float maxValue = 0.0f;
-	for (std::uint32_t i = 0; i < w * h; i++)
-		for (std::uint32_t j = 0; j < c; j++)
-				maxValue = std::max(maxValue, data[i * c + j]);
+	if (channel == 1)
+	{
+		for (std::uint32_t i = 0; i < w * h * channel; i++)
+		{
+			image[i] = math::clamp<std::uint8_t>(data[i] * 255, 0, 255);
+		}
+	}
+	else
+	{
+		for (std::uint32_t i = 0; i < h; i++)
+		{
+			for (std::uint32_t j = 0; j < w; j++)
+			{
+				float r = data[i * w * channel + j * channel + 0];
+				float g = data[i * w * channel + j * channel + 1];
+				float b = data[i * w * channel + j * channel + 2];
 
-	for (std::uint32_t i = 0; i < w * h * c; i++)
-		image[i] = math::clamp<std::uint8_t>(data[i] * 255 / maxValue, 0, 255);
+				float encode[4];
+				RGBTEncode(r, g, b, encode);
+
+				image[i * w * channel + j * channel + 0] = math::clamp<std::uint8_t>(encode[0] * 255, 0, 255);
+				image[i * w * channel + j * channel + 1] = math::clamp<std::uint8_t>(encode[1] * 255, 0, 255);
+				image[i * w * channel + j * channel + 2] = math::clamp<std::uint8_t>(encode[2] * 255, 0, 255);
+				image[i * w * channel + j * channel + 3] = math::clamp<std::uint8_t>(encode[3] * 255, 0, 255);
+			}
+		}
+	}
 
 	for (std::uint32_t j = 0; j < h / 2; j++)
-		for (std::uint32_t i = 0; i < w * c; i++)
-			std::swap(image[i + j * (w * c)], image[(h - j - 1) * (w * c) + i]);
+		for (std::uint32_t i = 0; i < w * channel; i++)
+			std::swap(image[i + j * (w * channel)], image[(h - j - 1) * (w * channel) + i]);
 
 	if (!isGreyscale)
 	{
-		for (std::size_t i = 0; i < w * h * c; i += c)
+		for (std::size_t i = 0; i < w * h * channel; i += channel)
 			std::swap(image[i], image[i + 2]);
 	}
 
@@ -241,222 +350,10 @@ LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, 
 	if (stream.open(path))
 	{
 		stream.write((char*)&header, sizeof(header));
-		stream.write((char*)image, w * h * c);
+		stream.write((char*)image, w * h * channel);
 	}
 
 	return true;
-}
-
-bool 
-LightMass::pack(const LightMassParams& params, PMX& model) noexcept
-{
-	if (_lightMassListener)
-		_lightMassListener->onUvmapperStart();
-
-	std::vector<float3> atlasVertices;
-	std::vector<std::uint32_t> atlasIndices;
-
-	for (std::size_t i = 0; i < model.numVertices; i++)
-		atlasVertices.push_back(model.vertices[i].position);
-
-	std::vector<uint32_t> adj(model.numIndices);
-
-	if (model.header.sizeOfIndices == 1)
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("Failed to GenerateAdjacencyAndPointReps.");
-		return false;
-	}
-	else if (model.header.sizeOfIndices == 2)
-	{
-		HRESULT hr = DirectX::GenerateAdjacencyAndPointReps((std::uint16_t*)model.indices.data(), model.numIndices / 3, (DirectX::XMFLOAT3*)atlasVertices.data(), model.numVertices, 0.0, nullptr, adj.data());
-		if (FAILED(hr))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Failed to GenerateAdjacencyAndPointReps.");
-			return false;
-		}
-	}
-	else
-	{
-		HRESULT hr = DirectX::GenerateAdjacencyAndPointReps((std::uint32_t*)model.indices.data(), model.numIndices / 3, (DirectX::XMFLOAT3*)atlasVertices.data(), model.numVertices, 0.0, nullptr, adj.data());
-		if (FAILED(hr))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Failed to GenerateAdjacencyAndPointReps.");
-			return false;
-		}
-	}
-
-	std::vector<DirectX::UVAtlasVertex> vb;
-	std::vector<uint8_t> ib;
-	std::vector<uint32_t> remap;
-
-	auto callback = [&](float percentComplete) -> HRESULT
-	{
-		if (_lightMassListener)
-			_lightMassListener->onUvmapperProgressing(percentComplete);
-
-		return true;
-	};
-
-	if (model.header.sizeOfIndices == 1)
-		return false;
-	else if (model.header.sizeOfIndices == 2)
-	{
-		HRESULT hr = DirectX::UVAtlasCreate(
-			(DirectX::XMFLOAT3*)atlasVertices.data(),
-			atlasVertices.size(),
-			model.indices.data(),
-			DXGI_FORMAT::DXGI_FORMAT_R16_UINT,
-			model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, params.lightMap.margin, adj.data(), 0, 0,
-			callback, 
-			0.5,
-			DirectX::UVATLAS_GEODESIC_QUALITY,
-			vb, ib, 0, &remap);
-		if (FAILED(hr))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Failed to UV Atlas.");
-			return false;
-		}
-	}
-	else
-	{
-		HRESULT hr = DirectX::UVAtlasCreate(
-			(DirectX::XMFLOAT3*)atlasVertices.data(),
-			atlasVertices.size(),
-			model.indices.data(),
-			DXGI_FORMAT::DXGI_FORMAT_R32_UINT,
-			model.numIndices / 3, 0, 0, params.lightMap.width, params.lightMap.height, 2.0, adj.data(), 0, 0,
-			callback,
-			0.5,
-			DirectX::UVATLAS_GEODESIC_QUALITY,
-			vb, ib, 0, &remap);
-		if (FAILED(hr))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Failed to UV Atlas.");
-			return false;
-		}
-	}
-
-	std::vector<PMX_Vertex> newVertices;
-	newVertices.resize(vb.size());
-
-	for (int i = 0; i < vb.size(); i++)
-	{
-		PMX_Vertex v = model.vertices[remap[i]];
-		v.addCoord->x = vb[i].uv.x;
-		v.addCoord->y = vb[i].uv.y;
-
-		newVertices[i] = v;
-	}
-
-	model.header.addUVCount = 1;
-	model.numVertices = newVertices.size();
-	model.vertices = newVertices;
-	model.indices = ib;
-
-	if (_lightMassListener)
-		_lightMassListener->onUvmapperEnd();
-
-	return true;
-}
-
-bool 
-LightMass::baking(const LightMassParams& params, const PMX& model) noexcept
-{
-	assert(params.lightMap.data);
-	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
-	assert(params.lightMap.channel == 1 || params.lightMap.channel == 2 || params.lightMap.channel == 3 || params.lightMap.channel == 4);
-
-	if (glewInit() != GLEW_OK)
-	{
-		auto listener = this->getLightMassListener();
-		if (listener)
-			listener->onMessage("Could not initialize with OpenGL.");
-
-		return false;
-	}
-
-	LightBakingOptions option;
-	option.baking = params.baking;
-	option.lightMap = params.lightMap;
-
-	option.model.vertices = (std::uint8_t*)model.vertices.data();
-	option.model.indices = model.indices.data();
-
-	option.model.sizeofVertices = sizeof(PMX_Vertex);
-	option.model.sizeofIndices = model.header.sizeOfIndices;
-
-	option.model.strideVertices = offsetof(PMX_Vertex, position);
-	option.model.strideTexcoord = offsetof(PMX_Vertex, addCoord[0]);
-
-	option.model.numVertices = model.numVertices;
-	option.model.numIndices = model.numIndices;
-
-	option.model.subsets.resize(model.numMaterials);
-
-	for (std::uint32_t i = 0; i < model.numMaterials; i++)
-	{
-		std::uint32_t offset = 0;
-
-		for (std::uint32_t j = 0; j < i; j++)
-			offset += model.materials[j].IndicesCount;
-
-		option.model.subsets[i].drawcall.count = model.materials[i].IndicesCount;
-		option.model.subsets[i].drawcall.instanceCount = 1;
-		option.model.subsets[i].drawcall.firstIndex = offset;
-		option.model.subsets[i].drawcall.baseInstance = 0;
-		option.model.subsets[i].drawcall.baseVertex = 0;
-	}
-
-	if (_lightMassListener)
-		_lightMassListener->onMessage("Calculating the bounding box of the model.");
-
-	for (std::uint32_t i = 0; i < model.numMaterials; i++)
-	{
-		Bound bound;
-		this->computeBoundingBox(model, bound, option.model.subsets[i].drawcall.firstIndex * option.model.sizeofIndices, option.model.subsets[i].drawcall.count);
-		option.model.subsets[i].boundingBox = bound;
-	}
-
-	if (_lightMassListener)
-		_lightMassListener->onMessage("Calculated the bounding box of the model.");
-
-	auto lightMassBaking = std::make_shared<LightBakingAO>();
-	lightMassBaking->open(option.model);
-	lightMassBaking->setLightMassListener(_lightMassListener);
-
-	if (!lightMassBaking->baking(option))
-	{
-		if (_lightMassListener)
-			_lightMassListener->onMessage("Failed to baking the model");
-	}
-
-	return true;
-}
-
-void
-LightMass::setLightMassListener(LightMassListenerPtr pointer) noexcept
-{
-	if (_lightMassListener != pointer)
-	{
-		if (_lightMassListener)
-			_lightMassListener->onListenerChangeBefore();
-
-		_lightMassListener = pointer;
-
-		if (_lightMassListener)
-			_lightMassListener->onListenerChangeAfter();
-	}
-}
-
-LightMassListenerPtr 
-LightMass::getLightMassListener() const noexcept
-{
-	return _lightMassListener;
 }
 
 void 

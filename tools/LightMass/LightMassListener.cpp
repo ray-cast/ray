@@ -57,21 +57,6 @@ LightMassListener::onListenerChangeAfter()
 }
 
 void 
-LightMassListener::onUvmapperStart()
-{
-}
-
-void 
-LightMassListener::onUvmapperProgressing(float progress)
-{
-}
-
-void 
-LightMassListener::onUvmapperEnd()
-{
-}
-
-void 
 LightMassListener::onBakingStart()
 {
 }

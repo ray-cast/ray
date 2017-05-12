@@ -360,8 +360,11 @@ public:
 
 	bool doCanRead(StreamReader& stream) const noexcept;
 
+	bool doLoad(const std::string& path, PMX& pmx, std::string& error) noexcept;
 	bool doLoad(StreamReader& stream, PMX& pmx) noexcept;
+
 	bool doSave(StreamWrite& stream, const PMX& pmx) noexcept;
+	bool doSave(const std::string& path, const PMX& pmx, std::string& error) noexcept;
 
 private:
 	PMXHandler(const PMXHandler&) = delete;

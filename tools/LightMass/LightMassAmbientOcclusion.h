@@ -50,7 +50,7 @@ public:
 	bool open(const LightModelData& params) noexcept;
 	void close() noexcept;
 
-	void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp);
+	void doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& viewport, const float4x4& mvp);
 
 private:
 	struct GLContext

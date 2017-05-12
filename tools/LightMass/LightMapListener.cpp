@@ -34,47 +34,46 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
-
-#include "LightMassParams.h"
-#include "LightMassListener.h"
-
-#include "modpmx.h"
+#include "LightMapListener.h"
 
 _NAME_BEGIN
 
-class LightMass
+LightMapListener::LightMapListener() noexcept
 {
-public:
-	LightMass() noexcept;
-	LightMass(LightMassListenerPtr listener) noexcept;
-	~LightMass() noexcept;
+}
 
-	bool open() noexcept;
-	void close() noexcept;
+LightMapListener::~LightMapListener() noexcept
+{
+}
 
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
+void 
+LightMapListener::onListenerChangeBefore()
+{
+}
 
-	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin);
+void 
+LightMapListener::onListenerChangeAfter()
+{
+}
 
-	bool baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept;
+void 
+LightMapListener::onUvmapperStart()
+{
+}
 
-	void computeBoundingBox(const PMX& model, Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
+void 
+LightMapListener::onUvmapperEnd()
+{
+}
 
-	std::uint32_t getFace(const PMX& pmx, std::size_t n) noexcept;
-	std::uint32_t getFace(const PMX& pmx, std::size_t n, std::uint32_t firstIndex) noexcept;
-	
-	void ImageDilate(const float *image, float *outImage, int w, int h, int c) noexcept;
-	void ImageSmooth(const float *image, float *outImage, int w, int h, int c) noexcept;
+void
+LightMapListener::onUvmapperProgressing(float progress)
+{
+}
 
-private:
-	bool _initialize;
-
-	LightMassListenerPtr _lightMassListener;
-};
+void 
+LightMapListener::onMessage(const std::string& message)
+{
+}
 
 _NAME_END
-
-#endif

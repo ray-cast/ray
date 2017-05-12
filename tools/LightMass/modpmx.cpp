@@ -887,4 +887,53 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 	return true;
 }
 
+bool
+PMXHandler::doLoad(const std::string& path, PMX& pmx, std::string& error) noexcept
+{
+	if (path.empty())
+	{
+		error = "The input path cannot be empty";
+		return false;
+	}
+
+	ray::ifstream stream;
+	if (!stream.open(path))
+	{
+		error = "Failed to open the path : ";
+		return false;
+	}
+
+	ray::PMXHandler model;
+	if (!model.doCanRead(stream))
+	{
+		error = "File is not a valid model with : " + path;
+		return false;
+	}
+
+	if (!model.doLoad(stream, pmx))
+	{
+		error = "Non readable PMX file : " + path;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+PMXHandler::doSave(const std::string& path, const PMX& pmx, std::string& error) noexcept
+{
+	ofstream stream;
+	if (!stream.open(path))
+	{
+		error = "Failed to open the path : " + path;
+		return false;
+	}
+
+	ray::PMXHandler model;
+	if (!model.doSave(stream, pmx))
+		return false;
+
+	return true;
+}
+
 _NAME_END

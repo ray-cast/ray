@@ -44,8 +44,14 @@ LightMapData::LightMapData() noexcept
 	: width(1024)
 	, height(1024)
 	, channel(1)
-	, margin(2.5)
 	, data(nullptr)
+{
+}
+
+LightMapParams::LightMapParams() noexcept
+	: width(1024)
+	, height(1024)
+	, margin(2.5)
 {
 }
 
@@ -55,6 +61,11 @@ LightModelDrawCall::LightModelDrawCall() noexcept
 	, firstIndex(0)
 	, baseVertex(0)
 	, baseInstance(0)
+{
+}
+
+LightModelSubset::LightModelSubset() noexcept
+	: emissive(float3::Zero)
 {
 }
 
@@ -70,7 +81,7 @@ LightModelData::LightModelData() noexcept
 {
 }
 
-LightBakingParams::LightBakingParams() noexcept
+LightSampleParams::LightSampleParams() noexcept
 	: hemisphereSize(64)
 	, hemisphereNear(0.1)
 	, hemisphereFar(100)

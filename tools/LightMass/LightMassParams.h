@@ -48,9 +48,16 @@ struct LightMapData
 	std::uint16_t width;
 	std::uint16_t height;
 	std::uint8_t channel;
-	std::uint8_t margin;
+	std::unique_ptr<float[]> data;
+};
 
-	float* data;
+struct LightMapParams
+{
+	LightMapParams() noexcept;
+
+	std::uint16_t width;
+	std::uint16_t height;
+	std::uint8_t margin;
 };
 
 struct LightModelDrawCall
@@ -66,6 +73,9 @@ struct LightModelDrawCall
 
 struct LightModelSubset
 {
+	LightModelSubset() noexcept;
+
+	float3 emissive;
 	Bound boundingBox;
 	LightModelDrawCall drawcall;
 };
@@ -89,9 +99,9 @@ struct LightModelData
 	std::vector<LightModelSubset> subsets;
 };
 
-struct LightBakingParams
+struct LightSampleParams
 {
-	LightBakingParams() noexcept;
+	LightSampleParams() noexcept;
 
 	std::uint32_t hemisphereSize;
 
@@ -104,25 +114,18 @@ struct LightBakingParams
 	float interpolationThreshold;
 };
 
-struct LightBakingOptions
+struct LightBakingParams
 {
-	LightMapData lightMap;
 	LightModelData model;
-	LightBakingParams baking;
+	LightMapData lightMap;
+	LightSampleParams baking;
 };
 
 struct LightMassParams
 {
-	LightMapData lightMap;
-	LightBakingParams baking;
-};
-
-struct LightMapParams
-{
-	float gutter;
-	float maxStretch;
-	std::size_t maxChartNumber;
-	LightMapData lightMap;
+	bool enableGI;
+	LightMapParams lightMap;
+	LightSampleParams baking;
 };
 
 _NAME_END

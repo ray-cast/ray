@@ -50,7 +50,7 @@ public:
 	bool open(const LightModelData& params) noexcept;
 	void close() noexcept;
 
-	void doSampleHemisphere(const LightBakingOptions& params, const Viewportt<int>& viewport, const float4x4& mvp);
+	void doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& viewport, const float4x4& mvp);
 
 private:
 	struct GLContext
@@ -62,8 +62,9 @@ private:
 		std::uint32_t fs;
 		std::uint32_t program;
 
-		std::uint32_t u_lightmap;
-		std::uint32_t u_mvp;
+		std::uint32_t mvp;
+		std::uint32_t lightsamp;
+		std::uint32_t emissive;
 
 		std::uint32_t lightmap;
 		std::uint32_t vao, vbo, ibo;

@@ -118,8 +118,6 @@ SET(PLATFORM_IO_LIST
     ${HEADER_PATH}/streambuf.h
     ${HEADER_PATH}/xmlreader.h
     ${SOURCE_PATH}/xmlreader.cpp
-    ${HEADER_PATH}/jsonreader.h
-    ${SOURCE_PATH}/jsonreader.cpp
 )
 SOURCE_GROUP("io" FILES ${PLATFORM_IO_LIST})
 

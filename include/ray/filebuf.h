@@ -42,11 +42,11 @@
 
 _NAME_BEGIN
 
-class filebuf : public StreamBuf
+class filebuf final : public StreamBuf
 {
 public:
 	filebuf() noexcept;
-	virtual ~filebuf() noexcept;
+	~filebuf() noexcept;
 
 	bool is_open() const noexcept;
 
@@ -64,8 +64,8 @@ public:
 	streamsize size() const noexcept;
 
 	int flush() noexcept;
-private:
 
+private:
 	IOFILE _file;
 };
 

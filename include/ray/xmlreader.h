@@ -46,7 +46,7 @@ class TiXmlAttribute;
 
 _NAME_BEGIN
 
-class XmlBuf : public archivebuf
+class XmlBuf final : public archivebuf
 {
 public:
 	XmlBuf() noexcept;
@@ -68,8 +68,9 @@ public:
 	virtual void removeAttribute(const std::string& key) noexcept;
 
 	virtual bool addDeclaration(const std::string& version, const std::string& encoding, const std::string& standalone) noexcept;
-	virtual bool addNode(const std::string& key) noexcept;
-	virtual bool addSubNode(const std::string& key) noexcept;
+
+	virtual bool insert(const std::string& key) noexcept;
+	virtual bool insertToParent(const std::string& key) noexcept;
 
 	virtual bool setToNode(const std::string& path) noexcept;
 	virtual bool setToFirstChild() noexcept;
@@ -87,8 +88,6 @@ public:
 	virtual bool addAttrsInChildren() noexcept;
 	virtual bool addAttrsInChildren(const std::string& key) noexcept;
 	virtual const std::vector<std::string>& getAttrList() const noexcept;
-
-	virtual std::string getText() const noexcept;
 
 	virtual bool getValue(const std::string& name, bool& result) const noexcept;
 	virtual bool getValue(const std::string& name, int1& result) const noexcept;

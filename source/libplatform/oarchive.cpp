@@ -111,7 +111,7 @@ oarchive::addNode(const std::string& key) noexcept
 	const osentry ok(this);
 	if (ok)
 	{
-		if (!this->fail() && !this->rdbuf()->addNode(key))
+		if (!this->fail() && !this->rdbuf()->insertToParent(key))
 			this->setstate(ios_base::failbit);
 	}
 
@@ -124,7 +124,7 @@ oarchive::addSubNode(const std::string& key) noexcept
 	const osentry ok(this);
 	if (ok)
 	{
-		if (!this->fail() && !this->rdbuf()->addSubNode(key))
+		if (!this->fail() && !this->rdbuf()->insert(key))
 			this->setstate(ios_base::failbit);
 	}
 

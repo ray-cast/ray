@@ -56,7 +56,7 @@ Model::load(StreamReader& stream, ModelType type) noexcept
 
 	_Myhandler impl;
 	if (this->find(stream, type, impl))
-		return impl->doLoad(*this, stream);
+		return impl->doLoad(stream, *this);
 
 	return false;
 }
@@ -69,7 +69,7 @@ Model::save(StreamWrite& stream, ModelType type) noexcept
 
 	_Myhandler impl;
 	if (this->find(type, impl))
-		return impl->doSave(*this, stream);
+		return impl->doSave(stream, *this);
 
 	return false;
 }

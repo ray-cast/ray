@@ -51,7 +51,6 @@ public:
 	const std::string& getPath() const noexcept;
 
 private:
-
 	std::string _name;
 	std::string _path;
 };

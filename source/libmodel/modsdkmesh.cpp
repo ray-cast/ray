@@ -332,7 +332,7 @@ SDKMeshHandler::doLoad(StreamReader& stream, Model& model) noexcept
 }
 
 bool
-SDKMeshHandler::doSave(StreamWrite& stream, Model& model) noexcept
+SDKMeshHandler::doSave(StreamWrite& stream, const Model& model) noexcept
 {
 	return false;
 }

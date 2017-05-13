@@ -311,7 +311,9 @@ FxmlCompile::load(ray::iarchive& reader) except
 		}
 		else if (name == "shader")
 		{
-			_hlslCodes += reader.getText();
+			std::string codes;
+			reader.getValue("", codes);
+			_hlslCodes += codes;
 		}
 		else if (name == "technique")
 		{

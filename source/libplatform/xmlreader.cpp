@@ -233,7 +233,24 @@ XmlBuf::addDeclaration(const std::string& version, const std::string& encoding, 
 }
 
 bool
-XmlBuf::addNode(const std::string& key) noexcept
+XmlBuf::insert(const std::string& key) noexcept
+{
+	TiXmlElement element(key.c_str());
+	TiXmlNode* node = nullptr;
+
+	if (!_currentNode)
+		node = _document->InsertEndChild(element);
+	else
+		node = _currentNode->InsertEndChild(element);
+
+	if (node)
+		_currentNode = node->ToElement();
+
+	return node ? true : false;
+}
+
+bool
+XmlBuf::insertToParent(const std::string& key) noexcept
 {
 	TiXmlElement element(key.c_str());
 	TiXmlNode* node = nullptr;
@@ -253,23 +270,6 @@ XmlBuf::addNode(const std::string& key) noexcept
 	}
 
 	return false;
-}
-
-bool
-XmlBuf::addSubNode(const std::string& key) noexcept
-{
-	TiXmlElement element(key.c_str());
-	TiXmlNode* node = nullptr;
-
-	if (!_currentNode)
-		node = _document->InsertEndChild(element);
-	else
-		node = _currentNode->InsertEndChild(element);
-
-	if (node)
-		_currentNode = node->ToElement();
-
-	return node ? true : false;
 }
 
 bool
@@ -500,19 +500,6 @@ const std::vector<std::string>&
 XmlBuf::getAttrList() const noexcept
 {
 	return _attrNames;
-}
-
-std::string
-XmlBuf::getText() const noexcept
-{
-	auto element = _currentNode->ToElement();
-	if (element)
-	{
-		auto result = element->GetText();
-		if (result)
-			return result;
-	}
-	return "";
 }
 
 bool
@@ -830,16 +817,31 @@ XmlBuf::getValue(const std::string& name, float4& result) const noexcept
 bool
 XmlBuf::getValue(const std::string& name, std::string& result) const noexcept
 {
-	if (_attrLists.empty())
+	if (_attrLists.empty() || name.empty())
 	{
 		auto element = _currentNode->ToElement();
 		if (element)
 		{
-			auto value = element->Attribute(name.c_str());
-			if (value)
+			if (name.empty())
 			{
-				result = value;
-				return true;
+				const TiXmlNode* child = element->FirstChild();
+				if (child) 
+				{
+					const TiXmlText* childText = child->ToText();
+					if (childText) {
+						result = childText->Value();
+						return true;
+					}
+				}
+			}
+			else
+			{
+				auto value = element->Attribute(name.c_str());
+				if (value)
+				{
+					result = value;
+					return true;
+				}
 			}
 		}
 	}

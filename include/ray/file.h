@@ -74,7 +74,7 @@ extern int faccess(const wchar_t* path, int mode) noexcept;
 //extern int feof(FILE* stream);
 //extern int ferror(FILE* stream);
 
-class EXPORT IOFILE
+class EXPORT IOFILE final
 {
 public:
 	IOFILE() noexcept;
@@ -110,7 +110,6 @@ public:
 	void swap(IOFILE& other) noexcept;
 
 private:
-
 	FILE* _stream;
 };
 

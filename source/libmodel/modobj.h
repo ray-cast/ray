@@ -51,7 +51,7 @@ public:
 	bool doCanSave(ModelType type) const noexcept;
 
 	bool doLoad(StreamReader& stream, Model& model) noexcept;
-	bool doSave(StreamWrite& stream, Model& model) noexcept;
+	bool doSave(StreamWrite& stream, const Model& model) noexcept;
 
 private:
 

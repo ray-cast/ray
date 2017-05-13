@@ -146,9 +146,9 @@ MaterialMaker::instanceCodes(MaterialManager& manager, iarchive& reader) except
 	if (!_isHlsl && name.empty())
 		throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
 
-	std::string codes = reader.getText();
-	if (codes.empty())
-		return;
+	std::string codes;
+	if (!reader.getValue("", codes))
+		throw failure(__TEXT("Failed to fetch codes: ") + reader.getCurrentNodePath());
 
 	if (!_isHlsl)
 		util::str2hex(_shaderCodes[name], codes.c_str(), codes.size());

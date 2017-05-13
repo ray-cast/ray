@@ -148,7 +148,7 @@ LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, float chart
 			model.numIndices / 3, maxChartNumber, stretch, w, h, margin, adj.data(), 0, 0,
 			callback,
 			0.5,
-			DirectX::UVATLAS_GEODESIC_QUALITY,
+			DirectX::UVATLAS_DEFAULT,
 			vb, ib, 0, &remap);
 
 		if (FAILED(hr))
@@ -168,7 +168,7 @@ LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, float chart
 			model.numIndices / 3, maxChartNumber, stretch, w, h, margin, adj.data(), 0, 0,
 			callback,
 			0.5,
-			DirectX::UVATLAS_GEODESIC_QUALITY,
+			DirectX::UVATLAS_DEFAULT,
 			vb, ib, 0, &remap);
 
 		if (FAILED(hr))

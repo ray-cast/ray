@@ -3,6 +3,7 @@ PROJECT(libplatform)
 SET(LIB_NAME libplatform)
 
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/tinyxml)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/jsoncpp/include)
 
 SET(HEADER_PATH ${CMAKE_SOURCE_DIR}/include/ray)
 SET(SOURCE_PATH ${CMAKE_SOURCE_DIR}/source/libplatform)
@@ -117,6 +118,8 @@ SET(PLATFORM_IO_LIST
     ${HEADER_PATH}/streambuf.h
     ${HEADER_PATH}/xmlreader.h
     ${SOURCE_PATH}/xmlreader.cpp
+    ${HEADER_PATH}/jsonreader.h
+    ${SOURCE_PATH}/jsonreader.cpp
 )
 SOURCE_GROUP("io" FILES ${PLATFORM_IO_LIST})
 

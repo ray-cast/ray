@@ -102,12 +102,6 @@ iarchive::getAttrList() const noexcept
 	return this->rdbuf()->getAttrList();
 }
 
-std::string
-iarchive::getText() const noexcept
-{
-	return this->rdbuf()->getText();
-}
-
 bool
 iarchive::getValue(const std::string& name, bool& result) noexcept
 {

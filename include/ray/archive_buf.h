@@ -55,8 +55,8 @@ public:
 	virtual void setAttribute(const std::string& key, const std::string& value) noexcept = 0;
 	virtual void removeAttribute(const std::string& key) noexcept = 0;
 
-	virtual bool addNode(const std::string& key) noexcept = 0;
-	virtual bool addSubNode(const std::string& key) noexcept = 0;
+	virtual bool insert(const std::string& key) noexcept = 0;
+	virtual bool insertToParent(const std::string& key) noexcept = 0;
 
 	virtual bool setToNode(const std::string& path) noexcept = 0;
 	virtual bool setToFirstChild() noexcept = 0;
@@ -74,8 +74,6 @@ public:
 	virtual bool addAttrsInChildren() noexcept = 0;
 	virtual bool addAttrsInChildren(const std::string& key) noexcept = 0;
 	virtual const std::vector<std::string>& getAttrList() const noexcept = 0;
-
-	virtual std::string getText() const noexcept = 0;
 
 	virtual bool getValue(const std::string& name, bool& result) const noexcept = 0;
 	virtual bool getValue(const std::string& name, int1& result) const noexcept = 0;

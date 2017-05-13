@@ -72,8 +72,6 @@ public:
 	void addAttrsInChildren(const std::string& key) noexcept;
 	const std::vector<std::string>& getAttrList() const noexcept;
 
-	std::string getText() const noexcept;
-
 	bool getValue(const std::string& name, bool& result) noexcept;
 	bool getValue(const std::string& name, int1& result) noexcept;
 	bool getValue(const std::string& name, int2& result) noexcept;

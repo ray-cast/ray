@@ -40,6 +40,7 @@
 
 #include <GL\glew.h>
 #include <sstream>
+#include <ray/image.h>
 
 _NAME_BEGIN
 
@@ -100,7 +101,7 @@ LightMass::open() noexcept
 	return true;
 }
 
-void
+void 
 LightMass::close() noexcept
 {
 	_initialize = false;
@@ -127,7 +128,7 @@ LightMass::getLightMassListener() const noexcept
 	return _lightMassListener;
 }
 
-bool
+bool 
 LightMass::baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept
 {
 	assert(_initialize);
@@ -253,24 +254,6 @@ LightMass::computeBoundingBox(const PMX& model, Bound& boundingBox, std::uint32_
 	}
 }
 
-void RGBTEncode(float r, float g, float b, float encode[4])
-{
-	float range = 1024;
-
-	float max = 0;
-	max = std::max(std::max(r, g), std::max(b, 1e-6f));
-	max = std::min(max, range);
-
-	encode[3] = (range + 1) / range *  max / (1 + max);
-	encode[3] = std::ceil(encode[3] * 255.0) / 255.0;
-
-	float rcp = 1.0 / (encode[3] / (1.0 + 1.0 / range - encode[3]));
-
-	encode[0] = r * rcp;
-	encode[1] = g * rcp;
-	encode[2] = b * rcp;
-}
-
 bool
 LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
 {
@@ -325,13 +308,8 @@ LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, 
 				float g = data[i * w * channel + j * channel + 1];
 				float b = data[i * w * channel + j * channel + 2];
 
-				float encode[4];
-				RGBTEncode(r, g, b, encode);
-
-				image[i * w * channel + j * channel + 0] = math::clamp<std::uint8_t>(encode[0] * 255, 0, 255);
-				image[i * w * channel + j * channel + 1] = math::clamp<std::uint8_t>(encode[1] * 255, 0, 255);
-				image[i * w * channel + j * channel + 2] = math::clamp<std::uint8_t>(encode[2] * 255, 0, 255);
-				image[i * w * channel + j * channel + 3] = math::clamp<std::uint8_t>(encode[3] * 255, 0, 255);
+				std::uint8_t encode[4];
+				ray::image::RGBTEncode(r, g, b, &image[i * w * channel + j * channel], 1024.0f);
 			}
 		}
 	}
@@ -356,7 +334,7 @@ LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, 
 	return true;
 }
 
-void
+void 
 LightMass::ImageDilate(const float *image, float *outImage, int w, int h, int c) noexcept
 {
 	assert(c > 0 && c <= 4);
@@ -410,7 +388,7 @@ LightMass::ImageDilate(const float *image, float *outImage, int w, int h, int c)
 	}
 }
 
-void
+void 
 LightMass::ImageSmooth(const float *image, float *outImage, int w, int h, int c) noexcept
 {
 	assert(c > 0 && c <= 4);

@@ -41,6 +41,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 class DDSHandler final : public ImageHandler
 {
 public:
@@ -48,13 +51,17 @@ public:
 	~DDSHandler() noexcept;
 
 	bool doCanRead(StreamReader& stream) const noexcept;
-	bool doLoad(Image& image, StreamReader& stream) noexcept;
-	bool doSave(Image& image, StreamWrite& stream) noexcept;
+	bool doCanRead(const char* type_name) const noexcept;
+
+	bool doLoad(StreamReader& stream, Image& image) noexcept;
+	bool doSave(StreamWrite& stream, const Image& image) noexcept;
 
 private:
 	DDSHandler(const DDSHandler&) noexcept = delete;
 	const DDSHandler& operator=(const DDSHandler&) noexcept = delete;
 };
+
+}
 
 _NAME_END
 

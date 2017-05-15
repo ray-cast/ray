@@ -100,7 +100,7 @@ LightMass::open() noexcept
 	return true;
 }
 
-void 
+void
 LightMass::close() noexcept
 {
 	_initialize = false;
@@ -127,7 +127,7 @@ LightMass::getLightMassListener() const noexcept
 	return _lightMassListener;
 }
 
-bool 
+bool
 LightMass::baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept
 {
 	assert(_initialize);
@@ -356,7 +356,7 @@ LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, 
 	return true;
 }
 
-void 
+void
 LightMass::ImageDilate(const float *image, float *outImage, int w, int h, int c) noexcept
 {
 	assert(c > 0 && c <= 4);
@@ -410,7 +410,7 @@ LightMass::ImageDilate(const float *image, float *outImage, int w, int h, int c)
 	}
 }
 
-void 
+void
 LightMass::ImageSmooth(const float *image, float *outImage, int w, int h, int c) noexcept
 {
 	assert(c > 0 && c <= 4);

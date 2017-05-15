@@ -49,7 +49,7 @@ Model::~Model() noexcept
 }
 
 bool
-Model::load(StreamReader& stream, ModelType type) noexcept
+Model::load(StreamReader& stream, const char* type) noexcept
 {
 	if (emptyHandler())
 		GetModelInstanceList(*this);
@@ -62,7 +62,7 @@ Model::load(StreamReader& stream, ModelType type) noexcept
 }
 
 bool
-Model::save(StreamWrite& stream, ModelType type) noexcept
+Model::save(StreamWrite& stream, const char* type) noexcept
 {
 	if (emptyHandler())
 		GetModelInstanceList(*this);
@@ -442,11 +442,11 @@ Model::removeHandler(_Myhandler handler) noexcept
 }
 
 bool
-Model::find(ModelType type, _Myhandler& out) const noexcept
+Model::find(const char* type, _Myhandler& out) const noexcept
 {
 	for (auto& it : _handlers)
 	{
-		if (it->doCanSave(type))
+		if (it->doCanRead(type))
 		{
 			out = it;
 			return true;
@@ -479,14 +479,12 @@ Model::find(StreamReader& stream, _Myhandler& out) const noexcept
 }
 
 bool
-Model::find(StreamReader& stream, ModelType type, _Myhandler& out) const noexcept
+Model::find(StreamReader& stream, const char* type, _Myhandler& out) const noexcept
 {
-	if (type != MT_UNKNOWN)
+	if (type)
 	{
 		if (this->find(type, out))
-		{
 			return true;
-		}
 	}
 
 	return this->find(stream, out);

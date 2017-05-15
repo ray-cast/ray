@@ -40,6 +40,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 struct PNGInfoStruct
 {
 	jmp_buf jmpbuf;
@@ -91,7 +94,13 @@ PNGHandler::doCanRead(StreamReader& stream) const noexcept
 }
 
 bool
-PNGHandler::doLoad(Image& image, StreamReader& stream) noexcept
+PNGHandler::doCanRead(const char* type_name) const noexcept
+{
+	return std::strncmp(type_name, "png", 3) == 0;
+}
+
+bool
+PNGHandler::doLoad(StreamReader& stream, Image& image) noexcept
 {
 	PNGInfoStruct info;
 	info.stream.in = &stream;
@@ -146,12 +155,12 @@ PNGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		ImageFormat format;
 		if (color_type & PNG_COLOR_TYPE_RGBA)
 		{
-			format = ImageFormat::ImageFormatR8G8B8A8UNorm;
+			format = ImageFormat::R8G8B8A8UNorm;
 			pixelSize = 4;
 		}
 		else if (color_type & PNG_COLOR_TYPE_RGB)
 		{
-			format = ImageFormat::ImageFormatR8G8B8UNorm;
+			format = ImageFormat::R8G8B8UNorm;
 			pixelSize = 3;
 		}
 
@@ -175,9 +184,11 @@ PNGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 }
 
 bool
-PNGHandler::doSave(Image&, StreamWrite&) noexcept
+PNGHandler::doSave(StreamWrite&, const Image&) noexcept
 {
 	return false;
+}
+
 }
 
 _NAME_END

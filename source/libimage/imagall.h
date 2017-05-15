@@ -41,7 +41,18 @@
 
 _NAME_BEGIN
 
-EXPORT void GetImageInstanceList(Image& image);
+namespace image
+{
+EXPORT const std::vector<ImageHandlerPtr>& GetImageInstanceList();
+
+bool emptyHandler() noexcept;
+bool addHandler(ImageHandlerPtr handler) noexcept;
+bool removeHandler(ImageHandlerPtr handler) noexcept;
+
+ImageHandlerPtr findHandler(const char* type) noexcept;
+ImageHandlerPtr findHandler(StreamReader& stream) noexcept;
+ImageHandlerPtr findHandler(StreamReader& stream, const char* type) noexcept;
+}
 
 _NAME_END
 

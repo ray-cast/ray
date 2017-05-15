@@ -50,8 +50,10 @@
 #include <ray/except.h>
 #include <ray/ioserver.h>
 #include <ray/mstream.h>
-#include <ray/xmlreader.h>
+#include <ray/image.h>
 #include <ray/jsonreader.h>
+
+#include <ray/SH.h>
 
 struct AppParams
 {
@@ -193,6 +195,16 @@ public:
 
 	void getParams(AppParams& params)
 	{
+		/*ray::image::Image image;
+		image.create(512, 512, 6, ray::image::ImageFormat::R32G32B32SFloat);
+
+		auto sh = ray::math::CalcCubemapToSH(512, 512, (ray::float3*)image.data());
+		ray::math::CalcCubemapToIrradiance(sh, 512, 512, (ray::float3*)image.data());
+
+		ray::image::Image imageTGA;
+		imageTGA.create(image, ray::image::ImageFormat::R8G8B8UInt);
+		imageTGA.save("C:/Users/ray/Desktop/1.tga");*/
+
 		ray::StreamReaderPtr stream;
 		if (!ray::IoServer::instance()->openFile(stream, "root:config.json", ray::ios_base::in))
 			throw ray::failure(__TEXT("Opening file fail: config.txt"));

@@ -38,6 +38,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 #pragma pack(push)
 #pragma pack(1)
 
@@ -100,7 +103,13 @@ TGAHandler::doCanRead(StreamReader& stream) const noexcept
 }
 
 bool
-TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
+TGAHandler::doCanRead(const char* type_name) const noexcept
+{
+	return std::strncmp(type_name, "tga", 3) == 0;
+}
+
+bool
+TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 {
 	TGAHeader hdr;
 	if (!stream.read((char*)&hdr, sizeof(hdr))) return false;
@@ -119,11 +128,11 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	{
 		ImageFormat format = ImageFormat::ImageFormatMaxEnum;
 		if (hdr.pixel_size == 8)
-			format = ImageFormat::ImageFormatR8UNorm;
+			format = ImageFormat::R8UNorm;
 		else if (hdr.pixel_size == 24)
-			format = ImageFormat::ImageFormatR8G8B8UNorm;
+			format = ImageFormat::R8G8B8UNorm;
 		else if (hdr.pixel_size == 32)
-			format = ImageFormat::ImageFormatR8G8B8A8UNorm;
+			format = ImageFormat::R8G8B8A8UNorm;
 		else
 			return false;
 
@@ -151,7 +160,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 		case 24:
 		{
-			if (!image.create(columns, rows, ImageFormat::ImageFormatR8G8B8UNorm))
+			if (!image.create(columns, rows, ImageFormat::R8G8B8UNorm))
 				return false;
 
 			RGB* rgb = (RGB*)image.data();
@@ -194,7 +203,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		break;
 		case 32:
 		{
-			if (!image.create(columns, rows, ImageFormat::ImageFormatR8G8B8A8UNorm))
+			if (!image.create(columns, rows, ImageFormat::R8G8B8A8UNorm))
 				return false;
 
 			std::uint32_t* rgba = (std::uint32_t*)image.data();
@@ -266,9 +275,33 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 }
 
 bool
-TGAHandler::doSave(Image&, StreamWrite&) noexcept
+TGAHandler::doSave(StreamWrite& stream, const Image& image) noexcept
 {
-	return false;
+	std::uint32_t channel = image.channel();
+
+	bool isGreyscale = channel == 1;
+	bool hasAlpha = channel == 1 ? false : true;
+
+	TGAHeader header;
+	header.id_length = 0;
+	header.colormap_type = 0;
+	header.image_type = isGreyscale ? 3 : 2;
+	header.colormap_index = 0;
+	header.colormap_length = 0;
+	header.colormap_size = 0;
+	header.x_origin = 0;
+	header.y_origin = 0;
+	header.width = image.width();
+	header.height = image.height();
+	header.pixel_size = channel * 8;
+	header.attributes = hasAlpha ? 8 : 0;
+
+	stream.write((char*)&header, sizeof(header));
+	stream.write((char*)image.data(), image.size());
+
+	return true;
+}
+
 }
 
 _NAME_END

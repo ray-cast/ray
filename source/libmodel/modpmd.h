@@ -324,7 +324,7 @@ public:
 	~PMDHandler() noexcept;
 
 	bool doCanRead(StreamReader& stream) const noexcept;
-	bool doCanSave(ModelType type) const noexcept;
+	bool doCanRead(const char* type) const noexcept;
 
 	bool doLoad(StreamReader& stream, PMD& pmd) noexcept;
 	bool doLoad(StreamReader& stream, Model& model) noexcept;

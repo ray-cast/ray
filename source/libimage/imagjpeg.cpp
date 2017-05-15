@@ -41,6 +41,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 #define JPEG_LENGTH_MAX 200
 #define JPEG_IO_BUFFER_SIZE 4096
 
@@ -160,8 +163,14 @@ JPEGHandler::doCanRead(StreamReader& stream) const noexcept
 	return false;
 }
 
+bool 
+JPEGHandler::doCanRead(const char* type_name) const noexcept
+{
+	return (std::strncmp(type_name, "jpg", 3) == 0) || (std::strncmp(type_name, "jpeg", 4) == 0);
+}
+
 bool
-JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
+JPEGHandler::doLoad(StreamReader& stream, Image& image) noexcept
 {
 	jpeg_decompress_struct cinfo;
 
@@ -200,7 +209,7 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	// read jpeg handle parameters*/
 	::jpeg_read_header(&cinfo, TRUE);
 
-	if (!image.create(cinfo.image_width, cinfo.image_height, ImageFormat::ImageFormatR8G8B8UNorm))
+	if (!image.create(cinfo.image_width, cinfo.image_height, ImageFormat::R8G8B8UNorm))
 		return false;
 
 	RGB* data = (RGB*)image.data();
@@ -263,7 +272,7 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 }
 
 bool
-JPEGHandler::doSave(Image&, StreamWrite&) noexcept
+JPEGHandler::doSave(StreamWrite&, const Image&) noexcept
 {
 	jpeg_compress_struct cinfo;
 
@@ -274,6 +283,8 @@ JPEGHandler::doSave(Image&, StreamWrite&) noexcept
 	jpeg_create_compress(&cinfo);
 
 	return true;
+}
+
 }
 
 _NAME_END

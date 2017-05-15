@@ -162,29 +162,27 @@ VMDHandler::~VMDHandler() noexcept
 bool
 VMDHandler::doCanRead(StreamReader& stream) const noexcept
 {
-	assert(sizeof(VMDMotion) == 111);
-	assert(sizeof(VMDMorph) == 23);
-	assert(sizeof(VMDCamera) == 61);
-	assert(sizeof(VMDLight) == 28);
-	assert(sizeof(VMDSelfShadow) == 9);
+	static_assert(sizeof(VMDMotion) == 111);
+	static_assert(sizeof(VMDMorph) == 23);
+	static_assert(sizeof(VMDCamera) == 61);
+	static_assert(sizeof(VMDLight) == 28);
+	static_assert(sizeof(VMDSelfShadow) == 9);
 
 	VMD_Header hdr;
 
 	if (stream.read((char*)&hdr, sizeof(hdr)))
 	{
 		if (std::strncmp(hdr.magic, "Vocaloid Motion Data 0002", 30) == 0)
-		{
 			return true;
-		}
 	}
 
 	return false;
 }
 
 bool 
-VMDHandler::doCanSave(ModelType type) const noexcept
+VMDHandler::doCanRead(const char* type) const noexcept
 {
-	return false;
+	return std::strncmp(type, "vmd", 3) == 0;
 }
 
 bool

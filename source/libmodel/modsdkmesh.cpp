@@ -185,9 +185,9 @@ SDKMeshHandler::doCanRead(StreamReader& stream) const noexcept
 }
 
 bool
-SDKMeshHandler::doCanSave(ModelType type) const noexcept
+SDKMeshHandler::doCanRead(const char* type) const noexcept
 {
-	return true;
+	return std::strncmp(type, "sdkmesh", 7) == 0;
 }
 
 bool

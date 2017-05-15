@@ -38,6 +38,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 GIFHandler::GIFHandler() noexcept
 {
 }
@@ -62,15 +65,23 @@ GIFHandler::doCanRead(StreamReader& stream) const noexcept
 }
 
 bool
-GIFHandler::doLoad(Image&, StreamReader&) noexcept
+GIFHandler::doCanRead(const char* type_name) const noexcept
+{
+	return std::strncmp(type_name, "gif", 3) == 0;
+}
+
+bool
+GIFHandler::doLoad(StreamReader&, Image&) noexcept
 {
 	return false;
 }
 
 bool
-GIFHandler::doSave(Image&, StreamWrite&) noexcept
+GIFHandler::doSave(StreamWrite&, const Image&) noexcept
 {
 	return false;
+}
+
 }
 
 _NAME_END

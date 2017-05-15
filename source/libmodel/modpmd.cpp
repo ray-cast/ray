@@ -69,12 +69,9 @@ PMDHandler::doCanRead(StreamReader& stream) const noexcept
 }
 
 bool
-PMDHandler::doCanSave(ModelType type) const noexcept
+PMDHandler::doCanRead(const char* type) const noexcept
 {
-	if (type == ModelType::MT_PMD)
-		return true;
-	else
-		return false;
+	return std::strncmp(type, "pmd", 3) == 0;
 }
 
 bool

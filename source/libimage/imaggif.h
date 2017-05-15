@@ -41,6 +41,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 class GIFHandler final : public ImageHandler
 {
 public:
@@ -48,13 +51,17 @@ public:
 	~GIFHandler() noexcept;
 
 	bool doCanRead(StreamReader& stream) const noexcept;
-	bool doLoad(Image& image, StreamReader& stream) noexcept;
-	bool doSave(Image& image, StreamWrite& stream) noexcept;
+	bool doCanRead(const char* type_name) const noexcept;
+
+	bool doLoad(StreamReader& stream, Image& image) noexcept;
+	bool doSave(StreamWrite& stream, const Image& image) noexcept;
 
 private:
 	GIFHandler(const GIFHandler&) = delete;
 	GIFHandler& operator=(const GIFHandler&) = delete;
 };
+
+}
 
 _NAME_END
 

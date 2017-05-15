@@ -68,12 +68,9 @@ PMXHandler::doCanRead(StreamReader& stream) const noexcept
 }
 
 bool
-PMXHandler::doCanSave(ModelType type) const noexcept
+PMXHandler::doCanRead(const char* type) const noexcept
 {
-	if (type == ModelType::MT_PMX)
-		return true;
-	else
-		return false;
+	return std::strncmp(type, "pmx", 3) == 0;
 }
 
 bool

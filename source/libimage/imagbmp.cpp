@@ -38,6 +38,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 #ifndef __WINDOWS__
 /* constants for the biCompression field */
 #   define BI_RGB        0L
@@ -161,7 +164,13 @@ BMPHandler::doCanRead(StreamReader& stream) const noexcept
 }
 
 bool
-BMPHandler::doLoad(Image& image, StreamReader& stream) except
+BMPHandler::doCanRead(const char* type_name) const noexcept
+{
+	return std::strncmp(type_name, "bmp", 3) == 0;
+}
+
+bool
+BMPHandler::doLoad(StreamReader& stream, Image& image) except
 {
 	auto size = (std::size_t)stream.size();
 
@@ -185,7 +194,7 @@ BMPHandler::doLoad(Image& image, StreamReader& stream) except
 
 	if (info.info.comp == BI_RGB)
 	{
-		return this->loadDIB(image, stream, info);
+		return this->loadDIB(stream, image, info);
 	}
 	else
 	{
@@ -196,30 +205,30 @@ BMPHandler::doLoad(Image& image, StreamReader& stream) except
 			return false;
 		}
 
-		return this->decode(image, stream, info);
+		return this->decode(stream, image, info);
 	}
 }
 
 bool
-BMPHandler::doSave(Image&, StreamWrite&) except
+BMPHandler::doSave(StreamWrite&, const Image&) except
 {
 	return false;
 }
 
 bool
-BMPHandler::decode(Image&, StreamReader&, const BITMAPINFO&)
+BMPHandler::decode(StreamReader&, Image&, const BITMAPINFO&)
 {
 	return false;
 }
 
 bool
-BMPHandler::encode(Image&, StreamReader&, const BITMAPINFO&)
+BMPHandler::encode(StreamReader&, Image&, const BITMAPINFO&)
 {
 	return false;
 }
 
 bool
-BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
+BMPHandler::loadDIB(StreamReader& stream, Image& image, const BITMAPINFO& info)
 {
 	std::uint32_t columns = (std::uint32_t)info.info.width;
 	std::uint32_t rows = (std::uint32_t)(info.info.height < 0 ? -info.info.height : info.info.height);
@@ -235,17 +244,17 @@ BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 
 	if (info.info.bpp == BMP_32BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8A8UNorm))
+		if (!image.create(columns, rows, ImageFormat::B8G8R8A8UNorm))
 			return false;
 	}
 	else if (info.info.bpp == BMP_24BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::ImageFormatB8G8R8UNorm))
+		if (!image.create(columns, rows, ImageFormat::B8G8R8UNorm))
 			return false;
 	}
 	else if (info.info.bpp == BMP_16BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::ImageFormatR8G8B8UNorm))
+		if (!image.create(columns, rows, ImageFormat::R8G8B8UNorm))
 			return false;
 	}
 	else
@@ -344,6 +353,8 @@ BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 	}
 
 	return true;
+}
+
 }
 
 _NAME_END

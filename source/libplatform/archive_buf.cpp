@@ -482,6 +482,15 @@ archive_node::operator=(boolean_t value)
 	return *this;
 }
 
+void 
+archive_node::resize(std::size_t size)
+{
+	if (this->type() != archive_node::type_t::object)
+		this->emplace(archive_node::type_t::object);
+
+	std::get<archive_node::type_t::object>(_data)->resize(size);
+}
+
 archive_node&
 archive_node::operator=(number_integer_t value)
 {

@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_IMAGEBMP_H_
-#define _H_IMAGEBMP_H_
+#ifndef _H_IMAGE_HDR_H_
+#define _H_IMAGE_HDR_H_
 
 #include <ray/image.h>
 
@@ -44,23 +44,21 @@ _NAME_BEGIN
 namespace image
 {
 
-struct BITMAPINFO;
-
-class BMPHandler final : public ImageHandler
+class HDRHandler final : public ImageHandler
 {
 public:
-	BMPHandler() noexcept;
-	virtual ~BMPHandler() noexcept;
+	HDRHandler() noexcept;
+	~HDRHandler() noexcept;
 
 	bool doCanRead(StreamReader& stream) const noexcept;
 	bool doCanRead(const char* type_name) const noexcept;
 
-	bool doLoad(StreamReader& stream, Image& image) except;
-	bool doSave(StreamWrite& stream, const Image& image) except;
+	bool doLoad(StreamReader& stream, Image& image) noexcept;
+	bool doSave(StreamWrite& stream, const Image& image) noexcept;
 
-	bool decode(StreamReader& stream, Image& image, const BITMAPINFO& info);
-	bool encode(StreamReader& stream, Image& image, const BITMAPINFO& info);
-	bool loadDIB(StreamReader& stream, Image& image, const BITMAPINFO& info);
+private:
+	HDRHandler(const HDRHandler&) noexcept = delete;
+	const HDRHandler& operator=(const HDRHandler&) noexcept = delete;
 };
 
 }

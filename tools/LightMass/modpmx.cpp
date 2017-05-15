@@ -38,6 +38,22 @@
 
 _NAME_BEGIN
 
+PMX::PMX() noexcept
+	: numVertices(0)
+	, numIndices(0)
+	, numTextures(0)
+	, numMaterials(0)
+	, numBones(0)
+	, numMorphs(0)
+	, numDisplayFrames(0)
+	, numRigidbodys(0)
+	, numJoints(0)
+	, numSoftBodies(0)
+{
+	std::memset(&header, 0, sizeof(header));
+	std::memset(&description, 0, sizeof(description));
+}
+
 PMXHandler::PMXHandler() noexcept
 {
 }
@@ -498,6 +514,11 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 			if (!stream.read((char*)&joint.springMovementConstant, sizeof(joint.springMovementConstant))) return false;
 			if (!stream.read((char*)&joint.springRotationConstant, sizeof(joint.springRotationConstant))) return false;
 		}
+	}
+
+	if (pmx.header.version > 2.0)
+	{
+		if (!stream.read((char*)&pmx.numSoftBodies, sizeof(pmx.numSoftBodies))) return false;
 	}
 
 	return true;

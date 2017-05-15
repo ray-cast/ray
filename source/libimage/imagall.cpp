@@ -57,6 +57,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 #if _BUILD_BMP_HANDLER
 std::shared_ptr<ImageHandler> bmp = std::make_shared<BMPHandler>();
 #endif
@@ -73,23 +76,100 @@ std::shared_ptr<ImageHandler> png = std::make_shared<PNGHandler>();
 std::shared_ptr<ImageHandler> tga = std::make_shared<TGAHandler>();
 #endif
 
-void GetImageInstanceList(Image& image)
-{
+std::vector<ImageHandlerPtr> _handlers = {
 #if _BUILD_PNG_HANDLER
-	image.add(png);
+	png,
 #endif
 #if _BUILD_TGA_HANDLER
-	image.add(tga);
+	tga,
 #endif
 #if _BUILD_JPEG_HANDLER
-	image.add(jpeg);
+	jpeg,
 #endif
 #if _BUILD_BMP_HANDLER
-	image.add(bmp);
+	bmp,
 #endif
 #if _BUILD_DDS_HANDLER
-	image.add(dds);
+	dds,
 #endif
+};
+
+const std::vector<ImageHandlerPtr>& GetImageInstanceList()
+{
+	return _handlers;
+}
+
+
+bool emptyHandler() noexcept
+{
+	return _handlers.empty();
+}
+
+bool addHandler(ImageHandlerPtr handler) noexcept
+{
+	assert(handler);
+	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
+	if (it == _handlers.end())
+	{
+		_handlers.push_back(handler);
+		return true;
+	}
+
+	return false;
+}
+
+bool removeHandler(ImageHandlerPtr handler) noexcept
+{
+	assert(handler);
+	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
+	if (it != _handlers.end())
+	{
+		_handlers.erase(it);
+		return true;
+	}
+
+	return false;
+}
+
+ImageHandlerPtr findHandler(const char* type) noexcept
+{
+	if (type)
+	{
+		for (auto& it : _handlers)
+			if (it->doCanRead(type))
+				return it;
+	}
+
+	return nullptr;
+}
+
+ImageHandlerPtr findHandler(StreamReader& stream) noexcept
+{
+	if (!stream.good())
+		return nullptr;
+
+	for (auto it : _handlers)
+	{
+		stream.seekg(0, std::ios_base::beg);
+
+		if (it->doCanRead(stream))
+		{
+			stream.seekg(0, std::ios_base::beg);
+			return it;
+		}
+	}
+
+	return nullptr;
+}
+
+ImageHandlerPtr findHandler(StreamReader& stream, const char* type) noexcept
+{
+	ImageHandlerPtr result = findHandler(type);
+	if (result)
+		return result;
+	return findHandler(stream, type);
+}
+
 }
 
 _NAME_END

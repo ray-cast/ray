@@ -89,6 +89,19 @@ enum MorphType
 	MorphTypeMaterial = 8
 };
 
+enum ShapeType
+{
+	ShapeTypeTriMesh,
+	ShapeTypeRope
+};
+
+enum ShapeFlags
+{
+	ShapeFlagsB_Link,
+	ShapeFlags_ClusterCreation,
+	ShapeFlagsLinkCrossing
+};
+
 #pragma pack(push)
 #pragma pack(push,1)
 
@@ -328,6 +341,8 @@ struct PMX_Morph
 
 struct PMX
 {
+	PMX() noexcept;
+
 	PMX_Header header;
 	PMX_Description description;
 
@@ -340,6 +355,7 @@ struct PMX
 	PMX_uint32_t numDisplayFrames;
 	PMX_uint32_t numRigidbodys;
 	PMX_uint32_t numJoints;
+	PMX_uint32_t numSoftBodies;
 
 	std::vector<PMX_Vertex> vertices;
 	std::vector<PMX_Index> indices;

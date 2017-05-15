@@ -48,7 +48,7 @@ public:
 	virtual ~ModelHandler() noexcept {};
 
 	virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
-	virtual bool doCanSave(ModelType type) const noexcept = 0;
+	virtual bool doCanRead(const char* type) const noexcept = 0;
 
 	virtual bool doLoad(StreamReader& stream, Model& model) noexcept = 0;
 	virtual bool doSave(StreamWrite& stream, const Model& model) noexcept = 0;
@@ -135,15 +135,15 @@ public:
 
 	void clear() noexcept;
 
-	bool load(StreamReader& stream, ModelType type = MT_UNKNOWN) noexcept;
-	bool save(StreamWrite& stream, ModelType type = MT_OBJ) noexcept;
+	bool load(StreamReader& stream, const char* type) noexcept;
+	bool save(StreamWrite& stream, const char* type) noexcept;
 
 	bool emptyHandler() const noexcept;
 	bool addHandler(_Myhandler handler) noexcept;
 	bool removeHandler(_Myhandler handler) noexcept;
-	bool find(ModelType type, _Myhandler& handler) const noexcept;
+	bool find(const char* type, _Myhandler& handler) const noexcept;
 	bool find(StreamReader& stream, _Myhandler& handler) const noexcept;
-	bool find(StreamReader& stream, ModelType type, _Myhandler& handler) const noexcept;
+	bool find(StreamReader& stream, const char* type, _Myhandler& handler) const noexcept;
 
 private:
 	Model& operator=(const Model&) noexcept = delete;

@@ -103,10 +103,10 @@ ObjHandler::doCanRead(StreamReader& stream) const noexcept
 	return SearchFileHeaderForToken(&stream, pTokens, 2);
 }
 
-bool 
-ObjHandler::doCanSave(ModelType type) const noexcept
+bool
+ObjHandler::doCanRead(const char* type) const noexcept
 {
-	return false;
+	return std::strncmp(type, "obj", 3) == 0;
 }
 
 bool

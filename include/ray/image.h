@@ -42,21 +42,27 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 class EXPORT Image final
 {
 public:
 	Image() noexcept;
+	Image(Image&& move) noexcept;
 	~Image() noexcept;
 
-	bool create(std::uint32_t width, std::uint32_t height, ImageFormat format, bool clear = false) noexcept;
-	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, bool clear = false) noexcept;
-	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, std::uint32_t mipLevel, std::uint32_t layerLevel, std::uint32_t mipBase = 0, std::uint32_t layerBase = 0, bool clear = false) noexcept;
-	bool create(const Image& src) noexcept;
+	bool create(std::uint32_t width, std::uint32_t height, ImageFormat format, bool clear = true) noexcept;
+	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, bool clear = true) noexcept;
+	bool create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, ImageFormat format, std::uint32_t mipLevel, std::uint32_t layerLevel, std::uint32_t mipBase = 0, std::uint32_t layerBase = 0, bool clear = true) noexcept;
+	bool create(const Image& src, ImageFormat format = ImageFormat::Undefined) noexcept;
 
 	void destroy() noexcept;
 	bool empty() const noexcept;
 
-	ImageFormat getImageFormat() const noexcept;
+	ImageFormat format() const noexcept;
+
+	std::uint32_t channel() const noexcept;
 
 	std::uint32_t width() const noexcept;
 	std::uint32_t height() const noexcept;
@@ -64,29 +70,21 @@ public:
 
 	std::uint32_t size() const noexcept;
 
-	// for dds
-	std::uint32_t getMipBase() const noexcept;
-	std::uint32_t getMipLevel() const noexcept;
+	std::uint32_t mipBase() const noexcept;
+	std::uint32_t mipLevel() const noexcept;
 
-	std::uint32_t getLayerBase() const noexcept;
-	std::uint32_t getLayerLevel() const noexcept;
+	std::uint32_t layerBase() const noexcept;
+	std::uint32_t layerLevel() const noexcept;
 
 	const char* data() const noexcept;
 
 public:
-	bool load(const std::string& filename, ImageType type = ImageType::ImageTypeUnknown) noexcept;
-	bool load(StreamReader& stream, ImageType type = ImageType::ImageTypeUnknown) noexcept;
+	bool load(const std::string& filename, const char* type = "") noexcept;
+	bool load(StreamReader& stream, const char* type = "") noexcept;
 
-	bool save(const std::string& filename, ImageType type = ImageType::ImageTypePNG) noexcept;
-	bool save(StreamWrite& stream, ImageType type = ImageType::ImageTypePNG) noexcept;
+	bool save(const std::string& filename, const char* type = "tga") noexcept;
+	bool save(StreamWrite& stream, const char* type = "tga") noexcept;
 
-	bool emptyHandler() const noexcept;
-	bool add(ImageHandlerPtr handler) noexcept;
-	bool remove(ImageHandlerPtr handler) noexcept;
-	bool find(StreamReader& stream, ImageHandlerPtr& handler) const noexcept;
-	bool find(StreamReader& stream, ImageType type, ImageHandlerPtr& handler) const noexcept;
-	bool find(ImageType type, ImageHandlerPtr& handler) const noexcept;
-	
 private:
 	void _init() noexcept;
 
@@ -95,8 +93,7 @@ private:
 	Image& operator=(const Image&) noexcept = delete;
 
 private:
-	ImageType _imageType;
-	ImageFormat _imageFormat;
+	ImageFormat _format;
 
 	std::uint32_t _width;
 	std::uint32_t _height;
@@ -110,10 +107,52 @@ private:
 
 	std::size_t _size;
 
-	std::uint8_t* _data;
-
-	std::vector<ImageHandlerPtr> _handlers;
+	std::unique_ptr<std::uint8_t[]> _data;
 };
+
+ImageType type(ImageFormat format) noexcept;
+ImageType type(const Image& image) noexcept;
+
+ImageOrder order(ImageFormat format) noexcept;
+ImageOrder order(const Image& image) noexcept;
+
+template<typename _Tx, typename _Ty>
+std::enable_if_t<std::is_floating_point<_Ty>::value, void> RGBTEncode(_Tx r, _Tx g, _Tx b, _Ty encode[4], _Tx range = 1024) noexcept
+{
+	_Tx max = 0;
+	max = std::max(std::max(r, g), std::max(b, 1e-6f));
+	max = std::min(max, range);
+
+	_Tx alpha = (range + 1) / range *  max / (1 + max);
+	alpha = std::ceil(alpha * 255.0f) / 255.0f;
+
+	_Tx rcp = 1.0f / (alpha / (1.0f + 1.0f / range - alpha));
+
+	encode[0] = r * rcp;
+	encode[1] = g * rcp;
+	encode[2] = b * rcp;
+	encode[3] = alpha;
+}
+
+template<typename _Tx, typename _Ty>
+std::enable_if_t<std::is_unsigned<_Ty>::value, void> RGBTEncode(_Tx r, _Tx g, _Tx b, _Ty encode[4], _Tx range = 1024) noexcept
+{
+	_Tx max = 0;
+	max = std::max(std::max(r, g), std::max(b, 1e-6f));
+	max = std::min(max, range);
+
+	_Tx a = (range + 1) / range *  max / (1 + max);
+	a = std::ceil(a * 255.0f) / 255.0f;
+
+	_Tx rcp = 1.0f / (a / (1.0f + 1.0f / range - a));
+
+	encode[0] = math::clamp<_Ty>(r * rcp * std::numeric_limits<_Ty>::max(), 0, std::numeric_limits<_Ty>::max());
+	encode[1] = math::clamp<_Ty>(g * rcp * std::numeric_limits<_Ty>::max(), 0, std::numeric_limits<_Ty>::max());
+	encode[2] = math::clamp<_Ty>(b * rcp * std::numeric_limits<_Ty>::max(), 0, std::numeric_limits<_Ty>::max());
+	encode[3] = math::clamp<_Ty>(a * std::numeric_limits<_Ty>::max(), 0, std::numeric_limits<_Ty>::max());
+}
+
+}
 
 _NAME_END
 

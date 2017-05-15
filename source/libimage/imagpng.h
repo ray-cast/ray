@@ -41,6 +41,9 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+
 class PNGHandler final : public ImageHandler
 {
 public:
@@ -48,13 +51,17 @@ public:
 	~PNGHandler() noexcept;
 
 	bool doCanRead(StreamReader& stream) const noexcept;
-	bool doLoad(Image& image, StreamReader& stream) noexcept;
-	bool doSave(Image& image, StreamWrite& stream) noexcept;
+	bool doCanRead(const char* type_name) const noexcept;
+
+	bool doLoad(StreamReader& stream, Image& image) noexcept;
+	bool doSave(StreamWrite& stream, const Image& image) noexcept;
 
 private:
 	PNGHandler(const PNGHandler&) noexcept = delete;
 	const PNGHandler& operator=(const PNGHandler&) noexcept = delete;
 };
+
+}
 
 _NAME_END
 

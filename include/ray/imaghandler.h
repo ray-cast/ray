@@ -41,21 +41,26 @@
 
 _NAME_BEGIN
 
+namespace image
+{
+class Image;
 class EXPORT ImageHandler
 {
 public:
 	ImageHandler() noexcept {};
 	virtual ~ImageHandler() noexcept {};
 
+	virtual bool doCanRead(const char* type_name) const noexcept = 0;
 	virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
 
-	virtual bool doLoad(class Image& image, StreamReader& stream) except = 0;
-	virtual bool doSave(class Image& image, StreamWrite& stream) except = 0;
+	virtual bool doLoad(StreamReader& stream, Image& image) except = 0;
+	virtual bool doSave(StreamWrite& stream, const Image& image) except = 0;
 
 private:
 	ImageHandler(const ImageHandler&) noexcept = delete;
 	const ImageHandler& operator=(const ImageHandler&) noexcept = delete;
 };
+}
 
 _NAME_END
 

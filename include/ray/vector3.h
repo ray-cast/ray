@@ -318,52 +318,52 @@ inline bool operator>=(const _Ty value, const Vector3t<_Tx>& v)
 	return value >= v.x && value >= v.y && value >= v.z;
 }
 
-template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator+(_Ty value, const Vector3t<_Tx>& v)
+template<typename T>
+inline Vector3t<T> operator+(T value, const Vector3t<T>& v)
 {
-	return Vector3t<_Tx>((_Tx)(value + v.x), (_Tx)(value + v.y), (_Tx)(value + v.z));
+	return Vector3t<T>((T)(value + v.x), (T)(value + v.y), (T)(value + v.z));
 }
 
-template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator-(_Ty value, const Vector3t<_Tx>& v)
+template<typename T>
+inline Vector3t<T> operator-(T value, const Vector3t<T>& v)
 {
-	return Vector3t<_Tx>((_Tx)(value - v.x), (_Tx)(value - v.y), (_Tx)(value - v.z));
+	return Vector3t<T>((T)(value - v.x), (T)(value - v.y), (T)(value - v.z));
 }
 
-template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator*(_Ty value, const Vector3t<_Tx>& v)
+template<typename T>
+inline Vector3t<T> operator*(T value, const Vector3t<T>& v)
 {
-	return Vector3t<_Tx>((_Tx)(value * v.x), (_Tx)(value * v.y), (_Tx)(value * v.z));
+	return Vector3t<T>((T)(value * v.x), (T)(value * v.y), (T)(value * v.z));
 }
 
-template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator/(_Ty value, const Vector3t<_Tx>& v)
+template<typename T>
+inline Vector3t<T> operator/(T value, const Vector3t<T>& v)
 {
-	return Vector3t<_Tx>((_Tx)(value / v.x), (_Tx)(value / v.y), (_Tx)(value / v.z));
+	return Vector3t<T>((T)(value / v.x), (T)(value / v.y), (T)(value / v.z));
 }
 
-template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator+(const Vector3t<_Tx>& v, _Ty value)
+template<typename T>
+inline Vector3t<T> operator+(const Vector3t<T>& v, T value)
 {
-	return Vector3t<_Tx>((_Tx)(v.x + value), (_Tx)(v.y + value), (_Tx)(v.z + value));
+	return Vector3t<T>((T)(v.x + value), (T)(v.y + value), (T)(v.z + value));
 }
 
-template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator-(const Vector3t<_Tx>& v, _Ty value)
+template<typename T>
+inline Vector3t<T> operator-(const Vector3t<T>& v, T value)
 {
-	return Vector3t<_Tx>((_Tx)(v.x - value), (_Tx)(v.y - value), (_Tx)(v.z - value));
+	return Vector3t<T>((T)(v.x - value), (T)(v.y - value), (T)(v.z - value));
 }
 
-template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator*(const Vector3t<_Tx>& v, _Ty value)
+template<typename T>
+inline Vector3t<T> operator*(const Vector3t<T>& v, T value)
 {
-	return Vector3t<_Tx>((_Tx)(v.x * value), (_Tx)(v.y * value), (_Tx)(v.z * value));
+	return Vector3t<T>((T)(v.x * value), (T)(v.y * value), (T)(v.z * value));
 }
 
-template<typename _Tx, typename _Ty>
-inline Vector3t<_Tx> operator/(const Vector3t<_Tx>& v, _Ty value)
+template<typename T>
+inline Vector3t<T> operator/(const Vector3t<T>& v, T value)
 {
-	return Vector3t<_Tx>((_Tx)(v.x / value), (_Tx)(v.y / value), (_Tx)(v.z / value));
+	return Vector3t<T>((T)(v.x / value), (T)(v.y / value), (T)(v.z / value));
 }
 
 template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>

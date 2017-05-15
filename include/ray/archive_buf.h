@@ -52,7 +52,7 @@ public:
 	using number_unsigned_t = std::uint64_t;
 	using number_float_t = double;
 	using string_t = std::string;
-	using object_t = std::vector<std::pair<std::string, archive_node>>;
+	using object_t = std::list<std::pair<std::string, archive_node>>;
 	using iterator = object_t::iterator;
 	using reverse_iterator = object_t::reverse_iterator;
 	using const_iterator = object_t::const_iterator;
@@ -266,6 +266,8 @@ public:
 		return this->type() == archive_node::type_t::object;
 	}
 	
+	void resize(std::size_t size);
+
 	archive_node& operator=(boolean_t value);
 	archive_node& operator=(number_integer_t value);
 	archive_node& operator=(number_unsigned_t value);

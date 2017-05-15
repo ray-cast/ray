@@ -157,6 +157,8 @@ SET(PLATFORM_MATH_LIST
     ${HEADER_PATH}/vector4.h
     ${HEADER_PATH}/kdtree.h
     ${HEADER_PATH}/zintrin.h
+    ${HEADER_PATH}/sh_impl.h
+    ${HEADER_PATH}/sh.h
 )
 SOURCE_GROUP("math" FILES ${PLATFORM_MATH_LIST})
 

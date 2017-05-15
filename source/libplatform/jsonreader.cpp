@@ -40,6 +40,8 @@
 #include <sstream>
 #include <stack>
 
+#if _HAS_CXX17
+
 using Json = nlohmann::json;
 
 _NAME_BEGIN
@@ -135,3 +137,5 @@ bool writer(const std::string& path, archive_node& root)
 }
 
 _NAME_END
+
+#endif

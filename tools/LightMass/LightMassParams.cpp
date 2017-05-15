@@ -92,4 +92,9 @@ LightSampleParams::LightSampleParams() noexcept
 {
 }
 
+LightMassParams::LightMassParams()
+	: enableGI(false)
+{
+}
+
 _NAME_END

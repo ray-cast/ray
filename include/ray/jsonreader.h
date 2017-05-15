@@ -41,6 +41,7 @@
 
 _NAME_BEGIN
 
+#if _HAS_CXX17
 namespace json
 {
 	EXPORT archive_node reader(StreamReader& stream);
@@ -49,6 +50,7 @@ namespace json
 	EXPORT bool writer(StreamWrite& stream, archive_node& root);
 	EXPORT bool writer(const std::string& path, archive_node& root);
 }
+#endif
 
 _NAME_END
 

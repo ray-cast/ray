@@ -37,12 +37,17 @@
 #ifndef _H_ARCHIVEBUF_H_
 #define _H_ARCHIVEBUF_H_
 
-#include <variant>
 #include <ray/math.h>
 #include <ray/iostream.h>
 #include <ray/except.h>
 
+#if _HAS_CXX17
+#	include <variant>
+#endif
+
 _NAME_BEGIN
+
+#if _HAS_CXX17
 
 class EXPORT archive_node final
 {
@@ -313,6 +318,8 @@ private:
 private:
 	variant_t _data;
 };
+
+#endif
 
 class archivebuf
 {

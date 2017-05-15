@@ -281,7 +281,7 @@ LightMass::saveLightMass(const std::string& path, float* data, std::uint32_t w, 
 		std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * channel);
 		std::memset(lightmapTemp.get(), 0, w * h * channel * sizeof(float));
 
-		for (std::uint32_t j = 0; j < std::min<std::uint32_t>(margin >> 1, 1); j++)
+		for (std::uint32_t j = 0; j < std::max<std::uint32_t>(margin >> 1, 1); j++)
 		{
 			ImageSmooth(data, lightmapTemp.get(), w, h, channel);
 			ImageDilate(lightmapTemp.get(), data, w, h, channel);

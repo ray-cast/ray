@@ -159,6 +159,7 @@ private:
 	XmlBuf _xml;
 };
 
+#if _HAS_CXX17
 namespace xml
 {
 	EXPORT archive_node reader(StreamReader& stream);
@@ -167,6 +168,7 @@ namespace xml
 	EXPORT bool writer(StreamWrite& stream, archive_node& root);
 	EXPORT bool writer(const std::string& path, archive_node& root);
 }
+#endif
 
 _NAME_END
 

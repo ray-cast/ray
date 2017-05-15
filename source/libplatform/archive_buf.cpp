@@ -38,8 +38,10 @@
 
 _NAME_BEGIN
 
+#if _HAS_CXX17
 const archive_node& archive_node::nil = archive_node();
 const archive_node& archive_node::nilRef = archive_node();
+#endif
 
 archivebuf::archivebuf() noexcept
 {
@@ -59,6 +61,7 @@ archivebuf::unlock() noexcept
 {
 }
 
+#if _HAS_CXX17
 archive_node::archive_node()
 {
 }
@@ -556,5 +559,7 @@ archive_node::operator[](const string_t& key) const
 {
 	return this->at(key);
 }
+
+#endif
 
 _NAME_END

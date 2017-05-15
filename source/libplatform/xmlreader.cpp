@@ -981,6 +981,8 @@ XMLWrite::save(StreamWrite& ostream) noexcept
 	return (*this);
 }
 
+#if _HAS_CXX17
+
 namespace xml
 {
 	archive_node reader(StreamReader& stream)
@@ -1070,5 +1072,7 @@ namespace xml
 		return false;
 	}
 }
+
+#endif
 
 _NAME_END

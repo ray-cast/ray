@@ -123,6 +123,8 @@ struct LightBakingParams
 
 struct LightMassParams
 {
+	LightMassParams();
+
 	bool enableGI;
 	LightMapParams lightMap;
 	LightSampleParams baking;

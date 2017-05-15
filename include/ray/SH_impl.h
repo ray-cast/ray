@@ -48,14 +48,14 @@ public:
 	using value_t = T;
 	using size_t = std::size_t;
 
-	static const value_t CosineA0 = M_PI;
-	static const value_t CosineA1 = M_TWO_PI / 3.0f;
-	static const value_t CosineA2 = M_PI / 4.0f;
+	static constexpr float CosineA0 = M_PI;
+	static constexpr float CosineA1 = M_TWO_PI / 3.0f;
+	static constexpr float CosineA2 = M_PI / 4.0f;
 
 	value_t coeff[N];
 
 	SH() noexcept {}
-	explicit SH(value_t* coeffs) noexcept { for (size_t i = 0; i < N; ++i) this->coeff[i] = coeffs[N]; }
+	SH(value_t coeffs) noexcept { for (size_t i = 0; i < N; ++i) this->coeff[i] = coeffs; }
 
 	SH& operator+=(const SH& sh) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] += sh.coeff[i]; return *this; }
 	SH& operator-=(const SH& sh) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] -= sh.coeff[i]; return *this; }
@@ -67,9 +67,18 @@ public:
 	SH& operator/=(const value_t& scale) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] /= scale; return *this; }
 	SH& operator*=(const value_t& scale) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] *= scale; return *this; }
 
+	template<typename S, typename = std::enable_if<!std::is_same<T, S>>>
+	SH& operator+=(const S& scale) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] += scale; return *this; }
+	template<typename S, typename = std::enable_if<!std::is_same<T, S>>>
+	SH& operator-=(const S& scale) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] -= scale; return *this; }
+	template<typename S, typename = std::enable_if<!std::is_same<T, S>>>
+	SH& operator/=(const S& scale) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] /= scale; return *this; }
+	template<typename S, typename = std::enable_if<!std::is_same<T, S>>>
+	SH& operator*=(const S& scale) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] *= scale; return *this; }
+
 	value_t& operator[](size_t n) noexcept { assert(n < N); return coeff[n]; }
 
-	constexpr value_t& operator[](size_t n) const noexcept { assert(n < N); return coeff[n]; }
+	const value_t& operator[](size_t n) const noexcept { assert(n < N); return coeff[n]; }
 
 	void ConvolveWithCosineKernel() noexcept
 	{
@@ -84,7 +93,7 @@ public:
 };
 
 template<typename T, std::size_t N>
-SH<T, N> operator+(const SH<T, N>& sh1, const SH<T, N>& sh2) noexcept
+SH<T, N> operator+(const SH<T, N>& sh1, const SH<T, N>& scale) noexcept
 {
 	SH<T, N> result;
 	for (SH<T, N>::size_t i = 0; i < N; ++i)
@@ -152,6 +161,114 @@ SH<T, N> operator/(const SH<T, N>& sh1, const T& sh2) noexcept
 	SH<T, N> result;
 	for (SH<T, N>::size_t i = 0; i < N; ++i)
 		result.coeff[i] = sh1.coeff[i] / sh2;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator+(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<Vector3t<T>, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] + scale;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator-(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<Vector3t<T>, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] - scale;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<Vector3t<T>, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] * scale;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<Vector3t<T>, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] / scale;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator*(const SH<T, N>& sh1, const Vector3t<T>& color) noexcept
+{
+	SH<T, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] * color;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator/(const SH<T, N>& sh1, const Vector3t<T>& color) noexcept
+{
+	SH<T, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] / color;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator*(const Vector3t<T>& color, const SH<T, N>& sh1) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = color * sh1.coeff[i];
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator/(const Vector3t<T>& color, const SH<T, N>& sh1) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = color / sh1.coeff[i];
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& color) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] * color;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& color) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] / color;
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator*(const Vector3t<T>& color, const SH<Vector3t<T>, N>& sh1) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = color * sh1.coeff[i];
+	return result;
+}
+
+template<typename T, std::size_t N>
+SH<Vector3t<T>, N> operator/(const Vector3t<T>& color, const SH<Vector3t<T>, N>& sh1) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = color / sh1.coeff[i];
 	return result;
 }
 
@@ -380,8 +497,8 @@ namespace math
 		return result;
 	}
 
-	template<typename T>
-	inline SH<T, 4> ProjectOntoSH4(const Vector3t<T>& dir)
+	template<typename T, std::size_t N, typename = std::enable_if_t<N == 4>>
+	inline SH<T, 4> ProjectOntoSH(const Vector3t<T>& dir)
 	{
 		SH<T, 4> sh;
 		sh.coeff[0] = 0.282095f;
@@ -392,8 +509,8 @@ namespace math
 		return sh;
 	}
 
-	template<typename T>
-	inline SH<T, 9> ProjectOntoSH9(const Vector3t<T>& dir)
+	template<typename T, std::size_t N, typename = std::enable_if_t<N == 9>>
+	inline SH<T, 9> ProjectOntoSH(const Vector3t<T>& dir)
 	{
 		SH<T, 9> sh;
 		sh.coeff[0] = 0.282095f;
@@ -409,6 +526,54 @@ namespace math
 		return sh;
 	}
 
+	template<typename T, std::size_t N, typename = std::enable_if_t<N == 25>>
+	inline SH<T, 25> ProjectOntoSH(const Vector3t<T>& dir)
+	{
+		const T x = dir[0];
+		const T y = dir[1];
+		const T z = dir[2];
+
+		const T x2 = x*x;
+		const T y2 = y*y;
+		const T z2 = z*z;
+
+		const T z3 = pow(z, 3.0);
+
+		const T x4 = pow(x, 4.0);
+		const T y4 = pow(y, 4.0);
+		const T z4 = pow(z, 4.0);
+
+		SH<T, 25> sh;
+		sh.coeff[0] = 1.0 / (2.0 * std::sqrt(M_PI));
+		sh.coeff[1] = -sqrt(3.0 / (M_PI * 4)) * y;
+		sh.coeff[2] =  sqrt(3.0 / (M_PI * 4)) * z;
+		sh.coeff[3] = -sqrt(3.0 / (M_PI * 4)) * x;
+
+		sh.coeff[4] =  sqrt(15.0 / (M_PI * 4)) * y * x;
+		sh.coeff[5] = -sqrt(15.0 / (M_PI * 4) )* y * z;
+		sh.coeff[6] =  sqrt( 5.0 / (M_PI * 16))* (3.0 * z2 - 1.0);
+		sh.coeff[7] = -sqrt(15.0 / (M_PI * 4)) * x * z;
+		sh.coeff[8] =  sqrt(15.0 / (M_PI * 16))* (x2 - y2);
+
+		sh.coeff[9]  = -sqrt(70.0 / PI64) * y * (3 * x2 - y2);
+		sh.coeff[10] =  sqrt(105.0 / (M_PI * 4))*y*x*z;
+		sh.coeff[11] = -sqrt(21.0 / (M_PI * 16))*y*(-1.0 + 5.0*z2);
+		sh.coeff[12] =  sqrt(7.0 / (M_PI * 16))*(5.0*z3 - 3.0*z);
+		sh.coeff[13] = -sqrt(42.0 / PI64)*x*(-1.0 + 5.0*z2);
+		sh.coeff[14] =  sqrt(105.0 / (M_PI * 16))*(x2 - y2)*z;
+		sh.coeff[15] = -sqrt(70.0 / PI64)*x*(x2 - 3.0*y2);
+
+		sh.coeff[16] =  3.0*sqrt(35.0 / (M_PI * 16))*x*y*(x2 - y2);
+		sh.coeff[17] = -3.0*sqrt(70.0 / PI64)*y*z*(3.0*x2 - y2);
+		sh.coeff[18] =  3.0*sqrt(5.0 / (M_PI * 16))*y*x*(-1.0 + 7.0*z2);
+		sh.coeff[19] = -3.0*sqrt(10.0 / PI64)*y*z*(-3.0 + 7.0*z2);
+		sh.coeff[20] =  (105.0*z4 - 90.0*z2 + 9.0) / (16.0 * std::sqrt(M_PI));
+		sh.coeff[21] = -3.0*sqrt(10.0 / PI64)*x*z*(-3.0 + 7.0*z2);
+		sh.coeff[22] =  3.0*sqrt(5.0 / PI64)*(x2 - y2)*(-1.0 + 7.0*z2);
+		sh.coeff[23] = -3.0*sqrt(70.0 / PI64)*x*z*(x2 - 3.0*y2);
+		sh.coeff[24] =  3.0*sqrt(35.0 / (4.0*PI64))*(x4 - 6.0*y2*x2 + y4);
+	}
+
 	template<typename T>
 	inline SH<T, 4> ProjectOntoH4(const Vector3t<T>& dir)
 	{
@@ -419,37 +584,6 @@ namespace math
 		result[3] = std::sqrt(1.5f / 3.14159f) * dir.x;
 
 		return result;
-	}
-
-	template<typename T>
-	inline SH<Vector3t<T>, 4> ProjectOntoSH4Color(const Vector3t<T>& dir, const Vector3t<T>& color)
-	{
-		SH<T, 4> sh = ProjectOntoSH4(dir);
-		SH<Vector3t<T>, 4> shColor;
-		for (SH<T, 4>::size_t i = 0; i < 4; ++i)
-			shColor.coeff[i] = color * sh.coeff[i];
-
-		return shColor;
-	}
-
-	template<typename T>
-	inline SH<Vector3t<T>, 9> ProjectOntoSH9Color(const Vector3t<T>& dir, const Vector3t<T>& color)
-	{
-		SH<T, 9> sh = ProjectOntoSH9(dir);
-		SH<Vector3t<T>, 9> result;
-		for (SH<T, 4>::size_t i = 0; i < 9; ++i)
-			result.coeff[i] = color * sh.coeff[i];
-		return result;
-	}
-
-	template<typename T>
-	inline SH<Vector3t<T>, 4> ProjectOntoH4Color(const Vector3t<T>& dir, const Vector3t<T>& color)
-	{
-		SH<T, 4> projected = ProjectOntoH4(dir);
-		SH<Vector3t<T>, 4> hColor;
-		for (SH<T, 4>::size_t i = 0; i < 4; ++i)
-			hColor.coeff[i] = color * projected.coeff[i];
-		return hColor;
 	}
 
 	template<typename T>
@@ -499,11 +633,11 @@ namespace math
 	template<typename T>
 	inline SH<T, 4> ConvertToH4(const SH<T, 9>& sh)
 	{
-		const float rt2 = sqrt(2.0f);
-		const float rt32 = sqrt(3.0f / 2.0f);
-		const float rt52 = sqrt(5.0f / 2.0f);
-		const float rt152 = sqrt(15.0f / 2.0f);
-		const float convMatrix[4][9] =
+		const T rt2 = sqrt(2.0f);
+		const T rt32 = sqrt(3.0f / 2.0f);
+		const T rt52 = sqrt(5.0f / 2.0f);
+		const T rt152 = sqrt(15.0f / 2.0f);
+		const T convMatrix[4][9] =
 		{
 			{ 1.0f / rt2, 0, 0.5f * rt32, 0, 0, 0, 0, 0, 0 },
 			{ 0, 1.0f / rt2, 0, 0, 0, (3.0f / 8.0f) * rt52, 0, 0, 0 },
@@ -513,39 +647,11 @@ namespace math
 
 		SH<T, 4> hBasis;
 
-		for (SH<T, 4>::size_t row = 0; row < 4; ++row)
+		for (std::size_t row = 0; row < 4; ++row)
 		{
 			hBasis.coeff[row] = 0.0f;
 
-			for (SH<T, 4>::size_t col = 0; col < 9; ++col)
-				hBasis.coeff[row] += convMatrix[row][col] * sh.coeff[col];
-		}
-
-		return hBasis;
-	}
-
-	template<typename T, typename C = Vector3t<T>>
-	inline SH<C, 4> ConvertToH4(const SH<C, 9>& sh)
-	{
-		const float rt2 = sqrt(2.0f);
-		const float rt32 = sqrt(3.0f / 2.0f);
-		const float rt52 = sqrt(5.0f / 2.0f);
-		const float rt152 = sqrt(15.0f / 2.0f);
-		const float convMatrix[4][9] =
-		{
-			{ 1.0f / rt2, 0, 0.5f * rt32, 0, 0, 0, 0, 0, 0 },
-			{ 0, 1.0f / rt2, 0, 0, 0, (3.0f / 8.0f) * rt52, 0, 0, 0 },
-			{ 0, 0, 1.0f / (2.0f * rt2), 0, 0, 0, 0.25f * rt152, 0, 0 },
-			{ 0, 0, 0, 1.0f / rt2, 0, 0, 0, (3.0f / 8.0f) * rt52, 0 }
-		};
-
-		SH<C, 4> hBasis;
-
-		for (SH<T, 4>::size_t row = 0; row < 4; ++row)
-		{
-			hBasis.coeff[row].set(0.0f);
-
-			for (SH<T, 4>::size_t col = 0; col < 9; ++col)
+			for (std::size_t col = 0; col < 9; ++col)
 				hBasis.coeff[row] += convMatrix[row][col] * sh.coeff[col];
 		}
 
@@ -555,11 +661,11 @@ namespace math
 	template<typename T>
 	inline SH<T, 6> ConvertToH6(const SH<T, 9>& sh)
 	{
-		const float rt2 = sqrt(2.0f);
-		const float rt32 = sqrt(3.0f / 2.0f);
-		const float rt52 = sqrt(5.0f / 2.0f);
-		const float rt152 = sqrt(15.0f / 2.0f);
-		const float convMatrix[6][9] =
+		const T rt2 = sqrt(2.0f);
+		const T rt32 = sqrt(3.0f / 2.0f);
+		const T rt52 = sqrt(5.0f / 2.0f);
+		const T rt152 = sqrt(15.0f / 2.0f);
+		const T convMatrix[6][9] =
 		{
 			{ 1.0f / rt2, 0, 0.5f * rt32, 0, 0, 0, 0, 0, 0 },
 			{ 0, 1.0f / rt2, 0, 0, 0, (3.0f / 8.0f) * rt52, 0, 0, 0 },
@@ -582,14 +688,42 @@ namespace math
 		return hBasis;
 	}
 
-	template<typename T, typename C = Vector3t<T>>
-	inline SH<T, 6> ConvertToH6(const SH<C, 9>& sh)
+	template<typename T>
+	inline SH<Vector3t<T>, 4> ConvertToH4(const SH<Vector3t<T>, 9>& sh)
 	{
-		const float rt2 = sqrt(2.0f);
-		const float rt32 = sqrt(3.0f / 2.0f);
-		const float rt52 = sqrt(5.0f / 2.0f);
-		const float rt152 = sqrt(15.0f / 2.0f);
-		const float convMatrix[6][9] =
+		const T rt2 = sqrt(2.0f);
+		const T rt32 = sqrt(3.0f / 2.0f);
+		const T rt52 = sqrt(5.0f / 2.0f);
+		const T rt152 = sqrt(15.0f / 2.0f);
+		const T convMatrix[4][9] =
+		{
+			{ 1.0f / rt2, 0, 0.5f * rt32, 0, 0, 0, 0, 0, 0 },
+			{ 0, 1.0f / rt2, 0, 0, 0, (3.0f / 8.0f) * rt52, 0, 0, 0 },
+			{ 0, 0, 1.0f / (2.0f * rt2), 0, 0, 0, 0.25f * rt152, 0, 0 },
+			{ 0, 0, 0, 1.0f / rt2, 0, 0, 0, (3.0f / 8.0f) * rt52, 0 }
+		};
+
+		SH<Vector3t<T>, 4> hBasis;
+
+		for (std::size_t row = 0; row < 4; ++row)
+		{
+			hBasis.coeff[row].set(0.0f);
+
+			for (std::size_t col = 0; col < 9; ++col)
+				hBasis.coeff[row] += convMatrix[row][col] * sh.coeff[col];
+		}
+
+		return hBasis;
+	}
+
+	template<typename T>
+	inline SH<Vector3t<T>, 6> ConvertToH6(const SH<Vector3t<T>, 9>& sh)
+	{
+		const T rt2 = sqrt(2.0f);
+		const T rt32 = sqrt(3.0f / 2.0f);
+		const T rt52 = sqrt(5.0f / 2.0f);
+		const T rt152 = sqrt(15.0f / 2.0f);
+		const T convMatrix[6][9] =
 		{
 			{ 1.0f / rt2, 0, 0.5f * rt32, 0, 0, 0, 0, 0, 0 },
 			{ 0, 1.0f / rt2, 0, 0, 0, (3.0f / 8.0f) * rt52, 0, 0, 0 },
@@ -599,13 +733,13 @@ namespace math
 			{ 0, 0, 0, 0, 0, 0, 0, 0, 1.0f / rt2 }
 		};
 
-		SH<C, 6> hBasis;
+		SH<Vector3t<T>, 6> hBasis;
 
-		for (SH<T, 4>::size_t row = 0; row < 6; ++row)
+		for (std::size_t row = 0; row < 6; ++row)
 		{
 			hBasis.coeff[row].set(0.0f);
 
-			for (SH<T, 4>::size_t col = 0; col < 9; ++col)
+			for (std::size_t col = 0; col < 9; ++col)
 				hBasis.coeff[row] += convMatrix[row][col] * sh.coeff[col];
 		}
 
@@ -613,12 +747,12 @@ namespace math
 	}
 
 	template<typename T>
-	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t s, std::uint32_t w, std::uint32_t h)
+	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t face, std::uint32_t w, std::uint32_t h)
 	{
-		float u = ((x + 0.5f) / float(w)) * 2.0f - 1.0f;
-		float v = ((y + 0.5f) / float(h)) * 2.0f - 1.0f;
+		T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
+		T v = ((y + 0.5f) / T(h)) * 2.0f - 1.0f;
 
-		switch (s) 
+		switch (face)
 		{
 		case 0: //+z
 			return normalize(Vector3t<T>(u, v, 1.0f));
@@ -637,40 +771,165 @@ namespace math
 			return Vector3t<T>::Zero;
 		}
 	}
-	
-	template<typename T>
-	inline SH<Vector3t<T>, 9> ProjectCubemapToSH9(std::uint32_t w, std::uint32_t h, Vector3t<T>* data)
+
+	template<typename T, std::size_t face, std::enable_if_t<face == 0, int> = 0>
+	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h)
 	{
-		SH<Vector3t<T>, 9> result;
+		T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
+		T v = ((y + 0.5f) / T(h)) * 2.0f - 1.0f;
+		return normalize(Vector3t<T>(u, v, 1.0f));
+	}
 
-		float weightSum = 0.0f;
+	template<typename T, std::size_t face, std::enable_if_t<face == 1, int> = 0>
+	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h)
+	{
+		T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
+		T v = ((y + 0.5f) / T(h)) * 2.0f - 1.0f;
+		return normalize(Vector3t<T>(-u, v, -1.0f));
+	}
 
-		for (SH<T, 4>::size_t face = 0; face < 6; ++face)
+	template<typename T, std::size_t face, std::enable_if_t<face == 2, int> = 0>
+	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h)
+	{
+		T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
+		T v = ((y + 0.5f) / T(h)) * 2.0f - 1.0f;
+		return normalize(Vector3t<T>(1.0f, v, -u));
+	}
+
+	template<typename T, std::size_t face, std::enable_if_t<face == 3, int> = 0>
+	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h)
+	{
+		T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
+		T v = ((y + 0.5f) / T(h)) * 2.0f - 1.0f;
+		return normalize(Vector3t<T>(-1.0f, v, u));
+	}
+
+	template<typename T, std::size_t face, std::enable_if_t<face == 4, int> = 0>
+	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h)
+	{
+		T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
+		T v = ((y + 0.5f) / T(h)) * 2.0f - 1.0f;
+		return normalize(Vector3t<T>(u, 1.0f, -v));
+	}
+
+	template<typename T, std::size_t face, std::enable_if_t<face == 5, int> = 0>
+	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h)
+	{
+		T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
+		T v = ((y + 0.5f) / T(h)) * 2.0f - 1.0f;
+		return normalize(Vector3t<T>(u, -1.0f, v));
+	}
+
+	template<typename T, std::size_t N, std::size_t face, std::enable_if_t<(N == 6 || N == 9 || N == 25) && face >= 0 && face < 6, int> = 0>
+	SH<Vector3t<T>, N> CalcCubefaceToSH(std::uint32_t w, std::uint32_t h, Vector3t<T>* data, T& weights)
+	{
+		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
+
+		for (std::uint32_t y = 0; y < h; ++y)
 		{
-			for (SH<T, 4>::size_t y = 0; y < h; ++y)
+			for (std::uint32_t x = 0; x < w; ++x)
 			{
-				for (SH<T, 4>::size_t x = 0; x < w; ++x)
-				{
-					const Vector3t<T>& sample = data[face * (width * height) + width * y + x];
+				const auto& sample = data[face * (w * h) + w * y + x];
 
-					T u = (x + T(0.5f)) / width;
-					T v = (y + T(0.5f)) / height;
+				T u = (x + T(0.5f)) / w;
+				T v = (y + T(0.5f)) / h;
 
-					u = u * T(2.0f) - T(1.0f);
-					v = v * T(2.0f) - T(1.0f);
+				u = u * T(2.0f) - T(1.0f);
+				v = v * T(2.0f) - T(1.0f);
 
-					T temp = 1.0f + u * u + v * v;
-					T weight = 4.0f / (std::sqrt(temp) * temp);
+				T temp = 1.0f + u * u + v * v;
+				T weight = 4.0f / (std::sqrt(temp) * temp);
 
-					Vector3t<T> dir = CalcCubeNormal(x, y, face, width, height);
-					result += ProjectOntoSH9Color(dir, sample) * weight;
-					weightSum += weight;
-				}
+				Vector3t<T> dir = CalcCubeNormal<T, face>(x, y, w, h);
+
+				SH<T, N> sh = ProjectOntoSH<T, N>(dir);
+
+				for (std::size_t i = 0; i < N; ++i)
+					result.coeff[i] += sample * sh.coeff[i] * weight;
+
+				weights += weight;
 			}
 		}
 
-		result *= (T(4.0f) * M_PI) / weightSum;
 		return result;
+	}
+
+	template<typename T, std::size_t N = 9, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
+	SH<Vector3t<T>, N> CalcCubemapToSH(std::uint32_t w, std::uint32_t h, Vector3t<T>* data)
+	{
+		T weightSum(0.0);
+
+		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
+		result += CalcCubefaceToSH<T, N, 0>(w, h, data, weightSum);
+		result += CalcCubefaceToSH<T, N, 1>(w, h, data, weightSum);
+		result += CalcCubefaceToSH<T, N, 2>(w, h, data, weightSum);
+		result += CalcCubefaceToSH<T, N, 3>(w, h, data, weightSum);
+		result += CalcCubefaceToSH<T, N, 4>(w, h, data, weightSum);
+		result += CalcCubefaceToSH<T, N, 5>(w, h, data, weightSum);
+
+		return result * T(4.0f * M_PI) / weightSum;
+	}
+
+	template<typename T, std::size_t N, std::size_t face, std::enable_if_t<(N == 9) && face >= 0 && face < 6, int> = 0>
+	void CalcCubefaceToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst)
+	{
+		Vector3t<T>* data = dst + (w * h) * face;
+
+		for (std::uint32_t y = 0; y < h; ++y)
+		{
+			for (std::uint32_t x = 0; x < w; ++x)
+			{
+				auto basis = ProjectOntoSH<T, N>(CalcCubeNormal<T, face>(x, y, w, h));
+				Vector3t<T> color = shColor.coeff[0] * basis[0];
+
+				std::size_t n = 1;
+				for (; n < 4; ++n)
+					color += shColor.coeff[n] * basis[n] * (2.0f / 3.0f);
+
+				for (; n < 9; ++n)
+					color += shColor.coeff[n] * basis[n] * (1.0f / 4.0f);
+
+				*(data++) = color;
+			}
+		}
+	}
+
+	template<typename T, std::size_t N, std::size_t face, std::enable_if_t<(N == 25) && face >= 0 && face < 6, int> = 0>
+	void CalcCubefaceToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst)
+	{
+		Vector3t<T>* data = dst + (w * h) * face;
+
+		for (std::uint32_t y = 0; y < h; ++y)
+		{
+			for (std::uint32_t x = 0; x < w; ++x)
+			{
+				auto basis = ProjectOntoSH<T, N>(CalcCubeNormal<T, face>(x, y, w, h));
+				Vector3t<T> color = shColor.coeff[0] * basis[0];
+
+				std::size_t n = 1;
+				for (; n < 4; ++n)
+					color += shColor.coeff[n] * basis[n] * (2.0f / 3.0f);
+
+				for (; n < 9; ++n)
+					color += shColor.coeff[n] * basis[n] * (1.0f / 4.0f);
+
+				for (n = 16; n < 25; ++n)
+					color += shColor.coeff[n] * basis[n] * (-1.0f / 24.0f);
+
+				*(data++) = color;
+			}
+		}
+	}
+
+	template<typename T, std::size_t N = 9, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
+	void CalcCubemapToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst)
+	{
+		CalcCubefaceToIrradiance<T, N, 0>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<T, N, 1>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<T, N, 2>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<T, N, 3>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<T, N, 4>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<T, N, 5>(shColor, w, h, dst);
 	}
 }
 

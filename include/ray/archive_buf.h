@@ -37,10 +37,280 @@
 #ifndef _H_ARCHIVEBUF_H_
 #define _H_ARCHIVEBUF_H_
 
-#include <ray/iostream.h>
+#include <variant>
 #include <ray/math.h>
+#include <ray/iostream.h>
+#include <ray/except.h>
 
 _NAME_BEGIN
+
+class EXPORT archive_node final
+{
+public:
+	using boolean_t = bool;
+	using number_integer_t = std::int64_t;
+	using number_unsigned_t = std::uint64_t;
+	using number_float_t = double;
+	using string_t = std::string;
+	using object_t = std::vector<std::pair<std::string, archive_node>>;
+	using iterator = object_t::iterator;
+	using reverse_iterator = object_t::reverse_iterator;
+	using const_iterator = object_t::const_iterator;
+	using const_reverse_iterator = object_t::const_reverse_iterator;
+
+	using variant_t = std::variant<
+		void*,
+		boolean_t,
+		number_integer_t,
+		number_unsigned_t,
+		number_float_t,
+		std::unique_ptr<string_t>, 
+		std::unique_ptr<std::uint8_t>,
+		std::unique_ptr<object_t>
+	>;
+
+	static const archive_node& nil;
+	static const archive_node& nilRef;
+
+	enum type_t
+	{
+		null,
+		boolean,
+		number_integer,
+		number_unsigned,
+		number_float,
+		string,
+		array,
+		object,
+	};
+public:
+	archive_node();
+	archive_node(type_t value);
+	archive_node(boolean_t value);
+	archive_node(number_integer_t value);
+	archive_node(number_unsigned_t value);
+	archive_node(number_float_t value);
+	archive_node(string_t&& value);
+	archive_node(const string_t& value);
+	archive_node(const string_t::value_type* value);
+	archive_node(archive_node&& value);
+	archive_node(const archive_node& value);
+	~archive_node();
+
+	archive_node& at(const string_t& key);
+	archive_node& at(const string_t::value_type* key);
+
+	const archive_node& at(const string_t& key) const;
+	const archive_node& at(const string_t::value_type* key) const;
+
+	template<type_t type, typename = std::enable_if_t<type == type_t::boolean>>
+	constexpr boolean_t get() const { return this->_get<type>(); }
+
+	template<type_t type, typename = std::enable_if_t<type == type_t::number_integer>>
+	constexpr number_integer_t get() const { return this->_get<type>(); }
+
+	template<type_t type, typename = std::enable_if_t<type == type_t::number_integer>>
+	constexpr number_integer_t get(number_integer_t min, number_integer_t max) const { return std::clamp(this->_get<type>(), min, max); }
+
+	template<type_t type, typename = std::enable_if_t<type == type_t::number_unsigned>>
+	constexpr number_unsigned_t get() const { return this->_get<type>(); }
+
+	template<type_t type, typename = std::enable_if_t<type == type_t::number_unsigned>>
+	constexpr number_unsigned_t get(number_unsigned_t min, number_unsigned_t max) const { return std::clamp(this->_get<type>(), min, max); }
+
+	template<type_t type, typename = std::enable_if_t<type == type_t::number_float>>
+	constexpr number_float_t get() const { return this->_get<type>(); }
+
+	template<type_t type, typename = std::enable_if_t<type == type_t::string>>
+	constexpr const string_t& get() const { return *this->_get<type>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, bool>::value>>
+	constexpr bool get() const { return this->get<archive_node::type_t::boolean>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, std::int32_t>::value>>
+	constexpr std::int32_t get() const { return this->get<archive_node::type_t::number_integer>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, std::uint32_t>::value>>
+	constexpr std::uint32_t get() const { return this->get<archive_node::type_t::number_unsigned>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, number_integer_t>::value>>
+	constexpr number_integer_t get() const { return this->get<archive_node::type_t::number_integer>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, number_unsigned_t>::value>>
+	constexpr number_unsigned_t get() const { return this->get<archive_node::type_t::number_unsigned>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, float>::value>>
+	constexpr float get() const { return this->get<float, archive_node::type_t::number_float>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
+	constexpr double get() const { return this->get<double, archive_node::type_t::number_float>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, string_t>::value>>
+	constexpr const string_t& get() const { return this->get<archive_node::type_t::string>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, std::int32_t>::value>>
+	constexpr std::int32_t get(std::int32_t min, std::int32_t max) const { return std::clamp(this->get<archive_node::type_t::number_integer>(), min, max); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, std::uint32_t>::value>>
+	constexpr std::uint32_t get(std::uint32_t min, std::uint32_t max) const { return std::clamp(this->get<archive_node::type_t::number_unsigned>(), min, max); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, number_integer_t>::value>>
+	constexpr number_integer_t get(number_integer_t min, number_integer_t max) const { return std::clamp(this->get<archive_node::type_t::number_integer>(), min, max); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, number_unsigned_t>::value>>
+	constexpr number_unsigned_t get(number_unsigned_t min, number_unsigned_t max) const { return std::clamp(this->get<archive_node::type_t::number_unsigned>(), min, max); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, float>::value>>
+	constexpr float get(float min, float max) const { return std::clamp(this->get<float, archive_node::type_t::number_float>(), min, max); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
+	constexpr double get(double min, double max) const { return std::clamp(this->get<double, archive_node::type_t::number_float>(), min, max); }
+
+	void push_back(const string_t& key, boolean_t value);
+	void push_back(const string_t& key, const number_integer_t& value);
+	void push_back(const string_t& key, const number_unsigned_t& value);
+	void push_back(const string_t& key, const number_float_t& value);
+	void push_back(const string_t& key, const string_t& value);
+	void push_back(const string_t& key, const string_t::value_type* value);
+	void push_back(const string_t& key, archive_node&& value);
+
+	iterator begin() noexcept;
+	iterator end() noexcept;
+
+	const_iterator begin() const noexcept;
+	const_iterator end() const noexcept;
+
+	reverse_iterator rbegin() noexcept;
+	reverse_iterator rend() noexcept;
+
+	const_reverse_iterator rbegin() const noexcept;
+	const_reverse_iterator rend() const noexcept;
+
+	archive_node& front() noexcept;
+	const archive_node& front() const noexcept;
+
+	archive_node& back() noexcept;
+	const archive_node& back() const noexcept;
+
+	void emplace(type_t type) noexcept;
+
+	type_t type() const noexcept;
+
+	char* type_name() const noexcept
+	{
+		return this->type_name(this->type());
+	}
+
+	char* type_name(type_t type) const noexcept
+	{
+		switch (type)
+		{
+		case archive_node::type_t::null:
+			return "null";
+		case archive_node::type_t::boolean:
+			return "boolean";
+		case archive_node::type_t::number_integer:
+			return "interger";
+		case archive_node::type_t::number_unsigned:
+			return "unsigned interger";
+		case archive_node::type_t::number_float:
+			return "float point";
+		case archive_node::type_t::string:
+			return "string";
+		case archive_node::type_t::array:
+			return "array";
+		case archive_node::type_t::object:
+			return "object";
+		default:
+			return "bad";
+		}
+	}
+
+	bool is_null() const noexcept
+	{
+		return this->type() == archive_node::type_t::null;
+	}
+
+	bool is_boolean() const noexcept
+	{
+		return this->type() == archive_node::type_t::boolean;
+	}
+
+	bool is_integral() const noexcept
+	{
+		return this->type() == archive_node::type_t::number_integer || this->type() == archive_node::type_t::number_unsigned;
+	}
+
+	bool is_float() const noexcept
+	{
+		return this->type() == archive_node::type_t::number_float;
+	}
+
+	bool is_string() const noexcept
+	{
+		return this->type() == archive_node::type_t::string;
+	}
+
+	bool is_numeric() const noexcept
+	{
+		return this->is_integral() || this->is_float();
+	}
+
+	bool is_array() const noexcept
+	{
+		return this->type() == archive_node::type_t::array;
+	}
+
+	bool is_object() const noexcept
+	{
+		return this->type() == archive_node::type_t::object;
+	}
+	
+	archive_node& operator=(boolean_t value);
+	archive_node& operator=(number_integer_t value);
+	archive_node& operator=(number_unsigned_t value);
+	archive_node& operator=(number_float_t value);
+	archive_node& operator=(string_t&& value);
+	archive_node& operator=(const string_t& value);
+	archive_node& operator=(archive_node&& value);
+
+	archive_node& operator[](const char* key);
+	archive_node& operator[](const string_t& key);
+
+	const archive_node& operator[](const char* key) const;
+	const archive_node& operator[](const string_t& key) const;
+
+private:
+	template<typename T, type_t type>
+	constexpr T get() const
+	{
+		switch (_data.index())
+		{
+		case type_t::boolean:
+			return (T)std::get<type_t::boolean>(_data);
+		case type_t::number_integer:
+			return (T)std::get<type_t::number_integer>(_data);
+		case type_t::number_unsigned:
+			return (T)std::get<type_t::number_unsigned>(_data);
+		case type_t::number_float:
+			return (T)std::get<type_t::number_float>(_data);
+		default:
+			throw failure(string_t("type must be number, but is ") + this->type_name());
+		}
+	}
+
+	template<type_t type>
+	constexpr decltype(auto) _get() const
+	{
+		if (this->type() != type)
+			throw failure(string_t("type must be ") + type_name(type) + " but is " + this->type_name());
+
+		return std::get<type>(_data);
+	}
+
+private:
+	variant_t _data;
+};
 
 class archivebuf
 {
@@ -97,6 +367,7 @@ private:
 	archivebuf(const archivebuf&) noexcept = delete;
 	archivebuf& operator=(const archivebuf&) noexcept = delete;
 };
+
 
 _NAME_END
 

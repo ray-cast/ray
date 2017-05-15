@@ -167,12 +167,12 @@ public:
 		return *this;
 	}
 
-	void setMin(const Vector3& _min) noexcept
+	void setMin(const Vector3t<T>& _min) noexcept
 	{
 		min = _min;
 	}
 
-	void setMax(const Vector3& _max) noexcept
+	void setMax(const Vector3t<T>& _max) noexcept
 	{
 		max = _max;
 	}
@@ -190,12 +190,12 @@ public:
 		max = pos1;
 	}
 
-	const Vector3& getMin() const noexcept
+	const Vector3t<T>& getMin() const noexcept
 	{
 		return min;
 	}
 
-	const Vector3& getMax() const noexcept
+	const Vector3t<T>& getMax() const noexcept
 	{
 		return max;
 	}

@@ -81,7 +81,7 @@ LightMapPack::getLightMapListener() const noexcept
 }
 
 bool
-LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, float chart, float stretch, float margin) noexcept
+LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32_t chart, float stretch, float margin) noexcept
 {
 	if (_lightMapListener)
 		_lightMapListener->onUvmapperStart();
@@ -133,9 +133,6 @@ LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, float chart
 		return true;
 	};
 
-	std::uint32_t maxChartNumber = chart * model.numIndices / 3;
-	maxChartNumber = maxChartNumber == 0 ? 0 : std::max(maxChartNumber, model.numVertices);
-
 	if (model.header.sizeOfIndices == 1)
 		return false;
 	else if (model.header.sizeOfIndices == 2)
@@ -145,7 +142,7 @@ LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, float chart
 			atlasVertices.size(),
 			model.indices.data(),
 			DXGI_FORMAT::DXGI_FORMAT_R16_UINT,
-			model.numIndices / 3, maxChartNumber, stretch, w, h, margin, adj.data(), 0, 0,
+			model.numIndices / 3, chart, stretch, w, h, margin, adj.data(), 0, 0,
 			callback,
 			0.5,
 			DirectX::UVATLAS_DEFAULT,
@@ -165,7 +162,7 @@ LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, float chart
 			atlasVertices.size(),
 			model.indices.data(),
 			DXGI_FORMAT::DXGI_FORMAT_R32_UINT,
-			model.numIndices / 3, maxChartNumber, stretch, w, h, margin, adj.data(), 0, 0,
+			model.numIndices / 3, chart, stretch, w, h, margin, adj.data(), 0, 0,
 			callback,
 			0.5,
 			DirectX::UVATLAS_DEFAULT,

@@ -158,7 +158,6 @@ public:
 	}
 
 private:
-
 	iarchive(const iarchive&) noexcept = delete;
 	iarchive& operator=(const iarchive&) noexcept = delete;
 };

@@ -34,33 +34,21 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHTMAP_PACK_H_
-#define _H_LIGHTMAP_PACK_H_
+#ifndef _H_JSONREADER_H_
+#define _H_JSONREADER_H_
 
-#include "LightMapListener.h"
-#include "modpmx.h"
+#include <ray/ioarchive.h>
 
 _NAME_BEGIN
 
-class LightMapPack
+namespace json
 {
-public:
-	LightMapPack() noexcept;
-	LightMapPack(LightMapListenerPtr listener) noexcept;
-	~LightMapPack() noexcept;
+	EXPORT archive_node reader(StreamReader& stream);
+	EXPORT archive_node reader(const std::string& path);
 
-	void setLightMapListener(LightMapListenerPtr pointer) noexcept;
-	LightMapListenerPtr getLightMapListener() const noexcept;
-
-	bool atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32_t chart, float stretch, float margin) noexcept;
-	bool atlasUV2(PMX& pmx, std::uint32_t w, std::uint32_t h, std::uint32_t margin) noexcept;
-
-	std::uint32_t getFace(const PMX& pmx, std::size_t n) noexcept;
-	std::uint32_t getFace(const PMX& pmx, std::size_t n, std::uint32_t firstIndex) noexcept;
-
-private:
-	LightMapListenerPtr _lightMapListener;
-};
+	EXPORT bool writer(StreamWrite& stream, archive_node& root);
+	EXPORT bool writer(const std::string& path, archive_node& root);
+}
 
 _NAME_END
 

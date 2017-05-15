@@ -101,6 +101,10 @@ SET(LIBRARY_OUTPUT_PATH_RELEASE ${LIBRARY_OUTPUT_PATH})
 SET(LIBRARY_OUTPUT_PATH_RELWITHDEBINFO ${LIBRARY_OUTPUT_PATH})
 SET(LIBRARY_OUTPUT_PATH_MINSIZEREL ${LIBRARY_OUTPUT_PATH})
 
+SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+
 MACRO(SET_TARGET_ATTRIBUTE target directory)
     SET_TARGET_PROPERTIES(${target} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH}
@@ -192,6 +196,8 @@ ELSEIF(CMAKE_GENERATOR MATCHES "Visual Studio")
 
         SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /W0")
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
+        
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest")
 
         # SEH
         SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /EHa")
@@ -232,44 +238,44 @@ IF(CMAKE_GENERATOR MATCHES "Visual Studio")
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshift-negative-value")
     ELSE()
         # 设置错误提示
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Wall")
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4061") # 枚举数没有被 case 标签显式处理
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4100") # 未引用的形参
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4191") # 不安全的函数转换
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4548") # 逗号前的表达式不起任何作用；应输入带副作用的表达式
-        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4201")
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4242") # 从“const int”转换到“BYTE”，可能丢失数据
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4244") # 从“int”转换到“unsigned char”，可能丢失数据
+        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W3")
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4061") # 枚举数没有被 case 标签显式处理
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4100") # 未引用的形参
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4191") # 不安全的函数转换
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4548") # 逗号前的表达式不起任何作用；应输入带副作用的表达式
+        ##SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4201")
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4242") # 从“const int”转换到“BYTE”，可能丢失数据
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4244") # 从“int”转换到“unsigned char”，可能丢失数据
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4251") # needs to have dll-interface to be used by clients of class
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4265") # 类有虚函数，但析构函数不是虚拟的
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4267") # 从“size_t”转换到“int”，可能丢失数据
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4265") # 类有虚函数，但析构函数不是虚拟的
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4267") # 从“size_t”转换到“int”，可能丢失数据
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4275") #  非 dll 接口 class“std::exception”用作 dll 接口 class“MyGUI::Exception”的基
-        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4305")
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4350") # 行为更改
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4355") # “this”: 用于基成员初始值设定项列表
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4365") # 不安全的整数转换
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4371") # 类的布局可能与早期版本的编译器有所不同
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4435") # 虚拟继承
-        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4480")
-        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4481")
+        ##SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4305")
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4350") # 行为更改
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4355") # “this”: 用于基成员初始值设定项列表
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4365") # 不安全的整数转换
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4371") # 类的布局可能与早期版本的编译器有所不同
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4435") # 虚拟继承
+        ##SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4480")
+        ##SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4481")
 
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4514") # “func” 未引用的内联函数已移除
-        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4548")
-        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4571")
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4623") # 已将默认构造函数隐式定义为“已删除
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4625") #未能生成复制构造函数，因为基类复制构造函数不可访问或已被删除
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4626") #未能生成赋值运算符，因为基类赋值运算符不可访问或已被删除
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4640") #本地静态对象的结构是非线程安全的
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4668") # 没有将“symbol”定义为预处理器宏，用“0”替换“directives”
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4710") # “function”: 函数未内联
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4711") # "function":自动内联
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4820") # “bytes”字节填充添加在构造“member_name”之后
-        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4836")
-        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4986") # 异常规范与前面的声明不匹配
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4987") # 使用了非标准扩展
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4996") # _CRT_SECURE_NO_WARNINGS
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd5026") # 已将移动构造函数隐式定义为“已删除”
-        SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd5027") # 已将移动赋值运算符隐式定义为“已删除”
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4514") # “func” 未引用的内联函数已移除
+        ##SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4548")
+        ##SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4571")
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4623") # 已将默认构造函数隐式定义为“已删除
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4625") #未能生成复制构造函数，因为基类复制构造函数不可访问或已被删除
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4626") #未能生成赋值运算符，因为基类赋值运算符不可访问或已被删除
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4640") #本地静态对象的结构是非线程安全的
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4668") # 没有将“symbol”定义为预处理器宏，用“0”替换“directives”
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4710") # “function”: 函数未内联
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4711") # "function":自动内联
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4820") # “bytes”字节填充添加在构造“member_name”之后
+        ##SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4836")
+        ##SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4986") # 异常规范与前面的声明不匹配
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4987") # 使用了非标准扩展
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4996") # _CRT_SECURE_NO_WARNINGS
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd5026") # 已将移动构造函数隐式定义为“已删除”
+        #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd5027") # 已将移动赋值运算符隐式定义为“已删除”
     ENDIF()
 ENDIF()
 

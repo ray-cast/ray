@@ -421,8 +421,8 @@ namespace math
 			}
 
 			T st = std::sin(theta);
-			T inv_st = 1.0 / st;
-			T c0 = std::sin((1.0 - t) * theta) * inv_st;
+			T inv_st = 1.0f / st;
+			T c0 = std::sin((1.0f - t) * theta) * inv_st;
 			T c1 = std::sin(t * theta) * inv_st;
 
 			Quaterniont<T> result;

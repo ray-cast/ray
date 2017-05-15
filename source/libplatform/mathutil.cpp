@@ -44,7 +44,7 @@ namespace math
 {
 	void randomize()
 	{
-		srand(time(NULL));
+		srand((unsigned int)time(NULL));
 	}
 
 	void randomize(unsigned int seed)

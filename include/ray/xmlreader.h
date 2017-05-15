@@ -159,6 +159,15 @@ private:
 	XmlBuf _xml;
 };
 
+namespace xml
+{
+	EXPORT archive_node reader(StreamReader& stream);
+	EXPORT archive_node reader(const std::string& path);
+
+	EXPORT bool writer(StreamWrite& stream, archive_node& root);
+	EXPORT bool writer(const std::string& path, archive_node& root);
+}
+
 _NAME_END
 
 #endif

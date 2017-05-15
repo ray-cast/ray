@@ -46,6 +46,21 @@
 
 #include <glfw/glfw3.h>
 
+#include <ray/fcntl.h>
+#include <ray/except.h>
+#include <ray/ioserver.h>
+#include <ray/mstream.h>
+#include <ray/xmlreader.h>
+#include <ray/jsonreader.h>
+
+struct AppParams
+{
+	std::uint32_t chart;
+	float stretch;
+	float margin;
+	ray::LightMassParams lightMass;
+};
+
 class AppMapListener : public ray::LightMapListener
 {
 public:
@@ -135,85 +150,6 @@ public:
 	{
 	}
 
-	std::uint32_t GetImageSize()
-	{
-		std::uint32_t size = 0;
-		while (!size)
-		{
-			std::cout << "Enter the image size (512, 1024, 2048, 4096, 8192): ";
-			char paths[MAX_PATH];
-			std::cin.getline(paths, MAX_PATH);
-			size = atoi(paths);
-		}
-
-		return std::floor(size / 2) * 2;
-	}
-
-	std::uint32_t GetImageMargin()
-	{
-		std::uint32_t size = 0;
-		while (!size)
-		{
-			std::cout << "Enter the image margin (1, 2, 3, 4, 5 and above): ";
-			char paths[MAX_PATH];
-			std::cin.getline(paths, MAX_PATH);
-			size = atoi(paths);
-			if (size > 1)
-				break;
-		}
-
-		return size;
-	}
-
-	std::uint32_t GetGIEnable()
-	{
-		std::uint32_t channel = 0;
-		while (!channel)
-		{
-			std::cout << "Enable Global Illumination (Y/N, 1/0) :";
-			char c;
-			std::cin.get(c);
-			if (c == 'y' || c == 'Y' || c == '1')
-				channel = 4;
-			if (c == 'n' || c == 'N' || c == '0')
-				channel = 1;
-		}
-
-		return channel;
-	}
-
-	std::uint32_t GetSampleCount()
-	{
-		std::uint32_t size = 0;
-		while (!size)
-		{
-			std::cout << "Enter the sample size (16, 32, 64, 128, 256, 512): ";
-			char paths[MAX_PATH];
-			std::cin.getline(paths, MAX_PATH);
-			size = atoi(paths);
-			if (size == 16 || size == 32 || size == 64 || size == 128 || size == 256, size == 512)
-				break;
-		}
-
-		return size;
-	}
-
-	std::uint32_t GetSampleScale()
-	{
-		std::uint32_t size = 0;
-		while (!size)
-		{
-			std::cout << "Enter the sample scale (1, 2, 3, 4, 5): ";
-			char paths[MAX_PATH];
-			std::cin.getline(paths, MAX_PATH);
-			size = atoi(paths);
-			if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5)
-				break;
-		}
-
-		return size;
-	}
-
 	bool load(const std::string& path, ray::PMX& model)
 	{
 		ray::PMXHandler modelLoader;
@@ -255,6 +191,30 @@ public:
 		return true;
 	}
 
+	void getParams(AppParams& params)
+	{
+		ray::StreamReaderPtr stream;
+		if (!ray::IoServer::instance()->openFile(stream, "root:config.json", ray::ios_base::in))
+			throw ray::failure(__TEXT("Opening file fail: config.txt"));
+
+		auto json = ray::json::reader(*stream);
+
+		params.lightMass.lightMap.width = std::clamp<std::uint32_t>(json["lightmap"]["width"].get<float>(), 256, 8192);
+		params.lightMass.lightMap.height = std::clamp<std::uint32_t>(json["lightmap"]["height"].get<float>(), 256, 8192);
+		params.lightMass.lightMap.margin = std::clamp<std::uint32_t>(json["lightmap"]["margin"].get<float>(), 0, 16);
+
+		params.margin = std::clamp<float>(json["uvmapper"]["margin"].get<float>(), 0.0, 16.0);
+		params.stretch = std::clamp<float>(json["uvmapper"]["stretch"].get<float>(), 0.0, 1.0);
+		params.chart = std::max<std::uint32_t>(json["uvmapper"]["chart"].get<float>(), 0);
+
+		params.lightMass.baking.hemisphereSize = std::clamp<std::uint32_t>(json["lightmass"]["hemisphereSize"].get<float>(), 16, 512);
+		params.lightMass.baking.hemisphereNear = std::max<float>(json["lightmass"]["hemisphereNear"].get<float>(), 1e-5);
+		params.lightMass.baking.hemisphereFar = std::max<float>(json["lightmass"]["hemisphereFar"].get<float>(), params.lightMass.baking.hemisphereNear);
+		params.lightMass.baking.interpolationPasses = std::clamp<std::uint32_t>(json["lightmass"]["interpolationPasses"].get<float>(), 0, 16);
+		params.lightMass.baking.interpolationThreshold = json["lightmass"]["interpolationThreshold"].get<float>();
+		params.lightMass.enableGI = json["lightmass"]["enableGI"].get<float>() > 0 ? 1 : 0;
+	}
+
 	bool run(std::string path)
 	{
 		while (path.empty())
@@ -265,11 +225,8 @@ public:
 			path.append(paths);
 		}
 
-		ray::LightMassParams params;
-		params.lightMap.width = params.lightMap.height = GetImageSize();
-		params.lightMap.margin = GetImageMargin();
-		params.baking.hemisphereSize = GetSampleCount();
-		params.enableGI = GetGIEnable() == 1 ? false : true;
+		AppParams params;
+		this->getParams(params);
 
 		ray::PMX model;
 		if (!this->load(path, model))
@@ -278,7 +235,7 @@ public:
 		if (model.header.addUVCount == 0)
 		{
 			ray::LightMapPack lightPack(_lightMapListener);
-			if (!lightPack.atlasUV1(model, params.lightMap.width, params.lightMap.height, 0, 0.001, params.lightMap.margin))
+			if (!lightPack.atlasUV1(model, params.lightMass.lightMap.width, params.lightMass.lightMap.height, params.chart, params.stretch, params.lightMass.lightMap.margin))
 				return false;
 
 			if (!this->save(ray::util::directory(path) + "stage.pmx", model))
@@ -290,13 +247,13 @@ public:
 			return false;
 
 		ray::LightMapData lightMap;
-		if (!lightMass->baking(params, model, lightMap))
+		if (!lightMass->baking(params.lightMass, model, lightMap))
 			return false;
 
 		std::string outputPath = ray::util::directory(path) + "ao.tga";
 		std::cout << "Save as image : " << outputPath << std::endl;
 		
-		if (!lightMass->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMap.margin))
+		if (!lightMass->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMass.lightMap.margin))
 		{
 			std::cout << "Failed to save image : " << outputPath << std::endl;
 			return false;
@@ -312,8 +269,25 @@ private:
 
 bool domain_main(int argc, char** argv)
 {
-	auto app = std::make_shared<Application>();
-	return app->run(argc > 1 ? argv[1] : "");
+	try
+	{
+		if (argc != 0)
+		{
+			if (ray::fcntl::access(argv[0], 0) == 0)
+			{
+				auto root = ray::util::directory(argv[0]);
+				ray::IoServer::instance()->addAssign(ray::IoAssign("root", root));
+			}
+		}
+
+		auto app = std::make_shared<Application>();
+		return app->run(argc > 1 ? argv[1] : "");
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what();
+		return false;
+	}
 }
 
 int main(int argc, char** argv)

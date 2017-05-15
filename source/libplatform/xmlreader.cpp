@@ -35,7 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/xmlreader.h>
+#include <ray/fstream.h>
 #include <sstream>
+#include <stack>
 #include <tinyxml.h>
 
 _NAME_BEGIN
@@ -92,12 +94,12 @@ XmlBuf::is_open() const noexcept
 bool
 XmlBuf::load(StreamReader& stream) noexcept
 {
-	std::size_t length = stream.size();
+	auto length = stream.size();
 	if (length == 0)
 		return false;
 
 	std::string data;
-	data.resize(length);
+	data.resize((std::size_t)length);
 
 	if (!stream.read((char*)data.c_str(), length))
 		return false;
@@ -977,6 +979,96 @@ XMLWrite::save(StreamWrite& ostream) noexcept
 	}
 
 	return (*this);
+}
+
+namespace xml
+{
+	archive_node reader(StreamReader& stream)
+	{
+		auto length = stream.size();
+		if (length == 0 || length > std::numeric_limits<std::string::size_type>::max())
+			return false;
+
+		std::string data;
+		data.resize((std::string::size_type)length);
+
+		if (!stream.read((char*)data.c_str(), (std::string::size_type)length))
+			return false;
+
+		TiXmlDocument xml;
+		xml.Parse(data.c_str());
+
+		if (xml.Error())
+			throw failure(xml.ErrorDesc());
+		
+		auto document = xml.ToDocument();
+		if (!document)
+			return archive_node::null;
+
+		archive_node root;
+
+		std::stack<std::pair<archive_node*, TiXmlElement*>> nodes;
+
+		auto childern = document->FirstChildElement();
+		while (childern)
+		{
+			nodes.push(std::make_pair(&root[childern->Value()], childern));
+			childern = childern->NextSiblingElement();
+		}
+
+		while (!nodes.empty())
+		{
+			auto node = nodes.top();
+			nodes.pop();
+
+			auto attribute = node.second->FirstAttribute();
+			if (attribute)
+			{
+				while (attribute)
+				{
+					node.first->push_back(attribute->Name(), attribute->Value());
+					attribute = attribute->Next();
+				}
+			}
+
+			const TiXmlNode* child = node.second->FirstChild();
+			if (child)
+			{
+				const TiXmlText* childText = child->ToText();
+				if (childText) 
+				{
+					node.first->push_back("CDATA", childText->Value());
+				}
+			}
+
+			auto childern = node.second->FirstChildElement();
+			while (childern)
+			{
+				node.first->push_back(childern->Value(), archive_node(archive_node::object));
+				nodes.push(std::make_pair(&node.first->back(), childern));
+				childern = childern->NextSiblingElement();
+			}
+		}
+
+		return root;
+	}
+
+	archive_node reader(const std::string& path)
+	{
+		ifstream stream;
+		if (!stream.open(path))
+			return archive_node::null;
+		return reader(stream);
+	}
+
+	bool writer(StreamWrite& stream, archive_node& root)
+	{
+		return false;
+	}
+	bool writer(const std::string& path, archive_node& root)
+	{
+		return false;
+	}
 }
 
 _NAME_END

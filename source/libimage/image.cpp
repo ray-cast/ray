@@ -109,7 +109,6 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, fo
 		auto channel = this->channel(format);
 		auto type_size = this->type_size(format);
 
-		std::size_t destLength = 0;
 		std::uint32_t pixelSize = type_size * channel;
 
 		for (std::uint32_t mip = mipBase; mip < mipBase + mipLevel; mip++)
@@ -121,9 +120,8 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, fo
 			w = std::max(w >> 1, (std::uint32_t)1);
 			h = std::max(h >> 1, (std::uint32_t)1);
 		}
-
-		return destLength;
 	}
+	break;
 	case value_t::Compressed:
 	{
 		std::uint32_t blockSize = 16;
@@ -135,7 +133,6 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, fo
 			blockSize = 8;
 		}
 
-		std::size_t destLength = 0;
 		for (std::uint32_t mip = mipBase; mip < mipBase + mipLevel; mip++)
 		{
 			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * depth * blockSize;
@@ -145,9 +142,8 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, fo
 			w = std::max(w >> 1, (std::uint32_t)1);
 			h = std::max(h >> 1, (std::uint32_t)1);
 		}
-
-		return destLength;
 	}
+	break;
 	case value_t::UNorm5_6_5:
 	case value_t::UNorm5_5_5_1:
 	case value_t::UNorm1_5_5_5:
@@ -163,6 +159,9 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, fo
 		return 0;
 	}
 
+	if (destLength == 0)
+		return false;
+
 	_format = format;
 
 	_width = width;
@@ -176,9 +175,7 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, fo
 	_data = std::make_unique<std::uint8_t[]>(destLength);
 
 	if (clear)
-	{
 		std::memset(_data.get(), 0, (std::size_t)this->size());
-	}
 
 	return true;
 }

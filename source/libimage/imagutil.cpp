@@ -43,6 +43,9 @@ namespace image
 {
 	void r32f_to_r8uint(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
 	{
+		assert(src && dst);
+		assert(w > 0 && h > 0 && channel > 0);
+
 		for (std::size_t i = 0; i < w * h * channel; i++)
 		{
 			dst[i] = (std::uint8_t)math::clamp<std::uint16_t>((std::uint16_t)(src[i] * 255), 0, 255);
@@ -51,6 +54,9 @@ namespace image
 
 	void r32f_to_r8sint(const float* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
 	{
+		assert(src && dst);
+		assert(w > 0 && h > 0 && channel > 0);
+
 		for (std::size_t i = 0; i < w * h * channel; i++)
 		{
 			dst[i] = (std::uint8_t)math::clamp<std::uint16_t>((std::uint16_t)(src[i] * 127), -127, 127);
@@ -59,6 +65,9 @@ namespace image
 
 	void r64f_to_r8uint(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
 	{
+		assert(src && dst);
+		assert(w > 0 && h > 0 && channel > 0);
+
 		for (std::size_t i = 0; i < w * h * channel; i++)
 		{
 			dst[i] = (std::uint8_t)math::clamp<std::uint16_t>((std::uint16_t)(src[i] * 255), 0, 255);
@@ -67,6 +76,9 @@ namespace image
 
 	void r64f_to_r8sint(const double* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel)
 	{
+		assert(src && dst);
+		assert(w > 0 && h > 0 && channel > 0);
+
 		for (std::size_t i = 0; i < w * h * channel; i++)
 		{
 			dst[i] = (std::uint8_t)math::clamp<std::uint16_t>((std::uint16_t)(src[i] * 127), -127, 127);
@@ -75,6 +87,9 @@ namespace image
 
 	void rgb32f_to_rgbt8(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
 	{
+		assert(src && dst);
+		assert(w > 0 && h > 0 && channel > 0);
+
 		for (std::uint32_t i = 0; i < h; i++)
 		{
 			for (std::uint32_t j = 0; j < w; j++)
@@ -90,6 +105,9 @@ namespace image
 
 	void rgb64f_to_rgbt8(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
 	{
+		assert(src && dst);
+		assert(w > 0 && h > 0 && channel > 0);
+
 		for (std::uint32_t i = 0; i < h; i++)
 		{
 			for (std::uint32_t j = 0; j < w; j++)

@@ -49,6 +49,8 @@ class EXPORT Image final
 {
 public:
 	using format_t = image::format_t;
+	using swizzle_t = image::swizzle_t;
+	using value_t = image::value_t;
 
 public:
 	Image() noexcept;
@@ -78,6 +80,18 @@ public:
 	std::uint32_t layerLevel() const noexcept;
 
 	const char* data() const noexcept;
+
+	value_t value_type() const noexcept;
+	swizzle_t swizzle_type() const noexcept;
+
+	std::uint8_t channel() const noexcept;
+	std::uint8_t type_size() const noexcept;
+
+public:
+	static value_t value_type(format_t format) noexcept;
+	static swizzle_t swizzle_type(format_t format) noexcept;
+	static std::uint8_t channel(format_t format) noexcept;
+	static std::uint8_t type_size(format_t format) noexcept;
 
 public:
 	bool load(const std::string& filename, const char* type = nullptr) noexcept;
@@ -110,22 +124,6 @@ private:
 
 	std::unique_ptr<std::uint8_t[]> _data;
 };
-
-value_t value_type(image::format_t format) noexcept;
-value_t value_type(const Image& image) noexcept;
-
-swizzle_t swizzle_type(image::format_t format) noexcept;
-swizzle_t swizzle_type(const Image& image) noexcept;
-
-std::uint32_t channel(image::format_t format) noexcept;
-std::uint32_t channel(const Image& image) noexcept;
-
-std::uint32_t type_size(image::format_t format) noexcept;
-std::uint32_t type_size(const Image& image) noexcept;
-
-std::size_t data_size(std::uint32_t width, std::uint32_t height, std::uint32_t depth, image::format_t format, std::uint32_t mipLevel, std::uint32_t layerLevel, std::uint32_t mipBase = 0, std::uint32_t layerBase = 0) noexcept;
-std::size_t data_size(const Image& image) noexcept;
-
 }
 
 _NAME_END

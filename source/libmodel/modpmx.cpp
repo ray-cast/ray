@@ -567,7 +567,7 @@ PMXHandler::doLoad(StreamReader& stream, Model& model) noexcept
 
 				wcstombs(name, texture.name, MAX_PATH);
 
-				material->set(MATKEY_COLOR_SPHEREMAP(0), name);
+				material->set(MATKEY_COLOR_SPHEREMAP, name);
 			}
 		}
 

@@ -43,13 +43,13 @@ _NAME_BEGIN
 
 namespace image
 {
-EXPORT bool emptyHandler() noexcept;
-EXPORT bool addHandler(ImageHandlerPtr handler) noexcept;
-EXPORT bool removeHandler(ImageHandlerPtr handler) noexcept;
+	EXPORT bool emptyHandler() noexcept;
+	EXPORT bool addHandler(ImageHandlerPtr handler) noexcept;
+	EXPORT bool removeHandler(ImageHandlerPtr handler) noexcept;
 
-EXPORT ImageHandlerPtr findHandler(const char* type) noexcept;
-EXPORT ImageHandlerPtr findHandler(StreamReader& stream) noexcept;
-EXPORT ImageHandlerPtr findHandler(StreamReader& stream, const char* type) noexcept;
+	EXPORT ImageHandlerPtr findHandler(const char* type) noexcept;
+	EXPORT ImageHandlerPtr findHandler(StreamReader& stream) noexcept;
+	EXPORT ImageHandlerPtr findHandler(StreamReader& stream, const char* type) noexcept;
 }
 
 _NAME_END

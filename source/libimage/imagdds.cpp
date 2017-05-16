@@ -1014,7 +1014,7 @@ DDSHandler::doLoad(StreamReader& stream, Image& image) noexcept
 	info.mip_level = std::max<dds_uint>(1, info.mip_level);
 	info10.arraySize = std::max<dds_uint>(info10.arraySize, 1);
 
-	std::size_t faceCount = 1;
+	std::uint8_t faceCount = 1;
 	if (info.caps.cubemap & DDSCAPS2_CUBEMAP_ALLFACES)
 	{
 		faceCount = 0;
@@ -1035,12 +1035,10 @@ DDSHandler::doLoad(StreamReader& stream, Image& image) noexcept
 
 	if (info.mip_level > 1 && faceCount > 1 && info.flags & DDSD_PITCH)
 	{
-		streamsize length = stream.size() - offset;
-		if (length > std::numeric_limits<std::size_t>::max())
-			return false;
+		auto length = (std::size_t)(stream.size() - offset);
 
-		auto data = make_scope<char[]>((std::size_t)length);
-		if (!stream.read((char*)data.get(), (std::size_t)length))
+		auto data = std::make_unique<char[]>(length);
+		if (!stream.read((char*)data.get(), length))
 			return false;
 
 		if (!image.create(info.width, info.height, info.depth * faceCount, format, info.mip_level, info10.arraySize))

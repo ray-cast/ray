@@ -63,6 +63,16 @@ struct TGAHeader
 
 #pragma pack(pop)
 
+#define TGA_TYPE_RGB 2
+#define TGA_TYPE_GRAY 3
+
+#define TGA_BPP_8 8
+#define TGA_BPP_16 16
+#define TGA_BPP_24 24
+#define TGA_BPP_32 32
+
+#define TGA_ATTRIB_ALPHA 8
+
 TGAHandler::TGAHandler() noexcept
 {
 }
@@ -278,22 +288,22 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 bool
 TGAHandler::doSave(StreamWrite& stream, const Image& image) noexcept
 {
-	auto channel = image::channel(image);
-	auto type_size = image::type_size(image);
+	auto channel = image.channel();
+	auto type_size = image.type_size();
 
 	std::size_t destLength = 0;
-	std::uint32_t pixelSize = type_size * channel * 8;
+	std::uint8_t pixelSize = type_size * channel * 8;
 
-	if (pixelSize != 8 && pixelSize != 16 && pixelSize != 24 && pixelSize != 32)
+	if (pixelSize != TGA_BPP_8 && pixelSize != TGA_BPP_16 && pixelSize != TGA_BPP_24 && pixelSize != TGA_BPP_32)
 		return false;
 
-	bool isGreyscale = channel == 1;
-	bool hasAlpha = pixelSize == 32 ? true : false;
+	bool isGreyscale = pixelSize == TGA_BPP_8;
+	bool hasAlpha = pixelSize == TGA_BPP_32 ? true : false;
 
 	TGAHeader header;
 	header.id_length = 0;
 	header.colormap_type = 0;
-	header.image_type = isGreyscale ? 3 : 2;
+	header.image_type = isGreyscale ? TGA_TYPE_GRAY : TGA_TYPE_RGB;
 	header.colormap_index = 0;
 	header.colormap_length = 0;
 	header.colormap_size = 0;
@@ -302,7 +312,7 @@ TGAHandler::doSave(StreamWrite& stream, const Image& image) noexcept
 	header.width = image.width();
 	header.height = image.height();
 	header.pixel_size = pixelSize;
-	header.attributes = hasAlpha ? 8 : 0;
+	header.attributes = hasAlpha ? TGA_ATTRIB_ALPHA : 0;
 
 	stream.write((char*)&header, sizeof(header));
 	stream.write((char*)image.data(), image.size());

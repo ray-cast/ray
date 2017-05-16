@@ -43,14 +43,14 @@ _NAME_BEGIN
 
 namespace image
 {
-	EXPORT void r32f_to_r8uint(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel);
-	EXPORT void r32f_to_r8sint(const float* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel);
+	EXPORT void r32f_to_r8uint(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel);
+	EXPORT void r32f_to_r8sint(const float* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel);
 
-	EXPORT void r64f_to_r8uint(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel);
-	EXPORT void r64f_to_r8sint(const double* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel);
+	EXPORT void r64f_to_r8uint(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel);
+	EXPORT void r64f_to_r8sint(const double* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel);
 
-	EXPORT void rgb32f_to_rgbt8(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel);
-	EXPORT void rgb64f_to_rgbt8(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel);
+	EXPORT void rgb32f_to_rgbt8(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel);
+	EXPORT void rgb64f_to_rgbt8(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel);
 
 	EXPORT void rgb32f_to_rgb8uint(const Image& src, Image& dst);
 	EXPORT void rgb64f_to_rgb8uint(const Image& src, Image& dst);
@@ -140,8 +140,8 @@ namespace image
 		encode[3] = (_Ty)std::clamp<_Tx>(a * maxLimits, minLimits, maxLimits);
 	}
 
-	EXPORT void smoothFilter(const float* src, float* dst, std::uint32_t w, std::uint32_t h, std::uint32_t c) noexcept;
-	EXPORT void dilateFilter(const float* src, float* dst, std::uint32_t w, std::uint32_t h, std::uint32_t c) noexcept;
+	EXPORT void smoothFilter(const float* src, float* dst, std::uint32_t w, std::uint32_t h, std::uint8_t c) noexcept;
+	EXPORT void dilateFilter(const float* src, float* dst, std::uint32_t w, std::uint32_t h, std::uint8_t c) noexcept;
 }
 
 _NAME_END

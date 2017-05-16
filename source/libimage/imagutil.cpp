@@ -41,10 +41,10 @@ _NAME_BEGIN
 
 namespace image
 {
-	void r32f_to_r8uint(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
+	void r32f_to_r8uint(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel)
 	{
 		assert(src && dst);
-		assert(w > 0 && h > 0 && channel > 0);
+		assert(w > 0 && h > 0 && channel > 0 && channel <= 4);
 
 		for (std::size_t i = 0; i < w * h * channel; i++)
 		{
@@ -52,10 +52,10 @@ namespace image
 		}
 	}
 
-	void r32f_to_r8sint(const float* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
+	void r32f_to_r8sint(const float* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel)
 	{
 		assert(src && dst);
-		assert(w > 0 && h > 0 && channel > 0);
+		assert(w > 0 && h > 0 && channel > 0 && channel <= 4);
 
 		for (std::size_t i = 0; i < w * h * channel; i++)
 		{
@@ -63,10 +63,10 @@ namespace image
 		}
 	}
 
-	void r64f_to_r8uint(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
+	void r64f_to_r8uint(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel)
 	{
 		assert(src && dst);
-		assert(w > 0 && h > 0 && channel > 0);
+		assert(w > 0 && h > 0 && channel > 0 && channel <= 4);
 
 		for (std::size_t i = 0; i < w * h * channel; i++)
 		{
@@ -77,7 +77,7 @@ namespace image
 	void r64f_to_r8sint(const double* src, std::int8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel)
 	{
 		assert(src && dst);
-		assert(w > 0 && h > 0 && channel > 0);
+		assert(w > 0 && h > 0 && channel > 0 && channel <= 4);
 
 		for (std::size_t i = 0; i < w * h * channel; i++)
 		{
@@ -85,10 +85,10 @@ namespace image
 		}
 	}
 
-	void rgb32f_to_rgbt8(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
+	void rgb32f_to_rgbt8(const float* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel)
 	{
 		assert(src && dst);
-		assert(w > 0 && h > 0 && channel > 0);
+		assert(w > 0 && h > 0 && channel > 0 && channel <= 4);
 
 		for (std::uint32_t i = 0; i < h; i++)
 		{
@@ -103,10 +103,10 @@ namespace image
 		}
 	}
 
-	void rgb64f_to_rgbt8(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint32_t channel)
+	void rgb64f_to_rgbt8(const double* src, std::uint8_t* dst, std::uint32_t w, std::uint32_t h, std::uint8_t channel)
 	{
 		assert(src && dst);
-		assert(w > 0 && h > 0 && channel > 0);
+		assert(w > 0 && h > 0 && channel > 0 && channel <= 4);
 
 		for (std::uint32_t i = 0; i < h; i++)
 		{
@@ -321,9 +321,10 @@ namespace image
 		}
 	}
 
-	void dilateFilter(const float* image, float* outImage, std::uint32_t w, std::uint32_t h, std::uint32_t c) noexcept
+	void dilateFilter(const float* image, float* outImage, std::uint32_t w, std::uint32_t h, std::uint8_t c) noexcept
 	{
-		assert(c > 0 && c <= 4);
+		assert(image && outImage);
+		assert(w > 0 && h > 0 && c > 0 && c <= 4);
 
 		for (std::uint32_t y = 0; y < h; y++)
 		{
@@ -375,9 +376,10 @@ namespace image
 		}
 	}
 
-	void smoothFilter(const float* image, float* outImage, std::uint32_t w, std::uint32_t h, std::uint32_t c) noexcept
+	void smoothFilter(const float* image, float* outImage, std::uint32_t w, std::uint32_t h, std::uint8_t c) noexcept
 	{
-		assert(c > 0 && c <= 4);
+		assert(image && outImage);
+		assert(w > 0 && h > 0 && c > 0 && c <= 4);
 
 		for (std::uint32_t y = 0; y < h; y++)
 		{

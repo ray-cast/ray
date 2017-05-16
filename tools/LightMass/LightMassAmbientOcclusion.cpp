@@ -233,7 +233,8 @@ LightBakingAO::doSampleHemisphere(const LightBakingParams& params, const Viewpor
 			_drawcalls.push_back(command);
 		}
 
-		glMultiDrawElementsIndirect(GL_TRIANGLES, faceType, _drawcalls.data(), _drawcalls.size(), 0);
+		assert(_drawcalls.size() < std::numeric_limits<GLsizei>::max());
+		glMultiDrawElementsIndirect(GL_TRIANGLES, faceType, _drawcalls.data(), (GLsizei)_drawcalls.size(), 0);
 	}
 	else
 	{

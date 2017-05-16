@@ -247,7 +247,7 @@ public:
 	{
 		ray::StreamReaderPtr stream;
 		if (!ray::IoServer::instance()->openFile(stream, "root:config.json", ray::ios_base::in))
-			throw ray::failure(__TEXT("Opening file fail: config.txt"));
+			throw ray::failure(__TEXT("Opening file fail: config.json"));
 
 		auto json = ray::json::reader(*stream);
 

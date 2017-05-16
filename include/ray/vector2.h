@@ -66,8 +66,14 @@ public:
 	Vector2t(T xx, T yy) noexcept : x(xx), y(yy) {}
 	explicit Vector2t(T xy) noexcept : x(xy), y(xy) {}
 
-	template<typename S>
-	explicit Vector2t(S* xy) noexcept : x(xy[0]), y(xy[1]) {}
+	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
+	explicit Vector2t(S xy[2]) noexcept
+		: x(static_cast<typename trait::_typeaddition<S>::value_type>(xy[0]))
+		, y(static_cast<typename trait::_typeaddition<S>::value_type>(xy[1]))
+	{
+		assert(xy[0] < std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(xy[1] < std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+	}
 
 	Vector2t<T>& operator+=(T scale) noexcept { x += scale; y += scale; return *this; }
 	Vector2t<T>& operator-=(T scale) noexcept { x -= scale; y -= scale; return *this; }
@@ -79,14 +85,17 @@ public:
 	Vector2t<T>& operator*=(const Vector2t<T>& v) noexcept { x *= v.x; y *= v.y; return *this; }
 	Vector2t<T>& operator/=(const Vector2t<T>& v) noexcept { x /= v.x; y /= v.y; return *this; }
 
-	template <typename S>
-	explicit operator Vector2t<S>() const
+	template <typename S, typename std::enable_if_t<!std::is_pointer<S>::value>>
+	explicit operator Vector2t<S>() const noexcept
 	{
+		assert(x <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(y <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+
 		return Vector2t<S>(static_cast<S>(x), static_cast<S>(y));
 	}
 
-	T operator[](unsigned int i) const noexcept { return *(&x + i); }
-	reference operator[](unsigned int i) noexcept { return *(&x + i); }
+	T operator[](std::uint8_t i) const noexcept { return *(&x + i); }
+	reference operator[](std::uint8_t i) noexcept { return *(&x + i); }
 
 	void set(T val) noexcept { x = y = val; }
 	void set(T xx, T yy) noexcept { x = xx; y = yy; }
@@ -109,22 +118,6 @@ public:
 	const_pointer ptr() const noexcept { return (const_pointer)this; }
 	pointer data() noexcept { return (pointer)this; }
 	const_pointer data() const noexcept { return (const_pointer)this; }
-
-	template<typename ostream>
-	ostream& operator << (ostream& os)
-	{
-		os << x << ", " << y;
-		return os;
-	}
-
-	template<typename istream>
-	istream& operator >> (istream& is)
-	{
-		is >> x;
-		is.ignore(2);
-		is >> y;
-		return is;
-	}
 };
 
 template<typename T> const Vector2t<T> Vector2t<T>::Zero = Vector2t<T>((T)0, (T)0);
@@ -293,13 +286,13 @@ namespace math
 	}
 
 	template<typename T>
-	inline bool isfinite(const Vector2t<T>& v)
+	inline bool isfinite(const Vector2t<T>& v) noexcept
 	{
 		return std::isfinite(v.x) && std::isfinite(v.y);
 	}
 
 	template<typename T>
-	inline bool lineIntersection(const Vector2t<T>& x0, const Vector2t<T>& x1, const Vector2t<T>& y0, const Vector2t<T>& y1, Vector2t<T>& res)
+	inline bool lineIntersection(const Vector2t<T>& x0, const Vector2t<T>& x1, const Vector2t<T>& y0, const Vector2t<T>& y1, Vector2t<T>& res) noexcept
 	{
 		Vector2t<T> dx = x1 - x0;
 		Vector2t<T> dy = y1 - y0;
@@ -326,7 +319,7 @@ namespace math
 	}
 
 	template<typename T>
-	inline Vector2t<T> clamp(const Vector2t<T>& t, T min, T max)
+	inline Vector2t<T> clamp(const Vector2t<T>& t, T min, T max) noexcept
 	{
 		return Vector2t<T>(
 			std::max(min, std::min(max, t.x)),
@@ -337,7 +330,7 @@ namespace math
 	template<typename T>
 	inline Vector2t<T> saturate(const Vector2t<T>& v) noexcept
 	{
-		return clamp(v, 0.0f, 1.0f);
+		return clamp(v, T(0.0f), T(1.0f));
 	}
 
 	template<typename T>
@@ -384,109 +377,109 @@ namespace math
 	}
 
 	template<typename T>
-	inline Vector2t<T> abs(const Vector2t<T>& v)
+	inline Vector2t<T> abs(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::abs(v.x), std::abs(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> cos(const Vector2t<T>& v)
+	inline Vector2t<T> cos(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::cos(v.x), std::cos(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> sin(const Vector2t<T>& v)
+	inline Vector2t<T> sin(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::sin(v.x), std::sin(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> tan(const Vector2t<T>& v)
+	inline Vector2t<T> tan(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::tan(v.x), std::tan(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> acos(const Vector2t<T>& v)
+	inline Vector2t<T> acos(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::acos(v.x), std::acos(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> asin(const Vector2t<T>& v)
+	inline Vector2t<T> asin(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::asin(v.x), std::asin(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> atan(const Vector2t<T>& v)
+	inline Vector2t<T> atan(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::atan(v.x), std::atan(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> exp(const Vector2t<T>& v)
+	inline Vector2t<T> exp(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::exp(v.x), std::exp(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> exp2(const Vector2t<T>& v)
+	inline Vector2t<T> exp2(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::exp2(v.x), std::exp2(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> log(const Vector2t<T>& v)
+	inline Vector2t<T> log(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::log(v.x), std::log(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> log2(const Vector2t<T>& v)
+	inline Vector2t<T> log2(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::log2(v.x), std::log2(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> log10(const Vector2t<T>& v)
+	inline Vector2t<T> log10(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::log10(v.x), std::log10(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> sqrt(const Vector2t<T>& v1)
+	inline Vector2t<T> sqrt(const Vector2t<T>& v1) noexcept
 	{
 		return Vector2t<T>(std::sqrt(v1.x), std::sqrt(v1.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> pow(const Vector2t<T>& v1, const Vector2t<T>& v2)
+	inline Vector2t<T> pow(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 	{
 		return Vector2t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> random(const Vector2t<T>& min, const Vector2t<T>& max)
+	inline Vector2t<T> random(const Vector2t<T>& min, const Vector2t<T>& max) noexcept
 	{
 		return Vector2t<T>(random(min.x, max.x), random(min.y, max.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> ceil(const Vector2t<T>& v)
+	inline Vector2t<T> ceil(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::ceil(v.x), std::ceil(v.y));
 	}
 
 	template<typename T>
-	inline Vector2t<T> floor(const Vector2t<T>& v)
+	inline Vector2t<T> floor(const Vector2t<T>& v) noexcept
 	{
 		return Vector2t<T>(std::floor(v.x), std::floor(v.y));
 	}
 
 	template<typename T>
-	static Vector2t<T> barycentric(const Vector2t<T>& p1, const Vector2t<T>& p2, const Vector2t<T>& p3, const Vector2t<T>& p)
+	static Vector2t<T> barycentric(const Vector2t<T>& p1, const Vector2t<T>& p2, const Vector2t<T>& p3, const Vector2t<T>& p) noexcept
 	{
 		// http://www.blackpawn.com/texts/pointinpoly/
 

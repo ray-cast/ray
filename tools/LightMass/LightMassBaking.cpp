@@ -103,8 +103,8 @@ LightMassBaking::setup(const LightSampleParams& params) noexcept
 	context->hemisphere.fbHemiCountX = 1536 / (3 * context->hemisphere.size);
 	context->hemisphere.fbHemiCountY = 512 / context->hemisphere.size;
 
-	std::uint32_t w[] = { context->hemisphere.fbHemiCountX * context->hemisphere.size * 3, context->hemisphere.fbHemiCountX * context->hemisphere.size / 2 };
-	std::uint32_t h[] = { context->hemisphere.fbHemiCountY * context->hemisphere.size,     context->hemisphere.fbHemiCountY * context->hemisphere.size / 2 };
+	std::size_t w[] = { context->hemisphere.fbHemiCountX * context->hemisphere.size * 3, context->hemisphere.fbHemiCountX * context->hemisphere.size / 2 };
+	std::size_t h[] = { context->hemisphere.fbHemiCountY * context->hemisphere.size,     context->hemisphere.fbHemiCountY * context->hemisphere.size / 2 };
 
 	glGenTextures(2, context->hemisphere.fbTexture);
 	glGenFramebuffers(2, context->hemisphere.fb);
@@ -406,9 +406,12 @@ LightMassBaking::setGeometry(int positionsType, const void *positionsXYZ, int po
 void
 LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 {
+	assert(_ctx->lightmap.width < std::numeric_limits<float>::max());
+	assert(_ctx->lightmap.height < std::numeric_limits<float>::max());
+
 	float2 uvMin(FLT_MAX, FLT_MAX);
 	float2 uvMax(-FLT_MAX, -FLT_MAX);
-	float2 uvScale(_ctx->lightmap.width, _ctx->lightmap.height);
+	float2 uvScale((float)_ctx->lightmap.width, (float)_ctx->lightmap.height);
 
 	_ctx->meshPosition.triangle.baseIndex = indicesTriangleBaseIndex;
 

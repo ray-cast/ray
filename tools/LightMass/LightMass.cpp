@@ -138,9 +138,14 @@ LightMass::baking(const LightMassParams& params, const PMX& model, LightMapData&
 	option.lightMap.height = map.height = params.lightMap.height;
 	option.lightMap.channel = map.channel = params.enableGI ? 4 : 1;
 
-	auto lightmap = std::make_unique<float[]>(params.lightMap.width * params.lightMap.height * option.lightMap.channel);
-	std::memset(lightmap.get(), 0, params.lightMap.width * params.lightMap.height * sizeof(float));
-	option.lightMap.data = std::move(lightmap);
+	if (map.data)
+		option.lightMap.data = std::move(map.data);
+	else
+	{
+		auto lightmap = std::make_unique<float[]>(params.lightMap.width * params.lightMap.height * option.lightMap.channel);
+		std::memset(lightmap.get(), 0, params.lightMap.width * params.lightMap.height * sizeof(float));
+		option.lightMap.data = std::move(lightmap);
+	}
 
 	option.model.vertices = (std::uint8_t*)model.vertices.data();
 	option.model.indices = model.indices.data();

@@ -62,94 +62,118 @@ public:
 	static const Vector3t<T> Up;
 	static const Vector3t<T> Forward;
 
-	Vector3t() {}
-	Vector3t(T xx, T yy, T zz) :x(xx), y(yy), z(zz) { }
-	Vector3t(T xx, const Vector2t<T>& yz) :x(xx), y(yz.x), z(yz.y) {}
-	Vector3t(const Vector2t<T>& xy, T zz) :x(xy.x), y(xy.y), z(zz) {}
-	explicit Vector3t(const Vector4t<T>& v) :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
-	explicit Vector3t(T xyz) :x(xyz), y(xyz), z(xyz) {}
+	Vector3t() noexcept {}
+	Vector3t(T xx, T yy, T zz) noexcept :x(xx), y(yy), z(zz) { }
+	Vector3t(T xx, const Vector2t<T>& yz) noexcept :x(xx), y(yz.x), z(yz.y) {}
+	Vector3t(const Vector2t<T>& xy, T zz) noexcept :x(xy.x), y(xy.y), z(zz) {}
+	explicit Vector3t(const Vector4t<T>& v) noexcept :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
+	explicit Vector3t(T xyz) noexcept :x(xyz), y(xyz), z(xyz) {}
 	
-	template<typename S>
-	explicit Vector3t(S* xyz) :x(xyz[0]), y(xyz[1]), z(xyz[2]) {}
-
-	Vector3t<T>& operator+=(const T sz) { x += sz; y += sz; z += sz; return *this; }
-	Vector3t<T>& operator-=(const T sz) { x -= sz; y -= sz; z -= sz; return *this; }
-	Vector3t<T>& operator*=(const T sz) { x *= sz; y *= sz; z *= sz; return *this; }
-	Vector3t<T>& operator/=(const T sz) { x /= sz; y /= sz; z /= sz; return *this; }
-
-	Vector3t<T>& operator+=(const Vector2t<T>& rt) { x += rt.x; y += rt.y; return *this; }
-	Vector3t<T>& operator-=(const Vector2t<T>& rt) { x -= rt.x; y -= rt.y; return *this; }
-	Vector3t<T>& operator/=(const Vector2t<T>& rt) { x *= rt.x; y *= rt.y; return *this; }
-	Vector3t<T>& operator*=(const Vector2t<T>& rt) { x /= rt.x; y /= rt.y; return *this; }
-
-	Vector3t<T>& operator+=(const Vector3t<T>& pt) { x += pt.x; y += pt.y; z += pt.z; return *this; }
-	Vector3t<T>& operator-=(const Vector3t<T>& pt) { x -= pt.x; y -= pt.y; z -= pt.z; return *this; }
-	Vector3t<T>& operator*=(const Vector3t<T>& pt) { x *= pt.x; y *= pt.y; z *= pt.z; return *this; }
-	Vector3t<T>& operator/=(const Vector3t<T>& pt) { x /= pt.x; y /= pt.y; z /= pt.z; return *this; }
-
-	template <typename S>
-	explicit operator Vector3t<S>() const
+	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
+	explicit Vector3t(S xyz[3]) noexcept
+		: x(static_cast<typename trait::_typeaddition<S>::value_type>(xyz[0]))
+		, y(static_cast<typename trait::_typeaddition<S>::value_type>(xyz[1]))
+		, z(static_cast<typename trait::_typeaddition<S>::value_type>(xyz[2]))
 	{
+		assert(xyz[0] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(xyz[1] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(xyz[2] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+	}
+
+	Vector3t<T>& operator+=(const T sz) noexcept { x += sz; y += sz; z += sz; return *this; }
+	Vector3t<T>& operator-=(const T sz) noexcept { x -= sz; y -= sz; z -= sz; return *this; }
+	Vector3t<T>& operator*=(const T sz) noexcept { x *= sz; y *= sz; z *= sz; return *this; }
+	Vector3t<T>& operator/=(const T sz) noexcept { x /= sz; y /= sz; z /= sz; return *this; }
+
+	Vector3t<T>& operator+=(const Vector2t<T>& rt) noexcept { x += rt.x; y += rt.y; return *this; }
+	Vector3t<T>& operator-=(const Vector2t<T>& rt) noexcept { x -= rt.x; y -= rt.y; return *this; }
+	Vector3t<T>& operator/=(const Vector2t<T>& rt) noexcept { x *= rt.x; y *= rt.y; return *this; }
+	Vector3t<T>& operator*=(const Vector2t<T>& rt) noexcept { x /= rt.x; y /= rt.y; return *this; }
+
+	Vector3t<T>& operator+=(const Vector3t<T>& pt) noexcept { x += pt.x; y += pt.y; z += pt.z; return *this; }
+	Vector3t<T>& operator-=(const Vector3t<T>& pt) noexcept { x -= pt.x; y -= pt.y; z -= pt.z; return *this; }
+	Vector3t<T>& operator*=(const Vector3t<T>& pt) noexcept { x *= pt.x; y *= pt.y; z *= pt.z; return *this; }
+	Vector3t<T>& operator/=(const Vector3t<T>& pt) noexcept { x /= pt.x; y /= pt.y; z /= pt.z; return *this; }
+
+	template<typename S, typename = std::enable_if<!std::is_pointer<S>::value>>
+	explicit operator Vector3t<S>() const noexcept
+	{
+		assert(x <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(y <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(z <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
 		return Vector3t<S>(static_cast<S>(x), static_cast<S>(y), static_cast<S>(z));
 	}
 
-	Vector2t<T> xx()  const { return Vector2t<T>(x, x); }
-	Vector2t<T> xy()  const { return Vector2t<T>(x, y); }
-	Vector2t<T> xz()  const { return Vector2t<T>(x, z); }
-	Vector3t<T> xxx() const { return Vector3t<T>(x, x, x); }
-	Vector3t<T> xxy() const { return Vector3t<T>(x, x, y); }
-	Vector3t<T> xxz() const { return Vector3t<T>(x, x, z); }
-	Vector3t<T> xyx() const { return Vector3t<T>(x, y, x); }
-	Vector3t<T> xyy() const { return Vector3t<T>(x, y, y); }
-	Vector3t<T> xyz() const { return Vector3t<T>(x, y, z); }
-	Vector3t<T> xzx() const { return Vector3t<T>(x, z, x); }
-	Vector3t<T> xzy() const { return Vector3t<T>(x, z, y); }
-	Vector3t<T> xzz() const { return Vector3t<T>(x, z, z); }
-	Vector2t<T> yx()  const { return Vector2t<T>(y, x); }
-	Vector2t<T> yy()  const { return Vector2t<T>(y, y); }
-	Vector2t<T> yz()  const { return Vector2t<T>(y, z); }
-	Vector3t<T> yxx() const { return Vector3t<T>(y, x, x); }
-	Vector3t<T> yxy() const { return Vector3t<T>(y, x, y); }
-	Vector3t<T> yxz() const { return Vector3t<T>(y, x, z); }
-	Vector3t<T> yyx() const { return Vector3t<T>(y, y, x); }
-	Vector3t<T> yyy() const { return Vector3t<T>(y, y, y); }
-	Vector3t<T> yyz() const { return Vector3t<T>(y, y, z); }
-	Vector3t<T> yzx() const { return Vector3t<T>(y, z, x); }
-	Vector3t<T> yzy() const { return Vector3t<T>(y, z, y); }
-	Vector3t<T> yzz() const { return Vector3t<T>(y, z, z); }
-	Vector2t<T> zx()  const { return Vector2t<T>(z, x); }
-	Vector2t<T> zy()  const { return Vector2t<T>(z, y); }
-	Vector2t<T> zz()  const { return Vector2t<T>(z, z); }
-	Vector3t<T> zxx() const { return Vector3t<T>(z, x, x); }
-	Vector3t<T> zxy() const { return Vector3t<T>(z, x, y); }
-	Vector3t<T> zxz() const { return Vector3t<T>(z, x, z); }
-	Vector3t<T> zyx() const { return Vector3t<T>(z, y, x); }
-	Vector3t<T> zyy() const { return Vector3t<T>(z, y, y); }
-	Vector3t<T> zyz() const { return Vector3t<T>(z, y, z); }
-	Vector3t<T> zzx() const { return Vector3t<T>(z, z, x); }
-	Vector3t<T> zzy() const { return Vector3t<T>(z, z, y); }
-	Vector3t<T> zzz() const { return Vector3t<T>(z, z, z); }
+	Vector2t<T> xx()  const noexcept { return Vector2t<T>(x, x); }
+	Vector2t<T> xy()  const noexcept { return Vector2t<T>(x, y); }
+	Vector2t<T> xz()  const noexcept { return Vector2t<T>(x, z); }
+	Vector3t<T> xxx() const noexcept { return Vector3t<T>(x, x, x); }
+	Vector3t<T> xxy() const noexcept { return Vector3t<T>(x, x, y); }
+	Vector3t<T> xxz() const noexcept { return Vector3t<T>(x, x, z); }
+	Vector3t<T> xyx() const noexcept { return Vector3t<T>(x, y, x); }
+	Vector3t<T> xyy() const noexcept { return Vector3t<T>(x, y, y); }
+	Vector3t<T> xyz() const noexcept { return Vector3t<T>(x, y, z); }
+	Vector3t<T> xzx() const noexcept { return Vector3t<T>(x, z, x); }
+	Vector3t<T> xzy() const noexcept { return Vector3t<T>(x, z, y); }
+	Vector3t<T> xzz() const noexcept { return Vector3t<T>(x, z, z); }
+	Vector2t<T> yx()  const noexcept { return Vector2t<T>(y, x); }
+	Vector2t<T> yy()  const noexcept { return Vector2t<T>(y, y); }
+	Vector2t<T> yz()  const noexcept { return Vector2t<T>(y, z); }
+	Vector3t<T> yxx() const noexcept { return Vector3t<T>(y, x, x); }
+	Vector3t<T> yxy() const noexcept { return Vector3t<T>(y, x, y); }
+	Vector3t<T> yxz() const noexcept { return Vector3t<T>(y, x, z); }
+	Vector3t<T> yyx() const noexcept { return Vector3t<T>(y, y, x); }
+	Vector3t<T> yyy() const noexcept { return Vector3t<T>(y, y, y); }
+	Vector3t<T> yyz() const noexcept { return Vector3t<T>(y, y, z); }
+	Vector3t<T> yzx() const noexcept { return Vector3t<T>(y, z, x); }
+	Vector3t<T> yzy() const noexcept { return Vector3t<T>(y, z, y); }
+	Vector3t<T> yzz() const noexcept { return Vector3t<T>(y, z, z); }
+	Vector2t<T> zx()  const noexcept { return Vector2t<T>(z, x); }
+	Vector2t<T> zy()  const noexcept { return Vector2t<T>(z, y); }
+	Vector2t<T> zz()  const noexcept { return Vector2t<T>(z, z); }
+	Vector3t<T> zxx() const noexcept { return Vector3t<T>(z, x, x); }
+	Vector3t<T> zxy() const noexcept { return Vector3t<T>(z, x, y); }
+	Vector3t<T> zxz() const noexcept { return Vector3t<T>(z, x, z); }
+	Vector3t<T> zyx() const noexcept { return Vector3t<T>(z, y, x); }
+	Vector3t<T> zyy() const noexcept { return Vector3t<T>(z, y, y); }
+	Vector3t<T> zyz() const noexcept { return Vector3t<T>(z, y, z); }
+	Vector3t<T> zzx() const noexcept { return Vector3t<T>(z, z, x); }
+	Vector3t<T> zzy() const noexcept { return Vector3t<T>(z, z, y); }
+	Vector3t<T> zzz() const noexcept { return Vector3t<T>(z, z, z); }
 
-	T operator[](unsigned int i) const
+	T operator[](std::uint8_t i) const noexcept
 	{
+		assert(i < 3);
 		return *(&x + i);
 	}
 
-	T& operator[](unsigned int i)
+	T& operator[](std::uint8_t i) noexcept
 	{
+		assert(i < 3);
 		return *(&x + i);
 	}
 
-	Vector3t<T>& set(T val) { x = y = z = val; return *this; }
-	Vector3t<T>& set(T xx, T yy, T zz) { x = xx; y = yy; z = zz; return *this; }
-	Vector3t<T>& set(T xx, const Vector2t<T>& yz) { x = xx; y = yz.x; z = yz.y; return *this; }
-	Vector3t<T>& set(const Vector2t<T>& xy, T zz) { x = xy.x; y = xy.y; z = zz; return *this; }
-	Vector3t<T>& set(const Vector4t<T>& v) { x = v.x / v.w; y = v.y / v.w; z = v.z / v.w; return *this; }
+	Vector3t<T>& set(T val) noexcept { x = y = z = val; return *this; }
+	Vector3t<T>& set(T xx, T yy, T zz) noexcept { x = xx; y = yy; z = zz; return *this; }
+	Vector3t<T>& set(T xx, const Vector2t<T>& yz) noexcept { x = xx; y = yz.x; z = yz.y; return *this; }
+	Vector3t<T>& set(const Vector2t<T>& xy, T zz) noexcept { x = xy.x; y = xy.y; z = zz; return *this; }
+	Vector3t<T>& set(const Vector4t<T>& v) noexcept { x = v.x / v.w; y = v.y / v.w; z = v.z / v.w; return *this; }
 
-	template<typename S>
-	Vector3t<T>& set(S* xyz) { x = xyz[0]; y = xyz[1]; z = xyz[2]; return *this; }
+	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
+	Vector3t<T>& set(S xyz[3]) noexcept 
+	{
+		assert(xyz[0] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(xyz[1] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(xyz[2] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
 
-	T& getComponent(unsigned char index)
+		x = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[0]); 
+		y = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[1]); 
+		z = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[2]); 
+
+		return *this;
+	}
+
+	T& getComponent(std::uint8_t index) noexcept
 	{
 		switch (index)
 		{
@@ -165,10 +189,10 @@ public:
 		return x;
 	}
 
-	T* ptr() { return (T*)this; }
-	const T* ptr() const { return (const T*)this; }
-	T* data() { return (T*)this; }
-	const T* data() const { return (const T*)this; }
+	T* ptr() noexcept { return (T*)this; }
+	const T* ptr() const noexcept { return (const T*)this; }
+	T* data() noexcept { return (T*)this; }
+	const T* data() const noexcept { return (const T*)this; }
 };
 
 template<typename T> const Vector3t<T> Vector3t<T>::Zero = Vector3t<T>((T)0.0, (T)0.0, (T)0.0);
@@ -181,187 +205,187 @@ template<typename T> const Vector3t<T> Vector3t<T>::Up = Vector3t<T>((T)0.0, (T)
 template<typename T> const Vector3t<T> Vector3t<T>::Forward = Vector3t<T>((T)0.0, (T)0.0, (T)1.0);
 
 template<typename T>
-inline bool operator==(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline bool operator==(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
 }
 
 template<typename T>
-inline bool operator!=(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline bool operator!=(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return !(v1 == v2);
 }
 
 template<typename T>
-inline bool operator<(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline bool operator<(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return v1.x < v2.x && v1.y < v2.y && v1.z < v2.z;
 }
 
 template<typename T>
-inline bool operator>(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline bool operator>(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return v1.x > v2.x && v1.y > v2.y && v1.z > v2.z;
 }
 
 template<typename T>
-inline bool operator<=(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline bool operator<=(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return v1.x <= v2.x && v1.y <= v2.y && v1.z <= v2.z;
 }
 
 template<typename T>
-inline bool operator>=(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline bool operator>=(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return v1.x >= v2.x && v1.y >= v2.y && v1.z >= v2.z;
 }
 
 template<typename T>
-inline Vector3t<T> operator+(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline Vector3t<T> operator+(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return Vector3t<T>(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 }
 
 template<typename T>
-inline Vector3t<T> operator-(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline Vector3t<T> operator-(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return Vector3t<T>(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
 }
 
 template<typename T>
-inline Vector3t<T> operator*(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline Vector3t<T> operator*(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return Vector3t<T>(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
 }
 
 template<typename T>
-inline Vector3t<T> operator/(const Vector3t<T>& v1, const Vector3t<T>& v2)
+inline Vector3t<T> operator/(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return Vector3t<T>(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
 }
 
 template<typename T>
-inline Vector3t<T> operator-(const Vector3t<T>& v)
+inline Vector3t<T> operator-(const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>(-v.x, -v.y, -v.z);
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator==(const Vector3t<_Tx>& v, const _Ty value)
+inline bool operator==(const Vector3t<_Tx>& v, const _Ty value) noexcept
 {
 	return v.x == value && v.y == value && v.z == value;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator==(const _Ty value, const Vector3t<_Tx>& v)
+inline bool operator==(const _Ty value, const Vector3t<_Tx>& v) noexcept
 {
 	return v.x == value && v.y == value && v.z == value;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator!=(const Vector3t<_Tx>& v, const _Ty value)
+inline bool operator!=(const Vector3t<_Tx>& v, const _Ty value) noexcept
 {
 	return v.x != value || v.y != value || v.z != value;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator!=(const _Ty value, const Vector3t<_Tx>& v)
+inline bool operator!=(const _Ty value, const Vector3t<_Tx>& v) noexcept
 {
 	return v.x != value && v.y != value && v.z != value;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator<(const Vector3t<_Tx>& v, const _Ty value)
+inline bool operator<(const Vector3t<_Tx>& v, const _Ty value) noexcept
 {
 	return v.x < value && v.y < value && v.z < value;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator<(const _Ty value, const Vector3t<_Tx>& v)
+inline bool operator<(const _Ty value, const Vector3t<_Tx>& v) noexcept
 {
 	return value < v.x && value < v.y && value < v.z;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator>(const Vector3t<_Tx>& v, const _Ty value)
+inline bool operator>(const Vector3t<_Tx>& v, const _Ty value) noexcept
 {
 	return v.x > value && v.y > value && v.z > value;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator>(const _Ty value, const Vector3t<_Tx>& v)
+inline bool operator>(const _Ty value, const Vector3t<_Tx>& v) noexcept
 {
 	return value > v.x && value > v.y && value > v.z;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator<=(const Vector3t<_Tx>& v, const _Ty value)
+inline bool operator<=(const Vector3t<_Tx>& v, const _Ty value) noexcept
 {
 	return v.x <= value && v.y <= value && v.z <= value;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator<=(const _Ty value, const Vector3t<_Tx>& v)
+inline bool operator<=(const _Ty value, const Vector3t<_Tx>& v) noexcept
 {
 	return value <= v.x && value <= v.y && value <= v.z;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator>=(const Vector3t<_Tx>& v, const _Ty value)
+inline bool operator>=(const Vector3t<_Tx>& v, const _Ty value) noexcept
 {
 	return v.x >= value && v.y >= value && v.z >= value;
 }
 
 template<typename _Tx, typename _Ty>
-inline bool operator>=(const _Ty value, const Vector3t<_Tx>& v)
+inline bool operator>=(const _Ty value, const Vector3t<_Tx>& v) noexcept
 {
 	return value >= v.x && value >= v.y && value >= v.z;
 }
 
 template<typename T>
-inline Vector3t<T> operator+(T value, const Vector3t<T>& v)
+inline Vector3t<T> operator+(T value, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>((T)(value + v.x), (T)(value + v.y), (T)(value + v.z));
 }
 
 template<typename T>
-inline Vector3t<T> operator-(T value, const Vector3t<T>& v)
+inline Vector3t<T> operator-(T value, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>((T)(value - v.x), (T)(value - v.y), (T)(value - v.z));
 }
 
 template<typename T>
-inline Vector3t<T> operator*(T value, const Vector3t<T>& v)
+inline Vector3t<T> operator*(T value, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>((T)(value * v.x), (T)(value * v.y), (T)(value * v.z));
 }
 
 template<typename T>
-inline Vector3t<T> operator/(T value, const Vector3t<T>& v)
+inline Vector3t<T> operator/(T value, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>((T)(value / v.x), (T)(value / v.y), (T)(value / v.z));
 }
 
 template<typename T>
-inline Vector3t<T> operator+(const Vector3t<T>& v, T value)
+inline Vector3t<T> operator+(const Vector3t<T>& v, T value) noexcept
 {
 	return Vector3t<T>((T)(v.x + value), (T)(v.y + value), (T)(v.z + value));
 }
 
 template<typename T>
-inline Vector3t<T> operator-(const Vector3t<T>& v, T value)
+inline Vector3t<T> operator-(const Vector3t<T>& v, T value) noexcept
 {
 	return Vector3t<T>((T)(v.x - value), (T)(v.y - value), (T)(v.z - value));
 }
 
 template<typename T>
-inline Vector3t<T> operator*(const Vector3t<T>& v, T value)
+inline Vector3t<T> operator*(const Vector3t<T>& v, T value) noexcept
 {
 	return Vector3t<T>((T)(v.x * value), (T)(v.y * value), (T)(v.z * value));
 }
 
 template<typename T>
-inline Vector3t<T> operator/(const Vector3t<T>& v, T value)
+inline Vector3t<T> operator/(const Vector3t<T>& v, T value) noexcept
 {
 	return Vector3t<T>((T)(v.x / value), (T)(v.y / value), (T)(v.z / value));
 }
@@ -435,7 +459,7 @@ namespace math
 	}
 
 	template<typename T>
-	inline bool isfinite(const Vector3t<T>& v)
+	inline bool isfinite(const Vector3t<T>& v) noexcept
 	{
 		return std::isfinite(v.x) && std::isfinite(v.y) && std::isfinite(v.z);
 	}
@@ -447,7 +471,7 @@ namespace math
 	}
 
 	template<typename T>
-	inline Vector3t<T> clamp(const Vector3t<T>& t, T min, T max)
+	inline Vector3t<T> clamp(const Vector3t<T>& t, T min, T max) noexcept
 	{
 		return Vector3t<T>(
 			std::max(min, std::min(max, t.x)),
@@ -459,7 +483,7 @@ namespace math
 	template<typename T>
 	inline Vector3t<T> saturate(const Vector3t<T>& v) noexcept
 	{
-		return clamp(v, 0.0f, 1.0f);
+		return clamp(v, T(0.0f), T(1.0f));
 	}
 
 	template<typename T>
@@ -496,127 +520,127 @@ namespace math
 	}
 
 	template <typename T>
-	inline Vector3t<T> min(const Vector3t<T>& a, const Vector3t<T>& b)
+	inline Vector3t<T> min(const Vector3t<T>& a, const Vector3t<T>& b) noexcept
 	{
 		return Vector3t<T>(std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z));
 	}
 
 	template <typename T>
-	inline Vector3t<T> max(const Vector3t<T>& a, const Vector3t<T>& b)
+	inline Vector3t<T> max(const Vector3t<T>& a, const Vector3t<T>& b) noexcept
 	{
 		return Vector3t<T>(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> abs(const Vector3t<T>& v)
+	inline Vector3t<T> abs(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::abs(v.x), std::abs(v.y), std::abs(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> cos(const Vector3t<T>& v)
+	inline Vector3t<T> cos(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::cos(v.x), std::cos(v.y), std::cos(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> sin(const Vector3t<T>& v)
+	inline Vector3t<T> sin(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::sin(v.x), std::sin(v.y), std::sin(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> tan(const Vector3t<T>& v)
+	inline Vector3t<T> tan(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::tan(v.x), std::tan(v.y), std::tan(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> acos(const Vector3t<T>& v)
+	inline Vector3t<T> acos(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::acos(v.x), std::acos(v.y), std::acos(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> asin(const Vector3t<T>& v)
+	inline Vector3t<T> asin(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::asin(v.x), std::asin(v.y), std::asin(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> atan(const Vector3t<T>& v)
+	inline Vector3t<T> atan(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::atan(v.x), std::atan(v.y), std::atan(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> exp(const Vector3t<T>& v)
+	inline Vector3t<T> exp(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::exp(v.x), std::exp(v.y), std::exp(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> exp2(const Vector3t<T>& v)
+	inline Vector3t<T> exp2(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::exp2(v.x), std::exp2(v.y), std::exp2(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> sqrt(const Vector3t<T>& v)
+	inline Vector3t<T> sqrt(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::sqrt(v.x), std::sqrt(v.y), std::sqrt(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> log(const Vector3t<T>& v)
+	inline Vector3t<T> log(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::log(v.x), std::log(v.y), std::log(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> log2(const Vector3t<T>& v)
+	inline Vector3t<T> log2(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::log2(v.x), std::log2(v.y), std::log2(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> log10(const Vector3t<T>& v)
+	inline Vector3t<T> log10(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::log10(v.x), std::log10(v.y), std::log10(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> pow(const Vector3t<T>& v1, T v2)
+	inline Vector3t<T> pow(const Vector3t<T>& v1, T v2) noexcept
 	{
 		return Vector3t<T>(std::pow(v1.x, v2), std::pow(v1.y, v2), std::pow(v1.z, v2));
 	}
 
 	template<typename T>
-	inline Vector3t<T> pow(const Vector3t<T>& v1, const Vector3t<T>& v2)
+	inline Vector3t<T> pow(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 	{
 		return Vector3t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y), std::pow(v1.z, v2.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> random(const Vector3t<T>& min, const Vector3t<T>& max)
+	inline Vector3t<T> random(const Vector3t<T>& min, const Vector3t<T>& max) noexcept
 	{
 		return Vector3t<T>(random(min.x, max.x), random(min.y, max.y), random(min.z, max.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> ceil(const Vector3t<T>& v)
+	inline Vector3t<T> ceil(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::ceil(v.x), std::ceil(v.y), std::ceil(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> floor(const Vector3t<T>& v)
+	inline Vector3t<T> floor(const Vector3t<T>& v) noexcept
 	{
 		return Vector3t<T>(std::floor(v.x), std::floor(v.y), std::floor(v.z));
 	}
 
 	template<typename T>
-	inline Vector3t<T> randomVector3()
+	inline Vector3t<T> randomVector3() noexcept
 	{
 		float z = 2.0f * std::rand() / RAND_MAX - 1.0f;
 		float t = 2.0f * std::rand() / RAND_MAX * M_PI;
@@ -625,7 +649,7 @@ namespace math
 	}
 
 	template<typename T>
-	inline Vector3t<T> linear2srgb(const Vector3t<T>& srgb)
+	inline Vector3t<T> linear2srgb(const Vector3t<T>& srgb) noexcept
 	{
 		const float ALPHA = 0.055f;
 		return Vector3t<T>(
@@ -635,7 +659,7 @@ namespace math
 	};
 
 	template<typename T>
-	inline Vector3t<T> srgb2linear(const Vector3t<T>& rgb)
+	inline Vector3t<T> srgb2linear(const Vector3t<T>& rgb) noexcept
 	{
 		const float ALPHA = 0.055f;
 		return Vector3t<T>(

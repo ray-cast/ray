@@ -85,7 +85,7 @@ public:
 	Vector2t<T>& operator*=(const Vector2t<T>& v) noexcept { x *= v.x; y *= v.y; return *this; }
 	Vector2t<T>& operator/=(const Vector2t<T>& v) noexcept { x /= v.x; y /= v.y; return *this; }
 
-	template <typename S, typename std::enable_if_t<!std::is_pointer<S>::value>>
+	template<typename S, typename = std::enable_if_t<!std::is_pointer<S>::value>>
 	explicit operator Vector2t<S>() const noexcept
 	{
 		assert(x <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());

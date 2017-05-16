@@ -101,6 +101,7 @@ public:
 		assert(x <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
 		assert(y <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
 		assert(z <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+
 		return Vector3t<S>(static_cast<S>(x), static_cast<S>(y), static_cast<S>(z));
 	}
 

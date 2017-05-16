@@ -65,9 +65,6 @@ public:
 
 	std::uint32_t getFace(const PMX& pmx, std::size_t n) noexcept;
 	std::uint32_t getFace(const PMX& pmx, std::size_t n, std::uint32_t firstIndex) noexcept;
-	
-	void ImageDilate(const float *image, float *outImage, int w, int h, int c) noexcept;
-	void ImageSmooth(const float *image, float *outImage, int w, int h, int c) noexcept;
 
 private:
 	bool _initialize;

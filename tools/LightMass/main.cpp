@@ -52,6 +52,9 @@
 #include <ray/mstream.h>
 #include <ray/jsonreader.h>
 
+#include <ray/image.h>
+#include <ray/imagutil.h>
+
 struct AppParams
 {
 	std::uint32_t chart;
@@ -190,6 +193,56 @@ public:
 		return true;
 	}
 
+	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
+	{
+		assert(channel == 1 || channel == 3 || channel == 4);
+
+		bool isGreyscale = channel == 1;
+		bool hasAlpha = channel == 1 ? false : true;
+
+		if (margin > 0)
+		{
+			std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * channel);
+			std::memset(lightmapTemp.get(), 0, w * h * channel * sizeof(float));
+
+			for (std::uint32_t j = 0; j < std::max<std::uint32_t>(margin >> 1, 1); j++)
+			{
+				ray::image::smoothFilter(data, lightmapTemp.get(), w, h, channel);
+				ray::image::dilateFilter(lightmapTemp.get(), data, w, h, channel);
+			}
+		}
+
+		ray::image::format_t format = isGreyscale ? ray::image::format_t::R8SRGB : ray::image::format_t::R8G8B8SRGB;
+		if (hasAlpha)
+			format = ray::image::format_t::R8G8B8A8SRGB;
+
+		ray::image::Image image;
+		if (!image.create(w, h, format))
+		{
+			std::cout << "Failed to create image : " << path << std::endl;
+			return false;
+		}
+
+		auto temp = (std::uint8_t*)image.data();
+
+		if (channel == 1)
+			ray::image::r32f_to_r8uint(data, temp, w, h, channel);
+		else
+			ray::image::rgb32f_to_rgbt8(data, temp, w, h, channel);
+
+		ray::image::flipHorizontal(temp, w, h, channel);
+
+		if (!isGreyscale)
+		{
+			for (std::size_t i = 0; i < w * h * channel; i += channel)
+				std::swap(temp[i], temp[i + 2]);
+		}
+
+		image.save(path);
+
+		return true;
+	}
+
 	void getParams(AppParams& params)
 	{
 		ray::StreamReaderPtr stream;
@@ -252,11 +305,8 @@ public:
 		std::string outputPath = ray::util::directory(path) + "ao.tga";
 		std::cout << "Save as image : " << outputPath << std::endl;
 		
-		if (!lightMass->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMass.lightMap.margin))
-		{
-			std::cout << "Failed to save image : " << outputPath << std::endl;
+		if (!this->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMass.lightMap.margin))
 			return false;
-		}
 
 		return true;
 	}

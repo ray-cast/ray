@@ -38,15 +38,14 @@
 #define _H_IMAGE_TYPES_H_
 
 #include <ray/imagdef.h>
+#include <ray/iostream.h>
 
 _NAME_BEGIN
 
 namespace image
 {
 
-typedef std::shared_ptr<class ImageHandler> ImageHandlerPtr;
-
-enum class ImageFormat
+enum class format_t : uint8_t
 {
 	Undefined,
 	R4G4UNormPack8,
@@ -275,55 +274,57 @@ enum class ImageFormat
 	ASTC12x10SRGBBlock,
 	ASTC12x12UNormBlock,
 	ASTC12x12SRGBBlock,
-	ImageFormatBeginRange = Undefined,
-	ImageFormatEndRange = ASTC12x12SRGBBlock,
-	ImageFormatRangeSize = (ImageFormatEndRange - ImageFormatBeginRange + 1),
-	ImageFormatMaxEnum = 0x7FFFFFFF
+	BeginRange = Undefined,
+	EndRange = ASTC12x12SRGBBlock,
+	RangeSize = (EndRange - BeginRange + 1),
 };
 
-enum ImageOrder
+enum class swizzle_t : uint8_t
 {
-	ImageOrderR,
-	ImageOrderRG,
-	ImageOrderRGB,
-	ImageOrderBGR,
-	ImageOrderRGBA,
-	ImageOrderBGRA,
-	ImageOrderABGR,
-	ImageOrderDepth,
-	ImageOrderStencil,
-	ImageOrderDepthStencil,
-	ImageOrderBeginRange = ImageOrderR,
-	ImageOrderEndRange = ImageOrderDepthStencil,
-	ImageOrderRangeSize = (ImageOrderEndRange - ImageOrderBeginRange + 1),
-	ImageOrderMaxEnum = 0x7FFFFFFF
+	R,
+	RG,
+	RGB,
+	BGR,
+	RGBA,
+	BGRA,
+	ABGR,
+	Depth,
+	Stencil,
+	DepthStencil,
+	BeginRange = R,
+	EndRange = DepthStencil,
+	RangeSize = (EndRange - BeginRange + 1),
 };
 
-enum ImageType
+enum class value_t : std::uint8_t
 {
-	ImageTypeSNorm,
-	ImageTypeUNorm,
-	ImageTypeUNorm5_6_5,
-	ImageTypeUNorm5_5_5_1,
-	ImageTypeUNorm1_5_5_5,
-	ImageTypeUNorm2_10_10_10,
-	ImageTypeSScaled,
-	ImageTypeUScaled,
-	ImageTypeSInt,
-	ImageTypeUInt,
-	ImageTypeHalf,
-	ImageTypeFloat,
-	ImageTypeDouble,
-	ImageTypeD16UNorm_S8UInt,
-	ImageTypeD24UNorm_S8UInt,
-	ImageTypeD24UNormPack32,
-	ImageTypeD32_SFLOAT_S8UInt,
-	ImageTypeCompressed,
-	ImageTypeBeginRange = ImageTypeSNorm,
-	ImageTypeEndRange = ImageTypeCompressed,
-	ImageTypeRangeSize = (ImageTypeEndRange - ImageTypeBeginRange + 1),
-	ImageTypeMaxEnum = 0x7FFFFFFF
+	Null,
+	SNorm,
+	UNorm,
+	UNorm5_6_5,
+	UNorm5_5_5_1,
+	UNorm1_5_5_5,
+	UNorm2_10_10_10,
+	UFloatB10G11R11Pack32,
+	UFloatE5B9G9R9Pack32,
+	SScaled,
+	UScaled,
+	SInt,
+	UInt,
+	SRGB,
+	Float,
+	D16UNorm_S8UInt,
+	D24UNorm_S8UInt,
+	D24UNormPack32,
+	D32_SFLOAT_S8UInt,
+	Compressed,
+	BeginRange = SNorm,
+	EndRange = Compressed,
+	RangeSize = (EndRange - BeginRange + 1),
 };
+
+typedef std::shared_ptr<class Image> ImagePtr;
+typedef std::shared_ptr<class ImageHandler> ImageHandlerPtr;
 
 }
 

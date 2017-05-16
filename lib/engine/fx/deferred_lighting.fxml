@@ -346,7 +346,7 @@
 				float4 source = texOpaque.Sample(PointClamp, coord);
 				float4 lighting = texLight.Sample(PointClamp, coord);
 
-				return float4(lerp(source.xyz, lighting.rgb + lighting.a, material.occlusion), source.w);
+				return float4(lerp(source.xyz, source.xyz + lighting.rgb + lighting.a, material.occlusion), source.w);
 			}
 		]]>
 	</shader>

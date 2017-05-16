@@ -327,16 +327,16 @@ public:
 
 	bool loadImage(int& _width, int& _height, PixelFormat& _format, const std::string& _filename, MemoryStream& stream)
 	{
-		Image image;
+		image::Image image;
 		if (image.load(_filename))
 		{
 			_width = image.width();
 			_height = image.height();
 
-			ImageFormat format = image.getImageFormat();
-			if (format == ImageFormat::ImageFormatR8G8B8A8UNorm)
+			auto format = image.format();
+			if (format == image::format_t::R8G8B8A8UNorm || format == image::format_t::R8G8B8A8SRGB)
 				_format = PixelFormat::R8G8B8A8;
-			else if (format == ImageFormat::ImageFormatR8G8B8UNorm)
+			else if (format == image::format_t::R8G8B8UNorm || format == image::format_t::R8G8B8SRGB)
 				_format = PixelFormat::R8G8B8;
 			else
 			{

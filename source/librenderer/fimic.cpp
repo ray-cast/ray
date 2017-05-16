@@ -78,8 +78,8 @@ FimicToneMapping::getSetting() const noexcept
 void
 FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	float width = source->getGraphicsTextureDesc().getWidth();
-	float height = source->getGraphicsTextureDesc().getHeight();
+	auto width = source->getGraphicsTextureDesc().getWidth();
+	auto height = source->getGraphicsTextureDesc().getHeight();
 
 	_texSource->uniformTexture(source);
 	_texSourceSizeInv->uniform2f(1.0 / width, 1.0 / height);
@@ -92,8 +92,8 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 void
 FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	float width = source->getGraphicsTextureDesc().getWidth();
-	float height = source->getGraphicsTextureDesc().getHeight();
+	auto width = source->getGraphicsTextureDesc().getWidth();
+	auto height = source->getGraphicsTextureDesc().getHeight();
 
 	_texSource->uniformTexture(source);
 	_texSourceSizeInv->uniform2f(1.0 / width, 1.0 / height);

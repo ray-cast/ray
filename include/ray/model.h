@@ -135,8 +135,8 @@ public:
 
 	void clear() noexcept;
 
-	bool load(StreamReader& stream, const char* type) noexcept;
-	bool save(StreamWrite& stream, const char* type) noexcept;
+	bool load(StreamReader& stream, const char* type = nullptr) noexcept;
+	bool save(StreamWrite& stream, const char* type = "obj") noexcept;
 
 	bool emptyHandler() const noexcept;
 	bool addHandler(_Myhandler handler) noexcept;

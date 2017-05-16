@@ -373,7 +373,7 @@ PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 				child.angleWeight = it.Weight;
 				child.minimumDegrees = RAD_TO_DEG(Vector3(-0.002f, 0.0f, 0.0f));
 				child.maximumDegrees = RAD_TO_DEG(Vector3(-M_PI, 0.0f, 0.0f));
-				child.rotateLimited = model.getBonesList()[bone]->getName().find("¤Ò¤¶") != std::string::npos;
+				child.rotateLimited = model.getBonesList()[bone]->getName().find("ひざ") != std::string::npos;
 
 				attr.child.push_back(child);
 			}

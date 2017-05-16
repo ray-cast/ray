@@ -94,12 +94,6 @@ std::vector<ImageHandlerPtr> _handlers = {
 #endif
 };
 
-const std::vector<ImageHandlerPtr>& GetImageInstanceList()
-{
-	return _handlers;
-}
-
-
 bool emptyHandler() noexcept
 {
 	return _handlers.empty();
@@ -167,7 +161,7 @@ ImageHandlerPtr findHandler(StreamReader& stream, const char* type) noexcept
 	ImageHandlerPtr result = findHandler(type);
 	if (result)
 		return result;
-	return findHandler(stream, type);
+	return findHandler(stream);
 }
 
 }

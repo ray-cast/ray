@@ -958,31 +958,31 @@ Gui::inputTextMultiline(const char* label, char* buf, size_t buf_size, const flo
 bool
 Gui::inputFloat(const char* label, float* v, float step, float step_fast, int decimal_precision, GuiInputTextFlags extraFlags) noexcept
 {
-	return ImGui::InputFloat(label, v, extraFlags);
+	return ImGui::InputFloat(label, v, step, step_fast, decimal_precision, extraFlags);
 }
 
 bool
 Gui::inputFloat2(const char* label, float v[2], int decimal_precision, GuiInputTextFlags extraFlags) noexcept
 {
-	return ImGui::InputFloat2(label, v, extraFlags);
+	return ImGui::InputFloat2(label, v, decimal_precision, extraFlags);
 }
 
 bool
 Gui::inputFloat3(const char* label, float v[3], int decimal_precision, GuiInputTextFlags extraFlags) noexcept
 {
-	return ImGui::InputFloat3(label, v, extraFlags);
+	return ImGui::InputFloat3(label, v, decimal_precision, extraFlags);
 }
 
 bool
 Gui::inputFloat4(const char* label, float v[4], int decimal_precision, GuiInputTextFlags extraFlags) noexcept
 {
-	return ImGui::InputFloat4(label, v, extraFlags);
+	return ImGui::InputFloat4(label, v, decimal_precision, extraFlags);
 }
 
 bool
 Gui::inputInt(const char* label, int* v, int step, int step_fast, GuiInputTextFlags extraFlags) noexcept
 {
-	return ImGui::InputInt(label, v, extraFlags);
+	return ImGui::InputInt(label, v, step, step_fast, extraFlags);
 }
 
 bool

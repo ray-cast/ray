@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "imagjpeg.h"
+#include <ray/dccmn.h>
 
 #include <setjmp.h>
 #include <jpeglib.h>
@@ -209,7 +210,7 @@ JPEGHandler::doLoad(StreamReader& stream, Image& image) noexcept
 	// read jpeg handle parameters*/
 	::jpeg_read_header(&cinfo, TRUE);
 
-	if (!image.create(cinfo.image_width, cinfo.image_height, ImageFormat::R8G8B8UNorm))
+	if (!image.create(cinfo.image_width, cinfo.image_height, image::format_t::R8G8B8SRGB))
 		return false;
 
 	RGB* data = (RGB*)image.data();

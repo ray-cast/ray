@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "imagbmp.h"
+#include <ray/dccmn.h>
 
 _NAME_BEGIN
 
@@ -143,8 +144,6 @@ struct BITMAPINFO
 
 #pragma pack(pop)
 
-typedef RGB BMPPalette;
-
 BMPHandler::BMPHandler() noexcept
 {
 }
@@ -244,17 +243,17 @@ BMPHandler::loadDIB(StreamReader& stream, Image& image, const BITMAPINFO& info)
 
 	if (info.info.bpp == BMP_32BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::B8G8R8A8UNorm))
+		if (!image.create(columns, rows, image::format_t::B8G8R8A8SRGB))
 			return false;
 	}
 	else if (info.info.bpp == BMP_24BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::B8G8R8UNorm))
+		if (!image.create(columns, rows, image::format_t::B8G8R8SRGB))
 			return false;
 	}
 	else if (info.info.bpp == BMP_16BPP)
 	{
-		if (!image.create(columns, rows, ImageFormat::R8G8B8UNorm))
+		if (!image.create(columns, rows, image::format_t::R8G8B8SRGB))
 			return false;
 	}
 	else

@@ -541,7 +541,7 @@ static float BezierEval(const std::uint8_t* ip, float t) noexcept
 			max = ct;
 		}
 
-		ct = min * 0.5 + max * 0.5;
+		ct = min * 0.5f + max * 0.5f;
 	}
 }
 

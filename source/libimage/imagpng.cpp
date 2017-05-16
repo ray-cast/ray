@@ -152,15 +152,15 @@ PNGHandler::doLoad(StreamReader& stream, Image& image) noexcept
 		color_type & PNG_COLOR_TYPE_RGB)
 	{
 		png_uint_32 pixelSize;
-		ImageFormat format;
+		image::format_t format;
 		if (color_type & PNG_COLOR_TYPE_RGBA)
 		{
-			format = ImageFormat::R8G8B8A8UNorm;
+			format = image::format_t::R8G8B8A8SRGB;
 			pixelSize = 4;
 		}
 		else if (color_type & PNG_COLOR_TYPE_RGB)
 		{
-			format = ImageFormat::R8G8B8UNorm;
+			format = image::format_t::R8G8B8SRGB;
 			pixelSize = 3;
 		}
 

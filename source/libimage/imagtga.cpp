@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "imagtga.h"
+#include <ray/dccmn.h>
 
 _NAME_BEGIN
 
@@ -126,13 +127,13 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 	{
 	case 2:
 	{
-		ImageFormat format = ImageFormat::ImageFormatMaxEnum;
+		image::format_t format = image::format_t::Undefined;
 		if (hdr.pixel_size == 8)
-			format = ImageFormat::R8UNorm;
+			format = image::format_t::R8SRGB;
 		else if (hdr.pixel_size == 24)
-			format = ImageFormat::R8G8B8UNorm;
+			format = image::format_t::R8G8B8SRGB;
 		else if (hdr.pixel_size == 32)
-			format = ImageFormat::R8G8B8A8UNorm;
+			format = image::format_t::R8G8B8A8SRGB;
 		else
 			return false;
 
@@ -160,7 +161,7 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 
 		case 24:
 		{
-			if (!image.create(columns, rows, ImageFormat::R8G8B8UNorm))
+			if (!image.create(columns, rows, image::format_t::R8G8B8SRGB))
 				return false;
 
 			RGB* rgb = (RGB*)image.data();
@@ -203,7 +204,7 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 		break;
 		case 32:
 		{
-			if (!image.create(columns, rows, ImageFormat::R8G8B8A8UNorm))
+			if (!image.create(columns, rows, image::format_t::R8G8B8A8SRGB))
 				return false;
 
 			std::uint32_t* rgba = (std::uint32_t*)image.data();
@@ -277,10 +278,17 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 bool
 TGAHandler::doSave(StreamWrite& stream, const Image& image) noexcept
 {
-	std::uint32_t channel = image.channel();
+	auto channel = image::channel(image);
+	auto type_size = image::type_size(image);
+
+	std::size_t destLength = 0;
+	std::uint32_t pixelSize = type_size * channel * 8;
+
+	if (pixelSize != 8 && pixelSize != 16 && pixelSize != 24 && pixelSize != 32)
+		return false;
 
 	bool isGreyscale = channel == 1;
-	bool hasAlpha = channel == 1 ? false : true;
+	bool hasAlpha = pixelSize == 32 ? true : false;
 
 	TGAHeader header;
 	header.id_length = 0;
@@ -293,7 +301,7 @@ TGAHandler::doSave(StreamWrite& stream, const Image& image) noexcept
 	header.y_origin = 0;
 	header.width = image.width();
 	header.height = image.height();
-	header.pixel_size = channel * 8;
+	header.pixel_size = pixelSize;
 	header.attributes = hasAlpha ? 8 : 0;
 
 	stream.write((char*)&header, sizeof(header));

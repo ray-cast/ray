@@ -107,13 +107,13 @@ ParticleEmitterComponent::emitter(Particle* it) noexcept
 	it->position = math::random(position + _position_start, position + math::lerp(_position_start, _position_end, _position_variance));
 
 	it->size = math::random(_size_start, math::lerp(_size_start, _size_end, _size_variance));
-	it->sizeDelta = math::random(_size_start, math::lerp(_size_start, _size_end, it->age));
+	it->sizeDelta = math::random(_size_start, math::lerp(_size_start, _size_end, Vector3(it->age)));
 
 	it->spin = math::random(_spin_start, math::lerp(_spin_start, _spin_end, _spin_variance));
-	it->spinDelta = math::random(_spin_start, math::lerp(_spin_start, _spin_end, it->age));
+	it->spinDelta = math::random(_spin_start, math::lerp(_spin_start, _spin_end, Vector3(it->age)));
 
 	it->color = math::random(_color_start, math::lerp(_color_start, _color_end, _color_variance));
-	it->colorDelta = math::random(_color_start, math::lerp(_color_start, _color_end, it->age));
+	it->colorDelta = math::random(_color_start, math::lerp(_color_start, _color_end, Vector3(it->age)));
 
 	it->velocity = math::random(_speed_min, math::lerp(_speed_min, _speed_max, _speed_variance));
 

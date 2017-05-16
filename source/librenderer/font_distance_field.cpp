@@ -496,7 +496,7 @@ FontDistanceField::computeDistanceField(const std::vector<float>& distanceArray,
 			else if (value == 0)
 				value = 0;
 			else
-				value = math::lerp(255, 0, math::clamp(-value * invSqr, 0.0f, 1.0f));
+				value = math::lerp(255.0f, 0.0f, math::clamp(-value * invSqr, 0.0f, 1.0f));
 
 			bitmap[bitmapSize * (y + offsetY * distanceSize) + offsetX * distanceSize + x] = value;
 		}

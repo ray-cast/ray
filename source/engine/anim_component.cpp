@@ -224,7 +224,7 @@ AnimationComponent::_playAnimation(const std::string& filename) noexcept
 	);
 
 	auto model = loader.data();
-	if (!model && !model->hasAnimations())
+	if (!model || !model->hasAnimations())
 		return false;
 	
 	std::intptr_t i = 0;

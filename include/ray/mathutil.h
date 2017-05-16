@@ -245,8 +245,8 @@ inline T saturate(const T& v) noexcept
 	return clamp(v, 0.0f, 1.0f);
 }
 
-template<typename T1, typename T2>
-inline T1 lerp(const T1& t1, const T1& t2, const T2& t3) noexcept
+template<typename T>
+inline T lerp(const T& t1, const T& t2, const T& t3) noexcept
 {
     return t1 + (t2 - t1) * t3;
 }

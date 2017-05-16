@@ -157,67 +157,67 @@ MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, 
 	if (!IoServer::instance()->openFile(stream, name))
 		return nullptr;
 
-	Image image;
+	image::Image image;
 	if (!image.load(*stream))
 		return nullptr;
 
-	ImageFormat imageFormat = image.getImageFormat();
+	auto imageFormat = image.format();
 	GraphicsFormat format = GraphicsFormat::GraphicsFormatUndefined;
-	if (imageFormat == ImageFormat::ImageFormatBC1RGBUNormBlock)
+	if (imageFormat == image::format_t::BC1RGBUNormBlock)
 		format = GraphicsFormat::GraphicsFormatBC1RGBUNormBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC1RGBAUNormBlock)
+	else if (imageFormat == image::format_t::BC1RGBAUNormBlock)
 		format = GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC1RGBSRGBBlock)
+	else if (imageFormat == image::format_t::BC1RGBSRGBBlock)
 		format = GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC1RGBASRGBBlock)
+	else if (imageFormat == image::format_t::BC1RGBASRGBBlock)
 		format = GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC3UNormBlock)
+	else if (imageFormat == image::format_t::BC3UNormBlock)
 		format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC3SRGBBlock)
+	else if (imageFormat == image::format_t::BC3SRGBBlock)
 		format = GraphicsFormat::GraphicsFormatBC3SRGBBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC4UNormBlock)
+	else if (imageFormat == image::format_t::BC4UNormBlock)
 		format = GraphicsFormat::GraphicsFormatBC4UNormBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC4SNormBlock)
+	else if (imageFormat == image::format_t::BC4SNormBlock)
 		format = GraphicsFormat::GraphicsFormatBC4SNormBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC5UNormBlock)
+	else if (imageFormat == image::format_t::BC5UNormBlock)
 		format = GraphicsFormat::GraphicsFormatBC5UNormBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC5SNormBlock)
+	else if (imageFormat == image::format_t::BC5SNormBlock)
 		format = GraphicsFormat::GraphicsFormatBC5SNormBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC6HUFloatBlock)
+	else if (imageFormat == image::format_t::BC6HUFloatBlock)
 		format = GraphicsFormat::GraphicsFormatBC6HUFloatBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC6HSFloatBlock)
+	else if (imageFormat == image::format_t::BC6HSFloatBlock)
 		format = GraphicsFormat::GraphicsFormatBC6HSFloatBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC7UNormBlock)
+	else if (imageFormat == image::format_t::BC7UNormBlock)
 		format = GraphicsFormat::GraphicsFormatBC7UNormBlock;
-	else if (imageFormat == ImageFormat::ImageFormatBC7SRGBBlock)
+	else if (imageFormat == image::format_t::BC7SRGBBlock)
 		format = GraphicsFormat::GraphicsFormatBC7SRGBBlock;
-	else if (imageFormat == ImageFormat::ImageFormatR8G8B8UNorm)
+	else if (imageFormat == image::format_t::R8G8B8UNorm || imageFormat == image::format_t::R8G8B8SRGB)
 		format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
-	else if (imageFormat == ImageFormat::ImageFormatR8G8B8A8UNorm)
+	else if (imageFormat == image::format_t::R8G8B8A8UNorm || imageFormat == image::format_t::R8G8B8A8SRGB)
 		format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
-	else if (imageFormat == ImageFormat::ImageFormatB8G8R8UNorm)
+	else if (imageFormat == image::format_t::B8G8R8UNorm || imageFormat == image::format_t::B8G8R8SRGB)
 		format = GraphicsFormat::GraphicsFormatB8G8R8UNorm;
-	else if (imageFormat == ImageFormat::ImageFormatB8G8R8A8UNorm)
+	else if (imageFormat == image::format_t::B8G8R8A8UNorm || imageFormat == image::format_t::B8G8R8A8SRGB)
 		format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm;
-	else if (imageFormat == ImageFormat::ImageFormatR8UNorm)
+	else if (imageFormat == image::format_t::R8UNorm || imageFormat == image::format_t::R8SRGB)
 		format = GraphicsFormat::GraphicsFormatR8UNorm;
-	else if (imageFormat == ImageFormat::ImageFormatR8G8UNorm)
+	else if (imageFormat == image::format_t::R8G8UNorm || imageFormat == image::format_t::R8G8SRGB)
 		format = GraphicsFormat::GraphicsFormatR8G8UNorm;
-	else if (imageFormat == ImageFormat::ImageFormatR16SFloat)
+	else if (imageFormat == image::format_t::R16SFloat)
 		format = GraphicsFormat::GraphicsFormatR16SFloat;
-	else if (imageFormat == ImageFormat::ImageFormatR16G16SFloat)
+	else if (imageFormat == image::format_t::R16G16SFloat)
 		format = GraphicsFormat::GraphicsFormatR16G16SFloat;
-	else if (imageFormat == ImageFormat::ImageFormatR16G16B16SFloat)
+	else if (imageFormat == image::format_t::R16G16B16SFloat)
 		format = GraphicsFormat::GraphicsFormatR16G16B16SFloat;
-	else if (imageFormat == ImageFormat::ImageFormatR16G16B16A16SFloat)
+	else if (imageFormat == image::format_t::R16G16B16A16SFloat)
 		format = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
-	else if (imageFormat == ImageFormat::ImageFormatR32SFloat)
+	else if (imageFormat == image::format_t::R32SFloat)
 		format = GraphicsFormat::GraphicsFormatR32SFloat;
-	else if (imageFormat == ImageFormat::ImageFormatR32G32SFloat)
+	else if (imageFormat == image::format_t::R32G32SFloat)
 		format = GraphicsFormat::GraphicsFormatR32G32SFloat;
-	else if (imageFormat == ImageFormat::ImageFormatR32G32B32SFloat)
+	else if (imageFormat == image::format_t::R32G32B32SFloat)
 		format = GraphicsFormat::GraphicsFormatR32G32B32SFloat;
-	else if (imageFormat == ImageFormat::ImageFormatR32G32B32A32SFloat)
+	else if (imageFormat == image::format_t::R32G32B32A32SFloat)
 		format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
 
 	if (format == GraphicsFormat::GraphicsFormatUndefined)
@@ -229,10 +229,10 @@ MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, 
 	textureDesc.setTexFormat(format);
 	textureDesc.setStream(image.data());
 	textureDesc.setStreamSize(image.size());
-	textureDesc.setMipBase(image.getMipBase());
-	textureDesc.setMipLevel(image.getMipLevel());
-	textureDesc.setLayerBase(image.getLayerBase());
-	textureDesc.setLayerNums(image.getLayerLevel());
+	textureDesc.setMipBase(image.mipBase());
+	textureDesc.setMipLevel(image.mipLevel());
+	textureDesc.setLayerBase(image.layerBase());
+	textureDesc.setLayerNums(image.layerLevel());
 	textureDesc.setSamplerFilter(filter);
 	textureDesc.setSamplerWrap(warp);
 

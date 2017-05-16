@@ -271,134 +271,134 @@ inline Vector3t<T> operator-(const Vector3t<T>& v) noexcept
 	return Vector3t<T>(-v.x, -v.y, -v.z);
 }
 
-template<typename _Tx, typename _Ty>
-inline bool operator==(const Vector3t<_Tx>& v, const _Ty value) noexcept
+template<typename T>
+inline bool operator==(const Vector3t<T>& v, const T value) noexcept
 {
 	return v.x == value && v.y == value && v.z == value;
 }
 
-template<typename _Tx, typename _Ty>
-inline bool operator==(const _Ty value, const Vector3t<_Tx>& v) noexcept
-{
-	return v.x == value && v.y == value && v.z == value;
-}
-
-template<typename _Tx, typename _Ty>
-inline bool operator!=(const Vector3t<_Tx>& v, const _Ty value) noexcept
+template<typename T>
+inline bool operator!=(const Vector3t<T>& v, const T value) noexcept
 {
 	return v.x != value || v.y != value || v.z != value;
 }
 
-template<typename _Tx, typename _Ty>
-inline bool operator!=(const _Ty value, const Vector3t<_Tx>& v) noexcept
-{
-	return v.x != value && v.y != value && v.z != value;
-}
-
-template<typename _Tx, typename _Ty>
-inline bool operator<(const Vector3t<_Tx>& v, const _Ty value) noexcept
+template<typename T>
+inline bool operator<(const Vector3t<T>& v, const T value) noexcept
 {
 	return v.x < value && v.y < value && v.z < value;
 }
 
-template<typename _Tx, typename _Ty>
-inline bool operator<(const _Ty value, const Vector3t<_Tx>& v) noexcept
-{
-	return value < v.x && value < v.y && value < v.z;
-}
-
-template<typename _Tx, typename _Ty>
-inline bool operator>(const Vector3t<_Tx>& v, const _Ty value) noexcept
+template<typename T>
+inline bool operator>(const Vector3t<T>& v, const T value) noexcept
 {
 	return v.x > value && v.y > value && v.z > value;
 }
 
-template<typename _Tx, typename _Ty>
-inline bool operator>(const _Ty value, const Vector3t<_Tx>& v) noexcept
-{
-	return value > v.x && value > v.y && value > v.z;
-}
-
-template<typename _Tx, typename _Ty>
-inline bool operator<=(const Vector3t<_Tx>& v, const _Ty value) noexcept
+template<typename T>
+inline bool operator<=(const Vector3t<T>& v, const T value) noexcept
 {
 	return v.x <= value && v.y <= value && v.z <= value;
 }
 
-template<typename _Tx, typename _Ty>
-inline bool operator<=(const _Ty value, const Vector3t<_Tx>& v) noexcept
-{
-	return value <= v.x && value <= v.y && value <= v.z;
-}
-
-template<typename _Tx, typename _Ty>
-inline bool operator>=(const Vector3t<_Tx>& v, const _Ty value) noexcept
+template<typename T>
+inline bool operator>=(const Vector3t<T>& v, const T value) noexcept
 {
 	return v.x >= value && v.y >= value && v.z >= value;
 }
 
-template<typename _Tx, typename _Ty>
-inline bool operator>=(const _Ty value, const Vector3t<_Tx>& v) noexcept
+template<typename T>
+inline Vector3t<T> operator+(const Vector3t<T>& v, const T value) noexcept
+{
+	return Vector3t<T>((v.x + value), (v.y + value), (v.z + value));
+}
+
+template<typename T>
+inline Vector3t<T> operator-(const Vector3t<T>& v, const T value) noexcept
+{
+	return Vector3t<T>((v.x - value), (v.y - value), (v.z - value));
+}
+
+template<typename T>
+inline Vector3t<T> operator*(const Vector3t<T>& v, const T value) noexcept
+{
+	return Vector3t<T>((v.x * value), (v.y * value), (v.z * value));
+}
+
+template<typename T>
+inline Vector3t<T> operator/(const Vector3t<T>& v, const T value) noexcept
+{
+	return Vector3t<T>((v.x / value), (v.y / value), (v.z / value));
+}
+
+template<typename T>
+inline bool operator==(const T value, const Vector3t<T>& v) noexcept
+{
+	return v.x == value && v.y == value && v.z == value;
+}
+
+template<typename T>
+inline bool operator!=(const T value, const Vector3t<T>& v) noexcept
+{
+	return v.x != value && v.y != value && v.z != value;
+}
+
+template<typename T>
+inline bool operator<(const T value, const Vector3t<T>& v) noexcept
+{
+	return value < v.x && value < v.y && value < v.z;
+}
+
+template<typename T>
+inline bool operator>(const T value, const Vector3t<T>& v) noexcept
+{
+	return value > v.x && value > v.y && value > v.z;
+}
+
+template<typename T>
+inline bool operator<=(const T value, const Vector3t<T>& v) noexcept
+{
+	return value <= v.x && value <= v.y && value <= v.z;
+}
+
+template<typename T>
+inline bool operator>=(const T value, const Vector3t<T>& v) noexcept
 {
 	return value >= v.x && value >= v.y && value >= v.z;
 }
 
 template<typename T>
-inline Vector3t<T> operator+(T value, const Vector3t<T>& v) noexcept
+inline Vector3t<T> operator+(const T value, const Vector3t<T>& v) noexcept
 {
-	return Vector3t<T>((T)(value + v.x), (T)(value + v.y), (T)(value + v.z));
+	return Vector3t<T>((value + v.x), (value + v.y), (value + v.z));
 }
 
 template<typename T>
-inline Vector3t<T> operator-(T value, const Vector3t<T>& v) noexcept
+inline Vector3t<T> operator-(const T value, const Vector3t<T>& v) noexcept
 {
-	return Vector3t<T>((T)(value - v.x), (T)(value - v.y), (T)(value - v.z));
+	return Vector3t<T>((value - v.x), (value - v.y), (value - v.z));
 }
 
 template<typename T>
-inline Vector3t<T> operator*(T value, const Vector3t<T>& v) noexcept
+inline Vector3t<T> operator*(const T value, const Vector3t<T>& v) noexcept
 {
-	return Vector3t<T>((T)(value * v.x), (T)(value * v.y), (T)(value * v.z));
+	return Vector3t<T>((value * v.x), (value * v.y), (value * v.z));
 }
 
 template<typename T>
-inline Vector3t<T> operator/(T value, const Vector3t<T>& v) noexcept
+inline Vector3t<T> operator/(const T value, const Vector3t<T>& v) noexcept
 {
-	return Vector3t<T>((T)(value / v.x), (T)(value / v.y), (T)(value / v.z));
+	return Vector3t<T>((value / v.x), (value / v.y), (value / v.z));
 }
 
-template<typename T>
-inline Vector3t<T> operator+(const Vector3t<T>& v, T value) noexcept
-{
-	return Vector3t<T>((T)(v.x + value), (T)(v.y + value), (T)(v.z + value));
-}
-
-template<typename T>
-inline Vector3t<T> operator-(const Vector3t<T>& v, T value) noexcept
-{
-	return Vector3t<T>((T)(v.x - value), (T)(v.y - value), (T)(v.z - value));
-}
-
-template<typename T>
-inline Vector3t<T> operator*(const Vector3t<T>& v, T value) noexcept
-{
-	return Vector3t<T>((T)(v.x * value), (T)(v.y * value), (T)(v.z * value));
-}
-
-template<typename T>
-inline Vector3t<T> operator/(const Vector3t<T>& v, T value) noexcept
-{
-	return Vector3t<T>((T)(v.x / value), (T)(v.y / value), (T)(v.z / value));
-}
-
-template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
+template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const Vector3t<T>& v)
 {
 	os << v.x << ", " << v.y << ", " << v.z;
 	return os;
 }
 
-template<typename istream, typename T, trait::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
+template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, Vector3t<T>& v)
 {
 	is >> v.x;

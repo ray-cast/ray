@@ -41,8 +41,6 @@
 
 _NAME_BEGIN
 
-typedef float Float;
-
 template<typename T = int>
 class Sizet;
 
@@ -55,94 +53,94 @@ class Rectt;
 template<typename T = std::uint32_t>
 class Binaryt;
 
-template<typename T = Float>
+template<typename T = float>
 class Viewportt;
 
 template<typename T = int>
 class Scissort;
 
-template<typename T = Float>
+template<typename T = float>
 class Vector2t;
 
-template<typename T = Float>
+template<typename T = float>
 class Vector3t;
 
-template<typename T = Float>
+template<typename T = float>
 class Vector4t;
 
-template<typename T = Float>
+template<typename T = float>
 class Color3t;
 
-template<typename T = Float>
+template<typename T = float>
 class Color4t;
 
-template<typename T = Float>
+template<typename T = float>
 class RGBt;
 
-template<typename T = Float>
+template<typename T = float>
 class RGBAt;
 
-template<typename T = Float>
+template<typename T = float>
 class BGRt;
 
-template<typename T = Float>
+template<typename T = float>
 class BGRAt;
 
-template<typename T = Float>
+template<typename T = float>
 class Matrix2x2t;
 
-template<typename T = Float>
+template<typename T = float>
 class Matrix3x3t;
 
-template<typename T = Float>
+template<typename T = float>
 class Matrix4x4t;
 
-template<typename T = Float>
+template<typename T = float>
 class Raycast2t;
 
-template<typename T = Float>
+template<typename T = float>
 class Raycast3t;
 
-template<typename T = Float>
+template<typename T = float>
 class Triangle3t;
 
-template<typename T = Float>
+template<typename T = float>
 class EulerAnglest;
 
-template <typename T = Float>
+template<typename T = float>
 class Quaterniont;
 
-template<typename T = Float>
+template<typename T = float>
 class Line2t;
 
-template<typename T = Float>
+template<typename T = float>
 class Line3t;
 
-template<typename T = Float>
+template<typename T = float>
 class Box2t;
 
-template<typename T = Float>
+template<typename T = float>
 class AABBt;
 
-template<typename T = Float>
+template<typename T = float>
 class OBBt;
 
-template<typename T = Float>
+template<typename T = float>
 class Boundt;
 
-template<typename T = Float>
+template<typename T = float>
 class Frustumt;
 
-template<typename T = Float>
+template<typename T = float>
 class Plane2t;
 
-template<typename T = Float>
+template<typename T = float>
 class Plane3t;
 
-template<typename T = Float>
+template<typename T = float>
 class Rect3t;
 
-template<typename T = Float>
+template<typename T = float>
 class Spheret;
 
 // default

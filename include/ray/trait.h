@@ -389,9 +389,6 @@ namespace trait
 	struct has_right_shift<T, void> : _Has_right_shift<T, void>::type
 	{
 	};
-
-	template<bool _Test, class _Ty = void>
-	using enable_if_t = typename std::enable_if<_Test, _Ty>::type;
 }
 
 _NAME_END

@@ -287,14 +287,14 @@ inline Quaterniont<T> operator/(T f, const Quaterniont<T>& q) noexcept
 	return Quaterniont<T>(q.x / f, q.y / f, q.z / f, q.w / f);
 }
 
-template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
+template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const Quaterniont<T>& v)
 {
 	os << v.x << ", " << v.y << ", " << v.z << ", " << v.w;
 	return os;
 }
 
-template<typename istream, typename T, trait::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
+template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, Quaterniont<T>& v)
 {
 	is >> v.x;

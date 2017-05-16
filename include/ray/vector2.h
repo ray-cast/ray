@@ -223,14 +223,14 @@ inline Vector2t<T> operator/(unsigned scale, const Vector2t<T>& v) noexcept
 	return Vector2t<T>(v.x / scale, v.y / scale);
 }
 
-template<typename ostream, typename T, trait::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
+template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const Vector2t<T>& v)
 {
 	os << v.x << ", " << v.y;
 	return os;
 }
 
-template<typename istream, typename T, trait::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
+template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, Vector2t<T>& v)
 {
 	is >> v.x;
@@ -245,14 +245,6 @@ namespace math
 	inline T dot(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
 	{
 		return v1.x * v2.x + v1.y * v2.y;
-	}
-
-	template<typename T>
-	Vector2t<T> cross(const Vector2t<T>& v1, const Vector3t<T>& v2) noexcept
-	{
-		return Vector2t<T>(
-			v1.y * v2.x - v1.x * v2.y,
-			v1.x * v2.y - v1.y * v2.x);
 	}
 
 	template<typename T>
@@ -310,6 +302,14 @@ namespace math
 		res.y = y0.y + dyx * dy.y;
 
 		return true;
+	}
+
+	template<typename T>
+	Vector2t<T> cross(const Vector2t<T>& v1, const Vector3t<T>& v2) noexcept
+	{
+		return Vector2t<T>(
+			v1.y * v2.x - v1.x * v2.y,
+			v1.x * v2.y - v1.y * v2.x);
 	}
 
 	template<typename T>

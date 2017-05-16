@@ -46,12 +46,16 @@ typedef SH<float, 6> H6;
 
 typedef SH<float, 4> SH4;
 typedef SH<float, 9> SH9;
+typedef SH<float, 16> SH16;
+typedef SH<float, 25> SH25;
 
 typedef SH<float3, 4> H4Color;
 typedef SH<float3, 6> H6Color;
 
 typedef SH<float3, 4> SH4Color;
 typedef SH<float3, 9> SH9Color;
+typedef SH<float3, 16> SH16Color;
+typedef SH<float3, 25> SH25Color;
 
 _NAME_END
 

@@ -45,6 +45,12 @@ template <typename T>
 class Quaterniont
 {
 public:
+	typedef typename trait::_typeaddition<T>::value_type value_type;
+	typedef typename trait::_typeaddition<T>::pointer pointer;
+	typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+	typedef typename trait::_typeaddition<T>::reference reference;
+	typedef typename trait::_typeaddition<T>::const_reference const_reference;
+
 	T x, y, z, w;
 
 	static const Quaterniont<T> Zero;
@@ -58,14 +64,23 @@ public:
 	explicit Quaterniont(const Vector3t<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
 	explicit Quaterniont(const EulerAnglest<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
 
-	Quaterniont& operator+=(T f) noexcept { w += w; x += f; y += f; z += f; return *this; }
-	Quaterniont& operator-=(T f) noexcept { w -= w; x -= f; y -= f; z -= f; return *this; }
-	Quaterniont& operator*=(T f) noexcept { w *= w; x *= f; y *= f; z *= f; return *this; }
-	Quaterniont& operator/=(T f) noexcept { w /= w; x /= f; y /= f; z /= f; return *this; }
-	Quaterniont& operator+=(const Quaterniont& v) noexcept { w += v.w; x += v.x; y += v.y; z += v.z; return *this; }
-	Quaterniont& operator-=(const Quaterniont& v) noexcept { w -= v.w; x -= v.x; y -= v.y; z -= v.z; return *this; }
-	Quaterniont& operator*=(const Quaterniont& v) noexcept { w *= v.w; x *= v.x; y *= v.y; z *= v.z; return *this; }
-	Quaterniont& operator/=(const Quaterniont& v) noexcept { w /= v.w; x /= v.x; y /= v.y; z /= v.z; return *this; }
+	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
+	explicit Quaterniont(S xyzw[4]) noexcept
+		: x(static_cast<typename trait::_typeaddition<S>::value_type>(xyzw[0]))
+		, y(static_cast<typename trait::_typeaddition<S>::value_type>(xyzw[1]))
+		, z(static_cast<typename trait::_typeaddition<S>::value_type>(xyzw[2]))
+		, w(static_cast<typename trait::_typeaddition<S>::value_type>(xyzw[3]))
+	{
+		assert(xyzw[0] < std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(xyzw[1] < std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(xyzw[2] < std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+		assert(xyzw[3] < std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
+	}
+
+	Quaterniont<T>& operator+=(const Quaterniont<T>& v) noexcept { w += v.w; x += v.x; y += v.y; z += v.z; return *this; }
+	Quaterniont<T>& operator-=(const Quaterniont<T>& v) noexcept { w -= v.w; x -= v.x; y -= v.y; z -= v.z; return *this; }
+	Quaterniont<T>& operator*=(const Quaterniont<T>& v) noexcept { w *= v.w; x *= v.x; y *= v.y; z *= v.z; return *this; }
+	Quaterniont<T>& operator/=(const Quaterniont<T>& v) noexcept { w /= v.w; x /= v.x; y /= v.y; z /= v.z; return *this; }
 
 	Quaterniont<T>& identity() noexcept
 	{
@@ -310,6 +325,34 @@ inline istream& operator >> (istream& is, Quaterniont<T>& v)
 namespace math
 {
 	template<typename T>
+	inline T dot(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
+	{
+		return q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
+	}
+
+	template<typename T>
+	inline T length2(const Quaterniont<T>& q) noexcept
+	{
+		return q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+	}
+
+	template<typename T>
+	inline T length(const Quaterniont<T>& q) noexcept
+	{
+		return std::sqrt(length2(q));
+	}
+
+	template<typename T>
+	inline bool equal(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
+	{
+		return
+			math::equal<T>(q1.x, q2.x) &&
+			math::equal<T>(q1.y, q2.y) &&
+			math::equal<T>(q1.z, q2.z) &&
+			math::equal<T>(q1.w, q2.w);
+	}
+
+	template<typename T>
 	inline Quaterniont<T> conjugate(const Quaterniont<T>& q) noexcept
 	{
 		return Quaterniont<T>(-q.x, -q.y, -q.z, q.w);
@@ -347,34 +390,6 @@ namespace math
 			q1.w * q2.y + q1.y * q2.w + q1.z * q2.x - q1.x * q2.z,
 			q1.w * q2.z + q1.z * q2.w + q1.x * q2.y - q1.y * q2.x,
 			q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z);
-	}
-
-	template<typename T>
-	inline T dot(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
-	{
-		return q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
-	}
-
-	template<typename T>
-	inline T length2(const Quaterniont<T>& q) noexcept
-	{
-		return q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
-	}
-
-	template<typename T>
-	inline T length(const Quaterniont<T>& q) noexcept
-	{
-		return std::sqrt(length2(q));
-	}
-
-	template<typename T>
-	inline bool equal(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
-	{
-		return
-			math::equal<T>(q1.x, q2.x) &&
-			math::equal<T>(q1.y, q2.y) &&
-			math::equal<T>(q1.z, q2.z) &&
-			math::equal<T>(q1.w, q2.w);
 	}
 
 	template<typename T>

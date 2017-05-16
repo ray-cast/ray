@@ -54,10 +54,10 @@ public:
 	explicit EulerAnglest(const Vector3t<T>& v) noexcept : x(v.x), y(v.y), z(v.z) {}
 	explicit EulerAnglest(const Quaterniont<T>& q) noexcept { this->makeRotate(q); }
 
-	EulerAnglest<T>& operator+=(const EulerAnglest<T>& e) { x += e.x; y += e.y; z += e.z; return *this; }
-	EulerAnglest<T>& operator-=(const EulerAnglest<T>& e) { x -= e.x; y -= e.y; z -= e.z; return *this; }
-	EulerAnglest<T>& operator*=(const EulerAnglest<T>& e) { x *= e.x; y *= e.y; z *= e.z; return *this; }
-	EulerAnglest<T>& operator/=(const EulerAnglest<T>& e) { x /= e.x; y /= e.y; z /= e.z; return *this; }
+	EulerAnglest<T>& operator+=(const EulerAnglest<T>& e) noexcept { x += e.x; y += e.y; z += e.z; return *this; }
+	EulerAnglest<T>& operator-=(const EulerAnglest<T>& e) noexcept { x -= e.x; y -= e.y; z -= e.z; return *this; }
+	EulerAnglest<T>& operator*=(const EulerAnglest<T>& e) noexcept { x *= e.x; y *= e.y; z *= e.z; return *this; }
+	EulerAnglest<T>& operator/=(const EulerAnglest<T>& e) noexcept { x /= e.x; y /= e.y; z /= e.z; return *this; }
 
 	EulerAnglest<T>& identity() noexcept
 	{
@@ -86,38 +86,38 @@ inline bool operator!=(const EulerAnglest<T>& e1, const EulerAnglest<T>& e2) noe
 }
 
 template<typename T>
-inline EulerAnglest<T> operator+(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2)
+inline EulerAnglest<T> operator+(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2) noexcept
 {
 	return EulerAnglest<T>(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 }
 
 template<typename T>
-inline EulerAnglest<T> operator-(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2)
+inline EulerAnglest<T> operator-(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2) noexcept
 {
 	return EulerAnglest<T>(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
 }
 
 template<typename T>
-inline EulerAnglest<T> operator*(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2)
+inline EulerAnglest<T> operator*(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2) noexcept
 {
 	return EulerAnglest<T>(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
 }
 
 template<typename T>
-inline EulerAnglest<T> operator/(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2)
+inline EulerAnglest<T> operator/(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2) noexcept
 {
 	return EulerAnglest<T>(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
 }
 
-template<typename ostream, typename T>
-inline ostream& operator << (ostream& os, const EulerAnglest<T>& v)
+template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
+inline ostream& operator << (ostream& os, const EulerAnglest<T>& v) noexcept
 {
     os << v.x << ", " << v.y << ", " << v.z;
     return os;
 }
 
-template<typename istream, typename T>
-inline istream& operator >> (istream& is, EulerAnglest<T>& v)
+template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
+inline istream& operator >> (istream& is, EulerAnglest<T>& v) noexcept
 {
     is >> v.x;
     is.ignore(2);

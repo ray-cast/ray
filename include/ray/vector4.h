@@ -467,7 +467,7 @@ public:
 		return *this;
 	}
 
-	Vector4t<T>& set(const Vector3t<T>& v) noexcept
+	 Vector4t<T>& set(const Vector3t<T>& v) noexcept
 	{
 		x = v.x; y = v.y; z = v.z;
 		return *this;
@@ -489,7 +489,7 @@ public:
 		return *this;
 	}
 
-	T& getComponent(unsigned char index) noexcept
+	T& getComponent(std::uint8_t index) noexcept
 	{
 		switch (index)
 		{
@@ -583,12 +583,6 @@ template<typename T>
 inline Vector4t<T> operator/(const Vector4t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return Vector4t<T>(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z, v1.w);
-}
-
-template<typename T>
-inline T operator*(const Vector4t<T>& v1, const Vector3t<T>& v2) noexcept
-{
-	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w;
 }
 
 template<typename T>

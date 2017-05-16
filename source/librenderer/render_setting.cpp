@@ -53,8 +53,8 @@ RenderSetting::computeScatteringCoefficients() noexcept
 
 	float4 mieTotalSctrCoeff = float4(this->density * 2e-5f);
 
-	this->rayleighAngularSctrCoeff = float4(4.0 / (16.0 * M_PI) * sctrCoeff, 0.0);
-	this->rayleighExtinctionCoeff = float4(sctrCoeff, 0.0f);
+	this->rayleighAngularSctrCoeff = float4((float3)(4.0 / (16.0 * M_PI) * sctrCoeff), 0.0);
+	this->rayleighExtinctionCoeff = float4((float3)sctrCoeff, 0.0f);
 	this->mieAngularSctrCoeff = mieTotalSctrCoeff / float(4.0f * M_PI);
 	this->mieExtinctionCoeff = mieTotalSctrCoeff * (1.f);
 }

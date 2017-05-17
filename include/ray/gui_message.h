@@ -37,7 +37,6 @@
 #ifndef _H_GUI_MESSAGE_H_
 #define _H_GUI_MESSAGE_H_
 
-#include <ray/imgui.h>
 #include <ray/message.h>
 
 _NAME_BEGIN

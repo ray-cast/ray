@@ -56,7 +56,7 @@ Factory::open() noexcept
 	for (auto& it : _rttis)
 	{
 		if (it)
-			_rtti_lists[it->getName()] = it;
+			_rtti_lists[it->type_name()] = it;
 	}
 	return true;
 }

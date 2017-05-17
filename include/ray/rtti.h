@@ -57,14 +57,13 @@ namespace rtti
 
 		const Rtti* getParent() const noexcept;
 
-		const std::string& getName() const noexcept;
+		const std::string& type_name() const noexcept;
 
 		bool isDerivedFrom(const Rtti* other) const;
 		bool isDerivedFrom(const Rtti& other) const;
 		bool isDerivedFrom(const std::string& name) const;
 
 	private:
-
 		std::string _name;
 		const Rtti* _parent;
 		RttiConstruct _construct;

@@ -69,7 +69,7 @@ Rtti::getParent() const noexcept
 }
 
 const std::string&
-Rtti::getName() const noexcept
+Rtti::type_name() const noexcept
 {
 	return _name;
 }
@@ -133,7 +133,7 @@ Interface::isInstanceOf(const Rtti& rtti) const noexcept
 bool
 Interface::isInstanceOf(const std::string& className) const noexcept
 {
-	return this->rtti()->getName() == className;
+	return this->rtti()->type_name() == className;
 }
 
 bool

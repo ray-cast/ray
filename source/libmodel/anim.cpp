@@ -546,7 +546,7 @@ static float BezierEval(const std::uint8_t* ip, float t) noexcept
 }
 
 void
-AnimationProperty::interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame) noexcept
+AnimationProperty::interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, std::size_t frame) noexcept
 {
 	auto ms = findMotionSegment(frame, motions);
 

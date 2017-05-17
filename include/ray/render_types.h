@@ -133,9 +133,9 @@ enum CameraOrder
 
 enum CameraClearFlagBits
 {
-	CameraClearColorBit,
-	CameraClearDepthBit,
-	CameraClearStencilBit,
+	CameraClearColorBit   = 1 << 0,
+	CameraClearDepthBit   = 1 << 1,
+	CameraClearStencilBit = 1 << 2,
 	CameraClearDepthStencilBit = CameraClearDepthBit | CameraClearStencilBit,
 	CameraClearMaxBit = 0x7FFFFFFF
 };

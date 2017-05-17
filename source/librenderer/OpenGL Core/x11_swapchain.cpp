@@ -150,7 +150,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Can't support depth stencil format");
+		GL_PLATFORM_LOG("Cannot support depth stencil format");
 		return false;
 	}
 

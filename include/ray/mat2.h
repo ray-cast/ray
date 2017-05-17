@@ -46,28 +46,28 @@ template<typename T>
 class Matrix2x2t
 {
 public:
-	Matrix2x2t() noexcept
-	{
-	}
+	typedef typename trait::_typeaddition<T>::value_type value_type;
+	typedef typename trait::_typeaddition<T>::pointer pointer;
+	typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+	typedef typename trait::_typeaddition<T>::reference reference;
+	typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
-	Matrix2x2t(T mt00, T mt01, T mt10, T mt11)
-	{
-		set(mt00, mt01, mt10, mt11);
-	}
+	Matrix2x2t() noexcept { }
+	Matrix2x2t(T mt00, T mt01, T mt10, T mt11) noexcept :a1(mt00), a2(mt01), b1(mt10), b2(mt11) {}
 
-	Matrix2x2t& set(T mt00, T mt01, T mt10, T mt11)
+	Matrix2x2t& set(T mt00, T mt01, T mt10, T mt11) noexcept
 	{
 		this->a1 = mt00; this->a2 = mt01;
 		this->b1 = mt10; this->b2 = mt11;
 		return *this;
 	}
 
-	void setScale(const Vector2t<T>& sz)
+	void setScale(const Vector2t<T>& sz) noexcept
 	{
 		setScale(sz.x, sz.y);
 	}
 
-	void setScale(T x, T y)
+	void setScale(T x, T y) noexcept
 	{
 		this->a1 *= x;
 		this->a2 *= x;
@@ -75,49 +75,48 @@ public:
 		this->b2 *= y;
 	}
 
-	void makeScale(const Vector2t<T>& sz)
+	void makeScale(const Vector2t<T>& sz) noexcept
 	{
 		makeScale(sz.x, sz.y);
 	}
 
-	void makeScale(T x, T y)
+	void makeScale(T x, T y) noexcept
 	{
-		set(x, 0,
-			0, y);
+		set(x, 0, 0, y);
 	}
 
-	void scale(const Vector2t<T>& sz)
+	void scale(const Vector2t<T>& sz) noexcept
 	{
 		scale(sz.x, sz.y);
 	}
 
-	void scale(T x, T y)
+	void scale(T x, T y) noexcept
 	{
 		this->a1 *= x;
 		this->b2 *= y;
 	}
 
-	void setRotate(const Quaterniont<T>& q)
+	void setRotate(const Quaterniont<T>& q) noexcept
 	{
 		setRotate(q.w, q.x, q.y, q.z);
 	}
 
-	void setRotate(T angle, const Vector3t<T>& axis)
+	void setRotate(T angle, const Vector3t<T>& axis) noexcept
 	{
 		setRotate(angle, axis.x, axis.y, axis.z);
 	}
 
-	void setRotate(T angle, T x, T y, T z)
+	void setRotate(T angle, T x, T y, T z) noexcept
 	{
 		makeRotate(angle, x, y, z);
 	}
 
-	void makeRotate(const Quaterniont<T>& q)
+	void makeRotate(const Quaterniont<T>& q) noexcept
 	{
 		makeRotate(q.w, q.x, q.y, q.z);
 	}
 
-	void makeRotate(T angle, const Vector3t<T>& axis)
+	void makeRotate(T angle, const Vector3t<T>& axis) noexcept
 	{
 		T c, s;
 
@@ -140,12 +139,12 @@ public:
 		this->b2 = (ty * y + c);
 	}
 
-	void makeRotate(T angle, T x, T y, T z)
+	void makeRotate(T angle, T x, T y, T z) noexcept
 	{
 		makeRotate(angle, Vector3t<T>(x, y, z));
 	}
 
-	void makeRotationX(T theta)
+	void makeRotationX(T theta) noexcept
 	{
 		T ang = degrees(theta);
 		T c, s;
@@ -157,7 +156,7 @@ public:
 			0, c);
 	}
 
-	void makeRotationY(T theta)
+	void makeRotationY(T theta) noexcept
 	{
 		T ang = degrees(theta);
 		T c, s;
@@ -169,7 +168,7 @@ public:
 			0, 1);
 	}
 
-	void makeRotationZ(T theta)
+	void makeRotationZ(T theta) noexcept
 	{
 		T ang = degrees(theta);
 		T c, s;
@@ -181,10 +180,10 @@ public:
 			s, c);
 	}
 
-	T* ptr() { return (T*)this; }
-	const T* ptr() const { return (const T*)this; }
-	T* data() { return (T*)&a1; }
-	const T* data() const { return (const T*)this; }
+	T* ptr() noexcept { return (T*)this; }
+	const T* ptr() const noexcept { return (const T*)this; }
+	T* data() noexcept { return (T*)&a1; }
+	const T* data() const noexcept { return (const T*)this; }
 
 private:
 	T a1, a2;

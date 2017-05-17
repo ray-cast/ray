@@ -189,7 +189,6 @@ public:
 	}
 
 private:
-
 	Spheret<T> _sp;
 };
 

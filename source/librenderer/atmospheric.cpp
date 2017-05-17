@@ -116,14 +116,14 @@ Atmospheric::computeViewProjectInverse(const Camera& camera, float4x4& viewProje
 		znear = (cameraElev - radius.z) / std::sqrt(1 + 1.0f / (proj.a1 * proj.a1) + 1.0f / (proj.b2 * proj.b2));
 	}
 
-	const int numTestDirections = 5;
-	for (int i = 0; i < numTestDirections; ++i)
+	const std::uint8_t numTestDirections = 5;
+	for (std::uint8_t i = 0; i < numTestDirections; ++i)
 	{
-		for (int j = 0; j < numTestDirections; ++j)
+		for (std::uint8_t j = 0; j < numTestDirections; ++j)
 		{
 			float3 proj;
-			proj.x = math::unorm2snorm((float)i / (numTestDirections - 1));
-			proj.y = math::unorm2snorm((float)j / (numTestDirections - 1));
+			proj.x = math::unorm2snorm(static_cast<float>(i) / (numTestDirections - 1));
+			proj.y = math::unorm2snorm(static_cast<float>(j) / (numTestDirections - 1));
 			proj.z = 0;
 
 			float3 world = camera.getViewProjectInverse() * proj;
@@ -142,7 +142,7 @@ Atmospheric::computeViewProjectInverse(const Camera& camera, float4x4& viewProje
 			}
 			else
 			{
-				zfar = maxViewDistance;
+				zfar = static_cast<float>(maxViewDistance);
 			}
 		}
 	}

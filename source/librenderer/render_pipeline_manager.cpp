@@ -716,10 +716,9 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 
 		renderPipeline->onRenderPre();
 		renderPipeline->onRenderPipeline(camera);
+		renderPipeline->onRenderPost();
 
 		camera->onRenderPost(*camera);
-
-		renderPipeline->onRenderPost();
 	}
 }
 

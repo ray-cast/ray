@@ -74,7 +74,7 @@ public:
 		this->extract(m);
 	}
 
-	void makeFrustum(float angle, float ratio, float znear, float zfar, const Vector3t<T>& position, const Vector3t<T>& lookat, const Vector3t<T>& up) noexcept
+	void makeFrustum(T angle, T ratio, T znear, T zfar, const Vector3t<T>& position, const Vector3t<T>& lookat, const Vector3t<T>& up) noexcept
 	{
 		Vector3t<T> z = math::normalize(position - lookat);
 		Vector3t<T> x = math::normalize(math::cross(up, z));
@@ -209,7 +209,7 @@ public:
 		return false;
 	}
 
-	bool contains(const Vector3t<T>& p, float radius) const  noexcept
+	bool contains(const Vector3t<T>& p, T radius) const  noexcept
 	{
 		if ((_left.getDistance(p) < -radius) ||
 			(_right.getDistance(p) < -radius) ||
@@ -268,15 +268,8 @@ public:
 		return FRUSTUM_CONTAINS;
 	}
 
-	float getFar() const noexcept
-	{
-		return _far.distance;
-	}
-
-	float getNear() const noexcept
-	{
-		return _near.distance;
-	}
+	T getFar() const noexcept { return _far.distance; }
+	T getNear() const noexcept { return _near.distance; }
 
 private:
 	Plane3t<T> _left;

@@ -47,6 +47,12 @@ template<typename T>
 class Matrix4x4t
 {
 public:
+	typedef typename trait::_typeaddition<T>::value_type value_type;
+	typedef typename trait::_typeaddition<T>::pointer pointer;
+	typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+	typedef typename trait::_typeaddition<T>::reference reference;
+	typedef typename trait::_typeaddition<T>::const_reference const_reference;
+
 	static const Matrix4x4t<T> Zero;
 	static const Matrix4x4t<T> One;
 
@@ -83,14 +89,14 @@ public:
 		d1 = 0.0f; d2 = 0.0f; d3 = 0.0f; d4 = 1.0f;
 	}
 
-	template <typename S>
+	template<typename S, typename = std::enable_if<!std::is_pointer<S>::value>>
 	explicit operator Matrix4x4t<S>() const noexcept
 	{
 		return Matrix4x4t<S>(
-			S(a1), S(a2), S(a3), S(a4),
-			S(b1), S(b2), S(b3), S(b4),
-			S(c1), S(c2), S(c3), S(c4),
-			S(d1), S(d2), S(d3), S(d4));
+			static_cast<S>(a1), static_cast<S>(a2), static_cast<S>(a3), static_cast<S>(a4),
+			static_cast<S>(b1), static_cast<S>(b2), static_cast<S>(b3), static_cast<S>(b4),
+			static_cast<S>(c1), static_cast<S>(c2), static_cast<S>(c3), static_cast<S>(c4),
+			static_cast<S>(d1), static_cast<S>(d2), static_cast<S>(d3), static_cast<S>(d4));
 	}
 
 	Matrix4x4t& operator=(const Matrix3x3t<T>& m) noexcept
@@ -103,11 +109,13 @@ public:
 
 	T& operator[](std::size_t n) noexcept
 	{
+		assert(n < 16);
 		return *((&a1) + n);
 	}
 
 	const T& operator[](std::size_t n) const noexcept
 	{
+		assert(n < 16);
 		return *((&a1) + n);
 	}
 
@@ -128,22 +136,10 @@ public:
 
 	Matrix4x4t<T>& set(T mt00, T mt01, T mt02, T mt03, T mt10, T mt11, T mt12, T mt13, T mt20, T mt21, T mt22, T mt23, T mt30, T mt31, T mt32, T mt33) noexcept
 	{
-		a1 = T(mt00);
-		a2 = T(mt01);
-		a3 = T(mt02);
-		a4 = T(mt03);
-		b1 = T(mt10);
-		b2 = T(mt11);
-		b3 = T(mt12);
-		b4 = T(mt13);
-		c1 = T(mt20);
-		c2 = T(mt21);
-		c3 = T(mt22);
-		c4 = T(mt23);
-		d1 = T(mt30);
-		d2 = T(mt31);
-		d3 = T(mt32);
-		d4 = T(mt33);
+		a1 = mt00; a2 = mt01; a3 = mt02; a4 = mt03;
+		b1 = mt10; b2 = mt11; b3 = mt12; b4 = mt13;
+		c1 = mt20; c2 = mt21; c3 = mt22; c4 = mt23;
+		d1 = mt30; d2 = mt31; d3 = mt32; d4 = mt33;
 		return *this;
 	}
 
@@ -155,15 +151,17 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& set(int line, const Vector3t<T>& v) noexcept
+	Matrix4x4t<T>& set(std::uint8_t line, const Vector3t<T>& v) noexcept
 	{
+		assert(line < 4);
 		((Vector3t<T>&)(*(*this)[line])) = v;
 		return *this;
 	}
 
-	Matrix4x4t<T>& set(std::size_t line, const Vector3t<T>& v) noexcept
+	Matrix4x4t<T>& set(std::uint8_t line, const Vector4t<T>& v) noexcept
 	{
-		((Vector3t<T>&)(*(*this)[line])) = v;
+		assert(line < 4);
+		((Vector4t<T>&)(*(*this)[line])) = v;
 		return *this;
 	}
 
@@ -1035,9 +1033,9 @@ inline Matrix4x4t<T>& operator*=(Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noe
 namespace math
 {
 	template<typename T>
-	bool isIdentity(const Matrix4x4t<T>& m) noexcept
+	inline bool isIdentity(const Matrix4x4t<T>& m) noexcept
 	{
-		constexpr T epsilon = (T)EPSILON_E4;
+		constexpr T epsilon = static_cast<T>(EPSILON_E4);
 		return (
 			m.a2 <= epsilon && m.a2 >= -epsilon &&
 			m.a3 <= epsilon && m.a3 >= -epsilon &&
@@ -1054,9 +1052,9 @@ namespace math
 	}
 
 	template<typename T>
-	bool isOnlyTranslate(const Matrix4x4t<T>& m) noexcept
+	inline bool isOnlyTranslate(const Matrix4x4t<T>& m) noexcept
 	{
-		constexpr T epsilon = (T)EPSILON_E4;
+		constexpr T epsilon = static_cast<T>(EPSILON_E4);
 		return (
 			m.a2 <= epsilon && m.a2 >= -epsilon &&
 			m.a3 <= epsilon && m.a3 >= -epsilon &&
@@ -1067,78 +1065,6 @@ namespace math
 			m.a1 <= 1.f + epsilon && m.a1 >= 1.f - epsilon &&
 			m.b2 <= 1.f + epsilon && m.b2 >= 1.f - epsilon &&
 			m.c3 <= 1.f + epsilon && m.c3 >= 1.f - epsilon);
-	}
-
-	template<typename T>
-	Matrix4x4t<T> orthonormalize(const Matrix4x4t<T>& _m) noexcept
-	{
-		Vector3t<T> x = _m.getRight();
-		Vector3t<T> y = _m.getUpVector();
-		Vector3t<T> z = _m.getForward();
-
-		x = math::normalize(x);
-		y = math::normalize(y);
-		z = math::normalize(z);
-
-		return Matrix4x4t<T>(
-			x.x, x.y, x.z, 0.0f,
-			y.x, y.y, y.z, 0.0f,
-			z.x, z.y, z.z, 0.0f,
-			_m.d1, _m.d2, _m.d3, 1.0f);
-	}
-
-	template<typename T>
-	Matrix4x4t<T> transpose(const Matrix4x4t<T>& _m) noexcept
-	{
-		Matrix4x4t<T> m = _m;
-		std::swap((T&)m.b1, (T&)m.a2);
-		std::swap((T&)m.c1, (T&)m.a3);
-		std::swap((T&)m.c2, (T&)m.b3);
-		std::swap((T&)m.d1, (T&)m.a4);
-		std::swap((T&)m.d2, (T&)m.b4);
-		std::swap((T&)m.d3, (T&)m.c4);
-		return m;
-	}
-
-	template<typename T>
-	Matrix4x4t<T> inverse(const Matrix4x4t<T>& _m) noexcept
-	{
-		Matrix4x4t<T> m;
-
-		const T det = _m.determinant();
-		if (det == static_cast<T>(0.0))
-		{
-			const T nan = std::numeric_limits<T>::quiet_NaN();
-			m.set
-				(
-					nan, nan, nan, nan,
-					nan, nan, nan, nan,
-					nan, nan, nan, nan,
-					nan, nan, nan, nan
-					);
-
-			return m;
-		}
-
-		const T invdet = static_cast<T>(1.0) / det;
-		m.a1 = invdet * (_m.b2 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.b3 * (_m.c4 * _m.d2 - _m.c2 * _m.d4) + _m.b4 * (_m.c2 * _m.d3 - _m.c3 * _m.d2));
-		m.a2 = -invdet * (_m.a2 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.a3 * (_m.c4 * _m.d2 - _m.c2 * _m.d4) + _m.a4 * (_m.c2 * _m.d3 - _m.c3 * _m.d2));
-		m.a3 = invdet * (_m.a2 * (_m.b3 * _m.d4 - _m.b4 * _m.d3) + _m.a3 * (_m.b4 * _m.d2 - _m.b2 * _m.d4) + _m.a4 * (_m.b2 * _m.d3 - _m.b3 * _m.d2));
-		m.a4 = -invdet * (_m.a2 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c2 - _m.b2 * _m.c4) + _m.a4 * (_m.b2 * _m.c3 - _m.b3 * _m.c2));
-		m.b1 = -invdet * (_m.b1 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.b3 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.b4 * (_m.c1 * _m.d3 - _m.c3 * _m.d1));
-		m.b2 = invdet * (_m.a1 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.a3 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.a4 * (_m.c1 * _m.d3 - _m.c3 * _m.d1));
-		m.b3 = -invdet * (_m.a1 * (_m.b3 * _m.d4 - _m.b4 * _m.d3) + _m.a3 * (_m.b4 * _m.d1 - _m.b1 * _m.d4) + _m.a4 * (_m.b1 * _m.d3 - _m.b3 * _m.d1));
-		m.b4 = invdet * (_m.a1 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c3 - _m.b3 * _m.c1));
-		m.c1 = invdet * (_m.b1 * (_m.c2 * _m.d4 - _m.c4 * _m.d2) + _m.b2 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.b4 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
-		m.c2 = -invdet * (_m.a1 * (_m.c2 * _m.d4 - _m.c4 * _m.d2) + _m.a2 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.a4 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
-		m.c3 = invdet * (_m.a1 * (_m.b2 * _m.d4 - _m.b4 * _m.d2) + _m.a2 * (_m.b4 * _m.d1 - _m.b1 * _m.d4) + _m.a4 * (_m.b1 * _m.d2 - _m.b2 * _m.d1));
-		m.c4 = -invdet * (_m.a1 * (_m.b2 * _m.c4 - _m.b4 * _m.c2) + _m.a2 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
-		m.d1 = -invdet * (_m.b1 * (_m.c2 * _m.d3 - _m.c3 * _m.d2) + _m.b2 * (_m.c3 * _m.d1 - _m.c1 * _m.d3) + _m.b3 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
-		m.d2 = invdet * (_m.a1 * (_m.c2 * _m.d3 - _m.c3 * _m.d2) + _m.a2 * (_m.c3 * _m.d1 - _m.c1 * _m.d3) + _m.a3 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
-		m.d3 = -invdet * (_m.a1 * (_m.b2 * _m.d3 - _m.b3 * _m.d2) + _m.a2 * (_m.b3 * _m.d1 - _m.b1 * _m.d3) + _m.a3 * (_m.b1 * _m.d2 - _m.b2 * _m.d1));
-		m.d4 = invdet * (_m.a1 * (_m.b2 * _m.c3 - _m.b3 * _m.c2) + _m.a2 * (_m.b3 * _m.c1 - _m.b1 * _m.c3) + _m.a3 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
-
-		return m;
 	}
 
 	template<typename T>
@@ -1159,7 +1085,6 @@ namespace math
 	inline Vector3t<T> invRotateVector3(const Matrix4x4t<T>& m, const Vector3t<T>& v)
 	{
 		Vector3t<T> result;
-
 		result.x = v.x * m.a1 + v.y * m.a2 + v.z * m.a3;
 		result.y = v.x * m.b1 + v.y * m.b2 + v.z * m.b3;
 		result.z = v.x * m.c1 + v.y * m.c2 + v.z * m.c3;
@@ -1190,11 +1115,85 @@ namespace math
 		out.d2 = m1.a2 * m2.d1 + m1.b2 * m2.d2 + m1.c2 * m2.d3 + m1.d2;
 		out.d3 = m1.a3 * m2.d1 + m1.b3 * m2.d2 + m1.c3 * m2.d3 + m1.d3;
 		out.d4 = 1.0f;
+
 		return out;
 	}
 
 	template<typename T>
-	Matrix4x4t<T> transformInverse(const Matrix4x4t<T>& m) noexcept
+	Matrix4x4t<T> orthonormalize(const Matrix4x4t<T>& m) noexcept
+	{
+		Vector3t<T> x = m.getRight();
+		Vector3t<T> y = m.getUpVector();
+		Vector3t<T> z = m.getForward();
+
+		x = math::normalize(x);
+		y = math::normalize(y);
+		z = math::normalize(z);
+
+		return Matrix4x4t<T>(
+			x.x, x.y, x.z, 0.0f,
+			y.x, y.y, y.z, 0.0f,
+			z.x, z.y, z.z, 0.0f,
+			m.d1, m.d2, m.d3, 1.0f);
+	}
+
+	template<typename T>
+	Matrix4x4t<T> transpose(const Matrix4x4t<T>& _m) noexcept
+	{
+		Matrix4x4t<T> m = _m;
+		std::swap((T&)m.b1, (T&)m.a2);
+		std::swap((T&)m.c1, (T&)m.a3);
+		std::swap((T&)m.c2, (T&)m.b3);
+		std::swap((T&)m.d1, (T&)m.a4);
+		std::swap((T&)m.d2, (T&)m.b4);
+		std::swap((T&)m.d3, (T&)m.c4);
+
+		return m;
+	}
+
+	template<typename T>
+	Matrix4x4t<T> inverse(const Matrix4x4t<T>& _m) noexcept
+	{
+		Matrix4x4t<T> m;
+
+		const T det = _m.determinant();
+		if (det == static_cast<T>(0.0))
+		{
+			const T nan = std::numeric_limits<T>::quiet_NaN();
+			m.set
+			(
+				nan, nan, nan, nan,
+				nan, nan, nan, nan,
+				nan, nan, nan, nan,
+				nan, nan, nan, nan
+			);
+
+			return m;
+		}
+
+		const T invdet = static_cast<T>(1.0) / det;
+		m.a1 = invdet * (_m.b2 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.b3 * (_m.c4 * _m.d2 - _m.c2 * _m.d4) + _m.b4 * (_m.c2 * _m.d3 - _m.c3 * _m.d2));
+		m.a2 = -invdet * (_m.a2 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.a3 * (_m.c4 * _m.d2 - _m.c2 * _m.d4) + _m.a4 * (_m.c2 * _m.d3 - _m.c3 * _m.d2));
+		m.a3 = invdet * (_m.a2 * (_m.b3 * _m.d4 - _m.b4 * _m.d3) + _m.a3 * (_m.b4 * _m.d2 - _m.b2 * _m.d4) + _m.a4 * (_m.b2 * _m.d3 - _m.b3 * _m.d2));
+		m.a4 = -invdet * (_m.a2 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c2 - _m.b2 * _m.c4) + _m.a4 * (_m.b2 * _m.c3 - _m.b3 * _m.c2));
+		m.b1 = -invdet * (_m.b1 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.b3 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.b4 * (_m.c1 * _m.d3 - _m.c3 * _m.d1));
+		m.b2 = invdet * (_m.a1 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.a3 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.a4 * (_m.c1 * _m.d3 - _m.c3 * _m.d1));
+		m.b3 = -invdet * (_m.a1 * (_m.b3 * _m.d4 - _m.b4 * _m.d3) + _m.a3 * (_m.b4 * _m.d1 - _m.b1 * _m.d4) + _m.a4 * (_m.b1 * _m.d3 - _m.b3 * _m.d1));
+		m.b4 = invdet * (_m.a1 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c3 - _m.b3 * _m.c1));
+		m.c1 = invdet * (_m.b1 * (_m.c2 * _m.d4 - _m.c4 * _m.d2) + _m.b2 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.b4 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
+		m.c2 = -invdet * (_m.a1 * (_m.c2 * _m.d4 - _m.c4 * _m.d2) + _m.a2 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.a4 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
+		m.c3 = invdet * (_m.a1 * (_m.b2 * _m.d4 - _m.b4 * _m.d2) + _m.a2 * (_m.b4 * _m.d1 - _m.b1 * _m.d4) + _m.a4 * (_m.b1 * _m.d2 - _m.b2 * _m.d1));
+		m.c4 = -invdet * (_m.a1 * (_m.b2 * _m.c4 - _m.b4 * _m.c2) + _m.a2 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
+		m.d1 = -invdet * (_m.b1 * (_m.c2 * _m.d3 - _m.c3 * _m.d2) + _m.b2 * (_m.c3 * _m.d1 - _m.c1 * _m.d3) + _m.b3 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
+		m.d2 = invdet * (_m.a1 * (_m.c2 * _m.d3 - _m.c3 * _m.d2) + _m.a2 * (_m.c3 * _m.d1 - _m.c1 * _m.d3) + _m.a3 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
+		m.d3 = -invdet * (_m.a1 * (_m.b2 * _m.d3 - _m.b3 * _m.d2) + _m.a2 * (_m.b3 * _m.d1 - _m.b1 * _m.d3) + _m.a3 * (_m.b1 * _m.d2 - _m.b2 * _m.d1));
+		m.d4 = invdet * (_m.a1 * (_m.b2 * _m.c3 - _m.b3 * _m.c2) + _m.a2 * (_m.b3 * _m.c1 - _m.b1 * _m.c3) + _m.a3 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
+
+		return m;
+	}
+
+	template<typename T>
+	inline Matrix4x4t<T> transformInverse(const Matrix4x4t<T>& m) noexcept
 	{
 		Matrix4x4t<T> out;
 
@@ -1240,7 +1239,7 @@ namespace math
 	}
 
 	template<typename T>
-	Matrix4x4t<T> transformInverseOnlyRotation(const Matrix4x4t<T>& m) noexcept
+	inline Matrix4x4t<T> transformInverseOnlyRotation(const Matrix4x4t<T>& m) noexcept
 	{
 		auto& right = m.getRight();
 		auto& up = m.getUpVector();

@@ -38,7 +38,6 @@
 #define _H_MATH_H_
 
 #include <ray/aabb.h>
-#include <ray/array.h>
 #include <ray/binary.h>
 #include <ray/bound.h>
 #include <ray/dccmn.h>

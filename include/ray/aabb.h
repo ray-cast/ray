@@ -48,7 +48,7 @@ public:
 	Vector2t<T> min;
 	Vector2t<T> max;
 
-	Box2t& set(const Vector2t<T>& _min, const Vector2t<T>& _max)
+	Box2t& set(const Vector2t<T>& _min, const Vector2t<T>& _max) noexcept
 	{
 		this->min = _min;
 		this->max = _max;
@@ -56,7 +56,7 @@ public:
 		return *this;
 	}
 
-	Box2t& encapsulate(const Vector2t<T>& point)
+	Box2t& encapsulate(const Vector2t<T>& point) noexcept
 	{
 		if (point.x < min.x) { min.x = point.x; }
 		if (point.y < min.y) { min.y = point.y; }
@@ -65,7 +65,7 @@ public:
 		if (point.y > max.y) { max.y = point.y; }
 	}
 
-	void encapsulate(const Box2t& box)
+	void encapsulate(const Box2t& box) noexcept
 	{
 		if (box.min.x < min.x) min.x = box.min.x;
 		if (box.min.y < min.y) min.y = box.min.y;
@@ -74,11 +74,11 @@ public:
 		if (box.max.y > min.x) min.y = box.max.y;
 	}
 
-	Box2t& encapsulate(const Vector2t<T> pt[], size_t n)
+	Box2t& encapsulate(const Vector2t<T> pt[], std::size_t n) noexcept
 	{
 		if (pt && n)
 		{
-			for (size_t i = 0; i < n; i++)
+			for (std::size_t i = 0; i < n; i++)
 			{
 				encapsulate(*pt);
 				pt++;
@@ -92,32 +92,32 @@ public:
 		return *this;
 	}
 
-	Box2t& makeEmpty()
+	Box2t& makeEmpty() noexcept
 	{
 		min = max = Vector2t<T>::Zero;
 		return *this;
 	}
 
-	bool empty()
+	bool empty() noexcept
 	{
 		return (max.x < min.x) || (max.y < min.y);
 	}
 
-	Box2t& expandByPoint(const Vector2t<T>& pt)
+	Box2t& expandByPoint(const Vector2t<T>& pt) noexcept
 	{
 		min.min(pt);
 		max.max(pt);
 		return *this;
 	}
 
-	Box2t& expandByVector(const Vector2t<T>& v)
+	Box2t& expandByVector(const Vector2t<T>& v) noexcept
 	{
 		min -= v;
 		max += v;
 		return *this;
 	}
 
-	Box2t& expandByScalar(const Vector2t<T>& scalar)
+	Box2t& expandByScalar(const Vector2t<T>& scalar) noexcept
 	{
 		min += -scalar;
 		max += scalar;
@@ -148,13 +148,13 @@ public:
 		assert(!empty());
 	}
 
-	AABBt<T>(const Vector3t<T> pt[], unsigned n) noexcept
+	AABBt<T>(const Vector3t<T> pt[], std::size_t n) noexcept
 	{
 		reset();
 		encapsulate(pt, n);
 	}
 
-	AABBt<T>(const Vector3t<T>& pt, size_t radio) noexcept
+	AABBt<T>(const Vector3t<T>& pt, std::size_t radio) noexcept
 	{
 		reset();
 		encapsulate(pt, radio);

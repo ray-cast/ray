@@ -136,7 +136,7 @@ public:
 	void updateIK() noexcept;
 
 	MotionSegment findMotionSegment(int frame, const std::vector<std::size_t>& motions) noexcept;
-	void interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame) noexcept;
+	void interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, std::size_t frame) noexcept;
 
 private:
 	AnimationProperty(const AnimationProperty&) = delete;

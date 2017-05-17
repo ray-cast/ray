@@ -45,6 +45,12 @@ template<typename T>
 class Matrix3x3t
 {
 public:
+	typedef typename trait::_typeaddition<T>::value_type value_type;
+	typedef typename trait::_typeaddition<T>::pointer pointer;
+	typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+	typedef typename trait::_typeaddition<T>::reference reference;
+	typedef typename trait::_typeaddition<T>::const_reference const_reference;
+
 	Matrix3x3t() noexcept
 	{
 	}
@@ -71,33 +77,23 @@ public:
 		this->makeRotate(q);
 	}
 
-	template <typename S>
-	explicit Matrix3x3t(const Matrix4x4t<S>& m) noexcept
+	explicit Matrix3x3t(const Matrix4x4t<T>& m) noexcept
 	{
 		a1 = m.a1; a2 = m.a2; a3 = m.a3;
 		b1 = m.b1; b2 = m.b2; b3 = m.b3;
 		c1 = m.c1; c2 = m.c2; c3 = m.c3;
 	}
 
-	template <typename S>
-	explicit Matrix3x3t(Matrix4x4t<S>&& m) noexcept
-	{
-		a1 = m.a1; a2 = m.a2; a3 = m.a3;
-		b1 = m.b1; b2 = m.b2; b3 = m.b3;
-		c1 = m.c1; c2 = m.c2; c3 = m.c3;
-	}
-
-	template <typename S>
+	template<typename S, typename = std::enable_if<!std::is_pointer<S>::value>>
 	explicit operator Matrix3x3t<S>() const noexcept
 	{
 		return Matrix3x3t<S>(
-			S(a1), S(a2), S(a3),
-			S(b1), S(b2), S(b3),
-			S(c1), S(c2), S(c3));
+			static_cast<S>(a1), static_cast<S>(a2), static_cast<S>(a3),
+			static_cast<S>(b1), static_cast<S>(b2), static_cast<S>(b3),
+			static_cast<S>(c1), static_cast<S>(c2), static_cast<S>(c3));
 	}
 
-	template <typename S>
-	Matrix3x3t<T>& operator -= (const Matrix3x3t<S>& m) noexcept
+	Matrix3x3t<T>& operator -= (const Matrix3x3t<T>& m) noexcept
 	{
 		a1 -= m.a1; b1 -= m.a2; c1 -= m.c1;
 		a2 -= m.a2; b2 -= m.a2; c2 -= m.c2;
@@ -105,8 +101,7 @@ public:
 		return *this;
 	}
 
-	template <typename S>
-	Matrix3x3t<T>& operator += (const Matrix3x3t<S>& m) noexcept
+	Matrix3x3t<T>& operator += (const Matrix3x3t<T>& m) noexcept
 	{
 		a1 += m.a1; b1 += m.a2; c1 += m.c1;
 		a2 += m.a2; b2 += m.a2; c2 += m.c2;
@@ -114,39 +109,42 @@ public:
 		return *this;
 	}
 
-	template <typename S>
-	Matrix3x3t<T>& operator *= (const Matrix3x3t<S>& m) noexcept
+	Matrix3x3t<T>& operator *= (const Matrix3x3t<T>& m) noexcept
 	{
 		*this = Matrix3x3t<T>(
-			m.a1 * a1 + m.b1 * a2 + m.c1 * a3,
-			m.a2 * a1 + m.b2 * a2 + m.c2 * a3,
-			m.a3 * a1 + m.b3 * a2 + m.c3 * a3,
-			m.a1 * b1 + m.b1 * b2 + m.c1 * b3,
-			m.a2 * b1 + m.b2 * b2 + m.c2 * b3,
-			m.a3 * b1 + m.b3 * b2 + m.c3 * b3,
-			m.a1 * c1 + m.b1 * c2 + m.c1 * c3,
-			m.a2 * c1 + m.b2 * c2 + m.c2 * c3,
-			m.a3 * c1 + m.b3 * c2 + m.c3 * c3);
+			a1 * m.a1 + a2 * m.b1 + a3 * m.c1,
+			a1 * m.a2 + a2 * m.b2 + a3 * m.c2,
+			a1 * m.a3 + a2 * m.b3 + a3 * m.c3,
+			b1 * m.a1 + b2 * m.b1 + b3 * m.c1,
+			b1 * m.a2 + b2 * m.b2 + b3 * m.c2,
+			b1 * m.a3 + b2 * m.b3 + b3 * m.c3,
+			c1 * m.a1 + c2 * m.b1 + c3 * m.c1,
+			c1 * m.a2 + c2 * m.b2 + c3 * m.c2,
+			c1 * m.a3 + c2 * m.b3 + c3 * m.c3);
 		return *this;
 	}
 
 	T& operator() (std::size_t m, std::size_t n) noexcept
 	{
+		assert(m * n < 9);
 		return *(&a1)[m * 3 + n];
 	}
 
 	const T& operator() (std::size_t m, std::size_t n) const noexcept
 	{
+		assert(m * n < 9);
 		return *(&a1)[m * 3 + n];
 	}
 
 	T& operator[] (std::size_t n) noexcept
 	{
+		assert(n < 9);
 		return *((&a1) + n);
 	}
 
 	const T& operator[] (std::size_t n) const noexcept
 	{
+		assert(n < 9);
 		return *((&a1) + n);
 	}
 
@@ -435,8 +433,8 @@ public:
 	T c1, c2, c3;
 };
 
-template <typename T>
-inline bool operator==(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
+template<typename T>
+inline bool operator==(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2) noexcept
 {
 	return
 		m1.a1 == m2.a1 && m1.a2 == m2.a2 && m1.a3 == m2.a3 &&
@@ -444,8 +442,8 @@ inline bool operator==(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
 		m1.c1 == m2.c1 && m1.c2 == m2.c2 && m1.c3 == m2.c3;
 }
 
-template <typename T>
-inline bool operator!=(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
+template<typename T>
+inline bool operator!=(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2) noexcept
 {
 	return
 		m1.a1 != m2.a1 || m1.a2 != m2.a2 || m1.a3 != m2.a3 ||
@@ -454,7 +452,7 @@ inline bool operator!=(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
 }
 
 template<typename T>
-inline Vector3t<T> operator*(const Vector3t<T>& v, const Matrix3x3t<T>& m)
+inline Vector3t<T> operator*(const Vector3t<T>& v, const Matrix3x3t<T>& m) noexcept
 {
 	return Vector3t<T>(
 		m.a1 * v.x + m.a2 * v.y + m.a3 * v.z,
@@ -463,7 +461,7 @@ inline Vector3t<T> operator*(const Vector3t<T>& v, const Matrix3x3t<T>& m)
 }
 
 template<typename T>
-inline Vector3t<T> operator*(const Matrix3x3t<T>& m, const Vector3t<T>& v)
+inline Vector3t<T> operator*(const Matrix3x3t<T>& m, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>(
 		m.a1 * v.x + m.b1 * v.y + m.c1 * v.z,
@@ -472,7 +470,7 @@ inline Vector3t<T> operator*(const Matrix3x3t<T>& m, const Vector3t<T>& v)
 }
 
 template<typename T>
-inline Matrix3x3t<T> operator*(T& scale, const Matrix3x3t<T>& m1)
+inline Matrix3x3t<T> operator*(T& scale, const Matrix3x3t<T>& m1) noexcept
 {
 	Matrix3x3t<T> m;
 	m.a1 = m1.a1 * scale; m.b1 = m1.b1 * scale; m.c1 = m1.c1 * scale;
@@ -482,7 +480,7 @@ inline Matrix3x3t<T> operator*(T& scale, const Matrix3x3t<T>& m1)
 }
 
 template<typename T>
-inline Matrix3x3t<T> operator*(const Matrix3x3t<T>& m1, T& scale)
+inline Matrix3x3t<T> operator*(const Matrix3x3t<T>& m1, T& scale) noexcept
 {
 	Matrix3x3t<T> m;
 	m.a1 = m1.a1 * scale; m.b1 = m1.b1 * scale; m.c1 = m1.c1 * scale;
@@ -492,20 +490,13 @@ inline Matrix3x3t<T> operator*(const Matrix3x3t<T>& m1, T& scale)
 }
 
 template<typename T>
-inline Matrix3x3t<T> operator*(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
+inline Matrix3x3t<T> operator*(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2) noexcept
 {
 	return Matrix3x3t<T>(m1, m2);
 }
 
 template<typename T>
-inline Matrix3x3t<T>& operator*=(Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
-{
-	m1 = m1 * m2;
-	return m1;
-}
-
-template<typename T>
-inline Vector3t<T>& operator*=(Vector3t<T>& v, const Matrix3x3t<T>& m)
+inline Vector3t<T>& operator*=(Vector3t<T>& v, const Matrix3x3t<T>& m) noexcept
 {
 	v = v * m;
 	return v;
@@ -513,6 +504,12 @@ inline Vector3t<T>& operator*=(Vector3t<T>& v, const Matrix3x3t<T>& m)
 
 namespace math
 {
+	template<typename T>
+	T determinant(const Matrix3x3t<T>& m) noexcept
+	{
+		return m.a1 * m.b2 * m.c3 - m.a1 * m.b3 * m.c2 + m.a2 * m.b3 * m.c1 - m.a2 * m.b1 * m.c3 + m.a3 * m.b1 * m.c2 - m.a3 * m.b2 * m.c1;
+	}
+
 	template<typename T>
 	bool isIdentity(const Matrix3x3t<T>& m) noexcept
 	{
@@ -546,13 +543,7 @@ namespace math
 	}
 
 	template<typename T>
-	T determinant(const Matrix3x3t<T>& m) noexcept
-	{
-		return m.a1 * m.b2 * m.c3 - m.a1 * m.b3 * m.c2 + m.a2 * m.b3 * m.c1 - m.a2 * m.b1 * m.c3 + m.a3 * m.b1 * m.c2 - m.a3 * m.b2 * m.c1;
-	}
-
-	template<typename T>
-	Matrix3x3t<T> orthonormalize(const Matrix3x3t<T>& _m)
+	Matrix3x3t<T> orthonormalize(const Matrix3x3t<T>& _m) noexcept
 	{
 		Matrix3x3t<T> m;
 		Vector3t<T> x(_m.a1, _m.b1, _m.c1);
@@ -570,7 +561,7 @@ namespace math
 	}
 
 	template<typename T>
-	Matrix3x3t<T> transpose(const Matrix3x3t<T>& _m)
+	Matrix3x3t<T> transpose(const Matrix3x3t<T>& _m) noexcept
 	{
 		Matrix3x3t<T> m = _m;
 		std::swap((T&)m.a2, (T&)m.b1);
@@ -580,7 +571,7 @@ namespace math
 	}
 
 	template<typename T>
-	Matrix3x3t<T> inverse(const Matrix3x3t<T>& _m)
+	Matrix3x3t<T> inverse(const Matrix3x3t<T>& _m) noexcept
 	{
 		const T det = determinant(_m);
 		if (det == T(0.0))

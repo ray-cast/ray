@@ -213,7 +213,7 @@ NSGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexc
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Can't support color format");
+		GL_PLATFORM_LOG("Cannot support color format");
 		return false;
 	}
 
@@ -262,7 +262,7 @@ NSGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexc
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Can't support depth stencil format");
+		GL_PLATFORM_LOG("Cannot support depth stencil format");
 		return false;
 	}
 

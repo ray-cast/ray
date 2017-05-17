@@ -484,10 +484,4 @@ Camera::onRenderPre(const Camera& camera) noexcept
 		_dataManager->needUpdateVisiable(true);
 }
 
-void 
-Camera::onRenderPost(const Camera& camera) noexcept
-{
-	RenderObject::onRenderPost(camera);
-}
-
 _NAME_END

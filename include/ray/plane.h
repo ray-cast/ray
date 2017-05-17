@@ -48,50 +48,50 @@ public:
 	float distance;
 	Vector2t<T> normal;
 
-	Plane2t()
+	Plane2t() noexcept
 	{
 	}
 
-	Plane2t(const Plane2t& copy)
+	Plane2t(const Plane2t& copy) noexcept
 		: distance(copy.distance)
 		, normal(copy.normal)
 	{
 	}
 
-	Plane2t(const Vector2t<T>& pt0, const Vector2t<T>& pt1)
+	Plane2t(const Vector2t<T>& pt0, const Vector2t<T>& pt1) noexcept
 	{
 		compute(pt0, pt1);
 	}
 
-	Plane2t(const Vector2t<T>& n, float dist)
+	Plane2t(const Vector2t<T>& n, float dist) noexcept
 	{
 		setNormal(n);
 		distance = dist;
 	}
 
-	void setNormal(const Vector2t<T>& n)
+	void setNormal(const Vector2t<T>& n) noexcept
 	{
 		normal = n;
 		normal.normalize();
 	}
 
-	void setDistance(const Vector2t<T>& pt)
+	void setDistance(const Vector2t<T>& pt) noexcept
 	{
 		distance = -normal.dot(pt);
 	}
 
-	void compute(const Vector2t<T>& pt0, const Vector2t<T>& pt1)
+	void compute(const Vector2t<T>& pt0, const Vector2t<T>& pt1) noexcept
 	{
 		setNormal(pt1 - pt0);
 		setDistance(pt0);
 	}
 
-	float getDistance(const Vector2t<T>& pt) const
+	float getDistance(const Vector2t<T>& pt) const noexcept
 	{
 		return normal.dot(pt) + distance;
 	}
 
-	Vector2t<T> project(const Vector2t<T>& pt) const
+	Vector2t<T> project(const Vector2t<T>& pt) const noexcept
 	{
 		return pt - getDistance(pt) * normal;
 	}
@@ -101,7 +101,6 @@ template<typename T>
 class Plane3t
 {
 public:
-
 	Vector3t<T> normal;
 	T distance;
 
@@ -112,39 +111,39 @@ public:
 		PLANE_INTERSECT
 	};
 
-	Plane3t()
+	Plane3t() noexcept
 	{
 	}
 
-	Plane3t(const Plane3t& copy)
+	Plane3t(const Plane3t& copy) noexcept
 		: normal(copy.normal)
 		, distance(copy.distance)
 	{
 	}
 
-	Plane3t(const Vector3t<T>& normal, const Vector3t<T>& pt)
+	Plane3t(const Vector3t<T>& normal, const Vector3t<T>& pt) noexcept
 	{
 		setNormal(normal);
 		setDistance(pt);
 	}
 
-	Plane3t(const Vector3t<T>& n, float dist)
+	Plane3t(const Vector3t<T>& n, float dist) noexcept
 	{
 		setNormal(n);
 		distance = dist;
 	}
 
-	Plane3t(const Vector3t<T>& a, const Vector3t<T>& b, const Vector3t<T>& c)
+	Plane3t(const Vector3t<T>& a, const Vector3t<T>& b, const Vector3t<T>& c) noexcept
 	{
 		compute(a, b, c);
 	}
 
-	Plane3t(const Vector3t<T> pt[], int n)
+	Plane3t(const Vector3t<T> pt[], std::size_t n) noexcept
 	{
 		compute(pt, n);
 	}
 
-	Plane3t& operator=(const Plane3t& rhs)
+	Plane3t& operator=(const Plane3t& rhs) noexcept
 	{
 		if (this == &rhs)
 		{
@@ -157,30 +156,30 @@ public:
 		return *this;
 	}
 
-	Plane3t* clone() const
+	Plane3t* clone() const noexcept
 	{
 		return new Plane3t(*this);
 	}
 
-	void setNormal(const Vector3t<T>& n)
+	void setNormal(const Vector3t<T>& n) noexcept
 	{
 		normal = n;
 		normal.normalize();
 	}
 
-	void normalize()
+	void normalize() noexcept
 	{
 		float inv = 1 / math::length(normal);
 		normal *= inv;
 		distance *= inv;
 	}
 
-	void setDistance(const Vector3t<T>& pt)
+	void setDistance(const Vector3t<T>& pt) noexcept
 	{
 		distance = dot(-normal, pt);
 	}
 
-	void compute(const Vector3t<T>& o, const Vector3t<T>& a, const Vector3t<T>& b)
+	void compute(const Vector3t<T>& o, const Vector3t<T>& a, const Vector3t<T>& b) noexcept
 	{
 		Vector3t<T> edge1 = a - o;
 		Vector3t<T> edge2 = b - o;
@@ -191,7 +190,7 @@ public:
 		distance = math::dot(-normal, o);
 	}
 
-	void compute(const Vector3t<T> pt[], int n)
+	void compute(const Vector3t<T> pt[], int n) noexcept
 	{
 		const Vector3t<T> *p = &pt[n - 1];
 
@@ -220,17 +219,17 @@ public:
 		distance = dist / n;
 	}
 
-	float getDistance(const Vector3t<T>& pt) const
+	float getDistance(const Vector3t<T>& pt) const noexcept
 	{
 		return math::dot(normal, pt) + distance;
 	}
 
-	Vector3t<T> closestPoint(const Vector3t<T>& pt) const
+	Vector3t<T> closestPoint(const Vector3t<T>& pt) const noexcept
 	{
 		return pt - math::dot(normal, getDistance(pt));
 	}
 
-	bool intersect(const Rect3t<T>& rc) const
+	bool intersect(const Rect3t<T>& rc) const noexcept
 	{
 		if ((getDistance(rc.pos0) > static_cast<T>(0.0)) ||
 			(getDistance(rc.pos1) > static_cast<T>(0.0)) ||
@@ -243,7 +242,7 @@ public:
 		return false;
 	}
 
-	int classify(const Vector3t<T>& pt) const
+	int classify(const Vector3t<T>& pt) const noexcept
 	{
 		float dist = getDistance(pt);
 
@@ -259,7 +258,7 @@ public:
 		return PLANE_BACK;
 	}
 
-	int classify(const Line3t<T>& line) const
+	int classify(const Line3t<T>& line) const noexcept
 	{
 		int classify0 = classify(line.pos0);
 		int classify1 = classify(line.pos1);
@@ -270,7 +269,7 @@ public:
 		return PLANE_INTERSECT;
 	}
 
-	int classify(const Rect3t<T>& rc) const
+	int classify(const Rect3t<T>& rc) const noexcept
 	{
 		Vector3t<T> minPoint, maxPoint;
 

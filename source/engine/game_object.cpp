@@ -823,7 +823,9 @@ void
 GameObject::sendMessage(const MessagePtr& message) noexcept
 {
 	assert(message);
-	assert(this->getActive());
+
+	if (!this->getActive())
+		return;
 
 	auto parent = this->getParent();
 	while (parent)
@@ -849,7 +851,9 @@ void
 GameObject::sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
 {
 	assert(message);
-	assert(this->getActive());
+
+	if (!this->getActive())
+		return;
 
 	auto parent = this->getParent();
 	while (parent)

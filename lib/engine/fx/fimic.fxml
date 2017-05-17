@@ -216,6 +216,8 @@
             float4 BloomPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
                 float4 color = texSource.Sample(PointClamp, coord.xy);
+                float avgLum = texLumAve.Sample(PointClamp, float2(0, 0)).r;
+                color *= exposure * ComputeExposure(avgLum);
                 return max(0, (color - bloomThreshold) * bloomIntensity);
             }
 

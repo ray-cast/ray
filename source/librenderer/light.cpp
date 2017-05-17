@@ -50,7 +50,7 @@ Light::Light() noexcept
 	, _lightIntensity(1.0f)
 	, _lightRange(10.0f)
 	, _lightColor(float3::One)
-	, _lightAttenuation(float3::UnitX)
+	, _lightAttenuation(float3::UnitZ)
 	, _spotInnerCone(5.0f, math::cos(math::deg2rad(5.0f)))
 	, _spotOuterCone(40.0f, math::cos(math::deg2rad(40.0f)))
 	, _enableLighting(false)

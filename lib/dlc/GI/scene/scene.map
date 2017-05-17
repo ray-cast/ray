@@ -22,7 +22,7 @@
             <attribute color="1.0,0.85,0.43"/>
             <attribute range="30.0"/>
             <attribute spot="5.0,30.0f"/>
-            <attribute atten="1,0,1"/>
+            <attribute atten="0,0,1"/>
             <attribute intensity="10.0"/>
             <attribute shadow="soft"/>
             <attribute GI="true"/>

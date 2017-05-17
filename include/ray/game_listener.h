@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,54 +34,27 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_SYSTEM_BASE_H_
-#define _H_GUI_SYSTEM_BASE_H_
+#ifndef _H_GAME_LISTENER_H_
+#define _H_GAME_LISTENER_H_
 
-#include <ray/gui_input_key.h>
-#include <ray/gui_input_button.h>
-#include <ray/gui_imageloader.h>
+#include <ray/rtti.h>
 
 _NAME_BEGIN
 
-class EXPORT GuiSystemBase : public rtti::Interface
+class GameListener : public rtti::Interface
 {
-	__DeclareSubInterface(GuiSystem, rtti::Interface)
+	__DeclareSubClass(GameSceneListener, rtti::Interface)
 public:
-	GuiSystemBase() noexcept;
-	virtual ~GuiSystemBase() noexcept;
+	GameListener() noexcept;
+	virtual ~GameListener() noexcept;
 
-	virtual bool open() except = 0;
-	virtual void close() noexcept = 0;
+	virtual void onMessage(const std::string& message) noexcept;
 
-	virtual void setCoreProfile(const std::string& core) except = 0;
-	virtual const std::string& getCoreProfile() const noexcept = 0;
+protected:
+	friend class GameApplication;
 
-	virtual void setImageLoader(GuiImageLoaderPtr loader) noexcept = 0;
-	virtual GuiImageLoaderPtr getImageLoader() const noexcept = 0;
-
-	virtual bool injectMouseMove(int _absx, int _absy, int _absz) noexcept = 0;
-	virtual bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept = 0;
-	virtual bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept = 0;
-	virtual bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept = 0;
-	virtual bool injectKeyRelease(GuiInputKey::Code _key) noexcept = 0;
-
-	virtual bool isFocusMouse() const noexcept = 0;
-	virtual bool isFocusKey() const noexcept = 0;
-	virtual bool isCaptureMouse() const noexcept = 0;
-
-	virtual void setViewport(std::uint32_t w, std::uint32_t h) noexcept = 0;
-	virtual void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept = 0;
-
-	virtual void setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept = 0;
-	virtual void getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept = 0;
-
-	virtual GuiWidgetPtr createWidget(const rtti::Rtti* rtti) except = 0;
-
-	virtual void render(float delta) except = 0;
-
-private:
-	GuiSystemBase(const GuiSystemBase&) noexcept = delete;
-	GuiSystemBase& operator=(const GuiSystemBase&) noexcept = delete;
+	virtual void onListenerChangeBefore() noexcept;
+	virtual void onListenerChangeAfter() noexcept;
 };
 
 _NAME_END

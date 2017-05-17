@@ -38,7 +38,7 @@
 #define _H_GUI_CAMERA_COMPONENT_H_
 
 #include <ray/game_component.h>
-#include <ray/gui_feature.h>
+#include <ray/gui_message.h>
 
 _NAME_BEGIN
 

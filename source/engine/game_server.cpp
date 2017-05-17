@@ -88,6 +88,27 @@ GameServer::close() noexcept
 	_features.clear();
 }
 
+void 
+GameServer::setGameListener(GameListenerPtr listener) noexcept
+{
+	if (_gameListener != listener)
+	{
+		for (auto& it : _features)
+			it->setGameListener(listener);
+
+		for (auto& it : _scenes)
+			it->setGameListener(listener);
+
+		_gameListener = listener;
+	}
+}
+
+GameListenerPtr 
+GameServer::getGameListener() const noexcept
+{
+	return _gameListener;
+}
+
 bool
 GameServer::isQuitRequest() const noexcept
 {
@@ -167,23 +188,21 @@ GameServer::openScene(const std::string& filename) noexcept
 	try
 	{
 		XMLReader xml;
-		if (xml.open(*stream))
-		{
-			auto scene = std::make_shared<GameScene>();
-			scene->load(xml);
+		if (!xml.open(*stream))
+			return false;
 
-			this->addScene(scene);
-			return true;
-		}
+		auto scene = std::make_shared<GameScene>();
+		scene->setGameListener(_gameListener);
+		scene->load(xml);
 
-		return false;
+		this->addScene(scene);
+		return true;
 	}
 	catch (const exception& e)
 	{
 		this->print(e.what());
+		return false;
 	}
-
-	return false;
 }
 
 void
@@ -283,6 +302,7 @@ GameServer::addFeature(GameFeaturePtr& features) noexcept
 		if (it == _features.end())
 		{
 			features->_setGameServer(this);
+			features->setGameListener(_gameListener);
 
 			if (this->active())
 				features->onActivate();

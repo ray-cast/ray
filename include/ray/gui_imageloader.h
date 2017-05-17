@@ -45,18 +45,21 @@ class EXPORT GuiImageLoader : public rtti::Interface
 {
 	__DeclareSubInterface(GuiImageLoader, rtti::Interface)
 public:
-	enum PixelFormat
+	enum class PixelFormat
 	{
 		Unknow,
-		L8, // 1 byte pixel format, 1 byte luminance
-		L8A8, // 2 byte pixel format, 1 byte luminance, 1 byte alpha
-		R8G8B8, // 24-bit pixel format, 8 bits for red, green and blue.
+		L8,		 // 1 byte pixel format, 1 byte luminance
+		L8A8,	 // 2 byte pixel format, 1 byte luminance, 1 byte alpha
+		R8G8B8,  // 24-bit pixel format, 8 bits for red, green and blue.
 		R8G8B8A8 // 32-bit pixel format, 8 bits for red, green, blue and alpha.
 	};
 
 public:
 	GuiImageLoader() noexcept;
 	virtual ~GuiImageLoader() noexcept;
+
+	virtual void onLoaderChangeBefore() noexcept;
+	virtual void onLoaderChangeAfter() noexcept;
 
 	virtual bool loadImage(int& _width, int& _height, PixelFormat& _format, const std::string& _filename, MemoryStream& stream) = 0;
 	virtual void saveImage(int _width, int _height, PixelFormat _format, void* _texture, const std::string& _filename) = 0;

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,28 +34,30 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#include <ray/gui_message.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
+__ImplementSubClass(GuiMessage, Message, "GuiMessage")
 
-GuiImageLoader::GuiImageLoader() noexcept
+GuiMessage::GuiMessage() noexcept
 {
 }
 
-GuiImageLoader::~GuiImageLoader() noexcept
+GuiMessage::~GuiMessage() noexcept
 {
 }
 
-void
-GuiImageLoader::onLoaderChangeBefore() noexcept
+Gui&
+GuiMessage::getGui() noexcept
 {
+	return _gui;
 }
 
-void
-GuiImageLoader::onLoaderChangeAfter() noexcept
+const Gui&
+GuiMessage::getGui() const noexcept
 {
+	return _gui;
 }
 
 _NAME_END

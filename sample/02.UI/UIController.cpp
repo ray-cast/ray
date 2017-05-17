@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "UIController.h"
-#include <ray/gui_feature.h>
+#include <ray/gui_message.h>
 #include <ray/game_server.h>
 
 __ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")

@@ -53,11 +53,13 @@ class GameFeature;
 class GameApplication;
 class GameScene;
 class GameSceneManager;
+class GameListener;
 class GameObject;
 class GameObjectManager;
 class GameComponent;
 
 typedef std::shared_ptr<GameScene> GameScenePtr;
+typedef std::shared_ptr<GameListener> GameListenerPtr;
 typedef std::shared_ptr<GameObject> GameObjectPtr;
 typedef std::shared_ptr<GameComponent> GameComponentPtr;
 typedef std::shared_ptr<GameFeature> GameFeaturePtr;
@@ -65,6 +67,7 @@ typedef std::shared_ptr<GameServer> GameServerPtr;
 typedef std::shared_ptr<GameApplication> GameApplicationPtr;
 
 typedef std::weak_ptr<GameScene> GameSceneWeakPtr;
+typedef std::weak_ptr<GameListener> GameListenerWeakPtr;
 typedef std::weak_ptr<GameObject> GameObjectWeakPtr;
 typedef std::weak_ptr<GameComponent> GameComponentWeakPtr;
 typedef std::weak_ptr<GameFeature> GameFeatureWeakPtr;

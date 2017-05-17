@@ -52,10 +52,13 @@ public:
 	void setActive(bool active) except;
 	bool getActive() const noexcept;
 
+	void setGameListener(GameListenerPtr listener) noexcept;
+	GameListenerPtr getGameListener() const noexcept;
+
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	std::uint32_t getInstanceID() const noexcept;
+	std::size_t getInstanceID() const noexcept;
 
 	GameObjectPtr getRootObject() noexcept;
 
@@ -69,6 +72,10 @@ public:
 	GameObjectPtr instanceObject(iarchive& reader, GameObjectPtr parent) except;
 
 private:
+	virtual void onListenerChangeBefore() noexcept;
+	virtual void onListenerChangeAfter() noexcept;
+
+private:
 	class RootObject : public GameObject
 	{
 	public:
@@ -80,9 +87,10 @@ private:
 	};
 
 	std::string _name;
-	std::uint32_t _instanceID;
+	std::size_t _instanceID;
 
 	GameObjectPtr  _root;
+	GameListenerPtr _gameListener;
 };
 
 _NAME_END

@@ -60,6 +60,10 @@ Camera::Camera() noexcept
 	, _cameraClearType(CameraClearFlagBits::CameraClearColorBit)
 	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
 	, _needUpdateViewProject(true)
+	, _project(float4x4::One)
+	, _projectInverse(float4x4::One)
+	, _viewProejct(float4x4::One)
+	, _viewProjectInverse(float4x4::One)
 {
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
 }

@@ -51,14 +51,19 @@ public:
 	void setActive(bool active)  except;
 	bool getActive() noexcept;
 
+	void setGameListener(GameListenerPtr listener) noexcept;
+	GameListenerPtr getGameListener() const noexcept;
+
 	GameServer* getGameServer() noexcept;
 
 	virtual void sendMessage(const MessagePtr& message) except;
 
 protected:
-
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
+
+	virtual void onListenerChangeBefore() noexcept;
+	virtual void onListenerChangeAfter() noexcept;
 
 	virtual void onOpenScene(GameScenePtr& scene) except;
 	virtual void onCloseScene(GameScenePtr& scene) noexcept;
@@ -84,6 +89,7 @@ private:
 	bool _isActive;
 
 	GameServer* _gameServer;
+	GameListenerPtr _gameListener;
 };
 
 _NAME_END

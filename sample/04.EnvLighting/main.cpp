@@ -40,11 +40,11 @@
 int main(int argc, const char* argv[])
 {
 	rayInit(argv[0], "dlc:EnvLighting/scenes/scene.map");
-	rayOpenWindow("EnvLighting", 1376, 768);
 
-	while (!rayIsQuitRequest())
+	if (rayOpenWindow("EnvLighting", 1376, 768))
 	{
-		rayUpdate();
+		while (!rayIsQuitRequest())
+			rayUpdate();
 	}
 
 	rayTerminate();

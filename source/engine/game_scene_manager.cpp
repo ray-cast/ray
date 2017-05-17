@@ -61,7 +61,7 @@ GameSceneManager::close() noexcept
 }
 
 void
-GameSceneManager::_instanceScene(GameScene* entity, std::uint32_t& instanceID) noexcept
+GameSceneManager::_instanceScene(GameScene* entity, std::size_t& instanceID) noexcept
 {
 	if (_emptyLists.empty())
 		_instanceLists.push_back(entity);

@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/gui_camera_component.h>
-#include <ray/gui_system.h>
+#include <ray/imgui_system.h>
 #include <ray/game_server.h>
 #include <ray/camera_component.h>
 
@@ -90,7 +90,7 @@ GuiCameraComponent::onPostRender(const Camera&) noexcept
 	GameServer::instance()->sendMessage(_guiMessage);
 	_guiMessage->getGui().render();
 
-	GuiSystem::instance()->render(GameServer::instance()->getTimer()->delta());
+	IMGUISystem::instance()->render(GameServer::instance()->getTimer()->delta());
 }
 
 _NAME_END

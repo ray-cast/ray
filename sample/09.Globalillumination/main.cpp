@@ -40,11 +40,11 @@
 int main(int argc, const char* argv[])
 {
 	rayInit(argv[0], "dlc:GI/scene/scene.map");
-	rayOpenWindow("Global illumination", 1376, 768);
 	
-	while (!rayIsQuitRequest())
+	if (rayOpenWindow("Global illumination", 1376, 768))
 	{
-		rayUpdate();
+		while (!rayIsQuitRequest())
+			rayUpdate();
 	}
 
 	rayTerminate();

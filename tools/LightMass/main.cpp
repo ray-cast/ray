@@ -66,7 +66,11 @@ struct AppParams
 class AppMapListener : public ray::LightMapListener
 {
 public:
-	AppMapListener() noexcept {}
+	AppMapListener() noexcept 
+		: _lastProgress(0)
+	{
+	}
+
 	~AppMapListener() noexcept {}
 
 	void onUvmapperStart()
@@ -78,9 +82,13 @@ public:
 
 	void onUvmapperProgressing(float progress)
 	{
-		std::cout.precision(2);
-		std::cout << "Processing : " << progress * 100 << "%" << std::fixed;
-		std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+		if (_lastProgress != progress)
+		{
+			std::cout.precision(2);
+			std::cout << "Processing : " << progress * 100 << "%" << std::fixed;
+			std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+			_lastProgress = progress;
+		}
 	}
 
 	void onUvmapperEnd()
@@ -97,6 +105,7 @@ public:
 	}
 
 private:
+	float _lastProgress;
 	std::time_t _startTime;
 	std::time_t _endTime;
 };

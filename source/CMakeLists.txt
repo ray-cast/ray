@@ -11,9 +11,16 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 OPTION(BUILD_INPUT "on for use off for ignore" ON)
 OPTION(BUILD_BASEGAME "on for use off for ignore" ON)
 OPTION(BUILD_PHYSIC "on for use off for ignore" ON)
-OPTION(BUILD_GUI "on for use off for ignore" ON)
 OPTION(BUILD_RENDERER "on for use off for ignore" ON)
 OPTION(BUILD_SOUND "on for use off for ignore" ON)
+
+SET(BUILD_GUI 1 CACHE STRING
+"Specify the GUI. Possible values:
+  0 - None
+  1 - IMGUI
+  2 - MYGUI
+  3 - IMGUI & MYGUI"
+)
 
 ADD_DEFINITIONS(-D_BUILD_DLL_EXPORT)
 ADD_DEFINITIONS(-D_ALLOW_KEYWORD_MACROS)
@@ -26,7 +33,6 @@ IF(CMAKE_GENERATOR MATCHES "Visual Studio")
     IF(${CMAKE_VS_PLATFORM_TOOLSET} STREQUAL "v140_clang_3_7")
         SET(BUILD_PHYSIC FALSE)
         SET(BUILD_SOUND FALSE)
-        SET(BUILD_GUI FALSE)
     ENDIF()
 ENDIF()
 

@@ -53,6 +53,9 @@ public:
 	bool open() noexcept;
 	void close() noexcept;
 
+	void setGameListener(GameListenerPtr listener) noexcept;
+	GameListenerPtr getGameListener() const noexcept;
+
 	bool isQuitRequest() const noexcept;
 
 	bool start() noexcept;
@@ -110,6 +113,7 @@ private:
 	GameFeatures _features;
 
 	GameApplication* _gameApp;
+	GameListenerPtr _gameListener;
 
 	MessageDispatcher _dispatcher;
 };

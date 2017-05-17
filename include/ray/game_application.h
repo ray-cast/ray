@@ -53,6 +53,9 @@ public:
 	bool start() noexcept;
 	void stop() noexcept;
 
+	void setGameListener(GameListenerPtr listener) noexcept;
+	GameListenerPtr getGameListener() const noexcept;
+
 	bool isQuitRequest() const noexcept;
 
 	bool openScene(GameScenePtr& scene) noexcept;
@@ -92,6 +95,7 @@ private:
 	std::string _downloadURL;
 
 	GameServer* _gameServer;
+	GameListenerPtr _gameListener;
 
 	IoServer* _ioServer;
 	IoInterface* _ioInterface;

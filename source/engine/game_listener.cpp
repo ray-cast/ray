@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,27 +34,32 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#include <ray/game_listener.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
+__ImplementSubClass(GameListener, rtti::Interface, "GameListener")
 
-GuiImageLoader::GuiImageLoader() noexcept
+GameListener::GameListener() noexcept
 {
 }
 
-GuiImageLoader::~GuiImageLoader() noexcept
+GameListener::~GameListener() noexcept
 {
 }
 
-void
-GuiImageLoader::onLoaderChangeBefore() noexcept
+void 
+GameListener::onListenerChangeBefore() noexcept
 {
 }
 
-void
-GuiImageLoader::onLoaderChangeAfter() noexcept
+void 
+GameListener::onListenerChangeAfter() noexcept
+{
+}
+
+void 
+GameListener::onMessage(const std::string&) noexcept
 {
 }
 

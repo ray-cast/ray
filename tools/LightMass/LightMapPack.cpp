@@ -144,7 +144,7 @@ LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32
 			DXGI_FORMAT::DXGI_FORMAT_R16_UINT,
 			model.numIndices / 3, chart, stretch, w, h, margin, adj.data(), 0, 0,
 			callback,
-			0.5,
+			1.0,
 			DirectX::UVATLAS_DEFAULT,
 			vb, ib, 0, &remap);
 
@@ -164,7 +164,7 @@ LightMapPack::atlasUV1(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32
 			DXGI_FORMAT::DXGI_FORMAT_R32_UINT,
 			model.numIndices / 3, chart, stretch, w, h, margin, adj.data(), 0, 0,
 			callback,
-			0.5,
+			1.0,
 			DirectX::UVATLAS_DEFAULT,
 			vb, ib, 0, &remap);
 

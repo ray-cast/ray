@@ -40,11 +40,11 @@
 int main(int argc, const char* argv[])
 {
 	rayInit(argv[0], "dlc:UI/scenes/scene.map");
-	rayOpenWindow("UI", 1376, 768);
 
-	while (!rayIsQuitRequest())
+	if (rayOpenWindow("UI", 1376, 768))
 	{
-		rayUpdate();
+		while (!rayIsQuitRequest())
+			rayUpdate();
 	}
 
 	rayTerminate();

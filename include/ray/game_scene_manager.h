@@ -64,7 +64,7 @@ public:
 
 private:
 	friend GameScene;
-	void _instanceScene(GameScene* entity, std::uint32_t& instanceID) noexcept;
+	void _instanceScene(GameScene* entity, std::size_t& instanceID) noexcept;
 	void _unsetScene(GameScene* entity) noexcept;
 	void _activeScene(GameScene* entity, bool active) noexcept;
 

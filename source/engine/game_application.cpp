@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/game_application.h>
 #include <ray/game_server.h>
+#include <ray/game_listener.h>
+
 #include <ray/rtti_factory.h>
 
 #if defined(_BUILD_INPUT)
@@ -68,9 +70,19 @@
 
 _NAME_BEGIN
 
+class GameAppListener final : public GameListener
+{
+public:
+	virtual void onMessage(const std::string& message) noexcept
+	{
+		std::cout << message << std::endl;
+	}
+};
+
 GameApplication::GameApplication() noexcept
 	: _isInitialize(false)
 	, _gameServer(nullptr)
+	, _gameListener(std::make_shared<GameAppListener>())
 	, _workDir("")
 	, _engineDir("../../engine/")
 	, _resourceBaseDir("../../dlc/")
@@ -97,6 +109,7 @@ GameApplication::open(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::ui
 
 	_gameServer = GameServer::instance();
 	_gameServer->_setGameApp(this);
+	_gameServer->setGameListener(_gameListener);
 
 	if (!_gameServer->open())
 		return false;
@@ -163,6 +176,27 @@ GameApplication::close() noexcept
 		_ioInterface->close();
 		_ioInterface = nullptr;
 	}
+}
+
+void 
+GameApplication::setGameListener(GameListenerPtr listener) noexcept
+{
+	if (_gameListener != listener)
+	{
+		if (_gameListener)
+			_gameListener->onListenerChangeBefore();
+
+		_gameListener = listener;
+
+		if (_gameListener)
+			_gameListener->onListenerChangeAfter();
+	}
+}
+
+GameListenerPtr 
+GameApplication::getGameListener() const noexcept
+{
+	return _gameListener;
 }
 
 bool

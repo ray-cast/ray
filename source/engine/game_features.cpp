@@ -72,6 +72,25 @@ GameFeature::getActive() noexcept
 }
 
 void
+GameFeature::setGameListener(GameListenerPtr listener) noexcept
+{
+	if (_gameListener != listener)
+	{
+		this->onListenerChangeBefore();
+
+		_gameListener = listener;
+
+		this->onListenerChangeAfter();
+	}
+}
+
+GameListenerPtr
+GameFeature::getGameListener() const noexcept
+{
+	return _gameListener;
+}
+
+void
 GameFeature::sendMessage(const MessagePtr& message) except
 {
 	assert(message);
@@ -118,6 +137,16 @@ GameFeature::onActivate() except
 
 void
 GameFeature::onDeactivate() noexcept
+{
+}
+
+void 
+GameFeature::onListenerChangeBefore() noexcept
+{
+}
+
+void 
+GameFeature::onListenerChangeAfter() noexcept
 {
 }
 

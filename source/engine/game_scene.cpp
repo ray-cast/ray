@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/game_scene.h>
 #include <ray/game_scene_manager.h>
+#include <ray/game_listener.h>
 #include <ray/game_component.h>
 
 #include <ray/rtti_factory.h>
@@ -88,6 +89,25 @@ GameScene::getActive() const noexcept
 	return _root->getActive();
 }
 
+void 
+GameScene::setGameListener(GameListenerPtr listener) noexcept
+{
+	if (_gameListener != listener)
+	{
+		this->onListenerChangeBefore();
+
+		_gameListener = listener;
+		
+		this->onListenerChangeAfter();
+	}
+}
+
+GameListenerPtr
+GameScene::getGameListener() const noexcept
+{
+	return _gameListener;
+}
+
 void
 GameScene::setName(const std::string& name) noexcept
 {
@@ -100,7 +120,7 @@ GameScene::getName() const noexcept
 	return _name;
 }
 
-std::uint32_t
+std::size_t
 GameScene::getInstanceID() const noexcept
 {
 	return _instanceID;
@@ -127,6 +147,16 @@ GameScene::sendMessage(const MessagePtr& message) except
 	}
 }
 
+void 
+GameScene::onListenerChangeBefore() noexcept
+{
+}
+
+void 
+GameScene::onListenerChangeAfter() noexcept
+{
+}
+
 GameObjectPtr
 GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 {
@@ -148,26 +178,28 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 				if (key == "component")
 				{
 					auto className = reader.getValue<std::string>("class");
-					if (!className.empty())
+					if (className.empty())
 					{
-						auto component = rtti::make_shared<GameComponent>(className);
-						if (component)
-						{
-							reader.addAttrs();
-							reader.addAttrsInChildren("attribute");
-							component->load(reader);
+						if (_gameListener)
+							_gameListener->onMessage("Component name cannot be empty : " + reader.getCurrentNodePath());
 
-							actor->addComponent(component);
-						}
-						else
-						{
-							throw failure("Unknown component name : " + className);
-						}
+						continue;
 					}
-					else
+
+					auto component = rtti::make_shared<GameComponent>(className);
+					if (!component)
 					{
-						throw failure("empty component name : " + reader.getCurrentNodePath());
+						if (_gameListener)
+							_gameListener->onMessage("Failed to create component : " + className);
+
+						continue;
 					}
+
+					reader.addAttrs();
+					reader.addAttrsInChildren("attribute");
+					component->load(reader);
+
+					actor->addComponent(component);
 				}
 				else if (key == "object")
 				{

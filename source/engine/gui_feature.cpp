@@ -35,39 +35,21 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/gui_feature.h>
-#include <ray/gui_system.h>
-#include <ray/input_feature.h>
-#include <ray/input_event.h>
-#include <ray/timer.h>
+
 #include <ray/image.h>
+
+#include <ray/input_event.h>
+#include <ray/input_feature.h>
 
 #include <ray/game_server.h>
 #include <ray/game_application.h>
 
+#include <ray/imgui.h>
+#include <ray/imgui_system.h>
+
 _NAME_BEGIN
 
-__ImplementSubClass(GuiMessage, Message, "GuiMessage")
 __ImplementSubClass(GuiFeature, GameFeature, "GuiFeature")
-
-GuiMessage::GuiMessage() noexcept
-{
-}
-
-GuiMessage::~GuiMessage() noexcept
-{
-}
-
-Gui&
-GuiMessage::getGui() noexcept
-{
-	return _gui;
-}
-
-const Gui& 
-GuiMessage::getGui() const noexcept
-{
-	return _gui;
-}
 
 GuiInputButton::Code ButtonCodeToGuiButton(InputButton::Code button) noexcept
 {
@@ -381,19 +363,6 @@ GuiFeature::GuiFeature(std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, st
 
 GuiFeature::~GuiFeature() noexcept
 {
-	GuiSystem::instance()->close();
-}
-
-void
-GuiFeature::setCoreProfile(const std::string& core) except
-{
-	GuiSystem::instance()->setCoreProfile(core);
-}
-
-const std::string&
-GuiFeature::getCoreProfile() const noexcept
-{
-	return GuiSystem::instance()->getCoreProfile();
 }
 
 void
@@ -401,16 +370,17 @@ GuiFeature::setViewport(std::uint32_t w, std::uint32_t h) noexcept
 {
 	if (_width != w || _height != h)
 	{
-		GuiSystem::instance()->setViewport(w, h);
 		_width = w;
 		_height = h;
+
+		IMGUISystem::instance()->setViewport(w, h);
 	}
 }
 
 void
 GuiFeature::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 {
-	GuiSystem::instance()->getViewport(w, h);
+	IMGUISystem::instance()->getViewport(w, h);
 }
 
 void 
@@ -418,39 +388,37 @@ GuiFeature::setWindowFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept
 {
 	if (_dpi_w != w || _dpi_h != h)
 	{
-		GuiSystem::instance()->setFramebufferScale(w, h);
 		_dpi_w = w;
 		_dpi_h = h;
+
+		IMGUISystem::instance()->setFramebufferScale(w, h);
 	}
 }
 
 void 
 GuiFeature::getWindowFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept
 {
-	GuiSystem::instance()->getFramebufferScale(w, h);
+	IMGUISystem::instance()->getFramebufferScale(w, h);
 }
 
 void
 GuiFeature::onActivate() except
 {
-	if (!GuiSystem::instance()->open())
+	if (!IMGUISystem::instance()->open())
 		throw failure("GuiSystem::instance() fail");
 
-	GuiSystem::instance()->setImageLoader(std::make_shared<ImageLoader>());
-	GuiSystem::instance()->setCoreProfile("sys:media/UI/MyGUI_Core.xml");
-	GuiSystem::instance()->setViewport(_width, _height);
-	GuiSystem::instance()->setFramebufferScale(_dpi_w, _dpi_h);
+	IMGUISystem::instance()->setImageLoader(std::make_shared<ImageLoader>());
+#if _BUILD_MYGUI
+	IMGUISystem::instance()->setCoreProfile("sys:media/UI/MyGUI_Core.xml");
+#endif
+	IMGUISystem::instance()->setViewport(_width, _height);
+	IMGUISystem::instance()->setFramebufferScale(_dpi_w, _dpi_h);
 }
 
 void
 GuiFeature::onDeactivate() noexcept
 {
-	GuiSystem::instance()->close();
-}
-
-void 
-GuiFeature::onFrameEnd() noexcept
-{
+	IMGUISystem::instance()->close();
 }
 
 void
@@ -465,28 +433,28 @@ GuiFeature::onMessage(const MessagePtr& message) except
 			switch (event.event)
 			{
 			case InputEvent::MouseMotion:
-				GuiSystem::instance()->injectMouseMove(event.motion.x, event.motion.y, 0);
+				IMGUISystem::instance()->injectMouseMove(event.motion.x, event.motion.y, 0);
 				break;
 			case InputEvent::MouseButtonDown:
-				GuiSystem::instance()->injectMousePress(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
+				IMGUISystem::instance()->injectMousePress(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
 				break;
 			case InputEvent::MouseButtonUp:
-				GuiSystem::instance()->injectMouseRelease(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
+				IMGUISystem::instance()->injectMouseRelease(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
 				break;
 			case InputEvent::KeyDown:
-				GuiSystem::instance()->injectKeyPress(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym), event.key.keysym.unicode);
+				IMGUISystem::instance()->injectKeyPress(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym), event.key.keysym.unicode);
 				break;
 			case InputEvent::KeyUp:
-				GuiSystem::instance()->injectKeyRelease(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym));
+				IMGUISystem::instance()->injectKeyRelease(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym));
 				break;
 			case InputEvent::Character:
-				GuiSystem::instance()->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event.key.keysym.unicode);
+				IMGUISystem::instance()->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event.key.keysym.unicode);
 				break;
 			case InputEvent::SizeChange:
-				GuiSystem::instance()->setViewport(event.change.w, event.change.h);
+				IMGUISystem::instance()->setViewport(event.change.w, event.change.h);
 				break;
 			case InputEvent::SizeChangeDPI:
-				GuiSystem::instance()->setFramebufferScale(event.change.w, event.change.h);
+				IMGUISystem::instance()->setFramebufferScale(event.change.w, event.change.h);
 				break;
 			default:
 				return;

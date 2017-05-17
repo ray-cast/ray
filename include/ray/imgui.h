@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_WIDGET_ALIGN_H_
-#define _H_GUI_WIDGET_ALIGN_H_
+#ifndef _H_IMGUI_H_
+#define _H_IMGUI_H_
 
 #include <ray/math.h>
 
@@ -97,56 +97,56 @@ enum GuiCol
 
 enum GuiInputTextFlagBits
 {
-	GuiInputTextFlagCharsDecimalBit = 1 << 0,
-	GuiInputTextFlagCharsHexadecimalBit = 1 << 1,
-	GuiInputTextFlagCharsUppercaseBit = 1 << 2,
-	GuiInputTextFlagCharsNoBlankBit = 1 << 3,
-	GuiInputTextFlagAutoSelectAllBit = 1 << 4,
-	GuiInputTextFlagEnterReturnsTrueBit = 1 << 5,
-	GuiInputTextFlagCallbackCompletionBit = 1 << 6,
-	GuiInputTextFlagCallbackHistoryBit = 1 << 7,
-	GuiInputTextFlagCallbackAlwaysBit = 1 << 8,
-	GuiInputTextFlagCallbackCharFilterBit = 1 << 9,
-	GuiInputTextFlagAllowTabInputBit = 1 << 10,
+	GuiInputTextFlagCharsDecimalBit        = 1 << 0,
+	GuiInputTextFlagCharsHexadecimalBit    = 1 << 1,
+	GuiInputTextFlagCharsUppercaseBit      = 1 << 2,
+	GuiInputTextFlagCharsNoBlankBit        = 1 << 3,
+	GuiInputTextFlagAutoSelectAllBit       = 1 << 4,
+	GuiInputTextFlagEnterReturnsTrueBit    = 1 << 5,
+	GuiInputTextFlagCallbackCompletionBit  = 1 << 6,
+	GuiInputTextFlagCallbackHistoryBit     = 1 << 7,
+	GuiInputTextFlagCallbackAlwaysBit      = 1 << 8,
+	GuiInputTextFlagCallbackCharFilterBit  = 1 << 9,
+	GuiInputTextFlagAllowTabInputBit       = 1 << 10,
 	GuiInputTextFlagCtrlEnterForNewLineBit = 1 << 11,
-	GuiInputTextFlagNoHorizontalScrollBit = 1 << 12,
-	GuiInputTextFlagAlwaysInsertModeBit = 1 << 13,
-	GuiInputTextFlagReadOnlyBit = 1 << 14,
-	GuiInputTextFlagPasswordBit = 1 << 15,
-	GuiInputTextFlagMultilineBit = 1 << 20
+	GuiInputTextFlagNoHorizontalScrollBit  = 1 << 12,
+	GuiInputTextFlagAlwaysInsertModeBit    = 1 << 13,
+	GuiInputTextFlagReadOnlyBit            = 1 << 14,
+	GuiInputTextFlagPasswordBit            = 1 << 15,
+	GuiInputTextFlagMultilineBit           = 1 << 20
 };
 
 typedef std::uint32_t GuiInputTextFlags;
 
 enum GuiWindowFlagBits
 {
-	GuiWindowFlagNoTitleBarBit = 1 << 0,
-	GuiWindowFlagNoResizeBit = 1 << 1,
-	GuiWindowFlagNoMoveBit = 1 << 2,
-	GuiWindowFlagNoScrollbarBit = 1 << 3,
-	GuiWindowFlagNoScrollWithMouseBit = 1 << 4,
-	GuiWindowFlagNoCollapseBit = 1 << 5,
-	GuiWindowFlagAlwaysAutoResizeBit = 1 << 6,
-	GuiWindowFlagShowBordersBit = 1 << 7,
-	GuiWindowFlagNoSavedSettingsBit = 1 << 8,
-	GuiWindowFlagNoInputsBit = 1 << 9,
-	GuiWindowFlagMenuBarBit = 1 << 10,
-	GuiWindowFlagHorizontalScrollbarBit = 1 << 11,
-	GuiWindowFlagNoFocusOnAppearingBit = 1 << 12,
-	GuiWindowFlagNoBringToFrontOnFocusBit = 1 << 13,
-	GuiWindowFlagAlwaysVerticalScrollbarBit = 1 << 14,
+	GuiWindowFlagNoTitleBarBit                = 1 << 0,
+	GuiWindowFlagNoResizeBit                  = 1 << 1,
+	GuiWindowFlagNoMoveBit                    = 1 << 2,
+	GuiWindowFlagNoScrollbarBit               = 1 << 3,
+	GuiWindowFlagNoScrollWithMouseBit         = 1 << 4,
+	GuiWindowFlagNoCollapseBit                = 1 << 5,
+	GuiWindowFlagAlwaysAutoResizeBit          = 1 << 6,
+	GuiWindowFlagShowBordersBit               = 1 << 7,
+	GuiWindowFlagNoSavedSettingsBit           = 1 << 8,
+	GuiWindowFlagNoInputsBit                  = 1 << 9,
+	GuiWindowFlagMenuBarBit                   = 1 << 10,
+	GuiWindowFlagHorizontalScrollbarBit       = 1 << 11,
+	GuiWindowFlagNoFocusOnAppearingBit        = 1 << 12,
+	GuiWindowFlagNoBringToFrontOnFocusBit     = 1 << 13,
+	GuiWindowFlagAlwaysVerticalScrollbarBit   = 1 << 14,
 	GuiWindowFlagAlwaysHorizontalScrollbarBit = 1 << 15,
-	GuiWindowFlagAlwaysUseWindowPaddingBit = 1 << 16
+	GuiWindowFlagAlwaysUseWindowPaddingBit    = 1 << 16
 };
 
 typedef std::uint32_t GuiWindowFlags;
 
 enum GuiAlignFlagBits
 {
-	GuiAlignFlagLeftBit = 1 << 0,
-	GuiAlignFlagCenterBit = 1 << 1,
-	GuiAlignFlagRightBit = 1 << 2,
-	GuiAlignFlagTopBit = 1 << 3,
+	GuiAlignFlagLeftBit    = 1 << 0,
+	GuiAlignFlagCenterBit  = 1 << 1,
+	GuiAlignFlagRightBit   = 1 << 2,
+	GuiAlignFlagTopBit     = 1 << 3,
 	GuiAlignFlagVCenterBit = 1 << 4,
 	GuiAlignFlagDefaultBit = GuiAlignFlagLeftBit | GuiAlignFlagTopBit
 };
@@ -155,26 +155,26 @@ typedef std::uint32_t GuiAlignFlags;
 
 enum GuiSetCondFlagBits
 {
-	GuiSetCondFlagAlwaysBit = 1 << 0,
-	GuiSetCondFlagOnceBit = 1 << 1,
+	GuiSetCondFlagAlwaysBit       = 1 << 0,
+	GuiSetCondFlagOnceBit         = 1 << 1,
 	GuiSetCondFlagFirstUseEverBit = 1 << 2,
-	GuiSetCondFlagAppearingBit = 1 << 3
+	GuiSetCondFlagAppearingBit    = 1 << 3
 };
 
 typedef std::uint32_t GuiSetCondFlags;
 
 enum GuiTreeNodeFlagBits
 {
-	GuiTreeNodeFlagSelectedBit = 1 << 0,
-	GuiTreeNodeFlagFramedBit = 1 << 1,
-	GuiTreeNodeFlagAllowOverlapModeBit = 1 << 2,
-	GuiTreeNodeFlagNoTreePushOnOpenBit = 1 << 3,
-	GuiTreeNodeFlagNoAutoOpenOnLogBit = 1 << 4,
-	GuiTreeNodeFlagDefaultOpenBit = 1 << 5,
+	GuiTreeNodeFlagSelectedBit          = 1 << 0,
+	GuiTreeNodeFlagFramedBit            = 1 << 1,
+	GuiTreeNodeFlagAllowOverlapModeBit  = 1 << 2,
+	GuiTreeNodeFlagNoTreePushOnOpenBit  = 1 << 3,
+	GuiTreeNodeFlagNoAutoOpenOnLogBit   = 1 << 4,
+	GuiTreeNodeFlagDefaultOpenBit       = 1 << 5,
 	GuiTreeNodeFlagOpenOnDoubleClickBit = 1 << 6,
-	GuiTreeNodeFlagOpenOnArrowBit = 1 << 7,
-	GuiTreeNodeFlagLeafBit = 1 << 8,
-	GuiTreeNodeFlagBulletBit = 1 << 9,
+	GuiTreeNodeFlagOpenOnArrowBit       = 1 << 7,
+	GuiTreeNodeFlagLeafBit              = 1 << 8,
+	GuiTreeNodeFlagBulletBit            = 1 << 9,
 	GuiTreeNodeFlagCollapsingHeaderBit = GuiTreeNodeFlagFramedBit | GuiTreeNodeFlagNoAutoOpenOnLogBit
 };
 
@@ -182,8 +182,8 @@ typedef std::uint32_t GuiTreeNodeFlags;
 
 enum GuiSelectableFlagBits
 {
-	GuiSelectableFlagDontClosePopupsBit = 1 << 0,
-	GuiSelectableFlagSpanAllColumnsBit = 1 << 1,
+	GuiSelectableFlagDontClosePopupsBit  = 1 << 0,
+	GuiSelectableFlagSpanAllColumnsBit   = 1 << 1,
 	GuiSelectableFlagAllowDoubleClickBit = 1 << 2
 };
 
@@ -213,14 +213,14 @@ enum GuiColorEditMode
 enum GuiStyleVar
 {
 	GuiStyleVarAlpha,               // float
-	GuiStyleVarWindowPadding,       // ImVec2
+	GuiStyleVarWindowPadding,       // float2
 	GuiStyleVarWindowRounding,      // float
-	GuiStyleVarWindowMinSize,       // ImVec2
+	GuiStyleVarWindowMinSize,       // float2
 	GuiStyleVarChildWindowRounding, // float
-	GuiStyleVarFramePadding,        // ImVec2
+	GuiStyleVarFramePadding,        // float2
 	GuiStyleVarFrameRounding,       // float
-	GuiStyleVarItemSpacing,         // ImVec2
-	GuiStyleVarItemInnerSpacing,    // ImVec2
+	GuiStyleVarItemSpacing,         // float2
+	GuiStyleVarItemInnerSpacing,    // float2
 	GuiStyleVarIndentSpacing,       // float
 	GuiStyleVarGrabMinSize          // float
 };

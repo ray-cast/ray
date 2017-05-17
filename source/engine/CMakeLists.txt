@@ -4,6 +4,8 @@ SET(SOURCE_PATH ${CMAKE_SOURCE_DIR}/source/engine)
 SET(GAMEAPP_LIST
     ${SOURCE_PATH}/game_application.cpp
     ${HEADER_PATH}/game_application.h
+    ${SOURCE_PATH}/game_listener.cpp
+    ${HEADER_PATH}/game_listener.h
     ${SOURCE_PATH}/game_object.cpp
     ${HEADER_PATH}/game_object.h
     ${SOURCE_PATH}/game_base_features.cpp
@@ -25,9 +27,19 @@ SET(GAMEAPP_LIST
 SOURCE_GROUP("system\\app" FILES ${GAMEAPP_LIST})
 
 IF(BUILD_GUI)
-    SET(GUI_FEATURES_LIST
+	SET(GUI_FEATURES_LIST
         ${HEADER_PATH}/gui_feature.h
         ${SOURCE_PATH}/gui_feature.cpp
+        ${HEADER_PATH}/gui_message.h
+        ${SOURCE_PATH}/gui_message.cpp
+        ${HEADER_PATH}/gui_camera_component.h
+        ${SOURCE_PATH}/gui_camera_component.cpp
+	)
+	SOURCE_GROUP("system\\gui" FILES ${GUI_FEATURES_LIST})
+ENDIF()
+
+IF(BUILD_GUI EQUAL 2 OR BUILD_GUI EQUAL 3)
+    SET(GUI_FEATURES_LIST
         ${HEADER_PATH}/gui_listbox_component.h
         ${SOURCE_PATH}/gui_listbox_component.cpp
         ${HEADER_PATH}/gui_combobox_component.h
@@ -40,8 +52,6 @@ IF(BUILD_GUI)
         ${SOURCE_PATH}/gui_menu_component.cpp
         ${HEADER_PATH}/gui_menuitem_component.h
         ${SOURCE_PATH}/gui_menuitem_component.cpp
-        ${HEADER_PATH}/gui_camera_component.h
-        ${SOURCE_PATH}/gui_camera_component.cpp
         ${HEADER_PATH}/gui_widget_component.h
         ${SOURCE_PATH}/gui_widget_component.cpp
         ${HEADER_PATH}/gui_scrollbar_component.h
@@ -54,10 +64,7 @@ IF(BUILD_GUI)
         ${SOURCE_PATH}/gui_window_component.cpp
         ${HEADER_PATH}/gui_image_component.h
         ${SOURCE_PATH}/gui_image_component.cpp
-    )
-    SOURCE_GROUP("system\\gui" FILES ${GUI_FEATURES_LIST})
-ELSE()
-    SET(GUI_FEATURES_LIST "")
+    )    
 ENDIF()
 
 SET(ANIM_FEATURES_LIST

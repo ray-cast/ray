@@ -34,18 +34,64 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifndef _H_IMGUI_SYSTEM_H_
+#define _H_IMGUI_SYSTEM_H_
+
 #include <ray/gui_system.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiSystemBase, rtti::Interface, "GuiSystem")
-
-GuiSystemBase::GuiSystemBase() noexcept
+class EXPORT IMGUISystem final : public GuiSystem
 {
-}
+	__DeclareSingleton(IMGUISystem)
+public:
+	IMGUISystem() noexcept;
+	~IMGUISystem() noexcept;
 
-GuiSystemBase::~GuiSystemBase() noexcept
-{
-}
+	bool open() except;
+	void close() noexcept;
+
+	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
+	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
+	bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
+	bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept;
+	bool injectKeyRelease(GuiInputKey::Code _key) noexcept;
+
+	bool isFocusMouse() const noexcept;
+	bool isFocusKey() const noexcept;
+	bool isCaptureMouse() const noexcept;
+
+	void setViewport(std::uint32_t w, std::uint32_t h) noexcept;
+	void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept;
+
+	void setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept;
+	void getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept;
+
+	GuiWidgetPtr createWidget(const rtti::Rtti* rtti);
+	template<typename T>
+	typename std::enable_if<std::is_base_of<GuiWidget, T>::value, std::shared_ptr<T>>::type createWidget()
+	{
+		return std::dynamic_pointer_cast<T>(this->createWidget(T::getRtti()));
+	}
+
+	void render(float delta) except;
+
+private:
+	IMGUISystem(const IMGUISystem&) noexcept = delete;
+	IMGUISystem& operator=(const IMGUISystem&) noexcept = delete;
+
+private:
+	MaterialPtr _material;
+	MaterialTechPtr _materialTech;
+	MaterialParamPtr _materialDecal;
+	MaterialParamPtr _materialProj;
+
+	GraphicsDataPtr _vbo;
+	GraphicsDataPtr _ibo;
+	GraphicsTexturePtr _texture;
+};
 
 _NAME_END
+
+#endif

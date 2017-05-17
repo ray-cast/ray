@@ -58,8 +58,6 @@ private:
 	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
-	virtual void onMessage(const MessagePtr& message) noexcept;
-
 	void onPostRender(const class Camera& camera) noexcept;
 
 private:

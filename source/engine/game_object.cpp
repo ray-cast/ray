@@ -823,13 +823,24 @@ void
 GameObject::sendMessage(const MessagePtr& message) noexcept
 {
 	assert(message);
+	assert(this->getActive());
 
-	if (!this->getActive())
-		return;
-
-	for (auto& it : _components)
+	auto parent = this->getParent();
+	while (parent)
 	{
-		if (it->getActive())
+		auto temp = parent->getParent();
+		if (!temp)
+			break;
+		else
+			parent = temp;
+	}
+
+	if (parent)
+		parent->sendMessageDownwards(message);
+	else
+	{
+		auto& components = this->getComponents();
+		for (auto& it : components)
 			it->onMessage(message);
 	}
 }
@@ -838,26 +849,40 @@ void
 GameObject::sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
 {
 	assert(message);
+	assert(this->getActive());
 
-	if (!this->getActive())
-		return;
-
-	for (auto& it : _components)
+	auto parent = this->getParent();
+	while (parent)
 	{
-		bool ignore = false;
-		for (std::size_t i = 0; i < n; i++)
-		{
-			if (ignores[i] == it.get())
-			{
-				ignore = true;
-				break;
-			}
-		}
+		auto temp = parent->getParent();
+		if (!temp)
+			break;
+		else
+			parent = temp;
+	}
 
-		if (!ignore)
+	if (parent)
+		parent->sendMessageDownwards(message, ignores, n);
+	else
+	{
+		auto& components = this->getComponents();
+		for (auto& it : components)
 		{
-			if (it->getActive())
-				it->onMessage(message);
+			bool ignore = false;
+			for (std::size_t i = 0; i < n; i++)
+			{
+				if (ignores[i] == it.get())
+				{
+					ignore = true;
+					break;
+				}
+			}
+
+			if (!ignore)
+			{
+				if (it->getActive())
+					it->onMessage(message);
+			}
 		}
 	}
 }

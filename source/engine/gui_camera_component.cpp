@@ -87,7 +87,7 @@ GuiCameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
 }
 
 void
-GuiCameraComponent::onPostRender(const Camera&) noexcept
+GuiCameraComponent::onPostRender(const Camera& camera) noexcept
 {
 	IMGUI::newFrame();
 
@@ -96,12 +96,6 @@ GuiCameraComponent::onPostRender(const Camera&) noexcept
 	IMGUI::render();
 
 	IMGUISystem::instance()->render(GameServer::instance()->getTimer()->delta());
-}
-
-void 
-GuiCameraComponent::onMessage(const MessagePtr& message) noexcept
-{
-
 }
 
 _NAME_END

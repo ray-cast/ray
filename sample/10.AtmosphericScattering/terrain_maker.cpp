@@ -80,8 +80,8 @@ TerrainMakerComponent::onActivate() except
 			auto material = gameObject->getComponent<MeshRenderComponent>()->getMaterial();
 			material->getParameter("quality")->uniform4f(float4(0.0, 0.0, 0.0, 0.0));
 			material->getParameter("diffuse")->uniform3f(0.5,0.5,0.5);
-			material->getParameter("specular")->uniform1f(0.1);
-			material->getParameter("shininess")->uniform1f(0.1);
+			material->getParameter("metalness")->uniform1f(0.0);
+			material->getParameter("smoothness")->uniform1f(0.1);
 
 			_objects.push_back(gameObject);
 		}

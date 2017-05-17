@@ -56,7 +56,7 @@ Atmospheric::Setting::Setting() noexcept
 	, rayleighExtinctionCoeff(0)
 	, mieAngularSctrCoeff(0)
 	, mieExtinctionCoeff(0)
-	, mie(0.97f)
+	, mie(0.76)
 {
 }
 

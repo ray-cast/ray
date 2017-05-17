@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <effect language="hlsl">
-    <include name="sys:fx/common.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/math.fxml"/>
@@ -291,11 +290,6 @@
 
             ComputeScatteringIntensity(totalOpticalDepthRayleigh, totalOpticalDepthMie, extinction);
             ComputePhaseFunctions(scatteringRayleigh, scatteringMie, viewdir, lightDirection, inscattering);
-
-            if (innerIntersections.x <= 0 && depth > 0.999f)
-            {
-                ComputeStars(viewdir, inscattering);
-            }
         }
 
         float3 ComputeInscatteredRadiancePS(in float4 Position : TEXCOORD0) : SV_Target

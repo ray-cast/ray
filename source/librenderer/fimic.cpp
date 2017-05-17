@@ -46,7 +46,7 @@ _NAME_BEGIN
 FimicToneMapping::Setting::Setting() noexcept
 	: bloomThreshold(2.0f)
 	, bloomIntensity(0.5f)
-	, exposure(3.0f)
+	, exposure(2.0f)
 {
 }
 

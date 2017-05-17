@@ -60,7 +60,7 @@ public:
 	void setLayer(std::uint8_t layer) noexcept;
 	std::uint8_t getLayer() const noexcept;
 
-	std::uint32_t getInstanceID() const noexcept;
+	std::size_t getInstanceID() const noexcept;
 
 	void setParent(GameObjectPtr& parent) noexcept;
 	void setParent(GameObjectPtr&& parent) noexcept;
@@ -73,7 +73,7 @@ public:
 	void cleanupChildren() noexcept;
 	GameObjectPtr findChild(const std::string& name, bool recurse = true) noexcept;
 
-	std::uint32_t getChildCount() const noexcept;
+	std::size_t getChildCount() const noexcept;
 	GameObjects& getChildren() noexcept;
 	const GameObjects& getChildren() const noexcept;
 
@@ -184,7 +184,7 @@ private:
 	bool _active;
 
 	std::uint8_t _layer;
-	std::uint32_t _instanceID;
+	std::size_t _instanceID;
 
 	std::string _name;
 

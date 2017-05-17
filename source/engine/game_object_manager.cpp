@@ -55,7 +55,7 @@ GameObjectManager::~GameObjectManager() noexcept
 }
 
 void
-GameObjectManager::_instanceObject(GameObject* entity, std::uint32_t& instanceID) noexcept
+GameObjectManager::_instanceObject(GameObject* entity, std::size_t& instanceID) noexcept
 {
 	if (_emptyLists.empty())
 		_instanceLists.push_back(entity);

@@ -62,7 +62,7 @@ public:
 private:
 	friend GameObject;
 
-	void _instanceObject(GameObject* entity, std::uint32_t& instanceID) noexcept;
+	void _instanceObject(GameObject* entity, std::size_t& instanceID) noexcept;
 	void _unsetObject(GameObject* entity) noexcept;
 	void _activeObject(GameObject* entity, bool active) noexcept;
 

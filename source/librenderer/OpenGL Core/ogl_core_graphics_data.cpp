@@ -124,13 +124,13 @@ OGLCoreGraphicsData::close() noexcept
 	}
 }
 
-int
+std::ptrdiff_t
 OGLCoreGraphicsData::flush() noexcept
 {
 	return this->flush(0, _desc.getStreamSize());
 }
 
-int
+std::ptrdiff_t
 OGLCoreGraphicsData::flush(GLintptr offset, GLsizeiptr cnt) noexcept
 {
 	glFlushMappedNamedBufferRange(_buffer, offset, cnt);

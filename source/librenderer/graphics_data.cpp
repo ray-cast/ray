@@ -48,7 +48,7 @@ GraphicsDataDesc::GraphicsDataDesc() noexcept
 {
 }
 
-GraphicsDataDesc::GraphicsDataDesc(GraphicsDataType type, GraphicsUsageFlags usage, const void* data, std::uint32_t size) noexcept
+GraphicsDataDesc::GraphicsDataDesc(GraphicsDataType type, GraphicsUsageFlags usage, const void* data, std::size_t size) noexcept
 	: _data((std::uint8_t*)data)
 	, _dataSize(size)
 	, _usage(usage)
@@ -97,12 +97,12 @@ GraphicsDataDesc::getStream() const noexcept
 }
 
 void
-GraphicsDataDesc::setStreamSize(std::uint32_t size) noexcept
+GraphicsDataDesc::setStreamSize(std::size_t size) noexcept
 {
 	_dataSize = size;
 }
 
-std::uint32_t
+std::size_t
 GraphicsDataDesc::getStreamSize() const noexcept
 {
 	return _dataSize;

@@ -157,7 +157,7 @@ GameObject::getLayer() const noexcept
 	return _layer;
 }
 
-std::uint32_t
+std::size_t
 GameObject::getInstanceID() const noexcept
 {
 	return _instanceID;
@@ -286,7 +286,7 @@ GameObject::findChild(const std::string& name, bool recuse) noexcept
 	return nullptr;
 }
 
-std::uint32_t
+std::size_t
 GameObject::getChildCount() const noexcept
 {
 	return _children.size();

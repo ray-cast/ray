@@ -418,7 +418,7 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			std::size_t viewportCount = std::max<std::size_t>(1, colorAttachment.size());
 			for (std::size_t i = 0; i < viewportCount; i++)
 			{
-				this->setViewport(i, Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+				this->setViewport(i, Viewport(0.0f, 0.0f, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 
 				glScissorIndexed(i, _scissors[i].left, framebufferDesc.getHeight() - _scissors[i].height - _scissors[i].top, _scissors[i].width, _scissors[i].height);
 			}

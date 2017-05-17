@@ -64,9 +64,9 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 	auto& srcBlends = _stateDesc.getColorBlends();
 	auto& destBlends = lastStateDesc.getColorBlends();
 
-	std::size_t srcBlendCount = srcBlends.size();
-	std::size_t destBlendCount = destBlends.size();
-	for (std::size_t i = srcBlendCount; i < destBlendCount; i++)
+	GLuint srcBlendCount = srcBlends.size();
+	GLuint destBlendCount = destBlends.size();
+	for (GLuint i = srcBlendCount; i < destBlendCount; i++)
 	{
 		auto& destBlend = destBlends[i];
 		if (destBlend.getBlendEnable())
@@ -82,7 +82,7 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		}
 	}
 
-	for (std::size_t i = 0; i < srcBlendCount; i++)
+	for (GLuint i = 0; i < srcBlendCount; i++)
 	{
 		auto& srcBlend = srcBlends[i];
 		auto& destBlend = destBlends[i];

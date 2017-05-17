@@ -45,7 +45,7 @@ class EXPORT GraphicsDataDesc final
 {
 public:
 	GraphicsDataDesc() noexcept;
-	GraphicsDataDesc(GraphicsDataType type, GraphicsUsageFlags usage, const void* data, std::uint32_t size) noexcept;
+	GraphicsDataDesc(GraphicsDataType type, GraphicsUsageFlags usage, const void* data, std::size_t size) noexcept;
 	~GraphicsDataDesc() noexcept;
 
 	void setType(GraphicsDataType type) noexcept;
@@ -57,12 +57,12 @@ public:
 	void setStream(std::uint8_t* data) noexcept;
 	std::uint8_t* getStream() const noexcept;
 
-	void setStreamSize(std::uint32_t size) noexcept;
-	std::uint32_t getStreamSize() const noexcept;
+	void setStreamSize(std::size_t size) noexcept;
+	std::size_t getStreamSize() const noexcept;
 
 private:
 	std::uint8_t* _data;
-	std::uint32_t _dataSize;
+	std::size_t _dataSize;
 	GraphicsUsageFlags _usage;
 	GraphicsDataType _type;
 };

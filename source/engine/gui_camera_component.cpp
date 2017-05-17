@@ -35,9 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/gui_camera_component.h>
-#include <ray/imgui_system.h>
+
 #include <ray/game_server.h>
 #include <ray/camera_component.h>
+
+#include <ray/imgui.h>
+#include <ray/imgui_system.h>
 
 _NAME_BEGIN
 
@@ -86,11 +89,19 @@ GuiCameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
 void
 GuiCameraComponent::onPostRender(const Camera&) noexcept
 {
-	_guiMessage->getGui().newFrame();
-	GameServer::instance()->sendMessage(_guiMessage);
-	_guiMessage->getGui().render();
+	IMGUI::newFrame();
+
+	this->sendMessage(_guiMessage);
+
+	IMGUI::render();
 
 	IMGUISystem::instance()->render(GameServer::instance()->getTimer()->delta());
+}
+
+void 
+GuiCameraComponent::onMessage(const MessagePtr& message) noexcept
+{
+
 }
 
 _NAME_END

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,30 +34,15 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_message.h>
+#ifndef _H_GUI_SYSTEM_H_
+#define _H_GUI_SYSTEM_H_
+
+#include <ray/imgui.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(GuiMessage, Message, "GuiMessage")
-
-GuiMessage::GuiMessage() noexcept
-{
-}
-
-GuiMessage::~GuiMessage() noexcept
-{
-}
-
-Gui&
-GuiMessage::getGui() noexcept
-{
-	return _gui;
-}
-
-const Gui&
-GuiMessage::getGui() const noexcept
-{
-	return _gui;
-}
+using Gui = IMGUI;
 
 _NAME_END
+
+#endif

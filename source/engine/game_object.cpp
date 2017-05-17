@@ -834,6 +834,34 @@ GameObject::sendMessage(const MessagePtr& message) noexcept
 	}
 }
 
+void 
+GameObject::sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
+{
+	assert(message);
+
+	if (!this->getActive())
+		return;
+
+	for (auto& it : _components)
+	{
+		bool ignore = false;
+		for (std::size_t i = 0; i < n; i++)
+		{
+			if (ignores[i] == it.get())
+			{
+				ignore = true;
+				break;
+			}
+		}
+
+		if (!ignore)
+		{
+			if (it->getActive())
+				it->onMessage(message);
+		}
+	}
+}
+
 void
 GameObject::sendMessageUpwards(const MessagePtr& message) noexcept
 {
@@ -854,6 +882,38 @@ GameObject::sendMessageUpwards(const MessagePtr& message) noexcept
 }
 
 void
+GameObject::sendMessageUpwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
+{
+	assert(message);
+
+	if (!this->getActive())
+		return;
+
+	for (auto& it : _components)
+	{
+		bool ignore = false;
+		for (std::size_t i = 0; i < n; i++)
+		{
+			if (ignores[i] == it.get())
+			{
+				ignore = true;
+				break;
+			}
+		}
+
+		if (!ignore)
+		{
+			if (it->getActive())
+				it->onMessage(message);
+		}
+	}
+
+	auto parent = _parent.lock();
+	if (parent)
+		parent->sendMessageDownwards(message, ignores, n);
+}
+
+void
 GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 {
 	assert(message);
@@ -869,6 +929,37 @@ GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 
 	for (auto& it : _children)
 		it->sendMessageDownwards(message);
+}
+
+void
+GameObject::sendMessageDownwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
+{
+	assert(message);
+
+	if (!this->getActive())
+		return;
+
+	for (auto& it : _components)
+	{
+		bool ignore = false;
+		for (std::size_t i = 0; i < n; i++)
+		{
+			if (ignores[i] == it.get())
+			{
+				ignore = true;
+				break;
+			}
+		}
+
+		if (!ignore)
+		{
+			if (it->getActive())
+				it->onMessage(message);
+		}
+	}
+
+	for (auto& it : _children)
+		it->sendMessageDownwards(message, ignores, n);
 }
 
 void

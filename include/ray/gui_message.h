@@ -48,12 +48,6 @@ class EXPORT GuiMessage final : public Message
 public:
 	GuiMessage() noexcept;
 	~GuiMessage() noexcept;
-
-	Gui& getGui() noexcept;
-	const Gui& getGui() const noexcept;
-
-private:
-	Gui _gui;
 };
 
 _NAME_END

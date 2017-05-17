@@ -34,46 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_CAMERA_COMPONENT_H_
-#define _H_GUI_CAMERA_COMPONENT_H_
-
-#include <ray/game_component.h>
 #include <ray/gui_message.h>
 
 _NAME_BEGIN
 
-class EXPORT GuiCameraComponent : public GameComponent
+__ImplementSubClass(GuiMessage, Message, "GuiMessage")
+
+GuiMessage::GuiMessage() noexcept
 {
-	__DeclareSubClass(GuiCameraComponent, GameComponent)
-public:
-	GuiCameraComponent() noexcept;
-	virtual ~GuiCameraComponent() noexcept;
+}
 
-	GameComponentPtr clone() const noexcept;
-
-private:
-	virtual void onActivate() noexcept;
-	virtual void onDeactivate() noexcept;
-
-	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
-
-	virtual void onMessage(const MessagePtr& message) noexcept;
-
-	void onPostRender(const class Camera& camera) noexcept;
-
-private:
-	GuiCameraComponent(const GuiCameraComponent&) noexcept = delete;
-	GuiCameraComponent& operator=(const GuiCameraComponent&) noexcept = delete;
-
-private:
-
-	GameComponentPtr _mouseFocus;
-	GameComponentPtr _motionFocus;
-	std::shared_ptr<GuiMessage> _guiMessage;
-	std::function<void(const Camera&)> _onPostRender;
-};
+GuiMessage::~GuiMessage() noexcept
+{
+}
 
 _NAME_END
-
-#endif

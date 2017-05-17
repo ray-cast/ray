@@ -177,11 +177,28 @@ GameComponent::save(oarchive& write) noexcept
 void
 GameComponent::sendMessage(const MessagePtr& message) except
 {
-	auto& components = this->getGameObject()->getComponents();
-	for (auto& it : components)
+	auto parent = this->getGameObject()->getParent();
+	while (parent)
 	{
-		if (it.get() != this)
-			it->onMessage(message);
+		auto temp = parent->getParent();
+		if (!temp)
+			break;
+		else
+			parent = temp;
+	}
+
+	GameComponent* ignore[1] = { this } ;
+
+	if (parent)
+		parent->sendMessageDownwards(message, ignore, 1);
+	else
+	{
+		auto& components = this->getGameObject()->getComponents();
+		for (auto& it : components)
+		{
+			if (it.get() != this)
+				it->onMessage(message);
+		}
 	}
 }
 

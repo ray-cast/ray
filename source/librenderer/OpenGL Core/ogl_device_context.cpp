@@ -289,36 +289,59 @@ OGLDeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept
 void
 OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
-	assert(pipeline);
-	assert(pipeline->isInstanceOf<OGLPipeline>());
+	assert(!pipeline || pipeline && pipeline->isInstanceOf<OGLPipeline>());
 	assert(_glcontext->getActive());
 
-	auto glpipeline = pipeline->downcast_pointer<OGLPipeline>();
-	if (_pipeline != glpipeline)
+	if (pipeline)
 	{
-		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
-
-		auto glstate = pipelineDesc.getGraphicsState()->downcast_pointer<OGLGraphicsState>();
-		if (_state != glstate)
-		{
-			glstate->apply(_stateCaptured);
-			_state = glstate;
-		}
-
-		auto glprogram = pipelineDesc.getGraphicsProgram()->downcast_pointer<OGLProgram>();
-		if (_program != glprogram)
-		{
-			_program = glprogram;
-			_program->apply();
-		}
+		auto glpipeline = pipeline->downcast_pointer<OGLPipeline>();
 
 		if (_pipeline != glpipeline)
 		{
-			_pipeline = glpipeline;
-			_pipeline->apply();
-			_needUpdatePipeline = true;
+			auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
+
+			auto glstate = pipelineDesc.getGraphicsState()->downcast_pointer<OGLGraphicsState>();
+			if (_state != glstate)
+			{
+				glstate->apply(_stateCaptured);
+				_state = glstate;
+			}
+
+			auto glprogram = pipelineDesc.getGraphicsProgram()->downcast_pointer<OGLProgram>();
+			if (_program != glprogram)
+			{
+				_program = glprogram;
+				_program->apply();
+			}
+
+			if (_pipeline != glpipeline)
+			{
+				_pipeline = glpipeline;
+				_pipeline->apply();
+				_needUpdatePipeline = true;
+			}
 		}
 	}
+	else
+	{
+		if (_pipeline != pipeline)
+		{
+			if (_state != _stateDefault)
+			{
+				_stateDefault->apply(_stateCaptured);
+				_state = _stateDefault;
+			}
+
+			if (_program)
+			{
+				glUseProgram(GL_NONE);
+				_program = nullptr;
+			}
+
+			_pipeline = nullptr;
+		}
+	}
+
 }
 
 GraphicsPipelinePtr
@@ -440,12 +463,7 @@ OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 	else
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-
-		if (_state != _stateDefault)
-		{
-			_stateDefault->apply(_stateCaptured);
-			_state = _stateDefault;
-		}
+		this->setRenderPipeline(nullptr);
 
 		_framebuffer = nullptr;
 	}

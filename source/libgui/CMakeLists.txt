@@ -25,6 +25,7 @@ SET(GUI_LIST
     ${SOURCE_PATH}/gui_system.cpp
     ${HEADER_PATH}/gui_system.h
     ${HEADER_PATH}/gui_types.h
+    ${HEADER_PATH}/gui.h
 )
 SOURCE_GROUP("Common" FILES ${GUI_LIST})
 

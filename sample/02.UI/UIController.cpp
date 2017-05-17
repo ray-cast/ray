@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "UIController.h"
+#include <ray/gui.h>
 #include <ray/gui_message.h>
 #include <ray/game_server.h>
 
@@ -61,32 +62,30 @@ GuiControllerComponent::clone() const noexcept
 void
 GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 {
-	if (message->isInstanceOf<ray::GuiMessage>())
+	if (!message->isInstanceOf<ray::GuiMessage>())
+		return;
+
+	float delta = ray::GameServer::instance()->getTimer()->delta();
+	float fps = ray::GameServer::instance()->getTimer()->averageFps();
+
+	ray::Gui::text("hello, world!");
+	ray::Gui::sliderFloat("float", &_f, 0.0f, 1.0f);
+	ray::Gui::colorEdit3("clear color", (float*)&_clearColor);
+	if (ray::Gui::button("Test Window")) _showTestWindow ^= 1;
+	if (ray::Gui::button("Another Window")) _showAnotherWindow ^= 1;
+	ray::Gui::text("Application average %f ms/frame (%f FPS)", std::abs(delta), fps);
+
+	if (_showAnotherWindow)
 	{
-		float delta = ray::GameServer::instance()->getTimer()->delta();
-		float fps = ray::GameServer::instance()->getTimer()->averageFps();
+		ray::Gui::setNextWindowSize(ray::float2(200, 100), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+		ray::Gui::begin("Another Window", &_showAnotherWindow);
+		ray::Gui::text("Hello");
+		ray::Gui::end();
+	}
 
-		auto& Gui = message->downcast<ray::GuiMessage>()->getGui();
-
-		Gui.text("hello, world!");
-		Gui.sliderFloat("float", &_f, 0.0f, 1.0f);
-		Gui.colorEdit3("clear color", (float*)&_clearColor);
-		if (Gui.button("Test Window")) _showTestWindow ^= 1;
-		if (Gui.button("Another Window")) _showAnotherWindow ^= 1;
-		Gui.text("Application average %f ms/frame (%f FPS)", std::abs(delta), fps);
-
-		if (_showAnotherWindow)
-		{
-			Gui.setNextWindowSize(ray::float2(200, 100), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
-			Gui.begin("Another Window", &_showAnotherWindow);
-			Gui.text("Hello");
-			Gui.end();
-		}
-
-		if (_showTestWindow)
-		{
-			Gui.setNextWindowPos(ray::float2(650, 20), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
-			Gui.showTestWindow(&_showTestWindow);
-		}
+	if (_showTestWindow)
+	{
+		ray::Gui::setNextWindowPos(ray::float2(650, 20), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+		ray::Gui::showTestWindow(&_showTestWindow);
 	}
 }

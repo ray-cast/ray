@@ -103,7 +103,12 @@ GameApplication::open(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::ui
 		return false;
 
 	if (!rtti::Factory::instance()->open())
+	{
+		if (_gameListener)
+			_gameListener->onMessage("Could not initialize with RTTI");
+
 		return false;
+	}		
 
 	_ioInterface->open();
 
@@ -342,12 +347,6 @@ GameApplication::postInputEvent(const InputEvent& event) noexcept
 	if (_inputFeature)
 		return _inputFeature->downcast<InputFeature>()->postInputEvent(event);
 	return false;
-}
-
-void
-GameApplication::print(const std::string& message) noexcept
-{
-	std::cout << message;
 }
 
 void

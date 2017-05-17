@@ -39,6 +39,7 @@
 #include <ray/game_scene.h>
 #include <ray/game_event.h>
 #include <ray/game_component.h>
+#include <ray/game_listener.h>
 #include <ray/xmlreader.h>
 #include <ray/mstream.h>
 #include <ray/ioserver.h>
@@ -137,7 +138,8 @@ GameServer::start() noexcept
 	}
 	catch (const exception& e)
 	{
-		this->print(e.what());
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
 
 		_isQuitRequest = true;
 		return false;
@@ -181,15 +183,27 @@ GameServer::getTimer() const noexcept
 bool
 GameServer::openScene(const std::string& filename) noexcept
 {
-	StreamReaderPtr stream;
-	if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
-		return false;
+	assert(!filename.empty());
 
 	try
 	{
+		StreamReaderPtr stream;
+		if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
+		{
+			if (_gameListener)
+				_gameListener->onMessage("Failed to open file : " + filename);
+
+			return false;
+		}
+
 		XMLReader xml;
 		if (!xml.open(*stream))
+		{
+			if (_gameListener)
+				_gameListener->onMessage("Non readable Scene file : " + filename);
+
 			return false;
+		}
 
 		auto scene = std::make_shared<GameScene>();
 		scene->setGameListener(_gameListener);
@@ -200,7 +214,9 @@ GameServer::openScene(const std::string& filename) noexcept
 	}
 	catch (const exception& e)
 	{
-		this->print(e.what());
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
+
 		return false;
 	}
 }
@@ -224,9 +240,7 @@ GameServer::findScene(const std::string& sceneName) noexcept
 	for (auto& it : _scenes)
 	{
 		if (it->getName() == sceneName)
-		{
 			return it;
-		}
 	}
 
 	return nullptr;
@@ -257,7 +271,9 @@ GameServer::addScene(GameScenePtr& scene) noexcept
 	}
 	catch (const exception& e)
 	{
-		this->print(e.what());
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
+
 		return false;
 	}
 }
@@ -314,7 +330,9 @@ GameServer::addFeature(GameFeaturePtr& features) noexcept
 	}
 	catch (const exception& e)
 	{
-		this->print(e.what());
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
+
 		return false;
 	}
 }
@@ -397,7 +415,9 @@ GameServer::sendMessage(const MessagePtr& message) noexcept
 	}
 	catch (const exception& e)
 	{
-		this->print(e.what());
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
+
 		return false;
 	}
 }
@@ -407,12 +427,6 @@ GameServer::postMessage(const MessagePtr& event) noexcept
 {
 	_dispatcher.postMessage(event);
 	return true;
-}
-
-void 
-GameServer::print(const std::string& name) noexcept
-{
-	this->getGameApp()->print(name);
 }
 
 void
@@ -443,7 +457,8 @@ GameServer::update() noexcept
 	}
 	catch (const exception& e)
 	{
-		this->print(e.what());
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
 
 		_isQuitRequest = true;
 	}

@@ -90,8 +90,6 @@ public:
 	bool sendMessage(const MessagePtr& message) noexcept;
 	bool postMessage(const MessagePtr& message) noexcept;
 
-	void print(const std::string& name) noexcept;
-
 	void update() noexcept;
 
 private:

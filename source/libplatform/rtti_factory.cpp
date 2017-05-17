@@ -83,13 +83,21 @@ Factory::getRTTI(const char* name) noexcept
 const Rtti*
 Factory::getRTTI(const std::string& name) const noexcept
 {
-	return _rtti_lists[name];
+	auto it = _rtti_lists.lower_bound(name);
+	for (; it != _rtti_lists.end(); ++it)
+		if ((*it).first == name)
+			return (*it).second;
+	return nullptr;
 }
 
 const Rtti*
 Factory::getRTTI(const char* name) const noexcept
 {
-	return _rtti_lists[name];
+	auto it = _rtti_lists.lower_bound(name);
+	for (; it != _rtti_lists.end(); ++it)
+		if ((*it).first == name)
+			return (*it).second;
+	return nullptr;
 }
 
 InterfacePtr

@@ -88,8 +88,8 @@ namespace rtti
 		}
 
 	private:
-		mutable std::vector<Rtti*> _rttis;
-		mutable std::map<std::string, Rtti*> _rtti_lists;
+		std::vector<Rtti*> _rttis;
+		std::map<std::string, Rtti*> _rtti_lists;
 	};
 
 	template<typename T>

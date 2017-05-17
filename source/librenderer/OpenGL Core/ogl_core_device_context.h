@@ -124,6 +124,7 @@ private:
 	OGLCoreVertexBuffers _vertexBuffers;
 	OGLGraphicsStatePtr _state;
 
+	GraphicsStateDesc _stateDefault;
 	GraphicsStateDesc _stateCaptured;
 
 	bool _needUpdatePipeline;

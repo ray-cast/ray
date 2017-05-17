@@ -134,6 +134,7 @@ private:
 	OGLProgramPtr _program;
 	OGLSwapchainPtr _glcontext;
 	OGLGraphicsStatePtr _state;
+	OGLGraphicsStatePtr _stateDefault;
 
 	GraphicsStateDesc _stateCaptured;
 

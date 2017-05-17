@@ -479,11 +479,19 @@ void RAY_CALL rayTerminate() noexcept
 
 int main(int argc, const char* argv[]) noexcept
 {
-	if (argc != 0)
+	try
 	{
-		if (ray::fcntl::access(argv[0], 0) == 0)
-			_gameRootPath = ray::util::directory(argv[0]);
-	}
+		if (argc != 0)
+		{
+			if (ray::fcntl::access(argv[0], 0) == 0)
+				_gameRootPath = ray::util::directory(argv[0]);
+		}
 
-	return ray_main(argc, argv);
+		return ray_main(argc, argv);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what();
+		return 1;
+	}
 }

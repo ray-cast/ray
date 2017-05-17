@@ -70,7 +70,9 @@ ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 {
 	assert(pipeline.getCamera());
 
+	auto& v = pipeline.getCamera()->getPixelViewportDPI();
 	pipeline.setFramebuffer(pipeline.getCamera()->getFramebuffer());
+	pipeline.setViewport(0, Viewport(v.x, v.y, v.z, v.w));
 
 	if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
 		pipeline.clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);

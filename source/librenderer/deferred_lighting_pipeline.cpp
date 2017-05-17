@@ -1221,6 +1221,8 @@ DeferredLightingPipeline::setupMRSIITextures(RenderPipeline& pipeline) noexcept
 	VPLsBufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	VPLsBufferDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_mrsiiVPLsBufferMap = pipeline.createTexture(VPLsBufferDesc);
+	if (!_mrsiiVPLsBufferMap)
+		return false;
 
 	GraphicsTextureDesc depthDerivDesc;
 	depthDerivDesc.setWidth(width);
@@ -1317,6 +1319,8 @@ DeferredLightingPipeline::setupMRSIIRenderTextureLayouts(RenderPipeline& pipelin
 bool
 DeferredLightingPipeline::setupMRSIIRenderTextures(RenderPipeline& pipeline) noexcept
 {
+	assert(_mrsiiVPLsViewLayout);
+
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
@@ -1556,7 +1560,7 @@ DeferredLightingPipeline::onResolutionChange() noexcept
 	setupDeferredTextures(*_pipeline);
 	setupDeferredRenderTextures(*_pipeline);
 
-	if (_pipelineManager->getRenderSetting().enableGlobalIllumination)
+	if (_enabledMRSSI && _pipelineManager->getRenderSetting().enableGlobalIllumination)
 	{
 		destroyMRSIIRenderTextures();
 		destroyMRSIITextures();

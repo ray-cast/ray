@@ -427,6 +427,13 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 	else
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+		
+		if (_state)
+		{
+			_state->apply(_stateDefault);
+			_state = nullptr;
+		}
+
 		_framebuffer = nullptr;
 	}
 }

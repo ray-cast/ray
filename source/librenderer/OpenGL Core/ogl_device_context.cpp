@@ -69,6 +69,8 @@ OGLDeviceContext::OGLDeviceContext() noexcept
 	, _needEnableDebugControl(false)
 	, _needDisableDebugControl(false)
 {
+	_stateDefault = std::make_shared<OGLGraphicsState>();
+	_stateDefault->setup(GraphicsStateDesc());
 }
 
 OGLDeviceContext::~OGLDeviceContext() noexcept
@@ -438,6 +440,13 @@ OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 	else
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+
+		if (_state != _stateDefault)
+		{
+			_stateDefault->apply(_stateCaptured);
+			_state = _stateDefault;
+		}
+
 		_framebuffer = nullptr;
 	}
 }

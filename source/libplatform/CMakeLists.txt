@@ -18,8 +18,6 @@ SET(PLATFORM_CORE_LIST
     ${HEADER_PATH}/mutex.h
     ${HEADER_PATH}/platform.h
     ${HEADER_PATH}/queue.h
-    ${HEADER_PATH}/scope_ptr.h
-    ${HEADER_PATH}/shared_ptr.h
     ${HEADER_PATH}/singleton.h
     ${HEADER_PATH}/thread.h
     ${SOURCE_PATH}/thread.cpp

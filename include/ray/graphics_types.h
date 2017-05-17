@@ -37,7 +37,6 @@
 #ifndef _H_GRAPHICS_TYPES_H_
 #define _H_GRAPHICS_TYPES_H_
 
-#include <ray/memory.h>
 #include <ray/math.h>
 #include <ray/rtti.h>
 

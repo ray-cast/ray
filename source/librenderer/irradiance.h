@@ -56,7 +56,7 @@ public:
 
 private:
 	bool _buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[2], std::uint32_t order, std::uint32_t size) noexcept;
-	bool _paraboloidCoord(Vector3& vec, int face, const Vector2& uv) noexcept;
+	bool _paraboloidCoord(double3& vec, int face, const double2& uv) noexcept;
 
 private:
 	MaterialPtr _irradiance;

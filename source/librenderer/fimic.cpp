@@ -82,7 +82,7 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 	auto height = source->getGraphicsTextureDesc().getHeight();
 
 	_texSource->uniformTexture(source);
-	_texSourceSizeInv->uniform2f(1.0 / width, 1.0 / height);
+	_texSourceSizeInv->uniform2f(1.0f / width, 1.0f / height);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -96,7 +96,7 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 	auto height = source->getGraphicsTextureDesc().getHeight();
 
 	_texSource->uniformTexture(source);
-	_texSourceSizeInv->uniform2f(1.0 / width, 1.0 / height);
+	_texSourceSizeInv->uniform2f(1.0f / width, 1.0f / height);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -117,7 +117,7 @@ FimicToneMapping::avgLuminance(RenderPipeline& pipeline, GraphicsTexturePtr adap
 
 	_texLumAve->uniformTexture(adaptedLum);
 
-	_delta->uniform2f(1.0f - pow(0.98f, 50 * _timer->delta()), _timer->delta());
+	_delta->uniform2f(1.0f - pow(0.98f, 50.0f * _timer->delta()), _timer->delta());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(*_avgLuminance);

@@ -71,7 +71,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, int 
 		}
 	}
 
-	auto prop = make_scope<MaterialParam>();
+	auto prop = std::make_unique<MaterialParam>();
 	prop->key = key;
 	prop->type = type;
 	prop->index = index;
@@ -81,7 +81,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, int 
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -106,7 +106,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, floa
 		}
 	}
 
-	auto prop = make_scope<MaterialParam>();
+	auto prop = std::make_unique<MaterialParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -117,7 +117,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, floa
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -142,7 +142,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 		}
 	}
 
-	auto prop = make_scope<MaterialParam>();
+	auto prop = std::make_unique<MaterialParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -153,7 +153,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -178,7 +178,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 		}
 	}
 
-	auto prop = make_scope<MaterialParam>();
+	auto prop = std::make_unique<MaterialParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -189,7 +189,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -232,7 +232,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 		}
 	}
 
-	auto prop = make_scope<MaterialParam>();
+	auto prop = std::make_unique<MaterialParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -243,7 +243,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 
 	std::memcpy(prop->data, value.data(), prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }

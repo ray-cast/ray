@@ -37,8 +37,7 @@
 #ifndef _H_MEMORY_H_
 #define _H_MEMORY_H_
 
-#include <ray/scope_ptr.h>
-#include <ray/shared_ptr.h>
+#include <memory>
 
 namespace std
 {

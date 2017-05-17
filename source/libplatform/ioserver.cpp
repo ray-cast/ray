@@ -122,7 +122,7 @@ IoServer::getResolveAssign(const std::string& url, std::string& resolvePath) noe
 {
 	std::string result = url;
 
-	int index = url.find_first_of(":", 0);
+	std::size_t index = url.find_first_of(":", 0);
 	if (index > 1)
 	{
 		std::string path;

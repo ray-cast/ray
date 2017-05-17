@@ -71,7 +71,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, int val
 		}
 	}
 
-	auto prop = make_scope<SoundParam>();
+	auto prop = std::make_unique<SoundParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -82,7 +82,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, int val
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -107,7 +107,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, unsigne
 		}
 	}
 
-	auto prop = make_scope<SoundParam>();
+	auto prop = std::make_unique<SoundParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -118,7 +118,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, unsigne
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -143,7 +143,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, float v
 		}
 	}
 
-	auto prop = make_scope<SoundParam>();
+	auto prop = std::make_unique<SoundParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -154,7 +154,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, float v
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -179,7 +179,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, const f
 		}
 	}
 
-	auto prop = make_scope<SoundParam>();
+	auto prop = std::make_unique<SoundParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -190,7 +190,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, const f
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -215,7 +215,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, const f
 		}
 	}
 
-	auto prop = make_scope<SoundParam>();
+	auto prop = std::make_unique<SoundParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -226,7 +226,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, const f
 
 	std::memcpy(prop->data, &value, prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }
@@ -269,7 +269,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, const s
 		}
 	}
 
-	auto prop = make_scope<SoundParam>();
+	auto prop = std::make_unique<SoundParam>();
 
 	prop->key = key;
 	prop->type = type;
@@ -280,7 +280,7 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, const s
 
 	std::memcpy(prop->data, value.data(), prop->length);
 
-	_properties.push_back(prop.dismiss());
+	_properties.push_back(prop.release());
 
 	return true;
 }

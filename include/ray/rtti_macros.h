@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RTTI_MACRO_H_
-#define _H_RTTI_MACRO_H_
+#ifndef _H_RTTI_MACROS_H_
+#define _H_RTTI_MACROS_H_
 
 #include <ray/platform.h>
 

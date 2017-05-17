@@ -502,10 +502,10 @@ namespace math
 	inline SH<T, 4> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
 		SH<T, 4> sh;
-		sh.coeff[0] = 0.282095f;
-		sh.coeff[1] = 0.488603f * dir.y;
-		sh.coeff[2] = 0.488603f * dir.z;
-		sh.coeff[3] = 0.488603f * dir.x
+		sh.coeff[0] =  0.282095f;
+		sh.coeff[1] = -0.488603f * dir.y;
+		sh.coeff[2] =  0.488603f * dir.z;
+		sh.coeff[3] = -0.488603f * dir.x;
 
 		return sh;
 	}
@@ -514,15 +514,17 @@ namespace math
 	inline SH<T, 9> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
 		SH<T, 9> sh;
-		sh.coeff[0] = 0.282095f;
-		sh.coeff[1] = 0.488603f * dir.y;
-		sh.coeff[2] = 0.488603f * dir.z;
-		sh.coeff[3] = 0.488603f * dir.x;
-		sh.coeff[4] = 1.092548f * dir.x * dir.y;
-		sh.coeff[5] = 1.092548f * dir.y * dir.z;
-		sh.coeff[6] = 0.315392f * (3.0f * dir.z * dir.z - 1.0f);
-		sh.coeff[7] = 1.092548f * dir.x * dir.z;
-		sh.coeff[8] = 0.546274f * (dir.x * dir.x - dir.y * dir.y);
+		sh.coeff[0] =  0.282095f;
+		sh.coeff[1] = -0.488603f * dir.y;
+		sh.coeff[2] =  0.488603f * dir.z;
+		sh.coeff[3] = -0.488603f * dir.x;
+		sh.coeff[4] =  1.092548f * dir.x * dir.y;
+		sh.coeff[5] = -1.092548f * dir.y * dir.z;
+		sh.coeff[6] =  0.315392f * (3.0f * dir.z * dir.z - 1.0f);
+		sh.coeff[7] = -1.092548f * dir.x * dir.z;
+		sh.coeff[6] =  0.315392f * (3.0f * dir.z * dir.z - 1.0f);
+		sh.coeff[7] =  1.092548f * dir.x * dir.z;
+		sh.coeff[8] =  0.546274f * (dir.x * dir.x - dir.y * dir.y);
 
 		return sh;
 	}
@@ -531,22 +533,22 @@ namespace math
 	inline SH<T, 16> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
 		SH<T, 16> sh;
-		sh.coeff[0] = 0.282095f;
-		sh.coeff[1] = 0.488603f * dir.y;
-		sh.coeff[2] = 0.488603f * dir.z;
-		sh.coeff[3] = 0.488603f * dir.x;
-		sh.coeff[4] = 1.092548f * dir.x * dir.y;
-		sh.coeff[5] = 1.092548f * dir.y * dir.z;
-		sh.coeff[6] = 0.315392f * (3.0f * dir.z * dir.z - 1.0f);
-		sh.coeff[7] = 1.092548f * dir.x * dir.z;
-		sh.coeff[8] = 0.546274f * (dir.x * dir.x - dir.y * dir.y);
-		sh.coeff[9] =  -sqrt(70.0f  / M_PI) / 8.0f * dir->y * (3.0f * dir->x * dir->x - dir->y * dir->y);
-		sh.coeff[10] =  sqrt(105.0f / M_PI) / 2.0f * dir->x * dir->y * dir->z;
-		sh.coeff[11] = -sqrt(42.0   / M_PI) / 8.0f * dir->y * (-1.0f + 5.0f * dir->z * dir->z);
-		sh.coeff[12] =  sqrt(7.0f   / M_PI) / 4.0f * dir->z * (5.0f * dir->z * dir->z - 3.0f);
-		sh.coeff[13] =  sqrt(42.0   / M_PI) / 8.0f * dir->x * (1.0f - 5.0f * dir->z * dir->z);
-		sh.coeff[14] =  sqrt(105.0f / M_PI) / 4.0f * dir->z * (dir->x * dir->x - dir->y * dir->y);
-		sh.coeff[15] = -sqrt(70.0f  / M_PI) / 8.0f * dir->x * (dir->x * dir->x - 3.0f * dir->y * dir->y);
+		sh.coeff[0]  =  0.282095f;
+		sh.coeff[1]  = -0.488603f * dir.y;
+		sh.coeff[2]  =  0.488603f * dir.z;
+		sh.coeff[3]  = -0.488603f * dir.x;
+		sh.coeff[4]  =  1.092548f * dir.x * dir.y;
+		sh.coeff[5]  = -1.092548f * dir.y * dir.z;
+		sh.coeff[6]  =  0.315392f * (3.0f * dir.z * dir.z - 1.0f);
+		sh.coeff[7]  = -1.092548f * dir.x * dir.z;
+		sh.coeff[8]  =  0.546274f * (dir.x * dir.x - dir.y * dir.y);
+		sh.coeff[9]  = -0.590044f * dir->y * (3.0f * dir->x * dir->x - dir->y * dir->y);
+		sh.coeff[10] =  2.890610f * dir->x * dir->y * dir->z;
+		sh.coeff[11] = -0.457046f * dir->y * (-1.0f + 5.0f * dir->z * dir->z);
+		sh.coeff[12] =  0.373176f * dir->z * (5.0f * dir->z * dir->z - 3.0f);
+		sh.coeff[13] =  0.457046f * dir->x * (1.0f - 5.0f * dir->z * dir->z);
+		sh.coeff[14] =  1.445310f * dir->z * (dir->x * dir->x - dir->y * dir->y);
+		sh.coeff[15] = -0.590044f * dir->x * (dir->x * dir->x - 3.0f * dir->y * dir->y);
 	
 		return sh;
 	}
@@ -580,21 +582,21 @@ namespace math
 		sh.coeff[7] = -std::sqrt(15.0 / (M_PI * 4)) * x * z;
 		sh.coeff[8] =  std::sqrt(15.0 / (M_PI * 16))* (x2 - y2);
 
-		sh.coeff[9]  = -std::sqrt(70.0 / PI64) * y * (3 * x2 - y2);
+		sh.coeff[9]  = -std::sqrt(70.0  / PI64) * y * (3 * x2 - y2);
 		sh.coeff[10] =  std::sqrt(105.0 / (M_PI * 4))*y*x*z;
-		sh.coeff[11] = -std::sqrt(21.0 / (M_PI * 16))*y*(-1.0 + 5.0*z2);
-		sh.coeff[12] =  std::sqrt(7.0 / (M_PI * 16))*(5.0*z3 - 3.0*z);
-		sh.coeff[13] = -std::sqrt(42.0 / PI64)*x*(-1.0 + 5.0*z2);
+		sh.coeff[11] = -std::sqrt(21.0  / (M_PI * 16))*y*(-1.0 + 5.0*z2);
+		sh.coeff[12] =  std::sqrt(7.0   / (M_PI * 16))*(5.0*z3 - 3.0*z);
+		sh.coeff[13] = -std::sqrt(42.0  / PI64)*x*(-1.0 + 5.0*z2);
 		sh.coeff[14] =  std::sqrt(105.0 / (M_PI * 16))*(x2 - y2)*z;
-		sh.coeff[15] = -std::sqrt(70.0 / PI64)*x*(x2 - 3.0*y2);
+		sh.coeff[15] = -std::sqrt(70.0  / PI64)*x*(x2 - 3.0*y2);
 
 		sh.coeff[16] =  3.0 * std::sqrt(35.0 / (M_PI * 16))*x*y*(x2 - y2);
 		sh.coeff[17] = -3.0 * std::sqrt(70.0 / PI64)*y*z*(3.0*x2 - y2);
-		sh.coeff[18] =  3.0 * std::sqrt(5.0 / (M_PI * 16))*y*x*(-1.0 + 7.0*z2);
+		sh.coeff[18] =  3.0 * std::sqrt(5.0  / (M_PI * 16))*y*x*(-1.0 + 7.0*z2);
 		sh.coeff[19] = -3.0 * std::sqrt(10.0 / PI64)*y*z*(-3.0 + 7.0*z2);
 		sh.coeff[20] =  (105.0*z4 - 90.0*z2 + 9.0) / (16.0 * std::sqrt(M_PI));
 		sh.coeff[21] = -3.0 * std::sqrt(10.0 / PI64)*x*z*(-3.0 + 7.0*z2);
-		sh.coeff[22] =  3.0 * std::sqrt(5.0 / PI64)*(x2 - y2)*(-1.0 + 7.0*z2);
+		sh.coeff[22] =  3.0 * std::sqrt(5.0  / PI64)*(x2 - y2)*(-1.0 + 7.0*z2);
 		sh.coeff[23] = -3.0 * std::sqrt(70.0 / PI64)*x*z*(x2 - 3.0*y2);
 		sh.coeff[24] =  3.0 * std::sqrt(35.0 / (4.0*PI64))*(x4 - 6.0*y2*x2 + y4);
 	}
@@ -602,41 +604,41 @@ namespace math
 	template<std::size_t N, typename T, typename = std::enable_if_t<N == 36>>
 	inline SH<T, 36> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
-		sh.coeff[0]  =  0.5f / std::sqrt(M_PI);
-		sh.coeff[1]  = -0.5f / std::sqrt(M_PI / 3.0f) * dir->y;
-		sh.coeff[2]  =  0.5f / std::sqrt(M_PI / 3.0f) * dir->z;
-		sh.coeff[3]  = -0.5f / std::sqrt(M_PI / 3.0f) * dir->x;
-		sh.coeff[4]  =  0.5f / std::sqrt(M_PI / 15.0f) * dir->x * dir->y;
-		sh.coeff[5]  = -0.5f / std::sqrt(M_PI / 15.0f) * dir->y * dir->z;
-		sh.coeff[6]  =  0.25f / std::sqrt(M_PI / 5.0f) * (3.0f * dir->z * dir->z - 1.0f);
-		sh.coeff[7]  = -0.5f / std::sqrt(M_PI / 15.0f) * dir->x * dir->z;
+		sh.coeff[0]  =  0.5f  / std::sqrt(M_PI);
+		sh.coeff[1]  = -0.5f  / std::sqrt(M_PI / 3.0f) * dir->y;
+		sh.coeff[2]  =  0.5f  / std::sqrt(M_PI / 3.0f) * dir->z;
+		sh.coeff[3]  = -0.5f  / std::sqrt(M_PI / 3.0f) * dir->x;
+		sh.coeff[4]  =  0.5f  / std::sqrt(M_PI / 15.0f) * dir->x * dir->y;
+		sh.coeff[5]  = -0.5f  / std::sqrt(M_PI / 15.0f) * dir->y * dir->z;
+		sh.coeff[6]  =  0.25f / std::sqrt(M_PI / 5.0f)  * (3.0f * dir->z * dir->z - 1.0f);
+		sh.coeff[7]  = -0.5f  / std::sqrt(M_PI / 15.0f) * dir->x * dir->z;
 		sh.coeff[8]  =  0.25f / std::sqrt(M_PI / 15.0f) * (dir->x * dir->x - dir->y * dir->y);
-		sh.coeff[9]  = -std::sqrt(70.0f / M_PI) / 8.0f * dir->y * (3.0f * dir->x * dir->x - dir->y * dir->y);
+		sh.coeff[9]  = -std::sqrt(70.0f  / M_PI) / 8.0f * dir->y * (3.0f * dir->x * dir->x - dir->y * dir->y);
 		sh.coeff[10] =  std::sqrt(105.0f / M_PI) / 2.0f * dir->x * dir->y * dir->z;
-		sh.coeff[11] = -std::sqrt(42.0 / M_PI) / 8.0f * dir->y * (-1.0f + 5.0f * dir->z * dir->z);
-		sh.coeff[12] =  std::sqrt(7.0f / M_PI) / 4.0f * dir->z * dir->z * dir->z * 5.0f - 3.0f * dir->z;
-		sh.coeff[13] =  std::sqrt(42.0 / M_PI) / 8.0f * dir->x * (1.0f - 5.0f * dir->z * dir->z);
+		sh.coeff[11] = -std::sqrt(42.0   / M_PI) / 8.0f * dir->y * (-1.0f + 5.0f * dir->z * dir->z);
+		sh.coeff[12] =  std::sqrt(7.0f   / M_PI) / 4.0f * dir->z * dir->z * dir->z * 5.0f - 3.0f * dir->z;
+		sh.coeff[13] =  std::sqrt(42.0   / M_PI) / 8.0f * dir->x * (1.0f - 5.0f * dir->z * dir->z);
 		sh.coeff[14] =  std::sqrt(105.0f / M_PI) / 4.0f * dir->z * (dir->x * dir->x - dir->y * dir->y);
-		sh.coeff[15] = -std::sqrt(70.0f / M_PI) / 8.0f * dir->x * (dir->x * dir->x - 3.0f * dir->y * dir->y);
-		sh.coeff[16] = 0.75f * std::sqrt(35.0f / M_PI) * dir->x * dir->y * (dir->x * dir->x - dir->y * dir->y);
-		sh.coeff[17] = 3.0f * dir->z * sh.coeff[9];
-		sh.coeff[18] = 0.75f * std::sqrt(5.0f / M_PI) * dir->x * dir->y * (7.0f * dir->z * dir->z - 1.0f);
-		sh.coeff[19] = 0.375f * std::sqrt(10.0f / M_PI) * dir->y * dir->z * (3.0f - 7.0f * dir->z * dir->z);
-		sh.coeff[20] = 3.0f / (16.0f * std::sqrt(M_PI)) * (35.0f * dir->z * dir->z * dir->z * dir->z - 30.f * dir->z * dir->z + 3.0f);
-		sh.coeff[21] = 0.375f * std::sqrt(10.0f / M_PI) * dir->x * dir->z * (3.0f - 7.0f * dir->z * dir->z);
-		sh.coeff[22] = 0.375f * std::sqrt(5.0f / M_PI) * (dir->x * dir->x - dir->y * dir->y) * (7.0f * dir->z * dir->z - 1.0f);
-		sh.coeff[23] = 3.0 * dir->z * sh.coeff[15];
-		sh.coeff[24] = 3.0f / 16.0f * std::sqrt(35.0f / M_PI) * (dir->x * dir->x * dir->x * dir->x - 6.0f * dir->x * dir->x * dir->y * dir->y + dir->y * dir->y * dir->y * dir->y);
-		sh.coeff[25] = -3.0f / 32.0f * std::sqrt(154.0f / M_PI) * dir->y * (5.0f * dir->x * dir->x * dir->x * dir->x - 10.0f * dir->x * dir->x * dir->y * dir->y + dir->y * dir->y * dir->y * dir->y);
-		sh.coeff[26] = 0.75f * std::sqrt(385.0f / M_PI) * dir->x * dir->y * dir->z * (dir->x * dir->x - dir->y * dir->y);
-		sh.coeff[27] = std::sqrt(770.0f / M_PI) / 32.0f * dir->y * (3.0f * dir->x * dir->x - dir->y * dir->y) * (1.0f - 9.0f * dir->z * dir->z);
-		sh.coeff[28] = std::sqrt(1155.0f / M_PI) / 4.0f * dir->x * dir->y * dir->z * (3.0f * dir->z * dir->z - 1.0f);
-		sh.coeff[29] = std::sqrt(165.0f / M_PI) / 16.0f * dir->y * (14.0f * dir->z * dir->z - 21.0f * dir->z * dir->z * dir->z * dir->z - 1.0f);
-		sh.coeff[30] = std::sqrt(11.0f / M_PI) / 16.0f * dir->z * (63.0f * dir->z * dir->z * dir->z * dir->z - 70.0f * dir->z * dir->z + 15.0f);
-		sh.coeff[31] = std::sqrt(165.0f / M_PI) / 16.0f * dir->x * (14.0f * dir->z * dir->z - 21.0f * dir->z * dir->z * dir->z * dir->z - 1.0f);
-		sh.coeff[32] = std::sqrt(1155.0f / M_PI) / 8.0f * dir->z * (dir->x * dir->x - dir->y * dir->y) * (3.0f * dir->z * dir->z - 1.0f);
-		sh.coeff[33] = std::sqrt(770.0f / M_PI) / 32.0f * dir->x * (dir->x * dir->x - 3.0f * dir->y * dir->y) * (1.0f - 9.0f * dir->z * dir->z);
-		sh.coeff[34] = 3.0f / 16.0f * std::sqrt(385.0f / M_PI) * dir->z * (dir->x * dir->x * dir->x * dir->x - 6.0 * dir->x * dir->x * dir->y * dir->y + dir->y * dir->y * dir->y * dir->y);
+		sh.coeff[15] = -std::sqrt(70.0f  / M_PI) / 8.0f * dir->x * (dir->x * dir->x - 3.0f * dir->y * dir->y);
+		sh.coeff[16] =  std::sqrt(35.0f  / M_PI) * dir->x * dir->y * (dir->x * dir->x - dir->y * dir->y) * 0.75;
+		sh.coeff[17] =  3.0f * dir->z * sh.coeff[9];
+		sh.coeff[18] =  std::sqrt(5.0f   / M_PI) * dir->x * dir->y * (7.0f * dir->z * dir->z - 1.0f) * 0.75;
+		sh.coeff[19] =  std::sqrt(10.0f  / M_PI) * dir->y * dir->z * (3.0f - 7.0f * dir->z * dir->z) * 0.375f;
+		sh.coeff[20] =  3.0f / (16.0f * std::sqrt(M_PI)) * (35.0f * dir->z * dir->z * dir->z * dir->z - 30.f * dir->z * dir->z + 3.0f);
+		sh.coeff[21] =  std::sqrt(10.0f  / M_PI) * dir->x * dir->z * (3.0f - 7.0f * dir->z * dir->z) * 0.375f;
+		sh.coeff[22] =  std::sqrt(5.0f   / M_PI) * (dir->x * dir->x - dir->y * dir->y) * (7.0f * dir->z * dir->z - 1.0f) * 0.375f;
+		sh.coeff[23] =  3.0 * dir->z * sh.coeff[15];
+		sh.coeff[24] =  std::sqrt(35.0f   / M_PI) * (dir->x * dir->x * dir->x * dir->x - 6.0f * dir->x * dir->x * dir->y * dir->y + dir->y * dir->y * dir->y * dir->y) * 3.0f / 16.0f;
+		sh.coeff[25] = -std::sqrt(154.0f  / M_PI) * dir->y * (5.0f * dir->x * dir->x * dir->x * dir->x - 10.0f * dir->x * dir->x * dir->y * dir->y + dir->y * dir->y * dir->y * dir->y) * 3.0f / 32.0f;
+		sh.coeff[26] =  std::sqrt(385.0f  / M_PI) * dir->x * dir->y * dir->z * (dir->x * dir->x - dir->y * dir->y) * 0.75f;
+		sh.coeff[27] =  std::sqrt(770.0f  / M_PI) / 32.0f * dir->y * (3.0f * dir->x * dir->x - dir->y * dir->y) * (1.0f - 9.0f * dir->z * dir->z);
+		sh.coeff[28] =  std::sqrt(1155.0f / M_PI) / 4.0f * dir->x * dir->y * dir->z * (3.0f * dir->z * dir->z - 1.0f);
+		sh.coeff[29] =  std::sqrt(165.0f  / M_PI) / 16.0f * dir->y * (14.0f * dir->z * dir->z - 21.0f * dir->z * dir->z * dir->z * dir->z - 1.0f);
+		sh.coeff[30] =  std::sqrt(11.0f   / M_PI) / 16.0f * dir->z * (63.0f * dir->z * dir->z * dir->z * dir->z - 70.0f * dir->z * dir->z + 15.0f);
+		sh.coeff[31] =  std::sqrt(165.0f  / M_PI) / 16.0f * dir->x * (14.0f * dir->z * dir->z - 21.0f * dir->z * dir->z * dir->z * dir->z - 1.0f);
+		sh.coeff[32] =  std::sqrt(1155.0f / M_PI) / 8.0f * dir->z * (dir->x * dir->x - dir->y * dir->y) * (3.0f * dir->z * dir->z - 1.0f);
+		sh.coeff[33] =  std::sqrt(770.0f  / M_PI) / 32.0f * dir->x * (dir->x * dir->x - 3.0f * dir->y * dir->y) * (1.0f - 9.0f * dir->z * dir->z);
+		sh.coeff[34] =  3.0f / 16.0f * std::sqrt(385.0f / M_PI) * dir->z * (dir->x * dir->x * dir->x * dir->x - 6.0 * dir->x * dir->x * dir->y * dir->y + dir->y * dir->y * dir->y * dir->y);
 		sh.coeff[35] = -3.0f / 32.0f * std::sqrt(154.0f / M_PI) * dir->x * (dir->x * dir->x * dir->x * dir->x - 10.0f * dir->x * dir->x * dir->y * dir->y + 5.0f * dir->y * dir->y * dir->y * dir->y);
 	}
 
@@ -644,10 +646,10 @@ namespace math
 	inline SH<T, 4> ProjectOntoH4(const Vector3t<T>& dir) noexcept
 	{
 		SH<T, 4> result;
-		result[0] = (1.0f / std::sqrt(2.0f * 3.14159f));
-		result[1] = std::sqrt(1.5f / 3.14159f) * dir.y;
-		result[2] = std::sqrt(1.5f / 3.14159f) * (2 * dir.z - 1.0f);
-		result[3] = std::sqrt(1.5f / 3.14159f) * dir.x;
+		result[0] = (1.0f / std::sqrt(2.0f * M_PI));
+		result[1] = std::sqrt(1.5f / M_PI) * dir.y;
+		result[2] = std::sqrt(1.5f / M_PI) * (2 * dir.z - 1.0f);
+		result[3] = std::sqrt(1.5f / M_PI) * dir.x;
 
 		return result;
 	}

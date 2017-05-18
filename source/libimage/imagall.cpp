@@ -54,6 +54,9 @@
 #if _BUILD_TGA_HANDLER
 #include "imagtga.h"
 #endif
+#if _BUILD_HDR_HANDLER
+#include "imaghdr.h"
+#endif
 
 _NAME_BEGIN
 
@@ -66,14 +69,17 @@ std::shared_ptr<ImageHandler> bmp = std::make_shared<BMPHandler>();
 #if _BUILD_DDS_HANDLER
 std::shared_ptr<ImageHandler> dds = std::make_shared<DDSHandler>();
 #endif
-#if _BUILD_JPEG_HANDLER
-std::shared_ptr<ImageHandler> jpeg = std::make_shared<JPEGHandler>();
-#endif
 #if _BUILD_PNG_HANDLER
 std::shared_ptr<ImageHandler> png = std::make_shared<PNGHandler>();
 #endif
+#if _BUILD_JPEG_HANDLER
+std::shared_ptr<ImageHandler> jpeg = std::make_shared<JPEGHandler>();
+#endif
 #if _BUILD_TGA_HANDLER
 std::shared_ptr<ImageHandler> tga = std::make_shared<TGAHandler>();
+#endif
+#if _BUILD_HDR_HANDLER
+std::shared_ptr<ImageHandler> hdr = std::make_shared<HDRHandler>();
 #endif
 
 std::vector<ImageHandlerPtr> _handlers = {
@@ -91,6 +97,9 @@ std::vector<ImageHandlerPtr> _handlers = {
 #endif
 #if _BUILD_DDS_HANDLER
 	dds,
+#endif
+#if _BUILD_HDR_HANDLER
+	hdr,
 #endif
 };
 

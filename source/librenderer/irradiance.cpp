@@ -217,17 +217,15 @@ EnvironmentIrradiance::_buildDualParaboloidWeightTextures(RenderPipeline& pipeli
 	double sum_d_omega = 0.f;
 	d_omega = new double[size * size];
 
-	std::size_t s, t;
-	//  paraboloids are symmetrical, so compute total diff. solid angle for one half, and double it.
-	for (t = 0; t < size; t++)
+	for (std::size_t t = 0; t < size; t++)
 	{
-		for (s = 0; s < size; s++)
+		for (std::size_t s = 0; s < size; s++)
 		{
 			double x = ((s + 0.5) / double(size))*2. - 1.;
 			double y = ((t + 0.5) / double(size))*2. - 1.;
 			double r_sqr = x*x + y*y;
 
-			int index = t*size + s;
+			std::size_t index = t*size + s;
 			if (r_sqr > 1.)  // only count points inside the circle
 			{
 				d_omega[index] = 0.;
@@ -248,15 +246,15 @@ EnvironmentIrradiance::_buildDualParaboloidWeightTextures(RenderPipeline& pipeli
 
 	double d_omega_scale = 4.*M_PI / (2.f*sum_d_omega);
 
-	for (int face = 0; face < 2; face++)
+	for (std::uint8_t face = 0; face < 2; face++)
 	{
 		float *coefficients;
 		coefficients = new float[size * size * size * size];
 		std::memset(coefficients, 0, size*size*size*size*sizeof(float));
 
-		for (t = 0; t < size; t++)
+		for (std::size_t t = 0; t < size; t++)
 		{
-			for (s = 0; s < size; s++)
+			for (std::size_t s = 0; s < size; s++)
 			{
 				double sd = ((s + 0.5) / double(size))*2.0 - 1.0;
 				double td = ((t + 0.5) / double(size))*2.0 - 1.0;
@@ -270,17 +268,18 @@ EnvironmentIrradiance::_buildDualParaboloidWeightTextures(RenderPipeline& pipeli
 				
 				auto sh = math::ProjectOntoSH<NUM_ORDER * NUM_ORDER, double>(parabVec);
 
-				int basis = 0;
-				int index = t*size + s;
+				std::size_t basis = 0;
+				std::size_t index = t * size + s;
+
 				for (int l = 0; l < (int)order; l++)
 				{
 					for (int m = -l; m <= l; m++, basis++)
 					{
-						int tiley = basis / order;
-						int tilex = basis % order;
+						std::size_t tiley = basis / order;
+						std::size_t tilex = basis % order;
 						double Ylm = sh[l*(l + 1) + m];
 
-						int offset = ((tiley*size + t)*size*nSize) + tilex*size + s;
+						std::size_t offset = ((tiley*size + t)*size*nSize) + tilex*size + s;
 						float weight = (float)(Ylm * d_omega[index] * d_omega_scale);
 						coefficients[offset] = weight;
 					}

@@ -157,9 +157,7 @@ JPEGHandler::doCanRead(StreamReader& stream) const noexcept
 	std::uint8_t hdr[sizeof(magic)];
 
 	if (stream.read((char*)hdr, sizeof(hdr)))
-	{
 		return std::memcmp(hdr, magic, sizeof(magic)) == 0;
-	}
 
 	return false;
 }

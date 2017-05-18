@@ -664,7 +664,7 @@ namespace math
 		dirSH.coeff[3] *= CosineA1;
 
 		SH<T, 4> result;
-		for (SH<T, 4>::size_t i = 0; i < 4; ++i)
+		for (std::uint8_t i = 0; i < 4; ++i)
 			result += dirSH.coeff[i] * sh.coeff[i];
 
 		return result;
@@ -685,7 +685,7 @@ namespace math
 		dirSH.coeff[8] *= CosineA2;
 
 		Vector3t<T> result;
-		for (SH<T, 4>::size_t i = 0; i < 9; ++i)
+		for (std::uint8_t i = 0; i < 9; ++i)
 			result += dirSH.coeff[i] * sh.coeff[i];
 
 		return result;
@@ -715,11 +715,10 @@ namespace math
 
 		SH<T, 4> hBasis;
 
-		for (std::size_t row = 0; row < 4; ++row)
+		for (std::uint8_t row = 0; row < 4; ++row)
 		{
 			hBasis.coeff[row] = 0.0f;
-
-			for (std::size_t col = 0; col < 9; ++col)
+			for (std::uint8_t col = 0; col < 9; ++col)
 				hBasis.coeff[row] += convMatrix[row][col] * sh.coeff[col];
 		}
 
@@ -745,11 +744,10 @@ namespace math
 
 		SH<T, 6> hBasis;
 
-		for (SH<T, 4>::size_t row = 0; row < 6; ++row)
+		for (std::uint8_t row = 0; row < 6; ++row)
 		{
 			hBasis.coeff[row] = 0.0f;
-
-			for (SH<T, 4>::size_t col = 0; col < 9; ++col)
+			for (std::uint8_t col = 0; col < 9; ++col)
 				hBasis.coeff[row] += convMatrix[row][col] * sh.coeff[col];
 		}
 
@@ -773,11 +771,10 @@ namespace math
 
 		SH<Vector3t<T>, 4> hBasis;
 
-		for (std::size_t row = 0; row < 4; ++row)
+		for (std::uint8_t row = 0; row < 4; ++row)
 		{
 			hBasis.coeff[row].set(0.0f);
-
-			for (std::size_t col = 0; col < 9; ++col)
+			for (std::uint8_t col = 0; col < 9; ++col)
 				hBasis.coeff[row] += convMatrix[row][col] * sh.coeff[col];
 		}
 
@@ -803,11 +800,10 @@ namespace math
 
 		SH<Vector3t<T>, 6> hBasis;
 
-		for (std::size_t row = 0; row < 6; ++row)
+		for (std::uint8_t row = 0; row < 6; ++row)
 		{
 			hBasis.coeff[row].set(0.0f);
-
-			for (std::size_t col = 0; col < 9; ++col)
+			for (std::uint8_t col = 0; col < 9; ++col)
 				hBasis.coeff[row] += convMatrix[row][col] * sh.coeff[col];
 		}
 
@@ -889,7 +885,7 @@ namespace math
 	}
 
 	template<std::size_t N, typename T, std::size_t face, std::enable_if_t<(N == 6 || N == 9 || N == 25) && face >= 0 && face < 6, int> = 0>
-	SH<Vector3t<T>, N> CalcCubefaceToSH(std::uint32_t w, std::uint32_t h, Vector3t<T>* data, T& weights) noexcept
+	SH<Vector3t<T>, N> CalcCubefaceToSH(std::uint32_t w, std::uint32_t h, float* data, std::uint8_t channel, T& weights) noexcept
 	{
 		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
 
@@ -897,7 +893,7 @@ namespace math
 		{
 			for (std::uint32_t x = 0; x < w; ++x)
 			{
-				const auto& sample = data[face * (w * h) + w * y + x];
+				const auto& sample = (Vector3t<T>&)data[(1 + face) * w * y * channel + x * channel];
 
 				T u = (x + T(0.5f)) / w;
 				T v = (y + T(0.5f)) / h;
@@ -923,17 +919,17 @@ namespace math
 	}
 
 	template<std::size_t N = 9, typename T = float, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
-	SH<Vector3t<T>, N> CalcCubemapToSH(std::uint32_t w, std::uint32_t h, Vector3t<T>* data) noexcept
+	SH<Vector3t<T>, N> CalcCubemapToSH(std::uint32_t w, std::uint32_t h, T* data, std::uint8_t channel = 3) noexcept
 	{
 		T weightSum(0.0);
 
 		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
-		result += CalcCubefaceToSH<T, N, 0>(w, h, data, weightSum);
-		result += CalcCubefaceToSH<T, N, 1>(w, h, data, weightSum);
-		result += CalcCubefaceToSH<T, N, 2>(w, h, data, weightSum);
-		result += CalcCubefaceToSH<T, N, 3>(w, h, data, weightSum);
-		result += CalcCubefaceToSH<T, N, 4>(w, h, data, weightSum);
-		result += CalcCubefaceToSH<T, N, 5>(w, h, data, weightSum);
+		result += CalcCubefaceToSH<N, T, 0>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, 1>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, 2>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, 3>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, 4>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, 5>(w, h, data, channel, weightSum);
 
 		return result * T(4.0f * M_PI) / weightSum;
 	}
@@ -950,7 +946,7 @@ namespace math
 				auto basis = ProjectOntoSH<N, T>(CalcCubeNormal<face, T>(x, y, w, h));
 				Vector3t<T> color = shColor.coeff[0] * basis[0];
 
-				std::size_t n = 1;
+				std::uint8_t n = 1;
 				for (; n < 4; ++n)
 					color += shColor.coeff[n] * basis[n] * (2.0f / 3.0f);
 
@@ -974,7 +970,7 @@ namespace math
 				auto basis = ProjectOntoSH<N, T>(CalcCubeNormal<face, T>(x, y, w, h));
 				Vector3t<T> color = shColor.coeff[0] * basis[0];
 
-				std::size_t n = 1;
+				std::uint8_t n = 1;
 				for (; n < 4; ++n)
 					color += shColor.coeff[n] * basis[n] * (2.0f / 3.0f);
 

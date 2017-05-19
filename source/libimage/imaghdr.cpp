@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include "imaghdr.h"
 #include <ray/imagutil.h>
-#include <ray/format.h>
 
 _NAME_BEGIN
 

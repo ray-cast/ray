@@ -55,6 +55,8 @@
 #include <ray/image.h>
 #include <ray/imagutil.h>
 
+#include <ray/SH.h>
+
 struct AppParams
 {
 	std::uint32_t chart;
@@ -329,6 +331,11 @@ bool domain_main(int argc, char** argv)
 {
 	try
 	{
+		ray::image::Image image;
+		image.load("C:/Users/ray/Desktop/uffizi/skybox.hdr", "hdr");
+		image.save("C:/Users/ray/Desktop/skybox.hdr", "hdr");
+		return true;
+
 		if (argc != 0)
 		{
 			if (ray::fcntl::access(argv[0], 0) == 0)

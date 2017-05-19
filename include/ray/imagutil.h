@@ -72,7 +72,7 @@ namespace image
 
 	template<typename _Tx, typename _Ty, typename = std::enable_if_t<std::is_floating_point<_Tx>::value>>
 	std::enable_if_t<std::is_floating_point<_Ty>::value, void> 
-	RGBTEncode(_Tx r, _Tx g, _Tx b, _Ty encode[4], _Tx range = 1024) noexcept
+	RGBT_encode(_Tx r, _Tx g, _Tx b, _Ty encode[4], _Tx range = 1024) noexcept
 	{
 		static_assert(std::numeric_limits<_Ty>::max() <= std::numeric_limits<_Tx>::max());
 
@@ -93,7 +93,7 @@ namespace image
 
 	template<typename _Tx, typename _Ty, typename = std::enable_if_t<std::is_floating_point<_Tx>::value>>
 	std::enable_if_t<std::is_signed<_Ty>::value, void>
-	RGBTEncode(_Tx r, _Tx g, _Tx b, _Ty encode[4], _Tx range = 1024) noexcept
+	RGBT_encode(_Tx r, _Tx g, _Tx b, _Ty encode[4], _Tx range = 1024) noexcept
 	{
 		static_assert(std::numeric_limits<_Ty>::max() <= std::numeric_limits<_Tx>::max());
 
@@ -117,8 +117,8 @@ namespace image
 	}
 
 	template<typename _Tx, typename _Ty, typename = std::enable_if_t<std::is_floating_point<_Tx>::value>>
-	std::enable_if_t<std::is_unsigned<_Ty>::value, void> 
-	RGBTEncode(_Tx r, _Tx g, _Tx b, _Ty encode[4], _Tx range = 1024) noexcept
+	inline std::enable_if_t<std::is_unsigned<_Ty>::value, void>
+	RGBT_encode(_Tx r, _Tx g, _Tx b, _Ty encode[4], _Tx range = 1024) noexcept
 	{
 		static_assert(std::numeric_limits<_Ty>::max() <= std::numeric_limits<_Tx>::max());
 
@@ -138,6 +138,50 @@ namespace image
 		encode[1] = (_Ty)std::clamp<_Tx>(g * rcp * maxLimits, minLimits, maxLimits);
 		encode[2] = (_Ty)std::clamp<_Tx>(b * rcp * maxLimits, minLimits, maxLimits);
 		encode[3] = (_Ty)std::clamp<_Tx>(a * maxLimits, minLimits, maxLimits);
+	}
+
+	template<typename _Tx, typename _Ty = std::uint8_t, typename = std::enable_if_t<std::is_floating_point<_Tx>::value>>
+	inline std::enable_if_t<std::is_unsigned<_Ty>::value, void> 
+	RGBE_encode(_Tx red, _Tx green, _Tx blue, _Ty rgbe[4])
+	{
+		_Tx v;
+		int e;
+
+		v = red;
+		if (green > v) v = green;
+		if (blue > v) v = blue;
+
+		if (v < 1e-32)
+		{
+			rgbe[0] = rgbe[1] = rgbe[2] = rgbe[3] = 0;
+		}
+		else
+		{
+			v = (_Tx)std::frexp(v, &e) * _Tx(256.0) / v;
+			rgbe[0] = (_Ty)(red * v);
+			rgbe[1] = (_Ty)(green * v);
+			rgbe[2] = (_Ty)(blue * v);
+			rgbe[3] = (_Ty)(e + 128);
+		}
+	}
+
+	template<typename _Tx, typename _Ty = std::uint8_t, typename = std::enable_if_t<std::is_floating_point<_Tx>::value>>
+	inline std::enable_if_t<std::is_unsigned<_Ty>::value, void> 
+	RGBE_decode(_Ty rgbe[4], _Tx* red, _Tx* green, _Tx* blue)
+	{
+		_Tx f;
+
+		if (rgbe[3])
+		{
+			f = (_Tx)std::ldexp(1.0, rgbe[3] - (int)(128 + 8));
+			*red = rgbe[0] * f;
+			*green = rgbe[1] * f;
+			*blue = rgbe[2] * f;
+		}
+		else
+		{
+			*red = *green = *blue = _Tx(0.0f);
+		}
 	}
 
 	EXPORT void smoothFilter(const float* src, float* dst, std::uint32_t w, std::uint32_t h, std::uint8_t c) noexcept;

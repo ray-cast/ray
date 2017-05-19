@@ -98,7 +98,7 @@ namespace image
 				float g = src[i * w * channel + j * channel + 1];
 				float b = src[i * w * channel + j * channel + 2];
 
-				image::RGBTEncode(r, g, b, &dst[i * w * 4 + j * 4], 1024.0f);
+				RGBT_encode(r, g, b, &dst[i * w * 4 + j * 4], 1024.0f);
 			}
 		}
 	}
@@ -116,7 +116,7 @@ namespace image
 				double g = src[i * w * channel + j * channel + 1];
 				double b = src[i * w * channel + j * channel + 2];
 
-				image::RGBTEncode(r, g, b, &dst[i * w * 4 + j * 4], 1024.0);
+				RGBT_encode(r, g, b, &dst[i * w * 4 + j * 4], 1024.0);
 			}
 		}
 	}

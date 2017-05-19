@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 class SH final
 {
 public:
@@ -93,7 +93,7 @@ public:
 	}
 };
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<T, N> operator+(const SH<T, N>& sh1, const SH<T, N>& scale) noexcept
 {
 	SH<T, N> result;
@@ -102,7 +102,7 @@ SH<T, N> operator+(const SH<T, N>& sh1, const SH<T, N>& scale) noexcept
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<T, N> operator-(const SH<T, N>& sh1, const SH<T, N>& sh2) noexcept
 {
 	SH<T, N> result;
@@ -111,7 +111,7 @@ SH<T, N> operator-(const SH<T, N>& sh1, const SH<T, N>& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<T, N> operator*(const SH<T, N>& sh1, const SH<T, N>& sh2) noexcept
 {
 	SH<T, N> result;
@@ -120,7 +120,7 @@ SH<T, N> operator*(const SH<T, N>& sh1, const SH<T, N>& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<T, N> operator/(const SH<T, N>& sh1, const SH<T, N>& sh2) noexcept
 {
 	SH<T, N> result;
@@ -129,7 +129,7 @@ SH<T, N> operator/(const SH<T, N>& sh1, const SH<T, N>& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<T, N> operator+(const SH<T, N>& sh1, const T& sh2) noexcept
 {
 	SH<T, N> result;
@@ -138,7 +138,7 @@ SH<T, N> operator+(const SH<T, N>& sh1, const T& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<T, N> operator-(const SH<T, N>& sh1, const T& sh2) noexcept
 {
 	SH<T, N> result;
@@ -147,7 +147,7 @@ SH<T, N> operator-(const SH<T, N>& sh1, const T& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<T, N> operator*(const SH<T, N>& sh1, const T& sh2) noexcept
 {
 	SH<T, N> result;
@@ -156,7 +156,7 @@ SH<T, N> operator*(const SH<T, N>& sh1, const T& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<T, N> operator/(const SH<T, N>& sh1, const T& sh2) noexcept
 {
 	SH<T, N> result;
@@ -165,7 +165,7 @@ SH<T, N> operator/(const SH<T, N>& sh1, const T& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator+(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -174,7 +174,7 @@ SH<Vector3t<T>, N> operator+(const SH<Vector3t<T>, N>& sh1, const T& scale) noex
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator-(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -183,7 +183,7 @@ SH<Vector3t<T>, N> operator-(const SH<Vector3t<T>, N>& sh1, const T& scale) noex
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -192,7 +192,7 @@ SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const T& scale) noex
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -201,7 +201,7 @@ SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const T& scale) noex
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator*(const SH<T, N>& sh1, const Vector3t<T>& color) noexcept
 {
 	SH<T, N> result;
@@ -210,7 +210,7 @@ SH<Vector3t<T>, N> operator*(const SH<T, N>& sh1, const Vector3t<T>& color) noex
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator/(const SH<T, N>& sh1, const Vector3t<T>& color) noexcept
 {
 	SH<T, N> result;
@@ -219,7 +219,7 @@ SH<Vector3t<T>, N> operator/(const SH<T, N>& sh1, const Vector3t<T>& color) noex
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator*(const Vector3t<T>& color, const SH<T, N>& sh1) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -228,7 +228,7 @@ SH<Vector3t<T>, N> operator*(const Vector3t<T>& color, const SH<T, N>& sh1) noex
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator/(const Vector3t<T>& color, const SH<T, N>& sh1) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -237,7 +237,7 @@ SH<Vector3t<T>, N> operator/(const Vector3t<T>& color, const SH<T, N>& sh1) noex
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& color) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -246,7 +246,7 @@ SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& c
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& color) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -255,7 +255,7 @@ SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& c
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator*(const Vector3t<T>& color, const SH<Vector3t<T>, N>& sh1) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -264,7 +264,7 @@ SH<Vector3t<T>, N> operator*(const Vector3t<T>& color, const SH<Vector3t<T>, N>&
 	return result;
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::uint8_t N>
 SH<Vector3t<T>, N> operator/(const Vector3t<T>& color, const SH<Vector3t<T>, N>& sh1) noexcept
 {
 	SH<Vector3t<T>, N> result;
@@ -275,7 +275,7 @@ SH<Vector3t<T>, N> operator/(const Vector3t<T>& color, const SH<Vector3t<T>, N>&
 
 namespace math
 {
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline T dot(const SH<T, N>& a, const SH<T, N>& b) noexcept
 	{
 		T result = T(0);
@@ -284,19 +284,19 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline T length2(const SH<T, N>& sh) noexcept
 	{
 		return dot(sh, sh);
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline T length(const SH<T, N>& sh) noexcept
 	{
 		return math::sqrt(dot(sh, sh));
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> min(const SH<T, N>& a, const SH<T, N>& b) noexcept
 	{
 		SH<T, N> result;
@@ -305,7 +305,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> max(const SH<T, N>& a, const SH<T, N>& b) noexcept
 	{
 		SH<T, N> result;
@@ -314,7 +314,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> normalize(const SH<T, N>& sh) noexcept
 	{
 		T magSq = length2(sh);
@@ -327,7 +327,7 @@ namespace math
 		return sh;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> negate(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -336,7 +336,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> isfinite(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -345,7 +345,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> abs(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -354,7 +354,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> cos(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -363,7 +363,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> sin(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -372,7 +372,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> tan(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -381,7 +381,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> acos(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -390,7 +390,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> asin(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -399,7 +399,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> atan(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -408,7 +408,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> exp(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -417,7 +417,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> exp2(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -426,7 +426,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> sqrt(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -435,7 +435,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> log(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -444,7 +444,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> log2(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -453,7 +453,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> log10(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -462,7 +462,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> pow(const SH<T, N>& sh, T y) noexcept
 	{
 		SH<T, N> result;
@@ -471,7 +471,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> pow(const SH<T, N>& a, const SH<T, N>& b) noexcept
 	{
 		SH<T, N> result;
@@ -480,7 +480,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> ceil(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -489,7 +489,7 @@ namespace math
 		return result;
 	}
 
-	template<typename T, std::size_t N>
+	template<typename T, std::uint8_t N>
 	inline SH<T, N> floor(const SH<T, N>& sh) noexcept
 	{
 		SH<T, N> result;
@@ -498,7 +498,7 @@ namespace math
 		return result;
 	}
 
-	template<std::size_t N, typename T, typename = std::enable_if_t<N == 4>>
+	template<std::uint8_t N, typename T, typename = std::enable_if_t<N == 4>>
 	inline SH<T, 4> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
 		SH<T, 4> sh;
@@ -510,7 +510,7 @@ namespace math
 		return sh;
 	}
 
-	template<std::size_t N, typename T, typename = std::enable_if_t<N == 9>>
+	template<std::uint8_t N, typename T, typename = std::enable_if_t<N == 9>>
 	inline SH<T, 9> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
 		SH<T, 9> sh;
@@ -529,7 +529,7 @@ namespace math
 		return sh;
 	}
 	
-	template<std::size_t N, typename T, typename = std::enable_if_t<N == 16>>
+	template<std::uint8_t N, typename T, typename = std::enable_if_t<N == 16>>
 	inline SH<T, 16> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
 		SH<T, 16> sh;
@@ -553,7 +553,7 @@ namespace math
 		return sh;
 	}
 
-	template<std::size_t N, typename T, typename = std::enable_if_t<N == 25>>
+	template<std::uint8_t N, typename T, typename = std::enable_if_t<N == 25>>
 	inline SH<T, 25> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
 		const T x = dir[0];
@@ -601,7 +601,7 @@ namespace math
 		sh.coeff[24] =  3.0 * std::sqrt(35.0 / (4.0*PI64))*(x4 - 6.0*y2*x2 + y4);
 	}
 
-	template<std::size_t N, typename T, typename = std::enable_if_t<N == 36>>
+	template<std::uint8_t N, typename T, typename = std::enable_if_t<N == 36>>
 	inline SH<T, 36> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
 		sh.coeff[0]  =  0.5f  / std::sqrt(M_PI);
@@ -884,7 +884,7 @@ namespace math
 		return normalize(Vector3t<T>(u, -1.0f, v));
 	}
 
-	template<std::size_t N, typename T, std::size_t face, std::enable_if_t<(N == 6 || N == 9 || N == 25) && face >= 0 && face < 6, int> = 0>
+	template<std::uint8_t N, typename T, std::size_t face, std::enable_if_t<(N == 6 || N == 9 || N == 25) && face >= 0 && face < 6, int> = 0>
 	SH<Vector3t<T>, N> CalcCubefaceToSH(std::uint32_t w, std::uint32_t h, float* data, std::uint8_t channel, T& weights) noexcept
 	{
 		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
@@ -918,7 +918,7 @@ namespace math
 		return result;
 	}
 
-	template<std::size_t N = 9, typename T = float, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
+	template<std::uint8_t N = 9, typename T = float, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
 	SH<Vector3t<T>, N> CalcCubemapToSH(std::uint32_t w, std::uint32_t h, T* data, std::uint8_t channel = 3) noexcept
 	{
 		T weightSum(0.0);
@@ -934,7 +934,7 @@ namespace math
 		return result * T(4.0f * M_PI) / weightSum;
 	}
 
-	template<std::size_t N, typename T, std::size_t face, std::enable_if_t<(N == 9) && face >= 0 && face < 6, int> = 0>
+	template<std::uint8_t N, typename T, std::size_t face, std::enable_if_t<(N == 9) && face >= 0 && face < 6, int> = 0>
 	void CalcCubefaceToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
 		Vector3t<T>* data = dst + (w * h) * face;
@@ -958,7 +958,7 @@ namespace math
 		}
 	}
 
-	template<std::size_t N, typename T, std::size_t face, std::enable_if_t<(N == 25) && face >= 0 && face < 6, int> = 0>
+	template<std::uint8_t N, typename T, std::size_t face, std::enable_if_t<(N == 25) && face >= 0 && face < 6, int> = 0>
 	void CalcCubefaceToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
 		Vector3t<T>* data = dst + (w * h) * face;
@@ -985,7 +985,7 @@ namespace math
 		}
 	}
 
-	template<std::size_t N = 9, typename T = float, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
+	template<std::uint8_t N = 9, typename T = float, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
 	void CalcCubemapToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
 		CalcCubefaceToIrradiance<N, T, 0>(shColor, w, h, dst);

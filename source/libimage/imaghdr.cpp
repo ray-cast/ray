@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "imaghdr.h"
+#include <ray/imagutil.h>
 #include <ray/format.h>
 
 _NAME_BEGIN
@@ -90,46 +91,6 @@ static int rgbe_error(int rgbe_error_code, char* msg)
 	}
 
 	return RGBE_RETURN_FAILURE;
-}
-
-inline void float2rgbe(unsigned char rgbe[4], float red, float green, float blue)
-{
-	float v;
-	int e;
-
-	v = red;
-	if (green > v) v = green;
-	if (blue > v) v = blue;
-
-	if (v < 1e-32)
-	{
-		rgbe[0] = rgbe[1] = rgbe[2] = rgbe[3] = 0;
-	}
-	else 
-	{
-		v = (float)std::frexp(v, &e) * 256.0f / v;
-		rgbe[0] = (std::uint8_t)(red * v);
-		rgbe[1] = (std::uint8_t)(green * v);
-		rgbe[2] = (std::uint8_t)(blue * v);
-		rgbe[3] = (std::uint8_t)(e + 128);
-	}
-}
-
-inline void rgbe2float(float *red, float *green, float *blue, std::uint8_t rgbe[4])
-{
-	float f;
-
-	if (rgbe[3]) 
-	{
-		f = (float)std::ldexp(1.0, rgbe[3] - (int)(128 + 8));
-		*red = rgbe[0] * f;
-		*green = rgbe[1] * f;
-		*blue = rgbe[2] * f;
-	}
-	else
-	{
-		*red = *green = *blue = 0.0f;
-	}
 }
 
 int RGBE_ReadHeader(StreamReader& stream, rgbe_header_info* info)
@@ -233,7 +194,7 @@ int RGBE_ReadPixels(StreamReader& stream, float* data, std::size_t numpixels)
 
 	for (std::size_t i = 0; i < numpixels; i++) 
 	{
-		rgbe2float(&data[RGBE_DATA_RED], &data[RGBE_DATA_GREEN], &data[RGBE_DATA_BLUE], &rgbe[i]);
+		RGBE_decode(&rgbe[i], &data[RGBE_DATA_RED], &data[RGBE_DATA_GREEN], &data[RGBE_DATA_BLUE]);
 		data += RGBE_DATA_SIZE;
 	}
 
@@ -242,81 +203,82 @@ int RGBE_ReadPixels(StreamReader& stream, float* data, std::size_t numpixels)
 
 int RGBE_ReadPixels_RLE(StreamReader& stream, float *data, std::uint32_t wdith, std::uint32_t height)
 {
-	int count;
-	std::uint8_t buf[2];
-	std::uint8_t rgbe[4], *ptr, *ptr_end;
-	std::unique_ptr<std::uint8_t[]> scanline_buffer = std::make_unique<std::uint8_t[]>(sizeof(std::uint8_t) * 4 * wdith);
+	std::uint8_t rgbe[4];
 
-	if ((wdith < 8) || (wdith > 0x7fff))
-		return RGBE_ReadPixels(stream, data, wdith*height);
+	if (!stream.read((char*)rgbe, sizeof(rgbe), 1))
+		return rgbe_error(rgbe_read_error, NULL);
 
-	scanline_buffer = NULL;
+	if ((((int)rgbe[2]) << 8 | rgbe[3]) != wdith)
+		return rgbe_error(rgbe_format_error, "wrong scanline width");
 
-	while (height > 0) 
+	if ((wdith < 8) || (wdith > 0x7fff) || (rgbe[0] != 2) || (rgbe[1] != 2) || (rgbe[2] & 0x80))
 	{
-		if (!stream.read((char*)rgbe, sizeof(rgbe), 1))
-			return rgbe_error(rgbe_read_error, NULL);
+		RGBE_decode(rgbe, &data[0], &data[1], &data[2]);
+		data += RGBE_DATA_SIZE;
 
-		if ((rgbe[0] != 2) || (rgbe[1] != 2) || (rgbe[2] & 0x80))
+		return RGBE_ReadPixels(stream, data, wdith*height - 1);
+	}
+	else
+	{
+		std::unique_ptr<std::uint8_t[]> scanline_buffer = std::make_unique<std::uint8_t[]>(sizeof(std::uint8_t) * 4 * wdith);
+
+		for (std::uint32_t i = 0; i < height; i++)
 		{
-			rgbe2float(&data[0], &data[1], &data[2], rgbe);
-			data += RGBE_DATA_SIZE;
+			if ((((int)rgbe[2]) << 8 | rgbe[3]) != wdith)
+				return rgbe_error(rgbe_format_error, "wrong scanline width");
 
-			return RGBE_ReadPixels(stream, data, wdith*height - 1);
-		}
+			auto ptr = scanline_buffer.get();
 
-		if ((((int)rgbe[2]) << 8 | rgbe[3]) != wdith)
-			return rgbe_error(rgbe_format_error, "wrong scanline width");
-
-		ptr = &scanline_buffer[0];
-
-		for (std::uint8_t i = 0; i < 4; i++) 
-		{
-			ptr_end = &scanline_buffer[(i + 1)*wdith];
-			while (ptr < ptr_end) 
+			for (std::uint8_t i = 0; i < 4; i++)
 			{
-				if (!stream.read((char*)buf, sizeof(buf[0]) * 2, 1))
-					return rgbe_error(rgbe_read_error, NULL);
-
-				if (buf[0] > 128) 
+				auto ptr_end = &scanline_buffer[(i + 1)*wdith];
+				while (ptr < ptr_end)
 				{
-					count = buf[0] - 128;
-					if ((count == 0) || (count > ptr_end - ptr)) 
-						return rgbe_error(rgbe_format_error, "bad scanline data");
+					std::uint8_t buf[2];
+					if (!stream.read((char*)buf, sizeof(buf), 1))
+						return rgbe_error(rgbe_read_error, NULL);
 
-					while (count-- > 0)
-						*ptr++ = buf[1];
-				}
-				else 
-				{
-					count = buf[0];
-					if ((count == 0) || (count > ptr_end - ptr)) 
-						return rgbe_error(rgbe_format_error, "bad scanline data");
-
-					*ptr++ = buf[1];
-					if (--count > 0) 
+					if (buf[0] > 128)
 					{
-						if (!stream.read((char*)ptr, sizeof(*ptr)*count, 1))
-							return rgbe_error(rgbe_read_error, NULL);
+						std::uint8_t count = buf[0] - 128;
+						if ((count == 0) || (count > ptr_end - ptr))
+							return rgbe_error(rgbe_format_error, "bad scanline data");
 
-						ptr += count;
+						while (count-- > 0)
+							*ptr++ = buf[1];
+					}
+					else
+					{
+						std::uint8_t count = buf[0];
+						if ((count == 0) || (count > ptr_end - ptr))
+							return rgbe_error(rgbe_format_error, "bad scanline data");
+
+						*ptr++ = buf[1];
+						if (--count > 0)
+						{
+							if (!stream.read((char*)ptr, sizeof(*ptr)*count, 1))
+								return rgbe_error(rgbe_read_error, NULL);
+
+							ptr += count;
+						}
 					}
 				}
 			}
+
+			for (std::uint32_t i = 0; i < wdith; i++)
+			{
+				rgbe[0] = scanline_buffer[i];
+				rgbe[1] = scanline_buffer[i + wdith];
+				rgbe[2] = scanline_buffer[i + 2 * wdith];
+				rgbe[3] = scanline_buffer[i + 3 * wdith];
+				RGBE_decode(rgbe, &data[RGBE_DATA_RED], &data[RGBE_DATA_GREEN], &data[RGBE_DATA_BLUE]);
+
+				data += RGBE_DATA_SIZE;
+			}
+
+			if (!stream.read((char*)rgbe, sizeof(rgbe), 1))
+				return rgbe_error(rgbe_read_error, NULL);
 		}
-
-		for (std::uint32_t i = 0; i < wdith; i++) 
-		{
-			rgbe[0] = scanline_buffer[i];
-			rgbe[1] = scanline_buffer[i + wdith];
-			rgbe[2] = scanline_buffer[i + 2 * wdith];
-			rgbe[3] = scanline_buffer[i + 3 * wdith];
-			rgbe2float(&data[RGBE_DATA_RED], &data[RGBE_DATA_GREEN], &data[RGBE_DATA_BLUE], rgbe);
-
-			data += RGBE_DATA_SIZE;
-		}
-
-		height--;
 	}
 
 	return RGBE_RETURN_SUCCESS;
@@ -367,7 +329,7 @@ int RGBE_WritePixels(StreamWrite& stream, float *data, int numpixels)
 
 	while (numpixels-- > 0) 
 	{
-		float2rgbe(rgbe, data[RGBE_DATA_RED], data[RGBE_DATA_GREEN], data[RGBE_DATA_BLUE]);
+		RGBE_encode(data[RGBE_DATA_RED], data[RGBE_DATA_GREEN], data[RGBE_DATA_BLUE], rgbe);
 		data += RGBE_DATA_SIZE;
 
 		if (!stream.write((char*)rgbe, sizeof(rgbe), 1))
@@ -452,7 +414,7 @@ int RGBE_WritePixels_RLE(StreamWrite& stream, float* data, std::uint32_t width, 
 
 		for (std::uint32_t i = 0; i < width; i++)
 		{
-			float2rgbe(rgbe, data[RGBE_DATA_RED], data[RGBE_DATA_GREEN], data[RGBE_DATA_BLUE]);
+			RGBE_encode(data[RGBE_DATA_RED], data[RGBE_DATA_GREEN], data[RGBE_DATA_BLUE], rgbe);
 			buffer[i] = rgbe[0];
 			buffer[i + width] = rgbe[1];
 			buffer[i + 2 * width] = rgbe[2];

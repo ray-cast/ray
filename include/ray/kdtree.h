@@ -259,7 +259,7 @@ public:
 			node->split = split;
 			*next = node;
 
-			for (std::size_t i = 0; i < _dimension; i++)
+			for (std::uint8_t i = 0; i < _dimension; i++)
 			{
 				if (node->pos[i] < _min[i])
 					_min[i] = node->pos[i];
@@ -345,7 +345,7 @@ private:
 	float distanceSqrt(const _Tx& pos1, const _Tx& pos2)
 	{
 		float distSq = 0;
-		for (std::size_t i = 0; i < _dimension; i++)
+		for (std::uint8_t i = 0; i < _dimension; i++)
 			distSq += SQ(pos1[i] - pos2[i]);
 		return distSq;
 	}
@@ -353,7 +353,7 @@ private:
 	float distanceSqrt(const _Tx& pos, const _Tx& min, const _Tx& max)
 	{
 		float result = 0;
-		for (std::size_t i = 0; i < _dimension; i++)
+		for (std::uint8_t i = 0; i < _dimension; i++)
 		{
 			if (pos[i] < min[i])
 				result += SQ(min[i] - pos[i]);

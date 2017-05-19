@@ -35,20 +35,20 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/imagcubemap.h>
-#include <ray/math.h>
+#include <ray/SH.h>
 
 _NAME_BEGIN
 
 namespace image
 {
-	enum
+	enum class CubeFace : std::uint8_t
 	{
-		CMFT_FACE_POS_X = 0,
-		CMFT_FACE_NEG_X = 1,
-		CMFT_FACE_POS_Y = 2,
-		CMFT_FACE_NEG_Y = 3,
-		CMFT_FACE_POS_Z = 4,
-		CMFT_FACE_NEG_Z = 5,
+		FACE_POS_X = 0,
+		FACE_NEG_X = 1,
+		FACE_POS_Y = 2,
+		FACE_NEG_Y = 3,
+		FACE_POS_Z = 4,
+		FACE_NEG_Z = 5,
 	};
 
 	static const float s_faceUvVectors[6][3][3] =
@@ -85,37 +85,6 @@ namespace image
 		}
 	};
 
-	static inline void texelCoordToVec(float* _out3f, float _u, float _v, std::uint8_t _faceId)
-	{
-		_out3f[0] = s_faceUvVectors[_faceId][0][0] * _u + s_faceUvVectors[_faceId][1][0] * _v + s_faceUvVectors[_faceId][2][0];
-		_out3f[1] = s_faceUvVectors[_faceId][0][1] * _u + s_faceUvVectors[_faceId][1][1] * _v + s_faceUvVectors[_faceId][2][1];
-		_out3f[2] = s_faceUvVectors[_faceId][0][2] * _u + s_faceUvVectors[_faceId][1][2] * _v + s_faceUvVectors[_faceId][2][2];
-
-		const float invLen = 1.0f / std::sqrt(_out3f[0] * _out3f[0] + _out3f[1] * _out3f[1] + _out3f[2] * _out3f[2]);
-		_out3f[0] *= invLen;
-		_out3f[1] *= invLen;
-		_out3f[2] *= invLen;
-	}
-
-	static inline void latLongFromVec(float& _u, float& _v, const float _vec[3])
-	{
-		const float phi = atan2f(_vec[0], _vec[2]);
-		const float theta = acosf(_vec[1]);
-
-		_u = (M_PI + phi) / (M_PI * 2.0f);
-		_v = theta / M_PI;
-	}
-
-	static inline void vecFromLatLong(float _vec[3], float _u, float _v)
-	{
-		const float phi = _u * M_TWO_PI;
-		const float theta = _v * M_PI;
-
-		_vec[0] = -std::sinf(theta) * std::sinf(phi);
-		_vec[1] = std::cosf(theta);
-		_vec[2] = -std::sinf(theta) * std::cosf(phi);
-	}
-
 	inline void vec3Mul(float* _result, const float* _a, float _b)
 	{
 		_result[0] = _a[0] * _b;
@@ -128,7 +97,7 @@ namespace image
 		return _a[0] * _b[0] + _a[1] * _b[1] + _a[2] * _b[2];
 	}
 
-	static inline void vecToTexelCoord(float& _u, float& _v, uint8_t& _faceIdx, const float* _vec)
+	static inline void vecToTexelCoord(float& u, float& v, uint8_t& _faceIdx, const float _vec[3])
 	{
 		const float absVec[3] =
 		{
@@ -136,29 +105,39 @@ namespace image
 			fabsf(_vec[1]),
 			fabsf(_vec[2]),
 		};
-		const float max = fmaxf(fmaxf(absVec[0], absVec[1]), absVec[2]);
+		const float max = std::max(std::max(absVec[0], absVec[1]), absVec[2]);
 
-		// Get face id (max component == face vector).
 		if (max == absVec[0])
-		{
-			_faceIdx = (_vec[0] >= 0.0f) ? uint8_t(CMFT_FACE_POS_X) : uint8_t(CMFT_FACE_NEG_X);
-		}
+			_faceIdx = (_vec[0] >= 0.0f) ? std::uint8_t(CubeFace::FACE_POS_X) : std::uint8_t(CubeFace::FACE_NEG_X);
 		else if (max == absVec[1])
-		{
-			_faceIdx = (_vec[1] >= 0.0f) ? uint8_t(CMFT_FACE_POS_Y) : uint8_t(CMFT_FACE_NEG_Y);
-		}
-		else //if (max == absVec[2])
-		{
-			_faceIdx = (_vec[2] >= 0.0f) ? uint8_t(CMFT_FACE_POS_Z) : uint8_t(CMFT_FACE_NEG_Z);
-		}
+			_faceIdx = (_vec[1] >= 0.0f) ? std::uint8_t(CubeFace::FACE_POS_Y) : std::uint8_t(CubeFace::FACE_NEG_Y);
+		else
+			_faceIdx = (_vec[2] >= 0.0f) ? std::uint8_t(CubeFace::FACE_POS_Z) : std::uint8_t(CubeFace::FACE_NEG_Z);
 
-		// Divide by max component.
 		float faceVec[3];
 		vec3Mul(faceVec, _vec, 1.0f / max);
 
-		// Project other two components to face uv basis.
-		_u = (vec3Dot(s_faceUvVectors[_faceIdx][0], faceVec) + 1.0f) * 0.5f;
-		_v = (vec3Dot(s_faceUvVectors[_faceIdx][1], faceVec) + 1.0f) * 0.5f;
+		u = (vec3Dot(s_faceUvVectors[_faceIdx][0], faceVec) + 1.0f) * 0.5f;
+		v = (vec3Dot(s_faceUvVectors[_faceIdx][1], faceVec) + 1.0f) * 0.5f;
+	}
+
+	inline void latLongFromVec(float& _u, float& _v, const float3& dir)
+	{
+		const float phi = atan2f(dir[0], dir[2]);
+		const float theta = acosf(dir[1]);
+
+		_u = (M_PI + phi) / (M_PI * 2.0f);
+		_v = theta / M_PI;
+	}
+
+	inline void vecFromLatLong(float _vec[3], float _u, float _v)
+	{
+		const float phi = _u * M_TWO_PI;
+		const float theta = _v * M_PI;
+
+		_vec[0] = -std::sinf(theta) * std::sinf(phi);
+		_vec[1] = std::cosf(theta);
+		_vec[2] = -std::sinf(theta) * std::cosf(phi);
 	}
 
 	bool isCubemap(const Image& image) noexcept
@@ -221,16 +200,12 @@ namespace image
 				const float uu = xx * invDstFaceSize * 2.0f - 1.0f;
 				const float vv = yy * invDstFaceSize * 2.0f - 1.0f;
 
-				// Get cubemap vector (x,y,z) from (u,v,faceIdx).
-				float vec[3];
-				texelCoordToVec(vec, uu, vv, face);
+				float3 vec = math::CalcCubeNormal(uu, vv, face);
 
-				// Convert cubemap vector (x,y,z) to latlong (u,v).
 				float xSrcf;
 				float ySrcf;
 				latLongFromVec(xSrcf, ySrcf, vec);
 
-				// Convert from [0..1] to [0..(size-1)] range.
 				xSrcf *= srcWidthMinusOne;
 				ySrcf *= srcHeightMinusOne;
 
@@ -280,8 +255,7 @@ namespace image
 				const float uu = xx * invDstFaceSize * 2.0f - 1.0f;
 				const float vv = yy * invDstFaceSize * 2.0f - 1.0f;
 
-				float vec[3];
-				texelCoordToVec(vec, uu, vv, face);
+				float3 vec = math::CalcCubeNormal(uu, vv, face);
 
 				float xSrcf;
 				float ySrcf;

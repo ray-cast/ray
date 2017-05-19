@@ -1040,13 +1040,13 @@ namespace math
 		return result * norm;
 	}
 
-	template<std::uint8_t N, typename T, std::uint8_t face, std::enable_if_t<(N == 9 || N == 16) && face >= 0 && face < 6, int> = 0>
+	template<std::uint8_t N, typename T, SHCubeFace face, std::enable_if_t<(N == 9 || N == 16), int> = 0>
 	void CalcCubefaceToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
 		assert(dst);
 		assert(w == h);
 
-		Vector3t<T>* data = dst + w * h * face;
+		Vector3t<T>* data = dst + w * h * static_cast<std::uint8_t>(face);
 
 		for (std::uint32_t y = 0; y < h; ++y)
 		{
@@ -1073,7 +1073,7 @@ namespace math
 		assert(dst);
 		assert(w == h);
 
-		Vector3t<T>* data = dst + (w * h) * static_cast<std::uint8_t>(face);
+		Vector3t<T>* data = dst + w * h * static_cast<std::uint8_t>(face);
 
 		for (std::uint32_t y = 0; y < h; ++y)
 		{

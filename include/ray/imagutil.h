@@ -167,7 +167,7 @@ namespace image
 
 	template<typename _Tx, typename _Ty = std::uint8_t, typename = std::enable_if_t<std::is_floating_point<_Tx>::value>>
 	inline std::enable_if_t<std::is_unsigned<_Ty>::value, void> 
-	RGBE_decode(_Ty rgbe[4], _Tx* red, _Tx* green, _Tx* blue)
+	RGBE_decode(const _Ty rgbe[4], _Tx* red, _Tx* green, _Tx* blue)
 	{
 		_Tx f;
 

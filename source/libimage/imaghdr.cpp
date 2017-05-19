@@ -64,6 +64,8 @@ struct rgbe_header_info
 #define RGBE_DATA_BLUE   2
 #define RGBE_DATA_SIZE   3
 
+#define RGBE_MINRUN_LENGTH 4
+
 enum rgbe_error_codes 
 {
 	rgbe_read_error,
@@ -336,59 +338,63 @@ int RGBE_WritePixels(StreamWrite& stream, float *data, int numpixels)
 	return RGBE_RETURN_SUCCESS;
 }
 
-int RGBE_WriteBytes_RLE(StreamWrite& stream, unsigned char* data, int numbytes)
+int RGBE_WriteBytes_RLE(StreamWrite& stream, std::uint8_t* data, int numbytes)
 {
-#define MINRUNLENGTH 4
-	int cur, beg_run, run_count, old_run_count, nonrun_count;
+	int old_run_count;
 
 	std::uint8_t buf[2];
 
-	cur = 0;
-	while (cur < numbytes) {
-		beg_run = cur;
-		/* find next run of length at least 4 if one exists */
-		run_count = old_run_count = 0;
-		while ((run_count < MINRUNLENGTH) && (beg_run < numbytes)) {
+	for (int cur = 0; cur < numbytes;)
+	{
+		int beg_run = cur;
+		int run_count = old_run_count = 0;
+
+		while ((run_count < RGBE_MINRUN_LENGTH) && (beg_run < numbytes))
+		{
 			beg_run += run_count;
 			old_run_count = run_count;
 			run_count = 1;
-			while ((beg_run + run_count < numbytes) && (run_count < 127)
-				&& (data[beg_run] == data[beg_run + run_count]))
+
+			while ((beg_run + run_count < numbytes) && (run_count < 127) && (data[beg_run] == data[beg_run + run_count]))
 				run_count++;
 		}
-		/* if data before next big run is a short run then write it as such */
-		if ((old_run_count > 1) && (old_run_count == beg_run - cur)) {
-			buf[0] = 128 + old_run_count;   /*write short run*/
+
+		if ((old_run_count > 1) && (old_run_count == beg_run - cur)) 
+		{
+			buf[0] = 128 + old_run_count;
 			buf[1] = data[cur];
 			if (!stream.write((char*)buf, sizeof(buf[0]) * 2, 1))
-				return rgbe_error(rgbe_write_error, NULL);
+				return rgbe_error(rgbe_write_error, nullptr);
+
 			cur = beg_run;
 		}
-		/* write out bytes until we reach the start of the next run */
-		while (cur < beg_run) {
-			nonrun_count = beg_run - cur;
-			if (nonrun_count > 128)
-				nonrun_count = 128;
+
+		while (cur < beg_run) 
+		{
+			auto nonrun_count = std::min(128, beg_run - cur);
+
 			buf[0] = nonrun_count;
 			if (!stream.write((char*)buf, sizeof(buf[0]), 1))
-				return rgbe_error(rgbe_write_error, NULL);
+				return rgbe_error(rgbe_write_error, nullptr);
 
-			if (!stream.write((char*)&data[cur], sizeof(data[0])*nonrun_count, 1))
-				return rgbe_error(rgbe_write_error, NULL);
+			if (!stream.write((char*)&data[cur], sizeof(data[0]) * nonrun_count, 1))
+				return rgbe_error(rgbe_write_error, nullptr);
 
 			cur += nonrun_count;
 		}
-		/* write out next run if one was found */
-		if (run_count >= MINRUNLENGTH) {
+
+		if (run_count >= RGBE_MINRUN_LENGTH)
+		{
 			buf[0] = 128 + run_count;
 			buf[1] = data[beg_run];
 			if (!stream.write((char*)buf, sizeof(buf[0]) * 2, 1))
-				return rgbe_error(rgbe_write_error, NULL);
+				return rgbe_error(rgbe_write_error, nullptr);
+
 			cur += run_count;
 		}
 	}
+
 	return RGBE_RETURN_SUCCESS;
-#undef MINRUNLENGTH
 }
 
 int RGBE_WritePixels_RLE(StreamWrite& stream, float* data, std::uint32_t width, std::uint32_t height)
@@ -398,7 +404,7 @@ int RGBE_WritePixels_RLE(StreamWrite& stream, float* data, std::uint32_t width, 
 
 	auto buffer = std::make_unique<std::uint8_t[]>(width * 4);
 
-	while (height-- > 0) 
+	for (std::uint32_t i = 0; i < height; i++) 
 	{
 		std::uint8_t rgbe[4];
 		rgbe[0] = 2;
@@ -409,20 +415,20 @@ int RGBE_WritePixels_RLE(StreamWrite& stream, float* data, std::uint32_t width, 
 		if (!stream.write((char*)rgbe, sizeof(rgbe), 1)) 
 			return rgbe_error(rgbe_write_error, NULL);
 
-		for (std::uint32_t i = 0; i < width; i++)
+		for (std::uint32_t j = 0; j < width; j++)
 		{
 			RGBE_encode(data[RGBE_DATA_RED], data[RGBE_DATA_GREEN], data[RGBE_DATA_BLUE], rgbe);
-			buffer[i] = rgbe[0];
-			buffer[i + width] = rgbe[1];
-			buffer[i + 2 * width] = rgbe[2];
-			buffer[i + 3 * width] = rgbe[3];
+			buffer[j] = rgbe[0];
+			buffer[j + width] = rgbe[1];
+			buffer[j + 2 * width] = rgbe[2];
+			buffer[j + 3 * width] = rgbe[3];
 
 			data += RGBE_DATA_SIZE;
 		}
 
-		for (std::uint8_t i = 0; i < 4; i++)
+		for (std::uint8_t j = 0; j < 4; j++)
 		{
-			int err = RGBE_WriteBytes_RLE(stream, &buffer[i*width], width);
+			int err = RGBE_WriteBytes_RLE(stream, &buffer[width * j], width);
 			if (err != RGBE_RETURN_SUCCESS) 
 				return err;
 		}

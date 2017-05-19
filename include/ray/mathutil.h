@@ -287,7 +287,7 @@ struct _mathutil<float>
 {
     static inline bool equal(float a, float b) noexcept
     {
-        return a + (float)EPSILON_E4 > b && a - (float)EPSILON_E4 < b;
+        return (a + (float)EPSILON_E4) > b && (a - (float)EPSILON_E4) < b;
     }
 
 	static inline void sinCos(float* returnSin, float* returnCos, float theta) noexcept
@@ -465,7 +465,7 @@ struct _mathutil<double>
 {
     static inline bool equal(double a, double b) noexcept
     {
-        return a + (double)EPSILON_E4 > b && a - (double)EPSILON_E4 < b;
+		return (a + (double)EPSILON_E4) > b && (a - (double)EPSILON_E4) < b;
     }
 
 	static inline void sinCos(double* returnSin, double* returnCos, double theta) noexcept

@@ -895,11 +895,8 @@ namespace math
 			{
 				const auto& sample = (Vector3t<T>&)data[(1 + face) * w * y * channel + x * channel];
 
-				T u = (x + T(0.5f)) / w;
-				T v = (y + T(0.5f)) / h;
-
-				u = u * T(2.0f) - T(1.0f);
-				v = v * T(2.0f) - T(1.0f);
+				T u = (x + T(0.5f)) / w * T(2.0f) - T(1.0f);
+				T v = (y + T(0.5f)) / h * T(2.0f) - T(1.0f);
 
 				T temp = 1.0f + u * u + v * v;
 				T weight = 4.0f / (std::sqrt(temp) * temp);

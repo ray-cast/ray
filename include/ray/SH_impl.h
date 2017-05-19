@@ -546,18 +546,28 @@ namespace math
 	template<std::uint8_t N, typename T, typename = std::enable_if_t<N == 9>>
 	inline SH<T, 9> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
+		const T x = dir[0];
+		const T y = dir[1];
+		const T z = dir[2];
+		
+		const T x2 = x * x;
+		const T y2 = y * y;
+		const T z2 = z * z;
+		
+		const T xy = x * y;
+		const T xz = x * z;
+		const T yz = y * z;
+		
 		SH<T, 9> sh;
 		sh.coeff[0] =  0.282095f;
-		sh.coeff[1] = -0.488603f * dir.y;
-		sh.coeff[2] =  0.488603f * dir.z;
-		sh.coeff[3] = -0.488603f * dir.x;
-		sh.coeff[4] =  1.092548f * dir.x * dir.y;
-		sh.coeff[5] = -1.092548f * dir.y * dir.z;
-		sh.coeff[6] =  0.315392f * (3.0f * dir.z * dir.z - 1.0f);
-		sh.coeff[7] = -1.092548f * dir.x * dir.z;
-		sh.coeff[6] =  0.315392f * (3.0f * dir.z * dir.z - 1.0f);
-		sh.coeff[7] =  1.092548f * dir.x * dir.z;
-		sh.coeff[8] =  0.546274f * (dir.x * dir.x - dir.y * dir.y);
+		sh.coeff[1] = -0.488603f * y;
+		sh.coeff[2] =  0.488603f * z;
+		sh.coeff[3] = -0.488603f * x;
+		sh.coeff[4] =  1.092548f * xy;
+		sh.coeff[5] = -1.092548f * yz;
+		sh.coeff[6] =  0.315392f * (3.0f * z2 - 1.0f);
+		sh.coeff[7] = -1.092548f * xz;
+		sh.coeff[8] =  0.546274f * (x2 - y2);
 
 		return sh;
 	}
@@ -565,23 +575,37 @@ namespace math
 	template<std::uint8_t N, typename T, typename = std::enable_if_t<N == 16>>
 	inline SH<T, 16> ProjectOntoSH(const Vector3t<T>& dir) noexcept
 	{
+		const T x = dir[0];
+		const T y = dir[1];
+		const T z = dir[2];
+		
+		const T x2 = x * x;
+		const T y2 = y * y;
+		const T z2 = z * z;
+		
+		const T xy = x * y;
+		const T xz = x * z;
+		const T yz = y * z;
+		
 		SH<T, 16> sh;
 		sh.coeff[0]  =  0.282095f;
-		sh.coeff[1]  = -0.488603f * dir.y;
-		sh.coeff[2]  =  0.488603f * dir.z;
-		sh.coeff[3]  = -0.488603f * dir.x;
-		sh.coeff[4]  =  1.092548f * dir.x * dir.y;
-		sh.coeff[5]  = -1.092548f * dir.y * dir.z;
-		sh.coeff[6]  =  0.315392f * (3.0f * dir.z * dir.z - 1.0f);
-		sh.coeff[7]  = -1.092548f * dir.x * dir.z;
-		sh.coeff[8]  =  0.546274f * (dir.x * dir.x - dir.y * dir.y);
-		sh.coeff[9]  = -0.590044f * dir->y * (3.0f * dir->x * dir->x - dir->y * dir->y);
-		sh.coeff[10] =  2.890610f * dir->x * dir->y * dir->z;
-		sh.coeff[11] = -0.457046f * dir->y * (-1.0f + 5.0f * dir->z * dir->z);
-		sh.coeff[12] =  0.373176f * dir->z * (5.0f * dir->z * dir->z - 3.0f);
-		sh.coeff[13] =  0.457046f * dir->x * (1.0f - 5.0f * dir->z * dir->z);
-		sh.coeff[14] =  1.445310f * dir->z * (dir->x * dir->x - dir->y * dir->y);
-		sh.coeff[15] = -0.590044f * dir->x * (dir->x * dir->x - 3.0f * dir->y * dir->y);
+		sh.coeff[1]  = -0.488603f * y;
+		sh.coeff[2]  =  0.488603f * z;
+		sh.coeff[3]  = -0.488603f * x;
+
+		sh.coeff[4]  =  1.092548f * xy;
+		sh.coeff[5]  = -1.092548f * yz;
+		sh.coeff[6]  =  0.315392f * (3.0f * z2 - 1.0f);
+		sh.coeff[7]  = -1.092548f * xz;
+		sh.coeff[8]  =  0.546274f * (x2 - y2);
+
+		sh.coeff[9]  = -0.590044f * y * (3.0f * x2 - y2);
+		sh.coeff[10] =  2.890610f * x * yz;
+		sh.coeff[11] = -0.457046f * y * (-1.0f + 5.0f * z2);
+		sh.coeff[12] =  0.373176f * z * (5.0f * z2 - 3.0f);
+		sh.coeff[13] =  0.457046f * x * (1.0f - 5.0f * z2);
+		sh.coeff[14] =  1.445310f * z * (x2 - y2);
+		sh.coeff[15] = -0.590044f * x * (x2 - 3.0f * y2);
 	
 		return sh;
 	}
@@ -592,12 +616,14 @@ namespace math
 		const T x = dir[0];
 		const T y = dir[1];
 		const T z = dir[2];
-
+		
 		const T x2 = x * x;
 		const T y2 = y * y;
 		const T z2 = z * z;
-
-		const T z3 = z * z * z;
+		
+		const T xy = x * y;
+		const T xz = x * z;
+		const T yz = y * z;
 
 		const T x4 = x2 * x2;
 		const T y4 = y2 * y2;
@@ -609,29 +635,29 @@ namespace math
 		sh.coeff[2] =  std::sqrt(3.0f / (M_PI * 4)) * z;
 		sh.coeff[3] = -std::sqrt(3.0f / (M_PI * 4)) * x;
 
-		sh.coeff[4] =  std::sqrt(15.0f / (M_PI * 4)) * y * x;
-		sh.coeff[5] = -std::sqrt(15.0f / (M_PI * 4) )* y * z;
+		sh.coeff[4] =  std::sqrt(15.0f / (M_PI * 4)) * xy;
+		sh.coeff[5] = -std::sqrt(15.0f / (M_PI * 4) )* yz;
 		sh.coeff[6] =  std::sqrt( 5.0f / (M_PI * 16))* (3.0f * z2 - 1.0f);
-		sh.coeff[7] = -std::sqrt(15.0f / (M_PI * 4)) * x * z;
+		sh.coeff[7] = -std::sqrt(15.0f / (M_PI * 4)) * xz;
 		sh.coeff[8] =  std::sqrt(15.0f / (M_PI * 16))* (x2 - y2);
 
 		sh.coeff[9]  = -std::sqrt(70.0f  / (M_PI * 64)) * y * (3 * x2 - y2);
-		sh.coeff[10] =  std::sqrt(105.0f / (M_PI * 4))*y*x*z;
-		sh.coeff[11] = -std::sqrt(21.0f  / (M_PI * 16))*y*(-1.0f + 5.0f*z2);
-		sh.coeff[12] =  std::sqrt(7.0f   / (M_PI * 16))*(5.0f*z3 - 3.0f*z);
-		sh.coeff[13] = -std::sqrt(42.0f  / (M_PI * 64))*x*(-1.0f + 5.0f*z2);
-		sh.coeff[14] =  std::sqrt(105.0f / (M_PI * 16))*(x2 - y2)*z;
-		sh.coeff[15] = -std::sqrt(70.0f  / (M_PI * 64))*x*(x2 - 3.0f*y2);
+		sh.coeff[10] =  std::sqrt(105.0f / (M_PI * 4 )) * y * xz;
+		sh.coeff[11] = -std::sqrt(21.0f  / (M_PI * 16)) * y * (-1.0f + 5.0f*z2);
+		sh.coeff[12] =  std::sqrt(7.0f   / (M_PI * 16)) * z * (5.0f*z2 - 3.0f);
+		sh.coeff[13] = -std::sqrt(42.0f  / (M_PI * 64)) * x * (-1.0f + 5.0f*z2);
+		sh.coeff[14] =  std::sqrt(105.0f / (M_PI * 16)) * z * (x2 - y2);
+		sh.coeff[15] = -std::sqrt(70.0f  / (M_PI * 64)) * x * (x2 - 3.0f*y2);
 
-		sh.coeff[16] =  3.0f * std::sqrt(35.0f / (M_PI * 16))*x*y*(x2 - y2);
-		sh.coeff[17] = -3.0f * std::sqrt(70.0f / (M_PI * 64))*y*z*(3.0f*x2 - y2);
-		sh.coeff[18] =  3.0f * std::sqrt(5.0f  / (M_PI * 16))*y*x*(-1.0f + 7.0f*z2);
-		sh.coeff[19] = -3.0f * std::sqrt(10.0f / (M_PI * 64))*y*z*(-3.0f + 7.0f*z2);
+		sh.coeff[16] =  std::sqrt(35.0f / (M_PI * 16)) * 3.0f * xy * (x2 - y2);
+		sh.coeff[17] = -std::sqrt(70.0f / (M_PI * 64)) * 3.0f * yz * (3.0f * x2 - y2);
+		sh.coeff[18] =  std::sqrt(5.0f  / (M_PI * 16)) * 3.0f * xy * (-1.0f + 7.0f * z2);
+		sh.coeff[19] = -std::sqrt(10.0f / (M_PI * 64)) * 3.0f * yz * (-3.0f + 7.0f * z2);
 		sh.coeff[20] =  (105.0f*z4 - 90.0f*z2 + 9.0f) / (16.0f * std::sqrt(M_PI));
-		sh.coeff[21] = -3.0f * std::sqrt(10.0f / (M_PI * 64))*x*z*(-3.0f + 7.0f*z2);
-		sh.coeff[22] =  3.0f * std::sqrt(5.0f  / (M_PI * 64))*(x2 - y2)*(-1.0f + 7.0f*z2);
-		sh.coeff[23] = -3.0f * std::sqrt(70.0f / (M_PI * 64))*x*z*(x2 - 3.0f*y2);
-		sh.coeff[24] =  3.0f * std::sqrt(35.0f / (4.0f*(M_PI * 64)))*(x4 - 6.0f*y2*x2 + y4);
+		sh.coeff[21] = -std::sqrt(10.0f / (M_PI * 64)) * 3.0f * xz*(-3.0f + 7.0f*z2);
+		sh.coeff[22] =  std::sqrt(5.0f  / (M_PI * 64)) * 3.0f * (x2 - y2) * (-1.0f + 7.0f * z2);
+		sh.coeff[23] = -std::sqrt(70.0f / (M_PI * 64)) * 3.0f * xz * (x2 - 3.0f*y2);
+		sh.coeff[24] =  std::sqrt(35.0f / (M_PI * 256)) * 3.0f * (x4 - 6.0f * y2 * x2 + y4);
 
 		return sh;
 	}
@@ -963,6 +989,9 @@ namespace math
 	template<std::uint8_t N, typename T, SHCubeFace face, std::enable_if_t<(N == 6 || N == 9 || N == 25), int> = 0>
 	SH<Vector3t<T>, N> CalcCubefaceToSH(std::uint32_t w, std::uint32_t h, const T* data, std::uint8_t channel, double& weights) noexcept
 	{
+		assert(data);
+		assert(w == h);
+
 		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
 
 		for (std::uint32_t y = 0; y < h; ++y)
@@ -994,6 +1023,9 @@ namespace math
 	template<std::uint8_t N = 9, typename T = float, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
 	SH<Vector3t<T>, N> CalcCubemapToSH(std::uint32_t w, std::uint32_t h, const T* data, std::uint8_t channel = 3) noexcept
 	{
+		assert(data);
+		assert(w == h);
+
 		double weightSum = 0.0;
 
 		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
@@ -1011,6 +1043,9 @@ namespace math
 	template<std::uint8_t N, typename T, std::uint8_t face, std::enable_if_t<(N == 9 || N == 16) && face >= 0 && face < 6, int> = 0>
 	void CalcCubefaceToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
+		assert(dst);
+		assert(w == h);
+
 		Vector3t<T>* data = dst + w * h * face;
 
 		for (std::uint32_t y = 0; y < h; ++y)
@@ -1035,6 +1070,9 @@ namespace math
 	template<std::uint8_t N, typename T, SHCubeFace face, std::enable_if_t<(N == 25), int> = 0>
 	void CalcCubefaceToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
+		assert(dst);
+		assert(w == h);
+
 		Vector3t<T>* data = dst + (w * h) * static_cast<std::uint8_t>(face);
 
 		for (std::uint32_t y = 0; y < h; ++y)
@@ -1063,6 +1101,9 @@ namespace math
 	template<std::uint8_t N = 9, typename T = float, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
 	void CalcCubemapToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
+		assert(dst);
+		assert(w == h);
+
 		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_POS_X>(shColor, w, h, dst);
 		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_NEG_X>(shColor, w, h, dst);
 		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_POS_Y>(shColor, w, h, dst);

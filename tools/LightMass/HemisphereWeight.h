@@ -134,7 +134,7 @@ inline HemisphereWeight<T> operator-(const HemisphereWeight<T>& w)
 namespace math
 {
 	template<typename T>
-	void makeHemisphereWeights(HemisphereWeight<T>* weights, std::size_t size)
+	void makeHemisphereWeights(HemisphereWeight<T>* weights, std::uint32_t size)
 	{
 		double sum = 0.0;
 		T center = (size - 1) * 0.5f;

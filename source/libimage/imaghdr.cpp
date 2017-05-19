@@ -107,7 +107,7 @@ inline void float2rgbe(unsigned char rgbe[4], float red, float green, float blue
 	}
 	else 
 	{
-		v = (float)frexp(v, &e) * 256.0f / v;
+		v = (float)std::frexp(v, &e) * 256.0f / v;
 		rgbe[0] = (std::uint8_t)(red * v);
 		rgbe[1] = (std::uint8_t)(green * v);
 		rgbe[2] = (std::uint8_t)(blue * v);
@@ -121,22 +121,24 @@ inline void rgbe2float(float *red, float *green, float *blue, std::uint8_t rgbe[
 
 	if (rgbe[3]) 
 	{
-		f = (float)ldexp(1.0, rgbe[3] - (int)(128 + 8));
+		f = (float)std::ldexp(1.0, rgbe[3] - (int)(128 + 8));
 		*red = rgbe[0] * f;
 		*green = rgbe[1] * f;
 		*blue = rgbe[2] * f;
 	}
 	else
 	{
-		*red = *green = *blue = 0.0;
+		*red = *green = *blue = 0.0f;
 	}
 }
 
 int RGBE_ReadHeader(StreamReader& stream, rgbe_header_info* info)
 {
+	static_assert(sizeof(char) == sizeof(std::uint8_t));
+
 	std::uint8_t buf[256];
 	if (!stream.read((char*)buf, sizeof(buf)))
-		return rgbe_error(rgbe_read_error, NULL);
+		return rgbe_error(rgbe_read_error, nullptr);
 
 	if ((buf[0] != '#') || (buf[1] != '?')) 
 		return rgbe_error(rgbe_format_error, (char*)"bad initial token");

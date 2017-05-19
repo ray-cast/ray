@@ -62,12 +62,12 @@ protected:
 
 	void setRenderTarget(float* lightmap, int w, int h, int channels);
 	void setGeometry(int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
-	void setSamplePosition(std::uint32_t indicesTriangleBaseIndex);
+	void setSamplePosition(std::size_t indicesTriangleBaseIndex);
 
 	int leftOf(const float2& a, const float2& b, const float2& c);
 	int convexClip(float2* poly, int nPoly, const float2* clip, int nClip, float2* res);
 
-	std::size_t passStepSize();
+	std::uint32_t passStepSize();
 	std::size_t passOffsetX();
 	std::size_t passOffsetY();
 
@@ -128,7 +128,7 @@ private:
 
 			struct
 			{
-				std::uint32_t baseIndex;
+				std::size_t baseIndex;
 				float3 p[3];
 				float2 uv[3];
 			} triangle;
@@ -163,13 +163,13 @@ private:
 
 		struct
 		{
-			std::size_t size;
+			std::uint32_t size;
 			float znear, zfar;
 			struct { float r, g, b; } clearColor;
 
-			std::size_t fbHemiCountX;
-			std::size_t fbHemiCountY;
-			std::size_t fbHemiIndex;
+			std::uint32_t fbHemiCountX;
+			std::uint32_t fbHemiCountY;
+			std::uint32_t fbHemiIndex;
 			std::unique_ptr<int2[]> fbHemiToLightmapLocation;
 			std::uint32_t fbTexture[2];
 			std::uint32_t fb[2];

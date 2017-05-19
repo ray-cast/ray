@@ -103,15 +103,15 @@ LightMassBaking::setup(const LightSampleParams& params) noexcept
 	context->hemisphere.fbHemiCountX = 1536 / (3 * context->hemisphere.size);
 	context->hemisphere.fbHemiCountY = 512 / context->hemisphere.size;
 
-	std::size_t w[] = { context->hemisphere.fbHemiCountX * context->hemisphere.size * 3, context->hemisphere.fbHemiCountX * context->hemisphere.size / 2 };
-	std::size_t h[] = { context->hemisphere.fbHemiCountY * context->hemisphere.size,     context->hemisphere.fbHemiCountY * context->hemisphere.size / 2 };
+	std::uint32_t w[] = { context->hemisphere.fbHemiCountX * context->hemisphere.size * 3, context->hemisphere.fbHemiCountX * context->hemisphere.size / 2 };
+	std::uint32_t h[] = { context->hemisphere.fbHemiCountY * context->hemisphere.size,     context->hemisphere.fbHemiCountY * context->hemisphere.size / 2 };
 
 	glGenTextures(2, context->hemisphere.fbTexture);
 	glGenFramebuffers(2, context->hemisphere.fb);
 	glGenRenderbuffers(1, &context->hemisphere.fbDepth);
 
 	glBindRenderbuffer(GL_RENDERBUFFER, context->hemisphere.fbDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, w[0], h[0]);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, static_cast<GLsizei>(w[0]), static_cast<GLsizei>(h[0]));
 	glBindFramebuffer(GL_FRAMEBUFFER, context->hemisphere.fb[0]);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, context->hemisphere.fbDepth);
 
@@ -122,7 +122,7 @@ LightMassBaking::setup(const LightSampleParams& params) noexcept
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w[i], h[i], 0, GL_RGBA, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, static_cast<GLsizei>(w[i]), static_cast<GLsizei>(h[i]), 0, GL_RGBA, GL_FLOAT, 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, context->hemisphere.fb[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, context->hemisphere.fbTexture[i], 0);
@@ -345,7 +345,7 @@ LightMassBaking::baking(const LightBakingParams& params) noexcept
 
 		Viewportt<int> vp;
 
-		std::uint32_t baseIndex = 0;
+		std::size_t baseIndex = 0;
 
 		while (this->beginSampleHemisphere(vp.ptr()))
 		{
@@ -404,7 +404,7 @@ LightMassBaking::setGeometry(int positionsType, const void *positionsXYZ, int po
 }
 
 void
-LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
+LightMassBaking::setSamplePosition(std::size_t indicesTriangleBaseIndex)
 {
 	assert(_ctx->lightmap.width < std::numeric_limits<float>::max());
 	assert(_ctx->lightmap.height < std::numeric_limits<float>::max());
@@ -417,7 +417,7 @@ LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 
 	for (int i = 0; i < 3; i++)
 	{
-		std::uint32_t index;
+		std::size_t index;
 		if (_ctx->mesh.indicesType == GL_UNSIGNED_INT)
 			index = ((const std::uint32_t*)_ctx->mesh.indices + _ctx->meshPosition.triangle.baseIndex)[i];
 		else if (_ctx->mesh.indicesType == GL_UNSIGNED_SHORT)
@@ -434,18 +434,22 @@ LightMassBaking::setSamplePosition(std::uint32_t indicesTriangleBaseIndex)
 			p = float3((const std::uint32_t*)(_ctx->mesh.positions + index * _ctx->mesh.positionsStride));
 		else if (_ctx->mesh.positionsType == GL_UNSIGNED_SHORT)
 			p = float3((const std::uint16_t*)(_ctx->mesh.positions + index * _ctx->mesh.positionsStride));
-		else
+		else if (_ctx->mesh.positionsType == GL_UNSIGNED_BYTE)
 			p = float3((const std::uint8_t*)(_ctx->mesh.positions + index * _ctx->mesh.positionsStride));
+		else
+			assert(false);
 
 		float2 uv;
 		if (_ctx->mesh.uvsType == GL_FLOAT)
 			uv = *(const float2*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride);
 		else if (_ctx->mesh.uvsType == GL_UNSIGNED_INT)
-			uv = float2((const std::uint32_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint32_t>::max();
+			uv = float2((const std::uint32_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint16_t>::max();
 		else if (_ctx->mesh.uvsType == GL_UNSIGNED_SHORT)
 			uv = float2((const std::uint16_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint16_t>::max();
-		else
+		else if (_ctx->mesh.uvsType == GL_UNSIGNED_BYTE)
 			uv = float2((const std::uint8_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint8_t>::max();
+		else
+			assert(false);
 
 		_ctx->meshPosition.triangle.uv[i] = uv * uvScale;
 		_ctx->meshPosition.triangle.p[i] = _camera.world * p;
@@ -517,11 +521,11 @@ LightMassBaking::convexClip(float2* poly, int nPoly, const float2* clip, int nCl
 	return nRes;
 }
 
-std::size_t
+std::uint32_t
 LightMassBaking::passStepSize()
 {
-	std::size_t shift = _ctx->meshPosition.passCount / 3 - (_ctx->meshPosition.pass - 1) / 3;
-	std::size_t step = (1 << shift);
+	std::uint32_t shift = _ctx->meshPosition.passCount / 3 - (_ctx->meshPosition.pass - 1) / 3;
+	std::uint32_t step = (1 << shift);
 	assert(step > 0);
 	return step;
 }
@@ -973,8 +977,8 @@ LightMassBaking::updateSampleHemisphere(int* viewport)
 		_ctx->hemisphere.fbHemiToLightmapLocation[_ctx->hemisphere.fbHemiIndex].set(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y);
 	}
 
-	int x = (_ctx->hemisphere.fbHemiIndex % _ctx->hemisphere.fbHemiCountX) * _ctx->hemisphere.size * 3;
-	int y = (_ctx->hemisphere.fbHemiIndex / _ctx->hemisphere.fbHemiCountX) * _ctx->hemisphere.size;
+	std::uint32_t x = (_ctx->hemisphere.fbHemiIndex % _ctx->hemisphere.fbHemiCountX) * _ctx->hemisphere.size * 3;
+	std::uint32_t y = (_ctx->hemisphere.fbHemiIndex / _ctx->hemisphere.fbHemiCountX) * _ctx->hemisphere.size;
 
 	int size = _ctx->hemisphere.size;
 	float znear = _ctx->hemisphere.znear;

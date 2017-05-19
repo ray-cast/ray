@@ -41,6 +41,16 @@
 
 _NAME_BEGIN
 
+enum class SHCubeFace : std::uint8_t
+{
+	FACE_POS_X = 0,
+	FACE_NEG_X = 1,
+	FACE_POS_Y = 2,
+	FACE_NEG_Y = 3,
+	FACE_POS_Z = 4,
+	FACE_NEG_Z = 5,
+};
+
 template<typename T, std::uint8_t N>
 class SH final
 {
@@ -836,21 +846,21 @@ namespace math
 	}
 
 	template<typename T>
-	inline Vector3t<T> CalcCubeNormal(T u, T v, std::uint8_t face) noexcept
+	inline Vector3t<T> CalcCubeNormal(T u, T v, SHCubeFace face) noexcept
 	{
 		switch (face)
 		{
-		case 0: //+x
+		case SHCubeFace::FACE_POS_X:
 			return normalize(Vector3t<T>( 1.0f, -v,-u));
-		case 1: //-x
+		case SHCubeFace::FACE_NEG_X:
 			return normalize(Vector3t<T>(-1.0f, -v, u));
-		case 2: //+y
+		case SHCubeFace::FACE_POS_Y:
 			return normalize(Vector3t<T>(u, 1.0f, v));
-		case 3: //-y
+		case SHCubeFace::FACE_NEG_Y:
 			return normalize(Vector3t<T>(u,-1.0f,-v));
-		case 4: //+z
+		case SHCubeFace::FACE_POS_Z:
 			return normalize(Vector3t<T>( u,-v, 1.0f));
-		case 5: //-z
+		case SHCubeFace::FACE_NEG_Z:
 			return normalize(Vector3t<T>(-u,-v,-1.0f));
 		default:
 			assert(false);
@@ -859,50 +869,50 @@ namespace math
 	}
 
 	template<typename T>
-	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint8_t face) noexcept
+	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, SHCubeFace face) noexcept
 	{
 		const T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
 		const T v = ((y + 0.5f) / T(h)) * 2.0f - 1.0f;
 		return CalcCubeNormal(u, v, face);
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 0, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_POS_X, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(T u, T v) noexcept
 	{
 		return normalize(Vector3t<T>(1.0f, -v, -u));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 1, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_NEG_X, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(T u, T v) noexcept
 	{
 		return normalize(Vector3t<T>(-1.0f, -v, u));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 2, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_POS_Y, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(T u, T v) noexcept
 	{
 		return normalize(Vector3t<T>(u, 1.0f, v));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 3, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_NEG_Y, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(T u, T v) noexcept
 	{
 		return normalize(Vector3t<T>(u, -1.0f, -v));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 4, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_POS_Z, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(T u, T v) noexcept
 	{
 		return normalize(Vector3t<T>(u, -v, 1.0f));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 5, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_NEG_Z, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(T u, T v) noexcept
 	{
 		return normalize(Vector3t<T>(-u, -v, -1.0f));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 0, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_POS_X, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h) noexcept
 	{
 		const T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
@@ -910,7 +920,7 @@ namespace math
 		return normalize(Vector3t<T>(1.0f, -v, -u));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 1, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_NEG_X, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h) noexcept
 	{
 		const T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
@@ -918,7 +928,7 @@ namespace math
 		return normalize(Vector3t<T>(-1.0f, -v, u));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 2, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_POS_Y, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h) noexcept
 	{
 		const T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
@@ -926,7 +936,7 @@ namespace math
 		return normalize(Vector3t<T>(u, 1.0f, v));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 3, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_NEG_Y, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h) noexcept
 	{
 		const T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
@@ -934,7 +944,7 @@ namespace math
 		return normalize(Vector3t<T>(u, -1.0f, -v));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 4, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_POS_Z, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h) noexcept
 	{
 		const T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
@@ -942,7 +952,7 @@ namespace math
 		return normalize(Vector3t<T>(u, -v, 1.0f));
 	}
 
-	template<std::size_t face, typename T, std::enable_if_t<face == 5, int> = 0>
+	template<SHCubeFace face, typename T, std::enable_if_t<face == SHCubeFace::FACE_NEG_Z, int> = 0>
 	inline Vector3t<T> CalcCubeNormal(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h) noexcept
 	{
 		const T u = ((x + 0.5f) / T(w)) * 2.0f - 1.0f;
@@ -950,7 +960,7 @@ namespace math
 		return normalize(Vector3t<T>(-u, -v, -1.0f));
 	}
 
-	template<std::uint8_t N, typename T, std::uint8_t face, std::enable_if_t<(N == 6 || N == 9 || N == 25) && face >= 0 && face < 6, int> = 0>
+	template<std::uint8_t N, typename T, SHCubeFace face, std::enable_if_t<(N == 6 || N == 9 || N == 25), int> = 0>
 	SH<Vector3t<T>, N> CalcCubefaceToSH(std::uint32_t w, std::uint32_t h, const T* data, std::uint8_t channel, double& weights) noexcept
 	{
 		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
@@ -959,7 +969,7 @@ namespace math
 		{
 			for (std::uint32_t x = 0; x < w; ++x)
 			{
-				const auto& sample = (Vector3t<T>&)data[(face * w * h + y * w + x) * channel];
+				const auto& sample = (Vector3t<T>&)data[(static_cast<std::uint8_t>(face) * w * h + y * w + x) * channel];
 
 				const T u = ((x + T(0.5f)) / w) * T(2.0f) - T(1.0f);
 				const T v = ((y + T(0.5f)) / h) * T(2.0f) - T(1.0f);
@@ -987,12 +997,12 @@ namespace math
 		double weightSum = 0.0;
 
 		SH<Vector3t<T>, N> result(Vector3t<T>::Zero);
-		result += CalcCubefaceToSH<N, T, 0>(w, h, data, channel, weightSum);
-		result += CalcCubefaceToSH<N, T, 1>(w, h, data, channel, weightSum);
-		result += CalcCubefaceToSH<N, T, 2>(w, h, data, channel, weightSum);
-		result += CalcCubefaceToSH<N, T, 3>(w, h, data, channel, weightSum);
-		result += CalcCubefaceToSH<N, T, 4>(w, h, data, channel, weightSum);
-		result += CalcCubefaceToSH<N, T, 5>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, SHCubeFace::FACE_POS_X>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, SHCubeFace::FACE_NEG_X>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, SHCubeFace::FACE_POS_Y>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, SHCubeFace::FACE_NEG_Y>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, SHCubeFace::FACE_POS_Z>(w, h, data, channel, weightSum);
+		result += CalcCubefaceToSH<N, T, SHCubeFace::FACE_NEG_Z>(w, h, data, channel, weightSum);
 
 		const float norm = T((4.0 * M_PI) / weightSum);
 		return result * norm;
@@ -1022,10 +1032,10 @@ namespace math
 		}
 	}
 
-	template<std::uint8_t N, typename T, std::size_t face, std::enable_if_t<(N == 25) && face >= 0 && face < 6, int> = 0>
+	template<std::uint8_t N, typename T, SHCubeFace face, std::enable_if_t<(N == 25), int> = 0>
 	void CalcCubefaceToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
-		Vector3t<T>* data = dst + (w * h) * face;
+		Vector3t<T>* data = dst + (w * h) * static_cast<std::uint8_t>(face);
 
 		for (std::uint32_t y = 0; y < h; ++y)
 		{
@@ -1053,12 +1063,12 @@ namespace math
 	template<std::uint8_t N = 9, typename T = float, std::enable_if_t<N == 6 || N == 9 || N == 25, int> = 0>
 	void CalcCubemapToIrradiance(const SH<Vector3t<T>, N>& shColor, std::uint32_t w, std::uint32_t h, Vector3t<T>* dst) noexcept
 	{
-		CalcCubefaceToIrradiance<N, T, 0>(shColor, w, h, dst);
-		CalcCubefaceToIrradiance<N, T, 1>(shColor, w, h, dst);
-		CalcCubefaceToIrradiance<N, T, 2>(shColor, w, h, dst);
-		CalcCubefaceToIrradiance<N, T, 3>(shColor, w, h, dst);
-		CalcCubefaceToIrradiance<N, T, 4>(shColor, w, h, dst);
-		CalcCubefaceToIrradiance<N, T, 5>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_POS_X>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_NEG_X>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_POS_Y>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_NEG_Y>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_POS_Z>(shColor, w, h, dst);
+		CalcCubefaceToIrradiance<N, T, SHCubeFace::FACE_NEG_Z>(shColor, w, h, dst);
 	}
 }
 

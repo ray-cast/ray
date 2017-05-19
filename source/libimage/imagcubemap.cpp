@@ -41,16 +41,6 @@ _NAME_BEGIN
 
 namespace image
 {
-	enum class CubeFace : std::uint8_t
-	{
-		FACE_POS_X = 0,
-		FACE_NEG_X = 1,
-		FACE_POS_Y = 2,
-		FACE_NEG_Y = 3,
-		FACE_POS_Z = 4,
-		FACE_NEG_Z = 5,
-	};
-
 	static const float s_faceUvVectors[6][3][3] =
 	{
 		{ // +x face
@@ -108,11 +98,11 @@ namespace image
 		const float max = std::max(std::max(absVec[0], absVec[1]), absVec[2]);
 
 		if (max == absVec[0])
-			_faceIdx = (_vec[0] >= 0.0f) ? std::uint8_t(CubeFace::FACE_POS_X) : std::uint8_t(CubeFace::FACE_NEG_X);
+			_faceIdx = (_vec[0] >= 0.0f) ? std::uint8_t(SHCubeFace::FACE_POS_X) : std::uint8_t(SHCubeFace::FACE_NEG_X);
 		else if (max == absVec[1])
-			_faceIdx = (_vec[1] >= 0.0f) ? std::uint8_t(CubeFace::FACE_POS_Y) : std::uint8_t(CubeFace::FACE_NEG_Y);
+			_faceIdx = (_vec[1] >= 0.0f) ? std::uint8_t(SHCubeFace::FACE_POS_Y) : std::uint8_t(SHCubeFace::FACE_NEG_Y);
 		else
-			_faceIdx = (_vec[2] >= 0.0f) ? std::uint8_t(CubeFace::FACE_POS_Z) : std::uint8_t(CubeFace::FACE_NEG_Z);
+			_faceIdx = (_vec[2] >= 0.0f) ? std::uint8_t(SHCubeFace::FACE_POS_Z) : std::uint8_t(SHCubeFace::FACE_NEG_Z);
 
 		float faceVec[3];
 		vec3Mul(faceVec, _vec, 1.0f / max);
@@ -165,11 +155,11 @@ namespace image
 		return image.width() == image.height();
 	}
 
-	template<std::uint8_t face>
+	template<SHCubeFace face>
 	void makeCubefaceFromLatLong(Image& dst, const Image& src)
 	{
 		assert(isLatLong(src));
-		assert(dst.width() == dst.height() && dst.depth() > face);
+		assert(dst.width() == dst.height() && dst.depth() > static_cast<std::uint8_t>(face));
 		assert(dst.channel() == 3 || dst.channel() == 4);
 		assert(dst.value_type() == image::value_t::Float && dst.type_size() == 4);
 		assert(src.channel() == 3 || src.channel() == 4);
@@ -189,7 +179,7 @@ namespace image
 
 		const float invDstFaceSize = 1.0f / float(dstFaceSize);
 
-		std::uint8_t* dstFaceData = (std::uint8_t*)dst.data() + face * dstFaceDataSize;
+		std::uint8_t* dstFaceData = (std::uint8_t*)dst.data() + dstFaceDataSize * static_cast<std::uint8_t>(face);
 
 		for (std::uint32_t yy = 0; yy < dstFaceSize; ++yy)
 		{
@@ -223,7 +213,7 @@ namespace image
 		}
 	}
 
-	template<std::uint8_t face>
+	template<SHCubeFace face>
 	void makeCubefaceFromLatLongBilinearInterpolation(Image& dst, const Image& src)
 	{
 		assert(isLatLong(src));
@@ -244,7 +234,7 @@ namespace image
 
 		const float invDstFaceSize = 1.0f / float(dstFaceSize);
 
-		std::uint8_t* dstFaceData = (std::uint8_t*)dst.data() + face * dstFaceDataSize;
+		std::uint8_t* dstFaceData = (std::uint8_t*)dst.data() + dstFaceDataSize * static_cast<std::uint8_t>(face);
 
 		for (std::uint32_t yy = 0; yy < dstFaceSize; ++yy)
 		{
@@ -316,21 +306,21 @@ namespace image
 		{
 			if (_useBilinearInterpolation)
 			{
-				makeCubefaceFromLatLongBilinearInterpolation<0>(dst, src);
-				makeCubefaceFromLatLongBilinearInterpolation<1>(dst, src);
-				makeCubefaceFromLatLongBilinearInterpolation<2>(dst, src);
-				makeCubefaceFromLatLongBilinearInterpolation<3>(dst, src);
-				makeCubefaceFromLatLongBilinearInterpolation<4>(dst, src);
-				makeCubefaceFromLatLongBilinearInterpolation<5>(dst, src);
+				makeCubefaceFromLatLongBilinearInterpolation<SHCubeFace::FACE_POS_X>(dst, src);
+				makeCubefaceFromLatLongBilinearInterpolation<SHCubeFace::FACE_NEG_X>(dst, src);
+				makeCubefaceFromLatLongBilinearInterpolation<SHCubeFace::FACE_POS_Y>(dst, src);
+				makeCubefaceFromLatLongBilinearInterpolation<SHCubeFace::FACE_NEG_Y>(dst, src);
+				makeCubefaceFromLatLongBilinearInterpolation<SHCubeFace::FACE_POS_Z>(dst, src);
+				makeCubefaceFromLatLongBilinearInterpolation<SHCubeFace::FACE_NEG_Z>(dst, src);
 			}
 			else
 			{
-				makeCubefaceFromLatLong<0>(dst, src);
-				makeCubefaceFromLatLong<1>(dst, src);
-				makeCubefaceFromLatLong<2>(dst, src);
-				makeCubefaceFromLatLong<3>(dst, src);
-				makeCubefaceFromLatLong<4>(dst, src);
-				makeCubefaceFromLatLong<5>(dst, src);
+				makeCubefaceFromLatLong<SHCubeFace::FACE_POS_X>(dst, src);
+				makeCubefaceFromLatLong<SHCubeFace::FACE_NEG_X>(dst, src);
+				makeCubefaceFromLatLong<SHCubeFace::FACE_POS_Y>(dst, src);
+				makeCubefaceFromLatLong<SHCubeFace::FACE_NEG_Y>(dst, src);
+				makeCubefaceFromLatLong<SHCubeFace::FACE_POS_Z>(dst, src);
+				makeCubefaceFromLatLong<SHCubeFace::FACE_NEG_Z>(dst, src);
 			}
 
 			return true;

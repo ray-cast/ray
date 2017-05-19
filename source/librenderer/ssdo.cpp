@@ -90,7 +90,7 @@ SSDO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_occlusionSourceInv->uniform2f(1.0 / width, 1.0 / height);
+	_occlusionSourceInv->uniform2f(1.0f / width, 1.0f / height);
 	_cameraProjScale->uniform1f(pipeline.getCamera()->getFar());
 
 	pipeline.setFramebuffer(dest);
@@ -147,8 +147,8 @@ SSDO::createSphereNoise() noexcept
 
 	for (std::size_t i = 0; i < numSample; i++)
 	{
-		float sampleAlpha = (i + 0.5) * (1.0 / numSample);
-		float angle = sampleAlpha * M_TWO_PI * 7;
+		float sampleAlpha = (i + 0.5f) * (1.0f / numSample);
+		float angle = sampleAlpha * M_TWO_PI * 7.0f;
 
 		float2 rotate;
 		math::sinCos(&rotate.y, &rotate.x, angle);

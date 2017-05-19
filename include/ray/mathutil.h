@@ -57,7 +57,7 @@ _NAME_BEGIN
 #   define M_PI_3 1.047197551196597746f
 #endif
 #ifndef M_TWO_PI
-#   define M_TWO_PI (3.14159265358979323846f * 2.0)
+#   define M_TWO_PI (3.14159265358979323846f * 2.0f)
 #endif
 
 #ifndef DEG_TO_RAD
@@ -84,8 +84,8 @@ _NAME_BEGIN
 #endif
 
 #ifndef SAFE_DELETE
-#   define SAFE_DELETE(p)            { if(p) { delete (p); (p)=0; } }
-#   define SAFE_DELETE_ARRAY(p)    { if(p) { delete[] (p);    (p)=0; } }
+#   define SAFE_DELETE(p)       { if(p) { delete   (p); (p)=0; } }
+#   define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p); (p)=0; } }
 #endif
 
 #ifndef BIG_NUMBER

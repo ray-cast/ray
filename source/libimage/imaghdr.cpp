@@ -53,11 +53,12 @@ struct rgbe_header_info
 	std::uint32_t height;
 };
 
+#define RGBE_RETURN_SUCCESS 0
+#define RGBE_RETURN_FAILURE -1
+
 #define RGBE_VALID_PROGRAMTYPE 0x01
 #define RGBE_VALID_GAMMA       0x02
 #define RGBE_VALID_EXPOSURE    0x04
-#define RGBE_RETURN_SUCCESS 0
-#define RGBE_RETURN_FAILURE -1
 
 #define RGBE_DATA_RED    0
 #define RGBE_DATA_GREEN  1
@@ -284,41 +285,38 @@ int RGBE_ReadPixels_RLE(StreamReader& stream, float *data, std::uint32_t wdith, 
 	return RGBE_RETURN_SUCCESS;
 }
 
-int RGBE_WriteHeader(StreamWrite& stream, rgbe_header_info *info)
+int RGBE_WriteHeader(StreamWrite& stream, const rgbe_header_info& info)
 {
-	assert(info->width > 0 && info->height > 0);
+	assert(info.width > 0 && info.height > 0);
 
-	char *programtype = "#?RGBE\n";
-	if (info->valid & RGBE_VALID_PROGRAMTYPE)
-		programtype = info->programtype;
+	static const char imageFormat[] = { "FORMAT=32-bit_rle_rgbe\n\n" };
 
-	if (!stream.write(programtype, std::strlen(programtype)))
-		return rgbe_error(rgbe_write_error, NULL);
+	char imageType[32] = { 0 };
+	std::strcpy(imageType, (info.valid & RGBE_VALID_PROGRAMTYPE) ? info.programtype : "#?RGBE\n");
 
-	if (info->valid & RGBE_VALID_GAMMA)
-	{
-		std::string str = ray::format("GAMMA=%g\n") % info->gamma;
+	char imageGamma[32] = { 0 };
+	std::sprintf(imageGamma, "GAMMA=%g\n", info.valid & RGBE_VALID_GAMMA ? info.gamma : 1.0);
 
-		if (!stream.write(str.data(), str.length()))
-			return rgbe_error(rgbe_write_error, NULL);
-	}
+	char imageExposure[32] = { 0 };
+	std::sprintf(imageExposure, "EXPOSURE=%g\n", info.valid & RGBE_VALID_EXPOSURE ? info.exposure : 1.0);
 
-	if (info->valid & RGBE_VALID_EXPOSURE)
-	{
-		std::string str = ray::format("EXPOSURE=%g\n") % info->exposure;
+	char imageSize[32] = { 0 };
+	std::sprintf(imageSize, "-Y %d +X %d\n", info.height, info.width);
 
-		if (!stream.write(str.data(), str.length()))
-			return rgbe_error(rgbe_write_error, NULL);
-	}
+	if (!stream.write(imageType, std::strlen(imageType)))
+		return rgbe_error(rgbe_write_error, nullptr);
 
-	if (!stream.write("FORMAT=32-bit_rle_rgbe\n\n", 24))
-		return rgbe_error(rgbe_write_error, NULL);
+	if (!stream.write(imageGamma, std::strlen(imageGamma)))
+		return rgbe_error(rgbe_write_error, nullptr);
 
+	if (!stream.write(imageExposure, std::strlen(imageExposure)))
+		return rgbe_error(rgbe_write_error, nullptr);
 
-	std::string str = ray::format("-Y %d +X %d\n") % info->height % info->width;
+	if (!stream.write(imageFormat, sizeof(imageFormat) - 1))
+		return rgbe_error(rgbe_write_error, nullptr);
 
-	if (!stream.write(str.data(), str.length()))
-		return rgbe_error(rgbe_write_error, NULL);
+	if (!stream.write(imageSize, std::strlen(imageSize)))
+		return rgbe_error(rgbe_write_error, nullptr);
 
 	return RGBE_RETURN_SUCCESS;
 }
@@ -339,7 +337,7 @@ int RGBE_WritePixels(StreamWrite& stream, float *data, int numpixels)
 	return RGBE_RETURN_SUCCESS;
 }
 
-int RGBE_WriteBytes_RLE(StreamWrite& stream, unsigned char *data, int numbytes)
+int RGBE_WriteBytes_RLE(StreamWrite& stream, unsigned char* data, int numbytes)
 {
 #define MINRUNLENGTH 4
 	int cur, beg_run, run_count, old_run_count, nonrun_count;
@@ -494,7 +492,7 @@ HDRHandler::doSave(StreamWrite& stream, const Image& image) noexcept
 	hdr.height = image.height();
 	std::memcpy(hdr.programtype, "#?RADIANCE\n\0", 12);
 
-	if (RGBE_WriteHeader(stream, &hdr) != RGBE_RETURN_SUCCESS)
+	if (RGBE_WriteHeader(stream, hdr) != RGBE_RETURN_SUCCESS)
 		return false;
 
 	if (RGBE_WritePixels_RLE(stream, (float*)image.data(), hdr.width, hdr.height) != RGBE_RETURN_SUCCESS)

@@ -298,8 +298,8 @@ PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 			faces.push_back(i);
 
 			VertexWeight weight;
-			weight.weight1 = v.Weight / 100.0;
-			weight.weight2 = 1.0 - weight.weight1;
+			weight.weight1 = v.Weight / 100.0f;
+			weight.weight2 = 1.0f - weight.weight1;
 			weight.weight3 = 0.0f;
 			weight.weight4 = 0.0f;
 			weight.bone1 = v.Bone.Bone1;

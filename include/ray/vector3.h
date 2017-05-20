@@ -99,17 +99,31 @@ public:
 	
 	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
 	Vector3t<T>& operator/=(const S sz) noexcept { x /= sz; y /= sz; z /= sz; return *this; }
+
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator+=(const Vector2t<S>& rt) noexcept { x += rt.x; y += rt.y; return *this; }
+
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator-=(const Vector2t<S>& rt) noexcept { x -= rt.x; y -= rt.y; return *this; }
+
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator/=(const Vector2t<S>& rt) noexcept { x *= rt.x; y *= rt.y; return *this; }
+
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator*=(const Vector2t<S>& rt) noexcept { x /= rt.x; y /= rt.y; return *this; }
+
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator+=(const Vector3t<S>& pt) noexcept { x += pt.x; y += pt.y; z += pt.z; return *this; }
+
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator-=(const Vector3t<S>& pt) noexcept { x -= pt.x; y -= pt.y; z -= pt.z; return *this; }
+
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator*=(const Vector3t<S>& pt) noexcept { x *= pt.x; y *= pt.y; z *= pt.z; return *this; }
+
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator/=(const Vector3t<S>& pt) noexcept { x /= pt.x; y /= pt.y; z /= pt.z; return *this; }
 #pragma warning(pop)
-
-	Vector3t<T>& operator+=(const Vector2t<T>& rt) noexcept { x += rt.x; y += rt.y; return *this; }
-	Vector3t<T>& operator-=(const Vector2t<T>& rt) noexcept { x -= rt.x; y -= rt.y; return *this; }
-	Vector3t<T>& operator/=(const Vector2t<T>& rt) noexcept { x *= rt.x; y *= rt.y; return *this; }
-	Vector3t<T>& operator*=(const Vector2t<T>& rt) noexcept { x /= rt.x; y /= rt.y; return *this; }
-
-	Vector3t<T>& operator+=(const Vector3t<T>& pt) noexcept { x += pt.x; y += pt.y; z += pt.z; return *this; }
-	Vector3t<T>& operator-=(const Vector3t<T>& pt) noexcept { x -= pt.x; y -= pt.y; z -= pt.z; return *this; }
-	Vector3t<T>& operator*=(const Vector3t<T>& pt) noexcept { x *= pt.x; y *= pt.y; z *= pt.z; return *this; }
-	Vector3t<T>& operator/=(const Vector3t<T>& pt) noexcept { x /= pt.x; y /= pt.y; z /= pt.z; return *this; }
 
 	template<typename S, typename = std::enable_if<!std::is_pointer<S>::value>>
 	explicit operator Vector3t<S>() const noexcept

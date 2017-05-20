@@ -51,7 +51,7 @@ LightMapData::LightMapData() noexcept
 LightMapParams::LightMapParams() noexcept
 	: width(1024)
 	, height(1024)
-	, margin(2.5)
+	, margin(2)
 {
 }
 

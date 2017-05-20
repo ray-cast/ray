@@ -66,7 +66,7 @@ TerrainChunk::visiable(const Frustum& fru, int chunkSize) noexcept
 	int dz = chunkSize + 1;
 
 	AABB aabb;
-	aabb.min = Vector3(dx, 0, dy);
+	aabb.min = Vector3(dx, 0.0f, dy);
 	aabb.max = Vector3(dz, dz, dz);
 
 	return fru.contains(aabb);

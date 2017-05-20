@@ -123,8 +123,8 @@ LightShaft::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFrameb
 		{
 			auto sun = pipeline.getCamera()->getTranslate() + light->getTransform().getTranslate();
 			auto view = pipeline.getCamera()->worldToProject(sun);
-			view.x = view.x * 0.5 + 0.5;
-			view.y = view.y * 0.5 + 0.5;
+			view.x = view.x * 0.5f + 0.5f;
+			view.y = view.y * 0.5f + 0.5f;
 
 			if (view.x >= -0.5f && view.x <= 2.0f &&
 				view.y >= -0.5f && view.y <= 2.0f && view.z < 1.0f)

@@ -87,7 +87,7 @@ Terrain::find(int p, int q)
 int
 Terrain::convChunked(float x)
 {
-	return floorf(roundf(x) / _chunkSize);
+	return static_cast<int>(floorf(roundf(x) / _chunkSize));
 }
 
 void

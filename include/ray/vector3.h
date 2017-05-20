@@ -68,7 +68,13 @@ public:
 	Vector3t(const Vector2t<T>& xy, T zz) noexcept :x(xy.x), y(xy.y), z(zz) {}
 	explicit Vector3t(const Vector4t<T>& v) noexcept :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
 	explicit Vector3t(T xyz) noexcept :x(xyz), y(xyz), z(xyz) {}
-	
+
+	template<typename S, typename = std::enable_if_t<!std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t(S xx, S yy, S zz) noexcept 
+		: x(static_cast<T>(xx)), y(static_cast<T>(yy)), z(static_cast<T>(zz))
+	{
+	}
+
 	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
 	explicit Vector3t(S xyz[3]) noexcept
 		: x(static_cast<typename trait::_typeaddition<S>::value_type>(xyz[0]))
@@ -80,10 +86,20 @@ public:
 		assert(xyz[2] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
 	}
 
-	Vector3t<T>& operator+=(const T sz) noexcept { x += sz; y += sz; z += sz; return *this; }
-	Vector3t<T>& operator-=(const T sz) noexcept { x -= sz; y -= sz; z -= sz; return *this; }
-	Vector3t<T>& operator*=(const T sz) noexcept { x *= sz; y *= sz; z *= sz; return *this; }
-	Vector3t<T>& operator/=(const T sz) noexcept { x /= sz; y /= sz; z /= sz; return *this; }
+#pragma warning(push)
+#pragma warning(disable : 4244) // float multiply with double
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator+=(const S sz) noexcept { x += sz; y += sz; z += sz; return *this; }
+	
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator-=(const S sz) noexcept { x -= sz; y -= sz; z -= sz; return *this; }
+	
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator*=(const S sz) noexcept { x *= sz; y *= sz; z *= sz; return *this; }
+	
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	Vector3t<T>& operator/=(const S sz) noexcept { x /= sz; y /= sz; z /= sz; return *this; }
+#pragma warning(pop)
 
 	Vector3t<T>& operator+=(const Vector2t<T>& rt) noexcept { x += rt.x; y += rt.y; return *this; }
 	Vector3t<T>& operator-=(const Vector2t<T>& rt) noexcept { x -= rt.x; y -= rt.y; return *this; }
@@ -218,6 +234,18 @@ inline bool operator!=(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 }
 
 template<typename T>
+inline bool operator==(const T value, const Vector3t<T>& v) noexcept
+{
+	return v.x == value && v.y == value && v.z == value;
+}
+
+template<typename T>
+inline bool operator!=(const T value, const Vector3t<T>& v) noexcept
+{
+	return v.x != value && v.y != value && v.z != value;
+}
+
+template<typename T>
 inline bool operator<(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return v1.x < v2.x && v1.y < v2.y && v1.z < v2.z;
@@ -239,36 +267,6 @@ template<typename T>
 inline bool operator>=(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 {
 	return v1.x >= v2.x && v1.y >= v2.y && v1.z >= v2.z;
-}
-
-template<typename T>
-inline Vector3t<T> operator+(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
-{
-	return Vector3t<T>(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
-}
-
-template<typename T>
-inline Vector3t<T> operator-(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
-{
-	return Vector3t<T>(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
-}
-
-template<typename T>
-inline Vector3t<T> operator*(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
-{
-	return Vector3t<T>(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
-}
-
-template<typename T>
-inline Vector3t<T> operator/(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
-{
-	return Vector3t<T>(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
-}
-
-template<typename T>
-inline Vector3t<T> operator-(const Vector3t<T>& v) noexcept
-{
-	return Vector3t<T>(-v.x, -v.y, -v.z);
 }
 
 template<typename T>
@@ -308,42 +306,6 @@ inline bool operator>=(const Vector3t<T>& v, const T value) noexcept
 }
 
 template<typename T>
-inline Vector3t<T> operator+(const Vector3t<T>& v, const T value) noexcept
-{
-	return Vector3t<T>((v.x + value), (v.y + value), (v.z + value));
-}
-
-template<typename T>
-inline Vector3t<T> operator-(const Vector3t<T>& v, const T value) noexcept
-{
-	return Vector3t<T>((v.x - value), (v.y - value), (v.z - value));
-}
-
-template<typename T>
-inline Vector3t<T> operator*(const Vector3t<T>& v, const T value) noexcept
-{
-	return Vector3t<T>((v.x * value), (v.y * value), (v.z * value));
-}
-
-template<typename T>
-inline Vector3t<T> operator/(const Vector3t<T>& v, const T value) noexcept
-{
-	return Vector3t<T>((v.x / value), (v.y / value), (v.z / value));
-}
-
-template<typename T>
-inline bool operator==(const T value, const Vector3t<T>& v) noexcept
-{
-	return v.x == value && v.y == value && v.z == value;
-}
-
-template<typename T>
-inline bool operator!=(const T value, const Vector3t<T>& v) noexcept
-{
-	return v.x != value && v.y != value && v.z != value;
-}
-
-template<typename T>
 inline bool operator<(const T value, const Vector3t<T>& v) noexcept
 {
 	return value < v.x && value < v.y && value < v.z;
@@ -368,25 +330,79 @@ inline bool operator>=(const T value, const Vector3t<T>& v) noexcept
 }
 
 template<typename T>
-inline Vector3t<T> operator+(const T value, const Vector3t<T>& v) noexcept
+inline Vector3t<T> operator-(const Vector3t<T>& v) noexcept
+{
+	return Vector3t<T>(-v.x, -v.y, -v.z);
+}
+
+template<typename T>
+inline Vector3t<T> operator+(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
+{
+	return Vector3t<T>(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+}
+
+template<typename T>
+inline Vector3t<T> operator-(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
+{
+	return Vector3t<T>(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+}
+
+template<typename T>
+inline Vector3t<T> operator*(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
+{
+	return Vector3t<T>(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
+}
+
+template<typename T>
+inline Vector3t<T> operator/(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
+{
+	return Vector3t<T>(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
+}
+
+template<typename T, typename S, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<S>::value>>
+inline Vector3t<T> operator+(const Vector3t<T>& v, const S value) noexcept
+{
+	return Vector3t<T>((v.x + value), (v.y + value), (v.z + value));
+}
+
+template<typename T, typename S, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<S>::value>>
+inline Vector3t<T> operator-(const Vector3t<T>& v, const S value) noexcept
+{
+	return Vector3t<T>((v.x - value), (v.y - value), (v.z - value));
+}
+
+template<typename T, typename S, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<S>::value>>
+inline Vector3t<T> operator*(const Vector3t<T>& v, const S value) noexcept
+{
+	return Vector3t<T>((v.x * value), (v.y * value), (v.z * value));
+}
+
+template<typename T, typename S, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<S>::value>>
+inline Vector3t<T> operator/(const Vector3t<T>& v, const S value) noexcept
+{
+	return Vector3t<T>((v.x / value), (v.y / value), (v.z / value));
+}
+
+template<typename T, typename S, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<S>::value>>
+inline Vector3t<T> operator+(const S value, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>((value + v.x), (value + v.y), (value + v.z));
 }
 
-template<typename T>
-inline Vector3t<T> operator-(const T value, const Vector3t<T>& v) noexcept
+template<typename T, typename S, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<S>::value>>
+inline Vector3t<T> operator-(const S value, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>((value - v.x), (value - v.y), (value - v.z));
 }
 
-template<typename T>
-inline Vector3t<T> operator*(const T value, const Vector3t<T>& v) noexcept
+template<typename T, typename S, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<S>::value>>
+inline Vector3t<T> operator*(const S value, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>((value * v.x), (value * v.y), (value * v.z));
 }
 
-template<typename T>
-inline Vector3t<T> operator/(const T value, const Vector3t<T>& v) noexcept
+template<typename T, typename S, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<S>::value>>
+inline Vector3t<T> operator/(const S value, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>((value / v.x), (value / v.y), (value / v.z));
 }

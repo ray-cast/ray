@@ -82,28 +82,32 @@ public:
 	SH& operator*=(const SH& sh) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] *= sh.coeff[i]; return *this; }
 	SH& operator/=(const SH& sh) noexcept { for (size_t i = 0; i < N; ++i) coeff[i] /= sh.coeff[i]; return *this; }
 
-	SH& operator+=(const value_t& scale) noexcept 
+	template<typename T, typename = std::enable_if_t<std::is_same<T, value_t>::value || !std::is_same<T, value_t>::value && std::is_floating_point<T>::value>>
+	SH& operator+=(const T& scale) noexcept 
 	{
 		for (std::uint8_t i = 0; i < N; ++i) 
 			coeff[i] += scale;
 		return *this; 
 	}
 
-	SH& operator-=(const value_t& scale) noexcept
+	template<typename T, typename = std::enable_if_t<std::is_same<T, value_t>::value || !std::is_same<T, value_t>::value && std::is_floating_point<T>::value>>
+	SH& operator-=(const T& scale) noexcept
 	{
 		for (std::uint8_t i = 0; i < N; ++i)
 			coeff[i] -= scale;
 		return *this;
 	}
 
-	SH& operator*=(const value_t& scale) noexcept
+	template<typename T, typename = std::enable_if_t<std::is_same<T, value_t>::value || !std::is_same<T, value_t>::value && std::is_floating_point<T>::value>>
+	SH& operator*=(const T& scale) noexcept
 	{
 		for (std::uint8_t i = 0; i < N; ++i)
 			coeff[i] *= scale;
 		return *this;
 	}
 
-	SH& operator/=(const value_t& scale) noexcept
+	template<typename T, typename = std::enable_if_t<std::is_same<T, value_t>::value || !std::is_same<T, value_t>::value && std::is_floating_point<T>::value>>
+	SH& operator/=(const T& scale) noexcept
 	{
 		for (std::uint8_t i = 0; i < N; ++i)
 			coeff[i] /= scale;
@@ -162,8 +166,8 @@ SH<T, N> operator/(const SH<T, N>& sh1, const SH<T, N>& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::uint8_t N>
-SH<T, N> operator+(const SH<T, N>& sh1, const T& sh2) noexcept
+template<typename T, typename S, std::uint8_t N, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<T>::value>>
+SH<T, N> operator+(const SH<T, N>& sh1, const S& sh2) noexcept
 {
 	SH<T, N> result;
 	for (SH<T, N>::size_t i = 0; i < N; ++i)
@@ -171,8 +175,8 @@ SH<T, N> operator+(const SH<T, N>& sh1, const T& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::uint8_t N>
-SH<T, N> operator-(const SH<T, N>& sh1, const T& sh2) noexcept
+template<typename T, typename S, std::uint8_t N, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<T>::value>>
+SH<T, N> operator-(const SH<T, N>& sh1, const S& sh2) noexcept
 {
 	SH<T, N> result;
 	for (SH<T, N>::size_t i = 0; i < N; ++i)
@@ -180,8 +184,8 @@ SH<T, N> operator-(const SH<T, N>& sh1, const T& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::uint8_t N>
-SH<T, N> operator*(const SH<T, N>& sh1, const T& sh2) noexcept
+template<typename T, typename S, std::uint8_t N, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<T>::value>>
+SH<T, N> operator*(const SH<T, N>& sh1, const S& sh2) noexcept
 {
 	SH<T, N> result;
 	for (SH<T, N>::size_t i = 0; i < N; ++i)
@@ -189,8 +193,8 @@ SH<T, N> operator*(const SH<T, N>& sh1, const T& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::uint8_t N>
-SH<T, N> operator/(const SH<T, N>& sh1, const T& sh2) noexcept
+template<typename T, typename S, std::uint8_t N, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<T>::value>>
+SH<T, N> operator/(const SH<T, N>& sh1, const S& sh2) noexcept
 {
 	SH<T, N> result;
 	for (SH<T, N>::size_t i = 0; i < N; ++i)
@@ -198,8 +202,8 @@ SH<T, N> operator/(const SH<T, N>& sh1, const T& sh2) noexcept
 	return result;
 }
 
-template<typename T, std::uint8_t N>
-SH<Vector3t<T>, N> operator+(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
+template<typename T, typename S, std::uint8_t N, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<T>::value>>
+SH<Vector3t<T>, N> operator+(const SH<Vector3t<T>, N>& sh1, const S& scale) noexcept
 {
 	SH<Vector3t<T>, N> result;
 	for (SH<Vector3t<T>, N>::size_t i = 0; i < N; ++i)
@@ -207,8 +211,8 @@ SH<Vector3t<T>, N> operator+(const SH<Vector3t<T>, N>& sh1, const T& scale) noex
 	return result;
 }
 
-template<typename T, std::uint8_t N>
-SH<Vector3t<T>, N> operator-(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
+template<typename T, typename S, std::uint8_t N, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<T>::value>>
+SH<Vector3t<T>, N> operator-(const SH<Vector3t<T>, N>& sh1, const S& scale) noexcept
 {
 	SH<Vector3t<T>, N> result;
 	for (SH<Vector3t<T>, N>::size_t i = 0; i < N; ++i)
@@ -216,8 +220,8 @@ SH<Vector3t<T>, N> operator-(const SH<Vector3t<T>, N>& sh1, const T& scale) noex
 	return result;
 }
 
-template<typename T, std::uint8_t N>
-SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
+template<typename T, typename S, std::uint8_t N, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<T>::value>>
+SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const S& scale) noexcept
 {
 	SH<Vector3t<T>, N> result;
 	for (SH<Vector3t<T>, N>::size_t i = 0; i < N; ++i)
@@ -225,12 +229,30 @@ SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const T& scale) noex
 	return result;
 }
 
-template<typename T, std::uint8_t N>
-SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const T& scale) noexcept
+template<typename T, typename S, std::uint8_t N, typename = std::enable_if_t<std::is_same<T, S>::value || !std::is_same<T, S>::value && std::is_floating_point<T>::value>>
+SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const S& scale) noexcept
 {
 	SH<Vector3t<T>, N> result;
 	for (SH<Vector3t<T>, N>::size_t i = 0; i < N; ++i)
 		result.coeff[i] = sh1.coeff[i] / scale;
+	return result;
+}
+
+template<typename T, std::uint8_t N>
+SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& color) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] * color;
+	return result;
+}
+
+template<typename T, std::uint8_t N>
+SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& color) noexcept
+{
+	SH<Vector3t<T>, N> result;
+	for (SH<T, N>::size_t i = 0; i < N; ++i)
+		result.coeff[i] = sh1.coeff[i] / color;
 	return result;
 }
 
@@ -267,24 +289,6 @@ SH<Vector3t<T>, N> operator/(const Vector3t<T>& color, const SH<T, N>& sh1) noex
 	SH<Vector3t<T>, N> result;
 	for (SH<T, N>::size_t i = 0; i < N; ++i)
 		result.coeff[i] = color / sh1.coeff[i];
-	return result;
-}
-
-template<typename T, std::uint8_t N>
-SH<Vector3t<T>, N> operator*(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& color) noexcept
-{
-	SH<Vector3t<T>, N> result;
-	for (SH<T, N>::size_t i = 0; i < N; ++i)
-		result.coeff[i] = sh1.coeff[i] * color;
-	return result;
-}
-
-template<typename T, std::uint8_t N>
-SH<Vector3t<T>, N> operator/(const SH<Vector3t<T>, N>& sh1, const Vector3t<T>& color) noexcept
-{
-	SH<Vector3t<T>, N> result;
-	for (SH<T, N>::size_t i = 0; i < N; ++i)
-		result.coeff[i] = sh1.coeff[i] / color;
 	return result;
 }
 
@@ -1003,8 +1007,8 @@ namespace math
 				const T u = ((x + T(0.5f)) / w) * T(2.0f) - T(1.0f);
 				const T v = ((y + T(0.5f)) / h) * T(2.0f) - T(1.0f);
 
-				const T temp = 1.0f + u * u + v * v;
-				const T weight = 4.0f / (sqrt(temp) * temp);
+				const double temp = 1.0 + u * u + v * v;
+				const double weight = 4.0 / (std::sqrt(temp) * temp);
 
 				const Vector3t<T> dir = CalcCubeNormal<face, T>(u, v);
 
@@ -1036,7 +1040,7 @@ namespace math
 		result += CalcCubefaceToSH<N, T, SHCubeFace::FACE_POS_Z>(w, h, data, channel, weightSum);
 		result += CalcCubefaceToSH<N, T, SHCubeFace::FACE_NEG_Z>(w, h, data, channel, weightSum);
 
-		const float norm = T((4.0 * M_PI) / weightSum);
+		const double norm = (4.0 * M_PI) / weightSum;
 		return result * norm;
 	}
 

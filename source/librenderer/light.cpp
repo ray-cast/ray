@@ -556,8 +556,8 @@ Light::_updateBoundingBox() noexcept
 
 			if (_lightType == LightType::LightTypeSun || _lightType == LightType::LightTypeDirectional)
 			{
-				float w = bound.size().x * 0.5;
-				float h = bound.size().y * 0.5;
+				float w = bound.size().x * 0.5f;
+				float h = bound.size().y * 0.5f;
 
 				camera->setOrtho(-w, w, -h, h);
 				camera->setFar(zfar);

@@ -266,7 +266,7 @@ GraphicsTextureDesc::setStream(const void* data) noexcept
 }
 
 void
-GraphicsTextureDesc::setStreamSize(std::uint32_t size) noexcept
+GraphicsTextureDesc::setStreamSize(std::size_t size) noexcept
 {
 	_dataSize = size;
 }
@@ -277,7 +277,7 @@ GraphicsTextureDesc::getStream() const noexcept
 	return _data;
 }
 
-std::uint32_t
+std::size_t
 GraphicsTextureDesc::getStreamSize() const noexcept
 {
 	return _dataSize;

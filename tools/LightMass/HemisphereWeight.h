@@ -66,10 +66,17 @@ public:
 	HemisphereWeight(const Vector4t<T>& clr, const Vector2t<T>& ub) noexcept : front(clr.x), back(clr.y), left(clr.z), right(clr.w), up(ub.x), down(ub.y) {}
 	explicit HemisphereWeight(float w) noexcept : front(w), back(w), left(w), right(w), up(w), down(w) {}
 
-	HemisphereWeight<T>& operator+=(const T sz) { front += sz; back += sz; left += sz; right += sz; up += sz; down += sz; return *this; }
-	HemisphereWeight<T>& operator-=(const T sz) { front -= sz; back -= sz; left -= sz; right -= sz; up -= sz; down -= sz; return *this; }
-	HemisphereWeight<T>& operator*=(const T sz) { front *= sz; back *= sz; left *= sz; right *= sz; up *= sz; down *= sz; return *this; }
-	HemisphereWeight<T>& operator/=(const T sz) { front /= sz; back /= sz; left /= sz; right /= sz; up /= sz; down /= sz; return *this; }
+#pragma warning(push)
+#pragma warning(disable : 4244) // float multiply with double
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	HemisphereWeight<T>& operator+=(const S sz) { front += sz; back += sz; left += sz; right += sz; up += sz; down += sz; return *this; }
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	HemisphereWeight<T>& operator-=(const S sz) { front -= sz; back -= sz; left -= sz; right -= sz; up -= sz; down -= sz; return *this; }
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	HemisphereWeight<T>& operator*=(const S sz) { front *= sz; back *= sz; left *= sz; right *= sz; up *= sz; down *= sz; return *this; }
+	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
+	HemisphereWeight<T>& operator/=(const S sz) { front /= sz; back /= sz; left /= sz; right /= sz; up /= sz; down /= sz; return *this; }
+#pragma warning(pop)
 
 	HemisphereWeight<T>& operator+=(const HemisphereWeight<T>& w) { front += w.front; back += w.back; left += w.left; right += w.right; up += w.up; down += w.down; return *this; }
 	HemisphereWeight<T>& operator-=(const HemisphereWeight<T>& w) { front -= w.front; back -= w.back; left -= w.left; right -= w.right; up -= w.up; down -= w.down; return *this; }
@@ -134,29 +141,31 @@ inline HemisphereWeight<T> operator-(const HemisphereWeight<T>& w)
 namespace math
 {
 	template<typename T>
-	void makeHemisphereWeights(HemisphereWeight<T>* weights, std::uint32_t size)
+	void makeHemisphereWeights(HemisphereWeight<T> weights[], std::uint32_t size)
 	{
 		double sum = 0.0;
-		T center = (size - 1) * 0.5f;
+		double center = (size - 1) * 0.5f;
 
 		for (std::uint32_t y = 0; y < size; y++)
 		{
 			for (std::uint32_t x = 0; x < size; x++)
 			{
-				float dy = 2.0f * (y - center) / (T)size;
-				float dx = 2.0f * (x - center) / (T)size;
+				const double u = 2.0f * (static_cast<double>(x) - center) / static_cast<double>(size);
+				const double v = 2.0f * (static_cast<double>(y) - center) / static_cast<double>(size);
 
-				float3 v = math::normalize(float3(dx, dy, 1.0f));
+				const double temp = 1.0 + u * u + v * v;
+				const double weight = 1.0 / std::sqrt(temp);
 
-				float solidAngle = v.z * v.z * v.z;
+				const double solidAngle = weight * weight * weight;
 
-				weights[size * y + x] = HemisphereWeight<T>(solidAngle);
+				weights[size * y + x] = HemisphereWeight<T>(static_cast<T>(solidAngle));
 
-				sum += 3.0 * (double)solidAngle;
+				sum += solidAngle;
 			}
 		}
 
-		T weightScale = (T)(1.0 / sum);
+		const double weightScale = 1.0 / (sum * 3.0);
+
 		for (std::size_t i = 0; i < size * size; i++)
 			weights[i] *= weightScale;		
 	}

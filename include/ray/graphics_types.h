@@ -698,7 +698,7 @@ enum GraphicsShaderStageFlagBits
 
 typedef std::uint32_t GraphicsShaderStageFlags;
 
-enum GraphicsShaderLang
+enum class GraphicsShaderLang : std::uint8_t
 {
 	GraphicsShaderLangNone = 0,
 	GraphicsShaderLangHLSL = 1,
@@ -707,7 +707,18 @@ enum GraphicsShaderLang
 	GraphicsShaderLangBeginRange = GraphicsShaderLangNone,
 	GraphicsShaderLangEndRange = GraphicsShaderLangGLSL,
 	GraphicsShaderLangRangeSize = (GraphicsShaderLangEndRange - GraphicsShaderLangBeginRange + 1),
-	GraphicsShaderLangMaxEnum = 0x7FFFFFFF
+};
+
+enum class GraphicsShaderModel : std::uint8_t
+{
+	GraphicsShaderModel2X = 0,
+	GraphicsShaderModel3X = 1,
+	GraphicsShaderModel4X = 2,
+	GraphicsShaderModel5X = 3,
+	GraphicsShaderModel6X = 4,
+	GraphicsShaderModelBeginRange = GraphicsShaderModel2X,
+	GraphicsShaderModelEndRange = GraphicsShaderModel6X,
+	GraphicsShaderModelRangeSize = (GraphicsShaderModelEndRange - GraphicsShaderModelBeginRange + 1),
 };
 
 enum GraphicsUniformType

@@ -37,7 +37,7 @@
 #include <ray/graphics_system.h>
 
 #if defined(_BUILD_OPENGL_CORE)
-#	include "OpenGL Core/ogl_device.h"
+#	include "OpenGL/ogl_device.h"
 #endif
 #if defined(_BUILD_OPENGL_ES2)
 #	include "OpenGL ES2/egl2_device.h"

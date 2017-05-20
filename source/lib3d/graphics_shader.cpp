@@ -47,19 +47,22 @@ __ImplementSubInterface(GraphicsProgram, GraphicsChild, "GraphicsProgram")
 
 GraphicsShaderDesc::GraphicsShaderDesc() noexcept
 	: _lang(GraphicsShaderLang::GraphicsShaderLangNone)
+	, _model(GraphicsShaderModel::GraphicsShaderModel4X)
 	, _stage(GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 {
 }
 
-GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStageFlagBits stage, const std::string& code) noexcept
+GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderModel model, GraphicsShaderStageFlagBits stage, const std::string& code) noexcept
 	: _bytecodes(code)
 	, _lang(lang)
+	, _model(model)
 	, _stage(stage)
 {
 }
 
-GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStageFlagBits stage, const std::vector<char>& code) noexcept
+GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderModel model, GraphicsShaderStageFlagBits stage, const std::vector<char>& code) noexcept
 	: _lang(lang)
+	, _model(model)
 	, _stage(stage)
 {
 	_bytecodes.insert(_bytecodes.begin(), code.begin(), code.end());
@@ -79,6 +82,18 @@ GraphicsShaderLang
 GraphicsShaderDesc::getLanguage() const noexcept
 {
 	return _lang;
+}
+
+void 
+GraphicsShaderDesc::setShaderModel(GraphicsShaderModel model) noexcept
+{
+	_model = model;
+}
+
+GraphicsShaderModel 
+GraphicsShaderDesc::getShaderModel() const noexcept
+{
+	return _model;
 }
 
 void
@@ -109,6 +124,24 @@ const std::string&
 GraphicsShaderDesc::getByteCodes() const noexcept
 {
 	return _bytecodes;
+}
+
+void
+GraphicsShaderDesc::setEntryPoint(const std::string& main) noexcept
+{
+	_main = main;
+}
+
+void
+GraphicsShaderDesc::setEntryPoint(std::string&& main) noexcept
+{
+	_main = std::move(main);
+}
+
+const std::string&
+GraphicsShaderDesc::getEntryPoint() const noexcept
+{
+	return _main;
 }
 
 GraphicsProgramDesc::GraphicsProgramDesc() noexcept

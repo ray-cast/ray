@@ -13,13 +13,41 @@ IF(NOT BUILD_OPENGL_ES)
     ADD_DEFINITIONS(-DGLEW_STATIC)
 ENDIF()
 
-FILE(GLOB HEADER_LIST *.h)
-FILE(GLOB SOURCE_LIST *.cpp)
+SET(LIGHTMASS_LIST 
+	HemisphereWeight.h
+	LightMass.h
+	LightMass.cpp
+	LightMassAmbientOcclusion.h
+	LightMassAmbientOcclusion.cpp
+	LightMassBaking.h
+	LightMassBaking.cpp
+	LightMassGlobalIllumination.h
+	LightMassGlobalIllumination.cpp
+	LightMassListener.h
+	LightMassListener.cpp
+	LightMassParams.h
+	LightMassParams.cpp
+	LightMassTypes.h
+)
+SOURCE_GROUP("LightMass" FILES ${LIGHTMASS_LIST})
 
-SOURCE_GROUP("LightMass" FILES ${HEADER_LIST})
-SOURCE_GROUP("LightMass" FILES ${SOURCE_LIST})
+SET(LIGHTMAPPACK_LIST 
+	LightMapListener.h
+	LightMapListener.cpp
+	LightMapPack.h
+	LightMapPack.cpp
+	LightMapTypes.h
+)
+SOURCE_GROUP("LightMapPack" FILES ${LIGHTMAPPACK_LIST})
 
-ADD_EXECUTABLE(${LIB_NAME} ${HEADER_LIST} ${SOURCE_LIST})
+SET(APP_LIST 
+	main.cpp
+	modpmx.h
+	modpmx.cpp
+)
+SOURCE_GROUP("Common" FILES ${APP_LIST})
+
+ADD_EXECUTABLE(${LIB_NAME} ${APP_LIST} ${LIGHTMASS_LIST} ${LIGHTMAPPACK_LIST})
 
 TARGET_LINK_LIBRARIES(${LIB_NAME} PRIVATE glew)
 TARGET_LINK_LIBRARIES(${LIB_NAME} PRIVATE glfw)

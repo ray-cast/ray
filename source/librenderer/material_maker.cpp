@@ -173,7 +173,14 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 		throw failure(__TEXT("Unknown shader type : ") + type + reader.getCurrentNodePath());
 
 	GraphicsShaderDesc shaderDesc;
-	if (!_isHlsl)
+	if (_isHlsl)
+	{
+		shaderDesc.setStage(shaderStage);
+		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSL);
+		shaderDesc.setEntryPoint(std::move(value));
+		shaderDesc.setByteCodes(_hlslCodes);
+	}
+	else
 	{
 		std::vector<char> codes = _shaderCodes[value];
 		if (codes.empty())
@@ -182,88 +189,6 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 		shaderDesc.setStage(shaderStage);
 		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes);
 		shaderDesc.setByteCodes(std::string(codes.data(), codes.size()));
-	}
-	else
-	{
-#if defined(_BUILD_PLATFORM_WINDOWS)
-		std::string profile;
-		if (type == "vertex")
-			profile = "vs_5_0";
-		else if (type == "fragment")
-			profile = "ps_5_0";
-
-		ID3DBlob* binary = nullptr;
-		ID3DBlob* error = nullptr;
-
-		D3DCreateBlob(4096, &binary);
-		D3DCreateBlob(4096, &error);
-
-		HRESULT hr = D3DCompile(
-			_hlslCodes.data(),
-			_hlslCodes.size(),
-			nullptr,
-			nullptr,
-			nullptr,
-			value.c_str(),
-			profile.c_str(),
-			D3DCOMPILE_OPTIMIZATION_LEVEL3,
-			0,
-			&binary,
-			&error
-			);
-
-		if (hr != S_OK)
-		{		
-			std::regex pattern("\\((.*?,.*?)\\): error");
-			std::match_results<std::string::const_iterator> result;
-			std::string errorString((char*)error->GetBufferPointer(), error->GetBufferSize());
-			
-			if (!std::regex_search(errorString, result, pattern))
-				throw failure((char*)error->GetBufferPointer());
-
-			std::istringstream patternResult(result.str());
-
-			std::size_t row;
-			patternResult.ignore(1);
-			patternResult >> row;
-
-			std::string line;
-			std::ostringstream ostream;
-			std::istringstream istream(_hlslCodes);
-			ostream << (const char*)error->GetBufferPointer() << std::endl;
-
-			std::size_t start = std::max<std::size_t>(0, row - 10);
-
-			for (std::size_t i = 0; i < row + 10; i++)
-			{
-				if (!std::getline(istream, line))
-					break;
-
-				if (i >= start)
-					ostream << i << '\t' << line << std::endl;
-			}
-
-			if (binary)
-				binary->Release();
-
-			if (error)
-				error->Release();
-
-			throw failure(ostream.str().c_str());
-		}
-
-		shaderDesc.setStage(shaderStage);
-		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes);
-		shaderDesc.setByteCodes(std::string((char*)binary->GetBufferPointer(), binary->GetBufferSize()));
-
-		if (binary)
-			binary->Release();
-
-		if (error)
-			error->Release();
-#else
-		throw failure(__TEXT("Can't support HLSL : ") + reader.getCurrentNodePath());
-#endif
 	}
 
 	auto shaderModule = manager.createShader(shaderDesc);

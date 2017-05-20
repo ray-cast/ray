@@ -300,9 +300,8 @@ OGLShader::~OGLShader() noexcept
 bool
 OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
-	assert(_instance == GL_NONE);
-	assert(shaderDesc.getByteCodes().size() > 0);
-	assert(OGLTypes::asShaderStage(shaderDesc.getStage()) != GL_INVALID_ENUM);
+	assert(!_instance);
+	assert(!shaderDesc.getByteCodes().empty());
 
 	_instance = glCreateShader(OGLTypes::asShaderStage(shaderDesc.getStage()));
 	if (_instance == GL_NONE)
@@ -311,10 +310,10 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 		return false;
 	}
 
-	std::string codes = shaderDesc.getByteCodes().data();
+	std::string codes;
 	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSL)
 	{
-		if (!HlslCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes))
+		if (!HlslCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), shaderDesc.getEntryPoint().data(), codes))
 		{
 			GL_PLATFORM_LOG("Can't conv hlsl to glsl.");
 			return false;
@@ -368,14 +367,18 @@ OGLShader::getInstanceID() const noexcept
 }
 
 bool
-OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, std::string& out)
+OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& codes, const std::string& main, std::string& out)
 {
 #if defined(_BUILD_PLATFORM_WINDOWS)
-	std::string profile;
+	const char* profile;
 	if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit)
 		profile = "vs_4_0";
 	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit)
 		profile = "ps_4_0";
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit)
+		profile = "gs_4_0";
+	else if (stage == GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit)
+		profile = "cs_4_0";
 
 	ID3DBlob* binary = nullptr;
 	ID3DBlob* error = nullptr;
@@ -383,38 +386,49 @@ OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& cod
 	D3DCreateBlob(4096, &binary);
 	D3DCreateBlob(4096, &error);
 
-	HRESULT hr = D3DCompile(
-		codes.data(),
-		codes.size(),
-		nullptr,
-		nullptr,
-		nullptr,
-		"main",
-		profile.c_str(),
-		D3DCOMPILE_OPTIMIZATION_LEVEL3,
-		0,
-		&binary,
-		&error
-		);
-
-	if (hr != S_OK)
+	try
 	{
-		std::string line;
-		std::size_t index = 1;
-		std::ostringstream ostream;
-		std::istringstream istream(codes);
-
-		ostream << (const char*)error->GetBufferPointer() << std::endl;
-		while (std::getline(istream, line))
+		HRESULT hr = D3DCompile(codes.data(), codes.size(), 0, 0, 0, main.c_str(), profile, D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, &binary, &error);
+		if (hr != S_OK)
 		{
-			ostream << index << '\t' << line << std::endl;
-			index++;
+			std::string line;
+			std::size_t index = 1;
+			std::ostringstream ostream;
+			std::istringstream istream(codes);
+
+			ostream << (const char*)error->GetBufferPointer() << std::endl;
+			while (std::getline(istream, line))
+			{
+				ostream << index << '\t' << line << std::endl;
+				index++;
+			}
+
+			GL_PLATFORM_LOG(ostream.str().c_str());
+		}
+		else
+		{
+			if (!HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out))
+				hr = S_FALSE;
 		}
 
-		GL_PLATFORM_LOG(ostream.str().c_str());
-	}
+		if (binary)
+			binary->Release();
 
-	return HlslByteCodes2GLSL(stage, (char*)binary->GetBufferPointer(), out);
+		if (error)
+			error->Release();
+
+		return hr == S_OK ? true : false;
+	}
+	catch (...)
+	{
+		if (binary)
+			binary->Release();
+
+		if (error)
+			error->Release();
+
+		return false;
+	}
 #else
 	return false;
 #endif
@@ -433,15 +447,24 @@ OGLShader::HlslByteCodes2GLSL(GraphicsShaderStageFlags stage, const char* codes,
 
 	GLSLShader shader;
 	GLSLCrossDependencyData dependency;
-	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_DEFAULT, 0, nullptr, &dependency, &shader))
+
+	try
+	{
+		if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_DEFAULT, 0, nullptr, &dependency, &shader))
+		{
+			FreeGLSLShader(&shader);
+			return false;
+		}
+
+		out = shader.sourceCode;
+		FreeGLSLShader(&shader);
+		return true;
+	}
+	catch (...)
 	{
 		FreeGLSLShader(&shader);
 		return false;
 	}
-
-	out = shader.sourceCode;
-	FreeGLSLShader(&shader);
-	return true;
 }
 
 const GraphicsShaderDesc&

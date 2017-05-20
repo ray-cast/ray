@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class GraphicsDeviceProperties final
+class EXPORT GraphicsDeviceProperties final
 {
 public:
 	GraphicsDeviceProperties() noexcept;

@@ -86,9 +86,9 @@ public:
 	std::uint32_t getMipBase() const noexcept;
 
 	void setStream(const void* data) noexcept;
-	void setStreamSize(std::uint32_t size) noexcept;
+	void setStreamSize(std::size_t size) noexcept;
 	const void* getStream() const noexcept;
-	std::uint32_t getStreamSize() const noexcept;
+	std::size_t getStreamSize() const noexcept;
 
 private:
 	std::string _name;
@@ -113,7 +113,7 @@ private:
 	GraphicsImageTiling _tiling;
 
 	const void* _data;
-	std::uint32_t _dataSize;
+	std::size_t _dataSize;
 };
 
 class EXPORT GraphicsTexture : public GraphicsResource

@@ -54,6 +54,7 @@
 
 #include <ray/image.h>
 #include <ray/imagutil.h>
+#include <ray/imagcubemap.h>
 
 #include <ray/SH.h>
 
@@ -331,10 +332,23 @@ bool domain_main(int argc, char** argv)
 {
 	try
 	{
-		ray::image::Image image;
-		image.load("C:/Users/ray/Desktop/uffizi/skybox.hdr", "hdr");
+		/*ray::image::Image image;
+		if (!image.load("C:/Users/ray/Desktop/uffizi/empty_room_04_pano.hdr", "hdr"))
+			return false;
+
+		ray::image::Image cubemap;
+		if (!ray::image::makeCubemapFromLatLong(cubemap, image))
+			return false;
+
+		auto sh = ray::math::CalcCubemapToSH<9>(cubemap.width(), cubemap.height(), (float*)cubemap.data(), cubemap.channel());
+		ray::math::CalcCubemapToIrradiance(sh, cubemap.width(), cubemap.height(), (ray::float3*)cubemap.data());
+
+		if (!ray::image::makeLatLongFromCubemap(image, cubemap))
+			return false;
+
 		image.save("C:/Users/ray/Desktop/skybox.hdr", "hdr");
-		return true;
+
+		return true;*/
 
 		if (argc != 0)
 		{

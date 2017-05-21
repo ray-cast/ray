@@ -43,6 +43,8 @@ SOURCE_GROUP("LightMapPack" FILES ${LIGHTMAPPACK_LIST})
 SET(LIGHTMAPPROBES_LIST 
 	LightProbe.h
 	LightProbe.cpp
+	LightProbeBaking.h
+	LightProbeBaking.cpp
 )
 SOURCE_GROUP("LightProbes" FILES ${LIGHTMAPPROBES_LIST})
 

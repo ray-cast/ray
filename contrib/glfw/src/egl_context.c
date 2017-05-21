@@ -28,6 +28,7 @@
 #include "internal.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -296,6 +297,9 @@ GLFWbool _glfwInitEGL(void)
         NULL
     };
 
+    if (_glfw.egl.handle)
+        return GLFW_TRUE;
+
     for (i = 0;  sonames[i];  i++)
     {
         _glfw.egl.handle = _glfw_dlopen(sonames[i]);
@@ -304,7 +308,12 @@ GLFWbool _glfwInitEGL(void)
     }
 
     if (!_glfw.egl.handle)
+    {
+        _glfwInputError(GLFW_API_UNAVAILABLE, "EGL: Library not found");
         return GLFW_FALSE;
+    }
+
+    _glfw.egl.prefix = (strncmp(sonames[i], "lib", 3) == 0);
 
     _glfw.egl.GetConfigAttrib = (PFNEGLGETCONFIGATTRIBPROC)
         _glfw_dlsym(_glfw.egl.handle, "eglGetConfigAttrib");
@@ -358,6 +367,8 @@ GLFWbool _glfwInitEGL(void)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "EGL: Failed to load required entry points");
+
+        _glfwTerminateEGL();
         return GLFW_FALSE;
     }
 
@@ -622,6 +633,11 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
 
         for (i = 0;  sonames[i];  i++)
         {
+            // HACK: Match presence of lib prefix to increase chance of finding
+            //       a matching pair in the jungle that is Win32 EGL/GLES
+            if (_glfw.egl.prefix != (strncmp(sonames[i], "lib", 3) == 0))
+                continue;
+
             window->context.egl.client = _glfw_dlopen(sonames[i]);
             if (window->context.egl.client)
                 break;

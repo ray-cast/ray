@@ -203,6 +203,18 @@ OGLCoreTexture::close() noexcept
 		glDeleteTextures(1, &_texture);
 		_texture = GL_NONE;
 	}
+
+	if (_pbo != GL_NONE)
+	{
+		glDeleteBuffers(1, &_pbo);
+		_pbo = GL_NONE;
+	}
+
+	if (_upbo != GL_NONE)
+	{
+		glDeleteBuffers(1, &_upbo);
+		_upbo = GL_NONE;
+	}
 }
 
 bool

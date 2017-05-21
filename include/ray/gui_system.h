@@ -53,7 +53,7 @@ public:
 	virtual void setImageLoader(GuiImageLoaderPtr loader) noexcept;
 	virtual GuiImageLoaderPtr getImageLoader() const noexcept;
 
-	virtual bool injectMouseMove(int _absx, int _absy, int _absz) noexcept = 0;
+	virtual bool injectMouseMove(float _absx, float _absy) noexcept = 0;
 	virtual bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept = 0;
 	virtual bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept = 0;
 	virtual bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept = 0;

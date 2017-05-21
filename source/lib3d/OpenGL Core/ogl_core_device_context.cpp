@@ -415,8 +415,8 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
 			auto& colorAttachment = framebufferDesc.getColorAttachments();
 
-			std::size_t viewportCount = std::max<std::size_t>(1, colorAttachment.size());
-			for (std::size_t i = 0; i < viewportCount; i++)
+			std::uint32_t viewportCount = std::max<std::uint32_t>(1, static_cast<std::uint32_t>(colorAttachment.size()));
+			for (std::uint32_t i = 0; i < viewportCount; i++)
 			{
 				this->setViewport(i, Viewport(0.0f, 0.0f, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 

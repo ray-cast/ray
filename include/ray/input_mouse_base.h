@@ -60,8 +60,8 @@ public:
 	virtual float getAxisX() const noexcept = 0;
 	virtual float getAxisY() const noexcept = 0;
 
-	virtual void setPosition(int x, int y) noexcept = 0;
-	virtual void getPosition(int& x, int& y) const noexcept = 0;
+	virtual void setPosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept = 0;
+	virtual void getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept = 0;
 
 	virtual bool getButtonDown(InputButton::Code key) const noexcept = 0;
 	virtual bool getButtonUp(InputButton::Code key) const noexcept = 0;

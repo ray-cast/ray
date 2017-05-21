@@ -52,7 +52,7 @@ VulkanMemory::~VulkanMemory() noexcept
 }
 
 bool
-VulkanMemory::setup(std::uint32_t streamSize, std::uint32_t typeBits, std::uint32_t mask) noexcept
+VulkanMemory::setup(VkDeviceSize streamSize, std::uint32_t typeBits, std::uint32_t mask) noexcept
 {
 	assert(streamSize > 0);
 

@@ -178,7 +178,7 @@ LightMass::baking(const LightMassParams& params, const PMX& model, LightMapData&
 
 	for (std::uint32_t i = 0; i < model.numMaterials; i++)
 	{
-		Bound bound;
+		BoundingBox bound;
 		this->computeBoundingBox(model, bound, option.model.subsets[i].drawcall.firstIndex * option.model.sizeofIndices, option.model.subsets[i].drawcall.count);
 		option.model.subsets[i].boundingBox = bound;
 	}
@@ -246,11 +246,11 @@ LightMass::getFace(const PMX& model, std::size_t n, std::uint32_t firstIndex) no
 }
 
 void
-LightMass::computeBoundingBox(const PMX& model, Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept
+LightMass::computeBoundingBox(const PMX& model, BoundingBox& boundingBox, std::uint32_t firstFace, std::size_t faceCount) noexcept
 {
 	boundingBox.reset();
 
-	for (size_t i = 0; i < faceCount; i++)
+	for (std::size_t i = 0; i < faceCount; i++)
 	{
 		std::uint32_t face = this->getFace(model, i, firstFace);
 		boundingBox.encapsulate(model.vertices[face].position);

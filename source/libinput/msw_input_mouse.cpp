@@ -63,13 +63,13 @@ MSWInputMouse::onHideMouse() noexcept
 }
 
 void 
-MSWInputMouse::onChangePosition(int x, int y) noexcept
+MSWInputMouse::onChangePosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept
 {
 	if (_focusWindow)
 	{
 		POINT pt;
-		pt.x = x;
-		pt.y = y;
+		pt.x = static_cast<LONG>(x);
+		pt.y = static_cast<LONG>(y);
 
 		::ClientToScreen((HWND)_window, &pt);
 		::SetCursorPos(pt.x, pt.y);

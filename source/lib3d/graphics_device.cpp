@@ -43,7 +43,7 @@ __ImplementSubInterface(GraphicsDevice2, GraphicsDevice, "GraphicsDevice2")
 
 GraphicsDeviceDesc::GraphicsDeviceDesc() noexcept
 	: _hwnd(nullptr)
-	, _deviceType(GraphicsDeviceType::GraphicsDeviceTypeMaxEnum)
+	, _deviceType(GraphicsDeviceType::GraphicsDeviceTypeUndefined)
 {
 }
 

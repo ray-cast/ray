@@ -68,8 +68,8 @@ protected:
 	int convexClip(float2* poly, int nPoly, const float2* clip, int nClip, float2* res);
 
 	std::uint32_t passStepSize();
-	std::size_t passOffsetX();
-	std::size_t passOffsetY();
+	std::uint32_t passOffsetX();
+	std::uint32_t passOffsetY();
 
 	float* getLightmapPixel(int x, int y);
 	void setLightmapPixel(int x, int y, float* in);
@@ -135,9 +135,9 @@ private:
 
 			struct
 			{
-				int minx, miny;
-				int maxx, maxy;
-				int x, y;
+				std::int16_t minx, miny;
+				std::int16_t maxx, maxy;
+				std::int16_t x, y;
 			} rasterizer;
 
 			struct

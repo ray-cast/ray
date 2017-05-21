@@ -59,8 +59,8 @@ public:
 	virtual float getAxisX() const noexcept;
 	virtual float getAxisY() const noexcept;
 
-	virtual void setMousePos(int x, int y) noexcept;
-	virtual void getMousePos(int& x, int& y) const noexcept;
+	virtual void setMousePos(InputButton::mouse_t x, InputButton::mouse_t y) noexcept;
+	virtual void getMousePos(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept;
 
 	virtual bool getKeyDown(InputKey::Code key) const noexcept;
 	virtual bool getKeyUp(InputKey::Code key) const noexcept;

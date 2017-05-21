@@ -128,37 +128,19 @@ template<typename T>
 class AABBt
 {
 public:
+	typedef typename trait::_typeaddition<T>::value_type value_type;
+	typedef typename trait::_typeaddition<T>::pointer pointer;
+	typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+	typedef typename trait::_typeaddition<T>::reference reference;
+	typedef typename trait::_typeaddition<T>::const_reference const_reference;
+
 	Vector3t<T> min, max;
 
-	AABBt<T>() noexcept
-	{
-		this->reset();
-	}
-
-	AABBt<T>(const AABBt& copy) noexcept
-	{
-		min = copy.min;
-		max = copy.max;
-	}
-
-	AABBt<T>(const Vector3t<T>& pos0, const Vector3t<T>& pos1) noexcept
-	{
-		min = pos0;
-		max = pos1;
-		assert(!empty());
-	}
-
-	AABBt<T>(const Vector3t<T> pt[], std::size_t n) noexcept
-	{
-		reset();
-		encapsulate(pt, n);
-	}
-
-	AABBt<T>(const Vector3t<T>& pt, std::size_t radio) noexcept
-	{
-		reset();
-		encapsulate(pt, radio);
-	}
+	AABBt<T>() noexcept { this->reset(); }
+	AABBt<T>(const AABBt& copy) noexcept { min = copy.min; max = copy.max; }
+	AABBt<T>(const Vector3t<T>& _min, const Vector3t<T>& _max) noexcept :min(_min), max(_max) { assert(!empty()); }
+	AABBt<T>(const Vector3t<T> pt[], std::size_t n) noexcept { this->reset(); this->encapsulate(pt, n); }
+	AABBt<T>(const Vector3t<T>& pt, std::size_t radio) noexcept { this->reset(); this->encapsulate(pt, radio); }
 
 	AABBt<T>& operator+=(const Vector3t<T>& other) noexcept
 	{

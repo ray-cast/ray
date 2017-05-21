@@ -45,32 +45,35 @@ template<typename T>
 class Spheret
 {
 public:
-	Spheret() noexcept
-	{
-	}
+	typedef typename trait::_typeaddition<T>::value_type value_type;
+	typedef typename trait::_typeaddition<T>::pointer pointer;
+	typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+	typedef typename trait::_typeaddition<T>::reference reference;
+	typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
-	Spheret(const Vector3t<T>& min, const Vector3t<T>& max) noexcept
-		: _box(min, max)
-	{
-		_center = _box.center();
-		_radius = math::length(_box.size()) * 0.5f;
-	}
-
-	Spheret(const Vector3t<T>& pt, T radius) noexcept
-		: _center(pt)
-		, _radius(radius)
-	{
-	}
-
-	bool empty() const noexcept
-	{
-		return _box.empty();
-	}
+	Spheret() noexcept {}
+	Spheret(const Vector3t<T>& min, const Vector3t<T>& max) noexcept { this->set(min, max); }
+	Spheret(const Vector3t<T>& pt, T radius) noexcept : _center(pt), _radius(radius) {}
 
 	void set(const AABBt<T>& aabb) noexcept
 	{
 		_box = aabb;
 		_center = _box.center();
+		_radius = math::length(_box.size()) * 0.5f;
+	}
+
+	void set(const Vector3t<T>& min, const Vector3t<T>& max) noexcept
+	{
+		_box = AABBt<T>(min, max);
+		_center = _box.center();
+		_radius = math::length(_box.size()) * 0.5f;
+	}
+
+	void setCenter(const Vector3t<T>& center) noexcept
+	{
+		_box.min = _box.min - _center + center;
+		_box.max = _box.max - _center + center;
+		_center = center;
 		_radius = math::length(_box.size()) * 0.5f;
 	}
 
@@ -148,6 +151,12 @@ public:
 		_radius = math::length(_box.size()) * 0.5f;
 	}
 
+	bool empty() const noexcept
+	{
+		return _box.empty();
+	}
+
+
 	bool contains(const Vector3t<T>& pt) const noexcept
 	{
 		Vector3t<T> p = pt - _center;
@@ -157,19 +166,6 @@ public:
 		if (p.z > _radius) { return false; }
 
 		return true;
-	}
-
-	Vector3t<T> closestPoint(const Vector3t<T> & pt) const noexcept
-	{
-		Vector3t<T>  d = _center - pt;
-
-		T len = d.length();
-
-		T dist = len - _radius;
-
-		Vector3t<T>  b = dist / len * d;
-
-		return pt + b;
 	}
 
 	bool intersects(const Spheret<T>& sphere) const noexcept
@@ -230,31 +226,30 @@ public:
 		return d.length2() - _radius * _radius;
 	}
 
-	AABBt<T>& aabb() noexcept
-	{
-		return _box;
-	}
-
-	const AABBt<T>& aabb() const noexcept
-	{
-		return _box;
-	}
-
-	float radius() const noexcept
+	T radius() const noexcept
 	{
 		return _radius;
 	}
 
-	const Vector3t<T>& center() const noexcept
-	{
-		return _center;
-	}
+	const AABBt<T>& aabb() const noexcept { return _box; }
 
-	void center(const Vector3t<T>& center) noexcept
+	const Vector3t<T>& min() const noexcept { return _box.min; }
+	const Vector3t<T>& max() const noexcept { return _box.max; }
+	const Vector3t<T>& center() const noexcept { return _center; }
+
+	Vector3t<T> size() const noexcept { return _box.size(); }
+
+	Vector3t<T> closestPoint(const Vector3t<T> & pt) const noexcept
 	{
-		_box.min = _box.min - _center + center;
-		_box.max = _box.max - _center + center;
-		_center = center;
+		Vector3t<T>  d = _center - pt;
+
+		T len = d.length();
+
+		T dist = len - _radius;
+
+		Vector3t<T>  b = dist / len * d;
+
+		return pt + b;
 	}
 
 private:

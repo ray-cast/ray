@@ -70,18 +70,18 @@ private:
 	void instanceShader(MaterialManager& manager, Material& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
 	void instanceInputLayout(MaterialManager& manager, Material& material, iarchive& reader) except;
 
-	static GraphicsShaderStageFlagBits stringToShaderStage(const std::string& stage) noexcept;
-	static GraphicsUniformType stringToUniformType(const std::string& type) noexcept;
-	static GraphicsVertexType stringToPrimitive(const std::string& primitive) noexcept;
-	static GraphicsCullMode stringToCullMode(const std::string& cullmode) noexcept;
-	static GraphicsPolygonMode stringToFillMode(const std::string& fillmode) noexcept;
-	static GraphicsBlendOp stringToBlendOperation(const std::string& blendop) noexcept;
-	static GraphicsBlendFactor stringToBlendFactor(const std::string& factor) noexcept;
-	static GraphicsColorMaskFlags stringToColorMask(const std::string& mask) noexcept;
-	static GraphicsCompareFunc stringToCompareFunc(const std::string& func) noexcept;
-	static GraphicsStencilOp stringToStencilOp(const std::string& stencilop) noexcept;
-	static GraphicsFormat stringToFormat(const std::string& format) noexcept;
-	static GlobalSemanticType stringToSemanticType(const std::string& type) noexcept;
+	static bool GetShaderStage(const std::string& string, GraphicsShaderStageFlagBits& flags) noexcept;
+	static bool GetUniformType(const std::string& string, GraphicsUniformType& type) noexcept;
+	static bool GetPrimitive(const std::string& string, GraphicsVertexType& primitive) noexcept;
+	static bool GetCullMode(const std::string& string, GraphicsCullMode& cullmode) noexcept;
+	static bool GetFillMode(const std::string& string, GraphicsPolygonMode& fillmode) noexcept;
+	static bool GetBlendOperation(const std::string& string, GraphicsBlendOp& blendop) noexcept;
+	static bool GetBlendFactor(const std::string& string, GraphicsBlendFactor& factor) noexcept;
+	static bool GetColorMask(const std::string& string, GraphicsColorMaskFlags& mask) noexcept;
+	static bool GetCompareFunc(const std::string& string, GraphicsCompareFunc& func) noexcept;
+	static bool GetStencilOp(const std::string& string, GraphicsStencilOp& stencilop) noexcept;
+	static bool GetFormat(const std::string& string, GraphicsFormat& format) noexcept;
+	static bool GetSemanticType(const std::string& string, GlobalSemanticType& type) noexcept;
 
 private:
 	MaterialMaker(const MaterialMaker&) noexcept = delete;

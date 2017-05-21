@@ -64,8 +64,8 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 	auto& srcBlends = _stateDesc.getColorBlends();
 	auto& destBlends = lastStateDesc.getColorBlends();
 
-	GLuint srcBlendCount = srcBlends.size();
-	GLuint destBlendCount = destBlends.size();
+	GLuint srcBlendCount = static_cast<GLuint>(srcBlends.size());
+	GLuint destBlendCount = static_cast<GLuint>(destBlends.size());
 	for (GLuint i = srcBlendCount; i < destBlendCount; i++)
 	{
 		auto& destBlend = destBlends[i];

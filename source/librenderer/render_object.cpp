@@ -77,19 +77,19 @@ RenderObject::getLayer() const noexcept
 }
 
 void
-RenderObject::setBoundingBox(const Bound& bound) noexcept
+RenderObject::setBoundingBox(const BoundingBox& bound) noexcept
 {
 	_worldBoundingxBox = _boundingBox = bound;
 	_worldBoundingxBox.applyMatrix(_transform);
 }
 
-const Bound&
+const BoundingBox&
 RenderObject::getBoundingBox() const noexcept
 {
 	return _boundingBox;
 }
 
-const Bound&
+const BoundingBox&
 RenderObject::getBoundingBoxInWorld() const noexcept
 {
 	return _worldBoundingxBox;

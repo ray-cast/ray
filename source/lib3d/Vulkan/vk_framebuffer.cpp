@@ -57,6 +57,8 @@ VulkanFramebufferLayout::~VulkanFramebufferLayout() noexcept
 bool
 VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) noexcept
 {
+	assert(passDesc.getComponents().size() < std::numeric_limits<std::uint32_t>::max());
+
 	std::vector<VkAttachmentDescription> attachments;
 	std::vector<VkAttachmentReference> colorAttachments;
 	std::vector<VkAttachmentReference> depthAttachments;
@@ -64,8 +66,8 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 	for (const auto& component : passDesc.getComponents())
 	{
 		auto imageLayout = VulkanTypes::asImageLayout(component.getAttachType());
-		if (imageLayout == GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal ||
-			imageLayout == GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal)
+		if (imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
+			imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
 		{
 			VkAttachmentReference reference;
 			reference.attachment = component.getAttachSlot();
@@ -100,7 +102,7 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 	subpass.flags = 0;
 	subpass.inputAttachmentCount = 0;
 	subpass.pInputAttachments = nullptr;
-	subpass.colorAttachmentCount = colorAttachments.size();
+	subpass.colorAttachmentCount = static_cast<std::uint32_t>(colorAttachments.size());
 	subpass.pColorAttachments = colorAttachments.data();
 	subpass.pResolveAttachments = nullptr;
 	subpass.pDepthStencilAttachment = depthAttachments.data();
@@ -111,7 +113,7 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 	pass.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	pass.flags = 0;
 	pass.pNext = nullptr;
-	pass.attachmentCount = attachments.size();
+	pass.attachmentCount = static_cast<std::uint32_t>(attachments.size());
 	pass.pAttachments = attachments.data();
 	pass.subpassCount = 1;
 	pass.pSubpasses = &subpass;

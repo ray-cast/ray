@@ -52,7 +52,7 @@ public:
 	bool open() except;
 	void close() noexcept;
 
-	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
+	bool injectMouseMove(float _absx, float _absy) noexcept;
 	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
 	bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
 	bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept;

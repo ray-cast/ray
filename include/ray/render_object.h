@@ -64,9 +64,9 @@ public:
 	void setOwnerListener(RenderListener* listener) noexcept;
 	RenderListener* getOwnerListener() noexcept;
 
-	void setBoundingBox(const Bound& bound) noexcept;
-	const Bound& getBoundingBox() const noexcept;
-	const Bound& getBoundingBoxInWorld() const noexcept;
+	void setBoundingBox(const BoundingBox& bound) noexcept;
+	const BoundingBox& getBoundingBox() const noexcept;
+	const BoundingBox& getBoundingBoxInWorld() const noexcept;
 
 	void setRenderScene(RenderScenePtr scene) noexcept;
 	const RenderScenePtr& getRenderScene() const noexcept;
@@ -97,8 +97,8 @@ public:
 protected:
 	std::uint8_t _layer;
 
-	Bound _boundingBox;
-	Bound _worldBoundingxBox;
+	BoundingBox _boundingBox;
+	BoundingBox _worldBoundingxBox;
 
 	float4x4 _transform;
 	float4x4 _transformInverse;

@@ -442,12 +442,16 @@ LightMassBaking::setSamplePosition(std::size_t indicesTriangleBaseIndex)
 		float2 uv;
 		if (_ctx->mesh.uvsType == GL_FLOAT)
 			uv = *(const float2*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride);
-		else if (_ctx->mesh.uvsType == GL_UNSIGNED_INT)
-			uv = float2((const std::uint32_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint16_t>::max();
 		else if (_ctx->mesh.uvsType == GL_UNSIGNED_SHORT)
 			uv = float2((const std::uint16_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint16_t>::max();
 		else if (_ctx->mesh.uvsType == GL_UNSIGNED_BYTE)
 			uv = float2((const std::uint8_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride)) / (float)std::numeric_limits<std::uint8_t>::max();
+		else if (_ctx->mesh.uvsType == GL_UNSIGNED_INT)
+		{
+			float u = ((const std::uint32_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride))[0] / (float)std::numeric_limits<std::uint32_t>::max();
+			float v = ((const std::uint32_t*)(_ctx->mesh.uvs + index * _ctx->mesh.uvsStride))[1] / (float)std::numeric_limits<std::uint32_t>::max();
+			uv = float2(u, v);
+		}
 		else
 			assert(false);
 
@@ -530,24 +534,24 @@ LightMassBaking::passStepSize()
 	return step;
 }
 
-std::size_t
+std::uint32_t
 LightMassBaking::passOffsetX()
 {
 	if (!_ctx->meshPosition.pass)
 		return 0;
 	int passType = (_ctx->meshPosition.pass - 1) % 3;
-	std::size_t halfStep = passStepSize() >> 1;
+	std::uint32_t halfStep = passStepSize() >> 1;
 	return passType != 1 ? halfStep : 0;
 }
 
-std::size_t
+std::uint32_t
 LightMassBaking::passOffsetY()
 {
 	if (!_ctx->meshPosition.pass)
 		return 0;
 
 	int passType = (_ctx->meshPosition.pass - 1) % 3;
-	std::size_t halfStep = passStepSize() >> 1;
+	std::uint32_t halfStep = passStepSize() >> 1;
 	return passType != 0 ? halfStep : 0;
 }
 
@@ -560,7 +564,7 @@ LightMassBaking::hasConservativeTriangleRasterizerFinished()
 void
 LightMassBaking::moveToNextPotentialConservativeTriangleRasterizerPosition()
 {
-	std::size_t step = passStepSize();
+	std::uint32_t step = passStepSize();
 
 	_ctx->meshPosition.rasterizer.x += step;
 

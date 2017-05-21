@@ -54,7 +54,7 @@ private:
 	void onShowMouse() noexcept;
 	void onHideMouse() noexcept;
 
-	void onChangePosition(int x, int y) noexcept;
+	void onChangePosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept;
 
 	void onInputEvent(const InputEvent& event) noexcept;
 

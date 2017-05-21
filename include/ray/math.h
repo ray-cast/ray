@@ -39,7 +39,7 @@
 
 #include <ray/aabb.h>
 #include <ray/binary.h>
-#include <ray/bound.h>
+#include <ray/boundingbox.h>
 #include <ray/dccmn.h>
 #include <ray/euler.h>
 #include <ray/frustum.h>

@@ -126,7 +126,7 @@ template<typename T = float>
 class OBBt;
 
 template<typename T = float>
-class Boundt;
+class BoundingBoxt;
 
 template<typename T = float>
 class Frustumt;
@@ -166,7 +166,7 @@ typedef Quaterniont<> Quaternion;
 typedef Line3t<> Line3;
 typedef Box2t<> Box2;
 typedef AABBt<> AABB;
-typedef Boundt<> Bound;
+typedef BoundingBoxt<> BoundingBox;
 typedef Frustumt<> Frustum;
 typedef OBBt<> OBB;
 typedef Plane3t<> Plane3;
@@ -197,7 +197,7 @@ typedef EulerAnglest<float> EulerAnglestf;
 typedef Quaterniont<float> Quaternionf;
 typedef Line3t<float> Line3f;
 typedef AABBt<float> AABBf;
-typedef Boundt<float> Boundf;
+typedef BoundingBoxt<float> BoundingBoxf;
 typedef Frustumt<float> Frustumf;
 typedef OBBt<float> OBBf;
 typedef Plane3t<float> Plane3f;
@@ -228,7 +228,7 @@ typedef EulerAnglest<double> EulerAnglestd;
 typedef Quaterniont<double> Quaterniond;
 typedef Line3t<double> Line3d;
 typedef AABBt<double> AABBd;
-typedef Boundt<double> Boundd;
+typedef BoundingBoxt<double> BoundingBoxd;
 typedef Frustumt<double> Frustumd;
 typedef OBBt<double> OBBd;
 typedef Plane3t<double> Plane3d;

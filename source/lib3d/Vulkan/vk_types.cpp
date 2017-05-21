@@ -516,9 +516,9 @@ VulkanTypes::asTextureTiling(GraphicsImageTiling tiling) noexcept
 {
 	switch (tiling)
 	{
-	case ray::GraphicsImageTilingOptimal:
+	case GraphicsImageTiling::GraphicsImageTilingOptimal:
 		return VK_IMAGE_TILING_OPTIMAL;
-	case ray::GraphicsImageTilingLinear:
+	case GraphicsImageTiling::GraphicsImageTilingLinear:
 		return VK_IMAGE_TILING_LINEAR;
 	default:
 		assert(false);
@@ -632,9 +632,9 @@ VulkanTypes::asFrontFace(GraphicsFrontFace face) noexcept
 {
 	switch (face)
 	{
-	case GraphicsFrontFaceCW:
+	case GraphicsFrontFace::GraphicsFrontFaceCW:
 		return VkFrontFace::VK_FRONT_FACE_CLOCKWISE;
-	case GraphicsFrontFaceCCW:
+	case GraphicsFrontFace::GraphicsFrontFaceCCW:
 		return VkFrontFace::VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	default:
 		assert(false);

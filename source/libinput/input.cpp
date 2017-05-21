@@ -157,14 +157,14 @@ DefaultInput::getAxisY() const noexcept
 }
 
 void
-DefaultInput::setMousePos(int x, int y) noexcept
+DefaultInput::setMousePos(InputButton::mouse_t x, InputButton::mouse_t y) noexcept
 {
 	if (_mouseCaptureDevice)
 		_mouseCaptureDevice->setPosition(x, y);
 }
 
 void
-DefaultInput::getMousePos(int& x, int& y) const noexcept
+DefaultInput::getMousePos(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept
 {
 	if (_mouseCaptureDevice)
 		_mouseCaptureDevice->getPosition(x, y);

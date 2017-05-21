@@ -163,7 +163,7 @@ IMGUISystem::close() noexcept
 }
 
 bool
-IMGUISystem::injectMouseMove(int absx, int absy, int _absz) noexcept
+IMGUISystem::injectMouseMove(float absx, float absy) noexcept
 {
 	auto& io = ImGui::GetIO();
 	io.MousePos.x = absx;

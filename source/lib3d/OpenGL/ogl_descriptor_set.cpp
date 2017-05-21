@@ -803,49 +803,64 @@ OGLDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 			glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, it->getFloat4x4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeIntArray:
-			glProgramUniform1iv(program, location, it->getIntArray().size(), it->getIntArray().data());
+			assert(it->getIntArray().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform1iv(program, location, static_cast<GLsizei>(it->getIntArray().size()), it->getIntArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt2Array:
-			glProgramUniform2iv(program, location, it->getInt2Array().size(), (GLint*)it->getInt2Array().data());
+			assert(it->getInt2Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform2iv(program, location, static_cast<GLsizei>(it->getInt2Array().size()), (GLint*)it->getInt2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt3Array:
-			glProgramUniform3iv(program, location, it->getInt3Array().size(), (GLint*)it->getInt3Array().data());
+			assert(it->getInt3Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform3iv(program, location, static_cast<GLsizei>(it->getInt3Array().size()), (GLint*)it->getInt3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt4Array:
-			glProgramUniform4iv(program, location, it->getInt4Array().size(), (GLint*)it->getInt4Array().data());
+			assert(it->getInt4Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform4iv(program, location, static_cast<GLsizei>(it->getInt4Array().size()), (GLint*)it->getInt4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUIntArray:
-			glProgramUniform1uiv(program, location, it->getUIntArray().size(), it->getUIntArray().data());
+			assert(it->getUIntArray().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform1uiv(program, location, static_cast<GLsizei>(it->getUIntArray().size()), it->getUIntArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
-			glProgramUniform2uiv(program, location, it->getUInt2Array().size(), (GLuint*)it->getUInt2Array().data());
+			assert(it->getUInt2Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform2uiv(program, location, static_cast<GLsizei>(it->getUInt2Array().size()), (GLuint*)it->getUInt2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
-			glProgramUniform3uiv(program, location, it->getUInt3Array().size(), (GLuint*)it->getUInt3Array().data());
+			assert(it->getUInt3Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform3uiv(program, location, static_cast<GLsizei>(it->getUInt3Array().size()), (GLuint*)it->getUInt3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
-			glProgramUniform4uiv(program, location, it->getUInt4Array().size(), (GLuint*)it->getUInt4Array().data());
+			assert(it->getUInt4Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform4uiv(program, location, static_cast<GLsizei>(it->getUInt4Array().size()), (GLuint*)it->getUInt4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloatArray:
-			glProgramUniform1fv(program, location, it->getFloatArray().size(), (GLfloat*)it->getFloatArray().data());
+			assert(it->getFloatArray().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform1fv(program, location, static_cast<GLsizei>(it->getFloatArray().size()), (GLfloat*)it->getFloatArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
-			glProgramUniform2fv(program, location, it->getFloat2Array().size(), (GLfloat*)it->getFloat2Array().data());
+			assert(it->getFloat2Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform2fv(program, location, static_cast<GLsizei>(it->getFloat2Array().size()), (GLfloat*)it->getFloat2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
-			glProgramUniform3fv(program, location, it->getFloat3Array().size(), (GLfloat*)it->getFloat3Array().data());
+			assert(it->getFloat3Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform3fv(program, location, static_cast<GLsizei>(it->getFloat3Array().size()), (GLfloat*)it->getFloat3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
-			glProgramUniform4fv(program, location, it->getFloat4Array().size(), (GLfloat*)it->getFloat4Array().data());
+			assert(it->getFloat4Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniform4fv(program, location, static_cast<GLsizei>(it->getFloat4Array().size()), (GLfloat*)it->getFloat4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2x2Array:
-			glProgramUniformMatrix2fv(program, location, it->getFloat2x2Array().size(), GL_FALSE, (GLfloat*)it->getFloat2x2Array().data());
+			assert(it->getFloat2x2Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniformMatrix2fv(program, location, static_cast<GLsizei>(it->getFloat2x2Array().size()), GL_FALSE, (GLfloat*)it->getFloat2x2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
-			glProgramUniformMatrix3fv(program, location, it->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)it->getFloat3x3Array().data());
+			assert(it->getFloat3x3Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniformMatrix3fv(program, location, static_cast<GLsizei>(it->getFloat3x3Array().size()), GL_FALSE, (GLfloat*)it->getFloat3x3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
-			glProgramUniformMatrix4fv(program, location, it->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)it->getFloat4x4Array().data());
+			assert(it->getFloat4x4Array().size() < std::numeric_limits<GLsizei>::max());
+			glProgramUniformMatrix4fv(program, location, static_cast<GLsizei>(it->getFloat4x4Array().size()), GL_FALSE, (GLfloat*)it->getFloat4x4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSampler:
 			glBindSampler(location, it->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());

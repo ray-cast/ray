@@ -135,46 +135,46 @@ OGLCoreDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 			glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, it->getFloat4x4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeIntArray:
-			glProgramUniform1iv(program, location, it->getIntArray().size(), it->getIntArray().data());
+			glProgramUniform1iv(program, location, static_cast<GLsizei>(it->getIntArray().size()), it->getIntArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt2Array:
-			glProgramUniform2iv(program, location, it->getInt2Array().size(), (GLint*)it->getInt2Array().data());
+			glProgramUniform2iv(program, location, static_cast<GLsizei>(it->getInt2Array().size()), (GLint*)it->getInt2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt3Array:
-			glProgramUniform3iv(program, location, it->getInt3Array().size(), (GLint*)it->getInt3Array().data());
+			glProgramUniform3iv(program, location, static_cast<GLsizei>(it->getInt3Array().size()), (GLint*)it->getInt3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInt4Array:
-			glProgramUniform4iv(program, location, it->getInt4Array().size(), (GLint*)it->getInt4Array().data());
+			glProgramUniform4iv(program, location, static_cast<GLsizei>(it->getInt4Array().size()), (GLint*)it->getInt4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUIntArray:
-			glProgramUniform1uiv(program, location, it->getUIntArray().size(), it->getUIntArray().data());
+			glProgramUniform1uiv(program, location, static_cast<GLsizei>(it->getUIntArray().size()), it->getUIntArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
-			glProgramUniform2uiv(program, location, it->getUInt2Array().size(), (GLuint*)it->getUInt2Array().data());
+			glProgramUniform2uiv(program, location, static_cast<GLsizei>(it->getUInt2Array().size()), (GLuint*)it->getUInt2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
-			glProgramUniform3uiv(program, location, it->getUInt3Array().size(), (GLuint*)it->getUInt3Array().data());
+			glProgramUniform3uiv(program, location, static_cast<GLsizei>(it->getUInt3Array().size()), (GLuint*)it->getUInt3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
-			glProgramUniform4uiv(program, location, it->getUInt4Array().size(), (GLuint*)it->getUInt4Array().data());
+			glProgramUniform4uiv(program, location, static_cast<GLsizei>(it->getUInt4Array().size()), (GLuint*)it->getUInt4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloatArray:
-			glProgramUniform1fv(program, location, it->getFloatArray().size(), (GLfloat*)it->getFloatArray().data());
+			glProgramUniform1fv(program, location, static_cast<GLsizei>(it->getFloatArray().size()), (GLfloat*)it->getFloatArray().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
-			glProgramUniform2fv(program, location, it->getFloat2Array().size(), (GLfloat*)it->getFloat2Array().data());
+			glProgramUniform2fv(program, location, static_cast<GLsizei>(it->getFloat2Array().size()), (GLfloat*)it->getFloat2Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
-			glProgramUniform3fv(program, location, it->getFloat3Array().size(), (GLfloat*)it->getFloat3Array().data());
+			glProgramUniform3fv(program, location, static_cast<GLsizei>(it->getFloat3Array().size()), (GLfloat*)it->getFloat3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
-			glProgramUniform4fv(program, location, it->getFloat4Array().size(), (GLfloat*)it->getFloat4Array().data());
+			glProgramUniform4fv(program, location, static_cast<GLsizei>(it->getFloat4Array().size()), (GLfloat*)it->getFloat4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
-			glProgramUniformMatrix3fv(program, location, it->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)it->getFloat3x3Array().data());
+			glProgramUniformMatrix3fv(program, location, static_cast<GLsizei>(it->getFloat3x3Array().size()), GL_FALSE, (GLfloat*)it->getFloat3x3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
-			glProgramUniformMatrix4fv(program, location, it->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)it->getFloat4x4Array().data());
+			glProgramUniformMatrix4fv(program, location, static_cast<GLsizei>(it->getFloat4x4Array().size()), GL_FALSE, (GLfloat*)it->getFloat4x4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSampler:
 			glBindSampler(location, it->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());

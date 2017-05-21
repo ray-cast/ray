@@ -76,7 +76,7 @@ struct LightModelSubset
 	LightModelSubset() noexcept;
 
 	float3 emissive;
-	Bound boundingBox;
+	BoundingBox boundingBox;
 	LightModelDrawCall drawcall;
 };
 

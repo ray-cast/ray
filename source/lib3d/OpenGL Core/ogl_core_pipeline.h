@@ -73,8 +73,8 @@ private:
 		GLuint index;
 		GLuint slot;
 		GLuint count;
+		GLuint offset;
 		GLboolean normalize;
-		GLintptr offset;
 	};
 
 	struct VertexBinding

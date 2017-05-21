@@ -564,7 +564,7 @@ MaterialPass::setup(Material& material) noexcept
 	{
 		GraphicsInputLayoutDesc inputLayoutDesc;
 
-		std::size_t offset = 0;
+		std::uint16_t offset = 0;
 		const auto& attributes = _program->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{

@@ -44,6 +44,8 @@ _NAME_BEGIN
 class InputButton
 {
 public:
+	using mouse_t = float;
+
 	enum Code
 	{
 		LEFT,

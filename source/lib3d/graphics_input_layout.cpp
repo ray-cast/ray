@@ -109,13 +109,12 @@ GraphicsVertexLayout::GraphicsVertexLayout() noexcept
 {
 }
 
-GraphicsVertexLayout::GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format) noexcept
-	: _name(semantic)
+GraphicsVertexLayout::GraphicsVertexLayout(std::uint8_t slot, std::string&& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset) noexcept
+	: _name(std::move(semantic))
 	, _index(semanticIndex)
-	, _count(0)
+	, _offset(offset)
 	, _format(format)
 	, _slot(slot)
-	, _offset(0)
 {
 	_count = getVertexCount(format);
 	_size = getVertexSize(format);

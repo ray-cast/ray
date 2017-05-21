@@ -42,8 +42,6 @@
 
 #if _HAS_CXX17
 
-using Json = nlohmann::json;
-
 _NAME_BEGIN
 
 namespace json
@@ -65,9 +63,9 @@ archive_node reader(StreamReader& stream)
 	{
 		archive_node root;
 
-		auto json = Json::parse(data.begin(), data.end());
+		auto json = nlohmann::json::parse(data.begin(), data.end());
 
-		std::stack<std::tuple<archive_node*, Json::iterator, Json::iterator>> iteratorStack;
+		std::stack<std::tuple<archive_node*, nlohmann::json::iterator, nlohmann::json::iterator>> iteratorStack;
 		iteratorStack.push(std::make_tuple(&root, json.begin(), json.end()));
 		
 		while (!iteratorStack.empty())
@@ -81,22 +79,22 @@ archive_node reader(StreamReader& stream)
 
 				switch (it.value().type())
 				{
-				case Json::value_t::boolean:
-					std::get<0>(entry)->push_back(it.key(), value.get<Json::boolean_t>());
+				case nlohmann::json::value_t::boolean:
+					std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::boolean_t>());
 					break;
-				case Json::value_t::number_float:
-					std::get<0>(entry)->push_back(it.key(), value.get<Json::number_float_t>());
+				case nlohmann::json::value_t::number_float:
+					std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::number_float_t>());
 					break;
-				case Json::value_t::number_integer:
-					std::get<0>(entry)->push_back(it.key(), value.get<Json::number_integer_t>());
+				case nlohmann::json::value_t::number_integer:
+					std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::number_integer_t>());
 					break;
-				case Json::value_t::number_unsigned:
-					std::get<0>(entry)->push_back(it.key(), value.get<Json::number_unsigned_t>());
+				case nlohmann::json::value_t::number_unsigned:
+					std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::number_unsigned_t>());
 					break;
-				case Json::value_t::string:
-					std::get<0>(entry)->push_back(it.key(), value.get<Json::string_t>());
+				case nlohmann::json::value_t::string:
+					std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::string_t>());
 					break;
-				case Json::value_t::object:
+				case nlohmann::json::value_t::object:
 					iteratorStack.push(std::make_tuple(&(*std::get<0>(entry))[it.key()], value.begin(), value.end()));
 					break;
 				default:

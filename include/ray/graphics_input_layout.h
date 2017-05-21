@@ -68,8 +68,8 @@ class EXPORT GraphicsVertexLayout final
 {
 public:
 	GraphicsVertexLayout() noexcept;
-	GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format) noexcept;
-	GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset) noexcept;
+	GraphicsVertexLayout(std::uint8_t slot, std::string&& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset = 0) noexcept;
+	GraphicsVertexLayout(std::uint8_t slot, const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset = 0) noexcept;
 	~GraphicsVertexLayout() noexcept;
 
 	void setSemantic(const std::string& semantic) noexcept;
@@ -81,17 +81,17 @@ public:
 	void setVertexSlot(std::uint8_t slot) noexcept;
 	std::uint8_t getVertexSlot() const noexcept;
 
-	void setVertexFormat(GraphicsFormat format) noexcept;
-	GraphicsFormat getVertexFormat() const noexcept;
-
 	void setVertexOffset(std::uint16_t offset) noexcept;
 	std::uint16_t getVertexOffset() const noexcept;
+
+	void setVertexFormat(GraphicsFormat format) noexcept;
+	GraphicsFormat getVertexFormat() const noexcept;
 
 	std::uint8_t getVertexCount() const noexcept;
 	std::uint8_t getVertexSize() const noexcept;
 
-	static std::uint8_t getVertexCount(GraphicsFormat) noexcept;
-	static std::uint8_t getVertexSize(GraphicsFormat) noexcept;
+	static std::uint8_t getVertexCount(GraphicsFormat format) noexcept;
+	static std::uint8_t getVertexSize(GraphicsFormat format) noexcept;
 
 private:
 	std::string _name;

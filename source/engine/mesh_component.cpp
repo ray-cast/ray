@@ -122,24 +122,24 @@ MeshComponent::getNumIndices() const noexcept
 	return _mesh->getNumIndices();
 }
 
-Bound
+const BoundingBox&
 MeshComponent::getBoundingBox() const noexcept
 {
 	if (_mesh)
 		_mesh->getBoundingBox();
 	else if (_sharedMesh)
 		_sharedMesh->getBoundingBox();
-	return Bound::Empty;
+	return BoundingBox::Empty;
 }
 
-Bound
+const BoundingBox&
 MeshComponent::getBoundingBoxDownwards() const noexcept
 {
 	if (_mesh)
 		_mesh->getBoundingBoxDownwards();
 	else if (_sharedMesh)
 		_sharedMesh->getBoundingBoxDownwards();
-	return Bound::Empty;
+	return BoundingBox::Empty;
 }
 
 void

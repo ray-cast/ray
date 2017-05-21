@@ -1008,9 +1008,9 @@ VulkanDescriptorSet::update() noexcept
 
 		switch (type)
 		{
-		case ray::GraphicsUniformTypeSampler:
+		case GraphicsUniformType::GraphicsUniformTypeSampler:
 			break;
-		case ray::GraphicsUniformTypeSamplerImage:
+		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
 		{
 			auto texture = it->getTexture();
 			if (texture)
@@ -1036,9 +1036,9 @@ VulkanDescriptorSet::update() noexcept
 			}
 		}
 		break;
-		case ray::GraphicsUniformTypeCombinedImageSampler:
+		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
 			break;
-		case ray::GraphicsUniformTypeStorageImage:
+		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
 		{
 			auto texture = it->getTexture();
 			if (texture)
@@ -1064,19 +1064,19 @@ VulkanDescriptorSet::update() noexcept
 			}
 		}
 		break;
-		case ray::GraphicsUniformTypeStorageTexelBuffer:
+		case GraphicsUniformType::GraphicsUniformTypeStorageTexelBuffer:
 			break;
-		case ray::GraphicsUniformTypeStorageBuffer:
+		case GraphicsUniformType::GraphicsUniformTypeStorageBuffer:
 			break;
-		case ray::GraphicsUniformTypeStorageBufferDynamic:
+		case GraphicsUniformType::GraphicsUniformTypeStorageBufferDynamic:
 			break;
-		case ray::GraphicsUniformTypeUniformTexelBuffer:
+		case GraphicsUniformType::GraphicsUniformTypeUniformTexelBuffer:
 			break;
-		case ray::GraphicsUniformTypeUniformBuffer:
+		case GraphicsUniformType::GraphicsUniformTypeUniformBuffer:
 			break;
-		case ray::GraphicsUniformTypeUniformBufferDynamic:
+		case GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic:
 			break;
-		case ray::GraphicsUniformTypeInputAttachment:
+		case GraphicsUniformType::GraphicsUniformTypeInputAttachment:
 			break;
 		default:
 			break;
@@ -1106,97 +1106,97 @@ VulkanDescriptorSet::update() noexcept
 		auto uniformType = uniform->getType();
 		switch (uniformType)
 		{
-		case ray::GraphicsUniformTypeBool:
+		case GraphicsUniformType::GraphicsUniformTypeBool:
 			(*(int*)((char*)buffer + uniform->getOffset())) = uniformSet->getBool();
 			break;
-		case ray::GraphicsUniformTypeInt:
+		case GraphicsUniformType::GraphicsUniformTypeInt:
 			(*(int1*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt();
 			break;
-		case ray::GraphicsUniformTypeInt2:
+		case GraphicsUniformType::GraphicsUniformTypeInt2:
 			(*(int2*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt2();
 			break;
-		case ray::GraphicsUniformTypeInt3:
+		case GraphicsUniformType::GraphicsUniformTypeInt3:
 			(*(int3*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt3();
 			break;
-		case ray::GraphicsUniformTypeInt4:
+		case GraphicsUniformType::GraphicsUniformTypeInt4:
 			(*(int4*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt4();
 			break;
-		case ray::GraphicsUniformTypeUInt:
+		case GraphicsUniformType::GraphicsUniformTypeUInt:
 			(*(uint1*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt();
 			break;
-		case ray::GraphicsUniformTypeUInt2:
+		case GraphicsUniformType::GraphicsUniformTypeUInt2:
 			(*(uint2*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt2();
 			break;
-		case ray::GraphicsUniformTypeUInt3:
+		case GraphicsUniformType::GraphicsUniformTypeUInt3:
 			(*(uint3*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt3();
 			break;
-		case ray::GraphicsUniformTypeUInt4:
+		case GraphicsUniformType::GraphicsUniformTypeUInt4:
 			(*(uint4*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt4();
 			break;
-		case ray::GraphicsUniformTypeFloat:
+		case GraphicsUniformType::GraphicsUniformTypeFloat:
 			(*(float1*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat();
 			break;
-		case ray::GraphicsUniformTypeFloat2:
+		case GraphicsUniformType::GraphicsUniformTypeFloat2:
 			(*(float2*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat2();
 			break;
-		case ray::GraphicsUniformTypeFloat3:
+		case GraphicsUniformType::GraphicsUniformTypeFloat3:
 			(*(float3*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat3();
 			break;
-		case ray::GraphicsUniformTypeFloat4:
+		case GraphicsUniformType::GraphicsUniformTypeFloat4:
 			(*(float4*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat4();
 			break;
-		case ray::GraphicsUniformTypeFloat2x2:
+		case GraphicsUniformType::GraphicsUniformTypeFloat2x2:
 			(*(float2x2*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat2x2();
 			break;
-		case ray::GraphicsUniformTypeFloat3x3:
+		case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
 			(*(float3x3*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat3x3();
 			break;
-		case ray::GraphicsUniformTypeFloat4x4:
+		case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
 			(*(float4x4*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat4x4();
 			break;
-		case ray::GraphicsUniformTypeIntArray:
+		case GraphicsUniformType::GraphicsUniformTypeIntArray:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getIntArray().data(), uniformSet->getIntArray().size()* sizeof(int1));
 			break;
-		case ray::GraphicsUniformTypeInt2Array:
+		case GraphicsUniformType::GraphicsUniformTypeInt2Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt2Array().data(), uniformSet->getInt2Array().size() * sizeof(int2));
 			break;
-		case ray::GraphicsUniformTypeInt3Array:
+		case GraphicsUniformType::GraphicsUniformTypeInt3Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt3Array().data(), uniformSet->getInt3Array().size() * sizeof(int3));
 			break;
-		case ray::GraphicsUniformTypeInt4Array:
+		case GraphicsUniformType::GraphicsUniformTypeInt4Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt4Array().data(), uniformSet->getInt4Array().size() * sizeof(int4));
 			break;
-		case ray::GraphicsUniformTypeUIntArray:
+		case GraphicsUniformType::GraphicsUniformTypeUIntArray:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUIntArray().data(), uniformSet->getUIntArray().size()* sizeof(uint1));
 			break;
-		case ray::GraphicsUniformTypeUInt2Array:
+		case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt2Array().data(), uniformSet->getUInt2Array().size() * sizeof(uint2));
 			break;
-		case ray::GraphicsUniformTypeUInt3Array:
+		case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt3Array().data(), uniformSet->getUInt3Array().size() * sizeof(uint3));
 			break;
-		case ray::GraphicsUniformTypeUInt4Array:
+		case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt4Array().data(), uniformSet->getUInt4Array().size() * sizeof(uint4));
 			break;
-		case ray::GraphicsUniformTypeFloatArray:
+		case GraphicsUniformType::GraphicsUniformTypeFloatArray:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloatArray().data(), uniformSet->getFloatArray().size() * sizeof(float1));
 			break;
-		case ray::GraphicsUniformTypeFloat2Array:
+		case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat2Array().data(), uniformSet->getFloat2Array().size() * sizeof(float2));
 			break;
-		case ray::GraphicsUniformTypeFloat3Array:
+		case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat3Array().data(), uniformSet->getFloat3Array().size() * sizeof(float3));
 			break;
-		case ray::GraphicsUniformTypeFloat4Array:
+		case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float4));
 			break;
-		case ray::GraphicsUniformTypeFloat2x2Array:
+		case GraphicsUniformType::GraphicsUniformTypeFloat2x2Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float2x2));
 			break;
-		case ray::GraphicsUniformTypeFloat3x3Array:
+		case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float3x3));
 			break;
-		case ray::GraphicsUniformTypeFloat4x4Array:
+		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
 			std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float4x4));
 			break;
 		default:

@@ -695,7 +695,7 @@ VulkanStageShader::HlslResTypeToUniformType(ResourceType type) noexcept
 		return GraphicsUniformType::GraphicsUniformTypeUniformBuffer;
 	default:
 		assert(false);
-		return GraphicsUniformType::GraphicsUniformTypeMaxEnum;
+		return GraphicsUniformType::GraphicsUniformTypeNone;
 	}
 }
 

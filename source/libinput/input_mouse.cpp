@@ -123,7 +123,7 @@ DefaultInputMouse::getAxisY() const noexcept
 }
 
 void
-DefaultInputMouse::setPosition(int x, int y) noexcept
+DefaultInputMouse::setPosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept
 {
 	_mouseX = x;
 	_mouseY = y;
@@ -131,7 +131,7 @@ DefaultInputMouse::setPosition(int x, int y) noexcept
 }
 
 void
-DefaultInputMouse::getPosition(int& x, int& y) const noexcept
+DefaultInputMouse::getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept
 {
 	x = _mouseX;
 	y = _mouseY;
@@ -213,7 +213,7 @@ DefaultInputMouse::onReleaseCapture() noexcept
 }
 
 void 
-DefaultInputMouse::onChangePosition(int x, int y) noexcept
+DefaultInputMouse::onChangePosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept
 {	
 }
 
@@ -267,9 +267,10 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 		break;
 	case InputEvent::SizeChange:
 	{
-		_centerX = event.change.w >> 1;
-		_centerY = event.change.h >> 1;
+		_centerX = static_cast<InputButton::mouse_t>(event.change.w >> 1);
+		_centerY = static_cast<InputButton::mouse_t>(event.change.h >> 1);
 	}
+	break;
 	default:
 		break;
 	}

@@ -73,7 +73,7 @@ private:
 
 	GameObjects _transforms;
 	GraphicsDataPtr _jointData;
-	Bound _boundingBox;
+	BoundingBox _boundingBox;
 	MeshPropertyPtr _mesh;
 
 	std::function<void()> _onMeshChange;

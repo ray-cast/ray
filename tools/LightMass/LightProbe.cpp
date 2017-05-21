@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,85 +34,28 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_INPUT_MOUSE_H_
-#define _H_INPUT_MOUSE_H_
-
-#include <ray/input_mouse_base.h>
+#include "LightProbe.h"
 
 _NAME_BEGIN
 
-class EXPORT DefaultInputMouse : public InputMouse
+LightProbe::LightProbe() noexcept
 {
-	__DeclareSubClass(DefaultInputMouse, InputMouse)
-public:
-	DefaultInputMouse() noexcept;
-	virtual ~DefaultInputMouse() noexcept;
+}
 
-	void lockMouse() noexcept;
-	void unlockMouse() noexcept;
-	bool isLockedMouse() const noexcept;
+LightProbe::~LightProbe() noexcept
+{
+}
 
-	void showMouse() noexcept;
-	void hideMouse() noexcept;
-	bool isShowMouse() noexcept;
+void 
+LightProbe::setBoundingBox(const BoundingBox& bound) noexcept
+{
+	_bound = bound;
+}
 
-	float getAxisX() const noexcept;
-	float getAxisY() const noexcept;
-
-	void setPosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept;
-	void getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept;
-
-	bool getButtonDown(InputButton::Code key) const noexcept;
-	bool getButtonUp(InputButton::Code key) const noexcept;
-
-	bool getButton(InputButton::Code key) const noexcept;
-
-	InputMousePtr clone() const noexcept;
-
-protected:
-	virtual void onFrameBegin() noexcept;
-	virtual void onFrameEnd() noexcept;
-
-	virtual void onObtainCapture() noexcept;
-	virtual void onReleaseCapture() noexcept;
-
-	virtual void onInputEvent(const InputEvent& event) noexcept;
-
-	virtual void onShowMouse() noexcept;
-	virtual void onHideMouse() noexcept;
-
-	virtual void onChangePosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept;
-
-private:
-	DefaultInputMouse(const DefaultInputMouse&) noexcept = delete;
-	DefaultInputMouse& operator=(const DefaultInputMouse&) noexcept = delete;
-
-protected:
-
-	bool _isMouseLock;
-	bool _isMouseLocked;
-	bool _isMouseHide;
-
-	float _axisX;
-	float _axisY;
-
-	InputButton::mouse_t _mouseX;
-	InputButton::mouse_t _mouseY;
-
-	InputButton::mouse_t _centerX;
-	InputButton::mouse_t _centerY;
-
-	struct ButtonState
-	{
-		bool down;
-		bool up;
-		bool pressed;
-		bool click;
-	};
-
-	ButtonState _buttonState[InputButton::NumButtonCodes];
-};
+const BoundingBox&
+LightProbe::getBoundingBox() const noexcept
+{
+	return _bound;
+}
 
 _NAME_END
-
-#endif

@@ -433,7 +433,7 @@ GuiFeature::onMessage(const MessagePtr& message) except
 			switch (event.event)
 			{
 			case InputEvent::MouseMotion:
-				IMGUISystem::instance()->injectMouseMove(event.motion.x, event.motion.y, 0);
+				IMGUISystem::instance()->injectMouseMove(event.motion.x, event.motion.y);
 				break;
 			case InputEvent::MouseButtonDown:
 				IMGUISystem::instance()->injectMousePress(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));

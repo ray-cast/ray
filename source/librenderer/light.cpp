@@ -515,7 +515,7 @@ Light::_updateTransform() noexcept
 void
 Light::_updateBoundingBox() noexcept
 {
-	Bound boundingBox;
+	BoundingBox boundingBox;
 
 	for (auto& camera : _shadowCameras)
 	{
@@ -527,7 +527,7 @@ Light::_updateBoundingBox() noexcept
 			min *= 0.5f;
 			max *= 0.5f;
 
-			Bound bound;
+			BoundingBox bound;
 			bound.encapsulate(min);
 			bound.encapsulate(max);
 
@@ -548,7 +548,7 @@ Light::_updateBoundingBox() noexcept
 			corners[6] = float3(-zfar, -zfar, zfar);
 			corners[7] = float3(+zfar, -zfar, zfar);
 
-			Bound bound;
+			BoundingBox bound;
 			bound.encapsulate(corners, 8);
 			bound.applyMatrix((float3x3)camera->getTransform());
 

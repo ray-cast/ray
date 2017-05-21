@@ -792,13 +792,13 @@ MeshProperty::getFaceArray() const noexcept
 	return _faces;
 }
 
-const Bound&
+const BoundingBox&
 MeshProperty::getBoundingBox() const noexcept
 {
 	return _boundingBox;
 }
 
-const Bound&
+const BoundingBox&
 MeshProperty::getBoundingBoxDownwards() const noexcept
 {
 	return _boundingBoxChildren;

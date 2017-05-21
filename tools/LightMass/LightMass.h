@@ -61,7 +61,7 @@ public:
 
 	bool baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept;
 
-	void computeBoundingBox(const PMX& model, Bound& boundingBox, std::uint32_t firstFace, std::uint32_t faceCount) noexcept;
+	void computeBoundingBox(const PMX& model, BoundingBox& boundingBox, std::uint32_t firstFace, std::size_t faceCount) noexcept;
 
 	std::uint32_t getFace(const PMX& pmx, std::size_t n) noexcept;
 	std::uint32_t getFace(const PMX& pmx, std::size_t n, std::uint32_t firstIndex) noexcept;

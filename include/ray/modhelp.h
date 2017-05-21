@@ -287,8 +287,8 @@ public:
 	void computeBoundingBox() noexcept;
 	void computePlanarUnwrap(std::vector<float2>& lightmap) noexcept;
 
-	const Bound& getBoundingBox() const noexcept;
-	const Bound& getBoundingBoxDownwards() const noexcept;
+	const BoundingBox& getBoundingBox() const noexcept;
+	const BoundingBox& getBoundingBoxDownwards() const noexcept;
 
 	void clear() noexcept;
 	MeshPropertyPtr clone() noexcept;
@@ -310,8 +310,8 @@ private:
 
 	Bones _bones;
 
-	Bound _boundingBox;
-	Bound _boundingBoxChildren;
+	BoundingBox _boundingBox;
+	BoundingBox _boundingBoxChildren;
 
 	MeshProperty* _parent;
 	MeshPropertys _children;

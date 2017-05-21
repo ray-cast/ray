@@ -66,8 +66,8 @@ struct MouseMotionEvent
 	std::uint64_t timestamp;
 	std::uint64_t windowID;
 	std::uint8_t state;
-	std::uint32_t x;
-	std::uint32_t y;
+	float x;
+	float y;
 	std::uint32_t xrel;
 	std::uint32_t yrel;
 };

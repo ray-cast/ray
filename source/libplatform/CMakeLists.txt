@@ -124,7 +124,7 @@ SOURCE_GROUP("io" FILES ${PLATFORM_IO_LIST})
 SET(PLATFORM_MATH_LIST
     ${HEADER_PATH}/aabb.h
     ${HEADER_PATH}/binary.h
-    ${HEADER_PATH}/bound.h
+    ${HEADER_PATH}/boundingbox.h
     ${HEADER_PATH}/dccmn.h
     ${HEADER_PATH}/euler.h
     ${HEADER_PATH}/frustum.h

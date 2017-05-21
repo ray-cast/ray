@@ -47,7 +47,7 @@ public:
 	VulkanMemory() noexcept;
 	virtual ~VulkanMemory() noexcept;
 
-	bool setup(std::uint32_t datasize, std::uint32_t typeBits, std::uint32_t mask) noexcept;
+	bool setup(VkDeviceSize datasize, std::uint32_t typeBits, std::uint32_t mask) noexcept;
 	void close() noexcept;
 
 	void setDevice(GraphicsDevicePtr device) noexcept;

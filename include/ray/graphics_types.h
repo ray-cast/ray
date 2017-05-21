@@ -200,9 +200,10 @@ typedef std::vector<GraphicsContextWeakPtr> GraphicsContextWeaks;
 
 typedef void* WindHandle;
 
-enum GraphicsDeviceType
+enum class GraphicsDeviceType : std::uint8_t
 {
-	GraphicsDeviceTypeD3D9 = 0,
+	GraphicsDeviceTypeUndefined = 0,
+	GraphicsDeviceTypeD3D9 = 1,
 	GraphicsDeviceTypeD3D11 = 1,
 	GraphicsDeviceTypeD3D12 = 2,
 	GraphicsDeviceTypeOpenGL = 3,
@@ -215,10 +216,9 @@ enum GraphicsDeviceType
 	GraphicsDeviceTypeBeginRange = GraphicsDeviceTypeD3D9,
 	GraphicsDeviceTypeEndRange = GraphicsDeviceTypeVulkan,
 	GraphicsDeviceTypeRangeSize = (GraphicsDeviceTypeEndRange - GraphicsDeviceTypeBeginRange + 1),
-	GraphicsDeviceTypeMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsSwapInterval
+enum class GraphicsSwapInterval : std::uint8_t
 {
 	GraphicsSwapIntervalFree = 0,
 	GraphicsSwapIntervalVsync = 1,
@@ -227,10 +227,9 @@ enum GraphicsSwapInterval
 	GraphicsSwapIntervalBeginRange = GraphicsSwapIntervalFree,
 	GraphicsSwapIntervalEndRange = GraphicsSwapIntervalFps15,
 	GraphicsSwapIntervalRangeSize = (GraphicsSwapIntervalEndRange - GraphicsSwapIntervalBeginRange + 1),
-	GraphicsSwapIntervalMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsCompareFunc
+enum class GraphicsCompareFunc : std::uint8_t
 {
 	GraphicsCompareFuncNone = 0,
 	GraphicsCompareFuncLequal = 1,
@@ -244,10 +243,9 @@ enum GraphicsCompareFunc
 	GraphicsCompareFuncBeginRange = GraphicsCompareFuncNone,
 	GraphicsCompareFuncEndRange = GraphicsCompareFuncNever,
 	GraphicsCompareFuncRangeSize = (GraphicsCompareFuncEndRange - GraphicsCompareFuncBeginRange + 1),
-	GraphicsCompareFuncMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsBlendFactor
+enum class GraphicsBlendFactor : std::uint8_t
 {
 	GraphicsBlendFactorZero = 0,
 	GraphicsBlendFactorOne = 1,
@@ -267,10 +265,9 @@ enum GraphicsBlendFactor
 	GraphicsBlendFactorBeginRange = GraphicsBlendFactorZero,
 	GraphicsBlendFactorEndRange = GraphicsBlendFactorSrcAlphaSaturate,
 	GraphicsBlendFactorRangeSize = (GraphicsBlendFactorEndRange - GraphicsBlendFactorBeginRange + 1),
-	GraphicsBlendFactorMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsBlendOp
+enum class GraphicsBlendOp : std::uint8_t
 {
 	GraphicsBlendOpAdd = 0,
 	GraphicsBlendOpSubtract = 1,
@@ -278,7 +275,6 @@ enum GraphicsBlendOp
 	GraphicsBlendOpBeginRange = GraphicsBlendOpAdd,
 	GraphicsBlendOpEndRange = GraphicsBlendOpRevSubtract,
 	GraphicsBlendOpRangeSize = (GraphicsBlendOpEndRange - GraphicsBlendOpBeginRange + 1),
-	GraphicsBlendOpMaxEnum = 0x7FFFFFFF
 };
 
 enum GraphicsColorMaskFlagBits
@@ -293,7 +289,7 @@ enum GraphicsColorMaskFlagBits
 
 typedef std::uint32_t GraphicsColorMaskFlags;
 
-enum GraphicsCullMode
+enum class GraphicsCullMode : std::uint8_t
 {
 	GraphicsCullModeNone = 0,
 	GraphicsCullModeFront = 1,
@@ -302,31 +298,28 @@ enum GraphicsCullMode
 	GraphicsCullModeBeginRange = GraphicsCullModeNone,
 	GraphicsCullModeEndRange = GraphicsCullModeFrontBack,
 	GraphicsCullModeRangeSize = (GraphicsCullModeEndRange - GraphicsCullModeBeginRange + 1),
-	GraphicsCullModeMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsFrontFace
+enum class GraphicsFrontFace : std::uint8_t
 {
 	GraphicsFrontFaceCW = 0,
 	GraphicsFrontFaceCCW = 1,
 	GraphicsFrontFaceBeginRange = GraphicsFrontFaceCW,
 	GraphicsFrontFaceEndRange = GraphicsFrontFaceCCW,
 	GraphicsFrontFaceRangeSize = (GraphicsFrontFaceEndRange - GraphicsFrontFaceBeginRange + 1),
-	GraphicsFrontFaceMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsPolygonMode
+enum class GraphicsPolygonMode : std::uint8_t
 {
 	GraphicsPolygonModePoint = 0,
 	GraphicsPolygonModeWireframe = 1,
 	GraphicsPolygonModeSolid = 2,
 	GraphicsPolygonModeBeginRange = GraphicsPolygonModePoint,
 	GraphicsPolygonModeEndRange = GraphicsPolygonModeSolid,
-	GraphicsPolygonModeRangeSize = (GraphicsPolygonModeEndRange - GraphicsPolygonModeBeginRange + 1),
-	GraphicsPolygonModeMaxEnum = 0x7FFFFFFF
+	GraphicsPolygonModeRangeSize = (GraphicsPolygonModeEndRange - GraphicsPolygonModeBeginRange + 1)
 };
 
-enum GraphicsStencilOp
+enum class GraphicsStencilOp : std::uint8_t
 {
 	GraphicsStencilOpKeep = 0,
 	GraphicsStencilOpReplace = 1,
@@ -337,8 +330,7 @@ enum GraphicsStencilOp
 	GraphicsStencilOpDecrWrap = 6,
 	GraphicsStencilOpBeginRange = GraphicsStencilOpKeep,
 	GraphicsStencilOpEndRange = GraphicsStencilOpDecrWrap,
-	GraphicsStencilOpRangeSize = (GraphicsStencilOpEndRange - GraphicsStencilOpBeginRange + 1),
-	GraphicsStencilOpMaxEnum = 0x7FFFFFFF
+	GraphicsStencilOpRangeSize = (GraphicsStencilOpEndRange - GraphicsStencilOpBeginRange + 1)
 };
 
 enum GraphicsStencilFaceFlagBits
@@ -363,7 +355,7 @@ enum GraphicsClearFlagBits
 
 typedef std::uint32_t GraphicsClearFlags;
 
-enum GraphicsFormat
+enum class GraphicsFormat : std::uint8_t
 {
 	GraphicsFormatUndefined = 0,
 	GraphicsFormatR4G4UNormPack8 = 1,
@@ -553,10 +545,9 @@ enum GraphicsFormat
 	GraphicsFormatBeginRange = GraphicsFormatUndefined,
 	GraphicsFormatEndRange = GraphicsFormatASTC12x12SRGBBlock,
 	GraphicsFormatRangeSize = (GraphicsFormatEndRange - GraphicsFormatBeginRange + 1),
-	GraphicsFormatMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsTextureDim
+enum class GraphicsTextureDim : std::uint8_t
 {
 	GraphicsTextureDim2D = 0,
 	GraphicsTextureDim3D = 1,
@@ -566,10 +557,10 @@ enum GraphicsTextureDim
 	GraphicsTextureDimBeginRange = GraphicsTextureDim2D,
 	GraphicsTextureDimEndRange = GraphicsTextureDimCubeArray,
 	GraphicsTextureDimRangeSize = (GraphicsTextureDimEndRange - GraphicsTextureDimBeginRange + 1),
-	GraphicsTextureDimMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsSamplerAnis
+enum class GraphicsSamplerAnis : std::uint8_t
+
 {
 	GraphicsSamplerAnis1 = 0,
 	GraphicsSamplerAnis2 = 1,
@@ -580,11 +571,10 @@ enum GraphicsSamplerAnis
 	GraphicsSamplerAnis64 = 6,
 	GraphicsSamplerAnisBeginRange = GraphicsSamplerAnis1,
 	GraphicsSamplerAnisEndRange = GraphicsSamplerAnis16,
-	GraphicsSamplerAnisRangeSize = (GraphicsSamplerAnisEndRange - GraphicsSamplerAnisBeginRange + 1),
-	GraphicsSamplerAnisMaxEnum = 0x7FFFFFFF
+	GraphicsSamplerAnisRangeSize = (GraphicsSamplerAnisEndRange - GraphicsSamplerAnisBeginRange + 1)
 };
 
-enum GraphicsSamplerWrap
+enum class GraphicsSamplerWrap : std::uint8_t
 {
 	GraphicsSamplerWrapNone = 0,
 	GraphicsSamplerWrapRepeat = 1,
@@ -592,11 +582,10 @@ enum GraphicsSamplerWrap
 	GraphicsSamplerWrapClampToEdge = 3,
 	GraphicsSamplerWrapBeginRange = GraphicsSamplerWrapNone,
 	GraphicsSamplerWrapEndRange = GraphicsSamplerWrapClampToEdge,
-	GraphicsSamplerWrapRangeSize = (GraphicsSamplerWrapEndRange - GraphicsSamplerWrapBeginRange + 1),
-	GraphicsSamplerWrapMaxEnum = 0x7FFFFFFF
+	GraphicsSamplerWrapRangeSize = (GraphicsSamplerWrapEndRange - GraphicsSamplerWrapBeginRange + 1)
 };
 
-enum GraphicsSamplerFilter
+enum class GraphicsSamplerFilter : std::uint8_t
 {
 	GraphicsSamplerFilterNearest = 0,
 	GraphicsSamplerFilterLinear = 1,
@@ -606,8 +595,7 @@ enum GraphicsSamplerFilter
 	GraphicsSamplerFilterLinearMipmapLinear = 5,
 	GraphicsSamplerFilterBeginRange = GraphicsSamplerFilterNearest,
 	GraphicsSamplerFilterEndRange = GraphicsSamplerFilterLinearMipmapLinear,
-	GraphicsSamplerFilterRangeSize = (GraphicsSamplerFilterEndRange - GraphicsSamplerFilterBeginRange + 1),
-	GraphicsSamplerFilterMaxEnum = 0x7FFFFFFF
+	GraphicsSamplerFilterRangeSize = (GraphicsSamplerFilterEndRange - GraphicsSamplerFilterBeginRange + 1)
 };
 
 enum GraphicsSampleFlagBits
@@ -623,7 +611,7 @@ enum GraphicsSampleFlagBits
 
 typedef std::uint32_t GraphicsSampleFlags;
 
-enum GraphicsDataType
+enum GraphicsDataType : std::uint8_t
 {
 	GraphicsDataTypeNone = 0,
 	GraphicsDataTypeTransferSrc = 1,
@@ -637,10 +625,9 @@ enum GraphicsDataType
 	GraphicsDataTypeBeginRange = GraphicsDataTypeNone,
 	GraphicsDataTypeEndRange = GraphicsDataTypeStorageIndexBuffer,
 	GraphicsDataTypeRangeSize = (GraphicsDataTypeEndRange - GraphicsDataTypeBeginRange + 1),
-	GraphicsDataTypeMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsVertexType
+enum GraphicsVertexType : std::uint8_t
 {
 	GraphicsVertexTypePointList = 0,
 	GraphicsVertexTypeLineList = 1,
@@ -655,29 +642,26 @@ enum GraphicsVertexType
 	GraphicsVertexTypePatchList = 10,
 	GraphicsVertexTypeBeginRange = GraphicsVertexTypePointList,
 	GraphicsVertexTypeEndRange = GraphicsVertexTypePatchList,
-	GraphicsVertexTypeRangeSize = (GraphicsVertexTypeEndRange - GraphicsVertexTypeBeginRange + 1),
-	GraphicsVertexTypeMaxEnum = 0x7FFFFFFF
+	GraphicsVertexTypeRangeSize = (GraphicsVertexTypeEndRange - GraphicsVertexTypeBeginRange + 1)
 };
 
-enum GraphicsVertexDivisor
+enum GraphicsVertexDivisor : std::uint8_t
 {
 	GraphicsVertexDivisorVertex = 0,
 	GraphicsVertexDivisorInstance = 1,
 	GraphicsVertexDivisorBeginRange = GraphicsVertexDivisorVertex,
 	GraphicsVertexDivisorEndRange = GraphicsVertexDivisorInstance,
-	GraphicsVertexDivisorRangeSize = (GraphicsVertexDivisorEndRange - GraphicsVertexDivisorBeginRange + 1),
-	GraphicsVertexDivisorMaxEnum = 0x7FFFFFFF
+	GraphicsVertexDivisorRangeSize = (GraphicsVertexDivisorEndRange - GraphicsVertexDivisorBeginRange + 1)
 };
 
-enum GraphicsIndexType
+enum GraphicsIndexType : std::uint8_t
 {
 	GraphicsIndexTypeNone = 0,
 	GraphicsIndexTypeUInt16 = 1,
 	GraphicsIndexTypeUInt32 = 2,
 	GraphicsIndexTypeBeginRange = GraphicsIndexTypeNone,
 	GraphicsIndexTypeEndRange = GraphicsIndexTypeUInt32,
-	GraphicsIndexTypeRangeSize = (GraphicsIndexTypeEndRange - GraphicsIndexTypeBeginRange + 1),
-	GraphicsIndexTypeMaxEnum = 0x7FFFFFFF
+	GraphicsIndexTypeRangeSize = (GraphicsIndexTypeEndRange - GraphicsIndexTypeBeginRange + 1)
 };
 
 enum GraphicsShaderStageFlagBits
@@ -721,7 +705,7 @@ enum class GraphicsShaderModel : std::uint8_t
 	GraphicsShaderModelRangeSize = (GraphicsShaderModelEndRange - GraphicsShaderModelBeginRange + 1),
 };
 
-enum GraphicsUniformType
+enum class GraphicsUniformType : std::uint8_t
 {
 	GraphicsUniformTypeNone = 0,
 	GraphicsUniformTypeBool = 1,
@@ -768,11 +752,10 @@ enum GraphicsUniformType
 	GraphicsUniformTypeInputAttachment = 49,
 	GraphicsUniformTypeBeginRange = GraphicsUniformTypeNone,
 	GraphicsUniformTypeEndRange = GraphicsUniformTypeInputAttachment,
-	GraphicsUniformTypeRangeSize = (GraphicsUniformTypeInputAttachment - GraphicsUniformTypeNone + 1),
-	GraphicsUniformTypeMaxEnum = 0x7FFFFFFF
+	GraphicsUniformTypeRangeSize = (GraphicsUniformTypeInputAttachment - GraphicsUniformTypeNone + 1)
 };
 
-enum GraphicsImageLayout
+enum class GraphicsImageLayout : std::uint8_t
 {
 	GraphicsImageLayoutUndefined = 0,
 	GraphicsImageLayoutGeneral = 1,
@@ -786,19 +769,17 @@ enum GraphicsImageLayout
 	GraphicsImageLayoutPresentSrcKhr = 9,
 	GraphicsImageLayoutBeginRange = GraphicsImageLayoutUndefined,
 	GraphicsImageLayoutEndRange = GraphicsImageLayoutPreinitialized,
-	GraphicsImageLayoutRangeSize = (GraphicsImageLayoutEndRange - GraphicsImageLayoutBeginRange + 1),
-	GraphicsImageLayoutMaxEnum = 0x7FFFFFFF
+	GraphicsImageLayoutRangeSize = (GraphicsImageLayoutEndRange - GraphicsImageLayoutBeginRange + 1)
 };
 
-enum GraphicsImageTiling
+enum class GraphicsImageTiling : std::uint8_t
 {
 	GraphicsImageTilingUndefined = 0,
 	GraphicsImageTilingOptimal = 1,
 	GraphicsImageTilingLinear = 2,
 	GraphicsImageTilingBeginRange = GraphicsImageTilingUndefined,
 	GraphicsImageTilingEndRange = GraphicsImageTilingLinear,
-	GraphicsImageTilingRangeSize = (GraphicsImageTilingEndRange - GraphicsImageTilingBeginRange + 1),
-	GraphicsImageTilingMaxEnum = 0x7FFFFFFF
+	GraphicsImageTilingRangeSize = (GraphicsImageTilingEndRange - GraphicsImageTilingBeginRange + 1)
 };
 
 enum GraphicsViewUsageFlagBits
@@ -837,7 +818,7 @@ enum GraphicsAccessFlagBits
 
 typedef std::uint32_t GraphicsAccessFlags;
 
-enum GraphicsCommandType
+enum class GraphicsCommandType : std::uint8_t
 {
 	GraphicsCommandTypeGraphics = 0,
 	GraphicsCommandTypeCompute = 1,
@@ -845,11 +826,10 @@ enum GraphicsCommandType
 	GraphicsCommandTypeCopy = 3,
 	GraphicsCommandTypeBeginRange = GraphicsCommandTypeGraphics,
 	GraphicsCommandTypeEndRange = GraphicsCommandTypeCopy,
-	GraphicsCommandTypeRangeSize = (GraphicsCommandTypeEndRange - GraphicsCommandTypeBeginRange + 1),
-	GraphicsCommandTypeMaxEnum = 0x7FFFFFFF
+	GraphicsCommandTypeRangeSize = (GraphicsCommandTypeEndRange - GraphicsCommandTypeBeginRange + 1)
 };
 
-enum GraphicsCommandQueueFlagBits
+enum GraphicsCommandQueueFlagBits : std::uint8_t
 {
 	GraphicsCommandQueueFlagNoneBit = 0,
 	GraphicsCommandQueueFlagDisableGpuTimeOutBit = 0x1
@@ -857,14 +837,13 @@ enum GraphicsCommandQueueFlagBits
 
 typedef std::uint32_t GraphicsCommandQueueFlags;
 
-enum GraphicsCommandQueuePriority
+enum class GraphicsCommandQueuePriority : std::uint8_t
 {
 	GraphicsCommandQueuePriorityNormal = 0,
 	GraphicsCommandQueuePriorityHigh = 1,
 	GraphicsCommandQueuePriorityBeginRange = GraphicsCommandQueuePriorityNormal,
 	GraphicsCommandQueuePriorityEndRange = GraphicsCommandQueuePriorityHigh,
-	GraphicsCommandQueuePriorityRangeSize = (GraphicsCommandQueuePriorityEndRange - GraphicsCommandQueuePriorityBeginRange + 1),
-	GraphicsCommandQueuePriorityMaxEnum = 0x7FFFFFFF
+	GraphicsCommandQueuePriorityRangeSize = (GraphicsCommandQueuePriorityEndRange - GraphicsCommandQueuePriorityBeginRange + 1)
 };
 
 enum GraphicsCommandPoolFlagBits

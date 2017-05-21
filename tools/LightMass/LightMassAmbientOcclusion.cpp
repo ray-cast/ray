@@ -185,13 +185,13 @@ LightBakingAO::open(const LightModelData& params) noexcept
 	return true;
 }
 
-void 
+void
 LightBakingAO::close() noexcept
 {
 	_glcontext.reset();
 }
 
-void 
+void
 LightBakingAO::doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& vp, const float4x4& mvp)
 {
 	assert(_glcontext);

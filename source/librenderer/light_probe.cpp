@@ -34,26 +34,28 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_PROBE_BAKING_H_
-#define _H_LIGHT_PROBE_BAKING_H_
-
-#include <ray/math.h>
+#include <ray/light_probe.h>
 
 _NAME_BEGIN
 
-class LightProbeBaking
+LightProbe::LightProbe() noexcept
 {
-public:
-	LightProbeBaking() noexcept;
-	~LightProbeBaking() noexcept;
+}
 
-	void setBoundingBox(const BoundingBox& bound) noexcept;
-	const BoundingBox& getBoundingBox() const noexcept;
+LightProbe::~LightProbe() noexcept
+{
+}
 
-private:
-	BoundingBox _bound;
-};
+void
+LightProbe::setSH9(const SH9& sh) noexcept
+{
+	_sh = sh;
+}
+
+const SH9& 
+LightProbe::getSH9() const noexcept
+{
+	return _sh;
+}
 
 _NAME_END
-
-#endif

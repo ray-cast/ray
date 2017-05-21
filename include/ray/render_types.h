@@ -38,7 +38,6 @@
 #define _H_RENDER_TYPES_H_
 
 #include <ray/graphics_types.h>
-#include <ray/model.h>
 
 _NAME_BEGIN
 
@@ -133,8 +132,8 @@ enum CameraOrder
 
 enum CameraClearFlagBits
 {
-	CameraClearColorBit   = 1 << 0,
-	CameraClearDepthBit   = 1 << 1,
+	CameraClearColorBit = 1 << 0,
+	CameraClearDepthBit = 1 << 1,
 	CameraClearStencilBit = 1 << 2,
 	CameraClearDepthStencilBit = CameraClearDepthBit | CameraClearStencilBit,
 	CameraClearMaxBit = 0x7FFFFFFF
@@ -247,27 +246,6 @@ enum RenderQueue
 	RenderQueueRangeSize = (RenderQueueEndRange - RenderQueueBeginRange + 1),
 	RenderQueueMaxEnum = 0x7FFFFFFF
 };
-
-enum ModelMakerFlagBits
-{
-	ModelMakerFlagBitVertex = 0x00000001,
-	ModelMakerFlagBitTexcoord = 0x00000002,
-	ModelMakerFlagBitNormal = 0x00000004,
-	ModelMakerFlagBitTangent = 0x00000008,
-	ModelMakerFlagBitBitangent = 0x00000016,
-	ModelMakerFlagBitWeight = 0x00000032,
-	ModelMakerFlagBitColor = 0x00000064,
-	ModelMakerFlagBit_VER_TEX = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord,
-	ModelMakerFlagBit_VER_TEX_NORMAL = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal,
-	ModelMakerFlagBit_VER_TEX_NORMAL_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitWeight,
-	ModelMakerFlagBit_VER_NORMAL = ModelMakerFlagBitVertex | ModelMakerFlagBitNormal,
-	ModelMakerFlagBit_VER_NORMAL_TANGENT = ModelMakerFlagBitVertex | ModelMakerFlagBitNormal | ModelMakerFlagBitTangent,
-	ModelMakerFlagBit_VER_NORMAL_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitWeight,
-	ModelMakerFlagBit_VER_NORMAL_TANGENT_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitTangent | ModelMakerFlagBitWeight,
-	ModelMakerFlagBitALL = 0x7FFFFFFF,
-};
-
-typedef std::uint32_t ModelMakerFlags;
 
 enum GlobalSemanticType
 {

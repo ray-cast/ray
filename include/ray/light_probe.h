@@ -38,11 +38,11 @@
 #define _H_LIGHT_PROBE_H_
 
 #include <ray/SH.h>
-#include <ray/math.h>
+#include <ray/render_object.h>
 
 _NAME_BEGIN
 
-class LightProbe
+class LightProbe final : public RenderObject
 {
 public:
 	LightProbe() noexcept;
@@ -51,16 +51,8 @@ public:
 	void setSH9(const SH9& sh) noexcept;
 	const SH9& getSH9() const noexcept;
 
-	void setTranslate(const Vector3& translate) noexcept;
-	const Vector3& getTranslate() const noexcept;
-
-	void setBoundingBox(const BoundingBox& bound) noexcept;
-	const BoundingBox& getBoundingBox() const noexcept;
-
 private:
 	SH9 _sh;
-	Vector3 _translate;
-	BoundingBox _bound;
 };
 
 _NAME_END

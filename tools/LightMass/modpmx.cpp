@@ -257,13 +257,12 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 			{
 				if (!stream.read((char*)&material.ToneTexture, pmx.header.sizeOfTexture)) return false;
 			}
-			
+
 			if (!stream.read((char*)&material.memLength, sizeof(material.memLength))) return false;
 			if (material.memLength > 0)
 			{
 				if (!stream.read((char*)&material.mem, material.memLength)) return false;
 			}
-
 
 			if (!stream.read((char*)&material.IndicesCount, sizeof(material.IndicesCount))) return false;
 		}
@@ -747,7 +746,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 		for (auto& morph : pmx.morphs)
 		{
 			if (morph.name.length)
-			if (!stream.write((char*)&morph.name.length, sizeof(morph.name.length))) return false;
+				if (!stream.write((char*)&morph.name.length, sizeof(morph.name.length))) return false;
 			if (!stream.write((char*)&morph.name.name, morph.name.length)) return false;
 			if (!stream.write((char*)&morph.nameEng.length, sizeof(morph.nameEng.length))) return false;
 			if (morph.nameEng.length)
@@ -870,7 +869,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			if (!stream.write((char*)&rigidbody.physicsOperation, sizeof(rigidbody.physicsOperation))) return false;
 		}
 	}
-	
+
 	if (!stream.write((char*)&pmx.numJoints, sizeof(pmx.numJoints))) return false;
 	if (pmx.numJoints)
 	{

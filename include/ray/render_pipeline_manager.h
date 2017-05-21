@@ -105,22 +105,18 @@ public:
 	bool isVertexSupport(GraphicsFormat format) noexcept;
 	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
 
+	MaterialPtr createMaterial(const std::string& name) noexcept;
+	void destroyMaterial(MaterialPtr material) noexcept;
+
+	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	GraphicsPipelinePtr createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept;
+	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
 	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
 	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
-
-	MaterialPtr createMaterial(const std::string& name) noexcept;
-	void destroyMaterial(MaterialPtr material) noexcept;
-
-	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
-	GraphicsPipelinePtr createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept;
-
-	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
-	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
 
 	void render(const RenderScene& scene) noexcept;
 

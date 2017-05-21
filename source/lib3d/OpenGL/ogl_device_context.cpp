@@ -341,7 +341,6 @@ OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_pipeline = nullptr;
 		}
 	}
-
 }
 
 GraphicsPipelinePtr
@@ -399,7 +398,7 @@ OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset,
 	assert(data);
 	assert(data->isInstanceOf<OGLGraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
+	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt8 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 	assert(_glcontext->getActive());
 
 	auto ibo = data->downcast_pointer<OGLGraphicsData>();
@@ -496,7 +495,7 @@ OGLDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, co
 			buffer = i;
 		}
 		else if (type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal ||
-				 type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal)
+			type == GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal)
 		{
 			if (!(flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit) &&
 				!(flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit))
@@ -682,7 +681,7 @@ OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstanc
 	assert(_pipeline);
 	assert(_glcontext->getActive());
 	assert(_indexBuffer);
-	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
+	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT || _indexType == GL_UNSIGNED_BYTE);
 	assert(startInstances == 0);
 
 	if (_needUpdatePipeline || _needUpdateVertexBuffers)
@@ -703,8 +702,10 @@ OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstanc
 		GLbyte* offsetIndices = nullptr;
 		if (_indexType == GL_UNSIGNED_INT)
 			offsetIndices += _indexOffset + sizeof(std::uint32_t) * startIndice;
-		else
+		else if (_indexType == GL_UNSIGNED_SHORT)
 			offsetIndices += _indexOffset + sizeof(std::uint16_t) * startIndice;
+		else if (_indexType == GL_UNSIGNED_BYTE)
+			offsetIndices += _indexOffset + sizeof(std::uint8_t) * startIndice;
 
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
 		glDrawElementsInstancedBaseVertex(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice);

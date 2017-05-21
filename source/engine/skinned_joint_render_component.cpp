@@ -75,7 +75,7 @@ SkinnedJointRenderComponent::_buildJointObject() noexcept
 	_geometry->setMaterial(RenderSystem::instance()->createMaterial("sys:fx/debug.fxml"));
 	_geometry->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
 
-	_renderMeshVbo = RenderSystem::instance()->createVertexBuffer(meshes, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	_renderMeshVbo = ResManager::instance()->createVertexBuffer(meshes, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 	if (!_renderMeshVbo)
 		return false;
 

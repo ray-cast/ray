@@ -69,7 +69,7 @@ struct AppParams
 class AppMapListener : public ray::LightMapListener
 {
 public:
-	AppMapListener() noexcept 
+	AppMapListener() noexcept
 		: _lastProgress(0)
 	{
 	}
@@ -316,7 +316,7 @@ public:
 
 		std::string outputPath = ray::util::directory(path) + "ao.tga";
 		std::cout << "Save as image : " << outputPath << std::endl;
-		
+
 		if (!this->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMass.lightMap.margin))
 			return false;
 
@@ -388,7 +388,7 @@ int main(int argc, char** argv)
 	if (window)
 	{
 		::glfwMakeContextCurrent(window);
-		
+
 		int code = domain_main(argc, argv);
 
 		::glfwDestroyWindow(window);

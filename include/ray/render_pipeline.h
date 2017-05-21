@@ -88,7 +88,7 @@ public:
 	void drawSphere(const MaterialTech& tech, std::uint32_t layer = 0) noexcept;
 	void drawScreenQuad(const MaterialTech& tech, std::uint32_t instanceCount = 1) noexcept;
 	void drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer, std::uint32_t instanceCount = 1) noexcept;
-	
+
 	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 
@@ -116,11 +116,7 @@ public:
 	const MaterialSemanticPtr& getSemanticParam(GlobalSemanticType type) const noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
-	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
-
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
-
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap wrap = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
 	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
@@ -138,6 +134,10 @@ private:
 	void destroyMaterialSemantic() noexcept;
 	void destroyBaseMeshes() noexcept;
 	void destroyDataManager() noexcept;
+
+	void makePlane(float width, float height, std::uint32_t widthSegments, std::uint32_t heightSegments) noexcept;
+	void makeCone(float radius, float height, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_TWO_PI) noexcept;
+	void makeSphere(float radius, std::uint32_t widthSegments = 8, std::uint32_t heightSegments = 6, float phiStart = 0.0, float phiLength = M_TWO_PI, float thetaStart = 0, float thetaLength = M_PI) noexcept;
 
 private:
 	RenderPipeline(const RenderPipeline&) = delete;
@@ -158,17 +158,20 @@ private:
 
 	CameraPtr _camera;
 
-	GraphicsDataPtr _screenQuadVbo;
-	GraphicsDataPtr _screenQuadIbo;
-	std::uint32_t _numScreenQuadFace;
+	GraphicsDataPtr _planeVbo;
+	GraphicsDataPtr _planeIbo;
+	GraphicsIndexType _planeIndexType;
+	std::uint32_t _planeIndices;
 
 	GraphicsDataPtr _sphereVbo;
 	GraphicsDataPtr _sphereIbo;
-	std::uint32_t _numSphereFace;
+	GraphicsIndexType _sphereIndexType;
+	std::uint32_t _sphereIndices;
 
 	GraphicsDataPtr _coneVbo;
 	GraphicsDataPtr _coneIbo;
-	std::uint32_t _numConeFace;	
+	GraphicsIndexType _coneIndexType;
+	std::uint32_t _coneIndices;
 
 	MaterialSemanticManagerPtr _semanticsManager;
 

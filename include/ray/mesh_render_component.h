@@ -37,7 +37,9 @@
 #ifndef _H_MESH_RENDER_COMPONENT_H_
 #define _H_MESH_RENDER_COMPONENT_H_
 
+#include <ray/mesh_component.h>
 #include <ray/render_component.h>
+#include <ray/res_manager.h>
 
 _NAME_BEGIN
 

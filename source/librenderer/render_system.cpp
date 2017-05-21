@@ -128,7 +128,7 @@ RenderSystem::getViewport(std::uint32_t i) const noexcept
 	return _pipelineManager->getViewport(i);
 }
 
-void 
+void
 RenderSystem::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_pipelineManager);
@@ -156,7 +156,7 @@ RenderSystem::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const 
 	_pipelineManager->clearFramebuffer(i, flags, color, depth, stencil);
 }
 
-void 
+void
 RenderSystem::setMaterialPass(const MaterialPassPtr& pass) noexcept
 {
 	assert(_pipelineManager);
@@ -301,20 +301,6 @@ RenderSystem::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->createGraphicsData(desc);
-}
-
-GraphicsDataPtr
-RenderSystem::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
-{
-	assert(_pipelineManager);
-	return _pipelineManager->createVertexBuffer(mesh, flags);
-}
-
-GraphicsDataPtr
-RenderSystem::createIndexBuffer(const MeshProperty& mesh) noexcept
-{
-	assert(_pipelineManager);
-	return _pipelineManager->createIndexBuffer(mesh);
 }
 
 GraphicsInputLayoutPtr

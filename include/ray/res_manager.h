@@ -40,8 +40,30 @@
 #include <ray/res_loader.h>
 #include <ray/game_types.h>
 #include <ray/render_types.h>
+#include <ray/modhelp.h>
 
 _NAME_BEGIN
+
+enum ModelMakerFlagBits
+{
+	ModelMakerFlagBitVertex = 0x00000001,
+	ModelMakerFlagBitTexcoord = 0x00000002,
+	ModelMakerFlagBitNormal = 0x00000004,
+	ModelMakerFlagBitTangent = 0x00000008,
+	ModelMakerFlagBitBitangent = 0x00000016,
+	ModelMakerFlagBitWeight = 0x00000032,
+	ModelMakerFlagBitColor = 0x00000064,
+	ModelMakerFlagBit_VER_TEX = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord,
+	ModelMakerFlagBit_VER_TEX_NORMAL = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal,
+	ModelMakerFlagBit_VER_TEX_NORMAL_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitWeight,
+	ModelMakerFlagBit_VER_NORMAL = ModelMakerFlagBitVertex | ModelMakerFlagBitNormal,
+	ModelMakerFlagBit_VER_NORMAL_TANGENT = ModelMakerFlagBitVertex | ModelMakerFlagBitNormal | ModelMakerFlagBitTangent,
+	ModelMakerFlagBit_VER_NORMAL_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitWeight,
+	ModelMakerFlagBit_VER_NORMAL_TANGENT_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitTangent | ModelMakerFlagBitWeight,
+	ModelMakerFlagBitALL = 0x7FFFFFFF,
+};
+
+typedef std::uint32_t ModelMakerFlags;
 
 class EXPORT ResManager final
 {
@@ -49,7 +71,7 @@ class EXPORT ResManager final
 public:
 	ResManager() noexcept;
 	~ResManager() noexcept;
-	
+
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	GameObjectPtr createGameObject(const std::string& name, const std::string& anim = "") noexcept;
 
@@ -64,6 +86,9 @@ public:
 
 	void destroyTexture(GraphicsTexturePtr texture) noexcept;
 	void destroyTexture(const std::string& name) noexcept;
+
+	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
 
 private:
 	bool loadModel(const std::string& filename, ResLoader<Model>& model) noexcept;

@@ -122,7 +122,7 @@ SkyboxComponent::getSkyLightSpecular() const noexcept
 	return _skySpecTexture;
 }
 
-void 
+void
 SkyboxComponent::setSkyboxEnable(bool enable) noexcept
 {
 	if (_enableSkyBox != enable)
@@ -135,13 +135,13 @@ SkyboxComponent::setSkyboxEnable(bool enable) noexcept
 	}
 }
 
-bool 
+bool
 SkyboxComponent::getSkyboxEnable() const noexcept
 {
 	return _enableSkyBox;
 }
 
-void 
+void
 SkyboxComponent::setSkyLightingEnable(bool enable) noexcept
 {
 	if (_enableSkyLighting != enable)
@@ -155,7 +155,7 @@ SkyboxComponent::setSkyLightingEnable(bool enable) noexcept
 		{
 			this->_destroySkyLighting();
 		}
-			
+
 		_enableSkyLighting = enable;
 	}
 }
@@ -173,7 +173,7 @@ SkyboxComponent::setSkyDiffuseIntensity(float intensity) noexcept
 	_updateMaterial();
 }
 
-float 
+float
 SkyboxComponent::getSkyDiffuseIntensity() const noexcept
 {
 	return _skyLightingIntensity.x;
@@ -192,35 +192,35 @@ SkyboxComponent::getSkySpecularIntensity() const noexcept
 	return _skyLightingIntensity.y;
 }
 
-void 
+void
 SkyboxComponent::addSkyBoxChangeListener(std::function<void()>* func) noexcept
 {
 	assert(!_onSkyBoxChange.find(func));
 	_onSkyBoxChange.attach(func);
 }
 
-void 
+void
 SkyboxComponent::addSkyLightingDiffuseChangeListener(std::function<void()>* func) noexcept
 {
 	assert(!_onSkyLightingDiffuseChange.find(func));
 	_onSkyLightingDiffuseChange.attach(func);
 }
 
-void 
+void
 SkyboxComponent::addSkyLightingSpecularChangeListener(std::function<void()>* func) noexcept
 {
 	assert(!_onSkyLightingSpecularChange.find(func));
 	_onSkyLightingSpecularChange.attach(func);
 }
 
-void 
+void
 SkyboxComponent::addEnableSkyBoxListener(std::function<void(bool)>* func) noexcept
 {
 	assert(!_onEnableSkyBox.find(func));
 	_onEnableSkyBox.attach(func);
 }
 
-void 
+void
 SkyboxComponent::addEnableSkyLightingListener(std::function<void(bool)>* func) noexcept
 {
 	assert(!_onEnableSkyLighting.find(func));
@@ -360,28 +360,28 @@ SkyboxComponent::_buildSphereMesh(MeshProperty& mesh) noexcept
 	return true;
 }
 
-bool 
+bool
 SkyboxComponent::_buildQuadMesh(MeshProperty& mesh) noexcept
 {
 	mesh.makePlane(2, 2, 1, 1);
 	return true;
 }
 
-bool 
+bool
 SkyboxComponent::_buildQuadRenderMesh(const MeshProperty& mesh) noexcept
 {
-	_renderScreenQuadVbo = RenderSystem::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	_renderScreenQuadVbo = ResManager::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 	if (!_renderScreenQuadVbo)
 		return true;
 
-	_renderScreenQuadIbo = RenderSystem::instance()->createIndexBuffer(mesh);
+	_renderScreenQuadIbo = ResManager::instance()->createIndexBuffer(mesh);
 	if (!_renderScreenQuadIbo)
 		return true;
 
 	return false;
 }
 
-bool 
+bool
 SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept
 {
 	MeshProperty sphere;
@@ -393,20 +393,20 @@ SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr te
 	return _buildRenderObject(_quadObject, sphere, _renderScreenQuadVbo, _renderScreenQuadIbo);
 }
 
-bool 
+bool
 SkyboxComponent::_buildSphereRenderMesh(const MeshProperty& mesh) noexcept
 {
-	_renderSphereVbo = RenderSystem::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
+	_renderSphereVbo = ResManager::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 	if (!_renderSphereVbo)
 		return true;
 
-	_renderSphereIbo = RenderSystem::instance()->createIndexBuffer(mesh);
+	_renderSphereIbo = ResManager::instance()->createIndexBuffer(mesh);
 	if (!_renderSphereIbo)
 		return true;
 	return false;
 }
 
-bool 
+bool
 SkyboxComponent::_buildSphereRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept
 {
 	_sphereObject = std::make_shared<Geometry>();
@@ -443,7 +443,7 @@ SkyboxComponent::_setupSkybox() noexcept
 	return false;
 }
 
-bool 
+bool
 SkyboxComponent::_setupSkyLighting() noexcept
 {
 	if (!_skyDiffuse.empty() && !_skySpecular.empty())
@@ -469,12 +469,12 @@ SkyboxComponent::_destroySkybox() noexcept
 		this->_destroyRenderhObject(_sphereObject);
 		_sphereObject.reset();
 	}
-	
+
 	_renderSphereVbo.reset();
 	_renderSphereIbo.reset();
 }
 
-void 
+void
 SkyboxComponent::_destroySkyLighting() noexcept
 {
 	if (_quadObject)
@@ -482,18 +482,18 @@ SkyboxComponent::_destroySkyLighting() noexcept
 		this->_destroyRenderhObject(_quadObject);
 		_quadObject.reset();
 	}
-	
+
 	_renderScreenQuadVbo.reset();
 	_renderScreenQuadIbo.reset();
 }
 
-void 
+void
 SkyboxComponent::_destroyMaterial() noexcept
 {
 	this->setMaterial(nullptr);
 }
 
-void 
+void
 SkyboxComponent::_reloadSkybox(const std::string& texture) noexcept
 {
 	if (!_loadSkybox(texture))
@@ -520,10 +520,10 @@ SkyboxComponent::_updateTransform() noexcept
 	float4x4 transforam;
 	transforam.makeScale(_skyboxSize, _skyboxSize, _skyboxSize);
 	//transforam.setTranslate(this->getGameObject()->getWorldTranslate());
-	
+
 	if (_sphereObject)
 		_sphereObject->setTransform(transforam);
-	
+
 	if (_quadObject)
 		_quadObject->setTransform(transforam);
 }

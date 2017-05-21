@@ -36,11 +36,14 @@
 // +----------------------------------------------------------------------
 #include <ray/res_manager.h>
 #include <ray/render_system.h>
-#include <ray/graphics_texture.h>
 #include <ray/game_object.h>
 #include <ray/mesh_component.h>
 #include <ray/mesh_render_component.h>
 #include <ray/skinned_mesh_render_component.h>
+
+#include <ray/graphics_data.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_input_layout.h>
 
 #if _BUILD_PHYSIC
 #include <ray/physics_body_component.h>
@@ -306,6 +309,182 @@ ResManager::createMeshes(const Model& model, GameObjectPtr& object) noexcept
 	}
 }
 
+GraphicsDataPtr
+ResManager::createIndexBuffer(const MeshProperty& mesh) noexcept
+{
+	std::size_t numIndices = mesh.getNumIndices();
+	for (auto& it : mesh.getChildren())
+		numIndices += it->getNumIndices();
+
+	if (numIndices == 0)
+		return nullptr;
+
+	auto _buildIndiceBuffer = [&](const MeshProperty& mesh, std::size_t& offsetIndices, std::vector<std::uint8_t>& _ibo)
+	{
+		auto& array = mesh.getFaceArray();
+		if (!array.empty())
+		{
+			char* indices = (char*)_ibo.data() + offsetIndices;
+			std::memcpy(indices, array.data(), array.size() * sizeof(std::uint32_t));
+			offsetIndices += mesh.getFaceArray().size() * sizeof(std::uint32_t);
+		}
+	};
+
+	std::vector<std::uint8_t> faces(numIndices * sizeof(std::uint32_t));
+	std::size_t offsetIndices = 0;
+
+	_buildIndiceBuffer(mesh, offsetIndices, faces);
+
+	auto subMeshCount = mesh.getChildCount();
+	for (std::size_t i = 0; i < subMeshCount; i++)
+	{
+		auto submesh = mesh.getChildren()[i];
+		_buildIndiceBuffer(*submesh, offsetIndices, faces);
+	}
+
+	GraphicsDataDesc _ib;
+	_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_ib.setStream((std::uint8_t*)faces.data());
+	_ib.setStreamSize(faces.size());
+
+	return RenderSystem::instance()->createGraphicsData(_ib);
+}
+
+GraphicsDataPtr
+ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
+{
+	std::size_t numVertex = mesh.getNumVertices();
+	for (auto& it : mesh.getChildren())
+		numVertex += it->getNumVertices();
+
+	if (numVertex == 0)
+		return nullptr;
+
+	std::uint32_t inputSize = 0;
+	if (!mesh.getVertexArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
+	if (!mesh.getTangentQuatArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	if (!mesh.getColorArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
+	if (!mesh.getTexcoordArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32SFloat);
+	if (!mesh.getWeightArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitWeight)
+	{
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UScaled);
+	}
+
+	auto _buildVertexBuffer = [&](const MeshProperty& mesh, std::size_t& offsetVertices, std::vector<std::uint8_t>& _vbo)
+	{
+		auto& vertices = mesh.getVertexArray();
+		auto& tangentQuats = mesh.getTangentQuatArray();
+		auto& colors = mesh.getColorArray();
+		auto& texcoords = mesh.getTexcoordArray();
+		auto& weight = mesh.getWeightArray();
+
+		std::size_t offset1 = 0;
+		std::uint8_t* mapBuffer = (std::uint8_t*)_vbo.data();
+
+		if (!vertices.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
+		{
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
+			for (auto& it : vertices)
+			{
+				*(float3*)data = it;
+				data += inputSize;
+			}
+
+			offset1 += sizeof(float3);
+		}
+
+		if (!tangentQuats.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+		{
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
+			for (auto& it : tangentQuats)
+			{
+				float4 unorm = math::snorm2unorm(it);
+
+				data[0] = math::fpToInt8UNORM(unorm.x);
+				data[1] = math::fpToInt8UNORM(unorm.y);
+				data[2] = math::fpToInt8UNORM(unorm.z);
+				data[3] = math::fpToInt8UNORM(unorm.w);
+
+				data += inputSize;
+			}
+
+			offset1 += 4;
+		}
+
+		if (!colors.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
+		{
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
+			for (auto& it : colors)
+			{
+				*(float4*)data = it;
+				data += inputSize;
+			}
+
+			offset1 += sizeof(float4);
+		}
+
+		if (!texcoords.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
+		{
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
+			for (auto& it : texcoords)
+			{
+				*(float2*)data = it;
+				data += inputSize;
+			}
+
+			offset1 += sizeof(float2);
+		}
+
+		if (!weight.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitWeight)
+		{
+			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
+			for (auto& it : weight)
+			{
+				data[0] = math::fpToInt8UNORM(it.weight1);
+				data[1] = math::fpToInt8UNORM(it.weight2);
+				data[2] = math::fpToInt8UNORM(it.weight3);
+				data[3] = math::fpToInt8UNORM(it.weight4);
+				data[4] = it.bone1;
+				data[5] = it.bone2;
+				data[6] = it.bone3;
+				data[7] = it.bone4;
+
+				data += inputSize;
+			}
+
+			offset1 += 8;
+		}
+
+		offsetVertices += mesh.getNumVertices() * inputSize;
+	};
+
+	std::vector<std::uint8_t> _data(numVertex * inputSize);
+	std::size_t offsetVertices = 0;
+
+	_buildVertexBuffer(mesh, offsetVertices, _data);
+
+	auto subMeshCount = mesh.getChildCount();
+	for (std::size_t i = 0; i < subMeshCount; i++)
+	{
+		auto submesh = mesh.getChildren()[i];
+		_buildVertexBuffer(*submesh, offsetVertices, _data);
+	}
+
+	GraphicsDataDesc _vb;
+	_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	_vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_vb.setStream((std::uint8_t*)_data.data());
+	_vb.setStreamSize(_data.size());
+
+	return RenderSystem::instance()->createGraphicsData(_vb);
+}
+
 void
 ResManager::createBones(const Model& model, GameObjects& bones) noexcept
 {
@@ -351,7 +530,7 @@ ResManager::createBones(const Model& model, GameObjects& bones) noexcept
 	}
 }
 
-void 
+void
 ResManager::createAnimation(const Model& model, GameObjectPtr& gameObject, GameObjects& bones, const std::string& file) noexcept
 {
 	if (!file.empty())
@@ -427,7 +606,7 @@ ResManager::createRigidbodys(const Model& model, GameObjects& rigidbodys) noexce
 		gameObject->setLayer(it->group);
 		gameObject->setQuaternion(Quaternion(RAD_TO_DEG(it->rotation)));
 		gameObject->setWorldTranslate(it->position);
-		
+
 		if (it->shape == ShapeType::ShapeTypeCircle)
 			gameObject->addComponent(std::make_shared<PhysicsSphereComponent>(it->scale.x));
 		else if (it->shape == ShapeType::ShapeTypeSquare)
@@ -600,7 +779,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 
 	effect->getParameter("smoothness")->uniform1f(0.2);
 
-	auto transmittance = effect->getParameter("transmittance"); 
+	auto transmittance = effect->getParameter("transmittance");
 	if (transmittance)
 		transmittance->uniform3f(translucency);
 

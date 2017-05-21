@@ -613,7 +613,7 @@ enum GraphicsSampleFlagBits
 
 typedef std::uint32_t GraphicsSampleFlags;
 
-enum GraphicsDataType : std::uint8_t
+enum class GraphicsDataType : std::uint8_t
 {
 	GraphicsDataTypeNone = 0,
 	GraphicsDataTypeTransferSrc = 1,
@@ -629,7 +629,7 @@ enum GraphicsDataType : std::uint8_t
 	GraphicsDataTypeRangeSize = (GraphicsDataTypeEndRange - GraphicsDataTypeBeginRange + 1),
 };
 
-enum GraphicsVertexType : std::uint8_t
+enum class GraphicsVertexType : std::uint8_t
 {
 	GraphicsVertexTypePointList = 0,
 	GraphicsVertexTypeLineList = 1,
@@ -647,7 +647,7 @@ enum GraphicsVertexType : std::uint8_t
 	GraphicsVertexTypeRangeSize = (GraphicsVertexTypeEndRange - GraphicsVertexTypeBeginRange + 1)
 };
 
-enum GraphicsVertexDivisor : std::uint8_t
+enum class GraphicsVertexDivisor : std::uint8_t
 {
 	GraphicsVertexDivisorVertex = 0,
 	GraphicsVertexDivisorInstance = 1,
@@ -656,11 +656,12 @@ enum GraphicsVertexDivisor : std::uint8_t
 	GraphicsVertexDivisorRangeSize = (GraphicsVertexDivisorEndRange - GraphicsVertexDivisorBeginRange + 1)
 };
 
-enum GraphicsIndexType : std::uint8_t
+enum class GraphicsIndexType : std::uint8_t
 {
 	GraphicsIndexTypeNone = 0,
-	GraphicsIndexTypeUInt16 = 1,
-	GraphicsIndexTypeUInt32 = 2,
+	GraphicsIndexTypeUInt8 = 1,
+	GraphicsIndexTypeUInt16 = 2,
+	GraphicsIndexTypeUInt32 = 3,
 	GraphicsIndexTypeBeginRange = GraphicsIndexTypeNone,
 	GraphicsIndexTypeEndRange = GraphicsIndexTypeUInt32,
 	GraphicsIndexTypeRangeSize = (GraphicsIndexTypeEndRange - GraphicsIndexTypeBeginRange + 1)

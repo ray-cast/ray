@@ -46,22 +46,22 @@ LightMapListener::~LightMapListener() noexcept
 {
 }
 
-void 
+void
 LightMapListener::onListenerChangeBefore()
 {
 }
 
-void 
+void
 LightMapListener::onListenerChangeAfter()
 {
 }
 
-void 
+void
 LightMapListener::onUvmapperStart()
 {
 }
 
-void 
+void
 LightMapListener::onUvmapperEnd()
 {
 }
@@ -71,7 +71,7 @@ LightMapListener::onUvmapperProgressing(float progress)
 {
 }
 
-void 
+void
 LightMapListener::onMessage(const std::string& message)
 {
 }

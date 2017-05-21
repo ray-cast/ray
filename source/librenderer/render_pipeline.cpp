@@ -41,6 +41,7 @@
 
 #include <ray/graphics_device.h>
 #include <ray/graphics_device_property.h>
+#include <ray/graphics_data.h>
 #include <ray/graphics_context.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_texture.h>
@@ -67,6 +68,12 @@ RenderPipeline::RenderPipeline() noexcept
 	, _height(0)
 	, _dpi_w(0)
 	, _dpi_h(0)
+	, _planeIndices(0)
+	, _sphereIndices(0)
+	, _coneIndices(0)
+	, _planeIndexType(GraphicsIndexType::GraphicsIndexTypeNone)
+	, _coneIndexType(GraphicsIndexType::GraphicsIndexTypeNone)
+	, _sphereIndexType(GraphicsIndexType::GraphicsIndexTypeNone)
 {
 }
 
@@ -176,7 +183,7 @@ RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const no
 	h = _height;
 }
 
-void 
+void
 RenderPipeline::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept
 {
 	if (_dpi_w != w || _dpi_h != h)
@@ -192,14 +199,14 @@ RenderPipeline::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcep
 	}
 }
 
-void 
+void
 RenderPipeline::getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept
 {
 	w = _dpi_w;
 	h = _dpi_h;
 }
 
-GraphicsDeviceType 
+GraphicsDeviceType
 RenderPipeline::getDeviceType() const noexcept
 {
 	assert(_pipelineDevice);
@@ -285,7 +292,7 @@ RenderPipeline::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 	_graphicsContext->setFramebuffer(target);
 }
 
-void 
+void
 RenderPipeline::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_graphicsContext);
@@ -307,14 +314,14 @@ RenderPipeline::setMaterialPass(const MaterialPassPtr& pass) noexcept
 	_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
 }
 
-void 
+void
 RenderPipeline::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setVertexBufferData(i, vbo, offset);
 }
 
-void 
+void
 RenderPipeline::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_graphicsContext);
@@ -332,7 +339,7 @@ void
 RenderPipeline::drawSphere(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
 	this->setVertexBuffer(0, _sphereVbo, 0);
-	this->setIndexBuffer(_sphereIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	this->setIndexBuffer(_sphereIbo, 0, _sphereIndexType);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -340,7 +347,7 @@ RenderPipeline::drawSphere(const MaterialTech& tech, std::uint32_t layer) noexce
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawIndexedLayer(_numSphereFace, 1, 0, 0, 0, layer);
+		this->drawIndexedLayer(_sphereIndices, 1, 0, 0, 0, layer);
 	}
 }
 
@@ -348,7 +355,7 @@ void
 RenderPipeline::drawCone(const MaterialTech& tech, std::uint32_t layer) noexcept
 {
 	this->setVertexBuffer(0, _coneVbo, 0);
-	this->setIndexBuffer(_coneIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	this->setIndexBuffer(_coneIbo, 0, _coneIndexType);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -356,15 +363,15 @@ RenderPipeline::drawCone(const MaterialTech& tech, std::uint32_t layer) noexcept
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawIndexedLayer(_numConeFace, 1, 0, 0, 0, layer);
+		this->drawIndexedLayer(_coneIndices, 1, 0, 0, 0, layer);
 	}
 }
 
 void
 RenderPipeline::drawScreenQuad(const MaterialTech& tech, std::uint32_t instanceCount) noexcept
 {
-	this->setVertexBuffer(0, _screenQuadVbo, 0);
-	this->setIndexBuffer(_screenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	this->setVertexBuffer(0, _planeVbo, 0);
+	this->setIndexBuffer(_planeIbo, 0, _planeIndexType);
 
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
@@ -372,53 +379,53 @@ RenderPipeline::drawScreenQuad(const MaterialTech& tech, std::uint32_t instanceC
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawIndexed(_numScreenQuadFace, instanceCount, 0, 0, 0);
+		this->drawIndexed(_planeIndices, instanceCount, 0, 0, 0);
 	}
 }
 
 void
 RenderPipeline::drawScreenQuadLayer(const MaterialTech& tech, std::uint32_t layer, std::uint32_t instanceCount) noexcept
 {
-	this->setVertexBuffer(0, _screenQuadVbo, 0);
-	this->setIndexBuffer(_screenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
-	
+	this->setVertexBuffer(0, _planeVbo, 0);
+	this->setIndexBuffer(_planeIbo, 0, _planeIndexType);
+
 	auto& passList = tech.getPassList();
 	for (auto& pass : passList)
 	{
 		pass->update(*_semanticsManager);
 
 		this->setMaterialPass(pass);
-		this->drawIndexedLayer(_numScreenQuadFace, instanceCount, 0, 0, 0, layer);
+		this->drawIndexedLayer(_planeIndices, instanceCount, 0, 0, 0, layer);
 	}
 }
 
-void 
+void
 RenderPipeline::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	_graphicsContext->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
-void 
+void
 RenderPipeline::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	_graphicsContext->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
 }
 
-void 
+void
 RenderPipeline::drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
 {
 	_graphicsContext->setStencilReference(GraphicsStencilFaceFlagBits::GraphicsStencilFaceAllBit, 1 << layer);
 	_graphicsContext->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
-void 
+void
 RenderPipeline::drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
 {
 	_graphicsContext->setStencilReference(GraphicsStencilFaceFlagBits::GraphicsStencilFaceAllBit, 1 << layer);
 	_graphicsContext->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
 }
 
-void 
+void
 RenderPipeline::drawRenderQueue(RenderQueue queue) noexcept
 {
 	assert(_camera);
@@ -574,20 +581,6 @@ RenderPipeline::destroyMaterial(MaterialPtr material) noexcept
 	return _pipelineDevice->destroyMaterial(material);
 }
 
-GraphicsDataPtr
-RenderPipeline::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createVertexBuffer(mesh, flags);
-}
-
-GraphicsDataPtr
-RenderPipeline::createIndexBuffer(const MeshProperty& mesh) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createIndexBuffer(mesh);
-}
-
 bool
 RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept
 {
@@ -623,44 +616,249 @@ RenderPipeline::setupMaterialSemantic() noexcept
 bool
 RenderPipeline::setupBaseMeshes() noexcept
 {
-	MeshProperty mesh;
-	mesh.makePlane(2, 2, 1, 1);
-
-	_screenQuadVbo = this->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	if (!_screenQuadVbo)
-		return false;
-
-	_screenQuadIbo = this->createIndexBuffer(mesh);
-	if (!_screenQuadIbo)
-		return false;
-
-	_numScreenQuadFace = mesh.getNumIndices();
-
-	mesh.makeSphere(1, 24, 18);
-
-	_sphereVbo = this->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	if (!_sphereVbo)
-		return false;
-
-	_sphereIbo = this->createIndexBuffer(mesh);
-	if (!_sphereIbo)
-		return false;
-
-	_numSphereFace = mesh.getNumIndices();
-
-	mesh.makeCone(1, 1, 16);
-
-	_coneVbo = this->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	if (!_coneVbo)
-		return false;
-
-	_coneIbo = this->createIndexBuffer(mesh);
-	if (!_coneIbo)
-		return false;
-
-	_numConeFace = mesh.getNumIndices();
+	this->makePlane(2, 2, 1, 1);
+	this->makeSphere(1, 24, 18);
+	this->makeCone(1, 1, 16);
 
 	return true;
+}
+
+void
+RenderPipeline::makePlane(float width, float height, std::uint32_t widthSegments, std::uint32_t heightSegments) noexcept
+{
+	std::vector<float3> _vertices;
+	std::vector<float3> _normals;
+	std::vector<float2> _texcoord;
+	std::vector<std::uint8_t> _indices;
+
+	float widthHalf = width * 0.5f;
+	float heightHalf = height * 0.5f;
+
+	std::uint32_t gridX = widthSegments;
+	std::uint32_t gridY = heightSegments;
+
+	std::uint32_t gridX1 = gridX + 1;
+	std::uint32_t gridY1 = gridY + 1;
+
+	float segmentWidth = width / gridX;
+	float segmentHeight = height / gridY;
+
+	const Vector3& normal = Vector3::UnitZ;
+
+	for (std::uint32_t iz = 0; iz < gridY1; iz++)
+	{
+		for (std::uint32_t ix = 0; ix < gridX1; ix++)
+		{
+			float x = ix * segmentWidth - widthHalf;
+			float z = iz * segmentHeight - heightHalf;
+
+			_normals.push_back(normal);
+			_vertices.emplace_back(x, z, 0.0f);
+		}
+	}
+
+	for (std::uint32_t iy = 0; iy < gridY; iy++)
+	{
+		for (std::uint32_t ix = 0; ix < gridX; ix++)
+		{
+			_texcoord.emplace_back((float)ix / gridX, (float)(1 - (iy + 1)) / gridY);
+			_texcoord.emplace_back((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY);
+			_texcoord.emplace_back((float)ix / gridX, (float)(1 - iy) / gridY);
+			_texcoord.emplace_back((float)(ix + 1) / gridX, (float)(1 - iy) / gridY);
+
+			std::int32_t a = static_cast<std::int32_t>(ix + gridX1 * iy);
+			std::int32_t b = static_cast<std::int32_t>(ix + gridX1 * (iy + 1));
+			std::int32_t c = static_cast<std::int32_t>(ix + gridX1 * (iy + 1) + 1);
+			std::int32_t d = static_cast<std::int32_t>(ix + gridX1 * iy + 1);
+
+			_indices.push_back(a);
+			_indices.push_back(b);
+			_indices.push_back(c);
+
+			_indices.push_back(c);
+			_indices.push_back(d);
+			_indices.push_back(a);
+		}
+	}
+
+	GraphicsDataDesc _vb;
+	_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	_vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_vb.setStream((std::uint8_t*)_vertices.data());
+	_vb.setStreamSize(_vertices.size() * sizeof(float3));
+
+	_planeVbo = this->createGraphicsData(_vb);
+
+	GraphicsDataDesc _ib;
+	_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_ib.setStream((std::uint8_t*)_indices.data());
+	_ib.setStreamSize(_indices.size() * sizeof(std::uint8_t));
+
+	_planeIbo = this->createGraphicsData(_ib);
+	_planeIndices = static_cast<std::uint8_t>(_indices.size());
+	_planeIndexType = GraphicsIndexType::GraphicsIndexTypeUInt8;
+}
+
+void
+RenderPipeline::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_t heightSegments, float phiStart, float phiLength, float thetaStart, float thetaLength) noexcept
+{
+	std::vector<float3> _vertices;
+	std::vector<float3> _normals;
+	std::vector<float2> _texcoord;
+	std::vector<std::uint16_t> _indices;
+
+	std::vector<std::uint32_t> vertices;
+
+	for (std::uint32_t y = 0; y <= heightSegments; y++)
+	{
+		for (std::uint32_t x = 0; x <= widthSegments; x++)
+		{
+			float u = (float)(x) / widthSegments;
+			float v = (float)(y) / heightSegments;
+
+			Vector3 vertex;
+			vertex.x = -radius * sin(thetaStart + v * thetaLength) * cos(phiStart + u * phiLength);
+			vertex.y = radius * cos(thetaStart + v * thetaLength);
+			vertex.z = radius * sin(thetaStart + v * thetaLength) * sin(phiStart + u * phiLength);
+
+			_vertices.push_back(vertex);
+			_normals.push_back(math::normalize(vertex));
+			_texcoord.emplace_back(u, 1 - v);
+
+			vertices.push_back((std::uint32_t)_vertices.size() - 1);
+		}
+	}
+
+	for (std::uint32_t y = 0; y < heightSegments; y++)
+	{
+		for (std::uint32_t x = 0; x < widthSegments; x++)
+		{
+			std::uint32_t v1 = vertices[y * (widthSegments + 1) + x];
+			std::uint32_t v2 = vertices[y * (widthSegments + 1) + x + 1];
+			std::uint32_t v3 = vertices[(y + 1) * (widthSegments + 1) + x];
+			std::uint32_t v4 = vertices[(y + 1) * (widthSegments + 1) + x + 1];
+
+			if (math::abs((_vertices)[v2].y) == radius)
+			{
+				_indices.push_back(v2);
+				_indices.push_back(v3);
+				_indices.push_back(v4);
+			}
+			else if (math::abs((_vertices)[v3].y) == radius)
+			{
+				_indices.push_back(v2);
+				_indices.push_back(v1);
+				_indices.push_back(v3);
+			}
+			else
+			{
+				_indices.push_back(v2);
+				_indices.push_back(v3);
+				_indices.push_back(v4);
+
+				_indices.push_back(v2);
+				_indices.push_back(v1);
+				_indices.push_back(v3);
+			}
+		}
+	}
+
+	GraphicsDataDesc _vb;
+	_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	_vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_vb.setStream((std::uint8_t*)_vertices.data());
+	_vb.setStreamSize(_vertices.size() * sizeof(float3));
+
+	_sphereVbo = this->createGraphicsData(_vb);
+
+	GraphicsDataDesc _ib;
+	_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_ib.setStream((std::uint8_t*)_indices.data());
+	_ib.setStreamSize(_indices.size() * sizeof(std::uint16_t));
+
+	_sphereIbo = this->createGraphicsData(_ib);
+	_sphereIndices = static_cast<std::uint16_t>(_indices.size());
+	_sphereIndexType = GraphicsIndexType::GraphicsIndexTypeUInt16;
+}
+
+void
+RenderPipeline::makeCone(float radius, float height, std::uint32_t segments, float thetaStart, float thetaLength) noexcept
+{
+	std::vector<float3> _vertices;
+	std::vector<float3> _normals;
+	std::vector<float2> _texcoord;
+	std::vector<std::uint16_t> _indices;
+
+	_vertices.emplace_back(0.0f, 0.0f, 0.0f);
+	_vertices.emplace_back(0.0f, 0.0f, -height);
+
+	_normals.emplace_back(0.0f, 0.0f, 0.0f);
+	_normals.emplace_back(0.0f, 0.0f, -1.0f);
+
+	_texcoord.emplace_back(0.0f, 0.0f);
+	_texcoord.emplace_back(1.0f, 1.0f);
+
+	float segment = thetaLength / segments;
+
+	for (std::uint32_t i = 0; i <= segments; i++)
+	{
+		float sin;
+		float cos;
+
+		math::sinCos(&sin, &cos, thetaStart + i * segment);
+
+		Vector3 v;
+		v.x = radius * cos;
+		v.y = -radius * sin;
+		v.z = 0;
+
+		_vertices.push_back(v);
+		_normals.push_back(math::normalize(v));
+
+		_texcoord.emplace_back((v.x / radius + 1), (v.y / radius + 1) / 2);
+	}
+
+	for (std::uint32_t i = 2; i <= segments + 1; i++)
+	{
+		std::uint32_t v1 = i;
+		std::uint32_t v2 = 0;
+		std::uint32_t v3 = i + 1;
+
+		_indices.push_back(v1);
+		_indices.push_back(v2);
+		_indices.push_back(v3);
+	}
+
+	for (std::uint32_t i = 2; i <= segments + 1; i++)
+	{
+		std::uint32_t v1 = i;
+		std::uint32_t v2 = 1;
+		std::uint32_t v3 = i + 1;
+
+		_indices.push_back(v3);
+		_indices.push_back(v2);
+		_indices.push_back(v1);
+	}
+
+	GraphicsDataDesc _vb;
+	_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	_vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_vb.setStream((std::uint8_t*)_vertices.data());
+	_vb.setStreamSize(_vertices.size() * sizeof(float3));
+
+	_coneVbo = this->createGraphicsData(_vb);
+
+	GraphicsDataDesc _ib;
+	_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
+	_ib.setStream((std::uint8_t*)_indices.data());
+	_ib.setStreamSize(_indices.size() * sizeof(std::uint16_t));
+
+	_coneIbo = this->createGraphicsData(_ib);
+	_coneIndices = static_cast<std::uint16_t>(_indices.size());
+	_coneIndexType = GraphicsIndexType::GraphicsIndexTypeUInt16;
 }
 
 void
@@ -679,10 +877,10 @@ RenderPipeline::destroyMaterialSemantic() noexcept
 void
 RenderPipeline::destroyBaseMeshes() noexcept
 {
-	_screenQuadVbo.reset();
+	_planeVbo.reset();
 	_sphereVbo.reset();
 	_coneVbo.reset();
-	_screenQuadIbo.reset();
+	_planeIbo.reset();
 	_sphereIbo.reset();
 	_coneIbo.reset();
 }

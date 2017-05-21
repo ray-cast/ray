@@ -189,6 +189,7 @@ OGLTypes::asIndexType(GraphicsIndexType type) noexcept
 	switch (type)
 	{
 	case GraphicsIndexType::GraphicsIndexTypeNone:   return GL_NONE;
+	case GraphicsIndexType::GraphicsIndexTypeUInt8:  return GL_UNSIGNED_BYTE;
 	case GraphicsIndexType::GraphicsIndexTypeUInt16: return GL_UNSIGNED_SHORT;
 	case GraphicsIndexType::GraphicsIndexTypeUInt32: return GL_UNSIGNED_INT;
 	default:
@@ -986,14 +987,14 @@ OGLTypes::getCompressedTextureSize(GLsizei width, GLsizei height, GLsizei depth,
 		height = (height + 3) & ~3;
 		return std::max(16, width * height);
 	default:
-		{
-			GL_PLATFORM_ASSERT(false, "bad texformat in compressed_texture_size");
-			return 0;
-		}
+	{
+		GL_PLATFORM_ASSERT(false, "bad texformat in compressed_texture_size");
+		return 0;
+	}
 	}
 }
 
-GLboolean 
+GLboolean
 OGLTypes::isNormFormat(GraphicsFormat format) noexcept
 {
 	switch (format)

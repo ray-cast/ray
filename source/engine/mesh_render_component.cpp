@@ -377,7 +377,7 @@ MeshRenderComponent::_attacRenderObjects() noexcept
 		it->setRenderScene(renderScene);
 }
 
-void 
+void
 MeshRenderComponent::_destroyRenderhObject(GeometryPtr object) noexcept
 {
 	assert(object);
@@ -423,7 +423,7 @@ MeshRenderComponent::_buildMaterials(const std::string& filename) noexcept
 	return false;
 }
 
-bool 
+bool
 MeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcept
 {
 	assert(!filename.empty());
@@ -448,7 +448,7 @@ MeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcep
 		float shininess = 0.0;
 		float opacity = 1.0;
 		std::string diffuseTexture;
-		
+
 		material->get(MATKEY_OPACITY, opacity);
 		material->get(MATKEY_SHININESS, shininess);
 		material->get(MATKEY_COLOR_DIFFUSE, diffuseColor);
@@ -493,11 +493,11 @@ MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFla
 
 	if (!_renderMeshVbo)
 	{
-		_renderMeshVbo = RenderSystem::instance()->createVertexBuffer(mesh, flags);
+		_renderMeshVbo = ResManager::instance()->createVertexBuffer(mesh, flags);
 		if (!_renderMeshVbo)
 			return false;
 
-		_renderMeshIbo = RenderSystem::instance()->createIndexBuffer(mesh);
+		_renderMeshIbo = ResManager::instance()->createIndexBuffer(mesh);
 		if (!_renderMeshIbo)
 			return false;
 	}
@@ -568,12 +568,12 @@ MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, const MeshProp
 	return true;
 }
 
-void 
+void
 MeshRenderComponent::_updateMaterial(std::size_t n) noexcept
 {
 	if (_renderObjects.size() <= n)
 		return;
-	
+
 	if (!_materials.empty())
 	{
 		if (_renderObjects.size() == _materials.size())

@@ -46,32 +46,32 @@ LightMassListener::~LightMassListener() noexcept
 {
 }
 
-void 
+void
 LightMassListener::onListenerChangeBefore()
 {
 }
 
-void 
+void
 LightMassListener::onListenerChangeAfter()
 {
 }
 
-void 
+void
 LightMassListener::onBakingStart()
 {
 }
 
-void 
+void
 LightMassListener::onBakingEnd()
 {
 }
 
-void 
+void
 LightMassListener::onBakingProgressing(float progress)
 {
 }
 
-void 
+void
 LightMassListener::onMessage(const std::string& message)
 {
 }

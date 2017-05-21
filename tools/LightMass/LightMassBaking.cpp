@@ -385,7 +385,7 @@ LightMassBaking::setRenderTarget(float *outLightmap, int w, int h, int c)
 	_ctx->lightmap.channels = c;
 }
 
-void 
+void
 LightMassBaking::setGeometry(int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices)
 {
 	_ctx->mesh.positions = (const std::uint8_t*)positionsXYZ;
@@ -616,7 +616,7 @@ LightMassBaking::trySamplingConservativeTriangleRasterizerPosition()
 		{
 			neighborsExpected += 2;
 			if (_ctx->meshPosition.rasterizer.x - d >= _ctx->meshPosition.rasterizer.minx &&
-				_ctx->meshPosition.rasterizer.x + d <  _ctx->meshPosition.rasterizer.maxx)
+				_ctx->meshPosition.rasterizer.x + d < _ctx->meshPosition.rasterizer.maxx)
 			{
 				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x - d, _ctx->meshPosition.rasterizer.y);
 				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x + d, _ctx->meshPosition.rasterizer.y);
@@ -626,7 +626,7 @@ LightMassBaking::trySamplingConservativeTriangleRasterizerPosition()
 		{
 			neighborsExpected += 2;
 			if (_ctx->meshPosition.rasterizer.y - d >= _ctx->meshPosition.rasterizer.miny &&
-				_ctx->meshPosition.rasterizer.y + d <  _ctx->meshPosition.rasterizer.maxy)
+				_ctx->meshPosition.rasterizer.y + d < _ctx->meshPosition.rasterizer.maxy)
 			{
 				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y - d);
 				neighbors[neighborCount++] = this->getLightmapPixel(_ctx->meshPosition.rasterizer.x, _ctx->meshPosition.rasterizer.y + d);

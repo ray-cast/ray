@@ -121,13 +121,13 @@ RenderPipelineManager::close() noexcept
 	_pipeline.reset();
 }
 
-void 
+void
 RenderPipelineManager::setRenderPipeline(RenderPipelinePtr pipeline) noexcept
 {
 	_pipeline = pipeline;
 }
 
-RenderPipelinePtr 
+RenderPipelinePtr
 RenderPipelineManager::getRenderPipeline() const noexcept
 {
 	return _pipeline;
@@ -343,7 +343,7 @@ RenderPipelineManager::getWindowResolution(std::uint32_t& w, std::uint32_t& h) c
 	h = _setting.height;
 }
 
-void 
+void
 RenderPipelineManager::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept
 {
 	if (_setting.dpi_w != w || _setting.dpi_h != h)
@@ -363,7 +363,7 @@ RenderPipelineManager::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) 
 	}
 }
 
-void 
+void
 RenderPipelineManager::getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept
 {
 	w = _setting.dpi_w;
@@ -396,7 +396,7 @@ RenderPipelineManager::getViewport(std::uint32_t i) const noexcept
 	return _pipeline->getViewport(i);
 }
 
-void 
+void
 RenderPipelineManager::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_pipeline);
@@ -438,21 +438,21 @@ RenderPipelineManager::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flag
 	_pipeline->clearFramebuffer(i, flags, color, depth, stencil);
 }
 
-void 
+void
 RenderPipelineManager::setMaterialPass(const MaterialPassPtr& pass) noexcept
 {
 	assert(_pipeline);
 	_pipeline->setMaterialPass(pass);
 }
 
-void 
+void
 RenderPipelineManager::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
 {
 	assert(_pipeline);
 	_pipeline->setVertexBuffer(i, vbo, offset);
 }
 
-void 
+void
 RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_pipeline);
@@ -480,28 +480,28 @@ RenderPipelineManager::drawScreenQuad(const MaterialTech& tech) noexcept
 	_pipeline->drawScreenQuad(tech);
 }
 
-void 
+void
 RenderPipelineManager::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipeline);
 	_pipeline->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
-void 
+void
 RenderPipelineManager::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipeline);
 	_pipeline->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
 }
 
-void 
+void
 RenderPipelineManager::drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
 {
 	assert(_pipeline);
 	_pipeline->drawLayer(numVertices, numInstances, startVertice, startInstances, layer);
 }
 
-void 
+void
 RenderPipelineManager::drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
 {
 	assert(_pipeline);
@@ -633,20 +633,6 @@ RenderPipelineManager::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createGraphicsData(desc);
-}
-
-GraphicsDataPtr
-RenderPipelineManager::createIndexBuffer(const MeshProperty& mesh) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createIndexBuffer(mesh);
-}
-
-GraphicsDataPtr
-RenderPipelineManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createVertexBuffer(mesh, flags);
 }
 
 bool

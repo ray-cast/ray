@@ -87,14 +87,14 @@ public:
 	explicit operator HemisphereWeight<S>() const
 	{
 		return HemisphereWeight<S>(
-			HemisphereWeight<S>(front), 
-			HemisphereWeight<S>(back), 
+			HemisphereWeight<S>(front),
+			HemisphereWeight<S>(back),
 			HemisphereWeight<S>(left),
 			HemisphereWeight<S>(right),
 			HemisphereWeight<S>(up),
 			HemisphereWeight<S>(down));
 	}
-	
+
 	T operator[](std::size_t i) const
 	{
 		return *(&front + i);
@@ -104,7 +104,7 @@ public:
 	{
 		return *(&front + i);
 	}
-	
+
 	T* ptr() { return (T*)this; }
 	const T* ptr() const { return (const T*)this; }
 	T* data() { return (T*)this; }
@@ -113,22 +113,22 @@ public:
 
 template<typename T>
 HemisphereWeight<T> operator+=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
-{ 
+{
 	return HemisphereWeight<T>(w1.front += w2.front, w1.back += w2.back, w1.left += w2.left, w1.right += w2.right, w1.up += w2.up, w1.down += w2.down);
 }
 template<typename T>
 HemisphereWeight<T> operator-=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
-{ 
+{
 	return HemisphereWeight<T>(w1.front -= w2.front, w1.back -= w2.back, w1.left -= w2.left, w1.right -= w2.right, w1.up -= w2.up, w1.down -= w2.down);
 }
 template<typename T>
 HemisphereWeight<T> operator*=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
-{ 
+{
 	return HemisphereWeight<T>(w1.front *= w2.front, w1.back *= w2.back, w1.left *= w2.left, w1.right *= w2.right, w1.up *= w2.up, w1.down *= w2.down);
 }
 template<typename T>
 HemisphereWeight<T> operator/=(const HemisphereWeight<T>& w1, const HemisphereWeight<T>& w2)
-{ 
+{
 	return HemisphereWeight<T>(w1.front /= w2.front, w1.back /= w2.back, w1.left /= w2.left, w1.right /= w2.right, w1.up /= w2.up, w1.down /= w2.down);
 }
 
@@ -167,7 +167,7 @@ namespace math
 		const double weightScale = 1.0 / (sum * 3.0);
 
 		for (std::size_t i = 0; i < size * size; i++)
-			weights[i] *= weightScale;		
+			weights[i] *= weightScale;
 	}
 }
 

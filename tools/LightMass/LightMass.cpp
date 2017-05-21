@@ -99,7 +99,7 @@ LightMass::open() noexcept
 	return true;
 }
 
-void 
+void
 LightMass::close() noexcept
 {
 	_initialize = false;
@@ -126,7 +126,7 @@ LightMass::getLightMassListener() const noexcept
 	return _lightMassListener;
 }
 
-bool 
+bool
 LightMass::baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept
 {
 	assert(_initialize);

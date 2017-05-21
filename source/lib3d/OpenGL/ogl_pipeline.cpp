@@ -121,7 +121,17 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			VertexBinding binding;
 			binding.index = attrib.index;
 			binding.slot = it.getVertexSlot();
-			binding.divisor = it.getVertexDivisor();
+
+			auto divisor = it.getVertexDivisor();
+			if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+				binding.divisor = 0;
+			else if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
+				binding.divisor = 1;
+			else
+			{
+				assert(false);
+				binding.divisor = 0;
+			}
 
 			_bindings.push_back(binding);
 		}
@@ -143,7 +153,7 @@ OGLPipeline::getGraphicsPipelineDesc() const noexcept
 	return _pipelineDesc;
 }
 
-void 
+void
 OGLPipeline::apply() noexcept
 {
 	for (auto& it : _bindings)
@@ -159,14 +169,14 @@ OGLPipeline::bindVertexBuffers(OGLVertexBuffers& vbos, bool forceUpdate) noexcep
 	{
 		if (!vbos[slot].vbo)
 			continue;
-	
+
 		if (vbos[slot].needUpdate || forceUpdate)
-		{	
+		{
 			glBindBuffer(GL_ARRAY_BUFFER, vbos[slot].vbo->getInstanceID());
-			
+
 			for (auto& it : _attributes[slot])
 			{
-				glEnableVertexAttribArray(it.index);				
+				glEnableVertexAttribArray(it.index);
 				glVertexAttribPointer(it.index, it.count, it.type, it.normalize, it.stride, (GLbyte*)nullptr + vbos[slot].offset + it.offset);
 			}
 

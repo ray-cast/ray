@@ -113,8 +113,18 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	{
 		VertexBinding binding;
 		binding.slot = it.getVertexSlot();
-		binding.divisor = it.getVertexDivisor();
 		binding.stride = it.getVertexSize();
+
+		auto divisor = it.getVertexDivisor();
+		if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+			binding.divisor = 0;
+		else if (divisor == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
+			binding.divisor = 1;
+		else
+		{
+			assert(false);
+			binding.divisor = 0;
+		}
 
 		_bindings.push_back(binding);
 	}

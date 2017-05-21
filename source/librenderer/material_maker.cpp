@@ -72,22 +72,29 @@ MaterialMaker::~MaterialMaker() noexcept
 bool
 MaterialMaker::doCanRead(StreamReader& stream) const noexcept
 {
-	XMLReader reader;
-	if (!reader.open(stream))
-		return false;
+	try
+	{
+		XMLReader reader;
+		if (!reader.open(stream))
+			return false;
 
-	reader.setToFirstChild();
-		
-	std::string nodeName;
-	nodeName = reader.getCurrentNodeName();
-	if (nodeName != "material" && nodeName != "effect")
-		return false;
+		reader.setToFirstChild();
 
-	std::string language = reader.getValue<std::string>("language");
-	if (language == "bytecodes")
-		return false;
+		std::string nodeName;
+		nodeName = reader.getCurrentNodeName();
+		if (nodeName != "material" && nodeName != "effect")
+			return false;
 
-	return true;
+		std::string language = reader.getValue<std::string>("language");
+		if (language == "bytecodes")
+			return false;
+
+		return true;
+	}
+	catch (...)
+	{
+		return false;
+	}
 }
 
 void

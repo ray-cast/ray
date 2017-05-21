@@ -43,6 +43,8 @@ _NAME_BEGIN
 
 __ImplementSubClass(RenderScene, rtti::Interface, "RenderScene")
 
+RenderScenes RenderScene::_sceneList;
+
 OcclusionCullNode::OcclusionCullNode() noexcept
 	: _distanceSqrt(0)
 	, _item(nullptr)
@@ -132,12 +134,14 @@ OcclusionCullList::sort(iterator begin, iterator end) noexcept
 	);
 }
 
-RenderScene::RenderScene() noexcept
+RenderScene::RenderScene()
 {
+	this->addRenderScene(this);
 }
 
 RenderScene::~RenderScene() noexcept
 {
+	this->removeRenderScene(this);
 }
 
 void
@@ -149,7 +153,13 @@ RenderScene::addCamera(CameraPtr camera) noexcept
 	if (it == _cameraList.end())
 	{
 		_cameraList.push_back(camera);
-		this->sortCamera();
+
+		std::sort(_cameraList.begin(), _cameraList.end(),
+			[](const CameraPtr& lhs, const CameraPtr& rhs)
+		{
+			return lhs->getCameraOrder() < rhs->getCameraOrder();
+		}
+		);
 	}
 }
 
@@ -160,9 +170,7 @@ RenderScene::removeCamera(CameraPtr camera) noexcept
 
 	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
 	if (it != _cameraList.end())
-	{
 		_cameraList.erase(it);
-	}
 }
 
 Cameras&
@@ -178,29 +186,14 @@ RenderScene::getCameraList() const noexcept
 }
 
 void
-RenderScene::sortCamera() noexcept
-{
-	std::sort(_cameraList.begin(), _cameraList.end(),
-		[](CameraPtr lhs, CameraPtr rhs)
-	{
-		return lhs->getCameraOrder() < rhs->getCameraOrder();
-	}
-	);
-}
-
-void
 RenderScene::addRenderObject(RenderObject* object) noexcept
 {
 	assert(!object->getRenderScene());
 
 	if (object->isInstanceOf<Camera>())
-	{
 		this->addCamera(object->downcast_pointer<Camera>());
-	}
 	else
-	{
 		_renderObjectList.push_back(object);
-	}
 }
 
 void
@@ -208,9 +201,7 @@ RenderScene::removeRenderObject(RenderObject* object) noexcept
 {
 	auto it = std::find(_renderObjectList.begin(), _renderObjectList.end(), object);
 	if (it != _renderObjectList.end())
-	{
 		_renderObjectList.erase(it);
-	}
 }
 
 void
@@ -266,6 +257,26 @@ RenderScene::computVisiableLight(const float4x4& viewProject, OcclusionCullList&
 
 		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
 	}
+}
+
+const RenderScenes& 
+RenderScene::getSceneAll() noexcept
+{
+	return _sceneList;
+}
+
+void
+RenderScene::addRenderScene(RenderScene* _this)
+{
+	_sceneList.push_back(_this);
+}
+
+void
+RenderScene::removeRenderScene(RenderScene* _this) noexcept
+{
+	auto it = std::find(_sceneList.begin(), _sceneList.end(), _this);
+	if (it != _sceneList.end())
+		_sceneList.erase(it);
 }
 
 _NAME_END

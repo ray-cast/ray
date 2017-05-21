@@ -94,7 +94,7 @@ typedef std::weak_ptr<class Light> LightWeakPtr;
 typedef std::vector<RenderPipelineStagePtr> RenderPipelineStages;
 typedef std::vector<GeometryPtr> Geometryes;
 typedef std::vector<RenderObjectPtr> RenderObjects;
-typedef std::vector<RenderScenePtr> RenderScenes;
+typedef std::vector<RenderScene*> RenderScenes;
 typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
 typedef std::vector<MaterialPtr> Materials;
 typedef std::vector<MaterialPassPtr> MaterialPassList;

@@ -60,9 +60,6 @@ public:
 	void setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	RenderScenePtr createRenderScene() noexcept;
-	void removeRenderScene(RenderScenePtr scene) noexcept;
-
 	void setViewport(std::uint32_t i, const Viewport& view) noexcept;
 	const Viewport& getViewport(std::uint32_t i) const noexcept;
 
@@ -113,7 +110,6 @@ private:
 	RenderSystem& operator=(const RenderSystem&) noexcept = delete;
 
 private:
-	RenderScenes _sceneList;
 	RenderPipelineManagerPtr _pipelineManager;
 };
 

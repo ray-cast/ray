@@ -244,7 +244,7 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UScaled);
 	}		
 
-	auto _buildVertexBuffer = [&](const MeshProperty& mesh, std::size_t& offsetVertices, const std::vector<char>& _vbo)
+	auto _buildVertexBuffer = [&](const MeshProperty& mesh, std::size_t& offsetVertices, std::vector<std::uint8_t>& _vbo)
 	{
 		auto& vertices = mesh.getVertexArray();
 		auto& tangentQuats = mesh.getTangentQuatArray();
@@ -332,7 +332,7 @@ RenderPipelineDevice::createVertexBuffer(const MeshProperty& mesh, ModelMakerFla
 		offsetVertices += mesh.getNumVertices() * inputSize;
 	};
 
-	std::vector<char> _data(numVertex * inputSize);
+	std::vector<std::uint8_t> _data(numVertex * inputSize);
 	std::size_t offsetVertices = 0;
 
 	_buildVertexBuffer(mesh, offsetVertices, _data);

@@ -60,9 +60,10 @@ public:
 	}
 
 	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
+	GraphicsTexturePtr getTexture(const std::string& name) noexcept;
+
 	void destroyTexture(GraphicsTexturePtr texture) noexcept;
 	void destroyTexture(const std::string& name) noexcept;
-	GraphicsTexturePtr getTexture(const std::string& name) noexcept;
 
 private:
 	bool loadModel(const std::string& filename, ResLoader<Model>& model) noexcept;

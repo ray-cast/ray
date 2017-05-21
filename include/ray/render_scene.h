@@ -84,12 +84,12 @@ private:
 	OcclusionCullNodes _iter;
 };
 
-class EXPORT RenderScene : public rtti::Interface
+class EXPORT RenderScene final : public rtti::Interface
 {
 	__DeclareSubClass(RenderScene, rtti::Interface)
 public:
-	RenderScene() noexcept;
-	virtual ~RenderScene() noexcept;
+	RenderScene();
+	~RenderScene() noexcept;
 
 	void addCamera(CameraPtr camera) noexcept;
 	void removeCamera(CameraPtr camera) noexcept;
@@ -103,12 +103,17 @@ public:
 	void computVisiableObject(const float4x4& viewProject, OcclusionCullList& list) noexcept;
 	void computVisiableLight(const float4x4& viewProject, OcclusionCullList& list) noexcept;
 
-private:
-	void sortCamera() noexcept;
+	static const RenderScenes& getSceneAll() noexcept;
+
+protected:
+	void addRenderScene(RenderScene* _this);
+	void removeRenderScene(RenderScene* _this) noexcept;
 
 private:
 	Cameras _cameraList;
 	RenderObjectRaws _renderObjectList;
+
+	static RenderScenes _sceneList;
 };
 
 _NAME_END

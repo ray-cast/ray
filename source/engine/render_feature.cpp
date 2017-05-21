@@ -99,7 +99,7 @@ RenderFeature::onActivate() except
 	if (!RenderSystem::instance()->setup(_renderSetting))
 		throw failure("RenderSystem::instance() fail.");
 
-	_renderScene = RenderSystem::instance()->createRenderScene();
+	_renderScene = std::make_shared<RenderScene>();
 	if (!_renderScene)
 		throw failure("RenderSystem::createRenderScene() fail.");
 }
@@ -107,7 +107,7 @@ RenderFeature::onActivate() except
 void
 RenderFeature::onDeactivate() noexcept
 {
-	RenderSystem::instance()->removeRenderScene(std::move(_renderScene));
+	_renderScene.reset();
 	RenderSystem::instance()->close();
 }
 

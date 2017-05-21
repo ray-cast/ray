@@ -338,8 +338,8 @@ SphereMakerComponent::onActivate() except
 			gameObject->setActive(true);
 			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
 			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
-			gameObject->setScale(ray::float3(2.5));
-			gameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0 + j * 5.5f));
+			gameObject->setScaleAll(2.5f);
+			gameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f));
 
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 

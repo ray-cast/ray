@@ -40,6 +40,7 @@
 #include <ray/geometry.h>
 #include <ray/graphics_context.h>
 #include <ray/material.h>
+#include <ray/res_manager.h>
 #include <ray/graphics_texture.h>
 
 _NAME_BEGIN
@@ -311,7 +312,7 @@ SkyboxComponent::_loadSkybox(const std::string& texture) noexcept
 	if (texture.empty())
 		return false;
 
-	auto skyTexture = RenderSystem::instance()->createTexture(texture,
+	auto skyTexture = ResManager::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDim2D,
 		GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 
@@ -325,7 +326,7 @@ SkyboxComponent::_loadSkybox(const std::string& texture) noexcept
 bool
 SkyboxComponent::_loadSkyDiffuse(const std::string& texture) noexcept
 {
-	auto skyDiffTexture = RenderSystem::instance()->createTexture(texture,
+	auto skyDiffTexture = ResManager::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
 		GraphicsSamplerFilter::GraphicsSamplerFilterLinear,
 		GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
@@ -340,7 +341,7 @@ SkyboxComponent::_loadSkyDiffuse(const std::string& texture) noexcept
 bool
 SkyboxComponent::_loadSkySpecular(const std::string& texture) noexcept
 {
-	auto skySpecTexture = RenderSystem::instance()->createTexture(texture,
+	auto skySpecTexture = ResManager::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
 		GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear,
 		GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);

@@ -232,7 +232,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	_texBloom1View.resize(2);
 	_texBloom2View.resize(2);
 
-	for (std::size_t i = 0; i < 1; i++)
+	for (std::uint8_t i = 0; i < 1; i++)
 	{
 		GraphicsFramebufferDesc bloom1ViewDesc;
 		bloom1ViewDesc.setWidth(width / ((2 << i)));

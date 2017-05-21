@@ -348,6 +348,12 @@ GameObject::setScale(const float3& scale) noexcept
 }
 
 void
+GameObject::setScaleAll(const float scale) noexcept
+{
+	this->setScale(float3(scale, scale, scale));
+}
+
+void
 GameObject::setScaleAccum(const float3& scale) noexcept
 {
 	this->setScale(_localScaling + scale);

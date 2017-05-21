@@ -66,11 +66,6 @@ public:
 	void destroySampler(const std::string& name) noexcept;
 	GraphicsSamplerPtr getSampler(const std::string& name) noexcept;
 
-	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept;
-	void destroyTexture(GraphicsTexturePtr texture) noexcept;
-	void destroyTexture(const std::string& name) noexcept;
-	GraphicsTexturePtr getTexture(const std::string& name) noexcept;
-
 	GraphicsInputLayoutPtr createInputLayout(const std::string& name, GraphicsInputLayoutDesc& textureDesc) noexcept;
 	void destroyInputLayout(GraphicsInputLayoutPtr texture) noexcept;
 	void destroyInputLayout(const std::string& name) noexcept;
@@ -85,7 +80,6 @@ private:
 
 	std::map<std::string, GraphicsShaderPtr> _shaders;
 	std::map<std::string, GraphicsSamplerPtr> _samplers;
-	std::map<std::string, GraphicsTexturePtr> _textures;
 	std::map<std::string, GraphicsInputLayoutPtr> _inputLayouts;
 	std::map<std::string, MaterialPtr> _materials;
 };

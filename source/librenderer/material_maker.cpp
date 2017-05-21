@@ -920,7 +920,7 @@ MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, iarchi
 	}
 
 	if (name.empty())
-		throw failure(__TEXT("The shader is not set"));
+		throw failure(__TEXT("Shader name cannot be empty"));
 
 	MaterialMaker maker;
 	if (!maker.load(manager, material, name))
@@ -947,8 +947,6 @@ MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, iarchi
 			param->uniform4f(parseFloat4<float>(arg.second));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
-			param->uniformTexture(RenderSystem::instance()->createTexture(arg.second, GraphicsTextureDim::GraphicsTextureDim2D));
-			break;
 		default:
 			assert(false);
 		}

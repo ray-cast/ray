@@ -51,7 +51,6 @@ public:
 	~ResManager() noexcept;
 	
 	MaterialPtr createMaterial(const std::string& name) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear) noexcept;
 	GameObjectPtr createGameObject(const std::string& name, const std::string& anim = "") noexcept;
 
 	template<typename T>
@@ -59,6 +58,11 @@ public:
 	{
 		return ResLoader<T>::find(name);
 	}
+
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
+	void destroyTexture(GraphicsTexturePtr texture) noexcept;
+	void destroyTexture(const std::string& name) noexcept;
+	GraphicsTexturePtr getTexture(const std::string& name) noexcept;
 
 private:
 	bool loadModel(const std::string& filename, ResLoader<Model>& model) noexcept;
@@ -77,6 +81,9 @@ private:
 private:
 	ResManager(const ResManager&) = delete;
 	ResManager& operator=(const ResManager&) = delete;
+
+private:
+	std::map<std::string, GraphicsTexturePtr> _textures;
 };
 
 _NAME_END

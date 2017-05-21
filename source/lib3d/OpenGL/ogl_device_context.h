@@ -124,7 +124,7 @@ private:
 	std::vector<Scissor> _scissors;
 
 	GLenum  _indexType;
-	GLsizei _indexOffset;
+	GLintptr _indexOffset;
 
 	OGLPipelinePtr _pipeline;
 	OGLDescriptorSetPtr _descriptorSet;

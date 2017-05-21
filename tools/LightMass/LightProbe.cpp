@@ -46,6 +46,30 @@ LightProbe::~LightProbe() noexcept
 {
 }
 
+void
+LightProbe::setSH9(const SH9& sh) noexcept
+{
+	_sh = sh;
+}
+
+const SH9& 
+LightProbe::getSH9() const noexcept
+{
+	return _sh;
+}
+
+void 
+LightProbe::setTranslate(const Vector3& translate) noexcept
+{
+	_translate = translate;
+}
+
+const Vector3& 
+LightProbe::getTranslate() const noexcept
+{
+	return _translate;
+}
+
 void 
 LightProbe::setBoundingBox(const BoundingBox& bound) noexcept
 {

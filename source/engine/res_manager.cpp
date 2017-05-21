@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/res_manager.h>
 #include <ray/render_system.h>
+#include <ray/graphics_texture.h>
 #include <ray/game_object.h>
 #include <ray/mesh_component.h>
 #include <ray/mesh_render_component.h>
@@ -50,6 +51,7 @@
 #endif
 
 #include <ray/ik_solver_component.h>
+#include <ray/image.h>
 #include <ray/material.h>
 #include <ray/anim_component.h>
 
@@ -63,6 +65,7 @@ ResManager::ResManager() noexcept
 
 ResManager::~ResManager() noexcept
 {
+	_textures.clear();
 }
 
 MaterialPtr
@@ -75,12 +78,132 @@ ResManager::createMaterial(const std::string& name) noexcept
 }
 
 GraphicsTexturePtr
-ResManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
+ResManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
 {
-	auto texture = RenderSystem::instance()->createTexture(name, dim, filter);
+	if (name.empty())
+		return nullptr;
+
+	auto texture = _textures[name];
+	if (texture)
+		return texture;
+
+	StreamReaderPtr stream;
+	if (!IoServer::instance()->openFile(stream, name))
+		return nullptr;
+
+	image::Image image;
+	if (!image.load(*stream))
+		return nullptr;
+
+	auto imageFormat = image.format();
+	GraphicsFormat format = GraphicsFormat::GraphicsFormatUndefined;
+	if (imageFormat == image::format_t::BC1RGBUNormBlock)
+		format = GraphicsFormat::GraphicsFormatBC1RGBUNormBlock;
+	else if (imageFormat == image::format_t::BC1RGBAUNormBlock)
+		format = GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock;
+	else if (imageFormat == image::format_t::BC1RGBSRGBBlock)
+		format = GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock;
+	else if (imageFormat == image::format_t::BC1RGBASRGBBlock)
+		format = GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock;
+	else if (imageFormat == image::format_t::BC3UNormBlock)
+		format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
+	else if (imageFormat == image::format_t::BC3SRGBBlock)
+		format = GraphicsFormat::GraphicsFormatBC3SRGBBlock;
+	else if (imageFormat == image::format_t::BC4UNormBlock)
+		format = GraphicsFormat::GraphicsFormatBC4UNormBlock;
+	else if (imageFormat == image::format_t::BC4SNormBlock)
+		format = GraphicsFormat::GraphicsFormatBC4SNormBlock;
+	else if (imageFormat == image::format_t::BC5UNormBlock)
+		format = GraphicsFormat::GraphicsFormatBC5UNormBlock;
+	else if (imageFormat == image::format_t::BC5SNormBlock)
+		format = GraphicsFormat::GraphicsFormatBC5SNormBlock;
+	else if (imageFormat == image::format_t::BC6HUFloatBlock)
+		format = GraphicsFormat::GraphicsFormatBC6HUFloatBlock;
+	else if (imageFormat == image::format_t::BC6HSFloatBlock)
+		format = GraphicsFormat::GraphicsFormatBC6HSFloatBlock;
+	else if (imageFormat == image::format_t::BC7UNormBlock)
+		format = GraphicsFormat::GraphicsFormatBC7UNormBlock;
+	else if (imageFormat == image::format_t::BC7SRGBBlock)
+		format = GraphicsFormat::GraphicsFormatBC7SRGBBlock;
+	else if (imageFormat == image::format_t::R8G8B8UNorm || imageFormat == image::format_t::R8G8B8SRGB)
+		format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+	else if (imageFormat == image::format_t::R8G8B8A8UNorm || imageFormat == image::format_t::R8G8B8A8SRGB)
+		format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+	else if (imageFormat == image::format_t::B8G8R8UNorm || imageFormat == image::format_t::B8G8R8SRGB)
+		format = GraphicsFormat::GraphicsFormatB8G8R8UNorm;
+	else if (imageFormat == image::format_t::B8G8R8A8UNorm || imageFormat == image::format_t::B8G8R8A8SRGB)
+		format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm;
+	else if (imageFormat == image::format_t::R8UNorm || imageFormat == image::format_t::R8SRGB)
+		format = GraphicsFormat::GraphicsFormatR8UNorm;
+	else if (imageFormat == image::format_t::R8G8UNorm || imageFormat == image::format_t::R8G8SRGB)
+		format = GraphicsFormat::GraphicsFormatR8G8UNorm;
+	else if (imageFormat == image::format_t::R16SFloat)
+		format = GraphicsFormat::GraphicsFormatR16SFloat;
+	else if (imageFormat == image::format_t::R16G16SFloat)
+		format = GraphicsFormat::GraphicsFormatR16G16SFloat;
+	else if (imageFormat == image::format_t::R16G16B16SFloat)
+		format = GraphicsFormat::GraphicsFormatR16G16B16SFloat;
+	else if (imageFormat == image::format_t::R16G16B16A16SFloat)
+		format = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
+	else if (imageFormat == image::format_t::R32SFloat)
+		format = GraphicsFormat::GraphicsFormatR32SFloat;
+	else if (imageFormat == image::format_t::R32G32SFloat)
+		format = GraphicsFormat::GraphicsFormatR32G32SFloat;
+	else if (imageFormat == image::format_t::R32G32B32SFloat)
+		format = GraphicsFormat::GraphicsFormatR32G32B32SFloat;
+	else if (imageFormat == image::format_t::R32G32B32A32SFloat)
+		format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+
+	if (format == GraphicsFormat::GraphicsFormatUndefined)
+		return nullptr;
+
+	GraphicsTextureDesc textureDesc;
+	textureDesc.setSize(image.width(), image.height(), image.depth());
+	textureDesc.setTexDim(dim);
+	textureDesc.setTexFormat(format);
+	textureDesc.setStream(image.data());
+	textureDesc.setStreamSize(image.size());
+	textureDesc.setMipBase(image.mipBase());
+	textureDesc.setMipLevel(image.mipLevel());
+	textureDesc.setLayerBase(image.layerBase());
+	textureDesc.setLayerNums(image.layerLevel());
+	textureDesc.setSamplerFilter(filter);
+	textureDesc.setSamplerWrap(warp);
+
+	texture = RenderSystem::instance()->createTexture(textureDesc);
 	if (!texture)
 		return nullptr;
+
+	_textures[name] = texture;
 	return texture;
+}
+
+void
+ResManager::destroyTexture(GraphicsTexturePtr texture) noexcept
+{
+	assert(texture);
+
+	for (auto& it : _textures)
+	{
+		if (it.second == texture)
+		{
+			it.second = nullptr;
+		}
+	}
+}
+
+void
+ResManager::destroyTexture(const std::string& name) noexcept
+{
+	assert(name.empty());
+	_textures[name] = nullptr;
+}
+
+GraphicsTexturePtr
+ResManager::getTexture(const std::string& name) noexcept
+{
+	assert(!name.empty());
+	return _textures[name];
 }
 
 GameObjectPtr
@@ -449,7 +572,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 
 	if (!diffuseTexture.empty())
 	{
-		auto texture = RenderSystem::instance()->createTexture(directory + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+		auto texture = this->createTexture(directory + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 		if (texture)
 		{
 			quality.x = 1.0f;
@@ -459,7 +582,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 
 	if (!normalTexture.empty())
 	{
-		auto texture = RenderSystem::instance()->createTexture(directory + normalTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+		auto texture = this->createTexture(directory + normalTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 		if (texture)
 		{
 			quality.y = 1.0f;

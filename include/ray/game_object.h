@@ -82,6 +82,7 @@ public:
 	const float3& getTranslate() const noexcept;
 
 	void setScale(const float3& v) noexcept;
+	void setScaleAll(const float v) noexcept;
 	void setScaleAccum(const float3& v) noexcept;
 	const float3& getScale() const noexcept;
 

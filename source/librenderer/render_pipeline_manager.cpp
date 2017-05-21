@@ -600,13 +600,6 @@ RenderPipelineManager::createTexture(std::uint32_t w, std::uint32_t h, GraphicsT
 	return _pipelineDevice->createTexture(w, h, dim, format, filter, wrap);
 }
 
-GraphicsTexturePtr
-RenderPipelineManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(name, dim, filter, wrap);
-}
-
 MaterialPtr
 RenderPipelineManager::createMaterial(const std::string& name) noexcept
 {

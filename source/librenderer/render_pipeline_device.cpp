@@ -149,12 +149,6 @@ RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTe
 	return _graphicsDevice->createTexture(textureDesc);
 }
 
-GraphicsTexturePtr
-RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
-{
-	return _materialManager->createTexture(name, dim, filter, warp);
-}
-
 GraphicsSwapchainPtr
 RenderPipelineDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 {

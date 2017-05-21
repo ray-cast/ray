@@ -3,14 +3,6 @@
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <macro name="TONEMAP_LINEAR" value="0"/>
-    <macro name="TONEMAP_EXPONENTIAL" value="1"/>
-    <macro name="TONEMAP_EXPONENTIAL_HSV" value="2"/>
-    <macro name="TONEMAP_REINHARD" value="3"/>
-    <macro name="TONEMAP_FILMIC" value="4"/>
-    <macro name="TONEMAP_UNCHARTED2" value="5"/>
-    <macro name="TONEMAP_ACES" value="6"/>
-    <macro name="TONEMAP_OPERATOR" value="TONEMAP_UNCHARTED2"/>
     <macro name="LIGHT_UNIT_SCALE" value="10000.0f"/>
     <parameter name="texSource" type="texture2D" />
     <parameter name="texSourceSizeInv" type="float2" />
@@ -25,6 +17,14 @@
     <parameter name="delta" type="float2" />
     <shader>
         <![CDATA[
+    		#define TONEMAP_LINEAR 0
+    		#define TONEMAP_EXPONENTIAL 1
+    		#define TONEMAP_EXPONENTIAL_HSV 2
+    		#define TONEMAP_REINHARD 3
+    		#define TONEMAP_UNCHARTED2 4
+    		#define TONEMAP_ACES 5
+    		#define TONEMAP_OPERATOR TONEMAP_UNCHARTED2
+        
             float3 Uncharted2Tonemap(float3 x)
             {
                 const float A = 0.22; // Shoulder Strength
@@ -81,11 +81,6 @@
                     float L_d = L * LL / (1 + L);
                     color.r = L_d;
                     color = xyz2rgb(Yxy2xyz(color));
-                    return color;
-                #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
-                    color = 2 * Uncharted2Tonemap(exposure * color);
-                    float3 whiteScale = 1.0f / Uncharted2Tonemap(8.0);
-                    color *= whiteScale;
                     return color;
                 #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
                     color = Uncharted2Tonemap(exposure * color);

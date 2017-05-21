@@ -467,7 +467,7 @@ MeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcep
 				return math::dot(rgb, lumfact);
 			};
 
-			auto texture = RenderSystem::instance()->createTexture(model->getDirectory() + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D);
+			auto texture = ResManager::instance()->createTexture(model->getDirectory() + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D);
 			if (texture)
 			{
 				quality.x = 1.0f;

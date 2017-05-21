@@ -285,13 +285,6 @@ RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim
 	return _pipelineManager->createTexture(w, h, dim, format, filter, wrap);
 }
 
-GraphicsTexturePtr
-RenderSystem::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap) noexcept
-{
-	assert(_pipelineManager);
-	return _pipelineManager->createTexture(name, dim, filter, wrap);
-}
-
 MaterialPtr
 RenderSystem::createMaterial(const std::string& name) noexcept
 {

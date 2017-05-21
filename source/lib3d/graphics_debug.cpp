@@ -34,53 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_CORE_TEXTURE_H_
-#define _H_OGL_CORE_TEXTURE_H_
-
-#include "ogl_types.h"
+#include <ray/graphics_debug.h>
 
 _NAME_BEGIN
 
-class OGLCoreTexture final : public GraphicsTexture
-{
-	__DeclareSubClass(OGLCoreTexture, GraphicsTexture)
-public:
-	OGLCoreTexture() noexcept;
-	~OGLCoreTexture() noexcept;
-
-	bool setup(const GraphicsTextureDesc& textureDesc) noexcept;
-	void close() noexcept;
-
-	bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint16_t mipLevel, void** data) noexcept;
-	void unmap() noexcept;
-
-	GLenum getTarget() const noexcept;
-	GLuint getInstanceID() const noexcept;
-
-	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
-
-private:
-	bool applyMipmapLimit(std::uint32_t min, std::uint32_t count) noexcept;
-	bool applySamplerWrap(GraphicsSamplerWrap wrap) noexcept;
-	bool applySamplerFilter(GraphicsSamplerFilter filter) noexcept;
-	bool applySamplerAnis(GraphicsSamplerAnis anis) noexcept;
-
-private:
-	friend class OGLDevice;
-	void setDevice(GraphicsDevicePtr device) noexcept;
-	GraphicsDevicePtr getDevice() noexcept;
-
-private:
-	GLenum _target;
-	GLuint _pbo;
-	GLuint _upbo;
-	GLuint _texture;
-	GLuint _pboSize;
-	GLuint _upboSize;
-	GraphicsTextureDesc _textureDesc;
-	GraphicsDeviceWeakPtr _device;
-};
-
 _NAME_END
-
-#endif

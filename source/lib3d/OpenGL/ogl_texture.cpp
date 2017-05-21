@@ -220,7 +220,7 @@ OGLTexture::close() noexcept
 }
 
 bool
-OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
+OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint16_t mipLevel, void** data) noexcept
 {
 	assert(data);
 
@@ -241,7 +241,7 @@ OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t
 
 	if (_pbo == GL_NONE)
 		glGenBuffers(1, &_pbo);
-
+	
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
 
 	GLsizei mapSize = w * h * num;
@@ -263,8 +263,7 @@ OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t
 void
 OGLTexture::unmap() noexcept
 {
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
-	glUnmapBufferARB(GL_PIXEL_PACK_BUFFER);
+	glUnmapNamedBuffer(_pbo);
 }
 
 GLenum
@@ -333,6 +332,10 @@ OGLTexture::applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept
 			glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
 			glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis32)
+			glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 32);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis64)
+			glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 64);
 		else
 		{
 			GL_PLATFORM_LOG("Can't support anisotropy format");

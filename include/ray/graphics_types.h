@@ -44,6 +44,7 @@ _NAME_BEGIN
 
 typedef std::shared_ptr<class GraphicsDevice> GraphicsDevicePtr;
 typedef std::shared_ptr<class GraphicsDeviceProperty> GraphicsDevicePropertyPtr;
+typedef std::shared_ptr<class GraphicsDebug> GraphicsDebugPtr;
 typedef std::shared_ptr<class GraphicsSwapchain> GraphicsSwapchainPtr;
 typedef std::shared_ptr<class GraphicsResource> GraphicsResourcePtr;
 typedef std::shared_ptr<class GraphicsContext> GraphicsContextPtr;
@@ -101,6 +102,7 @@ typedef std::shared_ptr<class GraphicsAttachmentBinding> GraphicsAttachmentBindi
 
 typedef std::weak_ptr<class GraphicsDevice> GraphicsDeviceWeakPtr;
 typedef std::weak_ptr<class GraphicsDeviceProperty> GraphicsDevicePropertyWeakPtr;
+typedef std::weak_ptr<class GraphicsDebug> GraphicsDebugWeakPtr;
 typedef std::weak_ptr<class GraphicsSwapchain> GraphicsSwapchainWeakPtr;
 typedef std::weak_ptr<class GraphicsResource> GraphicsResourceWeakPtr;
 typedef std::weak_ptr<class GraphicsContext> GraphicsContextWeakPtr;

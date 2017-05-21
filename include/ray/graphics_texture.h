@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_TEXTURE_H_
-#define _H_RENDER_TEXTURE_H_
+#ifndef _H_GRAPHICS_TEXTURE_H_
+#define _H_GRAPHICS_TEXTURE_H_
 
 #include <ray/graphics_resource.h>
 
@@ -123,7 +123,7 @@ public:
 	GraphicsTexture() noexcept;
 	virtual ~GraphicsTexture() noexcept;
 
-	virtual bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept = 0;
+	virtual bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint16_t mipLevel, void** data) noexcept = 0;
 	virtual void unmap() noexcept = 0;
 
 	virtual const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept = 0;

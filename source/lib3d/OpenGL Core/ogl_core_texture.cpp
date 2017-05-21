@@ -206,7 +206,7 @@ OGLCoreTexture::close() noexcept
 }
 
 bool
-OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
+OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint16_t mipLevel, void** data) noexcept
 {
 	assert(data);
 
@@ -313,6 +313,10 @@ OGLCoreTexture::applySamplerAnis(GraphicsSamplerAnis anis) noexcept
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis32)
+		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 32);
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis64)
+		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 64);
 	else
 	{
 		GL_PLATFORM_LOG("Can't support anisotropy format");

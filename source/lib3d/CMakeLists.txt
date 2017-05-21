@@ -97,6 +97,8 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/graphics_command.cpp
     ${HEADER_PATH}/graphics_data.h
     ${SOURCE_PATH}/graphics_data.cpp
+    ${HEADER_PATH}/graphics_debug.h
+    ${SOURCE_PATH}/graphics_debug.cpp
     ${HEADER_PATH}/graphics_descriptor.h
     ${SOURCE_PATH}/graphics_descriptor.cpp
     ${HEADER_PATH}/graphics_device.h

@@ -145,8 +145,8 @@ GuiControllerComponent::showLightMass() noexcept
 
 		if (ray::Gui::collapsingHeader("Uvmapper", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
-			ray::Gui::text("Output Size");
-			ray::Gui::combo("##Output size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
+			ray::Gui::text("UV size");
+			ray::Gui::combo("##UV size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
 			{
 				ray::Gui::sameLine();
@@ -187,7 +187,7 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
 			{
 				ray::Gui::sameLine();
-				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
+				if (ray::Gui::button("Revert ")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
 			}
 
 			ray::Gui::text("Sample Count");

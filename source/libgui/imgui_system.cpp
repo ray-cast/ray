@@ -65,7 +65,7 @@ IMGUISystem::open() except
 	style.FramePadding.y = 3;
 
 	style.Colors[ImGuiCol_MenuBarBg] = ImColor(222, 150, 0, 255);
-	style.Colors[ImGuiCol_Text] = ImColor(240, 240, 240, 255);
+	style.Colors[ImGuiCol_Text] = ImColor(245, 245, 245, 255);
 	style.Colors[ImGuiCol_TextDisabled] = ImColor(150, 150, 150, 255);
 	style.Colors[ImGuiCol_WindowBg] = ImColor(0, 0, 0, 220);
 	style.Colors[ImGuiCol_Header] = ImColor(0, 0, 0, 0);
@@ -74,7 +74,7 @@ IMGUISystem::open() except
 	style.Colors[ImGuiCol_TitleBg] = ImColor(0, 0, 0, 179);
 	style.Colors[ImGuiCol_TitleBgCollapsed] = ImColor(0, 0, 0, 179);
 	style.Colors[ImGuiCol_TitleBgActive] = ImColor(0, 0, 0, 179);
-	style.Colors[ImGuiCol_Button] = ImColor(220, 166, 13, 255);
+	style.Colors[ImGuiCol_Button] = ImColor(0, 95, 168, 255);
 	style.Colors[ImGuiCol_ButtonHovered] = ImColor(230, 179, 0, 255);
 	style.Colors[ImGuiCol_ButtonActive] = ImColor(255, 153, 0, 255);
 	style.Colors[ImGuiCol_CloseButton] = ImVec4(0.2, 0.2, 0.2, 0.50f);

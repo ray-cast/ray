@@ -42,11 +42,6 @@
             <attribute clearflags="none"/>
         </component>
         <component class="GuiCamera"/>
-    </object>
-    <object>
-        <attribute name="UIController"/>
-        <attribute active="true"/>
-        <component class="GuiController">
-        </component>
+		<component class="GuiController"/>
     </object>
 </scene>

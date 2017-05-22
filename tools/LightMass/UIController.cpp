@@ -137,7 +137,7 @@ GuiControllerComponent::showLightMass() noexcept
 		return;
 
 	ray::Gui::setNextWindowPos(ray::float2(0, 0), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
-	ray::Gui::setNextWindowSize(ray::float2(310, 700), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+	ray::Gui::setNextWindowSize(ray::float2(300, 700), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 
 	if (ray::Gui::begin("Light Mass", &_showLightMassWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{

@@ -48,10 +48,12 @@ public:
 
 private:
 
-	void onActivate() noexcept;
-	void onDectivate() noexcept;
+	virtual void onActivate() noexcept;
+	virtual void onDectivate() noexcept;
 
-	void onFrame() noexcept;
+	virtual void onFrame() noexcept;
+
+	virtual void onMessage(const ray::MessagePtr& message) noexcept;
 
 	void yawCamera(float speed) noexcept;
 	void moveCamera(float speed) noexcept;

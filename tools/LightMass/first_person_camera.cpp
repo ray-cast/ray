@@ -143,23 +143,28 @@ FirstPersonCameraComponent::onFrame() noexcept
 			}
 		}
 
-		if (input->getKey(ray::InputKey::Escape))
-		{
-			input->lockCursor(false);
-		}
-
 		if (input->isLockedCursor())
 		{
 			rotateCamera(input->getAxisX(), input->getAxisY());
 		}
-		else
-		{
-			if (input->getButtonDown(ray::InputButton::Code::LEFT))
-			{
-				if (!input->getKey(ray::InputKey::Code::LeftControl))
-					input->lockCursor(true);
-			}
-		}
+	}
+}
+
+void
+FirstPersonCameraComponent::onMessage(const ray::MessagePtr& message) noexcept
+{
+	if (!message->isInstanceOf<ray::InputMessage>())
+		return;
+
+	auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
+	if (inputFeature)
+	{
+		auto input = inputFeature->getInput();
+		if (!input)
+			return;
+
+		if (input->getKeyDown(ray::InputKey::Code::Escape))
+			input->lockCursor(input->isLockedCursor() ^ 1);
 	}
 }
 

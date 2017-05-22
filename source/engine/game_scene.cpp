@@ -142,7 +142,7 @@ GameScene::sendMessage(const MessagePtr& message) except
 		{
 			auto childrens = root->getChildren();
 			for (auto& child : childrens)
-				child->sendMessage(message);
+				child->sendMessageDownwards(message);
 		}
 	}
 }

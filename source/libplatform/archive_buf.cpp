@@ -418,7 +418,7 @@ archive_node::front() noexcept
 	return std::get<archive_node::type_t::object>(_data)->front().second;
 }
 
-const archive_node& 
+const archive_node&
 archive_node::front() const noexcept
 {
 	assert(this->type() == archive_node::type_t::object);
@@ -432,7 +432,7 @@ archive_node::back() noexcept
 	return std::get<archive_node::type_t::object>(_data)->back().second;
 }
 
-const archive_node& 
+const archive_node&
 archive_node::back() const noexcept
 {
 	assert(this->type() == archive_node::type_t::object);
@@ -443,6 +443,38 @@ archive_node::type_t
 archive_node::type() const noexcept
 {
 	return (type_t)_data.index();
+}
+
+char*
+archive_node::type_name() const noexcept
+{
+	return this->type_name(this->type());
+}
+
+char*
+archive_node::type_name(type_t type) const noexcept
+{
+	switch (type)
+	{
+	case archive_node::type_t::null:
+		return "null";
+	case archive_node::type_t::boolean:
+		return "boolean";
+	case archive_node::type_t::number_integer:
+		return "interger";
+	case archive_node::type_t::number_unsigned:
+		return "unsigned interger";
+	case archive_node::type_t::number_float:
+		return "float point";
+	case archive_node::type_t::string:
+		return "string";
+	case archive_node::type_t::array:
+		return "array";
+	case archive_node::type_t::object:
+		return "object";
+	default:
+		return "unknow";
+	}
 }
 
 void
@@ -485,7 +517,7 @@ archive_node::operator=(boolean_t value)
 	return *this;
 }
 
-void 
+void
 archive_node::resize(std::size_t size)
 {
 	if (this->type() != archive_node::type_t::object)

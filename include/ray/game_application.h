@@ -76,7 +76,7 @@ public:
 
 	bool sendInputEvent(const InputEvent& event) noexcept;
 	bool postInputEvent(const InputEvent& event) noexcept;
-	
+
 	void update() noexcept;
 
 private:

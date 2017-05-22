@@ -60,7 +60,11 @@ IMGUISystem::open() except
 
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.FrameRounding = 8.0f;
-	style.Colors[ImGuiCol_MenuBarBg] = ImColor(222, 150, 13, 255);
+	style.GrabRounding = 5.0f;
+	style.FramePadding.x = 2;
+	style.FramePadding.y = 4;
+
+	style.Colors[ImGuiCol_MenuBarBg] = ImColor(222, 150, 0, 255);
 	style.Colors[ImGuiCol_Text] = ImColor(240, 240, 240, 255);
 	style.Colors[ImGuiCol_TextDisabled] = ImColor(150, 150, 150, 255);
 	style.Colors[ImGuiCol_WindowBg] = ImColor(0, 0, 0, 220);
@@ -76,22 +80,23 @@ IMGUISystem::open() except
 	style.Colors[ImGuiCol_CloseButton] = ImVec4(0.2, 0.2, 0.2, 0.50f);
 	style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.6f, 0.6f, 0.6f, 0.60f);
 	style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
+	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0, 0.6, 1.0, 0.75f);
 	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.20f, 0.20, 0.20f, 0.60f);
 	style.Colors[ImGuiCol_ScrollbarGrab] = ImColor(0, 0, 0, 255);
 	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImColor(125, 125, 125, 100);
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImColor(75, 75, 75, 100);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(1.00f, 0.7, 0.0, 1.00f);
+	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.4, 0.0, 1.00f);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.10f);
+	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.90f, 0.80f, 0.80f, 0.20f);
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.90f, 0.65f, 0.65f, 0.25f);
+
+	style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.90f);
 
 	style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-	style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.10f, 0.90f);
-	style.Colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 0.65f);
+	style.Colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 0.125f);
 	style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.30f);
-	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.90f, 0.80f, 0.80f, 0.40f);
-	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.90f, 0.65f, 0.65f, 0.45f);	
 	style.Colors[ImGuiCol_ComboBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.99f);
-	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.90f, 0.90f, 0.90f, 0.50f);
-	style.Colors[ImGuiCol_SliderGrab] = ImVec4(1.00f, 1.00f, 1.00f, 0.30f);
-	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.80f, 0.50f, 0.50f, 1.00f);
 	style.Colors[ImGuiCol_Column] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.70f, 0.60f, 0.60f, 1.00f);
 	style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.90f, 0.70f, 0.70f, 1.00f);
@@ -105,10 +110,6 @@ IMGUISystem::open() except
 	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 0.00f, 1.00f, 0.35f);
 	style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
 
-	std::uint8_t* pixels;
-	int width, height;
-	io.Fonts->ClearFonts();
-	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	io.KeyMap[ImGuiKey_Tab] = GuiInputKey::Tab;
 	io.KeyMap[ImGuiKey_LeftArrow] = GuiInputKey::ArrowLeft;
 	io.KeyMap[ImGuiKey_RightArrow] = GuiInputKey::ArrowRight;
@@ -128,6 +129,12 @@ IMGUISystem::open() except
 	io.KeyMap[ImGuiKey_X] = GuiInputKey::X;
 	io.KeyMap[ImGuiKey_Y] = GuiInputKey::Y;
 	io.KeyMap[ImGuiKey_Z] = GuiInputKey::Z;
+
+	std::uint8_t* pixels;
+	int width, height;
+	io.Fonts->ClearFonts();
+	io.Fonts->AddFontFromFileTTF("../../engine/fonts/MONACO.TTF", 13.0f);
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 	ray::GraphicsTextureDesc fontDesc;
 	fontDesc.setSize(width, height);
@@ -249,7 +256,7 @@ IMGUISystem::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 	h = io.DisplaySize.y;
 }
 
-void 
+void
 IMGUISystem::setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept
 {
 	ImGuiIO& io = ImGui::GetIO();
@@ -265,7 +272,7 @@ IMGUISystem::setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept
 	_materialProj->uniform4fmat(project);
 }
 
-void 
+void
 IMGUISystem::getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept
 {
 	ImGuiIO& io = ImGui::GetIO();
@@ -276,7 +283,7 @@ IMGUISystem::getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept
 void
 IMGUISystem::render(float delta) except
 {
-	auto renderer = RenderSystem::instance();	
+	auto renderer = RenderSystem::instance();
 
 	auto drawData = ImGui::GetDrawData();
 
@@ -335,7 +342,7 @@ IMGUISystem::render(float delta) except
 	renderer->setIndexBuffer(_ibo, 0, ray::GraphicsIndexType::GraphicsIndexTypeUInt16);
 
 	renderer->setMaterialPass(_materialTech->getPass(0));
-	
+
 	std::uint32_t vdx_buffer_offset = 0;
 	std::uint32_t idx_buffer_offset = 0;
 

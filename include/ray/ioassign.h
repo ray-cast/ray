@@ -46,6 +46,7 @@ class EXPORT IoAssign final
 public:
 	IoAssign() noexcept;
 	IoAssign(const std::string& name, const std::string& path) noexcept;
+	~IoAssign() noexcept;
 
 	const std::string& getName() const noexcept;
 	const std::string& getPath() const noexcept;

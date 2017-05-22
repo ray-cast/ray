@@ -34,34 +34,89 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ioassign.h>
+#ifndef _H_UI_CONTROLLER_H_
+#define _H_UI_CONTROLLER_H_
 
-_NAME_BEGIN
+#include <ray/game_component.h>
 
-IoAssign::IoAssign() noexcept
+struct GuiControllerParams
 {
-}
+public:
+	struct Uvmapper
+	{
+		Uvmapper() noexcept
+			: margin(2)
+			, stretch(1e-2)
+			, chart(0)
+		{
+		}
 
-IoAssign::IoAssign(const std::string& name, const std::string& path) noexcept
-	: _name(name)
-	, _path(path)
+		int chart;
+		float margin;
+		float stretch;
+	};
+
+	struct LightMass
+	{
+		LightMass() noexcept
+			: environmentColor(ray::float4::One)
+			, hemisphereNear(0.1)
+			, hemisphereFar(100.0)
+			, interpolationPasses(1)
+			, interpolationThreshold(1e-4)
+			, imageSize(1)
+			, sampleCount(1)
+			, enableGI(false)
+		{
+		};
+
+		ray::float4 environmentColor;
+
+		int imageSize;
+		int sampleCount;
+		int interpolationPasses;
+
+		bool enableGI;
+
+		float hemisphereNear;
+		float hemisphereFar;
+		float hemisphereSize;
+		float interpolationThreshold;
+	};
+
+public:
+	GuiControllerParams()
+	{
+	}
+
+	Uvmapper uvmapper;
+	LightMass lightmass;
+};
+
+class GuiControllerComponent final : public ray::GameComponent
 {
-}
+	__DeclareSubClass(GuiControllerComponent, ray::GameComponent)
+public:
+	GuiControllerComponent() noexcept;
+	~GuiControllerComponent() noexcept;
 
-IoAssign::~IoAssign() noexcept
-{
-}
+	ray::GameComponentPtr clone() const noexcept;
 
-const std::string&
-IoAssign::getName() const noexcept
-{
-	return _name;
-}
+private:
+	virtual void onMessage(const ray::MessagePtr& message) noexcept;
 
-const std::string&
-IoAssign::getPath() const noexcept
-{
-	return _path;
-}
+private:
+	GuiControllerComponent(const GuiControllerComponent&) = delete;
+	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;
 
-_NAME_END
+private:
+	float _fps;
+	bool _showTestWindow;
+	bool _showLightMassWindow;
+	ray::float4 _clearColor;
+
+	GuiControllerParams _default;
+	GuiControllerParams _setting;
+};
+
+#endif

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="LightMass"/>
+    <object name="UIRoot">
+        <attribute position="0,0,-1"/>
+        <attribute active="true"/>
+        <component class="Camera">
+            <attribute type="ortho"/>
+            <attribute order="2D"/>
+            <attribute color="0.15,0.15,0.15,1"/>
+        </component>
+        <component class="GuiCamera"/>
+    </object>
+    <object>
+        <attribute name="UIController"/>
+        <attribute active="true"/>
+        <component class="GuiController">
+        </component>
+    </object>
+</scene>

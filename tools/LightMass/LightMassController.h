@@ -34,34 +34,15 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ioassign.h>
+#include <ray/game_component.h>
 
-_NAME_BEGIN
-
-IoAssign::IoAssign() noexcept
+class LightMassController final : ray::GameComponent
 {
-}
+public:
+	LightMassController() noexcept;
+	~LightMassController() noexcept;
 
-IoAssign::IoAssign(const std::string& name, const std::string& path) noexcept
-	: _name(name)
-	, _path(path)
-{
-}
-
-IoAssign::~IoAssign() noexcept
-{
-}
-
-const std::string&
-IoAssign::getName() const noexcept
-{
-	return _name;
-}
-
-const std::string&
-IoAssign::getPath() const noexcept
-{
-	return _path;
-}
-
-_NAME_END
+private:
+	LightMassController(const LightMassController&) = delete;
+	LightMassController& operator=(const LightMassController&) = delete;
+};

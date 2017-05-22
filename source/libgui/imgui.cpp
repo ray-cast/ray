@@ -370,7 +370,7 @@ IMGUI::setKeyboardFocusHere(int offset) noexcept
 void
 IMGUI::pushStyleColor(GuiCol idx, const float4& col) noexcept
 {
-	ImGui::PushStyleColor(idx, (ImVec4&)col);
+	ImGui::PushStyleColor((ImGuiCol)idx, (ImVec4&)col);
 }
 
 void
@@ -382,13 +382,13 @@ IMGUI::popStyleColor(int count) noexcept
 void
 IMGUI::pushStyleVar(GuiStyleVar idx, float val) noexcept
 {
-	ImGui::PushStyleVar(idx, val);
+	ImGui::PushStyleVar((ImGuiStyleVar)idx, val);
 }
 
 void
 IMGUI::pushStyleVar(GuiStyleVar idx, const float2& val) noexcept
 {
-	ImGui::PushStyleVar(idx, (ImVec2&)val);
+	ImGui::PushStyleVar((ImGuiStyleVar)idx, (ImVec2&)val);
 }
 
 void
@@ -412,7 +412,7 @@ IMGUI::getFontTexUvWhitePixel() noexcept
 std::uint32_t
 IMGUI::getColorU32(GuiCol idx, float alpha_mul) noexcept
 {
-	return ImGui::GetColorU32(idx, alpha_mul);
+	return ImGui::GetColorU32((ImGuiCol)idx, alpha_mul);
 }
 
 std::uint32_t
@@ -850,7 +850,7 @@ IMGUI::colorEdit4(const char* label, float col[4], bool show_alpha) noexcept
 void
 IMGUI::colorEditMode(GuiColorEditMode mode) noexcept
 {
-	ImGui::ColorEditMode(mode);
+	ImGui::ColorEditMode((ImGuiColorEditMode)mode);
 }
 
 void
@@ -1028,6 +1028,12 @@ IMGUI::sliderFloat4(const char* label, float v[4], float v_min, float v_max, con
 }
 
 bool
+IMGUI::sliderFloatv(const char* label, const float2& size, float* v, float v_min, float v_max, const char* display_format, float power) noexcept
+{
+	return ImGui::VSliderFloat(label, (ImVec2&)size, v, v_min, v_max, display_format, power);
+}
+
+bool
 IMGUI::sliderAngle(const char* label, float* v_rad, float v_degrees_min, float v_degrees_max) noexcept
 {
 	return ImGui::SliderAngle(label, v_rad, v_degrees_min, v_degrees_max);
@@ -1058,13 +1064,7 @@ IMGUI::sliderInt4(const char* label, int v[4], int v_min, int v_max, const char*
 }
 
 bool
-IMGUI::vSliderFloat(const char* label, const float2& size, float* v, float v_min, float v_max, const char* display_format, float power) noexcept
-{
-	return ImGui::VSliderFloat(label, (ImVec2&)size, v, v_min, v_max, display_format, power);
-}
-
-bool
-IMGUI::vSliderInt(const char* label, const float2& size, int* v, int v_min, int v_max, const char* display_format) noexcept
+IMGUI::sliderIntv(const char* label, const float2& size, int* v, int v_min, int v_max, const char* display_format) noexcept
 {
 	return ImGui::VSliderInt(label, (ImVec2&)size, v, v_min, v_max, display_format);
 }
@@ -1533,7 +1533,7 @@ IMGUI::getFrameCount() noexcept
 const char*
 IMGUI::getStyleColName(GuiCol idx) noexcept
 {
-	return ImGui::GetStyleColName(idx);
+	return ImGui::GetStyleColName((ImGuiCol)idx);
 }
 
 float2
@@ -1683,7 +1683,7 @@ IMGUI::resetMouseDragDelta(int button) noexcept
 void
 IMGUI::setMouseCursor(GuiMouseCursor type) noexcept
 {
-	return ImGui::SetMouseCursor(type);
+	return ImGui::SetMouseCursor((ImGuiMouseCursor)type);
 }
 
 void

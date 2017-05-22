@@ -69,7 +69,7 @@ public:
 		number_integer_t,
 		number_unsigned_t,
 		number_float_t,
-		std::unique_ptr<string_t>, 
+		std::unique_ptr<string_t>,
 		std::unique_ptr<std::uint8_t>,
 		std::unique_ptr<object_t>
 	>;
@@ -201,35 +201,8 @@ public:
 
 	type_t type() const noexcept;
 
-	char* type_name() const noexcept
-	{
-		return this->type_name(this->type());
-	}
-
-	char* type_name(type_t type) const noexcept
-	{
-		switch (type)
-		{
-		case archive_node::type_t::null:
-			return "null";
-		case archive_node::type_t::boolean:
-			return "boolean";
-		case archive_node::type_t::number_integer:
-			return "interger";
-		case archive_node::type_t::number_unsigned:
-			return "unsigned interger";
-		case archive_node::type_t::number_float:
-			return "float point";
-		case archive_node::type_t::string:
-			return "string";
-		case archive_node::type_t::array:
-			return "array";
-		case archive_node::type_t::object:
-			return "object";
-		default:
-			return "bad";
-		}
-	}
+	char* type_name() const noexcept;
+	char* type_name(type_t type) const noexcept;
 
 	bool is_null() const noexcept
 	{
@@ -270,7 +243,7 @@ public:
 	{
 		return this->type() == archive_node::type_t::object;
 	}
-	
+
 	void resize(std::size_t size);
 
 	archive_node& operator=(boolean_t value);
@@ -376,7 +349,6 @@ private:
 	archivebuf(const archivebuf&) noexcept = delete;
 	archivebuf& operator=(const archivebuf&) noexcept = delete;
 };
-
 
 _NAME_END
 

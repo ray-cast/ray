@@ -47,7 +47,7 @@
 
 _NAME_BEGIN
 
-enum GuiCol
+enum class GuiCol
 {
 	GuiColText,
 	GuiColTextDisabled,
@@ -97,56 +97,56 @@ enum GuiCol
 
 enum GuiInputTextFlagBits
 {
-	GuiInputTextFlagCharsDecimalBit        = 1 << 0,
-	GuiInputTextFlagCharsHexadecimalBit    = 1 << 1,
-	GuiInputTextFlagCharsUppercaseBit      = 1 << 2,
-	GuiInputTextFlagCharsNoBlankBit        = 1 << 3,
-	GuiInputTextFlagAutoSelectAllBit       = 1 << 4,
-	GuiInputTextFlagEnterReturnsTrueBit    = 1 << 5,
-	GuiInputTextFlagCallbackCompletionBit  = 1 << 6,
-	GuiInputTextFlagCallbackHistoryBit     = 1 << 7,
-	GuiInputTextFlagCallbackAlwaysBit      = 1 << 8,
-	GuiInputTextFlagCallbackCharFilterBit  = 1 << 9,
-	GuiInputTextFlagAllowTabInputBit       = 1 << 10,
+	GuiInputTextFlagCharsDecimalBit = 1 << 0,
+	GuiInputTextFlagCharsHexadecimalBit = 1 << 1,
+	GuiInputTextFlagCharsUppercaseBit = 1 << 2,
+	GuiInputTextFlagCharsNoBlankBit = 1 << 3,
+	GuiInputTextFlagAutoSelectAllBit = 1 << 4,
+	GuiInputTextFlagEnterReturnsTrueBit = 1 << 5,
+	GuiInputTextFlagCallbackCompletionBit = 1 << 6,
+	GuiInputTextFlagCallbackHistoryBit = 1 << 7,
+	GuiInputTextFlagCallbackAlwaysBit = 1 << 8,
+	GuiInputTextFlagCallbackCharFilterBit = 1 << 9,
+	GuiInputTextFlagAllowTabInputBit = 1 << 10,
 	GuiInputTextFlagCtrlEnterForNewLineBit = 1 << 11,
-	GuiInputTextFlagNoHorizontalScrollBit  = 1 << 12,
-	GuiInputTextFlagAlwaysInsertModeBit    = 1 << 13,
-	GuiInputTextFlagReadOnlyBit            = 1 << 14,
-	GuiInputTextFlagPasswordBit            = 1 << 15,
-	GuiInputTextFlagMultilineBit           = 1 << 20
+	GuiInputTextFlagNoHorizontalScrollBit = 1 << 12,
+	GuiInputTextFlagAlwaysInsertModeBit = 1 << 13,
+	GuiInputTextFlagReadOnlyBit = 1 << 14,
+	GuiInputTextFlagPasswordBit = 1 << 15,
+	GuiInputTextFlagMultilineBit = 1 << 20
 };
 
 typedef std::uint32_t GuiInputTextFlags;
 
 enum GuiWindowFlagBits
 {
-	GuiWindowFlagNoTitleBarBit                = 1 << 0,
-	GuiWindowFlagNoResizeBit                  = 1 << 1,
-	GuiWindowFlagNoMoveBit                    = 1 << 2,
-	GuiWindowFlagNoScrollbarBit               = 1 << 3,
-	GuiWindowFlagNoScrollWithMouseBit         = 1 << 4,
-	GuiWindowFlagNoCollapseBit                = 1 << 5,
-	GuiWindowFlagAlwaysAutoResizeBit          = 1 << 6,
-	GuiWindowFlagShowBordersBit               = 1 << 7,
-	GuiWindowFlagNoSavedSettingsBit           = 1 << 8,
-	GuiWindowFlagNoInputsBit                  = 1 << 9,
-	GuiWindowFlagMenuBarBit                   = 1 << 10,
-	GuiWindowFlagHorizontalScrollbarBit       = 1 << 11,
-	GuiWindowFlagNoFocusOnAppearingBit        = 1 << 12,
-	GuiWindowFlagNoBringToFrontOnFocusBit     = 1 << 13,
-	GuiWindowFlagAlwaysVerticalScrollbarBit   = 1 << 14,
+	GuiWindowFlagNoTitleBarBit = 1 << 0,
+	GuiWindowFlagNoResizeBit = 1 << 1,
+	GuiWindowFlagNoMoveBit = 1 << 2,
+	GuiWindowFlagNoScrollbarBit = 1 << 3,
+	GuiWindowFlagNoScrollWithMouseBit = 1 << 4,
+	GuiWindowFlagNoCollapseBit = 1 << 5,
+	GuiWindowFlagAlwaysAutoResizeBit = 1 << 6,
+	GuiWindowFlagShowBordersBit = 1 << 7,
+	GuiWindowFlagNoSavedSettingsBit = 1 << 8,
+	GuiWindowFlagNoInputsBit = 1 << 9,
+	GuiWindowFlagMenuBarBit = 1 << 10,
+	GuiWindowFlagHorizontalScrollbarBit = 1 << 11,
+	GuiWindowFlagNoFocusOnAppearingBit = 1 << 12,
+	GuiWindowFlagNoBringToFrontOnFocusBit = 1 << 13,
+	GuiWindowFlagAlwaysVerticalScrollbarBit = 1 << 14,
 	GuiWindowFlagAlwaysHorizontalScrollbarBit = 1 << 15,
-	GuiWindowFlagAlwaysUseWindowPaddingBit    = 1 << 16
+	GuiWindowFlagAlwaysUseWindowPaddingBit = 1 << 16
 };
 
 typedef std::uint32_t GuiWindowFlags;
 
 enum GuiAlignFlagBits
 {
-	GuiAlignFlagLeftBit    = 1 << 0,
-	GuiAlignFlagCenterBit  = 1 << 1,
-	GuiAlignFlagRightBit   = 1 << 2,
-	GuiAlignFlagTopBit     = 1 << 3,
+	GuiAlignFlagLeftBit = 1 << 0,
+	GuiAlignFlagCenterBit = 1 << 1,
+	GuiAlignFlagRightBit = 1 << 2,
+	GuiAlignFlagTopBit = 1 << 3,
 	GuiAlignFlagVCenterBit = 1 << 4,
 	GuiAlignFlagDefaultBit = GuiAlignFlagLeftBit | GuiAlignFlagTopBit
 };
@@ -155,26 +155,26 @@ typedef std::uint32_t GuiAlignFlags;
 
 enum GuiSetCondFlagBits
 {
-	GuiSetCondFlagAlwaysBit       = 1 << 0,
-	GuiSetCondFlagOnceBit         = 1 << 1,
+	GuiSetCondFlagAlwaysBit = 1 << 0,
+	GuiSetCondFlagOnceBit = 1 << 1,
 	GuiSetCondFlagFirstUseEverBit = 1 << 2,
-	GuiSetCondFlagAppearingBit    = 1 << 3
+	GuiSetCondFlagAppearingBit = 1 << 3
 };
 
 typedef std::uint32_t GuiSetCondFlags;
 
 enum GuiTreeNodeFlagBits
 {
-	GuiTreeNodeFlagSelectedBit          = 1 << 0,
-	GuiTreeNodeFlagFramedBit            = 1 << 1,
-	GuiTreeNodeFlagAllowOverlapModeBit  = 1 << 2,
-	GuiTreeNodeFlagNoTreePushOnOpenBit  = 1 << 3,
-	GuiTreeNodeFlagNoAutoOpenOnLogBit   = 1 << 4,
-	GuiTreeNodeFlagDefaultOpenBit       = 1 << 5,
+	GuiTreeNodeFlagSelectedBit = 1 << 0,
+	GuiTreeNodeFlagFramedBit = 1 << 1,
+	GuiTreeNodeFlagAllowOverlapModeBit = 1 << 2,
+	GuiTreeNodeFlagNoTreePushOnOpenBit = 1 << 3,
+	GuiTreeNodeFlagNoAutoOpenOnLogBit = 1 << 4,
+	GuiTreeNodeFlagDefaultOpenBit = 1 << 5,
 	GuiTreeNodeFlagOpenOnDoubleClickBit = 1 << 6,
-	GuiTreeNodeFlagOpenOnArrowBit       = 1 << 7,
-	GuiTreeNodeFlagLeafBit              = 1 << 8,
-	GuiTreeNodeFlagBulletBit            = 1 << 9,
+	GuiTreeNodeFlagOpenOnArrowBit = 1 << 7,
+	GuiTreeNodeFlagLeafBit = 1 << 8,
+	GuiTreeNodeFlagBulletBit = 1 << 9,
 	GuiTreeNodeFlagCollapsingHeaderBit = GuiTreeNodeFlagFramedBit | GuiTreeNodeFlagNoAutoOpenOnLogBit
 };
 
@@ -182,14 +182,14 @@ typedef std::uint32_t GuiTreeNodeFlags;
 
 enum GuiSelectableFlagBits
 {
-	GuiSelectableFlagDontClosePopupsBit  = 1 << 0,
-	GuiSelectableFlagSpanAllColumnsBit   = 1 << 1,
+	GuiSelectableFlagDontClosePopupsBit = 1 << 0,
+	GuiSelectableFlagSpanAllColumnsBit = 1 << 1,
 	GuiSelectableFlagAllowDoubleClickBit = 1 << 2
 };
 
 typedef std::uint32_t GuiSelectableFlags;
 
-enum GuiMouseCursor
+enum class GuiMouseCursor
 {
 	GuiMouseCursorArrow = 0,
 	GuiMouseCursorTextInput,         // When hovering over InputText, etc.
@@ -201,7 +201,7 @@ enum GuiMouseCursor
 	GuiMouseCursorCount_
 };
 
-enum GuiColorEditMode
+enum class GuiColorEditMode
 {
 	GuiColorEditModeUserSelect = -2,
 	GuiColorEditModeUserSelectShowButton = -1,
@@ -210,7 +210,7 @@ enum GuiColorEditMode
 	GuiColorEditModeHEX = 2
 };
 
-enum GuiStyleVar
+enum class GuiStyleVar
 {
 	GuiStyleVarAlpha,               // float
 	GuiStyleVarWindowPadding,       // float2
@@ -249,7 +249,7 @@ struct GuiStyle
 	bool        AntiAliasedLines;
 	bool        AntiAliasedShapes;
 	float       CurveTessellationTol;
-	float4      Colors[GuiCol::GuiColCOUNT];
+	float4      Colors[(int)GuiCol::GuiColCOUNT];
 
 	GuiStyle() noexcept;
 };
@@ -290,14 +290,6 @@ public:
 	static bool isWindowCollapsed() noexcept;
 	static void setWindowFontScale(float scale) noexcept;
 
-	static void setNextWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
-	static void setNextWindowPosCenter(GuiSetCondFlags cond = 0) noexcept;
-	static void setNextWindowSize(const float2& size, GuiSetCondFlags cond = 0) noexcept;
-	static void setNextWindowSizeConstraints(const float2& size_min, const float2& size_max) noexcept;
-	static void setNextWindowContentSize(const float2& size) noexcept;
-	static void setNextWindowContentWidth(float width) noexcept;
-	static void setNextWindowCollapsed(bool collapsed, GuiSetCondFlags cond = 0) noexcept;
-	static void setNextWindowFocus() noexcept;
 	static void setWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
 	static void setWindowSize(const float2& size, GuiSetCondFlags cond = 0) noexcept;
 	static void setWindowCollapsed(bool collapsed, GuiSetCondFlags cond = 0) noexcept;
@@ -306,6 +298,15 @@ public:
 	static void setWindowSize(const char* name, const float2& size, GuiSetCondFlags cond = 0) noexcept;
 	static void setWindowCollapsed(const char* name, bool collapsed, GuiSetCondFlags cond = 0) noexcept;
 	static void setWindowFocus(const char* name) noexcept;
+
+	static void setNextWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
+	static void setNextWindowPosCenter(GuiSetCondFlags cond = 0) noexcept;
+	static void setNextWindowSize(const float2& size, GuiSetCondFlags cond = 0) noexcept;
+	static void setNextWindowSizeConstraints(const float2& size_min, const float2& size_max) noexcept;
+	static void setNextWindowContentSize(const float2& size) noexcept;
+	static void setNextWindowContentWidth(float width) noexcept;
+	static void setNextWindowCollapsed(bool collapsed, GuiSetCondFlags cond = 0) noexcept;
+	static void setNextWindowFocus() noexcept;
 
 	static float getScrollX() noexcept;
 	static float getScrollY() noexcept;
@@ -432,13 +433,13 @@ public:
 	static bool sliderFloat2(const char* label, float v[2], float v_min, float v_max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
 	static bool sliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
 	static bool sliderFloat4(const char* label, float v[4], float v_min, float v_max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
+	static bool sliderFloatv(const char* label, const float2& size, float* v, float v_min, float v_max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
 	static bool sliderAngle(const char* label, float* v_rad, float v_degrees_min = -360.0f, float v_degrees_max = +360.0f) noexcept;
 	static bool sliderInt(const char* label, int* v, int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 	static bool sliderInt2(const char* label, int v[2], int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 	static bool sliderInt3(const char* label, int v[3], int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 	static bool sliderInt4(const char* label, int v[4], int v_min, int v_max, const char* display_format = "%.0f") noexcept;
-	static bool vSliderFloat(const char* label, const float2& size, float* v, float v_min, float v_max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
-	static bool vSliderInt(const char* label, const float2& size, int* v, int v_min, int v_max, const char* display_format = "%.0f") noexcept;
+	static bool sliderIntv(const char* label, const float2& size, int* v, int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 
 	static bool  treeNode(const char* label) noexcept;
 	static bool  treeNode(const char* str_id, const char* fmt, ...) noexcept;
@@ -480,11 +481,13 @@ public:
 	static void endTooltip() noexcept;
 
 	static bool beginMainMenuBar() noexcept;
-	static void endMainMenuBar() noexcept;
 	static bool beginMenuBar() noexcept;
-	static void endMenuBar() noexcept;
 	static bool beginMenu(const char* label, bool enabled = true) noexcept;
+
+	static void endMainMenuBar() noexcept;
+	static void endMenuBar() noexcept;
 	static void endMenu() noexcept;
+
 	static bool menuItem(const char* label, const char* shortcut = nullptr, bool selected = false, bool enabled = true) noexcept;
 	static bool menuItem(const char* label, const char* shortcut, bool* p_selected, bool enabled = true) noexcept;
 

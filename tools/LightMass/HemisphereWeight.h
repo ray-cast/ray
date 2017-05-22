@@ -95,12 +95,12 @@ public:
 			HemisphereWeight<S>(down));
 	}
 
-	T operator[](std::size_t i) const
+	T operator[](std::uint8_t i) const
 	{
 		return *(&front + i);
 	}
 
-	T& operator[](std::size_t i)
+	T& operator[](std::uint8_t i)
 	{
 		return *(&front + i);
 	}

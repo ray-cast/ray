@@ -260,7 +260,7 @@ GuiControllerComponent::showLightMass() noexcept
 			}
 
 			ray::Gui::text("Interpolation Threshold");
-			ray::Gui::sliderFloat("##Interpolation Threshold", &_setting.lightmass.interpolationThreshold, 1e-6, 1e-2, "%.5f", 2.2);
+			ray::Gui::sliderFloat("##Interpolation Threshold", &_setting.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
 			if (_setting.lightmass.interpolationThreshold != _default.lightmass.interpolationThreshold)
 			{
 				ray::Gui::sameLine();

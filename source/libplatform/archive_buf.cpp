@@ -111,38 +111,6 @@ archive_node::archive_node(archive_node&& node)
 {
 }
 
-archive_node::archive_node(const archive_node& node)
-{
-	switch (node.type())
-	{
-	case archive_node::type_t::null:
-		_data.emplace<void*>();
-		break;
-	case archive_node::type_t::boolean:
-		_data.emplace<boolean_t>(std::get<archive_node::type_t::boolean>(node._data));
-		break;
-	case archive_node::type_t::number_integer:
-		_data.emplace<number_integer_t>(std::get<archive_node::type_t::number_integer>(node._data));
-		break;
-	case archive_node::type_t::number_unsigned:
-		_data.emplace<number_unsigned_t>(std::get<archive_node::type_t::number_unsigned>(node._data));
-		break;
-	case archive_node::type_t::number_float:
-		_data.emplace<number_float_t>(std::get<archive_node::type_t::number_float>(node._data));
-		break;
-	case archive_node::type_t::string:
-		_data.emplace<std::unique_ptr<string_t>>(std::make_unique<string_t>(*std::get<archive_node::type_t::string>(node._data)));
-		break;
-	case archive_node::type_t::array:
-		break;
-	case archive_node::type_t::object:
-		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>(*std::get<archive_node::type_t::object>(node._data)));
-		break;
-	default:
-		break;
-	}
-}
-
 archive_node::~archive_node()
 {
 }
@@ -150,67 +118,117 @@ archive_node::~archive_node()
 archive_node&
 archive_node::at(const string_t& key)
 {
-	if (this->type() == archive_node::type_t::null)
-		this->emplace(archive_node::type_t::object);
+	if (this->is_null())
+		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	if (this->is_object())
+	{
+		auto& data = std::get<archive_node::type_t::object>(_data);
 
-	for (auto& it : *data)
-		if (it.first == key)
-			return it.second;
+		for (auto& it : *data)
+			if (it.first == key)
+				return it.second;
 
-	data->push_back(std::make_pair(key, null));
-	return data->back().second;
+		data->push_back(std::make_pair(key, archive_node::null));
+		return data->back().second;
+	}
+	else
+	{
+		throw failure(std::string("cannot use operator[] with ") + this->type_name());
+	}
 }
 
 archive_node&
 archive_node::at(const string_t::value_type* key)
 {
-	if (this->type() == archive_node::type_t::null)
-		this->emplace(archive_node::type_t::object);
+	if (this->is_null())
+		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	if (this->is_object())
+	{
+		auto& data = std::get<archive_node::type_t::object>(_data);
 
-	for (auto& it : *data)
-		if (it.first == key)
-			return it.second;
+		for (auto& it : *data)
+			if (it.first == key)
+				return it.second;
 
-	data->push_back(std::make_pair(key, null));
-	return data->back().second;
+		data->push_back(std::make_pair(key, archive_node::null));
+		return data->back().second;
+	}
+	else
+	{
+		throw failure(std::string("cannot use operator[] with ") + this->type_name());
+	}
+}
+
+archive_node&
+archive_node::at(const std::size_t n)
+{
+	if (this->is_array())
+	{
+		auto& data = std::get<archive_node::type_t::array>(_data);
+		assert(data->size() > n);
+
+		return (*data)[n];
+	}
+	else
+	{
+		throw failure(std::string("cannot use at with ") + this->type_name());
+	}
 }
 
 const archive_node&
 archive_node::at(const string_t& key) const
 {
-	assert(this->type() == archive_node::type_t::object);
-
-	if (this->type() == archive_node::type_t::object)
+	if (this->is_object())
 	{
 		auto& data = std::get<archive_node::type_t::object>(_data);
 
 		for (auto& it : *data)
 			if (it.first == key)
 				return it.second;
-	}
 
-	return archive_node::nil;
+		return archive_node::nil;
+	}
+	else
+	{
+		throw failure(std::string("cannot use at with ") + this->type_name());
+	}
 }
 
 const archive_node&
 archive_node::at(const string_t::value_type* key) const
 {
-	assert(this->type() == archive_node::type_t::object);
-
-	if (this->type() == archive_node::type_t::object)
+	if (this->is_object())
 	{
 		auto& data = std::get<archive_node::type_t::object>(_data);
 
 		for (auto& it : *data)
 			if (it.first == key)
 				return it.second;
-	}
 
-	return archive_node::nil;
+		return archive_node::nil;
+	}
+	else
+	{
+		throw failure(std::string("cannot use at with ") + this->type_name());
+	}
+}
+
+const archive_node&
+archive_node::at(const std::size_t n) const
+{
+	if (this->is_array())
+	{
+		auto& data = std::get<archive_node::type_t::array>(_data);
+		assert(data->size() > n);
+
+		return (*data)[n];
+	}
+	else
+	{
+		throw failure(std::string("cannot use at with ") + this->type_name());
+	}
 }
 
 void
@@ -280,7 +298,7 @@ archive_node::push_back(const string_t& key, archive_node&& value)
 		this->emplace(archive_node::type_t::object);
 
 	auto& data = std::get<archive_node::type_t::object>(_data);
-	data->push_back(std::make_pair(key, value));
+	data->push_back(std::make_pair(key, std::move(value)));
 }
 
 archive_node::iterator
@@ -477,6 +495,54 @@ archive_node::type_name(type_t type) const noexcept
 	}
 }
 
+bool
+archive_node::is_null() const noexcept
+{
+	return this->type() == archive_node::type_t::null;
+}
+
+bool
+archive_node::is_boolean() const noexcept
+{
+	return this->type() == archive_node::type_t::boolean;
+}
+
+bool
+archive_node::is_integral() const noexcept
+{
+	return this->type() == archive_node::type_t::number_integer || this->type() == archive_node::type_t::number_unsigned;
+}
+
+bool
+archive_node::is_float() const noexcept
+{
+	return this->type() == archive_node::type_t::number_float;
+}
+
+bool
+archive_node::is_string() const noexcept
+{
+	return this->type() == archive_node::type_t::string;
+}
+
+bool
+archive_node::is_numeric() const noexcept
+{
+	return this->is_integral() || this->is_float();
+}
+
+bool
+archive_node::is_array() const noexcept
+{
+	return this->type() == archive_node::type_t::array;
+}
+
+bool
+archive_node::is_object() const noexcept
+{
+	return this->type() == archive_node::type_t::object;
+}
+
 void
 archive_node::emplace(type_t type) noexcept
 {
@@ -501,6 +567,7 @@ archive_node::emplace(type_t type) noexcept
 		_data.emplace<std::unique_ptr<string_t>>(std::make_unique<string_t>());
 		break;
 	case archive_node::type_t::array:
+		_data.emplace<std::unique_ptr<array_t>>(std::make_unique<array_t>());
 		break;
 	case archive_node::type_t::object:
 		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
@@ -515,15 +582,6 @@ archive_node::operator=(boolean_t value)
 {
 	_data = value;
 	return *this;
-}
-
-void
-archive_node::resize(std::size_t size)
-{
-	if (this->type() != archive_node::type_t::object)
-		this->emplace(archive_node::type_t::object);
-
-	std::get<archive_node::type_t::object>(_data)->resize(size);
 }
 
 archive_node&
@@ -571,13 +629,70 @@ archive_node::operator=(archive_node&& value)
 archive_node&
 archive_node::operator[](const char* key)
 {
-	return this->at(key);
+	if (this->is_null())
+		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
+
+	if (this->is_object())
+	{
+		auto& data = std::get<archive_node::type_t::object>(_data);
+
+		for (auto& it : *data)
+			if (it.first == key)
+				return it.second;
+
+		data->push_back(std::make_pair(key, archive_node::null));
+		return data->back().second;
+	}
+	else
+	{
+		throw failure(std::string("cannot use operator[] with ") + this->type_name());
+	}
 }
 
 archive_node&
 archive_node::operator[](const string_t& key)
 {
-	return this->at(key);
+	if (this->is_null())
+		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
+
+	if (this->is_object())
+	{
+		auto& data = std::get<archive_node::type_t::object>(_data);
+
+		for (auto& it : *data)
+			if (it.first == key)
+				return it.second;
+
+		data->push_back(std::make_pair(key, null));
+		return data->back().second;
+	}
+	else
+	{
+		throw failure(std::string("cannot use operator[] with ") + this->type_name());
+	}
+}
+
+archive_node&
+archive_node::operator[](std::size_t n)
+{
+	if (this->is_null())
+		_data.emplace<std::unique_ptr<array_t>>(std::make_unique<array_t>());
+
+	if (this->is_array())
+	{
+		if (n > std::get<archive_node::type_t::array>(_data)->size())
+		{
+			auto end = std::get<archive_node::type_t::array>(_data)->end();
+			auto size = std::get<archive_node::type_t::array>(_data)->size();
+			std::get<archive_node::type_t::array>(_data)->resize(n);
+		}
+
+		return std::get<archive_node::type_t::array>(_data)->operator[](n);
+	}
+	else
+	{
+		throw failure(std::string("cannot use operator[] with ") + this->type_name());
+	}
 }
 
 const archive_node&
@@ -590,6 +705,12 @@ const archive_node&
 archive_node::operator[](const string_t& key) const
 {
 	return this->at(key);
+}
+
+const archive_node&
+archive_node::operator[](std::size_t n) const
+{
+	return this->at(n);
 }
 
 #endif

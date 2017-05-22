@@ -58,6 +58,7 @@ public:
 	using number_float_t = double;
 	using string_t = std::string;
 	using object_t = std::list<std::pair<std::string, archive_node>>;
+	using array_t = std::vector<archive_node>;
 	using iterator = object_t::iterator;
 	using reverse_iterator = object_t::reverse_iterator;
 	using const_iterator = object_t::const_iterator;
@@ -70,7 +71,7 @@ public:
 		number_unsigned_t,
 		number_float_t,
 		std::unique_ptr<string_t>,
-		std::unique_ptr<std::uint8_t>,
+		std::unique_ptr<array_t>,
 		std::unique_ptr<object_t>
 	>;
 
@@ -86,7 +87,7 @@ public:
 		number_float,
 		string,
 		array,
-		object,
+		object
 	};
 public:
 	archive_node();
@@ -99,14 +100,15 @@ public:
 	archive_node(const string_t& value);
 	archive_node(const string_t::value_type* value);
 	archive_node(archive_node&& value);
-	archive_node(const archive_node& value);
 	~archive_node();
 
 	archive_node& at(const string_t& key);
 	archive_node& at(const string_t::value_type* key);
+	archive_node& at(const std::size_t n);
 
 	const archive_node& at(const string_t& key) const;
 	const archive_node& at(const string_t::value_type* key) const;
+	const archive_node& at(const std::size_t n) const;
 
 	template<type_t type, typename = std::enable_if_t<type == type_t::boolean>>
 	constexpr boolean_t get() const { return this->_get<type>(); }
@@ -204,47 +206,14 @@ public:
 	char* type_name() const noexcept;
 	char* type_name(type_t type) const noexcept;
 
-	bool is_null() const noexcept
-	{
-		return this->type() == archive_node::type_t::null;
-	}
-
-	bool is_boolean() const noexcept
-	{
-		return this->type() == archive_node::type_t::boolean;
-	}
-
-	bool is_integral() const noexcept
-	{
-		return this->type() == archive_node::type_t::number_integer || this->type() == archive_node::type_t::number_unsigned;
-	}
-
-	bool is_float() const noexcept
-	{
-		return this->type() == archive_node::type_t::number_float;
-	}
-
-	bool is_string() const noexcept
-	{
-		return this->type() == archive_node::type_t::string;
-	}
-
-	bool is_numeric() const noexcept
-	{
-		return this->is_integral() || this->is_float();
-	}
-
-	bool is_array() const noexcept
-	{
-		return this->type() == archive_node::type_t::array;
-	}
-
-	bool is_object() const noexcept
-	{
-		return this->type() == archive_node::type_t::object;
-	}
-
-	void resize(std::size_t size);
+	bool is_null() const noexcept;
+	bool is_boolean() const noexcept;
+	bool is_integral() const noexcept;
+	bool is_float() const noexcept;
+	bool is_string() const noexcept;
+	bool is_numeric() const noexcept;
+	bool is_array() const noexcept;
+	bool is_object() const noexcept;
 
 	archive_node& operator=(boolean_t value);
 	archive_node& operator=(number_integer_t value);
@@ -256,9 +225,11 @@ public:
 
 	archive_node& operator[](const char* key);
 	archive_node& operator[](const string_t& key);
+	archive_node& operator[](std::size_t n);
 
 	const archive_node& operator[](const char* key) const;
 	const archive_node& operator[](const string_t& key) const;
+	const archive_node& operator[](std::size_t n) const;
 
 private:
 	template<typename T, type_t type>
@@ -287,6 +258,10 @@ private:
 
 		return std::get<type>(_data);
 	}
+
+private:
+	archive_node(const archive_node& value);
+	archive_node& operator=(const archive_node& value);
 
 private:
 	variant_t _data;

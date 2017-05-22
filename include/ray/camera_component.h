@@ -87,6 +87,9 @@ public:
 	void setCameraOrder(CameraOrder order) noexcept;
 	CameraOrder getCameraOrder() const noexcept;
 
+	void setCameraClearFlags(CameraClearFlags flags) noexcept;
+	CameraClearFlags getCameraClearFlags() const noexcept;
+
 	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
 

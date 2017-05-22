@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <scene>
     <attribute name="LightMass"/>
+	<object>
+		<attribute name="first_person_camera"/>
+		<attribute position="0,20,-50" />
+		<attribute active="true"/>
+		<component class="Camera">
+			<attribute aperture="75.0"/>
+			<attribute znear="0.1"/>
+			<attribute zfar="2000.0"/>
+		</component>
+		<component class="FirstPersonCamera">
+		</component>
+	</object>
+	<object>
+		<attribute name="sky"/>
+		<attribute position="0, 50, 0"/>
+		<attribute rotate="90, 0, 0"/>
+		<attribute active="true"/>
+		<component class="Light">
+			<attribute type="environment"/>
+			<attribute color="1.0,1.0,1.0"/>
+			<attribute range="60.0"/>
+			<attribute intensity="1.0"/>
+			<attribute shadow="none"/>
+		</component>
+		<component class="Skybox">
+			<attribute flags="skybox|skylighting"/>
+			<attribute skymap="dlc:common/textures/uffizi_sky.hdr"/>
+			<attribute skydiffuse="dlc:common/textures/uffizi_diff.dds"/>
+			<attribute skyspecular="dlc:common/textures/uffizi_spec.dds"/>
+		</component>
+	</object>
     <object name="UIRoot">
         <attribute position="0,0,-1"/>
         <attribute active="true"/>
@@ -8,6 +39,7 @@
             <attribute type="ortho"/>
             <attribute order="2D"/>
             <attribute color="0.15,0.15,0.15,1"/>
+            <attribute clearflags="0"/>
         </component>
         <component class="GuiCamera"/>
     </object>

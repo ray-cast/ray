@@ -37,7 +37,6 @@
 #include "UIController.h"
 #include <ray/gui.h>
 #include <ray/gui_message.h>
-#include <ray/game_server.h>
 
 __ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")
 
@@ -48,8 +47,10 @@ GuiControllerComponent::GuiControllerComponent() noexcept
 	: _clearColor(ray::float4(114.f / 255.f, 144.f / 255.f, 154.f / 255.f))
 {
 	_fps = 0.0f;
-	_showTestWindow = true;
+	_showMainMenu = true;
 	_showLightMassWindow = true;
+	_showStyleEditor = false;
+	_showAboutWindow = false;
 }
 
 GuiControllerComponent::~GuiControllerComponent() noexcept
@@ -68,10 +69,16 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 	if (!message->isInstanceOf<ray::GuiMessage>())
 		return;
 
-	float delta = ray::GameServer::instance()->getTimer()->delta();
-	float fps = ray::GameServer::instance()->getTimer()->averageFps();
+	this->showMainMenu();
+	this->showStyleEditor();
+	this->showLightMass();
+}
 
-	static bool show_app_main_menu_bar = false;
+void
+GuiControllerComponent::showMainMenu() noexcept
+{
+	if (!_showMainMenu)
+		return;
 
 	if (ray::Gui::beginMainMenuBar())
 	{
@@ -85,21 +92,10 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 			ray::Gui::endMenu();
 		}
 
-		if (ray::Gui::beginMenu("Edit"))
+		if (ray::Gui::beginMenu("Window"))
 		{
-			if (ray::Gui::menuItem("Undo", "CTRL+Z")) {}
-			if (ray::Gui::menuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-			ray::Gui::separator();
-			if (ray::Gui::menuItem("Cut", "CTRL+X")) {}
-			if (ray::Gui::menuItem("Copy", "CTRL+C")) {}
-			if (ray::Gui::menuItem("Paste", "CTRL+V")) {}
-			ray::Gui::endMenu();
-		}
-
-		if (ray::Gui::beginMenu("Environment"))
-		{
-			if (ray::Gui::menuItem("Load HDRi")) {}
-			if (ray::Gui::menuItem("Save HDRi")) {}
+			ray::Gui::menuItem("Light Mass", 0, &_showLightMassWindow);
+			ray::Gui::menuItem("Style Editor", 0, &_showStyleEditor);
 			ray::Gui::endMenu();
 		}
 
@@ -112,6 +108,33 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 
 		ray::Gui::endMainMenuBar();
 	}
+}
+
+void
+GuiControllerComponent::showAboutWindow() noexcept
+{
+	ray::Gui::text("LightMass Ver.0.1");
+	ray::Gui::text("Developer by : Rui (2017)");
+}
+
+void
+GuiControllerComponent::showStyleEditor() noexcept
+{
+	if (!_showStyleEditor)
+		return;
+
+	if (ray::Gui::begin("Style Editor", &_showStyleEditor))
+	{
+		ray::Gui::showStyleEditor();
+		ray::Gui::end();
+	}
+}
+
+void
+GuiControllerComponent::showLightMass() noexcept
+{
+	if (!_showLightMassWindow)
+		return;
 
 	ray::Gui::setNextWindowPos(ray::float2(0, 0), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 	ray::Gui::setNextWindowSize(ray::float2(310, 700), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
@@ -120,17 +143,7 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 	{
 		ray::Gui::text("Light Mass");
 
-		if (ray::Gui::collapsingHeader("About"))
-		{
-			ray::Gui::text("LightMass Ver.0.1");
-			ray::Gui::text("Developer by : Rui (2017)");
-		}
-
-		if (ray::Gui::collapsingHeader("Rendering"))
-		{
-		}
-
-		if (ray::Gui::collapsingHeader("Uvmapper"))
+		if (ray::Gui::collapsingHeader("Uvmapper", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::text("Output Size");
 			ray::Gui::combo("##Output size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
@@ -141,7 +154,7 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 			}
 
 			ray::Gui::text("margin:");
-			ray::Gui::sliderFloat("##Margin", &_setting.uvmapper.margin, 0.0f, 10.0f);
+			ray::Gui::sliderFloat("##margin", &_setting.uvmapper.margin, 0.0f, 10.0f);
 			if (_setting.uvmapper.margin != _default.uvmapper.margin)
 			{
 				ray::Gui::sameLine();
@@ -165,7 +178,7 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 			}
 		}
 
-		if (ray::Gui::collapsingHeader("Light Mass"))
+		if (ray::Gui::collapsingHeader("Light Mass", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::checkbox("Enable Global Illumination", &_setting.lightmass.enableGI);
 
@@ -234,11 +247,5 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 		}
 
 		ray::Gui::end();
-	}
-
-	if (_showTestWindow)
-	{
-		ray::Gui::setNextWindowPos(ray::float2(650, 20), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
-		ray::Gui::showTestWindow(&_showTestWindow);
 	}
 }

@@ -106,13 +106,23 @@ private:
 	virtual void onMessage(const ray::MessagePtr& message) noexcept;
 
 private:
+	void showMainMenu() noexcept;
+	void showStyleEditor() noexcept;
+	void showLightMass() noexcept;
+	void showAboutWindow() noexcept;
+
+private:
 	GuiControllerComponent(const GuiControllerComponent&) = delete;
 	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;
 
 private:
 	float _fps;
-	bool _showTestWindow;
+
+	bool _showMainMenu;
 	bool _showLightMassWindow;
+	bool _showStyleEditor;
+	bool _showAboutWindow;
+
 	ray::float4 _clearColor;
 
 	GuiControllerParams _default;

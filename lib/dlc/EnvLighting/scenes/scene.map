@@ -40,7 +40,7 @@
 		</component>
 		<component class="Skybox">
 			<attribute flags="skybox|skylighting"/>
-			<attribute skymap="dlc:common/textures/uffizi_sky.dds"/>
+			<attribute skymap="dlc:common/textures/uffizi_sky.hdr"/>
 			<attribute skydiffuse="dlc:common/textures/uffizi_diff.dds"/>
 			<attribute skyspecular="dlc:common/textures/uffizi_spec.dds"/>
 		</component>

@@ -47,7 +47,17 @@ SET(APP_LIST
 )
 SOURCE_GROUP("Common" FILES ${APP_LIST})
 
-ADD_EXECUTABLE(${LIB_NAME} ${APP_LIST} ${LIGHTMASS_LIST} ${LIGHTMAPPACK_LIST})
+SET(COMPONENT_LIST 
+	UIController.cpp
+	UIController.h
+	LightMassController.cpp
+	LightMassController.h
+	first_person_camera.cpp
+	first_person_camera.h
+)
+SOURCE_GROUP("Components" FILES ${COMPONENT_LIST})
+
+ADD_EXECUTABLE(${LIB_NAME} ${APP_LIST} ${LIGHTMASS_LIST} ${LIGHTMAPPACK_LIST} ${COMPONENT_LIST})
 
 TARGET_LINK_LIBRARIES(${LIB_NAME} "ray-c")
 TARGET_LINK_LIBRARIES(${LIB_NAME} PRIVATE glew)

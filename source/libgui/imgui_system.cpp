@@ -62,7 +62,7 @@ IMGUISystem::open() except
 	style.FrameRounding = 8.0f;
 	style.GrabRounding = 5.0f;
 	style.FramePadding.x = 2;
-	style.FramePadding.y = 4;
+	style.FramePadding.y = 3;
 
 	style.Colors[ImGuiCol_MenuBarBg] = ImColor(222, 150, 0, 255);
 	style.Colors[ImGuiCol_Text] = ImColor(240, 240, 240, 255);

@@ -211,6 +211,18 @@ CameraComponent::getCameraOrder() const noexcept
 }
 
 void
+CameraComponent::setCameraClearFlags(CameraClearFlags flags) noexcept
+{
+	_camera->setClearFlags(flags);
+}
+
+CameraClearFlags
+CameraComponent::getCameraClearFlags() const noexcept
+{
+	return _camera->getClearFlags();
+}
+
+void
 CameraComponent::setCameraRenderFlags(CameraRenderFlags flags) noexcept
 {
 	_camera->setCameraRenderFlags(flags);
@@ -297,7 +309,7 @@ CameraComponent::load(iarchive& reader) noexcept
 				flags |= GraphicsClearFlagBits::GraphicsClearFlagStencilBit;
 		}
 
-		this->setCameraRenderFlags(flags);
+		this->setCameraClearFlags(flags);
 	}
 
 	if (reader.getValue("renderflags", flagsString))

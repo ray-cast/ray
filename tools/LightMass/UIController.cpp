@@ -150,7 +150,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(0);
 				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("margin:");
@@ -158,7 +160,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.uvmapper.margin != _default.uvmapper.margin)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(1);
 				if (ray::Gui::button("Revert")) _setting.uvmapper.margin = _default.uvmapper.margin;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("stretch:");
@@ -166,7 +170,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.uvmapper.stretch != _default.uvmapper.stretch)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(2);
 				if (ray::Gui::button("Revert")) _setting.uvmapper.stretch = _default.uvmapper.stretch;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("chart:");
@@ -174,7 +180,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.uvmapper.chart != _default.uvmapper.chart)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(3);
 				if (ray::Gui::button("Revert")) _setting.uvmapper.chart = _default.uvmapper.chart;
+				ray::Gui::popID();
 			}
 		}
 
@@ -187,7 +195,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
 			{
 				ray::Gui::sameLine();
-				if (ray::Gui::button("Revert ")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
+				ray::Gui::pushID(4);
+				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Sample Count");
@@ -195,7 +205,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.sampleCount != _default.lightmass.sampleCount)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(5);
 				if (ray::Gui::button("Revert")) _setting.lightmass.sampleCount = _default.lightmass.sampleCount;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Environment Color:");
@@ -203,7 +215,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.environmentColor.xyz() != _default.lightmass.environmentColor.xyz())
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(6);
 				if (ray::Gui::button("Revert")) _setting.lightmass.environmentColor.set(_default.lightmass.environmentColor.xyz());
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Environment Intensity:");
@@ -211,7 +225,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.environmentColor.w != _default.lightmass.environmentColor.w)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(7);
 				if (ray::Gui::button("Revert")) _setting.lightmass.environmentColor.w = _default.lightmass.environmentColor.w;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Hemisphere znear:");
@@ -219,14 +235,18 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.hemisphereNear != _default.lightmass.hemisphereNear)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(8);
 				if (ray::Gui::button("Revert")) _setting.lightmass.hemisphereNear = _default.lightmass.hemisphereNear;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Hemisphere zfar:");
 			ray::Gui::sliderFloat("##Hemisphere zfar", &_setting.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
 			if (_setting.lightmass.hemisphereFar != _default.lightmass.hemisphereFar) {
 				ray::Gui::sameLine();
+				ray::Gui::pushID(9);
 				if (ray::Gui::button("Revert")) _setting.lightmass.hemisphereFar = _default.lightmass.hemisphereFar;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Interpolation Passes");
@@ -234,7 +254,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.interpolationPasses != _default.lightmass.interpolationPasses)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(10);
 				if (ray::Gui::button("Revert")) _setting.lightmass.interpolationPasses = _default.lightmass.interpolationPasses;
+				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Interpolation Threshold");
@@ -242,7 +264,9 @@ GuiControllerComponent::showLightMass() noexcept
 			if (_setting.lightmass.interpolationThreshold != _default.lightmass.interpolationThreshold)
 			{
 				ray::Gui::sameLine();
+				ray::Gui::pushID(11);
 				if (ray::Gui::button("Revert")) _setting.lightmass.interpolationThreshold = _default.lightmass.interpolationThreshold;
+				ray::Gui::popID();
 			}
 		}
 

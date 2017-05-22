@@ -220,7 +220,7 @@ OGLTexture::close() noexcept
 }
 
 bool
-OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint16_t mipLevel, void** data) noexcept
+OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
 {
 	assert(data);
 
@@ -241,7 +241,7 @@ OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t
 
 	if (_pbo == GL_NONE)
 		glGenBuffers(1, &_pbo);
-	
+
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
 
 	GLsizei mapSize = w * h * num;

@@ -218,7 +218,7 @@ OGLCoreTexture::close() noexcept
 }
 
 bool
-OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint16_t mipLevel, void** data) noexcept
+OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
 {
 	assert(data);
 

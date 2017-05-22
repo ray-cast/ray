@@ -172,7 +172,7 @@ VulkanCommandList::setScissor(const Scissor scissor[], std::uint32_t first, std:
 	}
 }
 
-void 
+void
 VulkanCommandList::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
 	VkStencilFaceFlags flags = 0;
@@ -181,13 +181,13 @@ VulkanCommandList::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uin
 		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_FRONT_BIT;
 		_pipelineState.setStencilFrontReadMask(mask);
 	}
-		
+
 	if (face & GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit)
 	{
 		flags |= VkStencilFaceFlagBits::VK_STENCIL_FACE_BACK_BIT;
 		_pipelineState.setStencilBackReadMask(mask);
 	}
-		
+
 	vkCmdSetStencilCompareMask(_commandBuffer, flags, mask);
 }
 
@@ -202,7 +202,7 @@ VulkanCommandList::getStencilCompareMask(GraphicsStencilFaceFlagBits face) noexc
 		return _pipelineState.getStencilBackReadMask();
 }
 
-void 
+void
 VulkanCommandList::setStencilReference(GraphicsStencilFaceFlags face, std::uint32_t reference) noexcept
 {
 	VkStencilFaceFlags flags = 0;
@@ -221,7 +221,7 @@ VulkanCommandList::setStencilReference(GraphicsStencilFaceFlags face, std::uint3
 	vkCmdSetStencilReference(_commandBuffer, flags, reference);
 }
 
-std::uint32_t 
+std::uint32_t
 VulkanCommandList::getStencilReference(GraphicsStencilFaceFlagBits face) noexcept
 {
 	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
@@ -232,7 +232,7 @@ VulkanCommandList::getStencilReference(GraphicsStencilFaceFlagBits face) noexcep
 		return _pipelineState.getStencilBackRef();
 }
 
-void 
+void
 VulkanCommandList::setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept
 {
 	VkStencilFaceFlags flags = 0;
@@ -251,7 +251,7 @@ VulkanCommandList::setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint3
 	vkCmdSetStencilWriteMask(_commandBuffer, flags, mask);
 }
 
-std::uint32_t 
+std::uint32_t
 VulkanCommandList::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept
 {
 	assert(face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceFrontBit || face == GraphicsStencilFaceFlagBits::GraphicsStencilFaceBackBit);
@@ -451,7 +451,7 @@ VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first,
 		_vertexBuffers[i] = data[i]->downcast<VulkanGraphicsData>()->getBuffer();
 		_vertexOffsets[i] = 0;
 	}
-	
+
 	vkCmdBindVertexBuffers(_commandBuffer, first, count, _vertexBuffers.data(), _vertexOffsets.data());
 }
 
@@ -459,24 +459,38 @@ void
 VulkanCommandList::setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
-	
-	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer(); 
+
+	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer();
 	if (indexType == GraphicsIndexType::GraphicsIndexTypeUInt16)
 		vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, VkIndexType::VK_INDEX_TYPE_UINT16);
 	else if (indexType == GraphicsIndexType::GraphicsIndexTypeUInt32)
 		vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, VkIndexType::VK_INDEX_TYPE_UINT32);
 }
 
-void 
+void
 VulkanCommandList::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	vkCmdDraw(_commandBuffer, numVertices, numInstances, startVertice, startInstances);
 }
 
-void 
+void
 VulkanCommandList::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	vkCmdDrawIndexed(_commandBuffer, numIndices, numInstances, startIndice, startVertice, startInstances);
+}
+
+void
+VulkanCommandList::drawIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+{
+	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer();
+	vkCmdDrawIndirect(_commandBuffer, buffer, offset, drawCount, stride);
+}
+
+void
+VulkanCommandList::drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+{
+	VkBuffer buffer = data->downcast<VulkanGraphicsData>()->getBuffer();
+	vkCmdDrawIndexedIndirect(_commandBuffer, buffer, offset, drawCount, stride);
 }
 
 void

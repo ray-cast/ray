@@ -63,14 +63,16 @@ OGLCoreGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 		target = GL_ARRAY_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
 		target = GL_ELEMENT_ARRAY_BUFFER;
-	else if (type == GraphicsDataType::GraphicsDataTypeUniformBuffer)
-		target = GL_UNIFORM_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageTexelBuffer)
 		target = GL_TEXTURE_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
 		target = GL_SHADER_STORAGE_BUFFER;
-	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
+	else if (type == GraphicsDataType::GraphicsDataTypeUniformBuffer)
+		target = GL_UNIFORM_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeIndirectBiffer)
 		target = GL_DRAW_INDIRECT_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeTransferSrc || type == GraphicsDataType::GraphicsDataTypeTransferSrc)
+		target = GL_TRANSFORM_FEEDBACK_BUFFER;
 	else
 	{
 		GL_PLATFORM_LOG("Unknown data type.");

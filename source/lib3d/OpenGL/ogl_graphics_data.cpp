@@ -65,15 +65,16 @@ OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 		_target = GL_ARRAY_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
 		_target = GL_ELEMENT_ARRAY_BUFFER;
-	else if (type == GraphicsDataType::GraphicsDataTypeUniformBuffer)
-		_target = GL_UNIFORM_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageTexelBuffer)
 		_target = GL_TEXTURE_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
-	{
-		GL_PLATFORM_LOG("Can't support SSBO.");
-		return false;
-	}
+		_target = GL_SHADER_STORAGE_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeUniformBuffer)
+		_target = GL_UNIFORM_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeIndirectBiffer)
+		_target = GL_DRAW_INDIRECT_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeTransferSrc || type == GraphicsDataType::GraphicsDataTypeTransferSrc)
+		_target = GL_TRANSFORM_FEEDBACK_BUFFER;
 	else
 	{
 		GL_PLATFORM_LOG("Unkown data type.");
@@ -118,7 +119,7 @@ OGLGraphicsData::close() noexcept
 	}
 }
 
-bool 
+bool
 OGLGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
 	assert(data);

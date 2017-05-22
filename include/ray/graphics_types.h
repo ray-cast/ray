@@ -624,6 +624,7 @@ enum class GraphicsDataType : std::uint8_t
 	GraphicsDataTypeStorageBuffer = 6,
 	GraphicsDataTypeStorageVertexBuffer = 7,
 	GraphicsDataTypeStorageIndexBuffer = 8,
+	GraphicsDataTypeIndirectBiffer = 9,
 	GraphicsDataTypeBeginRange = GraphicsDataTypeNone,
 	GraphicsDataTypeEndRange = GraphicsDataTypeStorageIndexBuffer,
 	GraphicsDataTypeRangeSize = (GraphicsDataTypeEndRange - GraphicsDataTypeBeginRange + 1),
@@ -658,11 +659,9 @@ enum class GraphicsVertexDivisor : std::uint8_t
 
 enum class GraphicsIndexType : std::uint8_t
 {
-	GraphicsIndexTypeNone = 0,
-	GraphicsIndexTypeUInt8 = 1,
-	GraphicsIndexTypeUInt16 = 2,
-	GraphicsIndexTypeUInt32 = 3,
-	GraphicsIndexTypeBeginRange = GraphicsIndexTypeNone,
+	GraphicsIndexTypeUInt16 = 0,
+	GraphicsIndexTypeUInt32 = 2,
+	GraphicsIndexTypeBeginRange = GraphicsIndexTypeUInt16,
 	GraphicsIndexTypeEndRange = GraphicsIndexTypeUInt32,
 	GraphicsIndexTypeRangeSize = (GraphicsIndexTypeEndRange - GraphicsIndexTypeBeginRange + 1)
 };

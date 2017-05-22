@@ -368,7 +368,7 @@ OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t off
 	assert(data);
 	assert(data->isInstanceOf<OGLCoreGraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt8 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
+	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 	assert(_glcontext->getActive());
 
 	auto ibo = data->downcast_pointer<OGLCoreGraphicsData>();
@@ -648,7 +648,7 @@ OGLCoreDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numIns
 	assert(_pipeline);
 	assert(_glcontext->getActive());
 	assert(_indexBuffer);
-	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT || _indexType == GL_UNSIGNED_BYTE);
+	assert(_indexType == GL_UNSIGNED_INT || _indexType == GL_UNSIGNED_SHORT);
 	assert(startInstances == 0);
 
 	if (_needUpdatePipeline || _needUpdateVertexBuffers)
@@ -669,13 +669,43 @@ OGLCoreDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numIns
 		GLbyte* offsetIndices = nullptr;
 		if (_indexType == GL_UNSIGNED_INT)
 			offsetIndices += _indexOffset + sizeof(std::uint32_t) * startIndice;
-		else if (_indexType == GL_UNSIGNED_SHORT)
-			offsetIndices += _indexOffset + sizeof(std::uint16_t) * startIndice;
 		else
-			offsetIndices += _indexOffset + sizeof(std::uint8_t) * startIndice;
+			offsetIndices += _indexOffset + sizeof(std::uint16_t) * startIndice;
 
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
 		glDrawElementsInstancedBaseVertexBaseInstance(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice, startInstances);
+	}
+}
+
+void
+OGLCoreDeviceContext::drawIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+{
+	assert(_pipeline);
+	assert(_glcontext->getActive());
+	assert(data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeIndirectBiffer);
+
+	glBindBuffer(GL_DRAW_INDIRECT_BUFFER, data->downcast<OGLCoreGraphicsData>()->getInstanceID());
+
+	if (drawCount > 0)
+	{
+		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
+		glMultiDrawArraysIndirect(drawType, (char*)nullptr + offset, drawCount, stride);
+	}
+}
+
+void
+OGLCoreDeviceContext::drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+{
+	assert(_pipeline);
+	assert(_glcontext->getActive());
+	assert(data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeIndirectBiffer);
+
+	glBindBuffer(GL_DRAW_INDIRECT_BUFFER, data->downcast<OGLCoreGraphicsData>()->getInstanceID());
+
+	if (drawCount > 0)
+	{
+		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
+		glMultiDrawElementsIndirect(drawType, GL_UNSIGNED_INT, (char*)nullptr + offset, drawCount, stride);
 	}
 }
 

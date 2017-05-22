@@ -71,9 +71,9 @@ RenderPipeline::RenderPipeline() noexcept
 	, _planeIndices(0)
 	, _sphereIndices(0)
 	, _coneIndices(0)
-	, _planeIndexType(GraphicsIndexType::GraphicsIndexTypeNone)
-	, _coneIndexType(GraphicsIndexType::GraphicsIndexTypeNone)
-	, _sphereIndexType(GraphicsIndexType::GraphicsIndexTypeNone)
+	, _planeIndexType(GraphicsIndexType::GraphicsIndexTypeUInt16)
+	, _coneIndexType(GraphicsIndexType::GraphicsIndexTypeUInt16)
+	, _sphereIndexType(GraphicsIndexType::GraphicsIndexTypeUInt16)
 {
 }
 
@@ -629,7 +629,7 @@ RenderPipeline::makePlane(float width, float height, std::uint32_t widthSegments
 	std::vector<float3> _vertices;
 	std::vector<float3> _normals;
 	std::vector<float2> _texcoord;
-	std::vector<std::uint8_t> _indices;
+	std::vector<std::uint16_t> _indices;
 
 	float widthHalf = width * 0.5f;
 	float heightHalf = height * 0.5f;
@@ -693,11 +693,11 @@ RenderPipeline::makePlane(float width, float height, std::uint32_t widthSegments
 	_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 	_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
 	_ib.setStream((std::uint8_t*)_indices.data());
-	_ib.setStreamSize(_indices.size() * sizeof(std::uint8_t));
+	_ib.setStreamSize(_indices.size() * sizeof(std::uint16_t));
 
 	_planeIbo = this->createGraphicsData(_ib);
-	_planeIndices = static_cast<std::uint8_t>(_indices.size());
-	_planeIndexType = GraphicsIndexType::GraphicsIndexTypeUInt8;
+	_planeIndices = static_cast<std::uint16_t>(_indices.size());
+	_planeIndexType = GraphicsIndexType::GraphicsIndexTypeUInt16;
 }
 
 void

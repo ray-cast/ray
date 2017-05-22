@@ -511,7 +511,7 @@ VulkanTypes::asTextureSample(GraphicsSamplerAnis anis) noexcept
 	}
 }
 
-VkImageTiling 
+VkImageTiling
 VulkanTypes::asTextureTiling(GraphicsImageTiling tiling) noexcept
 {
 	switch (tiling)
@@ -572,7 +572,7 @@ VulkanTypes::asShaderStage(GraphicsShaderStageFlagBits type) noexcept
 	}
 }
 
-VkShaderStageFlags 
+VkShaderStageFlags
 VulkanTypes::asShaderStageFlags(GraphicsShaderStageFlags stageFlags) noexcept
 {
 	VkShaderStageFlags flags = 0;
@@ -717,6 +717,8 @@ VulkanTypes::asBufferUsageFlagBits(GraphicsDataType type) noexcept
 		return VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	case GraphicsDataType::GraphicsDataTypeStorageIndexBuffer:
 		return VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+	case GraphicsDataType::GraphicsDataTypeIndirectBiffer:
+		return VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 	default:
 		assert(false);
 		return VkBufferUsageFlagBits(0);

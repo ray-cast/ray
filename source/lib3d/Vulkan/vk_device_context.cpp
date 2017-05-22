@@ -168,7 +168,7 @@ VulkanDeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexc
 	return _commandList->getStencilWriteMask(face);
 }
 
-void 
+void
 VulkanDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
 {
 }
@@ -191,7 +191,7 @@ VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 	}
 }
 
-void 
+void
 VulkanDeviceContext::setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 }
@@ -279,16 +279,28 @@ VulkanDeviceContext::getIndexBufferData() const noexcept
 	return _indexBuffer;
 }
 
-void 
+void
 VulkanDeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	_commandList->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
-void 
+void
 VulkanDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	_commandList->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
+}
+
+void
+VulkanDeviceContext::drawIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+{
+	_commandList->drawIndirect(data, offset, drawCount, stride);
+}
+
+void
+VulkanDeviceContext::drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+{
+	_commandList->drawIndexedIndirect(data, offset, drawCount, stride);
 }
 
 void

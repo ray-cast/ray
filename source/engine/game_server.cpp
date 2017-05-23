@@ -72,21 +72,12 @@ GameServer::open() noexcept
 void
 GameServer::close() noexcept
 {
-	_isActive = false;
-	_isQuitRequest = true;
-
-	for (auto& it : _scenes)
-		it->setActive(false);
+	this->stop();
 
 	_scenes.clear();
-
-	auto it = _features.rbegin();
-	auto end = _features.rend();
-
-	for (; it != end; ++it)
-		(*it)->setActive(false);
-
 	_features.clear();
+
+	_isQuitRequest = true;
 }
 
 void
@@ -196,15 +187,26 @@ GameServer::addScene(GameScenePtr& scene) noexcept
 
 	try
 	{
+		if (_gameListener)
+			_gameListener->onMessage(util::string("GameServer : Scene adding : ") + scene->getName());
+
 		if (this->isActive())
 		{
 			for (auto& feature : _features)
+			{
+				if (_gameListener)
+					_gameListener->onMessage(util::string("GameServer : Scene adding : ") + scene->getName() + " with feature : " + feature->type_name());
+
 				feature->onOpenScene(scene);
+			}
 
 			scene->setActive(true);
 		}
 
 		_scenes.push_back(scene);
+
+		if (_gameListener)
+			_gameListener->onMessage(util::string("GameServer : Scene added : ") + scene->getName());
 
 		return true;
 	}
@@ -223,6 +225,9 @@ GameServer::removeScene(GameScenePtr& scene) noexcept
 	auto it = std::find(_scenes.begin(), _scenes.end(), scene);
 	if (it != _scenes.end())
 	{
+		if (_gameListener)
+			_gameListener->onMessage(util::string("GameServer : Scene removeing : ") + scene->getName());
+
 		if (this->isActive())
 		{
 			for (auto& feature : _features)
@@ -232,29 +237,55 @@ GameServer::removeScene(GameScenePtr& scene) noexcept
 		}
 
 		_scenes.erase(it);
+
+		if (_gameListener)
+			_gameListener->onMessage(util::string("GameServer : scene Removed : ") + scene->getName());
 	}
 }
 
 bool
-GameServer::addFeature(GameFeaturePtr& features) noexcept
+GameServer::addFeature(GameFeaturePtr& feature) noexcept
 {
-	assert(features);
+	assert(feature);
 
 	try
 	{
-		auto it = std::find_if(_features.begin(), _features.end(), [features](GameFeaturePtr it) { return features->isInstanceOf(it->rtti()); });
+		auto it = std::find_if(_features.begin(), _features.end(), [feature](GameFeaturePtr it) { return feature->isInstanceOf(it->rtti()); });
 		if (it == _features.end())
 		{
-			features->_setGameServer(this);
-			features->setGameListener(_gameListener);
+			if (_gameListener)
+				_gameListener->onMessage(util::string("GameServer : Feature adding : ") + feature->type_name());
+
+			feature->_setGameServer(this);
+			feature->setGameListener(_gameListener);
 
 			if (this->isActive())
-				features->onActivate();
+			{
+				feature->onActivate();
 
-			_features.push_back(features);
+				for (auto& scene : _scenes)
+				{
+					if (_gameListener)
+						_gameListener->onMessage(util::string("GameServer : Feature adding : ") + feature->type_name() + " with scene : " + scene->getName());
+
+					feature->onOpenScene(scene);
+				}
+			}
+
+			_features.push_back(feature);
+
+			if (_gameListener)
+				_gameListener->onMessage(util::string("GameServer : Feature added : ") + feature->type_name());
+
+			return true;
 		}
+		else
+		{
+			if (_gameListener)
+				_gameListener->onMessage(util::string("GameServer : Feature has already added with : ") + feature->type_name());
 
-		return true;
+			return false;
+		}
 	}
 	catch (const exception& e)
 	{
@@ -266,16 +297,22 @@ GameServer::addFeature(GameFeaturePtr& features) noexcept
 }
 
 void
-GameServer::removeFeature(GameFeaturePtr& features) noexcept
+GameServer::removeFeature(GameFeaturePtr& feature) noexcept
 {
-	assert(features);
-	auto it = std::find(_features.begin(), _features.end(), features);
+	assert(feature);
+	auto it = std::find(_features.begin(), _features.end(), feature);
 	if (it != _features.end())
 	{
+		if (_gameListener)
+			_gameListener->onMessage(util::string("GameServer : Feature removeing: ") + feature->type_name());
+
 		(*it)->onDeactivate();
 		(*it)->_setGameServer(nullptr);
 
 		_features.erase(it);
+
+		if (_gameListener)
+			_gameListener->onMessage(util::string("GameServer : Feature removed: ") + feature->type_name());
 	}
 }
 
@@ -368,14 +405,34 @@ GameServer::start() noexcept
 				_gameListener->onMessage("GameServer : Starting.");
 
 			for (auto& it : _features)
+			{
+				if (_gameListener)
+					_gameListener->onMessage(util::string("GameServer : Starting : ") + it->type_name());
+
 				it->setActive(true);
+
+				if (_gameListener)
+					_gameListener->onMessage(util::string("GameServer : Started : ") + it->type_name());
+			}
 
 			for (auto& it : _features)
+			{
 				for (auto& scene : _scenes)
+				{
+					if (_gameListener)
+						_gameListener->onMessage(util::string("GameServer : Starting feature : ") + it->type_name() + " with scene : " + scene->getName());
+
 					it->onOpenScene(scene);
+				}
+			}
 
 			for (auto& it : _scenes)
+			{
+				if (_gameListener)
+					_gameListener->onMessage(util::string("GameServer : Starting scene : ") + it->getName());
+
 				it->setActive(true);
+			}
 
 			_timer->reset();
 
@@ -411,14 +468,37 @@ GameServer::stop() noexcept
 			_gameListener->onMessage("GameServer : Stopping.");
 
 		for (auto& it : _scenes)
+		{
+			if (_gameListener)
+				_gameListener->onMessage(util::string("GameServer : Stopping : ") + it->type_name() + " : " + it->getName());
+
 			it->setActive(false);
 
+			if (_gameListener)
+				_gameListener->onMessage(util::string("GameServer : Stopped : ") + it->type_name() + " : " + it->getName());
+		}
+
 		for (auto& it : _features)
+		{
 			for (auto& scene : _scenes)
+			{
+				if (_gameListener)
+					_gameListener->onMessage(util::string("GameServer : Stopping feature : ") + it->type_name() + " with scene : " + scene->getName());
+
 				it->onCloseScene(scene);
+			}
+		}
 
 		for (auto& it : _features)
+		{
+			if (_gameListener)
+				_gameListener->onMessage(util::string("GameServer : Stopping : ") + it->type_name());
+
 			it->setActive(false);
+
+			if (_gameListener)
+				_gameListener->onMessage(util::string("GameServer : Stopped : ") + it->type_name());
+		}
 
 		_isActive = false;
 

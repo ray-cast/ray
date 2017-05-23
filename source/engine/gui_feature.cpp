@@ -404,9 +404,6 @@ GuiFeature::getWindowFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexce
 void
 GuiFeature::onActivate() except
 {
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Starting : GuiFeature.");
-
 	if (!IMGUISystem::instance()->open())
 		throw failure("GuiSystem::instance() fail");
 
@@ -416,21 +413,12 @@ GuiFeature::onActivate() except
 #endif
 	IMGUISystem::instance()->setViewport(_width, _height);
 	IMGUISystem::instance()->setFramebufferScale(_dpi_w, _dpi_h);
-
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Started : GuiFeature.");
 }
 
 void
 GuiFeature::onDeactivate() noexcept
 {
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Stopping : GuiFeature.");
-
 	IMGUISystem::instance()->close();
-
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Stopped : GuiFeature.");
 }
 
 void

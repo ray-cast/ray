@@ -52,26 +52,14 @@ SoundFeature::~SoundFeature() noexcept
 void
 SoundFeature::onActivate() except
 {
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Starting : SoundFeature.");
-
 	SoundSystem::instance()->open();
 	SoundSystem::instance()->setDistanceModel(true);
-
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Started : SoundFeature.");
 }
 
 void
 SoundFeature::onDeactivate() noexcept
 {
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Stopping : SoundFeature.");
-
 	SoundSystem::instance()->close();
-
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Stopped : SoundFeature.");
 }
 
 _NAME_END

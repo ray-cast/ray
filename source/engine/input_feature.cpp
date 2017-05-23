@@ -130,9 +130,6 @@ InputFeature::postInputEvent(const InputEvent& event) noexcept
 void
 InputFeature::onActivate() except
 {
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Starting : InputFeature.");
-
 	_input = std::make_shared<DefaultInput>();
 	if (!_input->open())
 		throw failure("Input::open() fail.");
@@ -140,21 +137,12 @@ InputFeature::onActivate() except
 	_input->addInputListener(std::make_shared<InputEventListener>(*this));
 	_input->setCaptureObject(_window);
 	_input->obtainCapture();
-
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Started : InputFeature");
 }
 
 void
 InputFeature::onDeactivate() noexcept
 {
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Stopping : InputFeature.");
-
 	_input.reset();
-
-	if (this->getGameListener())
-		this->getGameListener()->onMessage("GameServer : Stopped : InputFeature.");
 }
 
 void

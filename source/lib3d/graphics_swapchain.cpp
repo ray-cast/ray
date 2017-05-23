@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(GraphicsSwapchain, GraphicsChild, "GraphicsSwapchain")
+
 GraphicsSwapchainDesc::GraphicsSwapchainDesc() noexcept
 	: _format(GraphicsFormat::GraphicsFormatUndefined)
 	, _depthStencilFormat(GraphicsFormat::GraphicsFormatUndefined)

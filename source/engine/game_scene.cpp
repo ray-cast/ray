@@ -273,6 +273,8 @@ GameScene::load(iarchive& reader) except
 				if (nodeName == "attribute")
 				{
 					std::string name = "unknown";
+					reader.addAttrs();
+					reader.addAttrsInChildren("attribute");
 					reader >> make_archive(name, "name");
 
 					this->setName(name);

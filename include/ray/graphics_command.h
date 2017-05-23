@@ -120,7 +120,7 @@ private:
 
 class GraphicsCommandQueue : public GraphicsChild
 {
-	__DeclareSubClass(GraphicsCommandQueue, GraphicsChild)
+	__DeclareSubInterface(GraphicsCommandQueue, GraphicsChild)
 public:
 	GraphicsCommandQueue() noexcept;
 	virtual ~GraphicsCommandQueue() noexcept;
@@ -143,7 +143,7 @@ private:
 
 class GraphicsCommandPool : public GraphicsChild
 {
-	__DeclareSubClass(GraphicsCommandPool, GraphicsChild)
+	__DeclareSubInterface(GraphicsCommandPool, GraphicsChild)
 public:
 	GraphicsCommandPool() noexcept;
 	virtual ~GraphicsCommandPool() noexcept;
@@ -157,7 +157,7 @@ private:
 
 class GraphicsCommandList : public GraphicsChild
 {
-	__DeclareSubClass(GraphicsCommandList, GraphicsChild)
+	__DeclareSubInterface(GraphicsCommandList, GraphicsChild)
 public:
 	GraphicsCommandList() noexcept;
 	virtual ~GraphicsCommandList() noexcept;

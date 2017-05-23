@@ -48,24 +48,28 @@ public:\
 	static _NAME rtti::Rtti RTTI;\
 	static _NAME rtti::Rtti* getRtti() noexcept;\
     virtual _NAME rtti::Rtti* rtti() const noexcept;\
+	virtual const char* type_name() noexcept;\
 private:
 
 #define __ImplementInterface(Base, Name) \
     _NAME rtti::Rtti Base::RTTI = _NAME rtti::Rtti(Name, nullptr, nullptr);\
 	_NAME rtti::Rtti* Base::rtti() const noexcept { return &RTTI; }\
-	static _NAME rtti::Rtti* Base::getRtti() noexcept { return &RTTI; }
+	static _NAME rtti::Rtti* Base::getRtti() noexcept { return &RTTI; }\
+	const char* Base::type_name() noexcept { return Name; };
 
 #define __DeclareSubInterface(Derived, Base)\
 public:\
 	static _NAME rtti::Rtti RTTI;\
 	static _NAME rtti::Rtti* getRtti() noexcept;\
     virtual _NAME rtti::Rtti* rtti() const noexcept;\
+	virtual const char* type_name() noexcept;\
 private:
 
 #define __ImplementSubInterface(Derived, Base, Name) \
     _NAME rtti::Rtti Derived::RTTI = _NAME rtti::Rtti(Name, nullptr, Base::getRtti());\
 	_NAME rtti::Rtti* Derived::rtti() const noexcept { return &RTTI; }\
-	_NAME rtti::Rtti* Derived::getRtti() noexcept { return &RTTI; }
+	_NAME rtti::Rtti* Derived::getRtti() noexcept { return &RTTI; }\
+	const char* Derived::type_name() noexcept { return Name; };
 
 #define __DeclareClass(Base) \
 public:\
@@ -73,6 +77,7 @@ public:\
 	static _NAME rtti::Rtti* getRtti() noexcept;\
 	static _NAME rtti::Interface* FactoryCreate(); \
     virtual _NAME rtti::Rtti* rtti() const noexcept;\
+	virtual const char* type_name() noexcept;\
 private:
 
 #define __ImplementClass(Base, Name) \
@@ -80,6 +85,7 @@ private:
 	_NAME rtti::Rtti* Base::rtti() const noexcept { return &RTTI; }\
 	_NAME rtti::Rtti* Base::getRtti() noexcept { return &RTTI; }\
 	_NAME rtti::Interface* Base::FactoryCreate() { return new Base; }\
+	const char* Base::type_name() noexcept { return Name; };
 
 #define __DeclareSubClass(Derived, Base) \
 public:\
@@ -87,13 +93,15 @@ public:\
 	static _NAME rtti::Rtti* getRtti() noexcept;\
 	static _NAME rtti::Interface* FactoryCreate(); \
     virtual _NAME rtti::Rtti* rtti() const noexcept;\
+	virtual const char* type_name() noexcept;\
 private:
 
 #define __ImplementSubClass(Derived, Base, Name) \
     _NAME rtti::Rtti Derived::RTTI = _NAME rtti::Rtti(Name, Derived::FactoryCreate, Base::getRtti());\
 	_NAME rtti::Rtti* Derived::rtti() const noexcept { return &RTTI; }\
 	_NAME rtti::Interface* Derived::FactoryCreate() { return new Derived; }\
-	_NAME rtti::Rtti* Derived::getRtti() noexcept { return &RTTI; }
+	_NAME rtti::Rtti* Derived::getRtti() noexcept { return &RTTI; }\
+	const char* Derived::type_name() noexcept { return Name; };
 }
 
 _NAME_END

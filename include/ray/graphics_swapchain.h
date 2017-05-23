@@ -83,6 +83,7 @@ private:
 
 class EXPORT GraphicsSwapchain : public GraphicsChild
 {
+	__DeclareSubInterface(GraphicsSwapchain, GraphicsChild)
 public:
 	GraphicsSwapchain() noexcept;
 	virtual ~GraphicsSwapchain() noexcept;

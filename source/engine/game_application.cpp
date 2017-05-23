@@ -271,7 +271,7 @@ void
 GameApplication::closeScene(GameScenePtr& name) noexcept
 {
 	assert(_gameServer);
-	return _gameServer->removeScene(name);
+	return _gameServer->closeScene(name);
 }
 
 void

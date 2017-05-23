@@ -402,7 +402,7 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 		_window = ::glfwCreateWindow(w, h, title, nullptr, nullptr);
 		if (_window)
 		{
-			::glfwSetWindowUserPointer(_window, nullptr);
+			::glfwSetWindowUserPointer(_window, &_gameApp);
 			::glfwSetWindowFocusCallback(_window, &onWindowFocus);
 			::glfwSetWindowCloseCallback(_window, &onWindowClose);
 			::glfwSetWindowSizeCallback(_window, &onWindowResize);
@@ -412,8 +412,8 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 			::glfwSetKeyCallback(_window, &onWindowKey);
 			::glfwSetCharModsCallback(_window, &onWindowKeyChar);
 
-			auto mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-			::glfwSetWindowPos(_window, (mode->width - w) >> 1, (mode->height - h) >> 1);
+			auto screen = ::glfwGetVideoMode(::glfwGetPrimaryMonitor());
+			::glfwSetWindowPos(_window, (screen->width - w) >> 1, (screen->height - h) >> 1);
 
 			int dpi_w, dpi_h;
 			::glfwGetFramebufferSize(_window, &dpi_w, &dpi_h);

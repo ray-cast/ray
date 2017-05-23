@@ -38,6 +38,7 @@
 #define _H_UI_CONTROLLER_H_
 
 #include <ray/game_component.h>
+#include "modpmx.h"
 
 struct GuiControllerParams
 {
@@ -102,6 +103,8 @@ public:
 
 	ray::GameComponentPtr clone() const noexcept;
 
+	void setOpenFileListener(std::function<void()>& delegate);
+
 private:
 	virtual void onMessage(const ray::MessagePtr& message) noexcept;
 
@@ -110,6 +113,7 @@ private:
 	void showStyleEditor() noexcept;
 	void showLightMass() noexcept;
 	void showAboutWindow() noexcept;
+	bool showFileBrowse(std::string& path) noexcept;
 
 private:
 	GuiControllerComponent(const GuiControllerComponent&) = delete;
@@ -122,11 +126,16 @@ private:
 	bool _showLightMassWindow;
 	bool _showStyleEditor;
 	bool _showAboutWindow;
+	bool _showFileBrowse;
 
 	ray::float4 _clearColor;
 
 	GuiControllerParams _default;
 	GuiControllerParams _setting;
+
+	std::function<void()> _onOpenFile;
+
+	std::unique_ptr<ray::PMX> _model;
 };
 
 #endif

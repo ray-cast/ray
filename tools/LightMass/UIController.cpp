@@ -37,6 +37,7 @@
 #include "UIController.h"
 #include <ray/gui.h>
 #include <ray/gui_message.h>
+#include <ray/ioserver.h>
 
 __ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")
 
@@ -51,6 +52,7 @@ GuiControllerComponent::GuiControllerComponent() noexcept
 	_showLightMassWindow = true;
 	_showStyleEditor = false;
 	_showAboutWindow = false;
+	_showFileBrowse = false;
 }
 
 GuiControllerComponent::~GuiControllerComponent() noexcept
@@ -64,6 +66,12 @@ GuiControllerComponent::clone() const noexcept
 }
 
 void
+GuiControllerComponent::setOpenFileListener(std::function<void()>& delegate)
+{
+	_onOpenFile = delegate;
+}
+
+void
 GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 {
 	if (!message->isInstanceOf<ray::GuiMessage>())
@@ -72,6 +80,68 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
 	this->showMainMenu();
 	this->showStyleEditor();
 	this->showLightMass();
+
+	if (_showFileBrowse)
+	{
+		_showFileBrowse = false;
+
+		std::string filepath;
+		if (!showFileBrowse(filepath))
+			return;
+
+		ray::StreamReaderPtr stream;
+		if (!ray::IoServer::instance()->openFile(stream, filepath))
+		{
+			ray::Gui::text((std::string("Failed to open file : ") + filepath).c_str());
+			return;
+		}
+
+		ray::PMXHandler header;
+		if (!header.doCanRead(*stream))
+		{
+			ray::Gui::text((std::string("Non readable PMX file : ") + filepath).c_str());
+			return;
+		}
+
+		auto model = std::make_unique<ray::PMX>();
+		if (!header.doLoad(*stream, *model))
+		{
+			ray::Gui::text((std::string("Non readable PMX file : ") + filepath).c_str());
+			return;
+		}
+
+		_model = std::move(model);
+	}
+}
+
+bool
+GuiControllerComponent::showFileBrowse(std::string& path) noexcept
+{
+#if __WINDOWS__
+	OPENFILENAME ofn;
+	ray::util::string::value_type filepath[PATHLIMIT];
+
+	std::memset(&ofn, 0, sizeof(ofn));
+	std::memset(filepath, 0, sizeof(filepath));
+
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = 0;
+	ofn.lpstrFilter = TEXT("PMX Flie\0*.pmx;\0\0");
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFile = filepath;
+	ofn.nMaxFile = sizeof(filepath);
+	ofn.lpstrInitialDir = 0;
+	ofn.lpstrTitle = TEXT("Choose File");
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+	if (::GetOpenFileName(&ofn))
+	{
+		path = filepath;
+		return true;
+	}
+	return false;
+#else
+	return false;
+#endif
 }
 
 void
@@ -86,9 +156,9 @@ GuiControllerComponent::showMainMenu() noexcept
 
 		if (ray::Gui::beginMenu("File"))
 		{
-			if (ray::Gui::menuItem("Open", "CTRL+O")) {}
-			if (ray::Gui::menuItem("Save", "CTRL+S")) {}
-			if (ray::Gui::menuItem("Save As", "CTRL+SHIFT+S")) {}
+			ray::Gui::menuItem("Open", "CTRL+O", &_showFileBrowse);
+			ray::Gui::menuItem("Save", "CTRL+S");
+			ray::Gui::menuItem("Save As", "CTRL+SHIFT+S");
 			ray::Gui::endMenu();
 		}
 
@@ -122,8 +192,6 @@ GuiControllerComponent::showStyleEditor() noexcept
 {
 	if (!_showStyleEditor)
 		return;
-
-	//ray::Gui::setNextWindowSize(ray::float2(550, 500), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 
 	if (ray::Gui::begin("Style Editor", &_showStyleEditor, ray::float2(550, 500)))
 	{

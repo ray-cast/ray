@@ -408,64 +408,65 @@ GameServer::start() noexcept
 	if (this->isQuitRequest())
 		return false;
 
+	if (_isActive)
+	{
+		if (_gameListener)
+			_gameListener->onMessage("GameServer : has already started.");
+
+		return true;
+	}
+
+	if (_gameListener)
+		_gameListener->onMessage("GameServer : Starting.");
+
 	try
 	{
-		if (!_isActive)
+		for (auto& it : _features)
 		{
 			if (_gameListener)
-				_gameListener->onMessage("GameServer : Starting.");
+				_gameListener->onMessage(util::string("GameServer : Starting : ") + it->type_name());
 
-			for (auto& it : _features)
-			{
-				if (_gameListener)
-					_gameListener->onMessage(util::string("GameServer : Starting : ") + it->type_name());
-
-				it->setActive(true);
-
-				if (_gameListener)
-					_gameListener->onMessage(util::string("GameServer : Started : ") + it->type_name());
-			}
-
-			for (auto& it : _features)
-			{
-				for (auto& scene : _scenes)
-				{
-					if (_gameListener)
-						_gameListener->onMessage(util::string("GameServer : Starting feature : ") + it->type_name() + " with scene : " + scene->getName());
-
-					it->onOpenScene(scene);
-				}
-			}
-
-			for (auto& it : _scenes)
-			{
-				if (_gameListener)
-					_gameListener->onMessage(util::string("GameServer : Starting scene : ") + it->getName());
-
-				it->setActive(true);
-			}
-
-			_timer->reset();
-
-			_isActive = true;
+			it->setActive(true);
 
 			if (_gameListener)
-				_gameListener->onMessage("GameServer : Started.");
+				_gameListener->onMessage(util::string("GameServer : Started : ") + it->type_name());
 		}
-		else
+
+		for (auto& it : _features)
+		{
+			for (auto& scene : _scenes)
+			{
+				if (_gameListener)
+					_gameListener->onMessage(util::string("GameServer : Starting feature : ") + it->type_name() + " with scene : " + scene->getName());
+
+				it->onOpenScene(scene);
+			}
+		}
+
+		for (auto& it : _scenes)
 		{
 			if (_gameListener)
-				_gameListener->onMessage("GameServer : has already started.");
+				_gameListener->onMessage(util::string("GameServer : Starting scene : ") + it->getName());
+
+			it->setActive(true);
 		}
+
+		_timer->reset();
+
+		_isActive = true;
+
+		if (_gameListener)
+			_gameListener->onMessage("GameServer : Started.");
 
 		return true;
 	}
 	catch (const exception& e)
 	{
-		if (_gameListener)
-			_gameListener->onMessage(e.what());
-
 		_isQuitRequest = true;
+
+		if (_gameListener)
+			_gameListener->onMessage(util::string("GameServer : except with ") + e.what());
+
 		return false;
 	}
 }
@@ -476,11 +477,19 @@ GameServer::stop() noexcept
 	if (this->isQuitRequest())
 		return;
 
-	if (_isActive)
+	if (!_isActive)
 	{
 		if (_gameListener)
-			_gameListener->onMessage("GameServer : Stopping.");
+			_gameListener->onMessage("GameServer : has already stopped.");
 
+		return;
+	}
+
+	if (_gameListener)
+		_gameListener->onMessage("GameServer : Stopping.");
+
+	try
+	{
 		for (auto& it : _scenes)
 		{
 			if (_gameListener)
@@ -514,15 +523,17 @@ GameServer::stop() noexcept
 				_gameListener->onMessage(util::string("GameServer : Stopped : ") + it->type_name());
 		}
 
+		if (_gameListener)
+			_gameListener->onMessage("GameServer : Stopped.");
+
+		_isActive = false;
+	}
+	catch (const std::exception& e)
+	{
 		_isActive = false;
 
 		if (_gameListener)
-			_gameListener->onMessage("GameServer : Stopped.");
-	}
-	else
-	{
-		if (_gameListener)
-			_gameListener->onMessage("GameServer : has already stopped.");
+			_gameListener->onMessage(util::string("GameServer : except with ") + e.what());
 	}
 }
 

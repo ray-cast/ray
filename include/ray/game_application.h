@@ -58,9 +58,9 @@ public:
 
 	bool isQuitRequest() const noexcept;
 
-	bool openScene(GameScenePtr& scene) noexcept;
+	bool openScene(const GameScenePtr& scene) noexcept;
 	bool openScene(const util::string& name) noexcept;
-	void closeScene(GameScenePtr& name) noexcept;
+	void closeScene(const GameScenePtr& name) noexcept;
 	void closeScene(const util::string& name) noexcept;
 	GameScenePtr findScene(const util::string& name) noexcept;
 

@@ -65,8 +65,8 @@ protected:
 	virtual void onListenerChangeBefore() noexcept;
 	virtual void onListenerChangeAfter() noexcept;
 
-	virtual void onOpenScene(GameScenePtr& scene) except;
-	virtual void onCloseScene(GameScenePtr& scene) noexcept;
+	virtual void onOpenScene(const GameScenePtr& scene) except;
+	virtual void onCloseScene(const GameScenePtr& scene) noexcept;
 
 	virtual void onReset() except;
 

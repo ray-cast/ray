@@ -256,7 +256,7 @@ GameApplication::isQuitRequest() const noexcept
 }
 
 bool
-GameApplication::openScene(GameScenePtr& scene) noexcept
+GameApplication::openScene(const GameScenePtr& scene) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->addScene(scene);
@@ -270,7 +270,7 @@ GameApplication::openScene(const util::string& name) noexcept
 }
 
 void
-GameApplication::closeScene(GameScenePtr& name) noexcept
+GameApplication::closeScene(const GameScenePtr& name) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->closeScene(name);

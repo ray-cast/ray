@@ -151,12 +151,12 @@ GameFeature::onListenerChangeAfter() noexcept
 }
 
 void
-GameFeature::onOpenScene(GameScenePtr& scene) except
+GameFeature::onOpenScene(const GameScenePtr& scene) except
 {
 }
 
 void
-GameFeature::onCloseScene(GameScenePtr& scene) noexcept
+GameFeature::onCloseScene(const GameScenePtr& scene) noexcept
 {
 }
 

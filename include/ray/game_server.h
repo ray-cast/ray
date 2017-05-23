@@ -65,8 +65,8 @@ public:
 	bool openScene(const util::string& sceneName) noexcept;
 	void closeScene(const util::string& sceneName) noexcept;
 
-	bool addScene(GameScenePtr& scene) noexcept;
-	void closeScene(GameScenePtr& scene) noexcept;
+	bool addScene(const GameScenePtr& scene) noexcept;
+	void closeScene(const GameScenePtr& scene) noexcept;
 
 	GameScenePtr findScene(const util::string& sceneName) noexcept;
 	const GameScenes& getScenes() const noexcept;

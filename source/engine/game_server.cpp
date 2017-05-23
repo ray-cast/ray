@@ -186,7 +186,7 @@ GameServer::getScenes() const noexcept
 }
 
 bool
-GameServer::addScene(GameScenePtr& scene) noexcept
+GameServer::addScene(const GameScenePtr& scene) noexcept
 {
 	assert(scene);
 	assert(std::find(_scenes.begin(), _scenes.end(), scene) == _scenes.end());
@@ -226,7 +226,7 @@ GameServer::addScene(GameScenePtr& scene) noexcept
 }
 
 void
-GameServer::closeScene(GameScenePtr& scene) noexcept
+GameServer::closeScene(const GameScenePtr& scene) noexcept
 {
 	assert(scene);
 

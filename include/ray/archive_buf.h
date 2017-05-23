@@ -131,6 +131,9 @@ public:
 	template<type_t type, typename = std::enable_if_t<type == type_t::string>>
 	constexpr const string_t& get() const { return *this->_get<type>(); }
 
+	template<type_t type, typename = std::enable_if_t<type == type_t::array>>
+	constexpr const array_t& get() const { return *this->_get<type>(); }
+
 	template<typename T, typename = std::enable_if_t<std::is_same<T, bool>::value>>
 	constexpr bool get() const { return this->get<archive_node::type_t::boolean>(); }
 
@@ -154,6 +157,9 @@ public:
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, string_t>::value>>
 	constexpr const string_t& get() const { return this->get<archive_node::type_t::string>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, array_t>::value>>
+	constexpr const array_t& get() const { return this->get<archive_node::type_t::array>(); }
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, std::int32_t>::value>>
 	constexpr std::int32_t get(std::int32_t min, std::int32_t max) const { return std::clamp(this->get<archive_node::type_t::number_integer>(), min, max); }

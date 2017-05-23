@@ -134,7 +134,7 @@ archive_node::at(const string_t& key)
 	}
 	else
 	{
-		throw failure(std::string("cannot use operator[] with ") + this->type_name());
+		throw failure(std::string("cannot use function:at with ") + this->type_name());
 	}
 }
 
@@ -157,7 +157,7 @@ archive_node::at(const string_t::value_type* key)
 	}
 	else
 	{
-		throw failure(std::string("cannot use operator[] with ") + this->type_name());
+		throw failure(std::string("cannot use function:at with ") + this->type_name());
 	}
 }
 
@@ -173,7 +173,7 @@ archive_node::at(const std::size_t n)
 	}
 	else
 	{
-		throw failure(std::string("cannot use at with ") + this->type_name());
+		throw failure(std::string("cannot use function:at with ") + this->type_name());
 	}
 }
 
@@ -192,7 +192,7 @@ archive_node::at(const string_t& key) const
 	}
 	else
 	{
-		throw failure(std::string("cannot use at with ") + this->type_name());
+		throw failure(std::string("cannot use function:at with ") + this->type_name());
 	}
 }
 
@@ -211,7 +211,7 @@ archive_node::at(const string_t::value_type* key) const
 	}
 	else
 	{
-		throw failure(std::string("cannot use at with ") + this->type_name());
+		throw failure(std::string("cannot use function:at with ") + this->type_name());
 	}
 }
 
@@ -227,14 +227,14 @@ archive_node::at(const std::size_t n) const
 	}
 	else
 	{
-		throw failure(std::string("cannot use at with ") + this->type_name());
+		throw failure(std::string("cannot use function:at with ") + this->type_name());
 	}
 }
 
 void
 archive_node::push_back(const string_t& key, boolean_t value)
 {
-	if (this->type() != archive_node::type_t::object)
+	if (this->is_null())
 		this->emplace(archive_node::type_t::object);
 
 	auto& data = std::get<archive_node::type_t::object>(_data);
@@ -244,7 +244,7 @@ archive_node::push_back(const string_t& key, boolean_t value)
 void
 archive_node::push_back(const string_t& key, const number_integer_t& value)
 {
-	if (this->type() != archive_node::type_t::object)
+	if (this->is_null())
 		this->emplace(archive_node::type_t::object);
 
 	auto& data = std::get<archive_node::type_t::object>(_data);
@@ -254,7 +254,7 @@ archive_node::push_back(const string_t& key, const number_integer_t& value)
 void
 archive_node::push_back(const string_t& key, const number_unsigned_t& value)
 {
-	if (this->type() != archive_node::type_t::object)
+	if (this->is_null())
 		this->emplace(archive_node::type_t::object);
 
 	auto& data = std::get<archive_node::type_t::object>(_data);
@@ -264,7 +264,7 @@ archive_node::push_back(const string_t& key, const number_unsigned_t& value)
 void
 archive_node::push_back(const string_t& key, const number_float_t& value)
 {
-	if (this->type() != archive_node::type_t::object)
+	if (this->is_null())
 		this->emplace(archive_node::type_t::object);
 
 	auto& data = std::get<archive_node::type_t::object>(_data);
@@ -274,7 +274,7 @@ archive_node::push_back(const string_t& key, const number_float_t& value)
 void
 archive_node::push_back(const string_t& key, const string_t& value)
 {
-	if (this->type() != archive_node::type_t::object)
+	if (this->is_null())
 		this->emplace(archive_node::type_t::object);
 
 	auto& data = std::get<archive_node::type_t::object>(_data);
@@ -284,7 +284,7 @@ archive_node::push_back(const string_t& key, const string_t& value)
 void
 archive_node::push_back(const string_t& key, const string_t::value_type* value)
 {
-	if (this->type() != archive_node::type_t::object)
+	if (this->is_null())
 		this->emplace(archive_node::type_t::object);
 
 	auto& data = std::get<archive_node::type_t::object>(_data);
@@ -294,7 +294,7 @@ archive_node::push_back(const string_t& key, const string_t::value_type* value)
 void
 archive_node::push_back(const string_t& key, archive_node&& value)
 {
-	if (this->type() != archive_node::type_t::object)
+	if (this->is_null())
 		this->emplace(archive_node::type_t::object);
 
 	auto& data = std::get<archive_node::type_t::object>(_data);
@@ -680,11 +680,11 @@ archive_node::operator[](std::size_t n)
 
 	if (this->is_array())
 	{
-		if (n > std::get<archive_node::type_t::array>(_data)->size())
+		if (n >= std::get<archive_node::type_t::array>(_data)->size())
 		{
 			auto end = std::get<archive_node::type_t::array>(_data)->end();
 			auto size = std::get<archive_node::type_t::array>(_data)->size();
-			std::get<archive_node::type_t::array>(_data)->resize(n);
+			std::get<archive_node::type_t::array>(_data)->resize(n + 1);
 		}
 
 		return std::get<archive_node::type_t::array>(_data)->operator[](n);

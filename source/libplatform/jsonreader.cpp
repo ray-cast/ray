@@ -46,6 +46,80 @@ _NAME_BEGIN
 
 namespace json
 {
+	void reader(archive_node& node, const nlohmann::json& json);
+
+	void reader(archive_node& node, const std::vector<nlohmann::json>& arrays)
+	{
+		std::size_t index = 0;
+
+		for (auto& object : arrays)
+		{
+			switch (object.type())
+			{
+			case nlohmann::json::value_t::boolean:
+				node[index++] = object.get<nlohmann::json::boolean_t>();
+				break;
+			case nlohmann::json::value_t::number_float:
+				node[index++] = object.get<nlohmann::json::number_float_t>();
+				break;
+			case nlohmann::json::value_t::number_integer:
+				node[index++] = object.get<nlohmann::json::number_integer_t>();
+				break;
+			case nlohmann::json::value_t::number_unsigned:
+				node[index++] = object.get<nlohmann::json::number_unsigned_t>();
+				break;
+			case nlohmann::json::value_t::string:
+				node[index++] = object.get<nlohmann::json::string_t>();
+				break;
+			case nlohmann::json::value_t::object:
+				reader(node[index++], object.get<nlohmann::json::object_t>());
+				break;
+			case nlohmann::json::value_t::array:
+				node[index].emplace(archive_node::array);
+				reader(node[index++], object.get<nlohmann::json::array_t>());
+				break;
+			}
+		}
+	}
+
+	void reader(archive_node& node, const nlohmann::json& json)
+	{
+		for (auto& it = json.begin(); it != json.end(); ++it)
+		{
+			auto& value = it.value();
+
+			switch (value.type())
+			{
+			case nlohmann::json::value_t::boolean:
+				node.push_back(it.key(), value.get<nlohmann::json::boolean_t>());
+				break;
+			case nlohmann::json::value_t::number_float:
+				node.push_back(it.key(), value.get<nlohmann::json::number_float_t>());
+				break;
+			case nlohmann::json::value_t::number_integer:
+				node.push_back(it.key(), value.get<nlohmann::json::number_integer_t>());
+				break;
+			case nlohmann::json::value_t::number_unsigned:
+				node.push_back(it.key(), value.get<nlohmann::json::number_unsigned_t>());
+				break;
+			case nlohmann::json::value_t::string:
+				node.push_back(it.key(), value.get<nlohmann::json::string_t>());
+				break;
+			case nlohmann::json::value_t::object:
+				reader(node[it.key()], value);
+				break;
+			case nlohmann::json::value_t::array:
+			{
+				node.push_back(it.key(), archive_node(archive_node::array));
+				reader(node.back(), value.get<nlohmann::json::array_t>());
+			}
+			break;
+			default:
+				break;
+			}
+		}
+	}
+
 	archive_node reader(StreamReader& stream)
 	{
 		auto length = stream.size();
@@ -61,75 +135,8 @@ namespace json
 		try
 		{
 			archive_node root;
-
 			auto json = nlohmann::json::parse(data.begin(), data.end());
-
-			std::stack<std::tuple<archive_node*, nlohmann::json::iterator, nlohmann::json::iterator>> iteratorStack;
-			iteratorStack.push(std::make_tuple(&root, json.begin(), json.end()));
-
-			while (!iteratorStack.empty())
-			{
-				auto entry = iteratorStack.top();
-				iteratorStack.pop();
-
-				for (auto& it = std::get<1>(entry); it != std::get<2>(entry); ++it)
-				{
-					auto& value = it.value();
-
-					switch (it.value().type())
-					{
-					case nlohmann::json::value_t::boolean:
-						std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::boolean_t>());
-						break;
-					case nlohmann::json::value_t::number_float:
-						std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::number_float_t>());
-						break;
-					case nlohmann::json::value_t::number_integer:
-						std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::number_integer_t>());
-						break;
-					case nlohmann::json::value_t::number_unsigned:
-						std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::number_unsigned_t>());
-						break;
-					case nlohmann::json::value_t::string:
-						std::get<0>(entry)->push_back(it.key(), value.get<nlohmann::json::string_t>());
-						break;
-					case nlohmann::json::value_t::object:
-						iteratorStack.push(std::make_tuple(&(*std::get<0>(entry))[it.key()], value.begin(), value.end()));
-					case nlohmann::json::value_t::array:
-					{
-						std::size_t index = 0;
-
-						auto& array = value.get<nlohmann::json::array_t>();
-						for (auto& it : array)
-						{
-							switch (it.type())
-							{
-							case nlohmann::json::value_t::boolean:
-								std::get<0>(entry)[index] = it.get<nlohmann::json::boolean_t>();
-								break;
-							case nlohmann::json::value_t::number_float:
-								std::get<0>(entry)[index] = it.get<nlohmann::json::number_float_t>();
-								break;
-							case nlohmann::json::value_t::number_integer:
-								std::get<0>(entry)[index] = it.get<nlohmann::json::number_integer_t>();
-								break;
-							case nlohmann::json::value_t::number_unsigned:
-								std::get<0>(entry)[index] = it.get<nlohmann::json::number_unsigned_t>();
-								break;
-							case nlohmann::json::value_t::string:
-								std::get<0>(entry)[index] = it.get<nlohmann::json::string_t>();
-								break;
-							case nlohmann::json::value_t::object:
-								iteratorStack.push(std::make_tuple(&std::get<0>(entry)[index], value.begin(), value.end()));
-							}
-							break;
-						}
-					}
-					default:
-						break;
-					}
-				}
-			}
+			reader(root, json);
 
 			return root;
 		}

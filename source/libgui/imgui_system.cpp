@@ -187,7 +187,7 @@ IMGUISystem::injectMouseMove(float absx, float absy) noexcept
 }
 
 bool
-IMGUISystem::injectMousePress(int absx, int absy, GuiInputButton::Code code) noexcept
+IMGUISystem::injectMousePress(float absx, float absy, GuiInputButton::Code code) noexcept
 {
 	auto& io = ImGui::GetIO();
 	io.MouseDown[code] = true;
@@ -197,7 +197,7 @@ IMGUISystem::injectMousePress(int absx, int absy, GuiInputButton::Code code) noe
 }
 
 bool
-IMGUISystem::injectMouseRelease(int absx, int absy, GuiInputButton::Code code) noexcept
+IMGUISystem::injectMouseRelease(float absx, float absy, GuiInputButton::Code code) noexcept
 {
 	auto& io = ImGui::GetIO();
 	io.MouseDown[code] = false;

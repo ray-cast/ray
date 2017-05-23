@@ -37,8 +37,7 @@
 #ifndef _H_GAME_SERVER_H_
 #define _H_GAME_SERVER_H_
 
-#include <ray/game_features.h>
-#include <ray/timer.h>
+#include <ray/game_types.h>
 
 _NAME_BEGIN
 

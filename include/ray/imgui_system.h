@@ -56,8 +56,8 @@ public:
 	void setStyle(GuiStyle* style);
 
 	bool injectMouseMove(float _absx, float _absy) noexcept;
-	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
-	bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
+	bool injectMousePress(float _absx, float _absy, GuiInputButton::Code _id) noexcept;
+	bool injectMouseRelease(float _absx, float _absy, GuiInputButton::Code _id) noexcept;
 	bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept;
 	bool injectKeyRelease(GuiInputKey::Code _key) noexcept;
 

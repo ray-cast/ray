@@ -35,14 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_server.h>
-#include <ray/game_application.h>
 #include <ray/game_scene.h>
-#include <ray/game_event.h>
-#include <ray/game_component.h>
+#include <ray/game_features.h>
 #include <ray/game_listener.h>
-#include <ray/xmlreader.h>
-#include <ray/mstream.h>
-#include <ray/ioserver.h>
 
 _NAME_BEGIN
 

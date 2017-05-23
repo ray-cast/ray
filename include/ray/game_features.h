@@ -37,13 +37,13 @@
 #ifndef _H_GAME_FEATURE_H_
 #define _H_GAME_FEATURE_H_
 
-#include <ray/game_listener.h>
+#include <ray/game_types.h>
 
 _NAME_BEGIN
 
 class EXPORT GameFeature : public MessageListener
 {
-	__DeclareSubClass(GameFeature, MessageListener)
+	__DeclareSubInterface(GameFeature, MessageListener)
 public:
 	GameFeature() noexcept;
 	virtual ~GameFeature() noexcept;

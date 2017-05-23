@@ -46,6 +46,7 @@ class EXPORT GameComponent : public MessageListener
 	__DeclareSubInterface(GameComponent, MessageListener)
 public:
 	GameComponent() noexcept;
+	GameComponent(const archive_node& reader) noexcept;
 	virtual ~GameComponent() noexcept;
 
 	void setActive(bool active) except;
@@ -63,10 +64,12 @@ public:
 
 	template<typename T>
 	std::shared_ptr<T> getComponent() const noexcept
-		{ return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
+	{
+		return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI));
+	}
 
-	virtual void load(iarchive& reader) noexcept;
-	virtual void save(oarchive& write) noexcept;
+	virtual void load(const archive_node& reader) noexcept;
+	virtual void save(archive_node& write) noexcept;
 
 	virtual GameComponentPtr clone() const noexcept = 0;
 

@@ -48,6 +48,12 @@ MeshComponent::MeshComponent() noexcept
 {
 }
 
+MeshComponent::MeshComponent(const archive_node& reader) noexcept
+	: MeshComponent()
+{
+	this->load(reader);
+}
+
 MeshComponent::MeshComponent(MeshPropertyPtr mesh, bool shared) noexcept
 {
 	if (shared)
@@ -163,7 +169,7 @@ MeshComponent::needUpdate() noexcept
 }
 
 void
-MeshComponent::load(iarchive& reader) noexcept
+MeshComponent::load(const archive_node& reader) noexcept
 {
 	GameComponent::load(reader);
 
@@ -211,8 +217,9 @@ MeshComponent::load(iarchive& reader) noexcept
 }
 
 void
-MeshComponent::save(oarchive& write) noexcept
+MeshComponent::save(archive_node& write) noexcept
 {
+	GameComponent::save(write);
 }
 
 GameComponentPtr

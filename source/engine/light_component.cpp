@@ -55,6 +55,12 @@ LightComponent::LightComponent() noexcept
 	_light->setOwnerListener(this);
 }
 
+LightComponent::LightComponent(const archive_node& reader) noexcept
+	: LightComponent()
+{
+	this->load(reader);
+}
+
 LightComponent::~LightComponent() noexcept
 {
 	_light->setRenderScene(nullptr);
@@ -181,68 +187,96 @@ LightComponent::getLightType() const noexcept
 }
 
 void
-LightComponent::load(iarchive& reader) noexcept
+LightComponent::load(const archive_node& reader) noexcept
 {
-	bool enableGI = false;
-
-	float1 lightIntensity = 1.0f;
-	float1 lightRange = 1.0f;
-	float1 shadowBias = 0.0;
-	float2 spot(5.0f, 40.0f);
-	float3 lightColor(1, 1, 1);
-	float3 lightAtten;
-
-	util::string lightType;
-	util::string shadowMode;
-
 	GameComponent::load(reader);
 
-	if (reader.getValue("atten", lightAtten))
-		this->setLightAttenuation(lightAtten);
+	const auto& inner_cone = reader["inner_cone"];
+	const auto& outer_cone = reader["outer_cone"];
+	const auto& lightIntensity = reader["intensity"];
+	const auto& lightRange = reader["range"];
+	const auto& lightColor = reader["color"];
+	const auto& lightAtten = reader["atten"];
+	const auto& lightType = reader["type"];
+	const auto& enableGI = reader["GI"];
+	const auto& shadowBias = reader["bias"];
+	const auto& shadowMode = reader["shadow"];
 
-	reader >> make_archive(lightIntensity, "intensity");
-	reader >> make_archive(lightRange, "range");
-	reader >> make_archive(lightColor, "color");
-	reader >> make_archive(lightAtten, "atten");
-	reader >> make_archive(lightType, "type");
-	reader >> make_archive(enableGI, "GI");
-	reader >> make_archive(shadowBias, "bias");
-	reader >> make_archive(shadowMode, "shadow");
-	reader >> make_archive(spot, "spot");
+	if (lightRange.is_numeric())
+		this->setLightRange(lightRange.get<archive_node::number_float>());
 
-	if (lightType == "sun")
-		this->setLightType(LightType::LightTypeSun);
-	else if (lightType == "directional")
-		this->setLightType(LightType::LightTypeDirectional);
-	else if (lightType == "point")
-		this->setLightType(LightType::LightTypePoint);
-	else if (lightType == "spot")
-		this->setLightType(LightType::LightTypeSpot);
-	else if (lightType == "ambient")
-		this->setLightType(LightType::LightTypeAmbient);
-	else if (lightType == "environment")
-		this->setLightType(LightType::LightTypeEnvironment);
-	else
-		this->setLightType(LightType::LightTypePoint);
+	if (lightIntensity.is_numeric())
+		this->setLightIntensity(lightIntensity.get<archive_node::number_float>());
 
-	if (shadowMode == "hard")
-		this->setShadowMode(ShadowMode::ShadowModeHard);
-	else if (shadowMode == "soft")
-		this->setShadowMode(ShadowMode::ShadowModeSoft);
-	else
-		this->setShadowMode(ShadowMode::ShadowModeNone);
+	if (inner_cone.is_numeric())
+		this->setSpotInnerCone(inner_cone.get<archive_node::number_float>());
 
-	this->setLightColor(lightColor);
-	this->setLightRange(lightRange);
-	this->setLightIntensity(lightIntensity);
-	this->setSpotInnerCone(spot.x);
-	this->setSpotOuterCone(spot.y);
-	this->setShadowBias(shadowBias);
-	this->setGlobalIllumination(enableGI);
+	if (outer_cone.is_numeric())
+		this->setSpotOuterCone(outer_cone.get<archive_node::number_float>());
+
+	if (shadowBias.is_numeric())
+		this->setShadowBias(shadowBias.get<archive_node::number_float>());
+
+	if (enableGI.is_boolean())
+		this->setGlobalIllumination(enableGI.get<archive_node::boolean>());
+
+	if (lightColor.is_array())
+	{
+		float3 color;
+
+		const auto& values = lightColor.get<archive_node::array_t>();
+		for (std::uint8_t i = 0; i < 3; ++i)
+			color[i] = values[i].get<archive_node::number_float>();
+
+		this->setLightColor(color);
+	}
+
+	if (lightAtten.is_array())
+	{
+		float3 atten;
+
+		const auto& values = lightAtten.get<archive_node::array_t>();
+		for (std::uint8_t i = 0; i < 3; ++i)
+			atten[i] = values[i].get<archive_node::number_float>();
+
+		this->setLightAttenuation(atten);
+	}
+
+	if (lightType.is_string())
+	{
+		const auto& name = lightType.get<archive_node::string_t>();
+
+		if (name == "sun")
+			this->setLightType(LightType::LightTypeSun);
+		else if (name == "directional")
+			this->setLightType(LightType::LightTypeDirectional);
+		else if (name == "point")
+			this->setLightType(LightType::LightTypePoint);
+		else if (name == "spot")
+			this->setLightType(LightType::LightTypeSpot);
+		else if (name == "ambient")
+			this->setLightType(LightType::LightTypeAmbient);
+		else if (name == "environment")
+			this->setLightType(LightType::LightTypeEnvironment);
+		else
+			this->setLightType(LightType::LightTypePoint);
+	}
+
+	if (shadowMode.is_string())
+	{
+		const auto& name = shadowMode.get<archive_node::string_t>();
+
+		if (name == "hard")
+			this->setShadowMode(ShadowMode::ShadowModeHard);
+		else if (name == "soft")
+			this->setShadowMode(ShadowMode::ShadowModeSoft);
+		else
+			this->setShadowMode(ShadowMode::ShadowModeNone);
+	}
 }
 
 void
-LightComponent::save(oarchive& write) noexcept
+LightComponent::save(archive_node& write) noexcept
 {
 	RenderComponent::save(write);
 }

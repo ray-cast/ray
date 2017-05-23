@@ -315,39 +315,31 @@ SoundComponent::removePlayEndListener(std::function<void()>* func) noexcept
 }
 
 void
-SoundComponent::load(iarchive& reader) noexcept
+SoundComponent::load(const archive_node& reader) noexcept
 {
-	reader >> make_archive(_volume, "volume");
+	/*reader >> make_archive(_volume, "volume");
 	reader >> make_archive(_volumeMin, "volumeMin");
 	reader >> make_archive(_volumeMax, "volumeMax");
-
 	reader >> make_archive(_pitch, "pitch");
-
 	reader >> make_archive(_distanceMin, "_distanceMin");
 	reader >> make_archive(_distanceMax, "_distanceMax");
-
 	reader >> make_archive(_isPlayOnActivate, "play");
 	reader >> make_archive(_isLoop, "loop");
-
-	reader >> make_archive(_sourceName, "source");
+	reader >> make_archive(_sourceName, "source");*/
 }
 
 void
-SoundComponent::save(oarchive& write) noexcept
+SoundComponent::save(archive_node& write) noexcept
 {
-	write << make_archive(_volume, "volume");
+	/*write << make_archive(_volume, "volume");
 	write << make_archive(_volumeMin, "volumeMin");
 	write << make_archive(_volumeMax, "volumeMax");
-
 	write << make_archive(_pitch, "pitch");
-
 	write << make_archive(_distanceMin, "_distanceMin");
 	write << make_archive(_distanceMax, "_distanceMax");
-
 	write << make_archive(_isPlayOnActivate, "play");
 	write << make_archive(_isLoop, "loop");
-
-	write << make_archive(_sourceName, "source");
+	write << make_archive(_sourceName, "source");*/
 }
 
 GameComponentPtr

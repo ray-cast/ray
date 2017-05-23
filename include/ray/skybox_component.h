@@ -46,6 +46,7 @@ class EXPORT SkyboxComponent final : public MeshRenderComponent
 	__DeclareSubClass(SkyboxComponent, MeshRenderComponent)
 public:
 	SkyboxComponent() noexcept;
+	SkyboxComponent(const archive_node& reader) noexcept;
 	~SkyboxComponent() noexcept;
 
 	void setSkyboxSize(float size) noexcept;
@@ -84,8 +85,8 @@ public:
 	void removeEnableSkyBoxListener(std::function<void(bool)>* func) noexcept;
 	void removeEnableSkyLightingListener(std::function<void(bool)>* func) noexcept;
 
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
+	void load(const archive_node& reader) noexcept;
+	void save(archive_node& write) noexcept;
 
 	GameComponentPtr clone() const noexcept;
 
@@ -132,8 +133,8 @@ private:
 	bool _enableSkyLighting;
 
 	float _skyboxSize;
-
-	float2 _skyLightingIntensity;
+	float _skyDiffuseIntensity;
+	float _skySpecularIntensity;
 
 	util::string _skyMap;
 	util::string _skyDiffuse;

@@ -90,6 +90,12 @@ MeshRenderComponent::MeshRenderComponent(Materials&& materials, bool shared) noe
 		this->setMaterials(materials);
 }
 
+MeshRenderComponent::MeshRenderComponent(const archive_node& reader) noexcept
+	: MeshRenderComponent()
+{
+	this->load(reader);
+}
+
 MeshRenderComponent::~MeshRenderComponent() noexcept
 {
 	this->_destroyMaterials();
@@ -228,20 +234,27 @@ MeshRenderComponent::hasSharedMaterial() const noexcept
 }
 
 void
-MeshRenderComponent::load(iarchive& reader) noexcept
+MeshRenderComponent::load(const archive_node& reader) noexcept
 {
 	RenderComponent::load(reader);
-	reader.getValue("material", _material);
-	reader >> make_archive(_isCastShadow, "castshadow");
-	reader >> make_archive(_isReceiveShadow, "receiveshadow");
+
+	const auto& material = reader["material"];
+	const auto& isCastShadow = reader["castshadow"];
+	const auto& isReceiveShadow = reader["receiveshadow"];
+
+	if (material.is_string())
+		_material = material.get<archive_node::string_t>();
+
+	if (isCastShadow.is_boolean())
+		_isCastShadow = isCastShadow.get<archive_node::boolean_t>();
+
+	if (isReceiveShadow.is_boolean())
+		_isReceiveShadow = isCastShadow.get<archive_node::boolean_t>();
 }
 
 void
-MeshRenderComponent::save(oarchive& write) noexcept
+MeshRenderComponent::save(archive_node& write) noexcept
 {
-	RenderComponent::save(write);
-	write << make_archive(_isCastShadow, "castshadow");
-	write << make_archive(_isReceiveShadow, "receiveshadow");
 }
 
 GameComponentPtr

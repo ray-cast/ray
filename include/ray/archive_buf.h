@@ -53,9 +53,9 @@ class EXPORT archive_node final
 {
 public:
 	using boolean_t = bool;
-	using number_integer_t = std::int64_t;
-	using number_unsigned_t = std::uint64_t;
-	using number_float_t = double;
+	using number_integer_t = std::int32_t;
+	using number_unsigned_t = std::uint32_t;
+	using number_float_t = float;
 	using string_t = std::string;
 	using object_t = std::list<std::pair<std::string, archive_node>>;
 	using array_t = std::vector<archive_node>;
@@ -126,7 +126,7 @@ public:
 	constexpr number_unsigned_t get(number_unsigned_t min, number_unsigned_t max) const { return std::clamp(this->_get<type>(), min, max); }
 
 	template<type_t type, typename = std::enable_if_t<type == type_t::number_float>>
-	constexpr number_float_t get() const { return this->_get<type>(); }
+	constexpr number_float_t get() const { return this->get<number_float_t, type>(); }
 
 	template<type_t type, typename = std::enable_if_t<type == type_t::string>>
 	constexpr const string_t& get() const { return *this->_get<type>(); }
@@ -136,12 +136,6 @@ public:
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, bool>::value>>
 	constexpr bool get() const { return this->get<archive_node::type_t::boolean>(); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, std::int32_t>::value>>
-	constexpr std::int32_t get() const { return this->get<archive_node::type_t::number_integer>(); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, std::uint32_t>::value>>
-	constexpr std::uint32_t get() const { return this->get<archive_node::type_t::number_unsigned>(); }
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, number_integer_t>::value>>
 	constexpr number_integer_t get() const { return this->get<archive_node::type_t::number_integer>(); }
@@ -160,12 +154,6 @@ public:
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, array_t>::value>>
 	constexpr const array_t& get() const { return this->get<archive_node::type_t::array>(); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, std::int32_t>::value>>
-	constexpr std::int32_t get(std::int32_t min, std::int32_t max) const { return std::clamp(this->get<archive_node::type_t::number_integer>(), min, max); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, std::uint32_t>::value>>
-	constexpr std::uint32_t get(std::uint32_t min, std::uint32_t max) const { return std::clamp(this->get<archive_node::type_t::number_unsigned>(), min, max); }
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, number_integer_t>::value>>
 	constexpr number_integer_t get(number_integer_t min, number_integer_t max) const { return std::clamp(this->get<archive_node::type_t::number_integer>(), min, max); }
@@ -244,13 +232,13 @@ private:
 		switch (_data.index())
 		{
 		case type_t::boolean:
-			return (T)std::get<type_t::boolean>(_data);
+			return static_cast<T>(std::get<type_t::boolean>(_data));
 		case type_t::number_integer:
-			return (T)std::get<type_t::number_integer>(_data);
+			return static_cast<T>(std::get<type_t::number_integer>(_data));
 		case type_t::number_unsigned:
-			return (T)std::get<type_t::number_unsigned>(_data);
+			return static_cast<T>(std::get<type_t::number_unsigned>(_data));
 		case type_t::number_float:
-			return (T)std::get<type_t::number_float>(_data);
+			return static_cast<T>(std::get<type_t::number_float>(_data));
 		default:
 			throw failure(string_t("type must be number, but is ") + this->type_name());
 		}

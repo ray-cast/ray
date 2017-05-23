@@ -49,6 +49,12 @@ CameraComponent::CameraComponent() noexcept
 	_camera->setCameraOrder(CameraOrder::CameraOrder3D);
 }
 
+CameraComponent::CameraComponent(const archive_node& reader) noexcept
+	: CameraComponent()
+{
+	this->load(reader);
+}
+
 CameraComponent::~CameraComponent() noexcept
 {
 	_camera->setRenderScene(nullptr);
@@ -169,6 +175,18 @@ CameraComponent::screenToDirection(const Vector2& pos) const noexcept
 }
 
 void
+CameraComponent::setClearColor(const float4& color) noexcept
+{
+	_camera->setClearColor(color);
+}
+
+const float4&
+CameraComponent::getClearColor() const noexcept
+{
+	return _camera->getClearColor();
+}
+
+void
 CameraComponent::setViewport(const float4& viewport) noexcept
 {
 	_camera->setViewport(viewport);
@@ -235,69 +253,89 @@ CameraComponent::getCameraRenderFlags() const noexcept
 }
 
 void
-CameraComponent::load(iarchive& reader) noexcept
+CameraComponent::load(const archive_node& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	float aperture;
-	float znear;
-	float zfar;
-	float ratio;
+	const auto& aperture = reader["aperture"];
+	const auto& znear = reader["znear"];
+	const auto& zfar = reader["zfar"];
+	const auto& ratio = reader["ratio"];
+	const auto& ortho = reader["ortho"];
+	const auto& viewport = reader["viewport"];
+	const auto& clear_color = reader["clear_color"];
+	const auto& order = reader["order"];
+	const auto& project = reader["project"];
+	const auto& clear_flags = reader["clear_flags"];
+	const auto& render_flags = reader["render_flags"];
 
-	float4 viewport;
-	float4 ortho;
-	float4 clearColor;
+	if (aperture.is_numeric())
+		this->setAperture(aperture.get<float>());
 
-	util::string type;
-	util::string order;
-	util::string flagsString;
-	util::string skymap;
-	util::string skydiffuse;
-	util::string skyspecular;
+	if (znear.is_numeric())
+		this->setNear(znear.get<float>());
 
-	if (reader.getValue("aperture", aperture))
-		this->setAperture(aperture);
+	if (zfar.is_numeric())
+		this->setFar(zfar.get<float>());
 
-	if (reader.getValue("znear", znear))
-		this->setNear(znear);
+	if (ratio.is_numeric())
+		this->setRatio(ratio.get<float>());
 
-	if (reader.getValue("zfar", zfar))
-		this->setFar(zfar);
-
-	if (reader.getValue("ratio", ratio))
-		this->setRatio(ratio);
-
-	if (reader.getValue("ortho", ortho))
-		this->setOrtho(ortho.x, ortho.y, ortho.z, ortho.w);
-
-	if (reader.getValue("viewport", viewport))
-		this->setViewport(float4(viewport.x, viewport.y, viewport.z, viewport.w));
-
-	if (reader.getValue("color", clearColor))
-		_camera->setClearColor(clearColor);
-
-	if (reader.getValue("type", type))
+	if (ortho.is_array())
 	{
-		if (type == "ortho")
+		float4 fru;
+
+		const auto& values = ortho.get<archive_node::array_t>();
+		for (std::uint8_t i = 0; i < 4; ++i)
+			fru[i] = values[i].get<archive_node::number_float>();
+
+		this->setOrtho(fru.x, fru.y, fru.z, fru.w);
+	}
+
+	if (viewport.is_array())
+	{
+		float4 vp;
+
+		const auto& values = ortho.get<archive_node::array_t>();
+		for (std::uint8_t i = 0; i < 4; ++i)
+			vp[i] = values[i].get<archive_node::number_float>();
+
+		this->setViewport(vp);
+	}
+
+	if (clear_color.is_array())
+	{
+		float4 color;
+
+		const auto& values = clear_color.get<archive_node::array_t>();
+		for (std::uint8_t i = 0; i < 4; ++i)
+			color[i] = values[i].get<archive_node::number_float>();
+
+		_camera->setClearColor(color);
+	}
+
+	if (project.is_string())
+	{
+		if (project.get<archive_node::string_t>() == "ortho")
 			this->setCameraType(CameraType::CameraTypeOrtho);
 		else
 			this->setCameraType(CameraType::CameraTypePerspective);
 	}
 
-	if (reader.getValue("order", order))
+	if (order.is_string())
 	{
-		if (order == "2D")
+		if (order.get<archive_node::string_t>() == "2D")
 			this->setCameraOrder(CameraOrder::CameraOrder2D);
 		else
 			this->setCameraOrder(CameraOrder::CameraOrder3D);
 	}
 
-	if (reader.getValue("clearflags", flagsString))
+	if (clear_flags.is_string())
 	{
 		GraphicsClearFlags flags = 0;
 
 		std::vector<util::string> args;
-		util::split(args, flagsString, "|");
+		util::split(args, clear_flags.get<archive_node::string_t>(), "|");
 
 		for (auto& flag : args)
 		{
@@ -314,12 +352,12 @@ CameraComponent::load(iarchive& reader) noexcept
 		this->setCameraClearFlags(flags);
 	}
 
-	if (reader.getValue("renderflags", flagsString))
+	if (render_flags.is_string())
 	{
 		CameraRenderFlags flags = 0;
 
 		std::vector<util::string> args;
-		util::split(args, flagsString, "|");
+		util::split(args, render_flags.get<archive_node::string_t>(), "|");
 
 		for (auto& flag : args)
 		{
@@ -346,7 +384,7 @@ CameraComponent::load(iarchive& reader) noexcept
 }
 
 void
-CameraComponent::save(oarchive& write) noexcept
+CameraComponent::save(archive_node& write) noexcept
 {
 }
 

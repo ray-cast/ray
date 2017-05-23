@@ -160,63 +160,6 @@ GameScene::onListenerChangeAfter() noexcept
 {
 }
 
-GameObjectPtr
-GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
-{
-	util::string name = reader.getCurrentNodeName();
-	if (name == "object")
-	{
-		auto actor = std::make_shared<GameObject>();
-		actor->setParent(parent);
-
-		reader.addAttrs();
-		reader.addAttrsInChildren("attribute");
-		actor->load(reader);
-
-		if (reader.setToFirstChild())
-		{
-			do
-			{
-				auto key = reader.getCurrentNodeName();
-				if (key == "component")
-				{
-					auto className = reader.getValue<util::string>("class");
-					if (className.empty())
-					{
-						if (_gameListener)
-							_gameListener->onMessage("Component name cannot be empty : " + reader.getCurrentNodePath());
-
-						continue;
-					}
-
-					auto component = rtti::make_shared<GameComponent>(className);
-					if (!component)
-					{
-						if (_gameListener)
-							_gameListener->onMessage("Failed to create component : " + className);
-
-						continue;
-					}
-
-					reader.addAttrs();
-					reader.addAttrsInChildren("attribute");
-					component->load(reader);
-
-					actor->addComponent(component);
-				}
-				else if (key == "object")
-				{
-					instanceObject(reader, actor);
-				}
-			} while (reader.setToNextChild());
-		}
-
-		return actor;
-	}
-
-	return nullptr;
-}
-
 bool
 GameScene::load(const util::string& filename) noexcept
 {
@@ -233,8 +176,8 @@ GameScene::load(const util::string& filename) noexcept
 			return false;
 		}
 
-		XMLReader xml;
-		if (!xml.open(*stream))
+		auto json = json::reader(*stream);
+		if (!json.is_object())
 		{
 			if (_gameListener)
 				_gameListener->onMessage("Non readable Scene file : " + filename);
@@ -242,7 +185,7 @@ GameScene::load(const util::string& filename) noexcept
 			return false;
 		}
 
-		this->load(xml);
+		this->load(json);
 		return true;
 	}
 	catch (const exception& e)
@@ -254,43 +197,94 @@ GameScene::load(const util::string& filename) noexcept
 	}
 }
 
-void
-GameScene::load(iarchive& reader) except
+bool
+GameScene::load(archive_node& reader) noexcept
 {
-	if (reader.getCurrentNodeName() == "xml")
+	try
 	{
-		reader.setToFirstChild();
-
-		util::string nodeName;
-		nodeName = reader.getCurrentNodeName();
-		if (nodeName == "scene")
+		const auto& scene = reader["scene"];
+		if (!scene.is_object())
 		{
-			reader.setToFirstChild();
+			if (_gameListener)
+				_gameListener->onMessage("scene is not a object type");
 
-			do
-			{
-				nodeName = reader.getCurrentNodeName();
-				if (nodeName == "attribute")
-				{
-					util::string name = "unknown";
-					reader.addAttrs();
-					reader.addAttrsInChildren("attribute");
-					reader >> make_archive(name, "name");
-
-					this->setName(name);
-				}
-				else if (nodeName == "object")
-				{
-					instanceObject(reader, this->getRootObject());
-				}
-			} while (reader.setToNextChild());
+			return false;
 		}
+
+		const auto& sceneName = scene["name"];
+		if (sceneName.is_string())
+			this->setName(scene["name"].get<util::string>());
+
+		const auto& objects = scene["objects"];
+		if (!objects.is_array())
+		{
+			if (_gameListener)
+				_gameListener->onMessage("objects is not a array type");
+
+			return false;
+		}
+
+		const auto& objectValues = objects.get<archive_node::array_t>();
+		for (auto& object : objectValues)
+		{
+			if (!object.is_object())
+				continue;
+
+			auto actor = std::make_shared<GameObject>();
+			actor->setParent(_root);
+			actor->load(object);
+
+			auto& components = object["components"];
+			if (!components.is_array())
+			{
+				if (_gameListener)
+					_gameListener->onMessage("components is not a array type");
+
+				continue;
+			}
+
+			const auto& componentValues = components.get<archive_node::array_t>();
+			for (auto& component : componentValues)
+			{
+				auto& className = component["class"].get<std::string>();
+				if (className.empty())
+				{
+					if (_gameListener)
+						_gameListener->onMessage("Component name cannot be empty.");
+
+					continue;
+				}
+
+				auto actorComponent = rtti::make_shared<GameComponent>(className);
+				if (!actorComponent)
+				{
+					if (_gameListener)
+						_gameListener->onMessage("Failed to create component : " + className);
+
+					continue;
+				}
+
+				actorComponent->load(component);
+
+				actor->addComponent(actorComponent);
+			}
+		}
+
+		return true;
+	}
+	catch (const std::exception& e)
+	{
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
+
+		return false;
 	}
 }
 
-void
-GameScene::save(oarchive& reader) except
+bool
+GameScene::save(oarchive& reader) noexcept
 {
+	return false;
 }
 
 GameScenePtr

@@ -561,7 +561,7 @@ archive_node::emplace(type_t type) noexcept
 		_data.emplace<number_unsigned_t>(0);
 		break;
 	case archive_node::type_t::number_float:
-		_data.emplace<number_float_t>(0);
+		_data.emplace<number_float_t>(number_float_t(0.0f));
 		break;
 	case archive_node::type_t::string:
 		_data.emplace<std::unique_ptr<string_t>>(std::make_unique<string_t>());

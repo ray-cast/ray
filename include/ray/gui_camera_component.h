@@ -65,9 +65,9 @@ private:
 	GuiCameraComponent& operator=(const GuiCameraComponent&) noexcept = delete;
 
 private:
-
 	GameComponentPtr _mouseFocus;
 	GameComponentPtr _motionFocus;
+
 	std::shared_ptr<GuiMessage> _guiMessage;
 	std::function<void(const Camera&)> _onPostRender;
 };

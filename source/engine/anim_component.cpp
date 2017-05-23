@@ -111,32 +111,21 @@ AnimationComponent::enablePhysics() const noexcept
 }
 
 void
-AnimationComponent::setTransforms(const GameObjects& transforms) noexcept
-{
-	_transforms = transforms;
-}
-
-void
 AnimationComponent::setTransforms(GameObjects&& transforms) noexcept
 {
 	_transforms = std::move(transforms);
+}
+
+void
+AnimationComponent::setTransforms(const GameObjects& transforms) noexcept
+{
+	_transforms = transforms;
 }
 
 const GameObjects&
 AnimationComponent::getTransforms() const noexcept
 {
 	return _transforms;
-}
-
-void
-AnimationComponent::load(iarchive& reader) noexcept
-{
-	GameComponent::load(reader);
-}
-
-void
-AnimationComponent::save(oarchive& write) noexcept
-{
 }
 
 GameComponentPtr

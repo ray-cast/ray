@@ -39,7 +39,7 @@
 
 int main(int argc, const char* argv[])
 {
-	rayInit(argv[0], "dlc:/LightMass/scenes/scene.map");
+	rayInit(argv[0], "dlc:/LightMass/scenes/scene.json");
 
 	if (rayOpenWindow("LightMass", 1376, 768))
 	{

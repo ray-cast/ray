@@ -57,6 +57,12 @@ GameObject::GameObject() noexcept
 	GameObjectManager::instance()->_instanceObject(this, _instanceID);
 }
 
+GameObject::GameObject(const archive_node& reader) noexcept
+	: GameObject()
+{
+	this->load(reader);
+}
+
 GameObject::~GameObject() noexcept
 {
 	this->cleanupChildren();
@@ -172,7 +178,7 @@ GameObject::setParent(GameObjectPtr& parent) noexcept
 	if (_weak != parent)
 	{
 		this->_onMoveBefore();
-		
+
 		if (_weak)
 		{
 			auto it = _weak->_children.begin();
@@ -447,7 +453,7 @@ GameObject::getTransform() const noexcept
 	return _localTransform;
 }
 
-const float4x4& 
+const float4x4&
 GameObject::getTransformInverse() const noexcept
 {
 	this->_updateLocalTransform();
@@ -551,7 +557,7 @@ GameObject::setWorldTransform(const float4x4& transform) noexcept
 	this->_onMoveAfter();
 }
 
-void 
+void
 GameObject::setWorldTransformOnlyRotate(const float4x4& transform) noexcept
 {
 	this->_onMoveBefore();
@@ -717,7 +723,7 @@ GameObject::getComponentInChildren(const rtti::Rtti& type) const noexcept
 	return this->getComponentInChildren(&type);
 }
 
-void 
+void
 GameObject::getComponentsInChildren(const rtti::Rtti* type, GameComponents& components) const noexcept
 {
 	for (auto& it : _components)
@@ -726,14 +732,14 @@ GameObject::getComponentsInChildren(const rtti::Rtti* type, GameComponents& comp
 		{
 			components.push_back(it);
 			break;
-		}			
+		}
 	}
 
 	for (auto& it : _children)
 		it->getComponentsInChildren(type, components);
 }
 
-void 
+void
 GameObject::getComponentsInChildren(const rtti::Rtti& type, GameComponents& components) const noexcept
 {
 	return this->getComponentsInChildren(&type, components);
@@ -745,7 +751,7 @@ GameObject::getComponents() const noexcept
 	return _components;
 }
 
-void 
+void
 GameObject::addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
 {
 	assert(component);
@@ -774,7 +780,7 @@ GameObject::addComponentDispatch(GameDispatchType type, GameComponentPtr compone
 	_dispatchComponents[type].push_back(component);
 }
 
-void 
+void
 GameObject::removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
 {
 	assert(component);
@@ -853,7 +859,7 @@ GameObject::sendMessage(const MessagePtr& message) noexcept
 	}
 }
 
-void 
+void
 GameObject::sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
 {
 	assert(message);
@@ -998,36 +1004,48 @@ GameObject::sendMessageDownwards(const MessagePtr& message, GameComponent* ignor
 }
 
 void
-GameObject::load(iarchive& reader) noexcept
+GameObject::load(const archive_node& reader) except
 {
-	util::string name;
-	bool active;
-	int layer;
-	float3 position;
-	float3 scale;
-	float3 rotate;
+	const auto& name = reader["name"];
+	const auto& active = reader["active"];
+	const auto& layer = reader["layer"];
+	const auto& position = reader["position"];
+	const auto& rotation = reader["rotate"];
 
-	if (reader.getValue("name", name))
-		this->setName(std::move(name));
+	if (name.is_string())
+		this->setName(name.get<archive_node::string_t>());
 
-	if (reader.getValue("active", active))
-		this->setActive(active);
+	if (active.is_boolean())
+		this->setActive(active.get<archive_node::boolean_t>());
 
-	if (reader.getValue("layer", layer))
-		this->setLayer(layer);
+	if (layer.is_boolean())
+		this->setLayer(layer.get<archive_node::number_integer>());
 
-	if (reader.getValue("position", position))
-		this->setTranslate(position);
+	if (position.is_array())
+	{
+		float3 translate;
 
-	if (reader.getValue("scale", scale))
-		this->setScale(scale);
+		const auto& values = position.get<archive_node::array_t>();
+		for (std::uint8_t i = 0; i < 3; ++i)
+			translate[i] = values[i].get<archive_node::number_float>();
 
-	if (reader.getValue("rotate", rotate))
-		this->setQuaternion(Quaternion(rotate));
+		this->setTranslate(translate);
+	}
+
+	if (rotation.is_array())
+	{
+		Quaternion quat;
+
+		const auto& values = position.get<archive_node::array_t>();
+		for (std::uint8_t i = 0; i < 4; ++i)
+			quat[i] = values[i].get<float>();
+
+		this->setQuaternion(quat);
+	}
 }
 
 void
-GameObject::save(oarchive& write) noexcept
+GameObject::save(archive_node& write) except
 {
 }
 
@@ -1081,7 +1099,7 @@ GameObject::_onFrameEnd() except
 		it->onFrameEnd();
 }
 
-void 
+void
 GameObject::_onActivate() except
 {
 	for (auto& it : _components)
@@ -1101,7 +1119,7 @@ GameObject::_onActivate() except
 	}
 }
 
-void 
+void
 GameObject::_onDeactivate() except
 {
 	if (!_dispatchComponents.empty())
@@ -1167,7 +1185,7 @@ GameObject::_onMoveAfter() except
 	}
 }
 
-void 
+void
 GameObject::_onLayerChangeBefore() except
 {
 	if (this->getActive())
@@ -1180,7 +1198,7 @@ GameObject::_onLayerChangeBefore() except
 	}
 }
 
-void 
+void
 GameObject::_onLayerChangeAfter() except
 {
 	if (this->getActive())
@@ -1202,7 +1220,7 @@ GameObject::_updateLocalChildren() const noexcept
 		it->_updateLocalChildren();
 }
 
-void 
+void
 GameObject::_updateWorldChildren() const noexcept
 {
 	this->_updateParentTransform();
@@ -1246,7 +1264,7 @@ GameObject::_updateWorldTransform() const noexcept
 	}
 }
 
-void 
+void
 GameObject::_updateParentTransform() const noexcept
 {
 	if (_worldNeedUpdates)

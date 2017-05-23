@@ -70,19 +70,19 @@ SoundListenerComponent::getVolume() const noexcept
 }
 
 void
-SoundListenerComponent::load(iarchive& reader) noexcept
+SoundListenerComponent::load(const archive_node& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	reader >> make_archive(_volume, "volume");
+	//reader >> make_archive(_volume, "volume");
 }
 
 void
-SoundListenerComponent::save(oarchive& write) noexcept
+SoundListenerComponent::save(archive_node& write) noexcept
 {
 	GameComponent::save(write);
 
-	write << make_archive(_volume, "volume");
+	//write << make_archive(_volume, "volume");
 }
 
 GameComponentPtr

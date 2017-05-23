@@ -48,6 +48,7 @@ class EXPORT MeshComponent final : public GameComponent
 public:
 	MeshComponent() noexcept;
 	MeshComponent(MeshPropertyPtr sharedMesh, bool shared = true) noexcept;
+	MeshComponent(const archive_node& reader) noexcept;
 	~MeshComponent() noexcept;
 
 	void setMesh(MeshPropertyPtr& mesh) noexcept;
@@ -70,8 +71,8 @@ public:
 
 	void needUpdate() noexcept;
 
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
+	void load(const archive_node& reader) noexcept;
+	void save(archive_node& write) noexcept;
 
 	GameComponentPtr clone() const noexcept;
 

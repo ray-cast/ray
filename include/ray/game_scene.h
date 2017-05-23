@@ -64,15 +64,13 @@ public:
 
 	void sendMessage(const MessagePtr& message) except;
 
-	void load(iarchive& reader) except;
-	void save(oarchive& reader) except;
+	bool load(archive_node& reader) noexcept;
+	bool save(oarchive& reader) noexcept;
 
 	bool load(const util::string& sceneName) noexcept;
 	bool save(const util::string& sceneName) noexcept;
 
 	GameScenePtr clone() const noexcept;
-
-	GameObjectPtr instanceObject(iarchive& reader, GameObjectPtr parent) except;
 
 private:
 	virtual void onListenerChangeBefore() noexcept;

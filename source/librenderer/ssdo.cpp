@@ -210,7 +210,7 @@ SSDO::onActivate(RenderPipeline& pipeline) noexcept
 	_blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
 	_blurRadius = _ambientOcclusion->getMacro("BLUR_RADIUS");
 
-	_setting.blurRadius = _blurRadius->getInt();
+	_setting.blurRadius = static_cast<float>(_blurRadius->getInt());
 
 	this->createSphereNoise();
 

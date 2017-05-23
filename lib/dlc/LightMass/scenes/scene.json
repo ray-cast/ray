@@ -3,11 +3,17 @@
         "name": "LightMass",
         "objects": [
             {
-                "name": "first_person_camera", "position": "0,20,-50", "active": true,
+                "name": "first_person_camera", "position": [0, 20,-50], "active": true,
                 "components": [
                     { "class": "Camera", "aperture": 75, "znear": 0.1, "zfar": 2000 },
                     { "class": "FirstPersonCamera" }
                 ]
+            },
+            {
+            	"active":true,
+            	"components":[
+            		{ "class":"SphereMaker" }
+            	]
             },
             {
                 "name": "sky", "position": "0,50,0", "rotate": "90,0,0", "active": true,
@@ -15,7 +21,7 @@
                     {
                         "class": "Light",
                         "type": "environment",
-                        "color": "1.0,1.0,1.0",
+                        "color": [1.0,1.0,1.0],
                         "range": 60,
                         "intensity": 1,
                         "shadow": "none"
@@ -30,9 +36,9 @@
                 ]
             },
             {
-                "name": "UIRoot", "position": "0,0,0", "active": true,
+                "name": "UIRoot", "position": [0,0,0], "active": true,
                 "components": [
-                    { "class": "Camera", "type": "ortho", "order": "2D", "color": "0.15,0.15,0.15,1", "clearflags": "none" },
+                    { "class": "Camera", "type": "ortho", "order": "2D", "clear_color": [0.15,0.15,0.15,1], "clear_flags": "none" },
                     { "class": "GuiCamera" },
                     { "class": "GuiView" },
                     { "class": "GuiController" }

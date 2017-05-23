@@ -82,6 +82,18 @@ public:
 	Quaterniont<T>& operator*=(const Quaterniont<T>& v) noexcept { w *= v.w; x *= v.x; y *= v.y; z *= v.z; return *this; }
 	Quaterniont<T>& operator/=(const Quaterniont<T>& v) noexcept { w /= v.w; x /= v.x; y /= v.y; z /= v.z; return *this; }
 
+	T operator[](std::uint8_t i) const noexcept
+	{
+		assert(i < 4);
+		return *(&x + i);
+	}
+
+	T& operator[](std::uint8_t i) noexcept
+	{
+		assert(i < 4);
+		return *(&x + i);
+	}
+
 	Quaterniont<T>& identity() noexcept
 	{
 		x = y = z = 0.0f; w = 1.0f;

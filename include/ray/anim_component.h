@@ -59,12 +59,9 @@ public:
 	void enablePhysics(bool physics) noexcept;
 	bool enablePhysics() const noexcept;
 
-	void setTransforms(const GameObjects& transforms) noexcept;
 	void setTransforms(GameObjects&& transforms) noexcept;
+	void setTransforms(const GameObjects& transforms) noexcept;
 	const GameObjects& getTransforms() const noexcept;
-
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
 
 	GameComponentPtr clone() const noexcept;
 

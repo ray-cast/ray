@@ -68,19 +68,19 @@ PhysicsBoxComponent::getSize() const noexcept
 	return _shape->getSize();
 }
 
-void 
-PhysicsBoxComponent::load(iarchive& reader) noexcept
+void
+PhysicsBoxComponent::load(const archive_node& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	float3 size;
+	/*float3 size;
 	reader >> make_archive(size, "size");
 
-	_shape->setSize(size);
+	_shape->setSize(size);*/
 }
 
-void 
-PhysicsBoxComponent::save(oarchive& write) noexcept
+void
+PhysicsBoxComponent::save(archive_node& write) noexcept
 {
 }
 

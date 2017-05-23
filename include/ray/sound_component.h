@@ -82,8 +82,8 @@ public:
 	void addPlayEndListener(std::function<void()>* func) noexcept;
 	void removePlayEndListener(std::function<void()>* func) noexcept;
 
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
+	void load(const archive_node& reader) noexcept;
+	void save(archive_node& write) noexcept;
 
 	GameComponentPtr clone() const noexcept;
 

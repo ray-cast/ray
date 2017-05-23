@@ -51,10 +51,17 @@ SkyboxComponent::SkyboxComponent() noexcept
 	: _enableSkyBox(false)
 	, _enableSkyLighting(false)
 	, _skyboxSize(1000.0f)
-	, _skyLightingIntensity(1.0f, 1.0f)
+	, _skyDiffuseIntensity(1.0f)
+	, _skySpecularIntensity(1.0f)
 {
 	this->setCastShadow(false);
 	this->setReceiveShadow(false);
+}
+
+SkyboxComponent::SkyboxComponent(const archive_node& reader) noexcept
+	: SkyboxComponent()
+{
+	this->load(reader);
 }
 
 SkyboxComponent::~SkyboxComponent() noexcept
@@ -169,27 +176,27 @@ SkyboxComponent::getSkyLightingEnable() const noexcept
 void
 SkyboxComponent::setSkyDiffuseIntensity(float intensity) noexcept
 {
-	_skyLightingIntensity.x = intensity;
+	_skyDiffuseIntensity = intensity;
 	_updateMaterial();
 }
 
 float
 SkyboxComponent::getSkyDiffuseIntensity() const noexcept
 {
-	return _skyLightingIntensity.x;
+	return _skyDiffuseIntensity;
 }
 
 void
 SkyboxComponent::setSkySpecularIntensity(float intensity) noexcept
 {
-	_skyLightingIntensity.y = intensity;
+	_skySpecularIntensity = intensity;
 	_updateMaterial();
 }
 
 float
 SkyboxComponent::getSkySpecularIntensity() const noexcept
 {
-	return _skyLightingIntensity.y;
+	return _skySpecularIntensity;
 }
 
 void
@@ -263,21 +270,29 @@ SkyboxComponent::removeEnableSkyLightingListener(std::function<void(bool)>* func
 }
 
 void
-SkyboxComponent::load(iarchive& reader) noexcept
+SkyboxComponent::load(const archive_node& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	reader.getValue("skymap", _skyMap);
-	reader.getValue("skydiffuse", _skyDiffuse);
-	reader.getValue("skyspecular", _skySpecular);
-	reader.getValue("skyIntensity", _skyLightingIntensity);
-	reader.getValue("skysize", _skyboxSize);
+	const auto& skyMap = reader["skymap"];
+	const auto& skydiffuse = reader["skydiffuse"];
+	const auto& skyspecular = reader["skyspecular"];
+	const auto& skyDiffuseIntensity = reader["skyDiffuse"];
+	const auto& skySpecularIntensity = reader["skySpeculars"];
+	const auto& skysize = reader["skysize"];
+	const auto& flags = reader["flags"];
 
-	util::string flagsString;
-	if (reader.getValue("flags", flagsString))
+	_skyMap = skyMap.is_string() ? skyMap.get<archive_node::string_t>() : "";
+	_skyDiffuse = skydiffuse.is_string() ? skydiffuse.get<archive_node::string_t>() : "";
+	_skySpecular = skyspecular.is_string() ? skyspecular.get<archive_node::string_t>() : "";
+	_skyDiffuseIntensity = skyDiffuseIntensity.is_numeric() ? skyDiffuseIntensity.get<archive_node::number_float_t>() : 1.0f;
+	_skySpecularIntensity = skySpecularIntensity.is_numeric() ? skySpecularIntensity.get<archive_node::number_float_t>() : 1.0f;
+	_skyboxSize = skysize.is_numeric() ? skysize.get<archive_node::number_float_t>() : 1000.0f;
+
+	if (flags.is_string())
 	{
 		std::vector<util::string> args;
-		util::split(args, flagsString, "|");
+		util::split(args, flags.get<archive_node::string_t>(), "|");
 
 		for (auto& flag : args)
 		{
@@ -292,7 +307,7 @@ SkyboxComponent::load(iarchive& reader) noexcept
 }
 
 void
-SkyboxComponent::save(oarchive& write) noexcept
+SkyboxComponent::save(archive_node& write) noexcept
 {
 }
 

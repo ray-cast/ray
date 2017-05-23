@@ -47,6 +47,11 @@ GameComponent::GameComponent() noexcept
 {
 }
 
+GameComponent::GameComponent(const archive_node& reader) noexcept
+{
+	this->load(reader);
+}
+
 GameComponent::~GameComponent() noexcept
 {
 }
@@ -152,26 +157,23 @@ GameComponent::getName() const noexcept
 }
 
 void
-GameComponent::load(iarchive& reader) noexcept
+GameComponent::load(const archive_node& reader) noexcept
 {
-	bool active;
+	auto& name = reader["name"];
+	auto& active = reader["active"];
 
-	if (reader.getValue("name", _name))
-	{
-		char buffer[4096];
-		auto size = UTF8toGBK(buffer, 4096, _name.c_str(), _name.size());
-		this->setName(util::string(buffer, size));
-	}
+	if (name.is_string())
+		this->setName(name.get<archive_node::string_t>());
 
-	if (reader.getValue("active", active))
-		this->setActive(active);
+	if (active.is_boolean())
+		this->setActive(active.get<archive_node::boolean_t>());
 }
 
 void
-GameComponent::save(oarchive& write) noexcept
+GameComponent::save(archive_node& write) noexcept
 {
-	write << make_archive(_name, "name");
-	write << make_archive(_active, "name");
+	write["name"] = _name;
+	write["active"] = _active;
 }
 
 void

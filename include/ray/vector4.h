@@ -112,6 +112,18 @@ public:
 		return Vector4t<S>(static_cast<S>(x), static_cast<S>(y), static_cast<S>(z), static_cast<S>(w));
 	}
 
+	T operator[](std::uint8_t i) const noexcept
+	{
+		assert(i < 4);
+		return *(&x + i);
+	}
+
+	T& operator[](std::uint8_t i) noexcept
+	{
+		assert(i < 4);
+		return *(&x + i);
+	}
+
 	Vector2t<T> xx()  const noexcept { return Vector2t<T>(x, x); }
 	Vector2t<T> xy()  const noexcept { return Vector2t<T>(x, y); }
 	Vector2t<T> xz()  const noexcept { return Vector2t<T>(x, z); }

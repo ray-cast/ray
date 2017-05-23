@@ -17,7 +17,7 @@
 
             float4 SkyPS(in float3 normal : TEXCOORD0) : SV_Target
             {
-                return srgb2linear(texSkybox.Sample(PointClamp, computeSphereCoord(normalize(normal))));
+                return texSkybox.Sample(PointClamp, computeSphereCoord(normalize(normal)));
             }
         ]]>
     </shader>

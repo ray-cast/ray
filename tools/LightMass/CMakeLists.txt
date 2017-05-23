@@ -54,6 +54,8 @@ SET(COMPONENT_LIST
 	LightMassController.h
 	first_person_camera.cpp
 	first_person_camera.h
+	sphere_maker.cpp
+	sphere_maker.h
 )
 SOURCE_GROUP("Components" FILES ${COMPONENT_LIST})
 

@@ -261,11 +261,11 @@ SphereMakerComponent::~SphereMakerComponent() noexcept
 void
 SphereMakerComponent::onActivate() except
 {
-	auto diffuseMap = ray::ResManager::instance()->createTexture("dlc:EnvLighting/texture/Bricks_ao.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
+	auto diffuseMap = ray::ResManager::instance()->createTexture("dlc:textures/Bricks_ao.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
 	if (!diffuseMap)
 		return;
 
-	auto normalMap = ray::ResManager::instance()->createTexture("dlc:EnvLighting/texture/Bricks_n.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
+	auto normalMap = ray::ResManager::instance()->createTexture("dlc:textures/Bricks_n.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
 	if (!normalMap)
 		return;
 

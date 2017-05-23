@@ -393,8 +393,10 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 		::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		::glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		::glfwWindowHint(GLFW_VISIBLE, false);
 #else
 		::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		::glfwWindowHint(GLFW_VISIBLE, false);
 #endif
 
 		_window = ::glfwCreateWindow(w, h, title, nullptr, nullptr);
@@ -409,6 +411,9 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 			::glfwSetCursorPosCallback(_window, &onWindowMouseMotion);
 			::glfwSetKeyCallback(_window, &onWindowKey);
 			::glfwSetCharModsCallback(_window, &onWindowKeyChar);
+
+			auto mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+			::glfwSetWindowPos(_window, (mode->width - w) >> 1, (mode->height - h) >> 1);
 
 			int dpi_w, dpi_h;
 			::glfwGetFramebufferSize(_window, &dpi_w, &dpi_h);
@@ -439,7 +444,11 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 				}
 			}
 
-			return _gameApp->start();
+			if (!_gameApp->start())
+				return false;
+
+			::glfwShowWindow(_window);
+			return true;
 		}
 
 		return true;

@@ -356,6 +356,10 @@ IMGUISystem::render(float delta) except
 			_materialDecal->uniformTexture(texture->downcast_pointer<ray::GraphicsTexture>());
 
 			auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+#if !defined(_BUILD_VULKAN)
+			scissor.y = io.DisplaySize.y - scissor.w - scissor.y;
+#endif
+
 			renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
 			renderer->drawIndexed(pcmd->ElemCount, 1, idx_buffer_offset, vdx_buffer_offset, 0);
 

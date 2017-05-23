@@ -77,18 +77,6 @@ RenderComponent::removePostRenderListener(std::function<void(const Camera&)>* fu
 }
 
 void
-RenderComponent::load(iarchive& reader) noexcept
-{
-	GameComponent::load(reader);
-}
-
-void
-RenderComponent::save(oarchive& write) noexcept
-{
-	GameComponent::save(write);
-}
-
-void
 RenderComponent::onRenderObjectPre(const Camera& camera) noexcept
 {
 	_onPreRender.run(camera);

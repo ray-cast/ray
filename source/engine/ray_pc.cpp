@@ -202,7 +202,7 @@ void onWindowResize(GLFWwindow* window, int w, int h)
 		event.event = ray::InputEvent::SizeChange;
 		event.change.w = w;
 		event.change.h = h;
-		event.change.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.change.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 		event.change.timestamp = ::glfwGetTimerFrequency();
 		_gameApp->sendInputEvent(event);
 	}
@@ -216,7 +216,7 @@ void onWindowFramebufferResize(GLFWwindow* window, int w, int h)
 		event.event = ray::InputEvent::SizeChangeDPI;
 		event.change.w = w;
 		event.change.h = h;
-		event.change.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.change.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 		event.change.timestamp = ::glfwGetTimerFrequency();
 		_gameApp->sendInputEvent(event);
 	}
@@ -228,7 +228,7 @@ void onWindowClose(GLFWwindow* window)
 	{
 		ray::InputEvent event;
 		event.event = ray::InputEvent::AppQuit;
-		event.window.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.window.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 		event.window.timestamp = ::glfwGetTimerFrequency();
 		_gameApp->sendInputEvent(event);
 	}
@@ -240,7 +240,7 @@ void onWindowFocus(GLFWwindow* window, int focus)
 	{
 		ray::InputEvent event;
 		event.event = focus ? ray::InputEvent::GetFocus : ray::InputEvent::LostFocus;
-		event.window.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.window.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 		event.window.timestamp = ::glfwGetTimerFrequency();
 		_gameApp->sendInputEvent(event);
 	}
@@ -252,12 +252,12 @@ void onWindowKey(GLFWwindow* window, int key, int scancode, int action, int mods
 	{
 		ray::InputEvent event;
 		event.event = (action == GLFW_PRESS || action == GLFW_REPEAT) ? ray::InputEvent::KeyDown : ray::InputEvent::KeyUp;
-		event.key.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.key.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 		event.key.timestamp = ::glfwGetTimerFrequency();
 		event.key.padding2 = 0;
 		event.key.padding3 = 0;
 		event.key.repeat = (action == GLFW_REPEAT) ? true : false;
-		event.key.state = ::glfwGetKey(_window, key) == GLFW_PRESS ? true : false;
+		event.key.state = ::glfwGetKey(window, key) == GLFW_PRESS ? true : false;
 		event.key.keysym.raw = scancode;
 		event.key.keysym.sym = KeyCodetoInputKey(key);
 		event.key.keysym.mod = mods;
@@ -273,7 +273,7 @@ void onWindowKeyChar(GLFWwindow* window, unsigned int unicode, int mods)
 	{
 		ray::InputEvent event;
 		event.event = ray::InputEvent::Character;
-		event.key.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.key.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 		event.key.timestamp = ::glfwGetTimerFrequency();
 		event.key.padding2 = 0;
 		event.key.padding3 = 0;
@@ -302,7 +302,7 @@ void onWindowMouseButton(GLFWwindow* window, int button, int action, int mods)
 		event.button.x = mouseX;
 		event.button.y = mouseY;
 		event.button.timestamp = glfwGetTimerFrequency();
-		event.button.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.button.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 		event.button.padding1 = 0;
 		event.button.which = 0;
 
@@ -331,7 +331,7 @@ void onWindowMouseButton(GLFWwindow* window, int button, int action, int mods)
 					doubleClick.button.x = mouseX;
 					doubleClick.button.y = mouseY;
 					doubleClick.button.timestamp = glfwGetTimerFrequency();
-					doubleClick.button.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+					doubleClick.button.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 					doubleClick.button.padding1 = 0;
 					doubleClick.button.which = 0;
 
@@ -356,7 +356,7 @@ void onWindowMouseMotion(GLFWwindow* window, double x, double y)
 		event.motion.yrel = y;
 		event.motion.timestamp = glfwGetTimerFrequency();
 		event.motion.state = false;
-		event.motion.windowID = (std::uint64_t)::glfwGetWinHandle(_window);
+		event.motion.windowID = (std::uint64_t)::glfwGetWinHandle(window);
 
 #if defined(GLFW_EXPOSE_NATIVE_WIN32)
 		POINT pt;

@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+GuiStyle IMGUI::_defalutStyle;
+
 float2 ImVec2ToFloat2(ImVec2 vec2)
 {
 	return float2(vec2.x, vec2.y);
@@ -88,7 +90,35 @@ IMGUI::showUserGuide() noexcept
 void
 IMGUI::showStyleEditor(GuiStyle* ref) noexcept
 {
-	ImGui::ShowStyleEditor();
+	static_assert(sizeof(GuiStyle) == sizeof(ImGuiStyle));
+	static_assert(offsetof(GuiStyle, Alpha) == offsetof(ImGuiStyle, Alpha));
+	static_assert(offsetof(GuiStyle, WindowPadding) == offsetof(ImGuiStyle, WindowPadding));
+	static_assert(offsetof(GuiStyle, WindowMinSize) == offsetof(ImGuiStyle, WindowMinSize));
+	static_assert(offsetof(GuiStyle, WindowRounding) == offsetof(ImGuiStyle, WindowRounding));
+	static_assert(offsetof(GuiStyle, WindowTitleAlign) == offsetof(ImGuiStyle, WindowTitleAlign));
+	static_assert(offsetof(GuiStyle, ChildWindowRounding) == offsetof(ImGuiStyle, ChildWindowRounding));
+	static_assert(offsetof(GuiStyle, FramePadding) == offsetof(ImGuiStyle, FramePadding));
+	static_assert(offsetof(GuiStyle, FrameRounding) == offsetof(ImGuiStyle, FrameRounding));
+	static_assert(offsetof(GuiStyle, ItemSpacing) == offsetof(ImGuiStyle, ItemSpacing));
+	static_assert(offsetof(GuiStyle, ItemInnerSpacing) == offsetof(ImGuiStyle, ItemInnerSpacing));
+	static_assert(offsetof(GuiStyle, TouchExtraPadding) == offsetof(ImGuiStyle, TouchExtraPadding));
+	static_assert(offsetof(GuiStyle, IndentSpacing) == offsetof(ImGuiStyle, IndentSpacing));
+	static_assert(offsetof(GuiStyle, ColumnsMinSpacing) == offsetof(ImGuiStyle, ColumnsMinSpacing));
+	static_assert(offsetof(GuiStyle, ScrollbarSize) == offsetof(ImGuiStyle, ScrollbarSize));
+	static_assert(offsetof(GuiStyle, ScrollbarRounding) == offsetof(ImGuiStyle, ScrollbarRounding));
+	static_assert(offsetof(GuiStyle, GrabMinSize) == offsetof(ImGuiStyle, GrabMinSize));
+	static_assert(offsetof(GuiStyle, GrabRounding) == offsetof(ImGuiStyle, GrabRounding));
+	static_assert(offsetof(GuiStyle, ButtonTextAlign) == offsetof(ImGuiStyle, ButtonTextAlign));
+	static_assert(offsetof(GuiStyle, DisplayWindowPadding) == offsetof(ImGuiStyle, DisplayWindowPadding));
+	static_assert(offsetof(GuiStyle, DisplaySafeAreaPadding) == offsetof(ImGuiStyle, DisplaySafeAreaPadding));
+	static_assert(offsetof(GuiStyle, AntiAliasedLines) == offsetof(ImGuiStyle, AntiAliasedLines));
+	static_assert(offsetof(GuiStyle, AntiAliasedShapes) == offsetof(ImGuiStyle, AntiAliasedShapes));
+	static_assert(offsetof(GuiStyle, CurveTessellationTol) == offsetof(ImGuiStyle, CurveTessellationTol));
+
+	if (ref)
+		ImGui::ShowStyleEditor((ImGuiStyle*)ref);
+	else
+		ImGui::ShowStyleEditor((ImGuiStyle*)&_defalutStyle);
 }
 
 void

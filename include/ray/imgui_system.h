@@ -37,6 +37,7 @@
 #ifndef _H_IMGUI_SYSTEM_H_
 #define _H_IMGUI_SYSTEM_H_
 
+#include <ray/gui.h>
 #include <ray/gui_system.h>
 #include <ray/render_types.h>
 
@@ -51,6 +52,8 @@ public:
 
 	bool open() except;
 	void close() noexcept;
+
+	void setStyle(GuiStyle* style);
 
 	bool injectMouseMove(float _absx, float _absy) noexcept;
 	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;

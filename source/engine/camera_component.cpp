@@ -239,14 +239,16 @@ CameraComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	util::string type;
 	float aperture;
 	float znear;
 	float zfar;
 	float ratio;
+
 	float4 viewport;
 	float4 ortho;
 	float4 clearColor;
+
+	util::string type;
 	util::string order;
 	util::string flagsString;
 	util::string skymap;

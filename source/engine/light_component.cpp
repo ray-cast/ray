@@ -183,15 +183,17 @@ LightComponent::getLightType() const noexcept
 void
 LightComponent::load(iarchive& reader) noexcept
 {
-	util::string lightType;
-	util::string shadowMode;
+	bool enableGI = false;
+
+	float1 lightIntensity = 1.0f;
+	float1 lightRange = 1.0f;
+	float1 shadowBias = 0.0;
 	float2 spot(5.0f, 40.0f);
 	float3 lightColor(1, 1, 1);
 	float3 lightAtten;
-	float lightIntensity = 1.0f;
-	float lightRange = 1.0f;
-	float shadowBias = 0.0;
-	bool enableGI = false;
+
+	util::string lightType;
+	util::string shadowMode;
 
 	GameComponent::load(reader);
 

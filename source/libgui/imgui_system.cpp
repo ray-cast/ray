@@ -110,6 +110,8 @@ IMGUISystem::open() except
 	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 0.00f, 1.00f, 0.35f);
 	style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
 
+	std::memcpy(&IMGUI::_defalutStyle, &style, sizeof(style));
+
 	io.KeyMap[ImGuiKey_Tab] = GuiInputKey::Tab;
 	io.KeyMap[ImGuiKey_LeftArrow] = GuiInputKey::ArrowLeft;
 	io.KeyMap[ImGuiKey_RightArrow] = GuiInputKey::ArrowRight;
@@ -166,6 +168,11 @@ IMGUISystem::open() except
 
 void
 IMGUISystem::close() noexcept
+{
+}
+
+void
+IMGUISystem::setStyle(GuiStyle* style)
 {
 }
 

@@ -55,9 +55,6 @@ public:
 	void addPostRenderListener(std::function<void(const Camera&)>* listener) noexcept;
 	void removePostRenderListener(std::function<void(const Camera&)>* listener) noexcept;
 
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
-
 protected:
 	virtual void onRenderObjectPre(const Camera& pipeline) noexcept;
 	virtual void onRenderObjectPost(const Camera& pipeline) noexcept;

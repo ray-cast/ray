@@ -231,7 +231,7 @@ struct GuiStyle
 	float2      WindowPadding;
 	float2      WindowMinSize;
 	float       WindowRounding;
-	GuiAlignFlags  WindowTitleAlign;
+	float2	    WindowTitleAlign;
 	float       ChildWindowRounding;
 	float2      FramePadding;
 	float       FrameRounding;
@@ -244,6 +244,7 @@ struct GuiStyle
 	float       ScrollbarRounding;
 	float       GrabMinSize;
 	float       GrabRounding;
+	float2      ButtonTextAlign;
 	float2      DisplayWindowPadding;
 	float2      DisplaySafeAreaPadding;
 	bool        AntiAliasedLines;
@@ -558,6 +559,10 @@ public:
 private:
 	IMGUI(const IMGUI&) = delete;
 	IMGUI& operator=(const IMGUI&) = delete;
+
+private:
+	friend class IMGUISystem;
+	static GuiStyle _defalutStyle;
 };
 
 _NAME_END

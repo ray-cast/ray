@@ -123,6 +123,8 @@ GuiControllerComponent::showStyleEditor() noexcept
 	if (!_showStyleEditor)
 		return;
 
+	ray::Gui::setNextWindowSize(ray::float2(550, 500), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+
 	if (ray::Gui::begin("Style Editor", &_showStyleEditor))
 	{
 		ray::Gui::showStyleEditor();

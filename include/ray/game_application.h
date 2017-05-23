@@ -53,8 +53,8 @@ public:
 	bool start() noexcept;
 	void stop() noexcept;
 
-	void setGameListener(GameListenerPtr listener) noexcept;
-	GameListenerPtr getGameListener() const noexcept;
+	void setGameListener(const GameListenerPtr& listener) noexcept;
+	const GameListenerPtr& getGameListener() const noexcept;
 
 	bool isQuitRequest() const noexcept;
 

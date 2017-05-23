@@ -48,13 +48,10 @@ public:
 	GameListener() noexcept;
 	virtual ~GameListener() noexcept;
 
-	virtual void onMessage(const util::string& message) noexcept;
-
-protected:
-	friend class GameApplication;
-
 	virtual void onListenerChangeBefore() noexcept;
 	virtual void onListenerChangeAfter() noexcept;
+
+	virtual void onMessage(const util::string& message) noexcept;
 };
 
 _NAME_END

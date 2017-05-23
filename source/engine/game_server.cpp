@@ -81,21 +81,40 @@ GameServer::close() noexcept
 }
 
 void
-GameServer::setGameListener(GameListenerPtr listener) noexcept
+GameServer::setTimer(const TimerPtr& timer) noexcept
+{
+	assert(timer);
+	_timer = timer;
+}
+
+const TimerPtr&
+GameServer::getTimer() const noexcept
+{
+	return _timer;
+}
+
+void
+GameServer::setGameListener(const GameListenerPtr& listener) noexcept
 {
 	if (_gameListener != listener)
 	{
+		if (_gameListener)
+			_gameListener->onListenerChangeBefore();
+
 		for (auto& it : _features)
 			it->setGameListener(listener);
 
 		for (auto& it : _scenes)
 			it->setGameListener(listener);
 
+		if (_gameListener)
+			_gameListener->onListenerChangeAfter();
+
 		_gameListener = listener;
 	}
 }
 
-GameListenerPtr
+const GameListenerPtr&
 GameServer::getGameListener() const noexcept
 {
 	return _gameListener;
@@ -111,19 +130,6 @@ bool
 GameServer::isQuitRequest() const noexcept
 {
 	return _isQuitRequest;
-}
-
-void
-GameServer::setTimer(TimerPtr timer) noexcept
-{
-	assert(timer);
-	_timer = timer;
-}
-
-TimerPtr
-GameServer::getTimer() const noexcept
-{
-	return _timer;
 }
 
 bool
@@ -152,6 +158,8 @@ GameServer::openScene(const util::string& filename) noexcept
 void
 GameServer::closeScene(const util::string& sceneName) noexcept
 {
+	assert(!sceneName.empty());
+
 	auto scene = this->findScene(sceneName);
 	if (scene)
 		this->closeScene(scene);
@@ -160,6 +168,8 @@ GameServer::closeScene(const util::string& sceneName) noexcept
 GameScenePtr
 GameServer::findScene(const util::string& sceneName) noexcept
 {
+	assert(!sceneName.empty());
+
 	for (auto& it : _scenes)
 	{
 		if (it->getName() == sceneName)
@@ -178,6 +188,7 @@ GameServer::getScenes() const noexcept
 bool
 GameServer::addScene(GameScenePtr& scene) noexcept
 {
+	assert(scene);
 	assert(std::find(_scenes.begin(), _scenes.end(), scene) == _scenes.end());
 
 	try
@@ -217,6 +228,8 @@ GameServer::addScene(GameScenePtr& scene) noexcept
 void
 GameServer::closeScene(GameScenePtr& scene) noexcept
 {
+	assert(scene);
+
 	auto it = std::find(_scenes.begin(), _scenes.end(), scene);
 	if (it != _scenes.end())
 	{
@@ -358,7 +371,7 @@ GameServer::getGameApp() noexcept
 bool
 GameServer::sendMessage(const MessagePtr& message) noexcept
 {
-	if (_isQuitRequest)
+	if (this->isQuitRequest())
 		return false;
 
 	try
@@ -392,6 +405,9 @@ GameServer::postMessage(const MessagePtr& event) noexcept
 bool
 GameServer::start() noexcept
 {
+	if (this->isQuitRequest())
+		return false;
+
 	try
 	{
 		if (!_isActive)
@@ -457,6 +473,9 @@ GameServer::start() noexcept
 void
 GameServer::stop() noexcept
 {
+	if (this->isQuitRequest())
+		return;
+
 	if (_isActive)
 	{
 		if (_gameListener)
@@ -510,6 +529,9 @@ GameServer::stop() noexcept
 void
 GameServer::update() noexcept
 {
+	if (this->isQuitRequest())
+		return;
+
 	try
 	{
 		_timer->update();

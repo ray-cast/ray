@@ -53,11 +53,11 @@ public:
 	bool open() noexcept;
 	void close() noexcept;
 
-	void setTimer(TimerPtr timer) noexcept;
-	TimerPtr getTimer() const noexcept;
+	void setTimer(const TimerPtr& timer) noexcept;
+	const TimerPtr& getTimer() const noexcept;
 
-	void setGameListener(GameListenerPtr listener) noexcept;
-	GameListenerPtr getGameListener() const noexcept;
+	void setGameListener(const GameListenerPtr& listener) noexcept;
+	const GameListenerPtr& getGameListener() const noexcept;
 
 	bool isActive() const noexcept;
 	bool isQuitRequest() const noexcept;

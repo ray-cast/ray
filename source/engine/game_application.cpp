@@ -222,24 +222,15 @@ GameApplication::close() noexcept
 }
 
 void
-GameApplication::setGameListener(GameListenerPtr listener) noexcept
+GameApplication::setGameListener(const GameListenerPtr& listener) noexcept
 {
-	if (_gameListener != listener)
-	{
-		if (_gameListener)
-			_gameListener->onListenerChangeBefore();
-
-		_gameListener = listener;
-
-		if (_gameListener)
-			_gameListener->onListenerChangeAfter();
-	}
+	_gameServer->setGameListener(listener);
 }
 
-GameListenerPtr
+const GameListenerPtr&
 GameApplication::getGameListener() const noexcept
 {
-	return _gameListener;
+	return _gameServer->getGameListener();
 }
 
 bool

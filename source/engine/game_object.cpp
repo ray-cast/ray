@@ -66,18 +66,18 @@ GameObject::~GameObject() noexcept
 }
 
 void
-GameObject::setName(const std::string& name) noexcept
+GameObject::setName(const util::string& name) noexcept
 {
 	_name = name;
 }
 
 void
-GameObject::setName(std::string&& name) noexcept
+GameObject::setName(util::string&& name) noexcept
 {
 	_name = std::move(name);
 }
 
-const std::string&
+const util::string&
 GameObject::getName() const noexcept
 {
 	return _name;
@@ -261,7 +261,7 @@ GameObject::cleanupChildren() noexcept
 }
 
 GameObjectPtr
-GameObject::findChild(const std::string& name, bool recuse) noexcept
+GameObject::findChild(const util::string& name, bool recuse) noexcept
 {
 	for (auto& it : _children)
 	{
@@ -1000,7 +1000,7 @@ GameObject::sendMessageDownwards(const MessagePtr& message, GameComponent* ignor
 void
 GameObject::load(iarchive& reader) noexcept
 {
-	std::string name;
+	util::string name;
 	bool active;
 	int layer;
 	float3 position;

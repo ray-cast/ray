@@ -64,7 +64,7 @@ GameScene::GameScene() noexcept
 	GameSceneManager::instance()->_instanceScene(this, _instanceID);
 }
 
-GameScene::GameScene(const std::string& name) noexcept
+GameScene::GameScene(const util::string& name) noexcept
 	: _name(name)
 {
 	GameSceneManager::instance()->_instanceScene(this, _instanceID);
@@ -112,12 +112,12 @@ GameScene::getGameListener() const noexcept
 }
 
 void
-GameScene::setName(const std::string& name) noexcept
+GameScene::setName(const util::string& name) noexcept
 {
 	_name = name;
 }
 
-const std::string&
+const util::string&
 GameScene::getName() const noexcept
 {
 	return _name;
@@ -163,7 +163,7 @@ GameScene::onListenerChangeAfter() noexcept
 GameObjectPtr
 GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 {
-	std::string name = reader.getCurrentNodeName();
+	util::string name = reader.getCurrentNodeName();
 	if (name == "object")
 	{
 		auto actor = std::make_shared<GameObject>();
@@ -180,7 +180,7 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 				auto key = reader.getCurrentNodeName();
 				if (key == "component")
 				{
-					auto className = reader.getValue<std::string>("class");
+					auto className = reader.getValue<util::string>("class");
 					if (className.empty())
 					{
 						if (_gameListener)
@@ -218,7 +218,7 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 }
 
 bool
-GameScene::load(const std::string& filename) noexcept
+GameScene::load(const util::string& filename) noexcept
 {
 	assert(!filename.empty());
 
@@ -261,7 +261,7 @@ GameScene::load(iarchive& reader) except
 	{
 		reader.setToFirstChild();
 
-		std::string nodeName;
+		util::string nodeName;
 		nodeName = reader.getCurrentNodeName();
 		if (nodeName == "scene")
 		{
@@ -272,7 +272,7 @@ GameScene::load(iarchive& reader) except
 				nodeName = reader.getCurrentNodeName();
 				if (nodeName == "attribute")
 				{
-					std::string name = "unknown";
+					util::string name = "unknown";
 					reader.addAttrs();
 					reader.addAttrsInChildren("attribute");
 					reader >> make_archive(name, "name");

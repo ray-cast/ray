@@ -62,13 +62,13 @@ public:
 	bool isActive() const noexcept;
 	bool isQuitRequest() const noexcept;
 
-	bool openScene(const std::string& sceneName) noexcept;
-	void closeScene(const std::string& sceneName) noexcept;
+	bool openScene(const util::string& sceneName) noexcept;
+	void closeScene(const util::string& sceneName) noexcept;
 
 	bool addScene(GameScenePtr& scene) noexcept;
 	void closeScene(GameScenePtr& scene) noexcept;
 
-	GameScenePtr findScene(const std::string& sceneName) noexcept;
+	GameScenePtr findScene(const util::string& sceneName) noexcept;
 	const GameScenes& getScenes() const noexcept;
 
 	bool addFeature(GameFeaturePtr& features) noexcept;

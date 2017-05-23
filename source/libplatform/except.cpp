@@ -90,6 +90,14 @@ failure::failure(const util::string& msg, const util::string& stack, const error
 {
 }
 
+failure::failure(failure&& move) noexcept
+	: _message(std::move(move._message))
+	, _stack(std::move(move._stack))
+	, _code(std::move(move._code))
+	, _info(std::move(move._info))
+{
+}
+
 failure::~failure() noexcept
 {
 }

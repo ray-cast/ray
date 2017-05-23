@@ -48,9 +48,9 @@ public:
 	GameObject() noexcept;
 	virtual ~GameObject() noexcept;
 
-	void setName(const std::string& name) noexcept;
-	void setName(std::string&& name) noexcept;
-	const std::string& getName() const noexcept;
+	void setName(const util::string& name) noexcept;
+	void setName(util::string&& name) noexcept;
+	const util::string& getName() const noexcept;
 
 	void setActive(bool active) except;
 	void setActiveUpwards(bool active) except;
@@ -71,7 +71,7 @@ public:
 	void removeChild(GameObjectPtr& child) noexcept;
 	void removeChild(GameObjectPtr&& child) noexcept;
 	void cleanupChildren() noexcept;
-	GameObjectPtr findChild(const std::string& name, bool recurse = true) noexcept;
+	GameObjectPtr findChild(const util::string& name, bool recurse = true) noexcept;
 
 	std::size_t getChildCount() const noexcept;
 	GameObjects& getChildren() noexcept;
@@ -192,7 +192,7 @@ private:
 	std::uint8_t _layer;
 	std::size_t _instanceID;
 
-	std::string _name;
+	util::string _name;
 
 	mutable float3 _localTranslate;
 	mutable float3 _localScaling;

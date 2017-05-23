@@ -59,7 +59,7 @@ GameListener::onListenerChangeAfter() noexcept
 }
 
 void
-GameListener::onMessage(const std::string&) noexcept
+GameListener::onMessage(const util::string&) noexcept
 {
 }
 

@@ -51,12 +51,12 @@ public:
 	bool open() noexcept;
 	void close() noexcept;
 
-	GameScenePtr findScene(const std::string& name) noexcept;
-	GameScenePtr findActiveScene(const std::string& name) noexcept;
+	GameScenePtr findScene(const util::string& name) noexcept;
+	GameScenePtr findActiveScene(const util::string& name) noexcept;
 
-	GameScenePtr instantiate(const std::string& name) except;
+	GameScenePtr instantiate(const util::string& name) except;
 
-	bool activeScene(const std::string& name) noexcept;
+	bool activeScene(const util::string& name) noexcept;
 
 	void onFrameBegin() noexcept;
 	void onFrame() noexcept;

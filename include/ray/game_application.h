@@ -59,17 +59,18 @@ public:
 	bool isQuitRequest() const noexcept;
 
 	bool openScene(GameScenePtr& scene) noexcept;
-	bool openScene(const std::string& name) noexcept;
+	bool openScene(const util::string& name) noexcept;
 	void closeScene(GameScenePtr& name) noexcept;
-	void closeScene(const std::string& name) noexcept;
-	GameScenePtr findScene(const std::string& name) noexcept;
+	void closeScene(const util::string& name) noexcept;
+	GameScenePtr findScene(const util::string& name) noexcept;
 
 	bool addFeatures(GameFeaturePtr& feature) noexcept;
 	void removeFeatures(GameFeaturePtr& feature) noexcept;
 
 	void setFileService(bool enable) noexcept;
-	void setFileServicePath(const std::string& path) noexcept;
-	void setResDownloadURL(const std::string& path) noexcept;
+	void setFileServicePath(const util::string& path) noexcept;
+	void setFileServiceListener(bool enable) noexcept;
+	void setResDownloadURL(const util::string& path) noexcept;
 
 	bool sendMessage(const MessagePtr& message) noexcept;
 	bool postMessage(const MessagePtr& message) noexcept;
@@ -87,16 +88,17 @@ private:
 
 	bool _isInitialize;
 
-	std::string _workDir;
-	std::string _engineDir;
-	std::string _resourceBaseDir;
-	std::string _downloadURL;
+	util::string _workDir;
+	util::string _engineDir;
+	util::string _resourceBaseDir;
+	util::string _downloadURL;
 
 	GameServer* _gameServer;
 	GameListenerPtr _gameListener;
 
 	IoServer* _ioServer;
 	IoInterface* _ioInterface;
+	IoListenerPtr _ioListener;
 
 	delegate<void()> _onWindowSizeChange;
 

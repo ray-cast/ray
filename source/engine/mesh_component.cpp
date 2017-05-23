@@ -170,7 +170,7 @@ MeshComponent::load(iarchive& reader) noexcept
 	ResLoader<Model> model;
 
 	model.load(this->getName(),
-		[&](ray::ModelPtr model, const std::string& filename)
+		[&](ray::ModelPtr model, const util::string& filename)
 	{
 		StreamReaderPtr stream;
 		if (IoServer::instance()->openFile(stream, filename))

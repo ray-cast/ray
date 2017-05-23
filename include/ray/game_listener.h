@@ -48,7 +48,7 @@ public:
 	GameListener() noexcept;
 	virtual ~GameListener() noexcept;
 
-	virtual void onMessage(const std::string& message) noexcept;
+	virtual void onMessage(const util::string& message) noexcept;
 
 protected:
 	friend class GameApplication;

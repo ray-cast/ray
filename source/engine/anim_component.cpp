@@ -63,7 +63,7 @@ AnimationComponent::~AnimationComponent() noexcept
 }
 
 bool
-AnimationComponent::play(const std::string& filename) noexcept
+AnimationComponent::play(const util::string& filename) noexcept
 {
 	if (this->getName() != filename)
 	{
@@ -205,7 +205,7 @@ AnimationComponent::onMeshWillRender(const Camera&) noexcept
 }
 
 bool
-AnimationComponent::_playAnimation(const std::string& filename) noexcept
+AnimationComponent::_playAnimation(const util::string& filename) noexcept
 {
 	this->_destroyAnimation();
 
@@ -214,7 +214,7 @@ AnimationComponent::_playAnimation(const std::string& filename) noexcept
 
 	ResLoader<Model> loader;
 	loader.load(filename,
-		[&](ray::ModelPtr model, const std::string& name)
+		[&](ray::ModelPtr model, const util::string& name)
 	{
 		StreamReaderPtr stream;
 		if (IoServer::instance()->openFile(stream, name))
@@ -228,7 +228,7 @@ AnimationComponent::_playAnimation(const std::string& filename) noexcept
 		return false;
 
 	std::intptr_t i = 0;
-	std::map<std::string, std::intptr_t> boneMap;
+	std::map<util::string, std::intptr_t> boneMap;
 	for (auto& it : _transforms)
 	{
 		boneMap[it->getName()] = i++;

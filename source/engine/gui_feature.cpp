@@ -307,7 +307,7 @@ public:
 	{
 	}
 
-	bool loadImage(int& _width, int& _height, PixelFormat& _format, const std::string& _filename, MemoryStream& stream)
+	bool loadImage(int& _width, int& _height, PixelFormat& _format, const util::string& _filename, MemoryStream& stream)
 	{
 		image::Image image;
 		if (image.load(_filename))
@@ -336,7 +336,7 @@ public:
 		return false;
 	}
 
-	void saveImage(int _width, int _height, PixelFormat _format, void* _texture, const std::string& _filename)
+	void saveImage(int _width, int _height, PixelFormat _format, void* _texture, const util::string& _filename)
 	{
 	}
 

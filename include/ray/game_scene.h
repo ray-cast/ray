@@ -46,7 +46,7 @@ class EXPORT GameScene final : public rtti::Interface
 	__DeclareSubClass(GameScene, rtti::Interface)
 public:
 	GameScene() noexcept;
-	GameScene(const std::string& name) noexcept;
+	GameScene(const util::string& name) noexcept;
 	~GameScene() noexcept;
 
 	void setActive(bool active) except;
@@ -55,8 +55,8 @@ public:
 	void setGameListener(GameListenerPtr listener) noexcept;
 	GameListenerPtr getGameListener() const noexcept;
 
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
+	void setName(const util::string& name) noexcept;
+	const util::string& getName() const noexcept;
 
 	std::size_t getInstanceID() const noexcept;
 
@@ -67,8 +67,8 @@ public:
 	void load(iarchive& reader) except;
 	void save(oarchive& reader) except;
 
-	bool load(const std::string& sceneName) noexcept;
-	bool save(const std::string& sceneName) noexcept;
+	bool load(const util::string& sceneName) noexcept;
+	bool save(const util::string& sceneName) noexcept;
 
 	GameScenePtr clone() const noexcept;
 
@@ -89,7 +89,7 @@ private:
 		GameScene* _scene;
 	};
 
-	std::string _name;
+	util::string _name;
 	std::size_t _instanceID;
 
 	GameObjectPtr  _root;

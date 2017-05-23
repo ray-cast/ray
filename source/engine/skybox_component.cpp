@@ -273,10 +273,10 @@ SkyboxComponent::load(iarchive& reader) noexcept
 	reader.getValue("skyIntensity", _skyLightingIntensity);
 	reader.getValue("skysize", _skyboxSize);
 
-	std::string flagsString;
+	util::string flagsString;
 	if (reader.getValue("flags", flagsString))
 	{
-		std::vector<std::string> args;
+		std::vector<util::string> args;
 		util::split(args, flagsString, "|");
 
 		for (auto& flag : args)
@@ -307,7 +307,7 @@ SkyboxComponent::clone() const noexcept
 }
 
 bool
-SkyboxComponent::_loadSkybox(const std::string& texture) noexcept
+SkyboxComponent::_loadSkybox(const util::string& texture) noexcept
 {
 	if (texture.empty())
 		return false;
@@ -324,7 +324,7 @@ SkyboxComponent::_loadSkybox(const std::string& texture) noexcept
 }
 
 bool
-SkyboxComponent::_loadSkyDiffuse(const std::string& texture) noexcept
+SkyboxComponent::_loadSkyDiffuse(const util::string& texture) noexcept
 {
 	auto skyDiffTexture = ResManager::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
@@ -339,7 +339,7 @@ SkyboxComponent::_loadSkyDiffuse(const std::string& texture) noexcept
 }
 
 bool
-SkyboxComponent::_loadSkySpecular(const std::string& texture) noexcept
+SkyboxComponent::_loadSkySpecular(const util::string& texture) noexcept
 {
 	auto skySpecTexture = ResManager::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
@@ -494,21 +494,21 @@ SkyboxComponent::_destroyMaterial() noexcept
 }
 
 void
-SkyboxComponent::_reloadSkybox(const std::string& texture) noexcept
+SkyboxComponent::_reloadSkybox(const util::string& texture) noexcept
 {
 	if (!_loadSkybox(texture))
 		_updateMaterial();
 }
 
 void
-SkyboxComponent::_reloadSkyDiffuse(const std::string& texture) noexcept
+SkyboxComponent::_reloadSkyDiffuse(const util::string& texture) noexcept
 {
 	if (!_loadSkyDiffuse(texture))
 		_updateMaterial();
 }
 
 void
-SkyboxComponent::_reloadSkySpecular(const std::string& texture) noexcept
+SkyboxComponent::_reloadSkySpecular(const util::string& texture) noexcept
 {
 	if (!_loadSkySpecular(texture))
 		_updateMaterial();

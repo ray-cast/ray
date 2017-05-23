@@ -49,6 +49,10 @@ public:
 
 	virtual const char* what() const noexcept = 0;
 	virtual const error_code& code() const noexcept = 0;
+
+private:
+	exception(const exception&) noexcept = delete;
+	exception& operator=(const exception&) noexcept = delete;
 };
 
 class EXPORT failure : public exception
@@ -60,6 +64,7 @@ public:
 	failure(const char* msg, const char* stack, const error_code& code = make_error_code(error_code::none)) noexcept;
 	failure(const util::string& msg, const error_code& code = make_error_code(error_code::none)) noexcept;
 	failure(const util::string& msg, const util::string& stack, const error_code& code = make_error_code(error_code::none)) noexcept;
+	failure(failure&& move) noexcept;
 	virtual ~failure() noexcept;
 
 	const char* message() const noexcept;
@@ -70,6 +75,10 @@ public:
 
 private:
 	void printStack() noexcept;
+
+private:
+	failure(const failure&) noexcept = delete;
+	failure& operator=(const failure&) noexcept = delete;
 
 private:
 	util::string _info;

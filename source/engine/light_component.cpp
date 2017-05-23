@@ -183,8 +183,8 @@ LightComponent::getLightType() const noexcept
 void
 LightComponent::load(iarchive& reader) noexcept
 {
-	std::string lightType;
-	std::string shadowMode;
+	util::string lightType;
+	util::string shadowMode;
 	float2 spot(5.0f, 40.0f);
 	float3 lightColor(1, 1, 1);
 	float3 lightAtten;

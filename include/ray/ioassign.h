@@ -45,15 +45,20 @@ class EXPORT IoAssign final
 {
 public:
 	IoAssign() noexcept;
-	IoAssign(const std::string& name, const std::string& path) noexcept;
+	IoAssign(util::string&& name, util::string&& path) noexcept;
+	IoAssign(const util::string& name, const util::string& path) noexcept;
+	IoAssign(const util::string::pointer name, const util::string::pointer path) noexcept;
+	IoAssign(std::pair<util::string, util::string>&& argv) noexcept;
+	IoAssign(std::initializer_list<util::string>& argv) noexcept;
+	IoAssign(std::initializer_list<util::string>&& argv) noexcept;
 	~IoAssign() noexcept;
 
-	const std::string& getName() const noexcept;
-	const std::string& getPath() const noexcept;
+	const util::string& name() const noexcept;
+	const util::string& path() const noexcept;
 
 private:
-	std::string _name;
-	std::string _path;
+	util::string _name;
+	util::string _path;
 };
 
 _NAME_END

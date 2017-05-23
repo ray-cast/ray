@@ -107,8 +107,8 @@ protected:
 
 	void _destroyMaterials() noexcept;
 
-	bool _buildMaterials(const std::string& filename) noexcept;
-	bool _buildDefaultMaterials(const std::string& filename) noexcept;
+	bool _buildMaterials(const util::string& filename) noexcept;
+	bool _buildDefaultMaterials(const util::string& filename) noexcept;
 
 	bool _buildRenderObjects(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
 	bool _buildRenderObject(const MeshProperty& mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept;
@@ -135,7 +135,7 @@ protected:
 
 	std::function<void()> _onMeshChange;
 
-	std::string _material;
+	util::string _material;
 };
 
 _NAME_END

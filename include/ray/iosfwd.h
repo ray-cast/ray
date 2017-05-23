@@ -49,6 +49,9 @@ typedef std::shared_ptr<class Stream> StreamPtr;
 typedef std::shared_ptr<class StreamReader> StreamReaderPtr;
 typedef std::shared_ptr<class StreamWrite> StreamWritePtr;
 
+typedef std::shared_ptr<class Package> PackagePtr;
+typedef std::shared_ptr<class IoListener> IoListenerPtr;
+
 _NAME_END
 
 #endif

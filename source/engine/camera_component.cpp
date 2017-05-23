@@ -239,7 +239,7 @@ CameraComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	std::string type;
+	util::string type;
 	float aperture;
 	float znear;
 	float zfar;
@@ -247,11 +247,11 @@ CameraComponent::load(iarchive& reader) noexcept
 	float4 viewport;
 	float4 ortho;
 	float4 clearColor;
-	std::string order;
-	std::string flagsString;
-	std::string skymap;
-	std::string skydiffuse;
-	std::string skyspecular;
+	util::string order;
+	util::string flagsString;
+	util::string skymap;
+	util::string skydiffuse;
+	util::string skyspecular;
 
 	if (reader.getValue("aperture", aperture))
 		this->setAperture(aperture);
@@ -294,7 +294,7 @@ CameraComponent::load(iarchive& reader) noexcept
 	{
 		GraphicsClearFlags flags = 0;
 
-		std::vector<std::string> args;
+		std::vector<util::string> args;
 		util::split(args, flagsString, "|");
 
 		for (auto& flag : args)
@@ -316,7 +316,7 @@ CameraComponent::load(iarchive& reader) noexcept
 	{
 		CameraRenderFlags flags = 0;
 
-		std::vector<std::string> args;
+		std::vector<util::string> args;
 		util::split(args, flagsString, "|");
 
 		for (auto& flag : args)

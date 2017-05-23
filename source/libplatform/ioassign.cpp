@@ -42,24 +42,56 @@ IoAssign::IoAssign() noexcept
 {
 }
 
-IoAssign::IoAssign(const std::string& name, const std::string& path) noexcept
+IoAssign::IoAssign(util::string&& name, util::string&& path) noexcept
+	: _name(std::move(name))
+	, _path(std::move(path))
+{
+}
+
+IoAssign::IoAssign(const util::string& name, const util::string& path) noexcept
 	: _name(name)
 	, _path(path)
 {
+}
+
+IoAssign::IoAssign(const util::string::pointer name, const util::string::pointer path) noexcept
+	: _name(name)
+	, _path(path)
+{
+}
+
+IoAssign::IoAssign(std::pair<util::string, util::string>&& argv) noexcept
+	: _name(std::move(argv.first))
+	, _path(std::move(argv.second))
+{
+}
+
+IoAssign::IoAssign(std::initializer_list<util::string>& argv) noexcept
+	: _name(*argv.begin())
+	, _path(*(argv.begin() + 1))
+{
+	assert(argv.size() == 2);
+}
+
+IoAssign::IoAssign(std::initializer_list<util::string>&& argv) noexcept
+	: _name(std::move(*argv.begin()))
+	, _path(std::move(*(argv.begin() + 1)))
+{
+	assert(argv.size() == 2);
 }
 
 IoAssign::~IoAssign() noexcept
 {
 }
 
-const std::string&
-IoAssign::getName() const noexcept
+const util::string&
+IoAssign::name() const noexcept
 {
 	return _name;
 }
 
-const std::string&
-IoAssign::getPath() const noexcept
+const util::string&
+IoAssign::path() const noexcept
 {
 	return _path;
 }

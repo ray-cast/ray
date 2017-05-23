@@ -72,7 +72,7 @@ ResManager::~ResManager() noexcept
 }
 
 MaterialPtr
-ResManager::createMaterial(const std::string& name) noexcept
+ResManager::createMaterial(const util::string& name) noexcept
 {
 	auto material = RenderSystem::instance()->createMaterial(name);
 	if (!material)
@@ -81,7 +81,7 @@ ResManager::createMaterial(const std::string& name) noexcept
 }
 
 GraphicsTexturePtr
-ResManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
+ResManager::createTexture(const util::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
 {
 	if (name.empty())
 		return nullptr;
@@ -196,21 +196,21 @@ ResManager::destroyTexture(GraphicsTexturePtr texture) noexcept
 }
 
 void
-ResManager::destroyTexture(const std::string& name) noexcept
+ResManager::destroyTexture(const util::string& name) noexcept
 {
 	assert(name.empty());
 	_textures[name] = nullptr;
 }
 
 GraphicsTexturePtr
-ResManager::getTexture(const std::string& name) noexcept
+ResManager::getTexture(const util::string& name) noexcept
 {
 	assert(!name.empty());
 	return _textures[name];
 }
 
 GameObjectPtr
-ResManager::createGameObject(const std::string& name, const std::string& anim) noexcept
+ResManager::createGameObject(const util::string& name, const util::string& anim) noexcept
 {
 	ResLoader<Model> resource;
 	if (!this->loadModel(name, resource))
@@ -255,10 +255,10 @@ ResManager::createGameObject(const std::string& name, const std::string& anim) n
 }
 
 bool
-ResManager::loadModel(const std::string& filename, ResLoader<Model>& model) noexcept
+ResManager::loadModel(const util::string& filename, ResLoader<Model>& model) noexcept
 {
 	model.load(filename,
-		[&](ray::ModelPtr model, const std::string& filename)
+		[&](ray::ModelPtr model, const util::string& filename)
 	{
 		model->setDirectory(util::directory(filename));
 
@@ -531,7 +531,7 @@ ResManager::createBones(const Model& model, GameObjects& bones) noexcept
 }
 
 void
-ResManager::createAnimation(const Model& model, GameObjectPtr& gameObject, GameObjects& bones, const std::string& file) noexcept
+ResManager::createAnimation(const Model& model, GameObjectPtr& gameObject, GameObjects& bones, const util::string& file) noexcept
 {
 	if (!file.empty())
 	{
@@ -551,7 +551,7 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 	for (auto& materialProp : model.getMaterialsList())
 	{
 		float opacity = 1.0;
-		std::string defaultMaterial;
+		util::string defaultMaterial;
 
 		materialProp->get(MATKEY_OPACITY, opacity);
 		materialProp->get(MATKEY_EFFECT, defaultMaterial);
@@ -719,7 +719,7 @@ ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, Game
 }
 
 MaterialPtr
-ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::string& file, const std::string& directory) noexcept
+ResManager::_buildDefaultMaterials(const MaterialProperty& material, const util::string& file, const util::string& directory) noexcept
 {
 	float3 metalness(0.5f);
 	float3 diffuseColor(1.0f);
@@ -727,8 +727,8 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const std::
 	float4 quality(0.0f);
 	float smoothness = 0.0;
 	float opacity = 1.0;
-	std::string diffuseTexture;
-	std::string normalTexture;
+	util::string diffuseTexture;
+	util::string normalTexture;
 
 	material.get(MATKEY_OPACITY, opacity);
 	material.get(MATKEY_SHININESS, smoothness);

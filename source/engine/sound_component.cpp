@@ -61,7 +61,7 @@ SoundComponent::~SoundComponent() noexcept
 }
 
 void
-SoundComponent::setSoundBuffer(const std::string& name) noexcept
+SoundComponent::setSoundBuffer(const util::string& name) noexcept
 {
 	if (_sourceName != name)
 	{
@@ -78,7 +78,7 @@ SoundComponent::setSoundBuffer(const std::string& name) noexcept
 	}
 }
 
-const std::string&
+const util::string&
 SoundComponent::getSoundBuffer() const noexcept
 {
 	return _sourceName;

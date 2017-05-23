@@ -48,12 +48,12 @@ public:
 	GameObjectManager() noexcept;
 	~GameObjectManager() noexcept;
 
-	GameObjectPtr findObject(const std::string& name) noexcept;
-	GameObjectPtr findActiveObject(const std::string& name) noexcept;
+	GameObjectPtr findObject(const util::string& name) noexcept;
+	GameObjectPtr findActiveObject(const util::string& name) noexcept;
 
-	GameObjectPtr instantiate(const std::string& name) noexcept;
+	GameObjectPtr instantiate(const util::string& name) noexcept;
 
-	bool activeObject(const std::string& name) noexcept;
+	bool activeObject(const util::string& name) noexcept;
 
 	void onFrameBegin() noexcept;
 	void onFrame() noexcept;

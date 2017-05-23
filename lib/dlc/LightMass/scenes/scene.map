@@ -18,6 +18,19 @@
 		<component class="SphereMaker"/>
 	</object>
 	<object>
+		<attribute name="sun"/>
+		<attribute position="0, 50, 0"/>
+		<attribute rotate="90, 0, 0"/>
+		<attribute active="false"/>
+		<component class="Light">
+			<attribute type="sun"/>
+			<attribute color="1.0,1.0,1.0"/>
+			<attribute range="60.0"/>
+			<attribute intensity="1.0"/>
+			<attribute shadow="soft"/>
+		</component>
+	</object>
+	<object>
 		<attribute name="sky"/>
 		<attribute position="0, 50, 0"/>
 		<attribute rotate="90, 0, 0"/>

@@ -60,8 +60,13 @@ RenderPipelineDevice::~RenderPipelineDevice() noexcept
 bool
 RenderPipelineDevice::open(GraphicsDeviceType type) noexcept
 {
+#if __DEBUG__
 	if (!GraphicsSystem::instance()->open(true))
 		return false;
+#else
+	if (!GraphicsSystem::instance()->open())
+		return false;
+#endif
 
 	GraphicsDeviceDesc deviceDesc;
 	deviceDesc.setDeviceType(type);

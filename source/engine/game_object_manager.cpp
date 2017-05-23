@@ -100,7 +100,7 @@ GameObjectManager::_activeObject(GameObject* entity, bool active) noexcept
 }
 
 GameObjectPtr
-GameObjectManager::findObject(const std::string& name) noexcept
+GameObjectManager::findObject(const util::string& name) noexcept
 {
 	for (auto& it : _instanceLists)
 	{
@@ -115,7 +115,7 @@ GameObjectManager::findObject(const std::string& name) noexcept
 }
 
 GameObjectPtr
-GameObjectManager::findActiveObject(const std::string& name) noexcept
+GameObjectManager::findActiveObject(const util::string& name) noexcept
 {
 	for (auto& it : _activeActors)
 	{
@@ -130,7 +130,7 @@ GameObjectManager::findActiveObject(const std::string& name) noexcept
 }
 
 GameObjectPtr
-GameObjectManager::instantiate(const std::string& name) noexcept
+GameObjectManager::instantiate(const util::string& name) noexcept
 {
 	auto object = this->findObject(name);
 	if (object)
@@ -139,7 +139,7 @@ GameObjectManager::instantiate(const std::string& name) noexcept
 }
 
 bool
-GameObjectManager::activeObject(const std::string& name) noexcept
+GameObjectManager::activeObject(const util::string& name) noexcept
 {
 	for (auto& it : _instanceLists)
 	{

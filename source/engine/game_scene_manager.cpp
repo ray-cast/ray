@@ -107,7 +107,7 @@ GameSceneManager::_activeScene(GameScene* entity, bool active) noexcept
 }
 
 GameScenePtr
-GameSceneManager::findScene(const std::string& name) noexcept
+GameSceneManager::findScene(const util::string& name) noexcept
 {
 	for (auto& it : _instanceLists)
 	{
@@ -122,7 +122,7 @@ GameSceneManager::findScene(const std::string& name) noexcept
 }
 
 GameScenePtr
-GameSceneManager::findActiveScene(const std::string& name) noexcept
+GameSceneManager::findActiveScene(const util::string& name) noexcept
 {
 	for (auto& it : _activeActors)
 	{
@@ -137,7 +137,7 @@ GameSceneManager::findActiveScene(const std::string& name) noexcept
 }
 
 GameScenePtr
-GameSceneManager::instantiate(const std::string& name) except
+GameSceneManager::instantiate(const util::string& name) except
 {
 	auto scene = this->findScene(name);
 	if (scene)
@@ -146,7 +146,7 @@ GameSceneManager::instantiate(const std::string& name) except
 }
 
 bool
-GameSceneManager::activeScene(const std::string& name) noexcept
+GameSceneManager::activeScene(const util::string& name) noexcept
 {
 	for (auto& it : _instanceLists)
 	{

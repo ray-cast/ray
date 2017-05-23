@@ -38,8 +38,8 @@
 #define _H_RES_MANAGER_H_
 
 #include <ray/res_loader.h>
-#include <ray/game_types.h>
 #include <ray/render_types.h>
+#include <ray/game_types.h>
 #include <ray/modhelp.h>
 
 _NAME_BEGIN
@@ -72,44 +72,44 @@ public:
 	ResManager() noexcept;
 	~ResManager() noexcept;
 
-	MaterialPtr createMaterial(const std::string& name) noexcept;
-	GameObjectPtr createGameObject(const std::string& name, const std::string& anim = "") noexcept;
+	MaterialPtr createMaterial(const util::string& name) noexcept;
+	GameObjectPtr createGameObject(const util::string& name, const util::string& anim = "") noexcept;
 
 	template<typename T>
-	std::shared_ptr<T> find(const std::string& name) noexcept
+	std::shared_ptr<T> find(const util::string& name) noexcept
 	{
 		return ResLoader<T>::find(name);
 	}
 
-	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
-	GraphicsTexturePtr getTexture(const std::string& name) noexcept;
+	GraphicsTexturePtr createTexture(const util::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
+	GraphicsTexturePtr getTexture(const util::string& name) noexcept;
 
 	void destroyTexture(GraphicsTexturePtr texture) noexcept;
-	void destroyTexture(const std::string& name) noexcept;
+	void destroyTexture(const util::string& name) noexcept;
 
 	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
 	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
 
 private:
-	bool loadModel(const std::string& filename, ResLoader<Model>& model) noexcept;
+	bool loadModel(const util::string& filename, ResLoader<Model>& model) noexcept;
 
 	void createMeshes(const Model& model, GameObjectPtr& meshes) noexcept;
 	void createBones(const Model& model, GameObjects& bones) noexcept;
-	void createAnimation(const Model& model, GameObjectPtr& gameObject, GameObjects& bones, const std::string& file) noexcept;
+	void createAnimation(const Model& model, GameObjectPtr& gameObject, GameObjects& bones, const util::string& file) noexcept;
 	void createMaterials(const Model& model, Materials& materials) noexcept;
 	void createRigidbodys(const Model& model, GameObjects& rigidbodys) noexcept;
 	void createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, GameObjects& bones);
 	void createJoints(const Model& model, const GameObjects& rigidbodys, GameObjects& joints) noexcept;
 
 private:
-	MaterialPtr _buildDefaultMaterials(const MaterialProperty& material, const std::string& file, const std::string& directory) noexcept;
+	MaterialPtr _buildDefaultMaterials(const MaterialProperty& material, const util::string& file, const util::string& directory) noexcept;
 
 private:
 	ResManager(const ResManager&) = delete;
 	ResManager& operator=(const ResManager&) = delete;
 
 private:
-	std::map<std::string, GraphicsTexturePtr> _textures;
+	std::map<util::string, GraphicsTexturePtr> _textures;
 };
 
 _NAME_END

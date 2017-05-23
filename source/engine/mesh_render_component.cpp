@@ -409,7 +409,7 @@ MeshRenderComponent::_destroyMaterials() noexcept
 }
 
 bool
-MeshRenderComponent::_buildMaterials(const std::string& filename) noexcept
+MeshRenderComponent::_buildMaterials(const util::string& filename) noexcept
 {
 	assert(!filename.empty());
 
@@ -424,7 +424,7 @@ MeshRenderComponent::_buildMaterials(const std::string& filename) noexcept
 }
 
 bool
-MeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcept
+MeshRenderComponent::_buildDefaultMaterials(const util::string& filename) noexcept
 {
 	assert(!filename.empty());
 
@@ -447,7 +447,7 @@ MeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcep
 		float4 quality(0.0f);
 		float shininess = 0.0;
 		float opacity = 1.0;
-		std::string diffuseTexture;
+		util::string diffuseTexture;
 
 		material->get(MATKEY_OPACITY, opacity);
 		material->get(MATKEY_SHININESS, shininess);

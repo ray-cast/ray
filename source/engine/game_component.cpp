@@ -134,18 +134,18 @@ GameComponent::getActive() const noexcept
 }
 
 void
-GameComponent::setName(const std::string& name) noexcept
+GameComponent::setName(const util::string& name) noexcept
 {
 	_name = name;
 }
 
 void
-GameComponent::setName(std::string&& name) noexcept
+GameComponent::setName(util::string&& name) noexcept
 {
 	_name = std::move(name);
 }
 
-const std::string&
+const util::string&
 GameComponent::getName() const noexcept
 {
 	return _name;
@@ -160,7 +160,7 @@ GameComponent::load(iarchive& reader) noexcept
 	{
 		char buffer[4096];
 		auto size = UTF8toGBK(buffer, 4096, _name.c_str(), _name.size());
-		this->setName(std::string(buffer, size));
+		this->setName(util::string(buffer, size));
 	}
 
 	if (reader.getValue("active", active))

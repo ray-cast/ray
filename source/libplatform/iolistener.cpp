@@ -34,70 +34,21 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_ANIM_COMPONENT_H_
-#define _H_ANIM_COMPONENT_H_
-
-#include <ray/game_component.h>
-#include <ray/anim.h>
+#include <ray/iolistener.h>
 
 _NAME_BEGIN
 
-class EXPORT AnimationComponent final : public GameComponent
+IoListener::IoListener() noexcept
 {
-	__DeclareSubClass(AnimationComponent, GameComponent)
-public:
-	AnimationComponent() noexcept;
-	~AnimationComponent() noexcept;
+}
 
-	bool play(const util::string& filename) noexcept;
-	void pause() noexcept;
-	void stop() noexcept;
+IoListener::~IoListener() noexcept
+{
+}
 
-	void enableAnimOnVisiable(bool visiableOnly) noexcept;
-	bool enableAnimOnVisiable() const noexcept;
-
-	void enablePhysics(bool physics) noexcept;
-	bool enablePhysics() const noexcept;
-
-	void setTransforms(const GameObjects& transforms) noexcept;
-	void setTransforms(GameObjects&& transforms) noexcept;
-	const GameObjects& getTransforms() const noexcept;
-
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
-
-	GameComponentPtr clone() const noexcept;
-
-private:
-	bool _playAnimation(const util::string& filename) noexcept;
-	void _updateAnimation() noexcept;
-	void _destroyAnimation() noexcept;
-
-private:
-	virtual void onActivate() except;
-	virtual void onDeactivate() noexcept;
-
-	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
-
-	virtual void onMeshChange() noexcept;
-	virtual void onMeshWillRender(const class Camera&) noexcept;
-
-	virtual void onFrameEnd() noexcept;
-
-private:
-	bool _enableAnimation;
-	bool _enableAnimOnVisableOnly;
-	bool _enablePhysics;
-	bool _needUpdate;
-
-	GameObjects _transforms;
-	AnimationPropertyPtr _animtion;
-
-	std::function<void()> _onMeshChange;
-	std::function<void(const Camera&)> _onMeshWillRender;
-};
+void
+IoListener::onMessage(const util::string& message) noexcept
+{
+}
 
 _NAME_END
-
-#endif

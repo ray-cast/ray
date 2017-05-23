@@ -94,6 +94,8 @@ SET(PLATFORM_IO_LIST
     ${HEADER_PATH}/ioserver.h
     ${SOURCE_PATH}/iointerface.cpp
     ${HEADER_PATH}/iointerface.h
+    ${SOURCE_PATH}/iolistener.cpp
+    ${HEADER_PATH}/iolistener.h
     ${SOURCE_PATH}/istream.cpp
     ${HEADER_PATH}/istream.h
     ${SOURCE_PATH}/iarchive.cpp

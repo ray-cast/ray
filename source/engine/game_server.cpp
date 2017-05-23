@@ -127,7 +127,7 @@ GameServer::getTimer() const noexcept
 }
 
 bool
-GameServer::openScene(const std::string& filename) noexcept
+GameServer::openScene(const util::string& filename) noexcept
 {
 	assert(!filename.empty());
 
@@ -150,7 +150,7 @@ GameServer::openScene(const std::string& filename) noexcept
 }
 
 void
-GameServer::closeScene(const std::string& sceneName) noexcept
+GameServer::closeScene(const util::string& sceneName) noexcept
 {
 	auto scene = this->findScene(sceneName);
 	if (scene)
@@ -158,7 +158,7 @@ GameServer::closeScene(const std::string& sceneName) noexcept
 }
 
 GameScenePtr
-GameServer::findScene(const std::string& sceneName) noexcept
+GameServer::findScene(const util::string& sceneName) noexcept
 {
 	for (auto& it : _scenes)
 	{

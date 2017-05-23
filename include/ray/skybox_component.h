@@ -90,9 +90,9 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 private:
-	bool _loadSkybox(const std::string& texture) noexcept;
-	bool _loadSkyDiffuse(const std::string& texture) noexcept;
-	bool _loadSkySpecular(const std::string& texture) noexcept;
+	bool _loadSkybox(const util::string& texture) noexcept;
+	bool _loadSkyDiffuse(const util::string& texture) noexcept;
+	bool _loadSkySpecular(const util::string& texture) noexcept;
 
 	bool _buildQuadMesh(MeshProperty& mesh) noexcept;
 	bool _buildQuadRenderMesh(const MeshProperty& mesh) noexcept;
@@ -110,9 +110,9 @@ private:
 	void _destroySkyLighting() noexcept;
 	void _destroyMaterial() noexcept;
 
-	void _reloadSkybox(const std::string& texture) noexcept;
-	void _reloadSkyDiffuse(const std::string& texture) noexcept;
-	void _reloadSkySpecular(const std::string& texture) noexcept;
+	void _reloadSkybox(const util::string& texture) noexcept;
+	void _reloadSkyDiffuse(const util::string& texture) noexcept;
+	void _reloadSkySpecular(const util::string& texture) noexcept;
 
 	void _updateMaterial() noexcept;
 	void _updateTransform() noexcept;
@@ -135,9 +135,9 @@ private:
 
 	float2 _skyLightingIntensity;
 
-	std::string _skyMap;
-	std::string _skyDiffuse;
-	std::string _skySpecular;
+	util::string _skyMap;
+	util::string _skyDiffuse;
+	util::string _skySpecular;
 
 	MaterialPtr _skyBoxMaterial;
 

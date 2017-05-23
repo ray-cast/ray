@@ -38,6 +38,7 @@
 #include <ray/game_server.h>
 #include <ray/game_listener.h>
 
+#include <ray/iolistener.h>
 #include <ray/rtti_factory.h>
 
 #if defined(_BUILD_INPUT)
@@ -73,7 +74,16 @@ _NAME_BEGIN
 class GameAppListener final : public GameListener
 {
 public:
-	virtual void onMessage(const std::string& message) noexcept
+	virtual void onMessage(const util::string& message) noexcept
+	{
+		std::cout << message << std::endl;
+	}
+};
+
+class GameIoListener final : public IoListener
+{
+public:
+	virtual void onMessage(const util::string& message) noexcept
 	{
 		std::cout << message << std::endl;
 	}
@@ -83,6 +93,7 @@ GameApplication::GameApplication() noexcept
 	: _isInitialize(false)
 	, _gameServer(nullptr)
 	, _gameListener(std::make_shared<GameAppListener>())
+	, _ioListener(std::make_shared<GameIoListener>())
 	, _workDir("")
 	, _engineDir("../../engine/")
 	, _resourceBaseDir("../../dlc/")
@@ -261,7 +272,7 @@ GameApplication::openScene(GameScenePtr& scene) noexcept
 }
 
 bool
-GameApplication::openScene(const std::string& name) noexcept
+GameApplication::openScene(const util::string& name) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->openScene(name);
@@ -275,14 +286,14 @@ GameApplication::closeScene(GameScenePtr& name) noexcept
 }
 
 void
-GameApplication::closeScene(const std::string& name) noexcept
+GameApplication::closeScene(const util::string& name) noexcept
 {
 	assert(_gameServer);
 	_gameServer->closeScene(name);
 }
 
 GameScenePtr
-GameApplication::findScene(const std::string& name) noexcept
+GameApplication::findScene(const util::string& name) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->findScene(name);
@@ -314,7 +325,7 @@ GameApplication::setFileService(bool enable) noexcept
 }
 
 void
-GameApplication::setFileServicePath(const std::string& path) noexcept
+GameApplication::setFileServicePath(const util::string& path) noexcept
 {
 	assert(_ioServer);
 
@@ -330,18 +341,27 @@ GameApplication::setFileServicePath(const std::string& path) noexcept
 	auto engineDir = tmp + _engineDir;
 	auto resourceBaseDir = tmp + _resourceBaseDir;
 
-	_ioServer->addAssign(IoAssign("sys", engineDir));
-	_ioServer->addAssign(IoAssign("sys:media/UI/", engineDir + "media/UI/"));
-	_ioServer->addAssign(IoAssign("dlc", resourceBaseDir));
+	_ioServer->addAssign({ "sys", engineDir });
+	_ioServer->addAssign({ "sys:media/UI/", engineDir + "media/UI/" });
+	_ioServer->addAssign({ "dlc", resourceBaseDir });
 }
 
 void
-GameApplication::setResDownloadURL(const std::string& path) noexcept
+GameApplication::setFileServiceListener(bool enable) noexcept
+{
+	if (enable)
+		_ioServer->addIoListener(_ioListener);
+	else
+		_ioServer->removeIoListener(_ioListener);
+}
+
+void
+GameApplication::setResDownloadURL(const util::string& path) noexcept
 {
 	assert(_ioServer);
 	if (_downloadURL != path)
 	{
-		_ioServer->addAssign(IoAssign("url", path));
+		_ioServer->addAssign({ "url", path });
 		_downloadURL = path;
 	}
 }

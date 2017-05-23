@@ -49,8 +49,8 @@ public:
 	SoundComponent() noexcept;
 	~SoundComponent() noexcept;
 
-	void setSoundBuffer(const std::string& name) noexcept;
-	const std::string& getSoundBuffer() const noexcept;
+	void setSoundBuffer(const util::string& name) noexcept;
+	const util::string& getSoundBuffer() const noexcept;
 
 	void setVolume(float volume) noexcept;
 	void setMinVolume(float volume) noexcept;
@@ -100,7 +100,7 @@ private:
 
 private:
 
-	std::string _sourceName;
+	util::string _sourceName;
 
 	SoundClip _clip;
 	SoundSourcePtr _sound;

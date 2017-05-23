@@ -261,11 +261,11 @@ SphereMakerComponent::~SphereMakerComponent() noexcept
 void
 SphereMakerComponent::onActivate() except
 {
-	auto diffuseMap = ray::ResManager::instance()->createTexture("dlc:textures/Bricks_ao.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
+	auto diffuseMap = ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
 	if (!diffuseMap)
 		return;
 
-	auto normalMap = ray::ResManager::instance()->createTexture("dlc:textures/Bricks_n.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
+	auto normalMap = ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
 	if (!normalMap)
 		return;
 
@@ -316,7 +316,7 @@ SphereMakerComponent::onActivate() except
 	materialTemp->getParameter("texDiffuse")->uniformTexture(diffuseMap);
 	materialTemp->getParameter("texNormal")->uniformTexture(normalMap);
 
-	auto planeMesh = std::make_shared<ray::MeshProperty>();
+	/*auto planeMesh = std::make_shared<ray::MeshProperty>();
 	planeMesh->makeFloor(1.0, 1.0);
 
 	auto planeObject = std::make_shared<ray::GameObject>();
@@ -324,8 +324,8 @@ SphereMakerComponent::onActivate() except
 	planeObject->addComponent(std::make_shared<ray::MeshComponent>(planeMesh));
 	planeObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
 	planeObject->setScale(ray::float3(80.0f));
-	planeObject->setTranslate(ray::float3(0.0, 0.1, 0.0));
-	_objects.push_back(planeObject);
+	planeObject->setTranslate(ray::float3(0.0, 0.5, 0.0));
+	_objects.push_back(planeObject);*/
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
 	sphereMesh->makeSphere(1.0, 64, 48);
@@ -343,18 +343,9 @@ SphereMakerComponent::onActivate() except
 
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 
-			if (shininess_parametes[j * 10 + i] > 0.8)
-			{
-				material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
-				material->getParameter("diffuse")->uniform3f(1.0, 1.0, 1.0);
-				material->getParameter("metalness")->uniform1f(shininess_parametes[j * 10 + i]);
-			}
-			else
-			{
-				material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
-				material->getParameter("diffuse")->uniform3f(diff_spec_parametes[(9 - i) * 10 + (9 - j)].xyz());
-				material->getParameter("metalness")->uniform1f(diff_spec_parametes[j * 10 + i].w);
-			}
+			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
+			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[(9 - i) * 10 + (9 - j)].xyz());
+			material->getParameter("metalness")->uniform1f(diff_spec_parametes[j * 10 + i].w);
 
 			if (shininess_parametes[i * 10 + j] > 0.6 &&
 				shininess_parametes[i * 10 + j] < 0.8 ||

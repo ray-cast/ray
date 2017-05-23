@@ -417,6 +417,7 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 
 			_gameApp = std::make_shared<ray::GameApplication>();
 			_gameApp->setFileService(true);
+			_gameApp->setFileServiceListener(true);
 			_gameApp->setFileServicePath(_gameRootPath);
 
 			if (!_gameApp->open(hwnd, w, h, dpi_w, dpi_h))

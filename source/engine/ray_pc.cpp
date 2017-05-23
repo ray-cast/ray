@@ -350,8 +350,10 @@ void onWindowMouseMotion(GLFWwindow* window, double x, double y)
 	{
 		ray::InputEvent event;
 		event.event = ray::InputEvent::MouseMotion;
-		event.motion.x = event.motion.xrel = x;
-		event.motion.y = event.motion.yrel = y;
+		event.motion.x = x;
+		event.motion.y = y;
+		event.motion.xrel = x;
+		event.motion.yrel = y;
 		event.motion.timestamp = glfwGetTimerFrequency();
 		event.motion.state = false;
 		event.motion.windowID = (std::uint64_t)::glfwGetWinHandle(_window);

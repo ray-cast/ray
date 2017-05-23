@@ -81,8 +81,8 @@ struct MouseButtonEvent
 	std::uint8_t state;
 	std::uint8_t clicks;
 	std::uint8_t padding1;
-	std::uint32_t x;
-	std::uint32_t y;
+	float x;
+	float y;
 };
 
 struct MouseWheelEvent

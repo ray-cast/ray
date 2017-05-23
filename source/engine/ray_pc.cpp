@@ -511,6 +511,7 @@ int main(int argc, const char* argv[]) noexcept
 	catch (const std::exception& e)
 	{
 		std::cerr << e.what();
+		std::system("pause");
 		return 1;
 	}
 }

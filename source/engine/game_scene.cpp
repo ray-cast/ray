@@ -41,6 +41,9 @@
 
 #include <ray/rtti_factory.h>
 
+#include <ray/xmlreader.h>
+#include <ray/jsonreader.h>
+
 _NAME_BEGIN
 
 __ImplementSubClass(GameScene, rtti::Interface, "GameScene")
@@ -89,7 +92,7 @@ GameScene::getActive() const noexcept
 	return _root->getActive();
 }
 
-void 
+void
 GameScene::setGameListener(GameListenerPtr listener) noexcept
 {
 	if (_gameListener != listener)
@@ -97,7 +100,7 @@ GameScene::setGameListener(GameListenerPtr listener) noexcept
 		this->onListenerChangeBefore();
 
 		_gameListener = listener;
-		
+
 		this->onListenerChangeAfter();
 	}
 }
@@ -147,12 +150,12 @@ GameScene::sendMessage(const MessagePtr& message) except
 	}
 }
 
-void 
+void
 GameScene::onListenerChangeBefore() noexcept
 {
 }
 
-void 
+void
 GameScene::onListenerChangeAfter() noexcept
 {
 }
@@ -212,6 +215,43 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 	}
 
 	return nullptr;
+}
+
+bool
+GameScene::load(const std::string& filename) noexcept
+{
+	assert(!filename.empty());
+
+	try
+	{
+		StreamReaderPtr stream;
+		if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
+		{
+			if (_gameListener)
+				_gameListener->onMessage("Failed to open file : " + filename);
+
+			return false;
+		}
+
+		XMLReader xml;
+		if (!xml.open(*stream))
+		{
+			if (_gameListener)
+				_gameListener->onMessage("Non readable Scene file : " + filename);
+
+			return false;
+		}
+
+		this->load(xml);
+		return true;
+	}
+	catch (const exception& e)
+	{
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
+
+		return false;
+	}
 }
 
 void

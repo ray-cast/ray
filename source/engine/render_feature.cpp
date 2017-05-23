@@ -96,22 +96,34 @@ RenderFeature::clone() const noexcept
 void
 RenderFeature::onActivate() except
 {
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Starting : RenderFeature.");
+
 	if (!RenderSystem::instance()->setup(_renderSetting))
 		throw failure("RenderSystem::instance() fail.");
 
 	_renderScene = std::make_shared<RenderScene>();
 	if (!_renderScene)
 		throw failure("RenderSystem::createRenderScene() fail.");
+
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Started : RenderFeature.");
 }
 
 void
 RenderFeature::onDeactivate() noexcept
 {
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Stopping : RenderFeature.");
+
 	_renderScene.reset();
 	RenderSystem::instance()->close();
+
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Stopped : RenderFeature.");
 }
 
-void 
+void
 RenderFeature::onMessage(const MessagePtr& message) except
 {
 	if (message->isInstanceOf<InputMessage>())

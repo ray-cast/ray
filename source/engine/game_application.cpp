@@ -100,17 +100,38 @@ bool
 GameApplication::open(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h) noexcept
 {
 	if (_isInitialize)
+	{
+		if (_gameListener)
+			_gameListener->onMessage("Game Application has already opened.");
+
 		return false;
+	}
+
+	if (_gameListener)
+		_gameListener->onMessage("Initializing : Game Application.");
+
+	if (_gameListener)
+		_gameListener->onMessage("Initializing : RTTI.");
 
 	if (!rtti::Factory::instance()->open())
 	{
 		if (_gameListener)
-			_gameListener->onMessage("Could not initialize with RTTI");
+			_gameListener->onMessage("Could not initialize with RTTI.");
 
 		return false;
-	}		
+	}
 
-	_ioInterface->open();
+	if (_gameListener)
+		_gameListener->onMessage("Initializing : IO Server.");
+
+	if (!_ioInterface->open())
+	{
+		if (_gameListener)
+			_gameListener->onMessage("Could not initialize with IO Server.");
+	}
+
+	if (_gameListener)
+		_gameListener->onMessage("Initializing : Game Server.");
 
 	_gameServer = GameServer::instance();
 	_gameServer->_setGameApp(this);
@@ -162,7 +183,7 @@ GameApplication::open(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::ui
 #if defined(_BUILD_GUI)
 	this->addFeatures(_guiFeature);
 #endif
-	
+
 	_isInitialize = this->start();
 	return _isInitialize;
 }
@@ -170,11 +191,17 @@ GameApplication::open(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::ui
 void
 GameApplication::close() noexcept
 {
+	if (_gameListener)
+		_gameListener->onMessage("Shutdown : Game Server.");
+
 	if (_gameServer)
 	{
 		_gameServer->close();
 		_gameServer = nullptr;
 	}
+
+	if (_gameListener)
+		_gameListener->onMessage("Shutdown : IO Server.");
 
 	if (_ioInterface)
 	{
@@ -183,7 +210,7 @@ GameApplication::close() noexcept
 	}
 }
 
-void 
+void
 GameApplication::setGameListener(GameListenerPtr listener) noexcept
 {
 	if (_gameListener != listener)
@@ -198,7 +225,7 @@ GameApplication::setGameListener(GameListenerPtr listener) noexcept
 	}
 }
 
-GameListenerPtr 
+GameListenerPtr
 GameApplication::getGameListener() const noexcept
 {
 	return _gameListener;
@@ -333,7 +360,7 @@ GameApplication::postMessage(const MessagePtr& message) noexcept
 	return _gameServer->postMessage(message);
 }
 
-bool 
+bool
 GameApplication::sendInputEvent(const InputEvent& event) noexcept
 {
 	if (_inputFeature)

@@ -53,24 +53,21 @@ public:
 	bool open() noexcept;
 	void close() noexcept;
 
-	void setGameListener(GameListenerPtr listener) noexcept;
-	GameListenerPtr getGameListener() const noexcept;
-
-	bool isQuitRequest() const noexcept;
-
-	bool start() noexcept;
-	bool active() const noexcept;
-	void stop() noexcept;
-
 	void setTimer(TimerPtr timer) noexcept;
 	TimerPtr getTimer() const noexcept;
 
+	void setGameListener(GameListenerPtr listener) noexcept;
+	GameListenerPtr getGameListener() const noexcept;
+
+	bool isActive() const noexcept;
+	bool isQuitRequest() const noexcept;
+
 	bool openScene(const std::string& sceneName) noexcept;
-	bool addScene(GameScenePtr& scene) noexcept;
-	bool addScene(GameScenePtr&& scene) noexcept;
 	void closeScene(const std::string& sceneName) noexcept;
+
+	bool addScene(GameScenePtr& scene) noexcept;
 	void removeScene(GameScenePtr& scene) noexcept;
-	void removeScene(GameScenePtr&& scene) noexcept;
+
 	GameScenePtr findScene(const std::string& sceneName) noexcept;
 	const GameScenes& getScenes() const noexcept;
 
@@ -80,8 +77,7 @@ public:
 	GameFeaturePtr getFeature(const rtti::Rtti* rtti) const noexcept;
 
 	template<typename T>
-	std::shared_ptr<T> getFeature() const noexcept
-		{ return std::dynamic_pointer_cast<T>(this->getFeature(T::getRtti())); }
+	std::shared_ptr<T> getFeature() const noexcept { return std::dynamic_pointer_cast<T>(this->getFeature(T::getRtti())); }
 
 	const GameFeatures& getGameFeatures() const noexcept;
 
@@ -90,6 +86,8 @@ public:
 	bool sendMessage(const MessagePtr& message) noexcept;
 	bool postMessage(const MessagePtr& message) noexcept;
 
+	bool start() noexcept;
+	void stop() noexcept;
 	void update() noexcept;
 
 private:

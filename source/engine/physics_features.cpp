@@ -52,14 +52,26 @@ PhysicFeatures::~PhysicFeatures() noexcept
 void
 PhysicFeatures::onActivate() except
 {
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Starting : PhysicFeatures.");
+
 	if (!PhysicsSystem::instance()->open())
 		throw failure("PhysicsSystem::instance() fail.");
+
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Started : PhysicFeatures.");
 }
 
 void
 PhysicFeatures::onDeactivate() noexcept
 {
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Stopping : PhysicFeatures.");
+
 	PhysicsSystem::instance()->close();
+
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Stopped : PhysicFeatures.");
 }
 
 void

@@ -67,6 +67,9 @@ public:
 	void load(iarchive& reader) except;
 	void save(oarchive& reader) except;
 
+	bool load(const std::string& sceneName) noexcept;
+	bool save(const std::string& sceneName) noexcept;
+
 	GameScenePtr clone() const noexcept;
 
 	GameObjectPtr instanceObject(iarchive& reader, GameObjectPtr parent) except;

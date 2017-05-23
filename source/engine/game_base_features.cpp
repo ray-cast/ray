@@ -50,17 +50,29 @@ GameBaseFeatures::~GameBaseFeatures() noexcept
 {
 }
 
-void 
+void
 GameBaseFeatures::onActivate() except
 {
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Starting : GameSceneManage.");
+
 	if (!GameSceneManager::instance()->open())
 		throw failure("GameSceneManager::instance() fail.");
+
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Started : GameSceneManager.");
 }
 
-void 
+void
 GameBaseFeatures::onDeactivate() noexcept
 {
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Stopping : GameSceneManager.");
+
 	GameSceneManager::instance()->close();
+
+	if (this->getGameListener())
+		this->getGameListener()->onMessage("GameServer : Stoped : GameSceneManager.");
 }
 
 void

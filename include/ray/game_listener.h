@@ -37,7 +37,7 @@
 #ifndef _H_GAME_LISTENER_H_
 #define _H_GAME_LISTENER_H_
 
-#include <ray/rtti.h>
+#include <ray/game_types.h>
 
 _NAME_BEGIN
 

@@ -90,7 +90,7 @@ public:
 	IoInterface() noexcept;
 	~IoInterface() noexcept;
 
-	void open() noexcept;
+	bool open() noexcept;
 	void close() noexcept;
 
 	void pause() noexcept;

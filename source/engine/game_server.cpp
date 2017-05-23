@@ -89,7 +89,7 @@ GameServer::close() noexcept
 	_features.clear();
 }
 
-void 
+void
 GameServer::setGameListener(GameListenerPtr listener) noexcept
 {
 	if (_gameListener != listener)
@@ -104,67 +104,22 @@ GameServer::setGameListener(GameListenerPtr listener) noexcept
 	}
 }
 
-GameListenerPtr 
+GameListenerPtr
 GameServer::getGameListener() const noexcept
 {
 	return _gameListener;
 }
 
 bool
-GameServer::isQuitRequest() const noexcept
+GameServer::isActive() const noexcept
 {
-	return _isQuitRequest;
+	return _isActive;
 }
 
 bool
-GameServer::start() noexcept
+GameServer::isQuitRequest() const noexcept
 {
-	try
-	{
-		if (!_isActive)
-		{
-			for (auto& it : _features)
-				it->setActive(true);
-
-			for (auto& it : _scenes)
-				it->setActive(true);
-
-			_timer->reset();
-
-			_isActive = true;
-		}
-
-		return true;
-	}
-	catch (const exception& e)
-	{
-		if (_gameListener)
-			_gameListener->onMessage(e.what());
-
-		_isQuitRequest = true;
-		return false;
-	}
-}
-
-void
-GameServer::stop() noexcept
-{
-	if (_isActive)
-	{
-		for (auto& it : _scenes)
-			it->setActive(false);
-
-		for (auto& it : _features)
-			it->setActive(false);
-
-		_isActive = false;
-	}
-}
-
-bool 
-GameServer::active() const noexcept
-{
-	return _isActive;
+	return _isQuitRequest;
 }
 
 void
@@ -187,29 +142,11 @@ GameServer::openScene(const std::string& filename) noexcept
 
 	try
 	{
-		StreamReaderPtr stream;
-		if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
-		{
-			if (_gameListener)
-				_gameListener->onMessage("Failed to open file : " + filename);
-
-			return false;
-		}
-
-		XMLReader xml;
-		if (!xml.open(*stream))
-		{
-			if (_gameListener)
-				_gameListener->onMessage("Non readable Scene file : " + filename);
-
-			return false;
-		}
-
 		auto scene = std::make_shared<GameScene>();
 		scene->setGameListener(_gameListener);
-		scene->load(xml);
+		if (scene->load(filename))
+			return this->addScene(scene);
 
-		this->addScene(scene);
 		return true;
 	}
 	catch (const exception& e)
@@ -259,11 +196,13 @@ GameServer::addScene(GameScenePtr& scene) noexcept
 
 	try
 	{
-		for (auto& feature : _features)
-			feature->onOpenScene(scene);
+		if (this->isActive())
+		{
+			for (auto& feature : _features)
+				feature->onOpenScene(scene);
 
-		if (this->active())
 			scene->setActive(true);
+		}
 
 		_scenes.push_back(scene);
 
@@ -278,33 +217,22 @@ GameServer::addScene(GameScenePtr& scene) noexcept
 	}
 }
 
-bool
-GameServer::addScene(GameScenePtr&& scene) noexcept
-{
-	return this->addScene(scene);
-}
-
 void
 GameServer::removeScene(GameScenePtr& scene) noexcept
 {
 	auto it = std::find(_scenes.begin(), _scenes.end(), scene);
 	if (it != _scenes.end())
 	{
-		for (auto& feature : _features)
+		if (this->isActive())
 		{
-			feature->onCloseScene(*it);
-		}
+			for (auto& feature : _features)
+				feature->onCloseScene(*it);
 
-		(*it)->setActive(false);
+			(*it)->setActive(false);
+		}
 
 		_scenes.erase(it);
 	}
-}
-
-void
-GameServer::removeScene(GameScenePtr&& scene) noexcept
-{
-	this->removeScene(scene);
 }
 
 bool
@@ -320,7 +248,7 @@ GameServer::addFeature(GameFeaturePtr& features) noexcept
 			features->_setGameServer(this);
 			features->setGameListener(_gameListener);
 
-			if (this->active())
+			if (this->isActive())
 				features->onActivate();
 
 			_features.push_back(features);
@@ -429,6 +357,81 @@ GameServer::postMessage(const MessagePtr& event) noexcept
 	return true;
 }
 
+bool
+GameServer::start() noexcept
+{
+	try
+	{
+		if (!_isActive)
+		{
+			if (_gameListener)
+				_gameListener->onMessage("GameServer : Starting.");
+
+			for (auto& it : _features)
+				it->setActive(true);
+
+			for (auto& it : _features)
+				for (auto& scene : _scenes)
+					it->onOpenScene(scene);
+
+			for (auto& it : _scenes)
+				it->setActive(true);
+
+			_timer->reset();
+
+			_isActive = true;
+
+			if (_gameListener)
+				_gameListener->onMessage("GameServer : Started.");
+		}
+		else
+		{
+			if (_gameListener)
+				_gameListener->onMessage("GameServer : has already started.");
+		}
+
+		return true;
+	}
+	catch (const exception& e)
+	{
+		if (_gameListener)
+			_gameListener->onMessage(e.what());
+
+		_isQuitRequest = true;
+		return false;
+	}
+}
+
+void
+GameServer::stop() noexcept
+{
+	if (_isActive)
+	{
+		if (_gameListener)
+			_gameListener->onMessage("GameServer : Stopping.");
+
+		for (auto& it : _scenes)
+			it->setActive(false);
+
+		for (auto& it : _features)
+			for (auto& scene : _scenes)
+				it->onCloseScene(scene);
+
+		for (auto& it : _features)
+			it->setActive(false);
+
+		_isActive = false;
+
+		if (_gameListener)
+			_gameListener->onMessage("GameServer : Stopped.");
+	}
+	else
+	{
+		if (_gameListener)
+			_gameListener->onMessage("GameServer : has already stopped.");
+	}
+}
+
 void
 GameServer::update() noexcept
 {
@@ -441,7 +444,7 @@ GameServer::update() noexcept
 		{
 			if (!this->sendMessage(event))
 				_isQuitRequest = true;
-		}			
+		}
 
 		if (!_isQuitRequest)
 		{

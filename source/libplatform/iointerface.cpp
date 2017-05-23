@@ -149,12 +149,18 @@ IoInterface::load(IoLoader& resource, bool async)
 	}
 }
 
-void
+bool
 IoInterface::open() noexcept
 {
-	if (!_disposeThread)
+	try
 	{
-		_disposeThread = std::make_unique<std::thread>(std::bind(&IoInterface::dispose, this));
+		if (!_disposeThread)
+			_disposeThread = std::make_unique<std::thread>(std::bind(&IoInterface::dispose, this));
+		return _disposeThread ? true : false;
+	}
+	catch (...)
+	{
+		return false;
 	}
 }
 

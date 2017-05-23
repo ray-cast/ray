@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -54,7 +54,7 @@ AnimationComponent::AnimationComponent() noexcept
 	, _enablePhysics(false)
 	, _needUpdate(false)
 	, _onMeshChange(std::bind(&AnimationComponent::onMeshChange, this))
-	, _onMeshWillRender(std::bind(&AnimationComponent::onMeshWillRender, this, std::placeholders::_1))	
+	, _onMeshWillRender(std::bind(&AnimationComponent::onMeshWillRender, this, std::placeholders::_1))
 {
 }
 
@@ -74,25 +74,25 @@ AnimationComponent::play(const std::string& filename) noexcept
 	return _enableAnimation;
 }
 
-void 
+void
 AnimationComponent::pause() noexcept
 {
 	_enableAnimation = false;
 }
 
-void 
+void
 AnimationComponent::stop() noexcept
 {
 	_destroyAnimation();
 }
 
-void 
+void
 AnimationComponent::enableAnimOnVisiable(bool visiableOnly) noexcept
 {
 	_enableAnimOnVisableOnly = visiableOnly;
 }
 
-bool 
+bool
 AnimationComponent::enableAnimOnVisiable() const noexcept
 {
 	return _enableAnimOnVisableOnly;
@@ -104,7 +104,7 @@ AnimationComponent::enablePhysics(bool physics) noexcept
 	_enablePhysics = physics;
 }
 
-bool 
+bool
 AnimationComponent::enablePhysics() const noexcept
 {
 	return _enablePhysics;
@@ -116,13 +116,13 @@ AnimationComponent::setTransforms(const GameObjects& transforms) noexcept
 	_transforms = transforms;
 }
 
-void 
+void
 AnimationComponent::setTransforms(GameObjects&& transforms) noexcept
 {
 	_transforms = std::move(transforms);
 }
 
-const GameObjects& 
+const GameObjects&
 AnimationComponent::getTransforms() const noexcept
 {
 	return _transforms;
@@ -226,7 +226,7 @@ AnimationComponent::_playAnimation(const std::string& filename) noexcept
 	auto model = loader.data();
 	if (!model || !model->hasAnimations())
 		return false;
-	
+
 	std::intptr_t i = 0;
 	std::map<std::string, std::intptr_t> boneMap;
 	for (auto& it : _transforms)
@@ -301,7 +301,7 @@ AnimationComponent::_updateAnimation() noexcept
 	}
 }
 
-void 
+void
 AnimationComponent::_destroyAnimation() noexcept
 {
 	_animtion.reset();

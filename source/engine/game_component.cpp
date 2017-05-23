@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -71,28 +71,28 @@ GameComponent::getComponents() const noexcept
 	return _gameObject->getComponents();
 }
 
-void 
+void
 GameComponent::addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
 {
 	assert(_gameObject && component);
 	_gameObject->addComponentDispatch(type, component);
 }
 
-void 
+void
 GameComponent::removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
 {
 	assert(_gameObject && component);
 	_gameObject->removeComponentDispatch(type, component);
 }
 
-void 
+void
 GameComponent::addComponentDispatch(GameDispatchType type, GameComponent* component) noexcept
 {
 	assert(_gameObject && component);
 	_gameObject->addComponentDispatch(type, component->cast_pointer<GameComponent>());
 }
 
-void 
+void
 GameComponent::removeComponentDispatch(GameDispatchType type, GameComponent* component) noexcept
 {
 	assert(_gameObject && component);
@@ -187,7 +187,7 @@ GameComponent::sendMessage(const MessagePtr& message) except
 			parent = temp;
 	}
 
-	GameComponent* ignore[1] = { this } ;
+	GameComponent* ignore[1] = { this };
 
 	if (parent)
 		parent->sendMessageDownwards(message, ignore, 1);

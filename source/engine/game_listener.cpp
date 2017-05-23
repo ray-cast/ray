@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -48,17 +48,17 @@ GameListener::~GameListener() noexcept
 {
 }
 
-void 
+void
 GameListener::onListenerChangeBefore() noexcept
 {
 }
 
-void 
+void
 GameListener::onListenerChangeAfter() noexcept
 {
 }
 
-void 
+void
 GameListener::onMessage(const std::string&) noexcept
 {
 }

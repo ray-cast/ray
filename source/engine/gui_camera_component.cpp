@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -62,12 +62,12 @@ GuiCameraComponent::clone() const noexcept
 	return std::make_shared<GuiCameraComponent>();
 }
 
-void 
+void
 GuiCameraComponent::onActivate() noexcept
 {
 }
 
-void 
+void
 GuiCameraComponent::onDeactivate() noexcept
 {
 }

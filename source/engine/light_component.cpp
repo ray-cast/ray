@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -102,7 +102,7 @@ LightComponent::getLightIntensity() const noexcept
 	return _light->getLightIntensity();
 }
 
-const float3& 
+const float3&
 LightComponent::getLightAttenuation() const noexcept
 {
 	return _light->getLightAttenuation();
@@ -144,13 +144,13 @@ LightComponent::getShadowBias() const noexcept
 	return _light->getShadowBias();
 }
 
-void 
+void
 LightComponent::setGlobalIllumination(bool enable) noexcept
 {
 	_light->setGlobalIllumination(enable);
 }
 
-bool 
+bool
 LightComponent::getGlobalIllumination() const noexcept
 {
 	return _light->getGlobalIllumination();

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -87,13 +87,13 @@ SkinnedMeshRenderComponent::~SkinnedMeshRenderComponent() noexcept
 {
 }
 
-void 
+void
 SkinnedMeshRenderComponent::setTransforms(const GameObjects& transforms) noexcept
 {
 	_transforms = transforms;
 }
 
-void 
+void
 SkinnedMeshRenderComponent::setTransforms(GameObjects&& transforms) noexcept
 {
 	_transforms = std::move(transforms);
@@ -105,7 +105,7 @@ SkinnedMeshRenderComponent::getTransforms() const noexcept
 	return _transforms;
 }
 
-void 
+void
 SkinnedMeshRenderComponent::onActivate() except
 {
 	if (_transforms.empty())
@@ -153,7 +153,7 @@ SkinnedMeshRenderComponent::onActivate() except
 	MeshRenderComponent::onActivate();
 }
 
-void 
+void
 SkinnedMeshRenderComponent::onDeactivate() noexcept
 {
 	MeshRenderComponent::onDeactivate();
@@ -166,7 +166,7 @@ SkinnedMeshRenderComponent::onDeactivate() noexcept
 	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeFrameEnd, this);
 }
 
-void 
+void
 SkinnedMeshRenderComponent::onAttachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
@@ -176,14 +176,14 @@ SkinnedMeshRenderComponent::onAttachComponent(GameComponentPtr& component) noexc
 	}
 }
 
-void 
+void
 SkinnedMeshRenderComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 	{
 		component->downcast<MeshComponent>()->removeMeshChangeListener(&_onMeshChange);
 		_mesh = nullptr;
-	}		
+	}
 }
 
 void
@@ -192,7 +192,7 @@ SkinnedMeshRenderComponent::onMeshChange() noexcept
 	_mesh = this->getComponent<MeshComponent>()->getMesh();
 }
 
-void 
+void
 SkinnedMeshRenderComponent::onMeshWillRender(const Camera&) noexcept
 {
 	if (!_mesh)

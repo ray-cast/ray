@@ -48,10 +48,12 @@ SET(APP_LIST
 SOURCE_GROUP("Common" FILES ${APP_LIST})
 
 SET(COMPONENT_LIST 
-	UIController.cpp
+	UIView.h
+	UIView.cpp
+	UIParams.h
+	UIParams.cpp
 	UIController.h
-	LightMassController.cpp
-	LightMassController.h
+	UIController.cpp
 	first_person_camera.cpp
 	first_person_camera.h
 	sphere_maker.cpp

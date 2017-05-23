@@ -36,16 +36,35 @@
 // +----------------------------------------------------------------------
 #include <ray/game_component.h>
 
-class GuiControllerComponent final : public ray::GameComponent
+struct GUIUvmapper
 {
-	__DeclareSubClass(GuiViewComponent, ray::GameComponent)
-public:
-	GuiControllerComponent() noexcept;
-	~GuiControllerComponent() noexcept;
+	GUIUvmapper() noexcept;
 
-	ray::GameComponentPtr clone() const noexcept;
+	int chart;
+	float margin;
+	float stretch;
+};
 
-private:
-	GuiControllerComponent(const GuiControllerComponent&) = delete;
-	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;
+struct GUILightMass
+{
+	GUILightMass() noexcept;
+
+	ray::float4 environmentColor;
+
+	int imageSize;
+	int sampleCount;
+	int interpolationPasses;
+
+	bool enableGI;
+
+	float hemisphereNear;
+	float hemisphereFar;
+	float hemisphereSize;
+	float interpolationThreshold;
+};
+
+struct GuiParams
+{
+	GUIUvmapper uvmapper;
+	GUILightMass lightmass;
 };

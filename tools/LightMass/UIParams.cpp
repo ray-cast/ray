@@ -34,18 +34,23 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/game_component.h>
+#include "UIParams.h"
 
-class GuiControllerComponent final : public ray::GameComponent
+GUIUvmapper::GUIUvmapper() noexcept
+	: margin(2)
+	, stretch(1e-2)
+	, chart(0)
 {
-	__DeclareSubClass(GuiViewComponent, ray::GameComponent)
-public:
-	GuiControllerComponent() noexcept;
-	~GuiControllerComponent() noexcept;
+}
 
-	ray::GameComponentPtr clone() const noexcept;
-
-private:
-	GuiControllerComponent(const GuiControllerComponent&) = delete;
-	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;
+GUILightMass::GUILightMass() noexcept
+	: environmentColor(ray::float4::One)
+	, hemisphereNear(0.1)
+	, hemisphereFar(100.0)
+	, interpolationPasses(1)
+	, interpolationThreshold(1e-4)
+	, imageSize(1)
+	, sampleCount(1)
+	, enableGI(false)
+{
 };

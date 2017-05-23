@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -35,24 +35,305 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "UIController.h"
-#include <ray/gui.h>
-#include <ray/gui_message.h>
+
+#include "LightMass.h"
+#include "LightMapPack.h"
+
+#include <chrono>
+#include <ctime>
+#include <cinttypes>
+#include <iomanip>
+#include <sstream>
+#include <ios>
+
+#include <glfw/glfw3.h>
+
+#include <ray/fcntl.h>
+#include <ray/except.h>
 #include <ray/ioserver.h>
+#include <ray/mstream.h>
+#include <ray/jsonreader.h>
+
+#include <ray/image.h>
+#include <ray/imagutil.h>
+#include <ray/imagcubemap.h>
+
+#include <ray/SH.h>
+
+struct AppParams
+{
+	std::uint32_t chart;
+	float stretch;
+	float margin;
+	ray::LightMassParams lightMass;
+};
+
+class AppMapListener : public ray::LightMapListener
+{
+public:
+	AppMapListener() noexcept
+		: _lastProgress(0)
+	{
+	}
+
+	~AppMapListener() noexcept {}
+
+	void onUvmapperStart()
+	{
+		_startTime = std::time(nullptr);
+		std::cout << "Calculating the Light map pack of the model : ";
+		std::cout << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	void onUvmapperProgressing(float progress)
+	{
+		if (_lastProgress != progress)
+		{
+			std::cout.precision(2);
+			std::cout << "Processing : " << progress * 100 << "%" << std::fixed;
+			std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+			_lastProgress = progress;
+		}
+	}
+
+	void onUvmapperEnd()
+	{
+		_endTime = std::time(nullptr);
+		std::cout << "Processing : " << "100.00%" << std::fixed << std::endl;
+		std::cout << "Calculated the Light map pack of the model : ";
+		std::cout << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	virtual void onMessage(const std::string& message) noexcept
+	{
+		std::cout << message << std::endl;
+	}
+
+private:
+	float _lastProgress;
+	std::time_t _startTime;
+	std::time_t _endTime;
+};
+
+class AppMassListener : public ray::LightMassListener
+{
+public:
+	AppMassListener() noexcept {}
+	~AppMassListener() noexcept {}
+
+	virtual void onBakingStart() noexcept
+	{
+		_startTime = std::time(nullptr);
+		std::cout << "Calculating the radiosity of the model : ";
+		std::cout << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	virtual void onBakingEnd() noexcept
+	{
+		_endTime = std::time(nullptr);
+		std::cout << "Processing : " << "100.00%" << std::fixed << std::endl;
+		std::cout << "Calculated the radiosity of the model : ";
+		std::cout << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	virtual void onBakingProgressing(float progress) noexcept
+	{
+		std::cout.precision(2);
+		std::cout << "Processing : " << progress * 100 << "%" << std::fixed;
+		std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+	}
+
+	virtual void onMessage(const std::string& message) noexcept
+	{
+		std::cout << message << std::endl;
+	}
+
+private:
+	std::time_t _startTime;
+	std::time_t _endTime;
+};
+
+class Application
+{
+public:
+	Application() noexcept
+		: _lightMapListener(std::make_shared<AppMapListener>())
+		, _lightMassListener(std::make_shared<AppMassListener>())
+	{
+	}
+
+	Application::~Application() noexcept
+	{
+	}
+
+	bool load(const std::string& path, ray::PMX& model)
+	{
+		ray::PMXHandler modelLoader;
+
+		if (_lightMassListener)
+			_lightMassListener->onMessage("loading model : " + path);
+
+		std::string error;
+		if (!modelLoader.doLoad(path, model, error))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage(error);
+
+			return false;
+		}
+
+		if (_lightMassListener)
+			_lightMassListener->onMessage("loaded model : " + path);
+
+		return true;
+	}
+
+	bool save(const std::string& path, ray::PMX& model)
+	{
+		ray::PMXHandler modelLoader;
+
+		if (_lightMassListener)
+			_lightMassListener->onMessage("Save as model : " + path);
+
+		std::string error;
+		if (!modelLoader.doSave(path, model, error))
+		{
+			if (_lightMassListener)
+				_lightMassListener->onMessage(error);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
+	{
+		assert(channel == 1 || channel == 3 || channel == 4);
+
+		bool isGreyscale = channel == 1;
+		bool hasAlpha = channel == 1 ? false : true;
+
+		if (margin > 0)
+		{
+			std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * channel);
+			std::memset(lightmapTemp.get(), 0, w * h * channel * sizeof(float));
+
+			for (std::uint32_t j = 0; j < std::max<std::uint32_t>(margin >> 1, 1); j++)
+			{
+				ray::image::smoothFilter(data, lightmapTemp.get(), w, h, channel);
+				ray::image::dilateFilter(lightmapTemp.get(), data, w, h, channel);
+			}
+		}
+
+		ray::image::format_t format = isGreyscale ? ray::image::format_t::R8SRGB : ray::image::format_t::R8G8B8SRGB;
+		if (hasAlpha)
+			format = ray::image::format_t::R8G8B8A8SRGB;
+
+		ray::image::Image image;
+		if (!image.create(w, h, format))
+		{
+			std::cout << "Failed to create image : " << path << std::endl;
+			return false;
+		}
+
+		auto temp = (std::uint8_t*)image.data();
+
+		if (channel == 1)
+			ray::image::r32f_to_r8uint(data, temp, w, h, channel);
+		else
+			ray::image::rgb32f_to_rgbt8(data, temp, w, h, channel);
+
+		ray::image::flipHorizontal(temp, w, h, channel);
+
+		if (!isGreyscale)
+		{
+			for (std::size_t i = 0; i < w * h * channel; i += channel)
+				std::swap(temp[i], temp[i + 2]);
+		}
+
+		image.save(path);
+
+		return true;
+	}
+
+	void getParams(AppParams& params)
+	{
+		ray::StreamReaderPtr stream;
+		if (!ray::IoServer::instance()->openFile(stream, "root:config.json", ray::ios_base::in))
+			throw ray::failure(__TEXT("Opening file fail: config.json"));
+
+		auto json = ray::json::reader(*stream);
+
+		params.lightMass.lightMap.width = std::clamp<std::uint32_t>(json["lightmap"]["width"].get<float>(), 256, 8192);
+		params.lightMass.lightMap.height = std::clamp<std::uint32_t>(json["lightmap"]["height"].get<float>(), 256, 8192);
+		params.lightMass.lightMap.margin = std::clamp<std::uint32_t>(json["lightmap"]["margin"].get<float>(), 0, 16);
+
+		params.margin = std::clamp<float>(json["uvmapper"]["margin"].get<float>(), 0.0, 16.0);
+		params.stretch = std::clamp<float>(json["uvmapper"]["stretch"].get<float>(), 0.0, 1.0);
+		params.chart = std::max<std::uint32_t>(json["uvmapper"]["chart"].get<float>(), 0);
+
+		params.lightMass.baking.hemisphereSize = std::clamp<std::uint32_t>(json["lightmass"]["hemisphereSize"].get<float>(), 16, 512);
+		params.lightMass.baking.hemisphereNear = std::max<float>(json["lightmass"]["hemisphereNear"].get<float>(), 1e-5);
+		params.lightMass.baking.hemisphereFar = std::max<float>(json["lightmass"]["hemisphereFar"].get<float>(), params.lightMass.baking.hemisphereNear);
+		params.lightMass.baking.interpolationPasses = std::clamp<std::uint32_t>(json["lightmass"]["interpolationPasses"].get<float>(), 0, 16);
+		params.lightMass.baking.interpolationThreshold = json["lightmass"]["interpolationThreshold"].get<float>();
+		params.lightMass.enableGI = json["lightmass"]["enableGI"].get<float>() > 0 ? 1 : 0;
+	}
+
+	bool run(std::string path)
+	{
+		while (path.empty())
+		{
+			std::cout << "Input a path to your pmx model : ";
+			char paths[PATHLIMIT];
+			std::cin.getline(paths, PATHLIMIT);
+			path.append(paths);
+		}
+
+		AppParams params;
+		this->getParams(params);
+
+		ray::PMX model;
+		if (!this->load(path, model))
+			return false;
+
+		if (model.header.addUVCount == 0)
+		{
+			ray::LightMapPack lightPack(_lightMapListener);
+			if (!lightPack.atlasUV1(model, params.lightMass.lightMap.width, params.lightMass.lightMap.height, params.chart, params.stretch, params.lightMass.lightMap.margin))
+				return false;
+
+			if (!this->save(ray::util::directory(path) + "stage.pmx", model))
+				return false;
+		}
+
+		auto lightMass = std::make_shared<ray::LightMass>(_lightMassListener);
+		if (!lightMass->open())
+			return false;
+
+		ray::LightMapData lightMap;
+		if (!lightMass->baking(params.lightMass, model, lightMap))
+			return false;
+
+		std::string outputPath = ray::util::directory(path) + "ao.tga";
+		std::cout << "Save as image : " << outputPath << std::endl;
+
+		if (!this->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMass.lightMap.margin))
+			return false;
+
+		return true;
+	}
+
+private:
+	ray::LightMapListenerPtr _lightMapListener;
+	ray::LightMassListenerPtr _lightMassListener;
+};
 
 __ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")
 
-const char* itemsImageSize[] = { "512", "1024", "2048", "4096", "8192" };
-const char* itemsSampleSize[] = { "32", "64", "128", "256", "512" };
-
 GuiControllerComponent::GuiControllerComponent() noexcept
-	: _clearColor(ray::float4(114.f / 255.f, 144.f / 255.f, 154.f / 255.f))
 {
-	_fps = 0.0f;
-	_showMainMenu = true;
-	_showLightMassWindow = true;
-	_showStyleEditor = false;
-	_showAboutWindow = false;
-	_showFileBrowse = false;
 }
 
 GuiControllerComponent::~GuiControllerComponent() noexcept
@@ -63,283 +344,4 @@ ray::GameComponentPtr
 GuiControllerComponent::clone() const noexcept
 {
 	return std::make_shared<GuiControllerComponent>();
-}
-
-void
-GuiControllerComponent::setOpenFileListener(std::function<void()>& delegate)
-{
-	_onOpenFile = delegate;
-}
-
-void
-GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
-{
-	if (!message->isInstanceOf<ray::GuiMessage>())
-		return;
-
-	this->showMainMenu();
-	this->showStyleEditor();
-	this->showLightMass();
-
-	if (_showFileBrowse)
-	{
-		_showFileBrowse = false;
-
-		std::string filepath;
-		if (!showFileBrowse(filepath))
-			return;
-
-		ray::StreamReaderPtr stream;
-		if (!ray::IoServer::instance()->openFile(stream, filepath))
-		{
-			ray::Gui::text((std::string("Failed to open file : ") + filepath).c_str());
-			return;
-		}
-
-		ray::PMXHandler header;
-		if (!header.doCanRead(*stream))
-		{
-			ray::Gui::text((std::string("Non readable PMX file : ") + filepath).c_str());
-			return;
-		}
-
-		auto model = std::make_unique<ray::PMX>();
-		if (!header.doLoad(*stream, *model))
-		{
-			ray::Gui::text((std::string("Non readable PMX file : ") + filepath).c_str());
-			return;
-		}
-
-		_model = std::move(model);
-	}
-}
-
-bool
-GuiControllerComponent::showFileBrowse(std::string& path) noexcept
-{
-#if __WINDOWS__
-	OPENFILENAME ofn;
-	ray::util::string::value_type filepath[PATHLIMIT];
-
-	std::memset(&ofn, 0, sizeof(ofn));
-	std::memset(filepath, 0, sizeof(filepath));
-
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = 0;
-	ofn.lpstrFilter = TEXT("PMX Flie\0*.pmx;\0\0");
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFile = filepath;
-	ofn.nMaxFile = sizeof(filepath);
-	ofn.lpstrInitialDir = 0;
-	ofn.lpstrTitle = TEXT("Choose File");
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-	if (::GetOpenFileName(&ofn))
-	{
-		path = filepath;
-		return true;
-	}
-	return false;
-#else
-	return false;
-#endif
-}
-
-void
-GuiControllerComponent::showMainMenu() noexcept
-{
-	if (!_showMainMenu)
-		return;
-
-	if (ray::Gui::beginMainMenuBar())
-	{
-		ray::Gui::pushStyleColor(ray::GuiCol::GuiColBorder, ray::float4::Zero);
-
-		if (ray::Gui::beginMenu("File"))
-		{
-			ray::Gui::menuItem("Open", "CTRL+O", &_showFileBrowse);
-			ray::Gui::menuItem("Save", "CTRL+S");
-			ray::Gui::menuItem("Save As", "CTRL+SHIFT+S");
-			ray::Gui::endMenu();
-		}
-
-		if (ray::Gui::beginMenu("Window"))
-		{
-			ray::Gui::menuItem("Light Mass", 0, &_showLightMassWindow);
-			ray::Gui::menuItem("Style Editor", 0, &_showStyleEditor);
-			ray::Gui::endMenu();
-		}
-
-		if (ray::Gui::beginMenu("About"))
-		{
-			ray::Gui::endMenu();
-		}
-
-		ray::Gui::popStyleColor();
-
-		ray::Gui::endMainMenuBar();
-	}
-}
-
-void
-GuiControllerComponent::showAboutWindow() noexcept
-{
-	ray::Gui::text("LightMass Ver.0.1");
-	ray::Gui::text("Developer by : Rui (2017)");
-}
-
-void
-GuiControllerComponent::showStyleEditor() noexcept
-{
-	if (!_showStyleEditor)
-		return;
-
-	if (ray::Gui::begin("Style Editor", &_showStyleEditor, ray::float2(550, 500)))
-	{
-		ray::Gui::showStyleEditor();
-		ray::Gui::end();
-	}
-}
-
-void
-GuiControllerComponent::showLightMass() noexcept
-{
-	if (!_showLightMassWindow)
-		return;
-
-	ray::Gui::setNextWindowPos(ray::float2(0, 0), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
-	ray::Gui::setNextWindowSize(ray::float2(300, 700), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
-
-	if (ray::Gui::begin("Light Mass", &_showLightMassWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
-	{
-		ray::Gui::text("Light Mass");
-
-		if (ray::Gui::collapsingHeader("Uvmapper", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
-		{
-			ray::Gui::text("UV size");
-			ray::Gui::combo("##UV size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
-			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(0);
-				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("margin:");
-			ray::Gui::sliderFloat("##margin", &_setting.uvmapper.margin, 0.0f, 10.0f);
-			if (_setting.uvmapper.margin != _default.uvmapper.margin)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(1);
-				if (ray::Gui::button("Revert")) _setting.uvmapper.margin = _default.uvmapper.margin;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("stretch:");
-			ray::Gui::sliderFloat("##stretch", &_setting.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
-			if (_setting.uvmapper.stretch != _default.uvmapper.stretch)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(2);
-				if (ray::Gui::button("Revert")) _setting.uvmapper.stretch = _default.uvmapper.stretch;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("chart:");
-			ray::Gui::sliderInt("##chart", &_setting.uvmapper.chart, 0, 65535);
-			if (_setting.uvmapper.chart != _default.uvmapper.chart)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(3);
-				if (ray::Gui::button("Revert")) _setting.uvmapper.chart = _default.uvmapper.chart;
-				ray::Gui::popID();
-			}
-		}
-
-		if (ray::Gui::collapsingHeader("Light Mass", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
-		{
-			ray::Gui::checkbox("Enable Global Illumination", &_setting.lightmass.enableGI);
-
-			ray::Gui::text("Output Size");
-			ray::Gui::combo("##Output size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
-			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(4);
-				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("Sample Count");
-			ray::Gui::combo("##Sample Count", &_setting.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
-			if (_setting.lightmass.sampleCount != _default.lightmass.sampleCount)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(5);
-				if (ray::Gui::button("Revert")) _setting.lightmass.sampleCount = _default.lightmass.sampleCount;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("Environment Color:");
-			ray::Gui::colorEdit3("##Environment Color", _setting.lightmass.environmentColor.ptr());
-			if (_setting.lightmass.environmentColor.xyz() != _default.lightmass.environmentColor.xyz())
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(6);
-				if (ray::Gui::button("Revert")) _setting.lightmass.environmentColor.set(_default.lightmass.environmentColor.xyz());
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("Environment Intensity:");
-			ray::Gui::sliderFloat("##Environment Intensity", &_setting.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
-			if (_setting.lightmass.environmentColor.w != _default.lightmass.environmentColor.w)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(7);
-				if (ray::Gui::button("Revert")) _setting.lightmass.environmentColor.w = _default.lightmass.environmentColor.w;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("Hemisphere znear:");
-			ray::Gui::sliderFloat("##Hemisphere znear", &_setting.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
-			if (_setting.lightmass.hemisphereNear != _default.lightmass.hemisphereNear)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(8);
-				if (ray::Gui::button("Revert")) _setting.lightmass.hemisphereNear = _default.lightmass.hemisphereNear;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("Hemisphere zfar:");
-			ray::Gui::sliderFloat("##Hemisphere zfar", &_setting.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
-			if (_setting.lightmass.hemisphereFar != _default.lightmass.hemisphereFar) {
-				ray::Gui::sameLine();
-				ray::Gui::pushID(9);
-				if (ray::Gui::button("Revert")) _setting.lightmass.hemisphereFar = _default.lightmass.hemisphereFar;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("Interpolation Passes");
-			ray::Gui::sliderInt("##Interpolation Passes", &_setting.lightmass.interpolationPasses, 1, 5);
-			if (_setting.lightmass.interpolationPasses != _default.lightmass.interpolationPasses)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(10);
-				if (ray::Gui::button("Revert")) _setting.lightmass.interpolationPasses = _default.lightmass.interpolationPasses;
-				ray::Gui::popID();
-			}
-
-			ray::Gui::text("Interpolation Threshold");
-			ray::Gui::sliderFloat("##Interpolation Threshold", &_setting.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
-			if (_setting.lightmass.interpolationThreshold != _default.lightmass.interpolationThreshold)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(11);
-				if (ray::Gui::button("Revert")) _setting.lightmass.interpolationThreshold = _default.lightmass.interpolationThreshold;
-				ray::Gui::popID();
-			}
-		}
-
-		ray::Gui::end();
-	}
 }

@@ -59,6 +59,7 @@
             <attribute clearflags="none"/>
         </component>
         <component class="GuiCamera"/>
+		<component class="GuiView"/>
 		<component class="GuiController"/>
     </object>
 </scene>

@@ -34,15 +34,55 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/game_component.h>
+#ifndef _H_UI_CONTROLLER_H_
+#define _H_UI_CONTROLLER_H_
 
-class LightMassController final : ray::GameComponent
+#include <ray/game_component.h>
+#include "modpmx.h"
+#include "UIParams.h"
+
+class GuiViewComponent final : public ray::GameComponent
 {
+	__DeclareSubClass(GuiViewComponent, ray::GameComponent)
 public:
-	LightMassController() noexcept;
-	~LightMassController() noexcept;
+	GuiViewComponent() noexcept;
+	~GuiViewComponent() noexcept;
+
+	ray::GameComponentPtr clone() const noexcept;
+
+	void setOpenFileListener(std::function<void()>& delegate);
 
 private:
-	LightMassController(const LightMassController&) = delete;
-	LightMassController& operator=(const LightMassController&) = delete;
+	virtual void onMessage(const ray::MessagePtr& message) noexcept;
+
+private:
+	void showMainMenu() noexcept;
+	void showStyleEditor() noexcept;
+	void showLightMass() noexcept;
+	void showAboutWindow() noexcept;
+	bool showFileBrowse(std::string& path) noexcept;
+
+private:
+	GuiViewComponent(const GuiViewComponent&) = delete;
+	GuiViewComponent& operator=(const GuiViewComponent&) = delete;
+
+private:
+	float _fps;
+
+	bool _showMainMenu;
+	bool _showLightMassWindow;
+	bool _showStyleEditor;
+	bool _showAboutWindow;
+	bool _showFileBrowse;
+
+	ray::float4 _clearColor;
+
+	GuiParams _default;
+	GuiParams _setting;
+
+	std::function<void()> _onOpenFile;
+
+	std::unique_ptr<ray::PMX> _model;
 };
+
+#endif

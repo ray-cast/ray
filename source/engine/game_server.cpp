@@ -154,12 +154,7 @@ GameServer::closeScene(const std::string& sceneName) noexcept
 {
 	auto scene = this->findScene(sceneName);
 	if (scene)
-	{
-		scene->setActive(false);
-
-		for (auto& feature : _features)
-			feature->onCloseScene(scene);
-	}
+		this->closeScene(scene);
 }
 
 GameScenePtr
@@ -220,7 +215,7 @@ GameServer::addScene(GameScenePtr& scene) noexcept
 }
 
 void
-GameServer::removeScene(GameScenePtr& scene) noexcept
+GameServer::closeScene(GameScenePtr& scene) noexcept
 {
 	auto it = std::find(_scenes.begin(), _scenes.end(), scene);
 	if (it != _scenes.end())

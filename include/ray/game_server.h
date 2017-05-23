@@ -66,7 +66,7 @@ public:
 	void closeScene(const std::string& sceneName) noexcept;
 
 	bool addScene(GameScenePtr& scene) noexcept;
-	void removeScene(GameScenePtr& scene) noexcept;
+	void closeScene(GameScenePtr& scene) noexcept;
 
 	GameScenePtr findScene(const std::string& sceneName) noexcept;
 	const GameScenes& getScenes() const noexcept;

@@ -47,10 +47,11 @@ GUILightMass::GUILightMass() noexcept
 	: environmentColor(ray::float4::One)
 	, hemisphereNear(0.1)
 	, hemisphereFar(100.0)
-	, interpolationPasses(1)
+	, interpolationPasses(2)
 	, interpolationThreshold(1e-4)
 	, imageSize(1)
 	, sampleCount(1)
 	, enableGI(false)
+	, enableSkyLighting(false)
 {
 };

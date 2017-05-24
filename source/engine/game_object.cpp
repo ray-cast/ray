@@ -132,7 +132,7 @@ GameObject::setActiveDownwards(bool active) except
 			this->_onDeactivate();
 
 		for (auto& it : _children)
-			it->setActiveDownwards(true);
+			it->setActiveDownwards(active);
 
 		_active = active;
 	}
@@ -209,10 +209,10 @@ GameObject::setParent(GameObjectPtr&& parent) noexcept
 	this->setParent(parent);
 }
 
-GameObjectPtr
+GameObject*
 GameObject::getParent() const noexcept
 {
-	return _parent.lock();
+	return _parent.lock().get();
 }
 
 void
@@ -1029,7 +1029,7 @@ GameObjectPtr
 GameObject::clone() const noexcept
 {
 	auto instance = std::make_shared<GameObject>();
-	instance->setParent(this->getParent());
+	instance->setParent(_parent.lock());
 	instance->setName(this->getName());
 	instance->setLayer(this->getLayer());
 	instance->setQuaternion(this->getQuaternion());

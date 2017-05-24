@@ -48,7 +48,8 @@ public:
 	ray::GameComponentPtr clone() const noexcept;
 
 private:
-	bool onImportModel(const std::string& path, std::string& error) noexcept;
+	bool onModelImport(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
+	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
 
 	virtual void onAttachComponent(ray::GameComponentPtr& component) except;
 	virtual void onDetachComponent(ray::GameComponentPtr& component) noexcept;

@@ -105,7 +105,7 @@ public:
 		std::cout << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
 
-	virtual void onMessage(const std::string& message) noexcept
+	virtual void onMessage(const ray::util::string& message) noexcept
 	{
 		std::cout << message << std::endl;
 	}
@@ -144,7 +144,7 @@ public:
 		std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
 	}
 
-	virtual void onMessage(const std::string& message) noexcept
+	virtual void onMessage(const ray::util::string& message) noexcept
 	{
 		std::cout << message << std::endl;
 	}
@@ -167,14 +167,14 @@ public:
 	{
 	}
 
-	bool load(const std::string& path, ray::PMX& model)
+	bool load(const ray::util::string& path, ray::PMX& model)
 	{
 		ray::PMXHandler modelLoader;
 
 		if (_lightMassListener)
 			_lightMassListener->onMessage("loading model : " + path);
 
-		std::string error;
+		ray::util::string error;
 		if (!modelLoader.doLoad(path, model, error))
 		{
 			if (_lightMassListener)
@@ -189,14 +189,14 @@ public:
 		return true;
 	}
 
-	bool save(const std::string& path, ray::PMX& model)
+	bool save(const ray::util::string& path, ray::PMX& model)
 	{
 		ray::PMXHandler modelLoader;
 
 		if (_lightMassListener)
 			_lightMassListener->onMessage("Save as model : " + path);
 
-		std::string error;
+		ray::util::string error;
 		if (!modelLoader.doSave(path, model, error))
 		{
 			if (_lightMassListener)
@@ -208,7 +208,7 @@ public:
 		return true;
 	}
 
-	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
+	bool saveLightMass(const ray::util::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
 	{
 		assert(channel == 1 || channel == 3 || channel == 4);
 
@@ -282,7 +282,7 @@ public:
 		params.lightMass.enableGI = json["lightmass"]["enableGI"].get<float>() > 0 ? 1 : 0;*/
 	}
 
-	bool run(std::string path)
+	bool run(ray::util::string path)
 	{
 		while (path.empty())
 		{
@@ -317,7 +317,7 @@ public:
 		if (!lightMass->baking(params.lightMass, model, lightMap))
 			return false;
 
-		std::string outputPath = ray::util::directory(path) + "ao.tga";
+		ray::util::string outputPath = ray::util::directory(path) + "ao.tga";
 		std::cout << "Save as image : " << outputPath << std::endl;
 
 		if (!this->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMass.lightMap.margin))
@@ -342,30 +342,39 @@ GuiControllerComponent::~GuiControllerComponent() noexcept
 }
 
 bool
-GuiControllerComponent::onImportModel(const std::string& path, std::string& error) noexcept
+GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray::util::string& error) noexcept
 {
 	ray::StreamReaderPtr stream;
 	if (!ray::IoServer::instance()->openFile(stream, path))
 	{
-		error = "Failed to open file : " + path;
+		error = "Failed to open file : ";
 		return false;
 	}
 
 	ray::PMXHandler header;
 	if (!header.doCanRead(*stream))
 	{
-		error = "Non readable PMX file : " + path;
+		error = "Non readable PMX file : ";
 		return false;
 	}
 
 	auto model = std::make_unique<ray::PMX>();
 	if (!header.doLoad(*stream, *model))
 	{
-		error = "Non readable PMX file : " + path;
+		error = "Non readable PMX file : ";
 		return false;
 	}
 
 	_model = std::move(model);
+
+	return true;
+}
+
+bool
+GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray::util::string& error) noexcept
+{
+	if (!_model)
+		return false;
 
 	return true;
 }
@@ -382,7 +391,8 @@ GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) exce
 	if (component->isInstanceOf<GuiViewComponent>())
 	{
 		auto view = component->downcast<GuiViewComponent>();
-		view->setImportModelListener(std::bind(&GuiControllerComponent::onImportModel, this, std::placeholders::_1, std::placeholders::_2));
+		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
+		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
 	}
 }
 

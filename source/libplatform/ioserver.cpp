@@ -179,10 +179,32 @@ IoServer::openFile(StreamReaderPtr& stream, const util::string& path, open_mode 
 }
 
 IoServer&
+IoServer::openFile(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode) noexcept
+{
+	bool result = this->openFileFromFileSystem(stream, path, mode);
+	if (!result)
+		result = this->openFileFromDisk(stream, path, mode);
+	return *this;
+}
+
+IoServer&
 IoServer::openFileFromFileSystem(StreamReaderPtr& stream, const util::string& path, open_mode mode) noexcept
 {
 	this->setstate(ios_base::failbit);
 	return *this;
+}
+
+IoServer&
+IoServer::openFileFromFileSystem(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode) noexcept
+{
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::openFileFromDisk(StreamReaderPtr& result, util::string::const_pointer path, open_mode mode) noexcept
+{
+	return this->openFileFromDisk(result, std::string(path), mode);
 }
 
 IoServer&

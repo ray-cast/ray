@@ -49,7 +49,12 @@ public:
 
 	ray::GameComponentPtr clone() const noexcept;
 
-	void setImportModelListener(std::function<bool(const std::string&, std::string&)> delegate);
+	void setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
+	void setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
+	void setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
+
+	void setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
+	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
 
 private:
 	virtual void onMessage(const ray::MessagePtr& message) noexcept;
@@ -59,7 +64,16 @@ private:
 	void showStyleEditor() noexcept;
 	void showLightMass() noexcept;
 	void showAboutWindow() noexcept;
-	bool showFileBrowse(std::string& path) noexcept;
+
+	bool showFileOpenBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept;
+	bool showFileSaveBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept;
+
+	void showModelImportBrowse() noexcept;
+	void showModelExportBrowse() noexcept;
+
+	void showProjectOpenBrowse() noexcept;
+	void showProjectSaveBrowse() noexcept;
+	void showProjectSaveAsBrowse() noexcept;
 
 private:
 	GuiViewComponent(const GuiViewComponent&) = delete;
@@ -72,14 +86,20 @@ private:
 	bool _showLightMassWindow;
 	bool _showStyleEditor;
 	bool _showAboutWindow;
-	bool _showFileBrowse;
+
+	std::string _pathProject;
 
 	ray::float4 _clearColor;
 
 	GuiParams _default;
 	GuiParams _setting;
 
-	std::function<bool(const std::string&, std::string&)> _onImportModel;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onProjectOpen;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onProjectSave;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onProjectSaveAs;
+
+	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelImport;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelSaveAs;
 };
 
 #endif

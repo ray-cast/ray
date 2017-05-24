@@ -56,6 +56,7 @@ struct GUILightMass
 	int interpolationPasses;
 
 	bool enableGI;
+	bool enableSkyLighting;
 
 	float hemisphereNear;
 	float hemisphereFar;

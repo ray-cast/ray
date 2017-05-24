@@ -52,7 +52,6 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showLightMassWindow = true;
 	_showStyleEditor = false;
 	_showAboutWindow = false;
-	_showFileBrowse = false;
 }
 
 GuiViewComponent::~GuiViewComponent() noexcept
@@ -66,9 +65,33 @@ GuiViewComponent::clone() const noexcept
 }
 
 void
-GuiViewComponent::setImportModelListener(std::function<bool(const std::string&, std::string&)> delegate)
+GuiViewComponent::setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
 {
-	_onImportModel = delegate;
+	_onModelImport = delegate;
+}
+
+void
+GuiViewComponent::setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+{
+	_onModelSaveAs = delegate;
+}
+
+void
+GuiViewComponent::setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+{
+	_onProjectOpen = delegate;
+}
+
+void
+GuiViewComponent::setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+{
+	_onProjectSave = delegate;
+}
+
+void
+GuiViewComponent::setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+{
+	_onProjectSaveAs = delegate;
 }
 
 void
@@ -80,53 +103,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 	this->showMainMenu();
 	this->showStyleEditor();
 	this->showLightMass();
-
-	if (_showFileBrowse)
-	{
-		std::string filepath;
-		if (showFileBrowse(filepath))
-		{
-			if (_onImportModel)
-			{
-				std::string error;
-				_onImportModel(filepath, error);
-			}
-		}
-
-		_showFileBrowse = false;
-	}
-}
-
-bool
-GuiViewComponent::showFileBrowse(std::string& path) noexcept
-{
-#if __WINDOWS__
-	OPENFILENAME ofn;
-	ray::util::string::value_type filepath[PATHLIMIT];
-
-	std::memset(&ofn, 0, sizeof(ofn));
-	std::memset(filepath, 0, sizeof(filepath));
-
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = 0;
-	ofn.lpstrFilter = TEXT("PMX Flie\0*.pmx;\0\0");
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFile = filepath;
-	ofn.nMaxFile = sizeof(filepath);
-	ofn.lpstrInitialDir = 0;
-	ofn.lpstrTitle = TEXT("Choose File");
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-	if (::GetOpenFileName(&ofn))
-	{
-		path = filepath;
-		return true;
-	}
-
-	return false;
-#else
-	return false;
-#endif
+	this->showAboutWindow();
 }
 
 void
@@ -141,9 +118,16 @@ GuiViewComponent::showMainMenu() noexcept
 
 		if (ray::Gui::beginMenu("File"))
 		{
-			ray::Gui::menuItem("Open", "CTRL+O", &_showFileBrowse);
-			ray::Gui::menuItem("Save", "CTRL+S");
-			ray::Gui::menuItem("Save As", "CTRL+SHIFT+S");
+			if (ray::Gui::menuItem("Open", "CTRL+O")) { this->showProjectOpenBrowse(); }
+			if (ray::Gui::menuItem("Save", "CTRL+S")) { this->showProjectSaveBrowse(); }
+			if (ray::Gui::menuItem("Save As", "CTRL+SHIFT+S")) { this->showProjectSaveAsBrowse(); }
+			ray::Gui::separator();
+			ray::Gui::separator();
+			if (ray::Gui::menuItem("Import Model", "")) { this->showModelImportBrowse(); }
+			if (ray::Gui::menuItem("Export Model", "")) { this->showModelExportBrowse(); }
+			ray::Gui::separator();
+			ray::Gui::separator();
+			if (ray::Gui::menuItem("Exit", "")) { std::exit(0); }
 			ray::Gui::endMenu();
 		}
 
@@ -154,8 +138,9 @@ GuiViewComponent::showMainMenu() noexcept
 			ray::Gui::endMenu();
 		}
 
-		if (ray::Gui::beginMenu("About"))
+		if (ray::Gui::beginMenu("Help"))
 		{
+			ray::Gui::menuItem("About", 0, &_showAboutWindow);
 			ray::Gui::endMenu();
 		}
 
@@ -165,11 +150,174 @@ GuiViewComponent::showMainMenu() noexcept
 	}
 }
 
+bool
+GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept
+{
+	assert(path && max_length > 0 && ext_name);
+
+#if __WINDOWS__
+	OPENFILENAME ofn;
+	std::memset(&ofn, 0, sizeof(ofn));
+
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = 0;
+	ofn.lpstrFilter = ext_name;
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFile = path;
+	ofn.nMaxFile = max_length;
+	ofn.lpstrInitialDir = 0;
+	ofn.lpstrTitle = TEXT("Choose File");
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+	if (::GetOpenFileName(&ofn))
+		return true;
+
+	return false;
+#else
+	return false;
+#endif
+}
+
+bool
+GuiViewComponent::showFileSaveBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept
+{
+	assert(path && max_length > 0 && ext_name);
+
+#if __WINDOWS__
+	OPENFILENAME ofn;
+	std::memset(&ofn, 0, sizeof(ofn));
+
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = 0;
+	ofn.lpstrFilter = ext_name;
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFile = path;
+	ofn.nMaxFile = max_length;
+	ofn.lpstrInitialDir = 0;
+	ofn.lpstrTitle = TEXT("Save As File");
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+
+	if (::GetSaveFileName(&ofn))
+		return true;
+
+	return false;
+#else
+	return false;
+#endif
+}
+
+void
+GuiViewComponent::showModelImportBrowse() noexcept
+{
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
+		return;
+
+	if (_onModelImport)
+	{
+		ray::util::string error;
+		if (!_onModelImport(filepath, error))
+		{
+			if (!error.empty())
+				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
+		}
+	}
+}
+
+void
+GuiViewComponent::showModelExportBrowse() noexcept
+{
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
+		return;
+
+	if (_onModelSaveAs)
+	{
+		ray::util::string error;
+		if (!_onModelSaveAs(filepath, error))
+		{
+			if (!error.empty())
+				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
+		}
+	}
+}
+
+void
+GuiViewComponent::showProjectOpenBrowse() noexcept
+{
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
+		return;
+
+	if (_onProjectOpen)
+	{
+		ray::util::string error;
+		if (!_onProjectOpen(filepath, error))
+		{
+			if (!error.empty())
+				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
+		}
+	}
+}
+
+void
+GuiViewComponent::showProjectSaveBrowse() noexcept
+{
+	if (_pathProject.empty())
+		return;
+
+	if (_onProjectSave)
+	{
+		ray::util::string error;
+		if (!_onProjectSave(_pathProject.c_str(), error))
+		{
+			if (!error.empty())
+				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
+		}
+	}
+}
+
+void
+GuiViewComponent::showProjectSaveAsBrowse() noexcept
+{
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
+		return;
+
+	if (_onProjectOpen)
+	{
+		ray::util::string error;
+		if (!_onProjectOpen(filepath, error))
+		{
+			if (!error.empty())
+				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
+		}
+
+		_pathProject = filepath;
+	}
+}
+
 void
 GuiViewComponent::showAboutWindow() noexcept
 {
-	ray::Gui::text("LightMass Ver.0.1");
-	ray::Gui::text("Developer by : Rui (2017)");
+	if (!_showAboutWindow)
+		return;
+
+	if (ray::Gui::begin("About", &_showAboutWindow))
+	{
+		ray::Gui::text("LightMass Ver.0.1");
+		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
+		ray::Gui::text("Copyright (c) 2017-2018. All rights reserved.");
+		ray::Gui::end();
+	}
 }
 
 void
@@ -244,6 +392,7 @@ GuiViewComponent::showLightMass() noexcept
 		if (ray::Gui::collapsingHeader("Light Mass", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::checkbox("Enable Global Illumination", &_setting.lightmass.enableGI);
+			ray::Gui::checkbox("Enable Image Based Lighting", &_setting.lightmass.enableSkyLighting);
 
 			ray::Gui::text("Output Size");
 			ray::Gui::combo("##Output size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
@@ -285,8 +434,8 @@ GuiViewComponent::showLightMass() noexcept
 				ray::Gui::popID();
 			}
 
-			ray::Gui::text("Hemisphere znear:");
-			ray::Gui::sliderFloat("##Hemisphere znear", &_setting.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
+			ray::Gui::text("Ray tracing znear:");
+			ray::Gui::sliderFloat("##Ray tracing znear", &_setting.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
 			if (_setting.lightmass.hemisphereNear != _default.lightmass.hemisphereNear)
 			{
 				ray::Gui::sameLine();
@@ -295,8 +444,8 @@ GuiViewComponent::showLightMass() noexcept
 				ray::Gui::popID();
 			}
 
-			ray::Gui::text("Hemisphere zfar:");
-			ray::Gui::sliderFloat("##Hemisphere zfar", &_setting.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
+			ray::Gui::text("Ray tracing zfar:");
+			ray::Gui::sliderFloat("##Ray tracing zfar", &_setting.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
 			if (_setting.lightmass.hemisphereFar != _default.lightmass.hemisphereFar) {
 				ray::Gui::sameLine();
 				ray::Gui::pushID(9);

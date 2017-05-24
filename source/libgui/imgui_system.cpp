@@ -78,9 +78,9 @@ IMGUISystem::open() except
 	style.Colors[ImGuiCol_Button] = ImColor(0, 95, 168, 255);
 	style.Colors[ImGuiCol_ButtonHovered] = ImColor(230, 179, 0, 255);
 	style.Colors[ImGuiCol_ButtonActive] = ImColor(255, 153, 0, 255);
-	style.Colors[ImGuiCol_CloseButton] = ImVec4(0.2, 0.2, 0.2, 0.50f);
-	style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.6f, 0.6f, 0.6f, 0.60f);
-	style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
+	style.Colors[ImGuiCol_CloseButton] = ImVec4(0.2f, 0.5f, 1.0f, 0.5f);
+	style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.2f, 0.5f, 1.0f, 0.7f);
+	style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.2f, 0.5f, 1.0f, 1.0f);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0, 0.6, 1.0, 0.75f);
 	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.20f, 0.20, 0.20f, 0.60f);
 	style.Colors[ImGuiCol_ScrollbarGrab] = ImColor(0, 0, 0, 255);

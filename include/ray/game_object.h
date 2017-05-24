@@ -65,7 +65,7 @@ public:
 
 	void setParent(GameObjectPtr& parent) noexcept;
 	void setParent(GameObjectPtr&& parent) noexcept;
-	GameObjectPtr getParent() const noexcept;
+	GameObject* getParent() const noexcept;
 
 	void addChild(GameObjectPtr& child) noexcept;
 	void addChild(GameObjectPtr&& child) noexcept;

@@ -72,6 +72,11 @@ GameScene::GameScene(const util::string& name) noexcept
 
 GameScene::~GameScene() noexcept
 {
+	assert(_root.unique());
+
+	this->setActive(false);
+	_root.unique();
+
 	GameSceneManager::instance()->_unsetScene(this);
 }
 
@@ -82,7 +87,7 @@ GameScene::setActive(bool active) except
 	{
 		GameSceneManager::instance()->_activeScene(this, active);
 
-		_root->setActive(active);
+		_root->setActiveDownwards(active);
 	}
 }
 

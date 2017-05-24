@@ -185,8 +185,9 @@ GameComponent::sendMessage(const MessagePtr& message) except
 
 	GameComponent* ignore[1] = { this };
 
-	if (parent)
-		parent->sendMessageDownwards(message, ignore, 1);
+	auto raw_parent = parent;
+	if (raw_parent)
+		raw_parent->sendMessageDownwards(message, ignore, 1);
 	else
 	{
 		auto& components = this->getGameObject()->getComponents();

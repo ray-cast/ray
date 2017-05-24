@@ -61,8 +61,13 @@ public:
 	IoServer& getResolveAssign(const util::string& url, util::string& resolvePath) noexcept;
 
 	IoServer& openFile(StreamReaderPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFile(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode = ios_base::in) noexcept;
+
 	IoServer& openFileFromFileSystem(StreamReaderPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromFileSystem(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode = ios_base::in) noexcept;
+
 	IoServer& openFileFromDisk(StreamReaderPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromDisk(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode = ios_base::in) noexcept;
 
 	IoServer& openFile(StreamWritePtr& stream, const util::string& path, open_mode mode = ios_base::out) noexcept;
 	IoServer& openFileFromFileSystem(StreamWritePtr& stream, const util::string& path, open_mode mode = ios_base::out) noexcept;

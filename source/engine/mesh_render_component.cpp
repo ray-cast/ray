@@ -238,23 +238,19 @@ MeshRenderComponent::load(const archive_node& reader) noexcept
 {
 	RenderComponent::load(reader);
 
-	const auto& material = reader["material"];
-	const auto& isCastShadow = reader["castshadow"];
-	const auto& isReceiveShadow = reader["receiveshadow"];
-
-	if (material.is_string())
-		_material = material.get<archive_node::string_t>();
-
-	if (isCastShadow.is_boolean())
-		_isCastShadow = isCastShadow.get<archive_node::boolean_t>();
-
-	if (isReceiveShadow.is_boolean())
-		_isReceiveShadow = isCastShadow.get<archive_node::boolean_t>();
+	reader["material"] >> _material;
+	reader["castshadow"] >> _isCastShadow;
+	reader["receiveshadow"] >> _isReceiveShadow;
 }
 
 void
 MeshRenderComponent::save(archive_node& write) noexcept
 {
+	RenderComponent::save(write);
+
+	write["material"] << _material;
+	write["castshadow"] << _isCastShadow;
+	write["receiveshadow"] << _isReceiveShadow;
 }
 
 GameComponentPtr

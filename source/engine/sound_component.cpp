@@ -317,29 +317,33 @@ SoundComponent::removePlayEndListener(std::function<void()>* func) noexcept
 void
 SoundComponent::load(const archive_node& reader) noexcept
 {
-	/*reader >> make_archive(_volume, "volume");
-	reader >> make_archive(_volumeMin, "volumeMin");
-	reader >> make_archive(_volumeMax, "volumeMax");
-	reader >> make_archive(_pitch, "pitch");
-	reader >> make_archive(_distanceMin, "_distanceMin");
-	reader >> make_archive(_distanceMax, "_distanceMax");
-	reader >> make_archive(_isPlayOnActivate, "play");
-	reader >> make_archive(_isLoop, "loop");
-	reader >> make_archive(_sourceName, "source");*/
+	GameComponent::load(reader);
+
+	reader["volume"] >> _volume;
+	reader["volumeMin"] >> _volumeMin;
+	reader["volumeMax"] >> _volumeMax;
+	reader["pitch"] >> _pitch;
+	reader["_distanceMin"] >> _distanceMin;
+	reader["_distanceMax"] >> _distanceMax;
+	reader["play"] >> _isPlayOnActivate;
+	reader["loop"] >> _isLoop;
+	reader["source"] >> _sourceName;
 }
 
 void
 SoundComponent::save(archive_node& write) noexcept
 {
-	/*write << make_archive(_volume, "volume");
-	write << make_archive(_volumeMin, "volumeMin");
-	write << make_archive(_volumeMax, "volumeMax");
-	write << make_archive(_pitch, "pitch");
-	write << make_archive(_distanceMin, "_distanceMin");
-	write << make_archive(_distanceMax, "_distanceMax");
-	write << make_archive(_isPlayOnActivate, "play");
-	write << make_archive(_isLoop, "loop");
-	write << make_archive(_sourceName, "source");*/
+	GameComponent::save(write);
+
+	write["volume"] << _volume;
+	write["volumeMin"] << _volumeMin;
+	write["volumeMax"] << _volumeMax;
+	write["pitch"] << _pitch;
+	write["_distanceMin"] << _distanceMin;
+	write["_distanceMax"] << _distanceMax;
+	write["play"] << _isPlayOnActivate;
+	write["loop"] << _isLoop;
+	write["source"] << _sourceName;
 }
 
 GameComponentPtr

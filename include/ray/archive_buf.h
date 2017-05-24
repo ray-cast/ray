@@ -56,6 +56,10 @@ public:
 	using number_integer_t = std::int32_t;
 	using number_unsigned_t = std::uint32_t;
 	using number_float_t = float;
+	using number_float2_t = Vector2t<number_float_t>;
+	using number_float3_t = Vector3t<number_float_t>;
+	using number_float4_t = Vector4t<number_float_t>;
+	using number_quaternion_t = Quaterniont<number_float_t>;
 	using string_t = std::string;
 	using object_t = std::list<std::pair<std::string, archive_node>>;
 	using array_t = std::vector<archive_node>;
@@ -224,6 +228,214 @@ public:
 	const archive_node& operator[](const char* key) const;
 	const archive_node& operator[](const string_t& key) const;
 	const archive_node& operator[](std::size_t n) const;
+
+	const archive_node& operator >> (archive_node::boolean_t& argv) const
+	{
+		const auto& value = *this;
+		if (value.is_boolean())
+			argv = value.get<archive_node::boolean_t>();
+		return *this;
+	}
+
+	template<typename T, std::enable_if_t<std::is_signed<T>::value, int> = 0>
+	const archive_node& operator >> (T& argv) const
+	{
+		if (this->is_integral())
+			argv = static_cast<T>(this->get<archive_node::number_integer_t>());
+		return *this;
+	}
+
+	template<typename T, std::enable_if_t<std::is_unsigned<T>::value, int> = 0>
+	const archive_node& operator >> (T& argv) const
+	{
+		if (this->is_integral())
+			argv = static_cast<T>(this->get<archive_node::number_unsigned_t>());
+		return *this;
+	}
+
+	const archive_node& operator >> (archive_node::number_float_t& argv) const
+	{
+		const auto& value = *this;
+		if (value.is_numeric())
+			argv = value.get<archive_node::number_float_t>();
+		return *this;
+	}
+
+	const archive_node& operator >> (archive_node::number_float2_t& argv) const
+	{
+		if (this->is_array())
+		{
+			const auto& values = this->get<archive_node::array_t>();
+			if (values.size() == 2)
+			{
+				for (std::uint8_t i = 0; i < 2; ++i)
+					argv[i] = values[i].get<archive_node::number_float_t>();
+			}
+			else
+			{
+				throw failure(std::string("array length mismatch with 2"));
+			}
+		}
+
+		return *this;
+	}
+
+	const archive_node& operator >> (archive_node::number_float3_t& argv) const
+	{
+		if (this->is_array())
+		{
+			const auto& values = this->get<archive_node::array_t>();
+			if (values.size() == 3)
+			{
+				for (std::uint8_t i = 0; i < 3; ++i)
+					argv[i] = values[i].get<archive_node::number_float_t>();
+			}
+			else
+			{
+				throw failure(std::string("array length mismatch with 3"));
+			}
+		}
+
+		return *this;
+	}
+
+	const archive_node& operator >> (archive_node::number_float4_t& argv) const
+	{
+		if (this->is_array())
+		{
+			const auto& values = this->get<archive_node::array_t>();
+			if (values.size() == 4)
+			{
+				for (std::uint8_t i = 0; i < 4; ++i)
+					argv[i] = values[i].get<archive_node::number_float_t>();
+			}
+			else
+			{
+				throw failure(std::string("array length mismatch with 4"));
+			}
+		}
+
+		return *this;
+	}
+
+	const archive_node& operator >> (archive_node::number_quaternion_t& argv) const
+	{
+		if (this->is_array())
+		{
+			const auto& values = this->get<archive_node::array_t>();
+			if (values.size() == 4)
+			{
+				for (std::uint8_t i = 0; i < 4; ++i)
+					argv[i] = values[i].get<archive_node::number_float_t>();
+			}
+			else
+			{
+				throw failure(std::string("array length mismatch with 4"));
+			}
+		}
+
+		return *this;
+	}
+
+	const archive_node& operator >> (archive_node::string_t& argv) const
+	{
+		const auto& value = *this;
+		if (value.is_string())
+			argv = value.get<archive_node::string_t>();
+		return *this;
+	}
+
+	archive_node& operator << (archive_node::boolean_t& argv)
+	{
+		this->operator=(argv);
+		return *this;
+	}
+
+	template<typename T, std::enable_if_t<std::is_integral<T>::value || std::is_same<T, number_float_t>::value, int> = 0>
+	archive_node& operator << (T& argv)
+	{
+		this->operator=(argv);
+		return *this;
+	}
+
+	template<typename T, std::enable_if_t<std::is_same<T, string_t>::value || std::is_same<T, string_t::const_pointer>::value, int> = 0>
+	archive_node& operator << (const T& argv)
+	{
+		this->operator=(argv);
+		return *this;
+	}
+
+	archive_node& operator << (const archive_node::number_float2_t& argv)
+	{
+		if (!this->is_array())
+			this->emplace(archive_node::array);
+
+		if (this->is_array())
+		{
+			for (std::uint8_t i = 0; i < 2; ++i)
+				this->operator[](i) = argv[i];
+		}
+		else
+		{
+			throw failure(std::string("cannot use operator << with ") + this->type_name());
+		}
+
+		return *this;
+	}
+
+	archive_node& operator << (const archive_node::number_float3_t& argv)
+	{
+		if (!this->is_array())
+			this->emplace(archive_node::array);
+
+		if (this->is_array())
+		{
+			for (std::uint8_t i = 0; i < 3; ++i)
+				this->operator[](i) = argv[i];
+		}
+		else
+		{
+			throw failure(std::string("cannot use operator << with ") + this->type_name());
+		}
+
+		return *this;
+	}
+
+	archive_node& operator << (const archive_node::number_float4_t& argv)
+	{
+		if (!this->is_array())
+			this->emplace(archive_node::array);
+
+		if (this->is_array())
+		{
+			for (std::uint8_t i = 0; i < 4; ++i)
+				this->operator[](i) = argv[i];
+		}
+		else
+		{
+			throw failure(std::string("cannot use operator << with ") + this->type_name());
+		}
+
+		return *this;
+	}
+
+	archive_node& operator << (const archive_node::number_quaternion_t& argv)
+	{
+		if (!this->is_array())
+			this->emplace(archive_node::array);
+
+		if (this->is_array())
+		{
+			for (std::uint8_t i = 0; i < 4; ++i)
+				this->operator[](i) = argv[i];
+		}
+		else
+		{
+			throw failure(std::string("cannot use operator << with ") + this->type_name());
+		}
+
+		return *this;
+	}
 
 private:
 	template<typename T, type_t type>

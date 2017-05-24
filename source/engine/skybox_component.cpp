@@ -274,21 +274,14 @@ SkyboxComponent::load(const archive_node& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	const auto& skyMap = reader["skymap"];
-	const auto& skydiffuse = reader["skydiffuse"];
-	const auto& skyspecular = reader["skyspecular"];
-	const auto& skyDiffuseIntensity = reader["skyDiffuse"];
-	const auto& skySpecularIntensity = reader["skySpeculars"];
-	const auto& skysize = reader["skysize"];
+	reader["skymap"] >> _skyMap;
+	reader["skydiffuse"] >> _skyDiffuse;
+	reader["skyspecular"] >> _skySpecular;
+	reader["skyDiffuse"] >> _skyDiffuseIntensity;
+	reader["skySpeculars"] >> _skySpecularIntensity;
+	reader["skysize"] >> _skyboxSize;
+
 	const auto& flags = reader["flags"];
-
-	_skyMap = skyMap.is_string() ? skyMap.get<archive_node::string_t>() : "";
-	_skyDiffuse = skydiffuse.is_string() ? skydiffuse.get<archive_node::string_t>() : "";
-	_skySpecular = skyspecular.is_string() ? skyspecular.get<archive_node::string_t>() : "";
-	_skyDiffuseIntensity = skyDiffuseIntensity.is_numeric() ? skyDiffuseIntensity.get<archive_node::number_float_t>() : 1.0f;
-	_skySpecularIntensity = skySpecularIntensity.is_numeric() ? skySpecularIntensity.get<archive_node::number_float_t>() : 1.0f;
-	_skyboxSize = skysize.is_numeric() ? skysize.get<archive_node::number_float_t>() : 1000.0f;
-
 	if (flags.is_string())
 	{
 		std::vector<util::string> args;
@@ -309,6 +302,14 @@ SkyboxComponent::load(const archive_node& reader) noexcept
 void
 SkyboxComponent::save(archive_node& write) noexcept
 {
+	GameComponent::save(write);
+
+	write["skymap"] << _skyMap;
+	write["skydiffuse"] << _skyDiffuse;
+	write["skyspecular"] << _skySpecular;
+	write["skyDiffuse"] << _skyDiffuseIntensity;
+	write["skySpeculars"] << _skySpecularIntensity;
+	write["skysize"] << _skyboxSize;
 }
 
 GameComponentPtr

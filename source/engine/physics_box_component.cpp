@@ -73,10 +73,10 @@ PhysicsBoxComponent::load(const archive_node& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	/*float3 size;
-	reader >> make_archive(size, "size");
+	float3 size;
+	reader >> size;
 
-	_shape->setSize(size);*/
+	_shape->setSize(size);
 }
 
 void

@@ -159,21 +159,15 @@ GameComponent::getName() const noexcept
 void
 GameComponent::load(const archive_node& reader) noexcept
 {
-	auto& name = reader["name"];
-	auto& active = reader["active"];
-
-	if (name.is_string())
-		this->setName(name.get<archive_node::string_t>());
-
-	if (active.is_boolean())
-		this->setActive(active.get<archive_node::boolean_t>());
+	reader["name"] >> _name;
+	reader["active"] >> _active;
 }
 
 void
 GameComponent::save(archive_node& write) noexcept
 {
-	write["name"] = _name;
-	write["active"] = _active;
+	write["name"] << _name;
+	write["active"] << _active;
 }
 
 void

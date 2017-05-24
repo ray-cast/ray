@@ -1006,47 +1006,23 @@ GameObject::sendMessageDownwards(const MessagePtr& message, GameComponent* ignor
 void
 GameObject::load(const archive_node& reader) except
 {
-	const auto& name = reader["name"];
-	const auto& active = reader["active"];
-	const auto& layer = reader["layer"];
-	const auto& position = reader["position"];
-	const auto& rotation = reader["rotate"];
-
-	if (name.is_string())
-		this->setName(name.get<archive_node::string_t>());
-
-	if (active.is_boolean())
-		this->setActive(active.get<archive_node::boolean_t>());
-
-	if (layer.is_boolean())
-		this->setLayer(layer.get<archive_node::number_integer>());
-
-	if (position.is_array())
-	{
-		float3 translate;
-
-		const auto& values = position.get<archive_node::array_t>();
-		for (std::uint8_t i = 0; i < 3; ++i)
-			translate[i] = values[i].get<archive_node::number_float>();
-
-		this->setTranslate(translate);
-	}
-
-	if (rotation.is_array())
-	{
-		Quaternion quat;
-
-		const auto& values = position.get<archive_node::array_t>();
-		for (std::uint8_t i = 0; i < 4; ++i)
-			quat[i] = values[i].get<float>();
-
-		this->setQuaternion(quat);
-	}
+	reader["name"] >> _name;
+	reader["active"] >> _active;
+	reader["layer"] >> _layer;
+	reader["position"] >> this->_localTranslate;
+	reader["scale"] >> this->_localScaling;
+	reader["rotate"] >> this->_localRotation;
 }
 
 void
 GameObject::save(archive_node& write) except
 {
+	write["name"] << _name;
+	write["active"] << _active;
+	write["layer"] << _layer;
+	write["position"] << this->_localTranslate;
+	write["scale"] << this->_localScaling;
+	write["rotate"] << this->_localRotation;
 }
 
 GameObjectPtr

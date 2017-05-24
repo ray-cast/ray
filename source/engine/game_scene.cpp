@@ -93,22 +93,22 @@ GameScene::getActive() const noexcept
 }
 
 void
-GameScene::setGameListener(GameListenerPtr listener) noexcept
+GameScene::setGameListener(const GameListenerPtr& listener) noexcept
 {
 	if (_gameListener != listener)
-	{
-		this->onListenerChangeBefore();
-
 		_gameListener = listener;
-
-		this->onListenerChangeAfter();
-	}
 }
 
 GameListenerPtr
 GameScene::getGameListener() const noexcept
 {
 	return _gameListener;
+}
+
+void
+GameScene::setName(util::string&& name) noexcept
+{
+	_name = std::move(name);
 }
 
 void
@@ -150,16 +150,6 @@ GameScene::sendMessage(const MessagePtr& message) except
 	}
 }
 
-void
-GameScene::onListenerChangeBefore() noexcept
-{
-}
-
-void
-GameScene::onListenerChangeAfter() noexcept
-{
-}
-
 bool
 GameScene::load(const util::string& filename) noexcept
 {
@@ -185,8 +175,7 @@ GameScene::load(const util::string& filename) noexcept
 			return false;
 		}
 
-		this->load(json);
-		return true;
+		return this->load(json);
 	}
 	catch (const exception& e)
 	{
@@ -198,7 +187,7 @@ GameScene::load(const util::string& filename) noexcept
 }
 
 bool
-GameScene::load(archive_node& reader) noexcept
+GameScene::load(const archive_node& reader) noexcept
 {
 	try
 	{
@@ -282,7 +271,13 @@ GameScene::load(archive_node& reader) noexcept
 }
 
 bool
-GameScene::save(oarchive& reader) noexcept
+GameScene::save(archive_node& reader) noexcept
+{
+	return false;
+}
+
+bool
+GameScene::save(const util::string& sceneName) noexcept
 {
 	return false;
 }

@@ -52,9 +52,10 @@ public:
 	void setActive(bool active) except;
 	bool getActive() const noexcept;
 
-	void setGameListener(GameListenerPtr listener) noexcept;
+	void setGameListener(const GameListenerPtr& listener) noexcept;
 	GameListenerPtr getGameListener() const noexcept;
 
+	void setName(util::string&& name) noexcept;
 	void setName(const util::string& name) noexcept;
 	const util::string& getName() const noexcept;
 
@@ -64,17 +65,13 @@ public:
 
 	void sendMessage(const MessagePtr& message) except;
 
-	bool load(archive_node& reader) noexcept;
-	bool save(oarchive& reader) noexcept;
+	bool load(const archive_node& reader) noexcept;
+	bool save(archive_node& reader) noexcept;
 
 	bool load(const util::string& sceneName) noexcept;
 	bool save(const util::string& sceneName) noexcept;
 
 	GameScenePtr clone() const noexcept;
-
-private:
-	virtual void onListenerChangeBefore() noexcept;
-	virtual void onListenerChangeAfter() noexcept;
 
 private:
 	class RootObject : public GameObject

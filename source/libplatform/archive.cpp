@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/archive.h>
-#include <ray/except.h>
 
 _NAME_BEGIN
 
@@ -79,64 +78,76 @@ archive::getOpenMode() const noexcept
 	return _mode;
 }
 
-std::string
-archive::getCurrentNodeName() const noexcept
+std::size_t
+archive::size() const noexcept
 {
-	return this->rdbuf()->getCurrentNodeName();
+	return this->rdbuf()->size();
 }
 
-std::string
-archive::getCurrentNodePath() const noexcept
+const char*
+archive::type_name() const noexcept
 {
-	return this->rdbuf()->getCurrentNodePath();
+	return this->rdbuf()->type_name();
 }
 
-bool
-archive::setToNode(const std::string& path) noexcept
+const char*
+archive::type_name(type_t type) const noexcept
 {
-	return this->rdbuf()->setToNode(path);
+	return this->rdbuf()->type_name(type);
 }
 
-bool
-archive::setToFirstChild() noexcept
+const archive::type_t
+archive::type() const noexcept
 {
-	return this->rdbuf()->setToFirstChild();
-}
-
-bool
-archive::setToFirstChild(const std::string& name) noexcept
-{
-	return this->rdbuf()->setToFirstChild(name);
+	return this->rdbuf()->type();
 }
 
 bool
-archive::setToNextChild() noexcept
+archive::is_null() const noexcept
 {
-	return this->rdbuf()->setToNextChild();
+	return this->rdbuf()->is_null();
 }
 
 bool
-archive::setToNextChild(const std::string& name) noexcept
+archive::is_boolean() const noexcept
 {
-	return this->rdbuf()->setToNextChild(name);
+	return this->rdbuf()->is_boolean();
 }
 
 bool
-archive::setToParent() noexcept
+archive::is_integral() const noexcept
 {
-	return this->rdbuf()->setToParent();
+	return this->rdbuf()->is_integral();
 }
 
 bool
-archive::setToRoot() noexcept
+archive::is_float() const noexcept
 {
-	return this->rdbuf()->setToRoot();
+	return this->rdbuf()->is_float();
 }
 
 bool
-archive::hasChild() const noexcept
+archive::is_string() const noexcept
 {
-	return this->rdbuf()->hasChild();
+	return this->rdbuf()->is_string();
+}
+
+bool
+archive::is_numeric() const noexcept
+{
+	return this->rdbuf()->is_numeric();
+}
+
+bool
+archive::is_array() const noexcept
+{
+	return this->rdbuf()->is_array();
+}
+
+bool
+archive::is_object() const noexcept
+{
+	return this->rdbuf()->is_object();
 }
 
 _NAME_END

@@ -166,8 +166,8 @@ GameScene::load(const util::string& filename) noexcept
 			return false;
 		}
 
-		auto json = json::reader(*stream);
-		if (!json.is_object())
+		JsonReader reader(*stream);
+		if (!reader.is_object())
 		{
 			if (_gameListener)
 				_gameListener->onMessage("Non readable Scene file : " + filename);
@@ -175,7 +175,7 @@ GameScene::load(const util::string& filename) noexcept
 			return false;
 		}
 
-		return this->load(json);
+		return this->load(reader);
 	}
 	catch (const exception& e)
 	{
@@ -187,7 +187,7 @@ GameScene::load(const util::string& filename) noexcept
 }
 
 bool
-GameScene::load(const archive_node& reader) noexcept
+GameScene::load(const iarchive& reader) noexcept
 {
 	try
 	{
@@ -202,7 +202,7 @@ GameScene::load(const archive_node& reader) noexcept
 
 		const auto& sceneName = scene["name"];
 		if (sceneName.is_string())
-			this->setName(scene["name"].get<util::string>());
+			this->setName(scene["name"].get<archive::string_t>());
 
 		const auto& objects = scene["objects"];
 		if (!objects.is_array())
@@ -213,7 +213,7 @@ GameScene::load(const archive_node& reader) noexcept
 			return false;
 		}
 
-		const auto& objectValues = objects.get<archive_node::array_t>();
+		const auto& objectValues = objects.get<archive::array_t>();
 		for (auto& object : objectValues)
 		{
 			if (!object.is_object())
@@ -232,10 +232,10 @@ GameScene::load(const archive_node& reader) noexcept
 				continue;
 			}
 
-			const auto& componentValues = components.get<archive_node::array_t>();
+			const auto& componentValues = components.get<archive::array_t>();
 			for (auto& component : componentValues)
 			{
-				auto& className = component["class"].get<std::string>();
+				auto& className = component["class"].get<archive::string_t>();
 				if (className.empty())
 				{
 					if (_gameListener)
@@ -271,7 +271,7 @@ GameScene::load(const archive_node& reader) noexcept
 }
 
 bool
-GameScene::save(archive_node& reader) noexcept
+GameScene::save(oarchive& reader) noexcept
 {
 	return false;
 }

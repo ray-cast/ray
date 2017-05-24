@@ -42,6 +42,393 @@
 
 _NAME_BEGIN
 
+xmlarchivebuf::xmlarchivebuf() noexcept
+{
+}
+
+xmlarchivebuf::~xmlarchivebuf() noexcept
+{
+}
+
+void
+xmlarchivebuf::lock() noexcept
+{
+}
+
+void
+xmlarchivebuf::unlock() noexcept
+{
+}
+
+xmlarchive::xmlarchive() noexcept
+{
+}
+
+xmlarchive::~xmlarchive() noexcept
+{
+}
+
+xmlarchivebuf*
+xmlarchive::rdbuf() const noexcept
+{
+	return _strbuf;
+}
+
+void
+xmlarchive::set_rdbuf(xmlarchivebuf* buf) noexcept
+{
+	_strbuf = buf;
+}
+
+void
+xmlarchive::_init(xmlarchivebuf* _buf, ios_base::openmode mode) noexcept
+{
+	this->set_rdbuf(_buf);
+	_mode = mode;
+	ios_base::_init();
+}
+
+void
+xmlarchive::setOpenMode(ios_base::openmode mode) noexcept
+{
+	_mode = mode;
+}
+
+ios_base::openmode
+xmlarchive::getOpenMode() const noexcept
+{
+	return _mode;
+}
+
+std::string
+xmlarchive::getCurrentNodeName() const noexcept
+{
+	return this->rdbuf()->getCurrentNodeName();
+}
+
+std::string
+xmlarchive::getCurrentNodePath() const noexcept
+{
+	return this->rdbuf()->getCurrentNodePath();
+}
+
+bool
+xmlarchive::setToNode(const std::string& path) noexcept
+{
+	return this->rdbuf()->setToNode(path);
+}
+
+bool
+xmlarchive::setToFirstChild() noexcept
+{
+	return this->rdbuf()->setToFirstChild();
+}
+
+bool
+xmlarchive::setToFirstChild(const std::string& name) noexcept
+{
+	return this->rdbuf()->setToFirstChild(name);
+}
+
+bool
+xmlarchive::setToNextChild() noexcept
+{
+	return this->rdbuf()->setToNextChild();
+}
+
+bool
+xmlarchive::setToNextChild(const std::string& name) noexcept
+{
+	return this->rdbuf()->setToNextChild(name);
+}
+
+bool
+xmlarchive::setToParent() noexcept
+{
+	return this->rdbuf()->setToParent();
+}
+
+bool
+xmlarchive::setToRoot() noexcept
+{
+	return this->rdbuf()->setToRoot();
+}
+
+bool
+xmlarchive::hasChild() const noexcept
+{
+	return this->rdbuf()->hasChild();
+}
+
+oxmlarchive::osentry::osentry(oxmlarchive* _istr)
+	: _ok(true)
+	, _my_istr(_istr)
+{
+	if (_my_istr->rdbuf() != 0)
+		_my_istr->rdbuf()->lock();
+}
+
+oxmlarchive::osentry::~osentry() noexcept
+{
+	if (_my_istr->rdbuf() != 0)
+		_my_istr->rdbuf()->unlock();
+}
+
+oxmlarchive::osentry::operator bool() const noexcept
+{
+	return _ok ? true : false;
+}
+
+oxmlarchive::oxmlarchive(xmlarchivebuf* buf) noexcept
+{
+	xmlarchive::_init(buf, ios_base::out);
+}
+
+oxmlarchive::~oxmlarchive() noexcept
+{
+}
+
+oxmlarchive&
+oxmlarchive::addAttribute(const std::string& key, const std::string& value) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !this->rdbuf()->addAttribute(key, value))
+			this->setstate(ios_base::failbit);
+	}
+
+	return *this;
+}
+
+oxmlarchive&
+oxmlarchive::setAttribute(const std::string& key, const std::string& value) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !this->rdbuf()->addAttribute(key, value))
+			this->setstate(ios_base::failbit);
+	}
+
+	return *this;
+}
+
+oxmlarchive&
+oxmlarchive::removeAttribute(const std::string& key) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail())
+			this->rdbuf()->removeAttribute(key);
+	}
+
+	return *this;
+}
+
+oxmlarchive&
+oxmlarchive::addNode(const std::string& key) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !this->rdbuf()->insertToParent(key))
+			this->setstate(ios_base::failbit);
+	}
+
+	return *this;
+}
+
+oxmlarchive&
+oxmlarchive::addSubNode(const std::string& key) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !this->rdbuf()->insert(key))
+			this->setstate(ios_base::failbit);
+	}
+
+	return *this;
+}
+
+ixmlarchive::isentry::isentry(ixmlarchive* _istr)
+	: _ok(true)
+	, _my_istr(_istr)
+{
+	if (_my_istr->rdbuf() != 0)
+		_my_istr->rdbuf()->lock();
+}
+
+ixmlarchive::isentry::~isentry() noexcept
+{
+	if (_my_istr->rdbuf() != 0)
+		_my_istr->rdbuf()->unlock();
+}
+
+ixmlarchive::isentry::operator bool() const noexcept
+{
+	return _ok ? true : false;
+}
+
+ixmlarchive::ixmlarchive(xmlarchivebuf* buf) noexcept
+{
+	xmlarchive::_init(buf, ios_base::in);
+}
+
+ixmlarchive::~ixmlarchive() noexcept
+{
+}
+
+bool
+ixmlarchive::hasAttr(const char* name) const noexcept
+{
+	return this->rdbuf()->hasAttr(name);
+}
+
+void
+ixmlarchive::clearAttrs() noexcept
+{
+	return this->rdbuf()->clearAttrs();
+}
+
+void
+ixmlarchive::addAttrs() noexcept
+{
+	this->rdbuf()->addAttrs();
+}
+
+void
+ixmlarchive::addAttrsInChildren() noexcept
+{
+	this->rdbuf()->addAttrsInChildren();
+}
+
+void
+ixmlarchive::addAttrsInChildren(const std::string& key) noexcept
+{
+	this->rdbuf()->addAttrsInChildren();
+}
+
+const std::vector<std::string>&
+ixmlarchive::getAttrList() const noexcept
+{
+	return this->rdbuf()->getAttrList();
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, bool& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, int1& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, int2& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, int3& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, int4& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, uint1& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, uint2& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, uint3& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, uint4& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, float1& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, float2& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, float3& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, float4& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
+bool
+ixmlarchive::getValue(const std::string& name, std::string& result) noexcept
+{
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
+}
+
 XmlBuf::XmlBuf() noexcept
 	: _currentNode(nullptr)
 	, _currentAttrNode(nullptr)
@@ -827,7 +1214,7 @@ XmlBuf::getValue(const std::string& name, std::string& result) const noexcept
 			if (name.empty())
 			{
 				const TiXmlNode* child = element->FirstChild();
-				if (child) 
+				if (child)
 				{
 					const TiXmlText* childText = child->ToText();
 					if (childText) {
@@ -867,7 +1254,7 @@ XmlBuf::errorString() const noexcept
 }
 
 XMLReader::XMLReader() noexcept
-	: iarchive(&_xml)
+	: ixmlarchive(&_xml)
 {
 }
 
@@ -925,7 +1312,7 @@ XMLReader::load(StreamReader& stream) noexcept
 }
 
 XMLWrite::XMLWrite() noexcept
-	: oarchive(&_xml)
+	: oxmlarchive(&_xml)
 {
 }
 
@@ -985,7 +1372,7 @@ XMLWrite::save(StreamWrite& ostream) noexcept
 
 namespace xml
 {
-	archive_node reader(StreamReader& stream)
+	archivebuf reader(StreamReader& stream)
 	{
 		auto length = stream.size();
 		if (length == 0 || length > std::numeric_limits<std::string::size_type>::max())
@@ -1002,14 +1389,14 @@ namespace xml
 
 		if (xml.Error())
 			throw failure(xml.ErrorDesc());
-		
+
 		auto document = xml.ToDocument();
 		if (!document)
-			return archive_node::null;
+			return archivebuf::null;
 
-		archive_node root;
+		archivebuf root;
 
-		std::stack<std::pair<archive_node*, TiXmlElement*>> nodes;
+		std::stack<std::pair<archivebuf*, TiXmlElement*>> nodes;
 
 		auto childern = document->FirstChildElement();
 		while (childern)
@@ -1037,7 +1424,7 @@ namespace xml
 			if (child)
 			{
 				const TiXmlText* childText = child->ToText();
-				if (childText) 
+				if (childText)
 				{
 					node.first->push_back("CDATA", childText->Value());
 				}
@@ -1046,7 +1433,7 @@ namespace xml
 			auto childern = node.second->FirstChildElement();
 			while (childern)
 			{
-				node.first->push_back(childern->Value(), archive_node(archive_node::object));
+				node.first->push_back(childern->Value(), archivebuf(archivebuf::object));
 				nodes.push(std::make_pair(&node.first->back(), childern));
 				childern = childern->NextSiblingElement();
 			}
@@ -1055,19 +1442,19 @@ namespace xml
 		return root;
 	}
 
-	archive_node reader(const std::string& path)
+	archivebuf reader(const std::string& path)
 	{
 		ifstream stream;
 		if (!stream.open(path))
-			return archive_node::null;
+			return archivebuf::null;
 		return reader(stream);
 	}
 
-	bool writer(StreamWrite& stream, archive_node& root)
+	bool writer(StreamWrite& stream, archivebuf& root)
 	{
 		return false;
 	}
-	bool writer(const std::string& path, archive_node& root)
+	bool writer(const std::string& path, archivebuf& root)
 	{
 		return false;
 	}

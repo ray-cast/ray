@@ -98,7 +98,7 @@ MaterialMaker::doCanRead(StreamReader& stream) const noexcept
 }
 
 void
-MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material, iarchive& reader) except
+MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	GraphicsInputLayoutDesc inputLayoutDesc;
 
@@ -121,7 +121,7 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material,
 				throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
 
 			std::string layoutFormat = reader.getValue<std::string>("format");
-			
+
 			GraphicsFormat format;
 			if (!GetFormat(layoutFormat, format))
 				throw failure(__TEXT("Undefined format : ") + reader.getCurrentNodePath());
@@ -137,7 +137,6 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material,
 
 			inputLayoutDesc.addVertexLayout(GraphicsVertexLayout(slot, layoutName, index, format, offset));
 		}
-
 	} while (reader.setToNextChild());
 
 	inputLayoutDesc.addVertexBinding(GraphicsVertexBinding(0, inputLayoutDesc.getVertexSize(0)));
@@ -147,7 +146,7 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material,
 }
 
 void
-MaterialMaker::instanceCodes(MaterialManager& manager, iarchive& reader) except
+MaterialMaker::instanceCodes(MaterialManager& manager, ixmlarchive& reader) except
 {
 	std::string name = reader.getValue<std::string>("name");
 
@@ -165,7 +164,7 @@ MaterialMaker::instanceCodes(MaterialManager& manager, iarchive& reader) except
 }
 
 void
-MaterialMaker::instanceShader(MaterialManager& manager, Material& material, GraphicsProgramDesc& programDesc, iarchive& reader) except
+MaterialMaker::instanceShader(MaterialManager& manager, Material& material, GraphicsProgramDesc& programDesc, ixmlarchive& reader) except
 {
 	std::string type = reader.getValue<std::string>("name");
 	std::string value = reader.getValue<std::string>("value");
@@ -207,7 +206,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, Material& material, Grap
 }
 
 void
-MaterialMaker::instancePass(MaterialManager& manager, Material& material, MaterialTechPtr& tech, iarchive& reader) except
+MaterialMaker::instancePass(MaterialManager& manager, Material& material, MaterialTechPtr& tech, ixmlarchive& reader) except
 {
 	std::string passName = reader.getValue<std::string>("name");
 	if (passName.empty())
@@ -270,7 +269,7 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 		else if (name == "linear2srgb")
 			stateDesc.setLinear2sRGBEnable(reader.getValue<bool>("value"));
 		else if (name == "linewidth")
-			stateDesc.setLineWidth(reader.getValue<float>("value"));	
+			stateDesc.setLineWidth(reader.getValue<float>("value"));
 		else if (name.compare(0, 7, "blendop") == 0)
 		{
 			auto index = std::atoi(name.substr(7).c_str());
@@ -282,7 +281,7 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 				blends[index].setBlendOp(blendOp);
 			else
 				throw failure(__TEXT("Failed to set BlendOp: ") + reader.getCurrentNodePath());
-		}			
+		}
 		else if (name.compare(0, 8, "blendsrc") == 0)
 		{
 			auto index = std::atoi(name.substr(8).c_str());
@@ -330,7 +329,7 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 				blends[index].setBlendAlphaSrc(blendFactor);
 			else
 				throw failure(__TEXT("Failed to set Dest Blend: ") + reader.getCurrentNodePath());
-		}			
+		}
 		else if (name.compare(0, 13, "blendalphadst") == 0)
 		{
 			auto index = std::atoi(name.substr(13).c_str());
@@ -490,7 +489,7 @@ MaterialMaker::instancePass(MaterialManager& manager, Material& material, Materi
 }
 
 void
-MaterialMaker::instanceTech(MaterialManager& manager, Material& material, iarchive& reader) except
+MaterialMaker::instanceTech(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	std::string techName = reader.getValue<std::string>("name");
 	if (techName.empty())
@@ -515,7 +514,7 @@ MaterialMaker::instanceTech(MaterialManager& manager, Material& material, iarchi
 }
 
 void
-MaterialMaker::instanceParameter(MaterialManager& manager, Material& material, iarchive& reader) except
+MaterialMaker::instanceParameter(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -556,7 +555,7 @@ MaterialMaker::instanceParameter(MaterialManager& manager, Material& material, i
 }
 
 void
-MaterialMaker::instanceMacro(MaterialManager& manager, Material& material, iarchive& reader) except
+MaterialMaker::instanceMacro(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -632,7 +631,7 @@ MaterialMaker::instanceMacro(MaterialManager& manager, Material& material, iarch
 }
 
 void
-MaterialMaker::instanceSampler(MaterialManager& manager, Material& material, iarchive& reader) except
+MaterialMaker::instanceSampler(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	std::string samplerName = reader.getValue<std::string>("name");
 	if (samplerName.empty())
@@ -732,7 +731,7 @@ MaterialMaker::instanceSampler(MaterialManager& manager, Material& material, iar
 }
 
 void
-MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, iarchive& reader) except
+MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	std::string name;
 	if (!reader.getValue("name", name))
@@ -769,19 +768,18 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, iarc
 				_hlslCodes += "uniform " + parmType + " " + parmName + ";\n";
 			}
 		}
-
 	} while (reader.setToNextChild());
 
 	if (_isHlsl)
 	{
 		_hlslCodes += "}";
 	}
-	
+
 	material.addParameter(std::move(buffer));
 }
 
 bool
-MaterialMaker::instanceInclude(MaterialManager& manager, Material& material, iarchive& reader) except
+MaterialMaker::instanceInclude(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	auto filename = reader.getValue<std::string>("name");
 	if (filename.empty())
@@ -854,8 +852,8 @@ MaterialMaker::load(MaterialManager& manager, Material& material, StreamReader& 
 	}
 }
 
-bool 
-MaterialMaker::loadEffect(MaterialManager& manager, Material& material, iarchive& reader) except
+bool
+MaterialMaker::loadEffect(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	std::string nodeName = reader.getCurrentNodeName();
 	if (nodeName != "effect")
@@ -898,8 +896,8 @@ MaterialMaker::loadEffect(MaterialManager& manager, Material& material, iarchive
 	return true;
 }
 
-bool 
-MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, iarchive& reader) except
+bool
+MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	std::string nodeName = reader.getCurrentNodeName();
 	if (nodeName != "material")
@@ -956,7 +954,7 @@ MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, iarchi
 }
 
 bool
-MaterialMaker::load(MaterialManager& manager, Material& material, iarchive& reader) except
+MaterialMaker::load(MaterialManager& manager, Material& material, ixmlarchive& reader) except
 {
 	std::string nodeName = reader.getCurrentNodeName();
 	if (nodeName == "material")
@@ -983,10 +981,10 @@ MaterialMaker::GetShaderStage(const std::string& string, GraphicsShaderStageFlag
 	if (string.empty())
 		return false;
 
-	if (string == "vertex")   { flags = GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit; return true; }
+	if (string == "vertex") { flags = GraphicsShaderStageFlagBits::GraphicsShaderStageVertexBit; return true; }
 	if (string == "fragment") { flags = GraphicsShaderStageFlagBits::GraphicsShaderStageFragmentBit; return true; }
 	if (string == "geometry") { flags = GraphicsShaderStageFlagBits::GraphicsShaderStageGeometryBit; return true; }
-	if (string == "compute")  { flags = GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit; return true; }
+	if (string == "compute") { flags = GraphicsShaderStageFlagBits::GraphicsShaderStageComputeBit; return true; }
 
 	assert(false);
 	return false;
@@ -998,41 +996,41 @@ MaterialMaker::GetUniformType(const std::string& string, GraphicsUniformType& ty
 	if (string.empty())
 		return false;
 
-	if (string == "bool") 	     { type = GraphicsUniformType::GraphicsUniformTypeBool; return true; }
-	if (string == "int") 	     { type = GraphicsUniformType::GraphicsUniformTypeInt; return true; }
-	if (string == "int2") 	     { type = GraphicsUniformType::GraphicsUniformTypeInt2; return true; }
-	if (string == "int3") 	     { type = GraphicsUniformType::GraphicsUniformTypeInt3; return true; }
-	if (string == "int4") 	     { type = GraphicsUniformType::GraphicsUniformTypeInt4; return true; }
-	if (string == "uint") 	     { type = GraphicsUniformType::GraphicsUniformTypeUInt; return true; }
-	if (string == "uint2") 	     { type = GraphicsUniformType::GraphicsUniformTypeUInt2; return true; }
-	if (string == "uint3") 	     { type = GraphicsUniformType::GraphicsUniformTypeUInt3; return true; }
-	if (string == "uint4") 	     { type = GraphicsUniformType::GraphicsUniformTypeUInt4; return true; }
-	if (string == "float") 	     { type = GraphicsUniformType::GraphicsUniformTypeFloat; return true; }
-	if (string == "float2") 	 { type = GraphicsUniformType::GraphicsUniformTypeFloat2; return true; }
-	if (string == "float3") 	 { type = GraphicsUniformType::GraphicsUniformTypeFloat3; return true; }
-	if (string == "float4") 	 { type = GraphicsUniformType::GraphicsUniformTypeFloat4; return true; }
-	if (string == "float2x2")    { type = GraphicsUniformType::GraphicsUniformTypeFloat2x2; return true; }
-	if (string == "float3x3")    { type = GraphicsUniformType::GraphicsUniformTypeFloat3x3; return true; }
-	if (string == "float4x4")	 { type = GraphicsUniformType::GraphicsUniformTypeFloat4x4; return true; }
-	if (string == "int[]") 	     { type = GraphicsUniformType::GraphicsUniformTypeIntArray; return true; }
-	if (string == "int2[]") 	 { type = GraphicsUniformType::GraphicsUniformTypeInt2Array; return true; }
-	if (string == "int3[]") 	 { type = GraphicsUniformType::GraphicsUniformTypeInt3Array; return true; }
-	if (string == "int4[]") 	 { type = GraphicsUniformType::GraphicsUniformTypeInt4Array; return true; }
-	if (string == "uint[]") 	 { type = GraphicsUniformType::GraphicsUniformTypeUIntArray; return true; }
-	if (string == "uint2[]") 	 { type = GraphicsUniformType::GraphicsUniformTypeUInt2Array; return true; }
-	if (string == "uint3[]") 	 { type = GraphicsUniformType::GraphicsUniformTypeUInt3Array; return true; }
-	if (string == "uint4[]") 	 { type = GraphicsUniformType::GraphicsUniformTypeUInt4Array; return true; }
-	if (string == "float[]") 	 { type = GraphicsUniformType::GraphicsUniformTypeFloatArray; return true; }
-	if (string == "float2[]")	 { type = GraphicsUniformType::GraphicsUniformTypeFloat2Array; return true; }
-	if (string == "float3[]")    { type = GraphicsUniformType::GraphicsUniformTypeFloat3Array; return true; }
-	if (string == "float4[]")    { type = GraphicsUniformType::GraphicsUniformTypeFloat4Array; return true; }
-	if (string == "float2x2[]")  { type = GraphicsUniformType::GraphicsUniformTypeFloat2x2Array; return true; }
-	if (string == "float3x3[]")  { type = GraphicsUniformType::GraphicsUniformTypeFloat3x3Array; return true; }
-	if (string == "float4x4[]")  { type = GraphicsUniformType::GraphicsUniformTypeFloat4x4Array; return true; }
-	if (string == "texture2D")   { type = GraphicsUniformType::GraphicsUniformTypeSamplerImage; return true; }
-	if (string == "texture3D")   { type = GraphicsUniformType::GraphicsUniformTypeSamplerImage; return true; }
+	if (string == "bool") { type = GraphicsUniformType::GraphicsUniformTypeBool; return true; }
+	if (string == "int") { type = GraphicsUniformType::GraphicsUniformTypeInt; return true; }
+	if (string == "int2") { type = GraphicsUniformType::GraphicsUniformTypeInt2; return true; }
+	if (string == "int3") { type = GraphicsUniformType::GraphicsUniformTypeInt3; return true; }
+	if (string == "int4") { type = GraphicsUniformType::GraphicsUniformTypeInt4; return true; }
+	if (string == "uint") { type = GraphicsUniformType::GraphicsUniformTypeUInt; return true; }
+	if (string == "uint2") { type = GraphicsUniformType::GraphicsUniformTypeUInt2; return true; }
+	if (string == "uint3") { type = GraphicsUniformType::GraphicsUniformTypeUInt3; return true; }
+	if (string == "uint4") { type = GraphicsUniformType::GraphicsUniformTypeUInt4; return true; }
+	if (string == "float") { type = GraphicsUniformType::GraphicsUniformTypeFloat; return true; }
+	if (string == "float2") { type = GraphicsUniformType::GraphicsUniformTypeFloat2; return true; }
+	if (string == "float3") { type = GraphicsUniformType::GraphicsUniformTypeFloat3; return true; }
+	if (string == "float4") { type = GraphicsUniformType::GraphicsUniformTypeFloat4; return true; }
+	if (string == "float2x2") { type = GraphicsUniformType::GraphicsUniformTypeFloat2x2; return true; }
+	if (string == "float3x3") { type = GraphicsUniformType::GraphicsUniformTypeFloat3x3; return true; }
+	if (string == "float4x4") { type = GraphicsUniformType::GraphicsUniformTypeFloat4x4; return true; }
+	if (string == "int[]") { type = GraphicsUniformType::GraphicsUniformTypeIntArray; return true; }
+	if (string == "int2[]") { type = GraphicsUniformType::GraphicsUniformTypeInt2Array; return true; }
+	if (string == "int3[]") { type = GraphicsUniformType::GraphicsUniformTypeInt3Array; return true; }
+	if (string == "int4[]") { type = GraphicsUniformType::GraphicsUniformTypeInt4Array; return true; }
+	if (string == "uint[]") { type = GraphicsUniformType::GraphicsUniformTypeUIntArray; return true; }
+	if (string == "uint2[]") { type = GraphicsUniformType::GraphicsUniformTypeUInt2Array; return true; }
+	if (string == "uint3[]") { type = GraphicsUniformType::GraphicsUniformTypeUInt3Array; return true; }
+	if (string == "uint4[]") { type = GraphicsUniformType::GraphicsUniformTypeUInt4Array; return true; }
+	if (string == "float[]") { type = GraphicsUniformType::GraphicsUniformTypeFloatArray; return true; }
+	if (string == "float2[]") { type = GraphicsUniformType::GraphicsUniformTypeFloat2Array; return true; }
+	if (string == "float3[]") { type = GraphicsUniformType::GraphicsUniformTypeFloat3Array; return true; }
+	if (string == "float4[]") { type = GraphicsUniformType::GraphicsUniformTypeFloat4Array; return true; }
+	if (string == "float2x2[]") { type = GraphicsUniformType::GraphicsUniformTypeFloat2x2Array; return true; }
+	if (string == "float3x3[]") { type = GraphicsUniformType::GraphicsUniformTypeFloat3x3Array; return true; }
+	if (string == "float4x4[]") { type = GraphicsUniformType::GraphicsUniformTypeFloat4x4Array; return true; }
+	if (string == "texture2D") { type = GraphicsUniformType::GraphicsUniformTypeSamplerImage; return true; }
+	if (string == "texture3D") { type = GraphicsUniformType::GraphicsUniformTypeSamplerImage; return true; }
 	if (string == "textureCUBE") { type = GraphicsUniformType::GraphicsUniformTypeSamplerImage; return true; }
-	if (string == "buffer") 	 { type = GraphicsUniformType::GraphicsUniformTypeUniformBuffer; return true; }
+	if (string == "buffer") { type = GraphicsUniformType::GraphicsUniformTypeUniformBuffer; return true; }
 
 	assert(false);
 	return false;
@@ -1044,12 +1042,12 @@ MaterialMaker::GetPrimitive(const std::string& string, GraphicsVertexType& primi
 	if (string.empty())
 		return false;
 
-	if (string == "point")          { primitive = GraphicsVertexType::GraphicsVertexTypePointList; return true; }
-	if (string == "line")           { primitive = GraphicsVertexType::GraphicsVertexTypeLineList; return true; }
-	if (string == "line_strip")     { primitive = GraphicsVertexType::GraphicsVertexTypeLineStrip; return true; }
-	if (string == "triangle")       { primitive = GraphicsVertexType::GraphicsVertexTypeTriangleList; return true; }
+	if (string == "point") { primitive = GraphicsVertexType::GraphicsVertexTypePointList; return true; }
+	if (string == "line") { primitive = GraphicsVertexType::GraphicsVertexTypeLineList; return true; }
+	if (string == "line_strip") { primitive = GraphicsVertexType::GraphicsVertexTypeLineStrip; return true; }
+	if (string == "triangle") { primitive = GraphicsVertexType::GraphicsVertexTypeTriangleList; return true; }
 	if (string == "triangle_strip") { primitive = GraphicsVertexType::GraphicsVertexTypeTriangleStrip; return true; }
-	if (string == "triangle_fan")   { primitive = GraphicsVertexType::GraphicsVertexTypeTriangleFan; return true; }
+	if (string == "triangle_fan") { primitive = GraphicsVertexType::GraphicsVertexTypeTriangleFan; return true; }
 
 	assert(false);
 	return false;
@@ -1061,10 +1059,10 @@ MaterialMaker::GetCullMode(const std::string& string, GraphicsCullMode& cullmode
 	if (string.empty())
 		return false;
 
-	if (string == "back")      { cullmode = GraphicsCullMode::GraphicsCullModeBack; return true; }
-	if (string == "front")     { cullmode = GraphicsCullMode::GraphicsCullModeFront; return true; }
+	if (string == "back") { cullmode = GraphicsCullMode::GraphicsCullModeBack; return true; }
+	if (string == "front") { cullmode = GraphicsCullMode::GraphicsCullModeFront; return true; }
 	if (string == "frontback") { cullmode = GraphicsCullMode::GraphicsCullModeFrontBack; return true; }
-	if (string == "none")      { cullmode = GraphicsCullMode::GraphicsCullModeNone; return true; }
+	if (string == "none") { cullmode = GraphicsCullMode::GraphicsCullModeNone; return true; }
 
 	assert(false);
 	return false;
@@ -1077,7 +1075,7 @@ MaterialMaker::GetFillMode(const std::string& string, GraphicsPolygonMode& fillm
 		return false;
 
 	if (string == "point") { fillmode = GraphicsPolygonMode::GraphicsPolygonModePoint; return true; }
-	if (string == "line")  { fillmode = GraphicsPolygonMode::GraphicsPolygonModeWireframe; return true; }
+	if (string == "line") { fillmode = GraphicsPolygonMode::GraphicsPolygonModeWireframe; return true; }
 	if (string == "solid") { fillmode = GraphicsPolygonMode::GraphicsPolygonModeSolid; return true; }
 
 	assert(false);
@@ -1090,9 +1088,9 @@ MaterialMaker::GetBlendOperation(const std::string& string, GraphicsBlendOp& ble
 	if (string.empty())
 		return false;
 
-	if (string == "sub")    { blendop = GraphicsBlendOp::GraphicsBlendOpSubtract; return true; }
+	if (string == "sub") { blendop = GraphicsBlendOp::GraphicsBlendOpSubtract; return true; }
 	if (string == "revsub") { blendop = GraphicsBlendOp::GraphicsBlendOpRevSubtract; return true; }
-	if (string == "add")    { blendop = GraphicsBlendOp::GraphicsBlendOpAdd; return true; }
+	if (string == "add") { blendop = GraphicsBlendOp::GraphicsBlendOpAdd; return true; }
 
 	assert(false);
 	return false;
@@ -1104,14 +1102,14 @@ MaterialMaker::GetBlendFactor(const std::string& string, GraphicsBlendFactor& fa
 	if (string.empty())
 		return false;
 
-	if (string == "zero")        { factor = GraphicsBlendFactor::GraphicsBlendFactorZero; return true; }
-	if (string == "one")         { factor = GraphicsBlendFactor::GraphicsBlendFactorOne; return true; }
-	if (string == "dstcol")      { factor = GraphicsBlendFactor::GraphicsBlendFactorDstCol; return true; }
-	if (string == "srccol")      { factor = GraphicsBlendFactor::GraphicsBlendFactorSrcColor; return true; }
-	if (string == "srcalpha")    { factor = GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha; return true; }
-	if (string == "dstalpha")    { factor = GraphicsBlendFactor::GraphicsBlendFactorDstAlpha; return true; }
-	if (string == "invsrccol")   { factor = GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcCol; return true; }
-	if (string == "invdstcol")   { factor = GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstCol; return true; }
+	if (string == "zero") { factor = GraphicsBlendFactor::GraphicsBlendFactorZero; return true; }
+	if (string == "one") { factor = GraphicsBlendFactor::GraphicsBlendFactorOne; return true; }
+	if (string == "dstcol") { factor = GraphicsBlendFactor::GraphicsBlendFactorDstCol; return true; }
+	if (string == "srccol") { factor = GraphicsBlendFactor::GraphicsBlendFactorSrcColor; return true; }
+	if (string == "srcalpha") { factor = GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha; return true; }
+	if (string == "dstalpha") { factor = GraphicsBlendFactor::GraphicsBlendFactorDstAlpha; return true; }
+	if (string == "invsrccol") { factor = GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcCol; return true; }
+	if (string == "invdstcol") { factor = GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstCol; return true; }
 	if (string == "invsrcalpha") { factor = GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha; return true; }
 	if (string == "invdstalpha") { factor = GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstAlpha; return true; }
 
@@ -1125,13 +1123,13 @@ MaterialMaker::GetColorMask(const std::string& string, GraphicsColorMaskFlags& m
 	if (string.empty())
 		return false;
 
-	if (string == "none")  { mask = GraphicsColorMaskFlags(0); return true; }
-	if (string == "red")   { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit; return true; }
+	if (string == "none") { mask = GraphicsColorMaskFlags(0); return true; }
+	if (string == "red") { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit; return true; }
 	if (string == "green") { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit; return true; }
-	if (string == "blue")  { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit; return true; }
+	if (string == "blue") { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit; return true; }
 	if (string == "alpha") { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit; return true; }
-	if (string == "rgb")   { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBBit; return true; }
-	if (string == "rgba")  { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit; return true; }
+	if (string == "rgb") { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBBit; return true; }
+	if (string == "rgba") { mask = GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRGBABit; return true; }
 
 	assert(false);
 	return false;
@@ -1143,16 +1141,16 @@ MaterialMaker::GetCompareFunc(const std::string& string, GraphicsCompareFunc& fu
 	if (string.empty())
 		return false;
 
-	if (string == "lequal")   { func = GraphicsCompareFunc::GraphicsCompareFuncLequal; return true; }
-	if (string == "equal")    { func = GraphicsCompareFunc::GraphicsCompareFuncEqual; return true; }
-	if (string == "greater")  { func = GraphicsCompareFunc::GraphicsCompareFuncGreater; return true; }
-	if (string == "less")     { func = GraphicsCompareFunc::GraphicsCompareFuncLess; return true; }
-	if (string == "gequal")   { func = GraphicsCompareFunc::GraphicsCompareFuncGequal; return true; }
+	if (string == "lequal") { func = GraphicsCompareFunc::GraphicsCompareFuncLequal; return true; }
+	if (string == "equal") { func = GraphicsCompareFunc::GraphicsCompareFuncEqual; return true; }
+	if (string == "greater") { func = GraphicsCompareFunc::GraphicsCompareFuncGreater; return true; }
+	if (string == "less") { func = GraphicsCompareFunc::GraphicsCompareFuncLess; return true; }
+	if (string == "gequal") { func = GraphicsCompareFunc::GraphicsCompareFuncGequal; return true; }
 	if (string == "notequal") { func = GraphicsCompareFunc::GraphicsCompareFuncNotEqual; return true; }
-	if (string == "always")   { func = GraphicsCompareFunc::GraphicsCompareFuncAlways; return true; }
-	if (string == "never")    { func = GraphicsCompareFunc::GraphicsCompareFuncNever; return true; }
-	if (string == "none")     { func = GraphicsCompareFunc::GraphicsCompareFuncNone; return true; }
-	
+	if (string == "always") { func = GraphicsCompareFunc::GraphicsCompareFuncAlways; return true; }
+	if (string == "never") { func = GraphicsCompareFunc::GraphicsCompareFuncNever; return true; }
+	if (string == "none") { func = GraphicsCompareFunc::GraphicsCompareFuncNone; return true; }
+
 	assert(false);
 	return false;
 }
@@ -1163,10 +1161,10 @@ MaterialMaker::GetStencilOp(const std::string& string, GraphicsStencilOp& stenci
 	if (string.empty())
 		return false;
 
-	if (string == "keep")    { stencilop = GraphicsStencilOp::GraphicsStencilOpKeep; return true; }
+	if (string == "keep") { stencilop = GraphicsStencilOp::GraphicsStencilOpKeep; return true; }
 	if (string == "replace") { stencilop = GraphicsStencilOp::GraphicsStencilOpReplace; return true; }
-	if (string == "inc")     { stencilop = GraphicsStencilOp::GraphicsStencilOpIncr; return true; }
-	if (string == "dec")     { stencilop = GraphicsStencilOp::GraphicsStencilOpDecr; return true; }
+	if (string == "inc") { stencilop = GraphicsStencilOp::GraphicsStencilOpIncr; return true; }
+	if (string == "dec") { stencilop = GraphicsStencilOp::GraphicsStencilOpDecr; return true; }
 	if (string == "incwrap") { stencilop = GraphicsStencilOp::GraphicsStencilOpIncrWrap; return true; }
 	if (string == "decwrap") { stencilop = GraphicsStencilOp::GraphicsStencilOpDecrWrap; return true; }
 
@@ -1180,142 +1178,142 @@ MaterialMaker::GetFormat(const std::string& string, GraphicsFormat& format) noex
 	if (string.empty())
 		return false;
 
-	if (string == "R4G4UNormPack8")           { format = GraphicsFormat::GraphicsFormatR4G4UNormPack8; return true; }
-	if (string == "R8UNorm")                  { format = GraphicsFormat::GraphicsFormatR8UNorm; return true; }
-	if (string == "R8SNorm")                  { format = GraphicsFormat::GraphicsFormatR8SNorm; return true; }
-	if (string == "R8UScaled")                { format = GraphicsFormat::GraphicsFormatR8UScaled; return true; }
-	if (string == "R8SScaled")                { format = GraphicsFormat::GraphicsFormatR8SScaled; return true; }
-	if (string == "R8UInt")                   { format = GraphicsFormat::GraphicsFormatR8UInt; return true; }
-	if (string == "R8SInt")                   { format = GraphicsFormat::GraphicsFormatR8SInt; return true; }
-	if (string == "R8SRGB")                   { format = GraphicsFormat::GraphicsFormatR8SRGB; return true; }
-	if (string == "S8UInt")                   { format = GraphicsFormat::GraphicsFormatS8UInt; return true; }
-	if (string == "R4G4B4A4UNormPack16")      { format = GraphicsFormat::GraphicsFormatR4G4B4A4UNormPack16; return true; }
-	if (string == "B4G4R4A4UNormPack16")      { format = GraphicsFormat::GraphicsFormatB4G4R4A4UNormPack16; return true; }
-	if (string == "R5G6B5UNormPack16")        { format = GraphicsFormat::GraphicsFormatR5G6B5UNormPack16; return true; }
-	if (string == "B5G6R5UNormPack16")        { format = GraphicsFormat::GraphicsFormatB5G6R5UNormPack16; return true; }
-	if (string == "R5G5B5A1UNormPack16")      { format = GraphicsFormat::GraphicsFormatR5G5B5A1UNormPack16; return true; }
-	if (string == "B5G5R5A1UNormPack16")      { format = GraphicsFormat::GraphicsFormatB5G5R5A1UNormPack16; return true; }
-	if (string == "A1R5G5B5UNormPack16")      { format = GraphicsFormat::GraphicsFormatA1R5G5B5UNormPack16; return true; }
-	if (string == "R8G8UNorm")                { format = GraphicsFormat::GraphicsFormatR8G8UNorm; return true; }
-	if (string == "R8G8SNorm")                { format = GraphicsFormat::GraphicsFormatR8G8SNorm; return true; }
-	if (string == "R8G8UScaled")              { format = GraphicsFormat::GraphicsFormatR8G8UScaled; return true; }
-	if (string == "R8G8SScaled")              { format = GraphicsFormat::GraphicsFormatR8G8SScaled; return true; }
-	if (string == "R8G8UInt")                 { format = GraphicsFormat::GraphicsFormatR8G8UInt; return true; }
-	if (string == "R8G8SInt")                 { format = GraphicsFormat::GraphicsFormatR8G8SInt; return true; }
-	if (string == "R8G8SRGB")                 { format = GraphicsFormat::GraphicsFormatR8G8SRGB; return true; }
-	if (string == "R16UNorm")                 { format = GraphicsFormat::GraphicsFormatR16UNorm; return true; }
-	if (string == "R16SNorm")                 { format = GraphicsFormat::GraphicsFormatR16SNorm; return true; }
-	if (string == "R16UScaled")               { format = GraphicsFormat::GraphicsFormatR16UScaled; return true; }
-	if (string == "R16SScaled")               { format = GraphicsFormat::GraphicsFormatR16SScaled; return true; }
-	if (string == "R16UInt")                  { format = GraphicsFormat::GraphicsFormatR16UInt; return true; }
-	if (string == "R16SInt")                  { format = GraphicsFormat::GraphicsFormatR16SInt; return true; }
-	if (string == "R16SFloat")                { format = GraphicsFormat::GraphicsFormatR16SFloat; return true; }
-	if (string == "D16UNorm")                 { format = GraphicsFormat::GraphicsFormatD16UNorm; return true; }
-	if (string == "R8G8B8UNorm")              { format = GraphicsFormat::GraphicsFormatR8G8B8UNorm; return true; }
-	if (string == "R8G8B8SNorm")              { format = GraphicsFormat::GraphicsFormatR8G8B8SNorm; return true; }
-	if (string == "R8G8B8UScaled")            { format = GraphicsFormat::GraphicsFormatR8G8B8UScaled; return true; }
-	if (string == "R8G8B8SScaled")            { format = GraphicsFormat::GraphicsFormatR8G8B8SScaled; return true; }
-	if (string == "R8G8B8UInt")               { format = GraphicsFormat::GraphicsFormatR8G8B8UInt; return true; }
-	if (string == "R8G8B8SInt")               { format = GraphicsFormat::GraphicsFormatR8G8B8SInt; return true; }
-	if (string == "R8G8B8SRGB")               { format = GraphicsFormat::GraphicsFormatR8G8B8SRGB; return true; }
-	if (string == "B8G8R8UNorm")              { format = GraphicsFormat::GraphicsFormatB8G8R8UNorm; return true; }
-	if (string == "B8G8R8SNorm")              { format = GraphicsFormat::GraphicsFormatB8G8R8SNorm; return true; }
-	if (string == "B8G8R8UScaled")            { format = GraphicsFormat::GraphicsFormatB8G8R8UScaled; return true; }
-	if (string == "B8G8R8SScaled")            { format = GraphicsFormat::GraphicsFormatB8G8R8SScaled; return true; }
-	if (string == "B8G8R8UInt")               { format = GraphicsFormat::GraphicsFormatB8G8R8UInt; return true; }
-	if (string == "B8G8R8SInt")               { format = GraphicsFormat::GraphicsFormatB8G8R8SInt; return true; }
-	if (string == "B8G8R8SRGB")               { format = GraphicsFormat::GraphicsFormatB8G8R8SRGB; return true; }
-	if (string == "R8G8B8A8UNorm")            { format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm; return true; }
-	if (string == "R8G8B8A8SNorm")            { format = GraphicsFormat::GraphicsFormatR8G8B8A8SNorm; return true; }
-	if (string == "R8G8B8A8UScaled")          { format = GraphicsFormat::GraphicsFormatR8G8B8A8UScaled; return true; }
-	if (string == "R8G8B8A8SScaled")          { format = GraphicsFormat::GraphicsFormatR8G8B8A8SScaled; return true; }
-	if (string == "R8G8B8A8UInt")             { format = GraphicsFormat::GraphicsFormatR8G8B8A8UInt; return true; }
-	if (string == "R8G8B8A8SInt")             { format = GraphicsFormat::GraphicsFormatR8G8B8A8SInt; return true; }
-	if (string == "R8G8B8A8SRGB")             { format = GraphicsFormat::GraphicsFormatR8G8B8A8SRGB; return true; }
-	if (string == "B8G8R8A8UNorm")            { format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm; return true; }
-	if (string == "B8G8R8A8SNorm")            { format = GraphicsFormat::GraphicsFormatB8G8R8A8SNorm; return true; }
-	if (string == "B8G8R8A8UScaled")          { format = GraphicsFormat::GraphicsFormatB8G8R8A8UScaled; return true; }
-	if (string == "B8G8R8A8SScaled")          { format = GraphicsFormat::GraphicsFormatB8G8R8A8SScaled; return true; }
-	if (string == "B8G8R8A8UInt")             { format = GraphicsFormat::GraphicsFormatB8G8R8A8UInt; return true; }
-	if (string == "B8G8R8A8SInt")             { format = GraphicsFormat::GraphicsFormatB8G8R8A8SInt; return true; }
-	if (string == "B8G8R8A8SRGB")             { format = GraphicsFormat::GraphicsFormatB8G8R8A8SRGB; return true; }
-	if (string == "A8B8G8R8UNormPack32")      { format = GraphicsFormat::GraphicsFormatA8B8G8R8UNormPack32; return true; }
-	if (string == "A8B8G8R8SNormPack32")      { format = GraphicsFormat::GraphicsFormatA8B8G8R8SNormPack32; return true; }
-	if (string == "A8B8G8R8UScaledPack32")    { format = GraphicsFormat::GraphicsFormatA8B8G8R8UScaledPack32; return true; }
-	if (string == "A8B8G8R8SScaledPack32")    { format = GraphicsFormat::GraphicsFormatA8B8G8R8SScaledPack32; return true; }
-	if (string == "A8B8G8R8UIntPack32")       { format = GraphicsFormat::GraphicsFormatA8B8G8R8UIntPack32; return true; }
-	if (string == "A8B8G8R8SIntPack32")       { format = GraphicsFormat::GraphicsFormatA8B8G8R8SIntPack32; return true; }
-	if (string == "A8B8G8R8SRGBPack32")       { format = GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32; return true; }
-	if (string == "R16G16SInt")               { format = GraphicsFormat::GraphicsFormatR16G16SInt; return true; }
-	if (string == "R16G16UInt")               { format = GraphicsFormat::GraphicsFormatR16G16UInt; return true; }
-	if (string == "R16G16SNorm")              { format = GraphicsFormat::GraphicsFormatR16G16SNorm; return true; }
-	if (string == "R16G16UNorm")              { format = GraphicsFormat::GraphicsFormatR16G16UNorm; return true; }
-	if (string == "R16G16UScaled")            { format = GraphicsFormat::GraphicsFormatR16G16UScaled; return true; }
-	if (string == "R16G16SScaled")            { format = GraphicsFormat::GraphicsFormatR16G16SScaled; return true; }
-	if (string == "R16G16SFloat")             { format = GraphicsFormat::GraphicsFormatR16G16SFloat; return true; }
-	if (string == "R32UInt")                  { format = GraphicsFormat::GraphicsFormatR32UInt; return true; }
-	if (string == "R32SInt")                  { format = GraphicsFormat::GraphicsFormatR32SInt; return true; }
-	if (string == "R32SFloat")                { format = GraphicsFormat::GraphicsFormatR32SFloat; return true; }
-	if (string == "A2R10G10B10UNormPack32")   { format = GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32; return true; }
-	if (string == "A2R10G10B10SNormPack32")   { format = GraphicsFormat::GraphicsFormatA2R10G10B10SNormPack32; return true; }
+	if (string == "R4G4UNormPack8") { format = GraphicsFormat::GraphicsFormatR4G4UNormPack8; return true; }
+	if (string == "R8UNorm") { format = GraphicsFormat::GraphicsFormatR8UNorm; return true; }
+	if (string == "R8SNorm") { format = GraphicsFormat::GraphicsFormatR8SNorm; return true; }
+	if (string == "R8UScaled") { format = GraphicsFormat::GraphicsFormatR8UScaled; return true; }
+	if (string == "R8SScaled") { format = GraphicsFormat::GraphicsFormatR8SScaled; return true; }
+	if (string == "R8UInt") { format = GraphicsFormat::GraphicsFormatR8UInt; return true; }
+	if (string == "R8SInt") { format = GraphicsFormat::GraphicsFormatR8SInt; return true; }
+	if (string == "R8SRGB") { format = GraphicsFormat::GraphicsFormatR8SRGB; return true; }
+	if (string == "S8UInt") { format = GraphicsFormat::GraphicsFormatS8UInt; return true; }
+	if (string == "R4G4B4A4UNormPack16") { format = GraphicsFormat::GraphicsFormatR4G4B4A4UNormPack16; return true; }
+	if (string == "B4G4R4A4UNormPack16") { format = GraphicsFormat::GraphicsFormatB4G4R4A4UNormPack16; return true; }
+	if (string == "R5G6B5UNormPack16") { format = GraphicsFormat::GraphicsFormatR5G6B5UNormPack16; return true; }
+	if (string == "B5G6R5UNormPack16") { format = GraphicsFormat::GraphicsFormatB5G6R5UNormPack16; return true; }
+	if (string == "R5G5B5A1UNormPack16") { format = GraphicsFormat::GraphicsFormatR5G5B5A1UNormPack16; return true; }
+	if (string == "B5G5R5A1UNormPack16") { format = GraphicsFormat::GraphicsFormatB5G5R5A1UNormPack16; return true; }
+	if (string == "A1R5G5B5UNormPack16") { format = GraphicsFormat::GraphicsFormatA1R5G5B5UNormPack16; return true; }
+	if (string == "R8G8UNorm") { format = GraphicsFormat::GraphicsFormatR8G8UNorm; return true; }
+	if (string == "R8G8SNorm") { format = GraphicsFormat::GraphicsFormatR8G8SNorm; return true; }
+	if (string == "R8G8UScaled") { format = GraphicsFormat::GraphicsFormatR8G8UScaled; return true; }
+	if (string == "R8G8SScaled") { format = GraphicsFormat::GraphicsFormatR8G8SScaled; return true; }
+	if (string == "R8G8UInt") { format = GraphicsFormat::GraphicsFormatR8G8UInt; return true; }
+	if (string == "R8G8SInt") { format = GraphicsFormat::GraphicsFormatR8G8SInt; return true; }
+	if (string == "R8G8SRGB") { format = GraphicsFormat::GraphicsFormatR8G8SRGB; return true; }
+	if (string == "R16UNorm") { format = GraphicsFormat::GraphicsFormatR16UNorm; return true; }
+	if (string == "R16SNorm") { format = GraphicsFormat::GraphicsFormatR16SNorm; return true; }
+	if (string == "R16UScaled") { format = GraphicsFormat::GraphicsFormatR16UScaled; return true; }
+	if (string == "R16SScaled") { format = GraphicsFormat::GraphicsFormatR16SScaled; return true; }
+	if (string == "R16UInt") { format = GraphicsFormat::GraphicsFormatR16UInt; return true; }
+	if (string == "R16SInt") { format = GraphicsFormat::GraphicsFormatR16SInt; return true; }
+	if (string == "R16SFloat") { format = GraphicsFormat::GraphicsFormatR16SFloat; return true; }
+	if (string == "D16UNorm") { format = GraphicsFormat::GraphicsFormatD16UNorm; return true; }
+	if (string == "R8G8B8UNorm") { format = GraphicsFormat::GraphicsFormatR8G8B8UNorm; return true; }
+	if (string == "R8G8B8SNorm") { format = GraphicsFormat::GraphicsFormatR8G8B8SNorm; return true; }
+	if (string == "R8G8B8UScaled") { format = GraphicsFormat::GraphicsFormatR8G8B8UScaled; return true; }
+	if (string == "R8G8B8SScaled") { format = GraphicsFormat::GraphicsFormatR8G8B8SScaled; return true; }
+	if (string == "R8G8B8UInt") { format = GraphicsFormat::GraphicsFormatR8G8B8UInt; return true; }
+	if (string == "R8G8B8SInt") { format = GraphicsFormat::GraphicsFormatR8G8B8SInt; return true; }
+	if (string == "R8G8B8SRGB") { format = GraphicsFormat::GraphicsFormatR8G8B8SRGB; return true; }
+	if (string == "B8G8R8UNorm") { format = GraphicsFormat::GraphicsFormatB8G8R8UNorm; return true; }
+	if (string == "B8G8R8SNorm") { format = GraphicsFormat::GraphicsFormatB8G8R8SNorm; return true; }
+	if (string == "B8G8R8UScaled") { format = GraphicsFormat::GraphicsFormatB8G8R8UScaled; return true; }
+	if (string == "B8G8R8SScaled") { format = GraphicsFormat::GraphicsFormatB8G8R8SScaled; return true; }
+	if (string == "B8G8R8UInt") { format = GraphicsFormat::GraphicsFormatB8G8R8UInt; return true; }
+	if (string == "B8G8R8SInt") { format = GraphicsFormat::GraphicsFormatB8G8R8SInt; return true; }
+	if (string == "B8G8R8SRGB") { format = GraphicsFormat::GraphicsFormatB8G8R8SRGB; return true; }
+	if (string == "R8G8B8A8UNorm") { format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm; return true; }
+	if (string == "R8G8B8A8SNorm") { format = GraphicsFormat::GraphicsFormatR8G8B8A8SNorm; return true; }
+	if (string == "R8G8B8A8UScaled") { format = GraphicsFormat::GraphicsFormatR8G8B8A8UScaled; return true; }
+	if (string == "R8G8B8A8SScaled") { format = GraphicsFormat::GraphicsFormatR8G8B8A8SScaled; return true; }
+	if (string == "R8G8B8A8UInt") { format = GraphicsFormat::GraphicsFormatR8G8B8A8UInt; return true; }
+	if (string == "R8G8B8A8SInt") { format = GraphicsFormat::GraphicsFormatR8G8B8A8SInt; return true; }
+	if (string == "R8G8B8A8SRGB") { format = GraphicsFormat::GraphicsFormatR8G8B8A8SRGB; return true; }
+	if (string == "B8G8R8A8UNorm") { format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm; return true; }
+	if (string == "B8G8R8A8SNorm") { format = GraphicsFormat::GraphicsFormatB8G8R8A8SNorm; return true; }
+	if (string == "B8G8R8A8UScaled") { format = GraphicsFormat::GraphicsFormatB8G8R8A8UScaled; return true; }
+	if (string == "B8G8R8A8SScaled") { format = GraphicsFormat::GraphicsFormatB8G8R8A8SScaled; return true; }
+	if (string == "B8G8R8A8UInt") { format = GraphicsFormat::GraphicsFormatB8G8R8A8UInt; return true; }
+	if (string == "B8G8R8A8SInt") { format = GraphicsFormat::GraphicsFormatB8G8R8A8SInt; return true; }
+	if (string == "B8G8R8A8SRGB") { format = GraphicsFormat::GraphicsFormatB8G8R8A8SRGB; return true; }
+	if (string == "A8B8G8R8UNormPack32") { format = GraphicsFormat::GraphicsFormatA8B8G8R8UNormPack32; return true; }
+	if (string == "A8B8G8R8SNormPack32") { format = GraphicsFormat::GraphicsFormatA8B8G8R8SNormPack32; return true; }
+	if (string == "A8B8G8R8UScaledPack32") { format = GraphicsFormat::GraphicsFormatA8B8G8R8UScaledPack32; return true; }
+	if (string == "A8B8G8R8SScaledPack32") { format = GraphicsFormat::GraphicsFormatA8B8G8R8SScaledPack32; return true; }
+	if (string == "A8B8G8R8UIntPack32") { format = GraphicsFormat::GraphicsFormatA8B8G8R8UIntPack32; return true; }
+	if (string == "A8B8G8R8SIntPack32") { format = GraphicsFormat::GraphicsFormatA8B8G8R8SIntPack32; return true; }
+	if (string == "A8B8G8R8SRGBPack32") { format = GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32; return true; }
+	if (string == "R16G16SInt") { format = GraphicsFormat::GraphicsFormatR16G16SInt; return true; }
+	if (string == "R16G16UInt") { format = GraphicsFormat::GraphicsFormatR16G16UInt; return true; }
+	if (string == "R16G16SNorm") { format = GraphicsFormat::GraphicsFormatR16G16SNorm; return true; }
+	if (string == "R16G16UNorm") { format = GraphicsFormat::GraphicsFormatR16G16UNorm; return true; }
+	if (string == "R16G16UScaled") { format = GraphicsFormat::GraphicsFormatR16G16UScaled; return true; }
+	if (string == "R16G16SScaled") { format = GraphicsFormat::GraphicsFormatR16G16SScaled; return true; }
+	if (string == "R16G16SFloat") { format = GraphicsFormat::GraphicsFormatR16G16SFloat; return true; }
+	if (string == "R32UInt") { format = GraphicsFormat::GraphicsFormatR32UInt; return true; }
+	if (string == "R32SInt") { format = GraphicsFormat::GraphicsFormatR32SInt; return true; }
+	if (string == "R32SFloat") { format = GraphicsFormat::GraphicsFormatR32SFloat; return true; }
+	if (string == "A2R10G10B10UNormPack32") { format = GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32; return true; }
+	if (string == "A2R10G10B10SNormPack32") { format = GraphicsFormat::GraphicsFormatA2R10G10B10SNormPack32; return true; }
 	if (string == "A2R10G10B10UScaledPack32") { format = GraphicsFormat::GraphicsFormatA2R10G10B10UScaledPack32; return true; }
 	if (string == "A2R10G10B10SScaledPack32") { format = GraphicsFormat::GraphicsFormatA2R10G10B10SScaledPack32; return true; }
-	if (string == "A2R10G10B10UIntPack32")    { format = GraphicsFormat::GraphicsFormatA2R10G10B10UIntPack32; return true; }
-	if (string == "A2R10G10B10SIntPack32")    { format = GraphicsFormat::GraphicsFormatA2R10G10B10SIntPack32; return true; }
-	if (string == "A2B10G10R10UNormPack32")   { format = GraphicsFormat::GraphicsFormatA2B10G10R10UNormPack32; return true; }
-	if (string == "A2B10G10R10SNormPack32")   { format = GraphicsFormat::GraphicsFormatA2B10G10R10SNormPack32; return true; }
+	if (string == "A2R10G10B10UIntPack32") { format = GraphicsFormat::GraphicsFormatA2R10G10B10UIntPack32; return true; }
+	if (string == "A2R10G10B10SIntPack32") { format = GraphicsFormat::GraphicsFormatA2R10G10B10SIntPack32; return true; }
+	if (string == "A2B10G10R10UNormPack32") { format = GraphicsFormat::GraphicsFormatA2B10G10R10UNormPack32; return true; }
+	if (string == "A2B10G10R10SNormPack32") { format = GraphicsFormat::GraphicsFormatA2B10G10R10SNormPack32; return true; }
 	if (string == "A2B10G10R10UScaledPack32") { format = GraphicsFormat::GraphicsFormatA2B10G10R10UScaledPack32; return true; }
 	if (string == "A2B10G10R10SScaledPack32") { format = GraphicsFormat::GraphicsFormatA2B10G10R10SScaledPack32; return true; }
-	if (string == "A2B10G10R10UIntPack32")    { format = GraphicsFormat::GraphicsFormatA2B10G10R10UIntPack32; return true; }
-	if (string == "A2B10G10R10SIntPack32")    { format = GraphicsFormat::GraphicsFormatA2B10G10R10SIntPack32; return true; }
-	if (string == "X8_D24UNormPack32")        { format = GraphicsFormat::GraphicsFormatX8_D24UNormPack32; return true; }
-	if (string == "B10G11R11UFloatPack32")    { format = GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32; return true; }
-	if (string == "E5B9G9R9UFloatPack32")     { format = GraphicsFormat::GraphicsFormatE5B9G9R9UFloatPack32; return true; }
-	if (string == "D32_SFLOAT")               { format = GraphicsFormat::GraphicsFormatD32_SFLOAT; return true; }
-	if (string == "D16UNorm_S8UInt")          { format = GraphicsFormat::GraphicsFormatD16UNorm_S8UInt; return true; }
-	if (string == "D24UNorm_S8UInt")          { format = GraphicsFormat::GraphicsFormatD24UNorm_S8UInt; return true; }
-	if (string == "D32_SFLOAT_S8UInt")        { format = GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt; return true; }
-	if (string == "R16G16B16SInt")            { format = GraphicsFormat::GraphicsFormatR16G16B16SInt; return true; }
-	if (string == "R16G16B16UInt")            { format = GraphicsFormat::GraphicsFormatR16G16B16UInt; return true; }
-	if (string == "R16G16B16SNorm")           { format = GraphicsFormat::GraphicsFormatR16G16B16SNorm; return true; }
-	if (string == "R16G16B16UNorm")           { format = GraphicsFormat::GraphicsFormatR16G16B16UNorm; return true; }
-	if (string == "R16G16B16UScaled")         { format = GraphicsFormat::GraphicsFormatR16G16B16UScaled; return true; }
-	if (string == "R16G16B16SScaled")         { format = GraphicsFormat::GraphicsFormatR16G16B16SScaled; return true; }
-	if (string == "R16G16B16SFloat")          { format = GraphicsFormat::GraphicsFormatR16G16B16SFloat; return true; }
-	if (string == "R32G32SFloat")             { format = GraphicsFormat::GraphicsFormatR32G32SFloat; return true; }
-	if (string == "R32G32SInt")               { format = GraphicsFormat::GraphicsFormatR32G32SInt; return true; }
-	if (string == "R32G32UInt")               { format = GraphicsFormat::GraphicsFormatR32G32UInt; return true; }
-	if (string == "R16G16B16A16SNorm")        { format = GraphicsFormat::GraphicsFormatR16G16B16A16SNorm; return true; }
-	if (string == "R16G16B16A16UNorm")        { format = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm; return true; }
-	if (string == "R16G16B16A16SScaled")      { format = GraphicsFormat::GraphicsFormatR16G16B16A16SScaled; return true; }
-	if (string == "R16G16B16A16UScaled")      { format = GraphicsFormat::GraphicsFormatR16G16B16A16UScaled; return true; }
-	if (string == "R16G16B16A16SFloat")       { format = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat; return true; }
-	if (string == "R16G16B16A16SInt")         { format = GraphicsFormat::GraphicsFormatR16G16B16A16SInt; return true; }
-	if (string == "R16G16B16A16UInt")         { format = GraphicsFormat::GraphicsFormatR16G16B16A16UInt; return true; }
-	if (string == "R64UInt")                  { format = GraphicsFormat::GraphicsFormatR64UInt; return true; }
-	if (string == "R64SInt")                  { format = GraphicsFormat::GraphicsFormatR64SInt; return true; }
-	if (string == "R64SFloat")                { format = GraphicsFormat::GraphicsFormatR64SFloat; return true; }
-	if (string == "R32G32B32SFloat")          { format = GraphicsFormat::GraphicsFormatR32G32B32SFloat; return true; }
-	if (string == "R32G32B32SInt")            { format = GraphicsFormat::GraphicsFormatR32G32B32SInt; return true; }
-	if (string == "R32G32B32UInt")            { format = GraphicsFormat::GraphicsFormatR32G32B32UInt; return true; }
-	if (string == "R32G32B32A32SFloat")       { format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat; return true; }
-	if (string == "R32G32B32A32SInt")         { format = GraphicsFormat::GraphicsFormatR32G32B32A32SInt; return true; }
-	if (string == "R32G32B32A32UInt")         { format = GraphicsFormat::GraphicsFormatR32G32B32A32UInt; return true; }
-	if (string == "R64G64UInt")               { format = GraphicsFormat::GraphicsFormatR64G64UInt; return true; }
-	if (string == "R64G64SInt")               { format = GraphicsFormat::GraphicsFormatR64G64SInt; return true; }
-	if (string == "R64G64SFloat")             { format = GraphicsFormat::GraphicsFormatR64G64SFloat; return true; }
-	if (string == "R64G64B64UInt")            { format = GraphicsFormat::GraphicsFormatR64G64B64UInt; return true; }
-	if (string == "R64G64B64SInt")            { format = GraphicsFormat::GraphicsFormatR64G64B64SInt; return true; }
-	if (string == "R64G64B64SFloat")          { format = GraphicsFormat::GraphicsFormatR64G64B64SFloat; return true; }
-	if (string == "R64G64B64A64UInt")         { format = GraphicsFormat::GraphicsFormatR64G64B64A64UInt; return true; }
-	if (string == "R64G64B64A64SInt")         { format = GraphicsFormat::GraphicsFormatR64G64B64A64SInt; return true; }
-	if (string == "R64G64B64A64SFloat")       { format = GraphicsFormat::GraphicsFormatR64G64B64A64SFloat; return true; }
+	if (string == "A2B10G10R10UIntPack32") { format = GraphicsFormat::GraphicsFormatA2B10G10R10UIntPack32; return true; }
+	if (string == "A2B10G10R10SIntPack32") { format = GraphicsFormat::GraphicsFormatA2B10G10R10SIntPack32; return true; }
+	if (string == "X8_D24UNormPack32") { format = GraphicsFormat::GraphicsFormatX8_D24UNormPack32; return true; }
+	if (string == "B10G11R11UFloatPack32") { format = GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32; return true; }
+	if (string == "E5B9G9R9UFloatPack32") { format = GraphicsFormat::GraphicsFormatE5B9G9R9UFloatPack32; return true; }
+	if (string == "D32_SFLOAT") { format = GraphicsFormat::GraphicsFormatD32_SFLOAT; return true; }
+	if (string == "D16UNorm_S8UInt") { format = GraphicsFormat::GraphicsFormatD16UNorm_S8UInt; return true; }
+	if (string == "D24UNorm_S8UInt") { format = GraphicsFormat::GraphicsFormatD24UNorm_S8UInt; return true; }
+	if (string == "D32_SFLOAT_S8UInt") { format = GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt; return true; }
+	if (string == "R16G16B16SInt") { format = GraphicsFormat::GraphicsFormatR16G16B16SInt; return true; }
+	if (string == "R16G16B16UInt") { format = GraphicsFormat::GraphicsFormatR16G16B16UInt; return true; }
+	if (string == "R16G16B16SNorm") { format = GraphicsFormat::GraphicsFormatR16G16B16SNorm; return true; }
+	if (string == "R16G16B16UNorm") { format = GraphicsFormat::GraphicsFormatR16G16B16UNorm; return true; }
+	if (string == "R16G16B16UScaled") { format = GraphicsFormat::GraphicsFormatR16G16B16UScaled; return true; }
+	if (string == "R16G16B16SScaled") { format = GraphicsFormat::GraphicsFormatR16G16B16SScaled; return true; }
+	if (string == "R16G16B16SFloat") { format = GraphicsFormat::GraphicsFormatR16G16B16SFloat; return true; }
+	if (string == "R32G32SFloat") { format = GraphicsFormat::GraphicsFormatR32G32SFloat; return true; }
+	if (string == "R32G32SInt") { format = GraphicsFormat::GraphicsFormatR32G32SInt; return true; }
+	if (string == "R32G32UInt") { format = GraphicsFormat::GraphicsFormatR32G32UInt; return true; }
+	if (string == "R16G16B16A16SNorm") { format = GraphicsFormat::GraphicsFormatR16G16B16A16SNorm; return true; }
+	if (string == "R16G16B16A16UNorm") { format = GraphicsFormat::GraphicsFormatR16G16B16A16UNorm; return true; }
+	if (string == "R16G16B16A16SScaled") { format = GraphicsFormat::GraphicsFormatR16G16B16A16SScaled; return true; }
+	if (string == "R16G16B16A16UScaled") { format = GraphicsFormat::GraphicsFormatR16G16B16A16UScaled; return true; }
+	if (string == "R16G16B16A16SFloat") { format = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat; return true; }
+	if (string == "R16G16B16A16SInt") { format = GraphicsFormat::GraphicsFormatR16G16B16A16SInt; return true; }
+	if (string == "R16G16B16A16UInt") { format = GraphicsFormat::GraphicsFormatR16G16B16A16UInt; return true; }
+	if (string == "R64UInt") { format = GraphicsFormat::GraphicsFormatR64UInt; return true; }
+	if (string == "R64SInt") { format = GraphicsFormat::GraphicsFormatR64SInt; return true; }
+	if (string == "R64SFloat") { format = GraphicsFormat::GraphicsFormatR64SFloat; return true; }
+	if (string == "R32G32B32SFloat") { format = GraphicsFormat::GraphicsFormatR32G32B32SFloat; return true; }
+	if (string == "R32G32B32SInt") { format = GraphicsFormat::GraphicsFormatR32G32B32SInt; return true; }
+	if (string == "R32G32B32UInt") { format = GraphicsFormat::GraphicsFormatR32G32B32UInt; return true; }
+	if (string == "R32G32B32A32SFloat") { format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat; return true; }
+	if (string == "R32G32B32A32SInt") { format = GraphicsFormat::GraphicsFormatR32G32B32A32SInt; return true; }
+	if (string == "R32G32B32A32UInt") { format = GraphicsFormat::GraphicsFormatR32G32B32A32UInt; return true; }
+	if (string == "R64G64UInt") { format = GraphicsFormat::GraphicsFormatR64G64UInt; return true; }
+	if (string == "R64G64SInt") { format = GraphicsFormat::GraphicsFormatR64G64SInt; return true; }
+	if (string == "R64G64SFloat") { format = GraphicsFormat::GraphicsFormatR64G64SFloat; return true; }
+	if (string == "R64G64B64UInt") { format = GraphicsFormat::GraphicsFormatR64G64B64UInt; return true; }
+	if (string == "R64G64B64SInt") { format = GraphicsFormat::GraphicsFormatR64G64B64SInt; return true; }
+	if (string == "R64G64B64SFloat") { format = GraphicsFormat::GraphicsFormatR64G64B64SFloat; return true; }
+	if (string == "R64G64B64A64UInt") { format = GraphicsFormat::GraphicsFormatR64G64B64A64UInt; return true; }
+	if (string == "R64G64B64A64SInt") { format = GraphicsFormat::GraphicsFormatR64G64B64A64SInt; return true; }
+	if (string == "R64G64B64A64SFloat") { format = GraphicsFormat::GraphicsFormatR64G64B64A64SFloat; return true; }
 
 	assert(false);
 	return false;
 }
 
-bool 
+bool
 MaterialMaker::GetSemanticType(const std::string& string, GlobalSemanticType& type) noexcept
 {
 	if (string.empty())

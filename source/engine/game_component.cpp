@@ -47,7 +47,7 @@ GameComponent::GameComponent() noexcept
 {
 }
 
-GameComponent::GameComponent(const archive_node& reader) noexcept
+GameComponent::GameComponent(const archivebuf& reader) noexcept
 {
 	this->load(reader);
 }
@@ -157,14 +157,14 @@ GameComponent::getName() const noexcept
 }
 
 void
-GameComponent::load(const archive_node& reader) noexcept
+GameComponent::load(const archivebuf& reader) noexcept
 {
 	reader["name"] >> _name;
 	reader["active"] >> _active;
 }
 
 void
-GameComponent::save(archive_node& write) noexcept
+GameComponent::save(archivebuf& write) noexcept
 {
 	write["name"] << _name;
 	write["active"] << _active;

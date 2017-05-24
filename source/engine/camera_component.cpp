@@ -49,7 +49,7 @@ CameraComponent::CameraComponent() noexcept
 	_camera->setCameraOrder(CameraOrder::CameraOrder3D);
 }
 
-CameraComponent::CameraComponent(const archive_node& reader) noexcept
+CameraComponent::CameraComponent(const archivebuf& reader) noexcept
 	: CameraComponent()
 {
 	this->load(reader);
@@ -253,7 +253,7 @@ CameraComponent::getCameraRenderFlags() const noexcept
 }
 
 void
-CameraComponent::load(const archive_node& reader) noexcept
+CameraComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);
 
@@ -285,9 +285,9 @@ CameraComponent::load(const archive_node& reader) noexcept
 	{
 		float4 fru;
 
-		const auto& values = ortho.get<archive_node::array_t>();
+		const auto& values = ortho.get<archive::array_t>();
 		for (std::uint8_t i = 0; i < 4; ++i)
-			fru[i] = values[i].get<archive_node::number_float>();
+			fru[i] = values[i].get<archive::number_float_t>();
 
 		this->setOrtho(fru.x, fru.y, fru.z, fru.w);
 	}
@@ -296,9 +296,9 @@ CameraComponent::load(const archive_node& reader) noexcept
 	{
 		float4 vp;
 
-		const auto& values = ortho.get<archive_node::array_t>();
+		const auto& values = ortho.get<archive::array_t>();
 		for (std::uint8_t i = 0; i < 4; ++i)
-			vp[i] = values[i].get<archive_node::number_float>();
+			vp[i] = values[i].get<archive::number_float_t>();
 
 		this->setViewport(vp);
 	}
@@ -307,16 +307,16 @@ CameraComponent::load(const archive_node& reader) noexcept
 	{
 		float4 color;
 
-		const auto& values = clear_color.get<archive_node::array_t>();
+		const auto& values = clear_color.get<archive::array_t>();
 		for (std::uint8_t i = 0; i < 4; ++i)
-			color[i] = values[i].get<archive_node::number_float>();
+			color[i] = values[i].get<archive::number_float_t>();
 
 		_camera->setClearColor(color);
 	}
 
 	if (project.is_string())
 	{
-		if (project.get<archive_node::string_t>() == "ortho")
+		if (project.get<archive::string_t>() == "ortho")
 			this->setCameraType(CameraType::CameraTypeOrtho);
 		else
 			this->setCameraType(CameraType::CameraTypePerspective);
@@ -324,7 +324,7 @@ CameraComponent::load(const archive_node& reader) noexcept
 
 	if (order.is_string())
 	{
-		if (order.get<archive_node::string_t>() == "2D")
+		if (order.get<archive::string_t>() == "2D")
 			this->setCameraOrder(CameraOrder::CameraOrder2D);
 		else
 			this->setCameraOrder(CameraOrder::CameraOrder3D);
@@ -335,7 +335,7 @@ CameraComponent::load(const archive_node& reader) noexcept
 		GraphicsClearFlags flags = 0;
 
 		std::vector<util::string> args;
-		util::split(args, clear_flags.get<archive_node::string_t>(), "|");
+		util::split(args, clear_flags.get<archive::string_t>(), "|");
 
 		for (auto& flag : args)
 		{
@@ -357,7 +357,7 @@ CameraComponent::load(const archive_node& reader) noexcept
 		CameraRenderFlags flags = 0;
 
 		std::vector<util::string> args;
-		util::split(args, render_flags.get<archive_node::string_t>(), "|");
+		util::split(args, render_flags.get<archive::string_t>(), "|");
 
 		for (auto& flag : args)
 		{
@@ -384,7 +384,7 @@ CameraComponent::load(const archive_node& reader) noexcept
 }
 
 void
-CameraComponent::save(archive_node& write) noexcept
+CameraComponent::save(archivebuf& write) noexcept
 {
 }
 

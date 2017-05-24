@@ -65,95 +65,127 @@ public:
 	iarchive(archivebuf* buf) noexcept;
 	virtual ~iarchive() noexcept;
 
-	bool hasAttr(const char* name) const noexcept;
-	void clearAttrs() noexcept;
-	void addAttrs() noexcept;
-	void addAttrsInChildren() noexcept;
-	void addAttrsInChildren(const std::string& key) noexcept;
-	const std::vector<std::string>& getAttrList() const noexcept;
+	const archivebuf& at(const string_t& key) const except;
+	const archivebuf& at(const std::size_t n) const except;
+	const archivebuf& at(string_t::const_pointer key) const except;
 
-	bool getValue(const std::string& name, bool& result) noexcept;
-	bool getValue(const std::string& name, int1& result) noexcept;
-	bool getValue(const std::string& name, int2& result) noexcept;
-	bool getValue(const std::string& name, int3& result) noexcept;
-	bool getValue(const std::string& name, int4& result) noexcept;
-	bool getValue(const std::string& name, uint1& result) noexcept;
-	bool getValue(const std::string& name, uint2& result) noexcept;
-	bool getValue(const std::string& name, uint3& result) noexcept;
-	bool getValue(const std::string& name, uint4& result) noexcept;
-	bool getValue(const std::string& name, float1& result) noexcept;
-	bool getValue(const std::string& name, float2& result) noexcept;
-	bool getValue(const std::string& name, float3& result) noexcept;
-	bool getValue(const std::string& name, float4& result) noexcept;
-	bool getValue(const std::string& name, std::string& result) noexcept;
+	const archivebuf& operator[](std::size_t n) const except;
+	const archivebuf& operator[](const string_t& key) const except;
+	const archivebuf& operator[](string_t::const_pointer key) const except;
 
-	template<typename T>
-	T getValue(const std::string& name)
+	const iarchive& operator >> (boolean_t& argv) const except
 	{
-		assert(!name.empty());
-		T value;
-		this->getValue(name, value);
-		return value;
-	}
-
-	template<typename T>
-	bool getValue(std::pair<const std::string&, T&> value)
-	{
-		assert(!value.first.empty());
-
-		auto& attributes = this->getAttrList();
-		for (auto& it : attributes)
-		{
-			if (it == value.first)
-			{
-				this->getValue(it, value.second);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	template<typename T>
-	bool getValue(std::pair<const char*, T&> value)
-	{
-		assert(value.first);
-
-		auto& attributes = this->getAttrList();
-		for (auto& it : attributes)
-		{
-			if (it.compare(value.first) == 0)
-			{
-				this->getValue(it, value.second);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	template<typename T>
-	iarchive& operator >> (std::pair<const std::string&, T&> value)
-	{
-		this->getValue(value);
+		const auto& value = *this;
+		if (value.is_boolean())
+			argv = value.get<boolean_t>();
 		return *this;
 	}
 
-	template<typename T>
-	iarchive& operator >> (std::pair<const char*, T&> value)
+	template<typename T, std::enable_if_t<std::is_signed<T>::value, int> = 0>
+	const iarchive& operator >> (T& argv) const except
 	{
-		this->getValue(value);
+		if (this->is_integral())
+			argv = static_cast<T>(this->get<number_integer_t>());
 		return *this;
 	}
 
-	template<typename T>
-	iarchive& operator >> (std::shared_ptr<T>& value)
+	template<typename T, std::enable_if_t<std::is_unsigned<T>::value, int> = 0>
+	const iarchive& operator >> (T& argv) const except
 	{
-		if (this->setToFirstChild())
+		if (this->is_integral())
+			argv = static_cast<T>(this->get<number_unsigned_t>());
+		return *this;
+	}
+
+	const iarchive& operator >> (number_float_t& argv) const except
+	{
+		const auto& value = *this;
+		if (value.is_numeric())
+			argv = value.get<number_float_t>();
+		return *this;
+	}
+
+	const iarchive& operator >> (number_float2_t& argv) const except
+	{
+		if (this->is_array())
 		{
-			value->load(*this);
-			this->setToParent();
+			const auto& values = this->get<array_t>();
+			if (values.size() == 2)
+			{
+				for (std::uint8_t i = 0; i < 2; ++i)
+					argv[i] = values[i].get<number_float_t>();
+			}
+			else
+			{
+				throw failure(std::string("array length mismatch with 2"));
+			}
 		}
+
+		return *this;
+	}
+
+	const iarchive& operator >> (number_float3_t& argv) const except
+	{
+		if (this->is_array())
+		{
+			const auto& values = this->get<array_t>();
+			if (values.size() == 3)
+			{
+				for (std::uint8_t i = 0; i < 3; ++i)
+					argv[i] = values[i].get<number_float_t>();
+			}
+			else
+			{
+				throw failure(std::string("array length mismatch with 3"));
+			}
+		}
+
+		return *this;
+	}
+
+	const iarchive& operator >> (number_float4_t& argv) const except
+	{
+		if (this->is_array())
+		{
+			const auto& values = this->get<array_t>();
+			if (values.size() == 4)
+			{
+				for (std::uint8_t i = 0; i < 4; ++i)
+					argv[i] = values[i].get<number_float_t>();
+			}
+			else
+			{
+				throw failure(std::string("array length mismatch with 4"));
+			}
+		}
+
+		return *this;
+	}
+
+	const iarchive& operator >> (number_quaternion_t& argv) const except
+	{
+		if (this->is_array())
+		{
+			const auto& values = this->get<array_t>();
+			if (values.size() == 4)
+			{
+				for (std::uint8_t i = 0; i < 4; ++i)
+					argv[i] = values[i].get<number_float_t>();
+			}
+			else
+			{
+				throw failure(std::string("array length mismatch with 4"));
+			}
+		}
+
+		return *this;
+	}
+
+	const iarchive& operator >> (string_t& argv) const except
+	{
+		const auto& value = *this;
+		if (value.is_string())
+			argv = value.get<string_t>();
 		return *this;
 	}
 

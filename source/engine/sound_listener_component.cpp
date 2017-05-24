@@ -70,7 +70,7 @@ SoundListenerComponent::getVolume() const noexcept
 }
 
 void
-SoundListenerComponent::load(const archive_node& reader) noexcept
+SoundListenerComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);
 
@@ -78,7 +78,7 @@ SoundListenerComponent::load(const archive_node& reader) noexcept
 }
 
 void
-SoundListenerComponent::save(archive_node& write) noexcept
+SoundListenerComponent::save(archivebuf& write) noexcept
 {
 	GameComponent::save(write);
 

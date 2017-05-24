@@ -64,7 +64,7 @@ public:
 	void jump(float speed) noexcept;
 
 	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
+	void save(archivebuf& write) noexcept;
 
 	virtual GameComponentPtr clone() const noexcept;
 

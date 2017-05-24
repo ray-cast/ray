@@ -66,68 +66,134 @@ oarchive::~oarchive() noexcept
 {
 }
 
-oarchive&
-oarchive::addAttribute(const std::string& key, const std::string& value) noexcept
+void
+oarchive::emplace(type_t type) noexcept
 {
-	const osentry ok(this);
-	if (ok)
-	{
-		if (!this->fail() && !this->rdbuf()->addAttribute(key, value))
-			this->setstate(ios_base::failbit);
-	}
+	this->rdbuf()->emplace(type);
+}
+void
+oarchive::clear() noexcept
+{
+	this->rdbuf()->clear();
+}
 
+archivebuf&
+oarchive::at(const string_t& key) except
+{
+	return this->rdbuf()->at(key);
+}
+
+archivebuf&
+oarchive::at(const string_t::value_type* key) except
+{
+	return this->rdbuf()->at(key);
+}
+
+archivebuf&
+oarchive::at(const std::size_t n) except
+{
+	return this->rdbuf()->at(n);
+}
+
+const archivebuf&
+oarchive::at(const string_t& key) const except
+{
+	return this->rdbuf()->at(key);
+}
+
+const archivebuf&
+oarchive::at(string_t::const_pointer key) const except
+{
+	return this->rdbuf()->at(key);
+}
+
+const archivebuf&
+oarchive::at(const std::size_t n) const except
+{
+	return this->rdbuf()->at(n);
+}
+
+oarchive&
+oarchive::operator=(boolean_t value) except
+{
+	this->rdbuf()->operator=(value);
 	return *this;
 }
 
 oarchive&
-oarchive::setAttribute(const std::string& key, const std::string& value) noexcept
+oarchive::operator=(number_integer_t value) except
 {
-	const osentry ok(this);
-	if (ok)
-	{
-		if (!this->fail() && !this->rdbuf()->addAttribute(key, value))
-			this->setstate(ios_base::failbit);
-	}
-
+	this->rdbuf()->operator=(value);
 	return *this;
 }
 
 oarchive&
-oarchive::removeAttribute(const std::string& key) noexcept
+oarchive::operator=(number_unsigned_t value) except
 {
-	const osentry ok(this);
-	if (ok)
-	{
-		if (!this->fail())
-			this->rdbuf()->removeAttribute(key);
-	}
-
+	this->rdbuf()->operator=(value);
 	return *this;
 }
 
 oarchive&
-oarchive::addNode(const std::string& key) noexcept
+oarchive::operator=(number_float_t value) except
 {
-	const osentry ok(this);
-	if (ok)
-	{
-		if (!this->fail() && !this->rdbuf()->insertToParent(key))
-			this->setstate(ios_base::failbit);
-	}
-
+	this->rdbuf()->operator=(value);
 	return *this;
 }
 
 oarchive&
-oarchive::addSubNode(const std::string& key) noexcept
+oarchive::operator=(string_t&& value) except
 {
-	const osentry ok(this);
-	if (ok)
-	{
-		if (!this->fail() && !this->rdbuf()->insert(key))
-			this->setstate(ios_base::failbit);
-	}
+	this->rdbuf()->operator=(value);
+	return *this;
+}
 
+oarchive&
+oarchive::operator=(const string_t& value) except
+{
+	this->rdbuf()->operator=(value);
+	return *this;
+}
+
+oarchive&
+oarchive::operator[](std::size_t n) except
+{
+	this->rdbuf()->operator[](n);
+	return *this;
+}
+
+oarchive&
+oarchive::operator[](const string_t& key) except
+{
+	this->rdbuf()->operator[](key);
+	return *this;
+}
+
+oarchive&
+oarchive::operator[](string_t::const_pointer key) except
+{
+	this->rdbuf()->operator[](key);
+	return *this;
+}
+
+const oarchive&
+oarchive::operator[](std::size_t n) const except
+{
+	this->rdbuf()->operator[](n);
+	return *this;
+}
+
+const oarchive&
+oarchive::operator[](const string_t& key) const except
+{
+	this->rdbuf()->operator[](key);
+	return *this;
+}
+
+const oarchive&
+oarchive::operator[](string_t::const_pointer key) const except
+{
+	this->rdbuf()->operator[](key);
 	return *this;
 }
 

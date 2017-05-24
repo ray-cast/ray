@@ -57,7 +57,7 @@ GameObject::GameObject() noexcept
 	GameObjectManager::instance()->_instanceObject(this, _instanceID);
 }
 
-GameObject::GameObject(const archive_node& reader) noexcept
+GameObject::GameObject(const archivebuf& reader) noexcept
 	: GameObject()
 {
 	this->load(reader);
@@ -1004,7 +1004,7 @@ GameObject::sendMessageDownwards(const MessagePtr& message, GameComponent* ignor
 }
 
 void
-GameObject::load(const archive_node& reader) except
+GameObject::load(const archivebuf& reader) except
 {
 	reader["name"] >> _name;
 	reader["active"] >> _active;
@@ -1015,7 +1015,7 @@ GameObject::load(const archive_node& reader) except
 }
 
 void
-GameObject::save(archive_node& write) except
+GameObject::save(archivebuf& write) except
 {
 	write["name"] << _name;
 	write["active"] << _active;

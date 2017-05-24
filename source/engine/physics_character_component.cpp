@@ -127,15 +127,15 @@ PhysicsCharacterComponent::load(iarchive& reader) noexcept
 	float radius = 1.0;
 	float height = 1.0;
 
-	reader >> make_archive(radius, "radius");
-	reader >> make_archive(height, "height");
+	reader["radius"] >> radius;
+	reader["height"] >> height;
 
 	this->setRadius(radius);
 	this->setHeight(height);
 }
 
 void
-PhysicsCharacterComponent::save(oarchive& write) noexcept
+PhysicsCharacterComponent::save(archivebuf& write) noexcept
 {
 }
 

@@ -315,7 +315,7 @@ SoundComponent::removePlayEndListener(std::function<void()>* func) noexcept
 }
 
 void
-SoundComponent::load(const archive_node& reader) noexcept
+SoundComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);
 
@@ -331,7 +331,7 @@ SoundComponent::load(const archive_node& reader) noexcept
 }
 
 void
-SoundComponent::save(archive_node& write) noexcept
+SoundComponent::save(archivebuf& write) noexcept
 {
 	GameComponent::save(write);
 

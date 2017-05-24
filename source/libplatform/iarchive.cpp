@@ -66,152 +66,40 @@ iarchive::~iarchive() noexcept
 {
 }
 
-bool
-iarchive::hasAttr(const char* name) const noexcept
+const archivebuf&
+iarchive::at(const string_t& key) const except
 {
-	return this->rdbuf()->hasAttr(name);
+	return this->rdbuf()->at(key);
 }
 
-void
-iarchive::clearAttrs() noexcept
+const archivebuf&
+iarchive::at(string_t::const_pointer key) const except
 {
-	return this->rdbuf()->clearAttrs();
+	return this->rdbuf()->at(key);
 }
 
-void
-iarchive::addAttrs() noexcept
+const archivebuf&
+iarchive::at(const std::size_t n) const except
 {
-	this->rdbuf()->addAttrs();
+	return this->rdbuf()->at(n);
 }
 
-void
-iarchive::addAttrsInChildren() noexcept
+const archivebuf&
+iarchive::operator[](std::size_t n) const except
 {
-	this->rdbuf()->addAttrsInChildren();
+	return this->rdbuf()->operator[](n);
 }
 
-void
-iarchive::addAttrsInChildren(const std::string& key) noexcept
+const archivebuf&
+iarchive::operator[](const string_t& key) const except
 {
-	this->rdbuf()->addAttrsInChildren();
+	return this->rdbuf()->operator[](key);
 }
 
-const std::vector<std::string>&
-iarchive::getAttrList() const noexcept
+const archivebuf&
+iarchive::operator[](string_t::const_pointer key) const except
 {
-	return this->rdbuf()->getAttrList();
-}
-
-bool
-iarchive::getValue(const std::string& name, bool& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, int1& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, int2& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, int3& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, int4& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, uint1& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, uint2& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, uint3& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, uint4& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, float1& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, float2& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, float3& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, float4& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
-}
-
-bool
-iarchive::getValue(const std::string& name, std::string& result) noexcept
-{
-	if (!this->rdbuf()->getValue(name, result))
-		return false;
-	return true;
+	return this->rdbuf()->operator[](key);
 }
 
 _NAME_END

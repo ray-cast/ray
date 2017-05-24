@@ -65,8 +65,8 @@ public:
 
 	void sendMessage(const MessagePtr& message) except;
 
-	bool load(const archive_node& reader) noexcept;
-	bool save(archive_node& reader) noexcept;
+	bool load(const iarchive& reader) noexcept;
+	bool save(oarchive& reader) noexcept;
 
 	bool load(const util::string& sceneName) noexcept;
 	bool save(const util::string& sceneName) noexcept;

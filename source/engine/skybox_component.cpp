@@ -58,7 +58,7 @@ SkyboxComponent::SkyboxComponent() noexcept
 	this->setReceiveShadow(false);
 }
 
-SkyboxComponent::SkyboxComponent(const archive_node& reader) noexcept
+SkyboxComponent::SkyboxComponent(const archivebuf& reader) noexcept
 	: SkyboxComponent()
 {
 	this->load(reader);
@@ -270,7 +270,7 @@ SkyboxComponent::removeEnableSkyLightingListener(std::function<void(bool)>* func
 }
 
 void
-SkyboxComponent::load(const archive_node& reader) noexcept
+SkyboxComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);
 
@@ -285,7 +285,7 @@ SkyboxComponent::load(const archive_node& reader) noexcept
 	if (flags.is_string())
 	{
 		std::vector<util::string> args;
-		util::split(args, flags.get<archive_node::string_t>(), "|");
+		util::split(args, flags.get<archive::string_t>(), "|");
 
 		for (auto& flag : args)
 		{
@@ -300,7 +300,7 @@ SkyboxComponent::load(const archive_node& reader) noexcept
 }
 
 void
-SkyboxComponent::save(archive_node& write) noexcept
+SkyboxComponent::save(archivebuf& write) noexcept
 {
 	GameComponent::save(write);
 

@@ -38,7 +38,7 @@
 #define _H_MATERIAL_MAKETER_H_
 
 #include <ray/material_loader.h>
-#include <ray/iarchive.h>
+#include <ray/xmlreader.h>
 
 _NAME_BEGIN
 
@@ -51,24 +51,24 @@ public:
 	bool doCanRead(StreamReader& stream) const noexcept;
 
 	bool load(MaterialManager& manager, Material& material, const std::string& filename) noexcept;
-	bool load(MaterialManager& manager, Material& material, iarchive& reader) except;
+	bool load(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
 	bool load(MaterialManager& manager, Material& material, StreamReader& stream) noexcept;
 
 private:
-	bool loadMaterial(MaterialManager& manager, Material& material, iarchive& reader) except;
-	bool loadEffect(MaterialManager& manager, Material& material, iarchive& reader) except;
+	bool loadMaterial(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
+	bool loadEffect(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
 
 private:
-	bool instanceInclude(MaterialManager& manager, Material& material, iarchive& reader) except;
-	void instancePass(MaterialManager& manager, Material& material, MaterialTechPtr& tech, iarchive& reader) except;
-	void instanceTech(MaterialManager& manager, Material& material, iarchive& reader) except;
-	void instanceSampler(MaterialManager& manager, Material& material, iarchive& reader) except;
-	void instanceParameter(MaterialManager& manager, Material& material, iarchive& reader) except;
-	void instanceMacro(MaterialManager& manager, Material& material, iarchive& reader) except;
-	void instanceBuffer(MaterialManager& manager, Material& material, iarchive& reader) except;
-	void instanceCodes(MaterialManager& manager, iarchive& reader) except;
-	void instanceShader(MaterialManager& manager, Material& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
-	void instanceInputLayout(MaterialManager& manager, Material& material, iarchive& reader) except;
+	bool instanceInclude(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
+	void instancePass(MaterialManager& manager, Material& material, MaterialTechPtr& tech, ixmlarchive& reader) except;
+	void instanceTech(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
+	void instanceSampler(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
+	void instanceParameter(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
+	void instanceMacro(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
+	void instanceBuffer(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
+	void instanceCodes(MaterialManager& manager, ixmlarchive& reader) except;
+	void instanceShader(MaterialManager& manager, Material& material, GraphicsProgramDesc& programDesc, ixmlarchive& reader) except;
+	void instanceInputLayout(MaterialManager& manager, Material& material, ixmlarchive& reader) except;
 
 	static bool GetShaderStage(const std::string& string, GraphicsShaderStageFlagBits& flags) noexcept;
 	static bool GetUniformType(const std::string& string, GraphicsUniformType& type) noexcept;

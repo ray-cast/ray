@@ -136,10 +136,11 @@ GameServer::openScene(const util::string& filename) noexcept
 	{
 		auto scene = std::make_shared<GameScene>();
 		scene->setGameListener(_gameListener);
-		if (scene->load(filename))
-			return this->addScene(scene);
 
-		return true;
+		if (!scene->load(filename))
+			return false;
+
+		return this->addScene(scene);
 	}
 	catch (const exception& e)
 	{

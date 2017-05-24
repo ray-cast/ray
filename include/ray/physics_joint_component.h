@@ -52,7 +52,7 @@ public:
 	PhysicsBodyComponentPtr getConnectRigidbody() const noexcept;
 
 	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
+	void save(archivebuf& write) noexcept;
 
 protected:
 	class PhysicsBody* getRawRigidbody() const noexcept;

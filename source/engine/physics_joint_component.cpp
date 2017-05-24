@@ -73,7 +73,7 @@ PhysicsJointComponent::load(iarchive& reader) noexcept
 }
 
 void
-PhysicsJointComponent::save(oarchive& write) noexcept
+PhysicsJointComponent::save(archivebuf& write) noexcept
 {
 }
 

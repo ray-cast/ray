@@ -48,7 +48,7 @@ MeshComponent::MeshComponent() noexcept
 {
 }
 
-MeshComponent::MeshComponent(const archive_node& reader) noexcept
+MeshComponent::MeshComponent(const archivebuf& reader) noexcept
 	: MeshComponent()
 {
 	this->load(reader);
@@ -169,7 +169,7 @@ MeshComponent::needUpdate() noexcept
 }
 
 void
-MeshComponent::load(const archive_node& reader) noexcept
+MeshComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);
 
@@ -217,7 +217,7 @@ MeshComponent::load(const archive_node& reader) noexcept
 }
 
 void
-MeshComponent::save(archive_node& write) noexcept
+MeshComponent::save(archivebuf& write) noexcept
 {
 	GameComponent::save(write);
 }

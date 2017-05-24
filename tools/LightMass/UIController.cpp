@@ -263,7 +263,7 @@ public:
 		if (!ray::IoServer::instance()->openFile(stream, "root:config.json", ray::ios_base::in))
 			throw ray::failure(__TEXT("Opening file fail: config.json"));
 
-		auto json = ray::json::reader(*stream);
+		/*auto json = ray::json::reader(*stream);
 
 		params.lightMass.lightMap.width = std::clamp<std::uint32_t>(json["lightmap"]["width"].get<float>(), 256, 8192);
 		params.lightMass.lightMap.height = std::clamp<std::uint32_t>(json["lightmap"]["height"].get<float>(), 256, 8192);
@@ -278,7 +278,7 @@ public:
 		params.lightMass.baking.hemisphereFar = std::max<float>(json["lightmass"]["hemisphereFar"].get<float>(), params.lightMass.baking.hemisphereNear);
 		params.lightMass.baking.interpolationPasses = std::clamp<std::uint32_t>(json["lightmass"]["interpolationPasses"].get<float>(), 0, 16);
 		params.lightMass.baking.interpolationThreshold = json["lightmass"]["interpolationThreshold"].get<float>();
-		params.lightMass.enableGI = json["lightmass"]["enableGI"].get<float>() > 0 ? 1 : 0;
+		params.lightMass.enableGI = json["lightmass"]["enableGI"].get<float>() > 0 ? 1 : 0;*/
 	}
 
 	bool run(std::string path)

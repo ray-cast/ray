@@ -90,7 +90,7 @@ MeshRenderComponent::MeshRenderComponent(Materials&& materials, bool shared) noe
 		this->setMaterials(materials);
 }
 
-MeshRenderComponent::MeshRenderComponent(const archive_node& reader) noexcept
+MeshRenderComponent::MeshRenderComponent(const archivebuf& reader) noexcept
 	: MeshRenderComponent()
 {
 	this->load(reader);
@@ -234,7 +234,7 @@ MeshRenderComponent::hasSharedMaterial() const noexcept
 }
 
 void
-MeshRenderComponent::load(const archive_node& reader) noexcept
+MeshRenderComponent::load(const archivebuf& reader) noexcept
 {
 	RenderComponent::load(reader);
 
@@ -244,7 +244,7 @@ MeshRenderComponent::load(const archive_node& reader) noexcept
 }
 
 void
-MeshRenderComponent::save(archive_node& write) noexcept
+MeshRenderComponent::save(archivebuf& write) noexcept
 {
 	RenderComponent::save(write);
 

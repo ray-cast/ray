@@ -69,7 +69,7 @@ PhysicsBoxComponent::getSize() const noexcept
 }
 
 void
-PhysicsBoxComponent::load(const archive_node& reader) noexcept
+PhysicsBoxComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);
 
@@ -80,7 +80,7 @@ PhysicsBoxComponent::load(const archive_node& reader) noexcept
 }
 
 void
-PhysicsBoxComponent::save(archive_node& write) noexcept
+PhysicsBoxComponent::save(archivebuf& write) noexcept
 {
 }
 

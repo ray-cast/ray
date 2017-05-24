@@ -52,7 +52,7 @@ public:
 	MeshRenderComponent(MaterialPtr&& material, bool shared = true) noexcept;
 	MeshRenderComponent(const Materials& materials, bool shared = true) noexcept;
 	MeshRenderComponent(Materials&& materials, bool shared = true) noexcept;
-	MeshRenderComponent(const archive_node& reader) noexcept;
+	MeshRenderComponent(const archivebuf& reader) noexcept;
 	~MeshRenderComponent() noexcept;
 
 	void setCastShadow(bool value) noexcept;
@@ -82,8 +82,8 @@ public:
 	bool hasMaterial() const noexcept;
 	bool hasSharedMaterial() const noexcept;
 
-	void load(const archive_node& reader) noexcept;
-	void save(archive_node& write) noexcept;
+	void load(const archivebuf& reader) noexcept;
+	void save(archivebuf& write) noexcept;
 
 	GameComponentPtr clone() const noexcept;
 

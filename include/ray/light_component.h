@@ -47,7 +47,7 @@ class LightComponent final : public RenderComponent
 	__DeclareSubClass(LightComponent, RenderComponent)
 public:
 	LightComponent() noexcept;
-	LightComponent(const archive_node& reader) noexcept;
+	LightComponent(const archivebuf& reader) noexcept;
 	~LightComponent() noexcept;
 
 	void setLightType(LightType type) noexcept;
@@ -76,8 +76,8 @@ public:
 	void setGlobalIllumination(bool enable) noexcept;
 	bool getGlobalIllumination() const noexcept;
 
-	void load(const archive_node& reader) noexcept;
-	void save(archive_node& write) noexcept;
+	void load(const archivebuf& reader) noexcept;
+	void save(archivebuf& write) noexcept;
 
 	GameComponentPtr clone() const noexcept;
 

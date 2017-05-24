@@ -38,12 +38,55 @@
 
 _NAME_BEGIN
 
-#if _HAS_CXX17
-const archive_node& archive_node::nil = archive_node();
-const archive_node& archive_node::nilRef = archive_node();
-#endif
+const archivebuf& archivebuf::nil = archivebuf();
+const archivebuf& archivebuf::nilRef = archivebuf();
 
 archivebuf::archivebuf() noexcept
+{
+}
+
+archivebuf::archivebuf(type_t value)
+{
+	this->emplace(value);
+}
+
+archivebuf::archivebuf(boolean_t value)
+	: _data(value)
+{
+}
+
+archivebuf::archivebuf(number_integer_t value)
+	: _data(value)
+{
+}
+
+archivebuf::archivebuf(number_unsigned_t value)
+	: _data(value)
+{
+}
+
+archivebuf::archivebuf(number_float_t value)
+	: _data(value)
+{
+}
+
+archivebuf::archivebuf(string_t&& value)
+	: _data(std::make_unique<string_t>(std::move(value)))
+{
+}
+
+archivebuf::archivebuf(const string_t& value)
+	: _data(std::make_unique<string_t>(value))
+{
+}
+
+archivebuf::archivebuf(const string_t::value_type* value)
+	: _data(std::make_unique<string_t>(value))
+{
+}
+
+archivebuf::archivebuf(archivebuf&& node)
+	: _data(std::move(node._data))
 {
 }
 
@@ -51,85 +94,21 @@ archivebuf::~archivebuf() noexcept
 {
 }
 
-void
-archivebuf::lock() noexcept
-{
-}
-
-void
-archivebuf::unlock() noexcept
-{
-}
-
-#if _HAS_CXX17
-archive_node::archive_node()
-{
-}
-
-archive_node::archive_node(type_t value)
-{
-	this->emplace(value);
-}
-
-archive_node::archive_node(boolean_t value)
-	: _data(value)
-{
-}
-
-archive_node::archive_node(number_integer_t value)
-	: _data(value)
-{
-}
-
-archive_node::archive_node(number_unsigned_t value)
-	: _data(value)
-{
-}
-
-archive_node::archive_node(number_float_t value)
-	: _data(value)
-{
-}
-
-archive_node::archive_node(string_t&& value)
-	: _data(std::make_unique<string_t>(std::move(value)))
-{
-}
-
-archive_node::archive_node(const string_t& value)
-	: _data(std::make_unique<string_t>(value))
-{
-}
-
-archive_node::archive_node(const string_t::value_type* value)
-	: _data(std::make_unique<string_t>(value))
-{
-}
-
-archive_node::archive_node(archive_node&& node)
-	: _data(std::move(node._data))
-{
-}
-
-archive_node::~archive_node()
-{
-}
-
-archive_node&
-archive_node::at(const string_t& key)
+archivebuf&
+archivebuf::at(const string_t& key)
 {
 	if (this->is_null())
 		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
 
 	if (this->is_object())
 	{
-		auto& data = std::get<archive_node::type_t::object>(_data);
+		auto& data = std::get<archivebuf::type_t::object>(_data);
 
 		for (auto& it : *data)
 			if (it.first == key)
 				return it.second;
 
-		data->push_back(std::make_pair(key, archive_node::null));
+		data->push_back(std::make_pair(key, archivebuf::null));
 		return data->back().second;
 	}
 	else
@@ -138,21 +117,21 @@ archive_node::at(const string_t& key)
 	}
 }
 
-archive_node&
-archive_node::at(const string_t::value_type* key)
+archivebuf&
+archivebuf::at(const string_t::value_type* key)
 {
 	if (this->is_null())
 		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
 
 	if (this->is_object())
 	{
-		auto& data = std::get<archive_node::type_t::object>(_data);
+		auto& data = std::get<archivebuf::type_t::object>(_data);
 
 		for (auto& it : *data)
 			if (it.first == key)
 				return it.second;
 
-		data->push_back(std::make_pair(key, archive_node::null));
+		data->push_back(std::make_pair(key, archivebuf::null));
 		return data->back().second;
 	}
 	else
@@ -161,12 +140,12 @@ archive_node::at(const string_t::value_type* key)
 	}
 }
 
-archive_node&
-archive_node::at(const std::size_t n)
+archivebuf&
+archivebuf::at(const std::size_t n)
 {
 	if (this->is_array())
 	{
-		auto& data = std::get<archive_node::type_t::array>(_data);
+		auto& data = std::get<archivebuf::type_t::array>(_data);
 		assert(data->size() > n);
 
 		return (*data)[n];
@@ -177,18 +156,18 @@ archive_node::at(const std::size_t n)
 	}
 }
 
-const archive_node&
-archive_node::at(const string_t& key) const
+const archivebuf&
+archivebuf::at(const string_t& key) const
 {
 	if (this->is_object())
 	{
-		auto& data = std::get<archive_node::type_t::object>(_data);
+		auto& data = std::get<archivebuf::type_t::object>(_data);
 
 		for (auto& it : *data)
 			if (it.first == key)
 				return it.second;
 
-		return archive_node::nil;
+		return archivebuf::nil;
 	}
 	else
 	{
@@ -196,18 +175,18 @@ archive_node::at(const string_t& key) const
 	}
 }
 
-const archive_node&
-archive_node::at(const string_t::value_type* key) const
+const archivebuf&
+archivebuf::at(const string_t::value_type* key) const
 {
 	if (this->is_object())
 	{
-		auto& data = std::get<archive_node::type_t::object>(_data);
+		auto& data = std::get<archivebuf::type_t::object>(_data);
 
 		for (auto& it : *data)
 			if (it.first == key)
 				return it.second;
 
-		return archive_node::nil;
+		return archivebuf::nil;
 	}
 	else
 	{
@@ -215,12 +194,12 @@ archive_node::at(const string_t::value_type* key) const
 	}
 }
 
-const archive_node&
-archive_node::at(const std::size_t n) const
+const archivebuf&
+archivebuf::at(const std::size_t n) const
 {
 	if (this->is_array())
 	{
-		auto& data = std::get<archive_node::type_t::array>(_data);
+		auto& data = std::get<archivebuf::type_t::array>(_data);
 		assert(data->size() > n);
 
 		return (*data)[n];
@@ -232,263 +211,263 @@ archive_node::at(const std::size_t n) const
 }
 
 void
-archive_node::push_back(const string_t& key, boolean_t value)
+archivebuf::push_back(const string_t& key, boolean_t value)
 {
 	if (this->is_null())
-		this->emplace(archive_node::type_t::object);
+		this->emplace(archivebuf::type_t::object);
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	auto& data = std::get<archivebuf::type_t::object>(_data);
 	data->push_back(std::make_pair(key, value));
 }
 
 void
-archive_node::push_back(const string_t& key, const number_integer_t& value)
+archivebuf::push_back(const string_t& key, const number_integer_t& value)
 {
 	if (this->is_null())
-		this->emplace(archive_node::type_t::object);
+		this->emplace(archivebuf::type_t::object);
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	auto& data = std::get<archivebuf::type_t::object>(_data);
 	data->push_back(std::make_pair(key, value));
 }
 
 void
-archive_node::push_back(const string_t& key, const number_unsigned_t& value)
+archivebuf::push_back(const string_t& key, const number_unsigned_t& value)
 {
 	if (this->is_null())
-		this->emplace(archive_node::type_t::object);
+		this->emplace(archivebuf::type_t::object);
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	auto& data = std::get<archivebuf::type_t::object>(_data);
 	data->push_back(std::make_pair(key, value));
 }
 
 void
-archive_node::push_back(const string_t& key, const number_float_t& value)
+archivebuf::push_back(const string_t& key, const number_float_t& value)
 {
 	if (this->is_null())
-		this->emplace(archive_node::type_t::object);
+		this->emplace(archivebuf::type_t::object);
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	auto& data = std::get<archivebuf::type_t::object>(_data);
 	data->push_back(std::make_pair(key, value));
 }
 
 void
-archive_node::push_back(const string_t& key, const string_t& value)
+archivebuf::push_back(const string_t& key, const string_t& value)
 {
 	if (this->is_null())
-		this->emplace(archive_node::type_t::object);
+		this->emplace(archivebuf::type_t::object);
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	auto& data = std::get<archivebuf::type_t::object>(_data);
 	data->push_back(std::make_pair(key, value));
 }
 
 void
-archive_node::push_back(const string_t& key, const string_t::value_type* value)
+archivebuf::push_back(const string_t& key, const string_t::value_type* value)
 {
 	if (this->is_null())
-		this->emplace(archive_node::type_t::object);
+		this->emplace(archivebuf::type_t::object);
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	auto& data = std::get<archivebuf::type_t::object>(_data);
 	data->push_back(std::make_pair(key, value));
 }
 
 void
-archive_node::push_back(const string_t& key, archive_node&& value)
+archivebuf::push_back(const string_t& key, archivebuf&& value)
 {
 	if (this->is_null())
-		this->emplace(archive_node::type_t::object);
+		this->emplace(archivebuf::type_t::object);
 
-	auto& data = std::get<archive_node::type_t::object>(_data);
+	auto& data = std::get<archivebuf::type_t::object>(_data);
 	data->push_back(std::make_pair(key, std::move(value)));
 }
 
-archive_node::iterator
-archive_node::begin() noexcept
+archivebuf::iterator
+archivebuf::begin() noexcept
 {
 	switch (this->type())
 	{
-	case archive_node::type_t::object:
-		if (std::get<archive_node::type_t::object>(_data))
-			return std::get<archive_node::type_t::object>(_data)->begin();
+	case archivebuf::type_t::object:
+		if (std::get<archivebuf::type_t::object>(_data))
+			return std::get<archivebuf::type_t::object>(_data)->begin();
 		break;
 	default:
 		break;
 	}
 
-	return archive_node::iterator();
+	return archivebuf::iterator();
 }
 
-archive_node::iterator
-archive_node::end() noexcept
+archivebuf::iterator
+archivebuf::end() noexcept
 {
 	switch (this->type())
 	{
-	case archive_node::type_t::object:
-		if (std::get<archive_node::type_t::object>(_data))
-			return std::get<archive_node::type_t::object>(_data)->end();
+	case archivebuf::type_t::object:
+		if (std::get<archivebuf::type_t::object>(_data))
+			return std::get<archivebuf::type_t::object>(_data)->end();
 		break;
 	default:
 		break;
 	}
 
-	return archive_node::iterator();
+	return archivebuf::iterator();
 }
 
-archive_node::const_iterator
-archive_node::begin() const noexcept
+archivebuf::const_iterator
+archivebuf::begin() const noexcept
 {
 	switch (this->type())
 	{
-	case archive_node::type_t::object:
-		if (std::get<archive_node::type_t::object>(_data))
-			return std::get<archive_node::type_t::object>(_data)->begin();
+	case archivebuf::type_t::object:
+		if (std::get<archivebuf::type_t::object>(_data))
+			return std::get<archivebuf::type_t::object>(_data)->begin();
 		break;
 	default:
 		break;
 	}
 
-	return archive_node::iterator();
+	return archivebuf::iterator();
 }
 
-archive_node::const_iterator
-archive_node::end() const noexcept
+archivebuf::const_iterator
+archivebuf::end() const noexcept
 {
 	switch (this->type())
 	{
-	case archive_node::type_t::object:
-		if (std::get<archive_node::type_t::object>(_data))
-			return std::get<archive_node::type_t::object>(_data)->end();
+	case archivebuf::type_t::object:
+		if (std::get<archivebuf::type_t::object>(_data))
+			return std::get<archivebuf::type_t::object>(_data)->end();
 		break;
 	default:
 		break;
 	}
 
-	return archive_node::iterator();
+	return archivebuf::iterator();
 }
 
-archive_node::reverse_iterator
-archive_node::rbegin() noexcept
+archivebuf::reverse_iterator
+archivebuf::rbegin() noexcept
 {
 	switch (this->type())
 	{
-	case archive_node::type_t::object:
-		if (std::get<archive_node::type_t::object>(_data))
-			return std::get<archive_node::type_t::object>(_data)->rbegin();
+	case archivebuf::type_t::object:
+		if (std::get<archivebuf::type_t::object>(_data))
+			return std::get<archivebuf::type_t::object>(_data)->rbegin();
 		break;
 	default:
 		break;
 	}
 
-	return archive_node::reverse_iterator();
+	return archivebuf::reverse_iterator();
 }
 
-archive_node::reverse_iterator
-archive_node::rend() noexcept
+archivebuf::reverse_iterator
+archivebuf::rend() noexcept
 {
 	switch (this->type())
 	{
-	case archive_node::type_t::object:
-		if (std::get<archive_node::type_t::object>(_data))
-			return std::get<archive_node::type_t::object>(_data)->rend();
+	case archivebuf::type_t::object:
+		if (std::get<archivebuf::type_t::object>(_data))
+			return std::get<archivebuf::type_t::object>(_data)->rend();
 		break;
 	default:
 		break;
 	}
 
-	return archive_node::reverse_iterator();
+	return archivebuf::reverse_iterator();
 }
 
-archive_node::const_reverse_iterator
-archive_node::rbegin() const noexcept
+archivebuf::const_reverse_iterator
+archivebuf::rbegin() const noexcept
 {
 	switch (this->type())
 	{
-	case archive_node::type_t::object:
-		if (std::get<archive_node::type_t::object>(_data))
-			return std::get<archive_node::type_t::object>(_data)->rbegin();
+	case archivebuf::type_t::object:
+		if (std::get<archivebuf::type_t::object>(_data))
+			return std::get<archivebuf::type_t::object>(_data)->rbegin();
 		break;
 	default:
 		break;
 	}
 
-	return archive_node::const_reverse_iterator();
+	return archivebuf::const_reverse_iterator();
 }
 
-archive_node::const_reverse_iterator
-archive_node::rend() const noexcept
+archivebuf::const_reverse_iterator
+archivebuf::rend() const noexcept
 {
 	switch (this->type())
 	{
-	case archive_node::type_t::object:
-		if (std::get<archive_node::type_t::object>(_data))
-			return std::get<archive_node::type_t::object>(_data)->rend();
+	case archivebuf::type_t::object:
+		if (std::get<archivebuf::type_t::object>(_data))
+			return std::get<archivebuf::type_t::object>(_data)->rend();
 		break;
 	default:
 		break;
 	}
 
-	return archive_node::const_reverse_iterator();
+	return archivebuf::const_reverse_iterator();
 }
 
-archive_node&
-archive_node::front() noexcept
+archivebuf&
+archivebuf::front() noexcept
 {
-	assert(this->type() == archive_node::type_t::object);
-	return std::get<archive_node::type_t::object>(_data)->front().second;
+	assert(this->type() == archivebuf::type_t::object);
+	return std::get<archivebuf::type_t::object>(_data)->front().second;
 }
 
-const archive_node&
-archive_node::front() const noexcept
+const archivebuf&
+archivebuf::front() const noexcept
 {
-	assert(this->type() == archive_node::type_t::object);
-	return std::get<archive_node::type_t::object>(_data)->front().second;
+	assert(this->type() == archivebuf::type_t::object);
+	return std::get<archivebuf::type_t::object>(_data)->front().second;
 }
 
-archive_node&
-archive_node::back() noexcept
+archivebuf&
+archivebuf::back() noexcept
 {
-	assert(this->type() == archive_node::type_t::object);
-	return std::get<archive_node::type_t::object>(_data)->back().second;
+	assert(this->type() == archivebuf::type_t::object);
+	return std::get<archivebuf::type_t::object>(_data)->back().second;
 }
 
-const archive_node&
-archive_node::back() const noexcept
+const archivebuf&
+archivebuf::back() const noexcept
 {
-	assert(this->type() == archive_node::type_t::object);
-	return std::get<archive_node::type_t::object>(_data)->back().second;
+	assert(this->type() == archivebuf::type_t::object);
+	return std::get<archivebuf::type_t::object>(_data)->back().second;
 }
 
-archive_node::type_t
-archive_node::type() const noexcept
+archivebuf::type_t
+archivebuf::type() const noexcept
 {
 	return (type_t)_data.index();
 }
 
 char*
-archive_node::type_name() const noexcept
+archivebuf::type_name() const noexcept
 {
 	return this->type_name(this->type());
 }
 
 char*
-archive_node::type_name(type_t type) const noexcept
+archivebuf::type_name(type_t type) const noexcept
 {
 	switch (type)
 	{
-	case archive_node::type_t::null:
+	case archivebuf::type_t::null:
 		return "null";
-	case archive_node::type_t::boolean:
+	case archivebuf::type_t::boolean:
 		return "boolean";
-	case archive_node::type_t::number_integer:
+	case archivebuf::type_t::number_integer:
 		return "interger";
-	case archive_node::type_t::number_unsigned:
+	case archivebuf::type_t::number_unsigned:
 		return "unsigned interger";
-	case archive_node::type_t::number_float:
+	case archivebuf::type_t::number_float:
 		return "float point";
-	case archive_node::type_t::string:
+	case archivebuf::type_t::string:
 		return "string";
-	case archive_node::type_t::array:
+	case archivebuf::type_t::array:
 		return "array";
-	case archive_node::type_t::object:
+	case archivebuf::type_t::object:
 		return "object";
 	default:
 		return "unknow";
@@ -496,80 +475,80 @@ archive_node::type_name(type_t type) const noexcept
 }
 
 bool
-archive_node::is_null() const noexcept
+archivebuf::is_null() const noexcept
 {
-	return this->type() == archive_node::type_t::null;
+	return this->type() == archivebuf::type_t::null;
 }
 
 bool
-archive_node::is_boolean() const noexcept
+archivebuf::is_boolean() const noexcept
 {
-	return this->type() == archive_node::type_t::boolean;
+	return this->type() == archivebuf::type_t::boolean;
 }
 
 bool
-archive_node::is_integral() const noexcept
+archivebuf::is_integral() const noexcept
 {
-	return this->type() == archive_node::type_t::number_integer || this->type() == archive_node::type_t::number_unsigned;
+	return this->type() == archivebuf::type_t::number_integer || this->type() == archivebuf::type_t::number_unsigned;
 }
 
 bool
-archive_node::is_float() const noexcept
+archivebuf::is_float() const noexcept
 {
-	return this->type() == archive_node::type_t::number_float;
+	return this->type() == archivebuf::type_t::number_float;
 }
 
 bool
-archive_node::is_string() const noexcept
+archivebuf::is_string() const noexcept
 {
-	return this->type() == archive_node::type_t::string;
+	return this->type() == archivebuf::type_t::string;
 }
 
 bool
-archive_node::is_numeric() const noexcept
+archivebuf::is_numeric() const noexcept
 {
 	return this->is_integral() || this->is_float();
 }
 
 bool
-archive_node::is_array() const noexcept
+archivebuf::is_array() const noexcept
 {
-	return this->type() == archive_node::type_t::array;
+	return this->type() == archivebuf::type_t::array;
 }
 
 bool
-archive_node::is_object() const noexcept
+archivebuf::is_object() const noexcept
 {
-	return this->type() == archive_node::type_t::object;
+	return this->type() == archivebuf::type_t::object;
 }
 
 void
-archive_node::emplace(type_t type) noexcept
+archivebuf::emplace(type_t type) noexcept
 {
 	switch (type)
 	{
-	case archive_node::type_t::null:
+	case archivebuf::type_t::null:
 		_data.emplace<void*>();
 		break;
-	case archive_node::type_t::boolean:
+	case archivebuf::type_t::boolean:
 		_data.emplace<bool>(false);
 		break;
-	case archive_node::type_t::number_integer:
+	case archivebuf::type_t::number_integer:
 		_data.emplace<number_integer_t>(0);
 		break;
-	case archive_node::type_t::number_unsigned:
+	case archivebuf::type_t::number_unsigned:
 		_data.emplace<number_unsigned_t>(0);
 		break;
-	case archive_node::type_t::number_float:
+	case archivebuf::type_t::number_float:
 		_data.emplace<number_float_t>(number_float_t(0.0f));
 		break;
-	case archive_node::type_t::string:
+	case archivebuf::type_t::string:
 		_data.emplace<std::unique_ptr<string_t>>(std::make_unique<string_t>());
 		break;
-	case archive_node::type_t::array:
+	case archivebuf::type_t::array:
 		_data.emplace<std::unique_ptr<array_t>>(std::make_unique<array_t>());
 		break;
-	case archive_node::type_t::object:
+	case archivebuf::type_t::object:
 		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
 		break;
 	default:
@@ -577,70 +556,88 @@ archive_node::emplace(type_t type) noexcept
 	}
 }
 
-archive_node&
-archive_node::operator=(boolean_t value)
+void
+archivebuf::clear() noexcept
+{
+	_data.emplace<void*>();
+}
+
+std::size_t
+archivebuf::size() const noexcept
+{
+	if (this->is_null())
+		return 0;
+
+	if (this->is_array())
+		return this->get<archivebuf::array_t>().size();
+	else
+		return 1;
+}
+
+archivebuf&
+archivebuf::operator=(boolean_t value)
 {
 	_data = value;
 	return *this;
 }
 
-archive_node&
-archive_node::operator=(number_integer_t value)
+archivebuf&
+archivebuf::operator=(number_integer_t value)
 {
 	_data = value;
 	return *this;
 }
 
-archive_node&
-archive_node::operator=(number_unsigned_t value)
+archivebuf&
+archivebuf::operator=(number_unsigned_t value)
 {
 	_data = value;
 	return *this;
 }
 
-archive_node&
-archive_node::operator=(number_float_t value)
+archivebuf&
+archivebuf::operator=(number_float_t value)
 {
 	_data = value;
 	return *this;
 }
 
-archive_node&
-archive_node::operator=(string_t&& value)
+archivebuf&
+archivebuf::operator=(string_t&& value)
 {
 	_data = std::make_unique<string_t>(std::move(value));
 	return *this;
 }
 
-archive_node&
-archive_node::operator=(const string_t& value)
+archivebuf&
+archivebuf::operator=(const string_t& value)
 {
 	_data = std::make_unique<string_t>(value);
 	return *this;
 }
 
-archive_node&
-archive_node::operator=(archive_node&& value)
+archivebuf&
+archivebuf::operator=(archivebuf&& value)
 {
 	_data = std::move(value._data);
 	return *this;
 }
 
-archive_node&
-archive_node::operator[](const char* key)
+archivebuf&
+archivebuf::operator[](const char* key)
 {
 	if (this->is_null())
 		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
 
 	if (this->is_object())
 	{
-		auto& data = std::get<archive_node::type_t::object>(_data);
+		auto& data = std::get<archivebuf::type_t::object>(_data);
 
 		for (auto& it : *data)
 			if (it.first == key)
 				return it.second;
 
-		data->push_back(std::make_pair(key, archive_node::null));
+		data->push_back(std::make_pair(key, archivebuf::null));
 		return data->back().second;
 	}
 	else
@@ -649,15 +646,15 @@ archive_node::operator[](const char* key)
 	}
 }
 
-archive_node&
-archive_node::operator[](const string_t& key)
+archivebuf&
+archivebuf::operator[](const string_t& key)
 {
 	if (this->is_null())
 		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
 
 	if (this->is_object())
 	{
-		auto& data = std::get<archive_node::type_t::object>(_data);
+		auto& data = std::get<archivebuf::type_t::object>(_data);
 
 		for (auto& it : *data)
 			if (it.first == key)
@@ -672,22 +669,22 @@ archive_node::operator[](const string_t& key)
 	}
 }
 
-archive_node&
-archive_node::operator[](std::size_t n)
+archivebuf&
+archivebuf::operator[](std::size_t n)
 {
 	if (this->is_null())
 		_data.emplace<std::unique_ptr<array_t>>(std::make_unique<array_t>());
 
 	if (this->is_array())
 	{
-		if (n >= std::get<archive_node::type_t::array>(_data)->size())
+		if (n >= std::get<archivebuf::type_t::array>(_data)->size())
 		{
-			auto end = std::get<archive_node::type_t::array>(_data)->end();
-			auto size = std::get<archive_node::type_t::array>(_data)->size();
-			std::get<archive_node::type_t::array>(_data)->resize(n + 1);
+			auto end = std::get<archivebuf::type_t::array>(_data)->end();
+			auto size = std::get<archivebuf::type_t::array>(_data)->size();
+			std::get<archivebuf::type_t::array>(_data)->resize(n + 1);
 		}
 
-		return std::get<archive_node::type_t::array>(_data)->operator[](n);
+		return std::get<archivebuf::type_t::array>(_data)->operator[](n);
 	}
 	else
 	{
@@ -695,24 +692,32 @@ archive_node::operator[](std::size_t n)
 	}
 }
 
-const archive_node&
-archive_node::operator[](const char* key) const
+const archivebuf&
+archivebuf::operator[](const char* key) const
 {
 	return this->at(key);
 }
 
-const archive_node&
-archive_node::operator[](const string_t& key) const
+const archivebuf&
+archivebuf::operator[](const string_t& key) const
 {
 	return this->at(key);
 }
 
-const archive_node&
-archive_node::operator[](std::size_t n) const
+const archivebuf&
+archivebuf::operator[](std::size_t n) const
 {
 	return this->at(n);
 }
 
-#endif
+void
+archivebuf::lock() noexcept
+{
+}
+
+void
+archivebuf::unlock() noexcept
+{
+}
 
 _NAME_END

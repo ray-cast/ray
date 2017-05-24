@@ -38,13 +38,13 @@
 
 _NAME_BEGIN
 
-ioarchive::ioarchive(archivebuf* buf)
+ioarchive::ioarchive(archivebuf* buf) noexcept
 	: iarchive(buf)
 	, oarchive(buf)
 {
 }
 
-ioarchive::~ioarchive()
+ioarchive::~ioarchive() noexcept
 {
 }
 

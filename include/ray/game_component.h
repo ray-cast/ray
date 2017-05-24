@@ -46,7 +46,7 @@ class EXPORT GameComponent : public MessageListener
 	__DeclareSubInterface(GameComponent, MessageListener)
 public:
 	GameComponent() noexcept;
-	GameComponent(const archive_node& reader) noexcept;
+	GameComponent(const archivebuf& reader) noexcept;
 	virtual ~GameComponent() noexcept;
 
 	void setActive(bool active) except;
@@ -68,8 +68,8 @@ public:
 		return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI));
 	}
 
-	virtual void load(const archive_node& reader) noexcept;
-	virtual void save(archive_node& write) noexcept;
+	virtual void load(const archivebuf& reader) noexcept;
+	virtual void save(archivebuf& write) noexcept;
 
 	virtual GameComponentPtr clone() const noexcept = 0;
 

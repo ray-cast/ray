@@ -44,8 +44,8 @@ _NAME_BEGIN
 class EXPORT ioarchive : public iarchive, public oarchive
 {
 public:
-	ioarchive(archivebuf* buf);
-	virtual ~ioarchive();
+	ioarchive(archivebuf* buf) noexcept;
+	virtual ~ioarchive() noexcept;
 
 private:
 	ioarchive(const ioarchive&) noexcept = delete;

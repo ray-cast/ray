@@ -65,31 +65,122 @@ public:
 	oarchive(archivebuf* buf) noexcept;
 	virtual ~oarchive() noexcept;
 
-	oarchive& addAttribute(const std::string& key, const std::string& value) noexcept;
-	oarchive& setAttribute(const std::string& key, const std::string& value) noexcept;
-	oarchive& removeAttribute(const std::string& key) noexcept;
+	void emplace(type_t type) noexcept;
+	void clear() noexcept;
 
-	oarchive& addNode(const std::string& key) noexcept;
-	oarchive& addSubNode(const std::string& key) noexcept;
+	archivebuf& at(const string_t& key) except;
+	archivebuf& at(const string_t::value_type* key) except;
+	archivebuf& at(const std::size_t n) except;
 
-	template<typename T>
-	oarchive& operator << (std::pair<const std::string&, T&> value)
+	const archivebuf& at(const string_t& key) const except;
+	const archivebuf& at(const string_t::value_type* key) const except;
+	const archivebuf& at(const std::size_t n) const except;
+
+	oarchive& operator=(boolean_t value) except;
+	oarchive& operator=(number_integer_t value) except;
+	oarchive& operator=(number_unsigned_t value) except;
+	oarchive& operator=(number_float_t value) except;
+	oarchive& operator=(string_t&& value) except;
+	oarchive& operator=(const string_t& value) except;
+	oarchive& operator=(string_t::const_pointer& value) except;
+
+	oarchive& operator[](std::size_t n) except;
+	oarchive& operator[](const string_t& key) except;
+	oarchive& operator[](string_t::const_pointer key) except;
+
+	const oarchive& operator[](std::size_t n) const except;
+	const oarchive& operator[](const string_t& key) const except;
+	const oarchive& operator[](string_t::const_pointer key) const except;
+
+	oarchive& operator << (archivebuf::boolean_t& argv)
 	{
-		assert(false);
+		this->operator=(argv);
 		return *this;
 	}
 
-	template<typename T>
-	oarchive& operator << (std::pair<const char*, T&> value)
+	template<typename T, std::enable_if_t<std::is_integral<T>::value || std::is_same<T, number_float_t>::value, int> = 0>
+	oarchive& operator << (T argv)
 	{
-		assert(false);
+		this->operator=(argv);
 		return *this;
 	}
 
-	template<typename T>
-	oarchive& operator << (std::shared_ptr<T>& value)
+	template<typename T, std::enable_if_t<std::is_same<T, string_t>::value || std::is_same<T, string_t::const_pointer>::value, int> = 0>
+	oarchive& operator << (const T& argv)
 	{
-		assert(false);
+		this->operator=(argv);
+		return *this;
+	}
+
+	oarchive& operator << (const archivebuf::number_float2_t& argv)
+	{
+		if (!this->is_array())
+			this->emplace(archivebuf::array);
+
+		if (this->is_array())
+		{
+			for (std::uint8_t i = 0; i < 2; ++i)
+				this->operator[](i) = argv[i];
+		}
+		else
+		{
+			throw failure(std::string("cannot use operator << with ") + this->type_name());
+		}
+
+		return *this;
+	}
+
+	oarchive& operator << (const archivebuf::number_float3_t& argv)
+	{
+		if (!this->is_array())
+			this->emplace(archivebuf::array);
+
+		if (this->is_array())
+		{
+			for (std::uint8_t i = 0; i < 3; ++i)
+				this->operator[](i) = argv[i];
+		}
+		else
+		{
+			throw failure(std::string("cannot use operator << with ") + this->type_name());
+		}
+
+		return *this;
+	}
+
+	oarchive& operator << (const archivebuf::number_float4_t& argv)
+	{
+		if (!this->is_array())
+			this->emplace(archivebuf::array);
+
+		if (this->is_array())
+		{
+			for (std::uint8_t i = 0; i < 4; ++i)
+				this->operator[](i) = argv[i];
+		}
+		else
+		{
+			throw failure(std::string("cannot use operator << with ") + this->type_name());
+		}
+
+		return *this;
+	}
+
+	oarchive& operator << (const archivebuf::number_quaternion_t& argv)
+	{
+		if (!this->is_array())
+			this->emplace(archivebuf::array);
+
+		if (this->is_array())
+		{
+			for (std::uint8_t i = 0; i < 4; ++i)
+				this->operator[](i) = argv[i];
+		}
+		else
+		{
+			throw failure(std::string("cannot use operator << with ") + this->type_name());
+		}
+
 		return *this;
 	}
 

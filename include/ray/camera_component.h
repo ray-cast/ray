@@ -47,7 +47,7 @@ class EXPORT CameraComponent final : public RenderComponent
 	__DeclareSubClass(CameraComponent, GameComponent)
 public:
 	CameraComponent() noexcept;
-	CameraComponent(const archive_node& reader) noexcept;
+	CameraComponent(const archivebuf& reader) noexcept;
 	~CameraComponent() noexcept;
 
 	void setAperture(float aspect) noexcept;
@@ -97,8 +97,8 @@ public:
 	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
 
-	void load(const archive_node& reader) noexcept;
-	void save(archive_node& write) noexcept;
+	void load(const archivebuf& reader) noexcept;
+	void save(archivebuf& write) noexcept;
 
 	virtual GameComponentPtr clone() const noexcept;
 

@@ -56,6 +56,9 @@ public:
 
 	GameServer* getGameServer() noexcept;
 
+	virtual void load(const archivebuf& reader) noexcept;
+	virtual void save(archivebuf& write) noexcept;
+
 	virtual void sendMessage(const MessagePtr& message) except;
 
 protected:

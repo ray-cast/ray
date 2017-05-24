@@ -91,6 +91,16 @@ GameFeature::getGameListener() const noexcept
 }
 
 void
+GameFeature::load(const archivebuf& reader) noexcept
+{
+}
+
+void
+GameFeature::save(archivebuf& write) noexcept
+{
+}
+
+void
 GameFeature::sendMessage(const MessagePtr& message) except
 {
 	assert(message);

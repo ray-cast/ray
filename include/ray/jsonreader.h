@@ -41,16 +41,51 @@
 
 _NAME_BEGIN
 
-#if _HAS_CXX17
-namespace json
+class EXPORT JsonReader final : public iarchive
 {
-	EXPORT archive_node reader(StreamReader& stream);
-	EXPORT archive_node reader(const std::string& path);
+public:
+	JsonReader() noexcept;
+	JsonReader(StreamReader& stream) except;
+	JsonReader(const std::string& path) except;
+	~JsonReader() noexcept;
 
-	EXPORT bool writer(StreamWrite& stream, archive_node& root);
-	EXPORT bool writer(const std::string& path, archive_node& root);
-}
-#endif
+	JsonReader& open(StreamReader& stream) except;
+	JsonReader& open(const std::string& path) except;
+
+	bool is_open() const noexcept;
+
+	void close() noexcept;
+
+private:
+	JsonReader(const JsonReader&) noexcept = delete;
+	JsonReader& operator=(const JsonReader&) noexcept = delete;
+
+private:
+	archivebuf _json;
+};
+
+class EXPORT JsonWrite final : public oarchive
+{
+public:
+	JsonWrite() noexcept;
+	JsonWrite(StreamWrite& stream) except;
+	JsonWrite(const std::string& path) except;
+	~JsonWrite() noexcept;
+
+	JsonWrite& open(StreamWrite& stream) except;
+	JsonWrite& open(const std::string& path) except;
+
+	void close() noexcept;
+
+	bool is_open() const noexcept;
+
+private:
+	JsonWrite(const JsonWrite&) noexcept = delete;
+	JsonWrite& operator=(const JsonWrite&) noexcept = delete;
+
+private:
+	archivebuf _json;
+};
 
 _NAME_END
 

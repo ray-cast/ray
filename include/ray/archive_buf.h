@@ -38,18 +38,12 @@
 #define _H_ARCHIVEBUF_H_
 
 #include <ray/math.h>
-#include <ray/iostream.h>
 #include <ray/except.h>
-
-#if _HAS_CXX17
-#	include <variant>
-#endif
+#include <variant>
 
 _NAME_BEGIN
 
-#if _HAS_CXX17
-
-class EXPORT archive_node final
+class EXPORT archivebuf final
 {
 public:
 	using boolean_t = bool;
@@ -61,8 +55,8 @@ public:
 	using number_float4_t = Vector4t<number_float_t>;
 	using number_quaternion_t = Quaterniont<number_float_t>;
 	using string_t = std::string;
-	using object_t = std::list<std::pair<std::string, archive_node>>;
-	using array_t = std::vector<archive_node>;
+	using object_t = std::list<std::pair<std::string, archivebuf>>;
+	using array_t = std::vector<archivebuf>;
 	using iterator = object_t::iterator;
 	using reverse_iterator = object_t::reverse_iterator;
 	using const_iterator = object_t::const_iterator;
@@ -79,8 +73,8 @@ public:
 		std::unique_ptr<object_t>
 	>;
 
-	static const archive_node& nil;
-	static const archive_node& nilRef;
+	static const archivebuf& nil;
+	static const archivebuf& nilRef;
 
 	enum type_t
 	{
@@ -94,25 +88,25 @@ public:
 		object
 	};
 public:
-	archive_node();
-	archive_node(type_t value);
-	archive_node(boolean_t value);
-	archive_node(number_integer_t value);
-	archive_node(number_unsigned_t value);
-	archive_node(number_float_t value);
-	archive_node(string_t&& value);
-	archive_node(const string_t& value);
-	archive_node(const string_t::value_type* value);
-	archive_node(archive_node&& value);
-	~archive_node();
+	archivebuf() noexcept;
+	archivebuf(type_t value);
+	archivebuf(boolean_t value);
+	archivebuf(number_integer_t value);
+	archivebuf(number_unsigned_t value);
+	archivebuf(number_float_t value);
+	archivebuf(string_t&& value);
+	archivebuf(const string_t& value);
+	archivebuf(const string_t::value_type* value);
+	archivebuf(archivebuf&& value);
+	~archivebuf() noexcept;
 
-	archive_node& at(const string_t& key);
-	archive_node& at(const string_t::value_type* key);
-	archive_node& at(const std::size_t n);
+	archivebuf& at(const string_t& key);
+	archivebuf& at(const string_t::value_type* key);
+	archivebuf& at(const std::size_t n);
 
-	const archive_node& at(const string_t& key) const;
-	const archive_node& at(const string_t::value_type* key) const;
-	const archive_node& at(const std::size_t n) const;
+	const archivebuf& at(const string_t& key) const;
+	const archivebuf& at(const string_t::value_type* key) const;
+	const archivebuf& at(const std::size_t n) const;
 
 	template<type_t type, typename = std::enable_if_t<type == type_t::boolean>>
 	constexpr boolean_t get() const { return this->_get<type>(); }
@@ -120,56 +114,35 @@ public:
 	template<type_t type, typename = std::enable_if_t<type == type_t::number_integer>>
 	constexpr number_integer_t get() const { return this->_get<type>(); }
 
-	template<type_t type, typename = std::enable_if_t<type == type_t::number_integer>>
-	constexpr number_integer_t get(number_integer_t min, number_integer_t max) const { return std::clamp(this->_get<type>(), min, max); }
-
 	template<type_t type, typename = std::enable_if_t<type == type_t::number_unsigned>>
 	constexpr number_unsigned_t get() const { return this->_get<type>(); }
-
-	template<type_t type, typename = std::enable_if_t<type == type_t::number_unsigned>>
-	constexpr number_unsigned_t get(number_unsigned_t min, number_unsigned_t max) const { return std::clamp(this->_get<type>(), min, max); }
 
 	template<type_t type, typename = std::enable_if_t<type == type_t::number_float>>
 	constexpr number_float_t get() const { return this->get<number_float_t, type>(); }
 
 	template<type_t type, typename = std::enable_if_t<type == type_t::string>>
-	constexpr const string_t& get() const { return *this->_get<type>(); }
+	constexpr string_t& get() const { return *this->_get<type>(); }
 
 	template<type_t type, typename = std::enable_if_t<type == type_t::array>>
-	constexpr const array_t& get() const { return *this->_get<type>(); }
+	constexpr array_t& get() const { return *this->_get<type>(); }
 
-	template<typename T, typename = std::enable_if_t<std::is_same<T, bool>::value>>
-	constexpr bool get() const { return this->get<archive_node::type_t::boolean>(); }
+	template<typename T, typename = std::enable_if_t<std::is_same<T, boolean_t>::value>>
+	constexpr boolean_t get() const { return this->get<archivebuf::type_t::boolean>(); }
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, number_integer_t>::value>>
-	constexpr number_integer_t get() const { return this->get<archive_node::type_t::number_integer>(); }
+	constexpr number_integer_t get() const { return this->get<archivebuf::type_t::number_integer>(); }
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, number_unsigned_t>::value>>
-	constexpr number_unsigned_t get() const { return this->get<archive_node::type_t::number_unsigned>(); }
+	constexpr number_unsigned_t get() const { return this->get<archivebuf::type_t::number_unsigned>(); }
 
-	template<typename T, typename = std::enable_if_t<std::is_same<T, float>::value>>
-	constexpr float get() const { return this->get<float, archive_node::type_t::number_float>(); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
-	constexpr double get() const { return this->get<double, archive_node::type_t::number_float>(); }
+	template<typename T, typename = std::enable_if_t<std::is_same<T, number_float_t>::value>>
+	constexpr number_float_t get() const { return this->get<float, archivebuf::type_t::number_float>(); }
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, string_t>::value>>
-	constexpr const string_t& get() const { return this->get<archive_node::type_t::string>(); }
+	constexpr string_t& get() const { return this->get<archivebuf::type_t::string>(); }
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, array_t>::value>>
-	constexpr const array_t& get() const { return this->get<archive_node::type_t::array>(); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, number_integer_t>::value>>
-	constexpr number_integer_t get(number_integer_t min, number_integer_t max) const { return std::clamp(this->get<archive_node::type_t::number_integer>(), min, max); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, number_unsigned_t>::value>>
-	constexpr number_unsigned_t get(number_unsigned_t min, number_unsigned_t max) const { return std::clamp(this->get<archive_node::type_t::number_unsigned>(), min, max); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, float>::value>>
-	constexpr float get(float min, float max) const { return std::clamp(this->get<float, archive_node::type_t::number_float>(), min, max); }
-
-	template<typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
-	constexpr double get(double min, double max) const { return std::clamp(this->get<double, archive_node::type_t::number_float>(), min, max); }
+	constexpr array_t& get() const { return this->get<archivebuf::type_t::array>(); }
 
 	void push_back(const string_t& key, boolean_t value);
 	void push_back(const string_t& key, const number_integer_t& value);
@@ -177,7 +150,7 @@ public:
 	void push_back(const string_t& key, const number_float_t& value);
 	void push_back(const string_t& key, const string_t& value);
 	void push_back(const string_t& key, const string_t::value_type* value);
-	void push_back(const string_t& key, archive_node&& value);
+	void push_back(const string_t& key, archivebuf&& value);
 
 	iterator begin() noexcept;
 	iterator end() noexcept;
@@ -191,18 +164,21 @@ public:
 	const_reverse_iterator rbegin() const noexcept;
 	const_reverse_iterator rend() const noexcept;
 
-	archive_node& front() noexcept;
-	const archive_node& front() const noexcept;
+	archivebuf& front() noexcept;
+	const archivebuf& front() const noexcept;
 
-	archive_node& back() noexcept;
-	const archive_node& back() const noexcept;
+	archivebuf& back() noexcept;
+	const archivebuf& back() const noexcept;
 
 	void emplace(type_t type) noexcept;
+	void clear() noexcept;
 
-	type_t type() const noexcept;
+	std::size_t size() const noexcept;
 
 	char* type_name() const noexcept;
 	char* type_name(type_t type) const noexcept;
+
+	type_t type() const noexcept;
 
 	bool is_null() const noexcept;
 	bool is_boolean() const noexcept;
@@ -213,63 +189,66 @@ public:
 	bool is_array() const noexcept;
 	bool is_object() const noexcept;
 
-	archive_node& operator=(boolean_t value);
-	archive_node& operator=(number_integer_t value);
-	archive_node& operator=(number_unsigned_t value);
-	archive_node& operator=(number_float_t value);
-	archive_node& operator=(string_t&& value);
-	archive_node& operator=(const string_t& value);
-	archive_node& operator=(archive_node&& value);
+	archivebuf& operator=(boolean_t value);
+	archivebuf& operator=(number_integer_t value);
+	archivebuf& operator=(number_unsigned_t value);
+	archivebuf& operator=(number_float_t value);
+	archivebuf& operator=(string_t&& value);
+	archivebuf& operator=(const string_t& value);
+	archivebuf& operator=(archivebuf&& value);
 
-	archive_node& operator[](const char* key);
-	archive_node& operator[](const string_t& key);
-	archive_node& operator[](std::size_t n);
+	archivebuf& operator[](const char* key);
+	archivebuf& operator[](const string_t& key);
+	archivebuf& operator[](std::size_t n);
 
-	const archive_node& operator[](const char* key) const;
-	const archive_node& operator[](const string_t& key) const;
-	const archive_node& operator[](std::size_t n) const;
+	const archivebuf& operator[](const char* key) const;
+	const archivebuf& operator[](const string_t& key) const;
+	const archivebuf& operator[](std::size_t n) const;
 
-	const archive_node& operator >> (archive_node::boolean_t& argv) const
+	virtual void lock() noexcept;
+	virtual void unlock() noexcept;
+
+	const archivebuf& operator >> (archivebuf::boolean_t& argv) const
 	{
 		const auto& value = *this;
 		if (value.is_boolean())
-			argv = value.get<archive_node::boolean_t>();
+			argv = value.get<archivebuf::boolean_t>();
 		return *this;
 	}
 
 	template<typename T, std::enable_if_t<std::is_signed<T>::value, int> = 0>
-	const archive_node& operator >> (T& argv) const
+	const archivebuf& operator >> (T& argv) const
 	{
 		if (this->is_integral())
-			argv = static_cast<T>(this->get<archive_node::number_integer_t>());
+			argv = static_cast<T>(this->get<archivebuf::number_integer_t>());
 		return *this;
 	}
 
 	template<typename T, std::enable_if_t<std::is_unsigned<T>::value, int> = 0>
-	const archive_node& operator >> (T& argv) const
+	const archivebuf& operator >> (T& argv) const
 	{
 		if (this->is_integral())
-			argv = static_cast<T>(this->get<archive_node::number_unsigned_t>());
+			argv = static_cast<T>(this->get<archivebuf::number_unsigned_t>());
 		return *this;
 	}
 
-	const archive_node& operator >> (archive_node::number_float_t& argv) const
+	const archivebuf& operator >> (archivebuf::number_float_t& argv) const
 	{
 		const auto& value = *this;
 		if (value.is_numeric())
-			argv = value.get<archive_node::number_float_t>();
+			argv = value.get<archivebuf::number_float_t>();
 		return *this;
 	}
 
-	const archive_node& operator >> (archive_node::number_float2_t& argv) const
+	const archivebuf& operator >> (archivebuf::number_float2_t& argv) const
 	{
 		if (this->is_array())
 		{
-			const auto& values = this->get<archive_node::array_t>();
+			const auto& values = this->get<archivebuf::array_t>();
 			if (values.size() == 2)
 			{
 				for (std::uint8_t i = 0; i < 2; ++i)
-					argv[i] = values[i].get<archive_node::number_float_t>();
+					argv[i] = values[i].get<archivebuf::number_float_t>();
 			}
 			else
 			{
@@ -280,15 +259,15 @@ public:
 		return *this;
 	}
 
-	const archive_node& operator >> (archive_node::number_float3_t& argv) const
+	const archivebuf& operator >> (archivebuf::number_float3_t& argv) const
 	{
 		if (this->is_array())
 		{
-			const auto& values = this->get<archive_node::array_t>();
+			const auto& values = this->get<archivebuf::array_t>();
 			if (values.size() == 3)
 			{
 				for (std::uint8_t i = 0; i < 3; ++i)
-					argv[i] = values[i].get<archive_node::number_float_t>();
+					argv[i] = values[i].get<archivebuf::number_float_t>();
 			}
 			else
 			{
@@ -299,15 +278,15 @@ public:
 		return *this;
 	}
 
-	const archive_node& operator >> (archive_node::number_float4_t& argv) const
+	const archivebuf& operator >> (archivebuf::number_float4_t& argv) const
 	{
 		if (this->is_array())
 		{
-			const auto& values = this->get<archive_node::array_t>();
+			const auto& values = this->get<archivebuf::array_t>();
 			if (values.size() == 4)
 			{
 				for (std::uint8_t i = 0; i < 4; ++i)
-					argv[i] = values[i].get<archive_node::number_float_t>();
+					argv[i] = values[i].get<archivebuf::number_float_t>();
 			}
 			else
 			{
@@ -318,15 +297,15 @@ public:
 		return *this;
 	}
 
-	const archive_node& operator >> (archive_node::number_quaternion_t& argv) const
+	const archivebuf& operator >> (archivebuf::number_quaternion_t& argv) const
 	{
 		if (this->is_array())
 		{
-			const auto& values = this->get<archive_node::array_t>();
+			const auto& values = this->get<archivebuf::array_t>();
 			if (values.size() == 4)
 			{
 				for (std::uint8_t i = 0; i < 4; ++i)
-					argv[i] = values[i].get<archive_node::number_float_t>();
+					argv[i] = values[i].get<archivebuf::number_float_t>();
 			}
 			else
 			{
@@ -337,38 +316,38 @@ public:
 		return *this;
 	}
 
-	const archive_node& operator >> (archive_node::string_t& argv) const
+	const archivebuf& operator >> (archivebuf::string_t& argv) const
 	{
 		const auto& value = *this;
 		if (value.is_string())
-			argv = value.get<archive_node::string_t>();
+			argv = value.get<archivebuf::string_t>();
 		return *this;
 	}
 
-	archive_node& operator << (archive_node::boolean_t& argv)
+	archivebuf& operator << (archivebuf::boolean_t& argv)
 	{
 		this->operator=(argv);
 		return *this;
 	}
 
 	template<typename T, std::enable_if_t<std::is_integral<T>::value || std::is_same<T, number_float_t>::value, int> = 0>
-	archive_node& operator << (T& argv)
+	archivebuf& operator << (T& argv)
 	{
 		this->operator=(argv);
 		return *this;
 	}
 
 	template<typename T, std::enable_if_t<std::is_same<T, string_t>::value || std::is_same<T, string_t::const_pointer>::value, int> = 0>
-	archive_node& operator << (const T& argv)
+	archivebuf& operator << (const T& argv)
 	{
 		this->operator=(argv);
 		return *this;
 	}
 
-	archive_node& operator << (const archive_node::number_float2_t& argv)
+	archivebuf& operator << (const archivebuf::number_float2_t& argv)
 	{
 		if (!this->is_array())
-			this->emplace(archive_node::array);
+			this->emplace(archivebuf::array);
 
 		if (this->is_array())
 		{
@@ -383,10 +362,10 @@ public:
 		return *this;
 	}
 
-	archive_node& operator << (const archive_node::number_float3_t& argv)
+	archivebuf& operator << (const archivebuf::number_float3_t& argv)
 	{
 		if (!this->is_array())
-			this->emplace(archive_node::array);
+			this->emplace(archivebuf::array);
 
 		if (this->is_array())
 		{
@@ -401,10 +380,10 @@ public:
 		return *this;
 	}
 
-	archive_node& operator << (const archive_node::number_float4_t& argv)
+	archivebuf& operator << (const archivebuf::number_float4_t& argv)
 	{
 		if (!this->is_array())
-			this->emplace(archive_node::array);
+			this->emplace(archivebuf::array);
 
 		if (this->is_array())
 		{
@@ -419,10 +398,10 @@ public:
 		return *this;
 	}
 
-	archive_node& operator << (const archive_node::number_quaternion_t& argv)
+	archivebuf& operator << (const archivebuf::number_quaternion_t& argv)
 	{
 		if (!this->is_array())
-			this->emplace(archive_node::array);
+			this->emplace(archivebuf::array);
 
 		if (this->is_array())
 		{
@@ -466,69 +445,11 @@ private:
 	}
 
 private:
-	archive_node(const archive_node& value);
-	archive_node& operator=(const archive_node& value);
+	archivebuf(const archivebuf& value);
+	archivebuf& operator=(const archivebuf& value);
 
 private:
 	variant_t _data;
-};
-
-#endif
-
-class archivebuf
-{
-public:
-	archivebuf() noexcept;
-	virtual ~archivebuf() noexcept;
-
-	virtual std::string getCurrentNodeName() const noexcept = 0;
-	virtual std::string getCurrentNodePath() const noexcept = 0;
-
-	virtual bool addAttribute(const std::string& key, const std::string& value) noexcept = 0;
-	virtual void setAttribute(const std::string& key, const std::string& value) noexcept = 0;
-	virtual void removeAttribute(const std::string& key) noexcept = 0;
-
-	virtual bool insert(const std::string& key) noexcept = 0;
-	virtual bool insertToParent(const std::string& key) noexcept = 0;
-
-	virtual bool setToNode(const std::string& path) noexcept = 0;
-	virtual bool setToFirstChild() noexcept = 0;
-	virtual bool setToFirstChild(const std::string& name) noexcept = 0;
-	virtual bool setToNextChild() noexcept = 0;
-	virtual bool setToNextChild(const std::string& name) noexcept = 0;
-	virtual bool setToParent() noexcept = 0;
-	virtual bool setToRoot() noexcept = 0;
-
-	virtual bool hasChild() const noexcept = 0;
-
-	virtual bool hasAttr(const char* name) const noexcept = 0;
-	virtual void clearAttrs() noexcept = 0;
-	virtual bool addAttrs() noexcept = 0;
-	virtual bool addAttrsInChildren() noexcept = 0;
-	virtual bool addAttrsInChildren(const std::string& key) noexcept = 0;
-	virtual const std::vector<std::string>& getAttrList() const noexcept = 0;
-
-	virtual bool getValue(const std::string& name, bool& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, int1& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, int2& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, int3& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, int4& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, uint1& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, uint2& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, uint3& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, uint4& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, float1& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, float2& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, float3& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, float4& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, std::string& result) const noexcept = 0;
-
-	virtual void lock() noexcept;
-	virtual void unlock() noexcept;
-
-private:
-	archivebuf(const archivebuf&) noexcept = delete;
-	archivebuf& operator=(const archivebuf&) noexcept = delete;
 };
 
 _NAME_END

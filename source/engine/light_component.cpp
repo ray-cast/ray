@@ -55,7 +55,7 @@ LightComponent::LightComponent() noexcept
 	_light->setOwnerListener(this);
 }
 
-LightComponent::LightComponent(const archive_node& reader) noexcept
+LightComponent::LightComponent(const archivebuf& reader) noexcept
 	: LightComponent()
 {
 	this->load(reader);
@@ -187,7 +187,7 @@ LightComponent::getLightType() const noexcept
 }
 
 void
-LightComponent::load(const archive_node& reader) noexcept
+LightComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);
 
@@ -203,30 +203,30 @@ LightComponent::load(const archive_node& reader) noexcept
 	const auto& shadowMode = reader["shadow"];
 
 	if (lightRange.is_numeric())
-		this->setLightRange(lightRange.get<archive_node::number_float>());
+		this->setLightRange(lightRange.get<archive::number_float_t>());
 
 	if (lightIntensity.is_numeric())
-		this->setLightIntensity(lightIntensity.get<archive_node::number_float>());
+		this->setLightIntensity(lightIntensity.get<archive::number_float_t>());
 
 	if (inner_cone.is_numeric())
-		this->setSpotInnerCone(inner_cone.get<archive_node::number_float>());
+		this->setSpotInnerCone(inner_cone.get<archive::number_float_t>());
 
 	if (outer_cone.is_numeric())
-		this->setSpotOuterCone(outer_cone.get<archive_node::number_float>());
+		this->setSpotOuterCone(outer_cone.get<archive::number_float_t>());
 
 	if (shadowBias.is_numeric())
-		this->setShadowBias(shadowBias.get<archive_node::number_float>());
+		this->setShadowBias(shadowBias.get<archive::number_float_t>());
 
 	if (enableGI.is_boolean())
-		this->setGlobalIllumination(enableGI.get<archive_node::boolean>());
+		this->setGlobalIllumination(enableGI.get<archive::boolean_t>());
 
 	if (lightColor.is_array())
 	{
 		float3 color;
 
-		const auto& values = lightColor.get<archive_node::array_t>();
+		const auto& values = lightColor.get<archive::array_t>();
 		for (std::uint8_t i = 0; i < 3; ++i)
-			color[i] = values[i].get<archive_node::number_float>();
+			color[i] = values[i].get<archive::number_float_t>();
 
 		this->setLightColor(color);
 	}
@@ -235,16 +235,16 @@ LightComponent::load(const archive_node& reader) noexcept
 	{
 		float3 atten;
 
-		const auto& values = lightAtten.get<archive_node::array_t>();
+		const auto& values = lightAtten.get<archive::array_t>();
 		for (std::uint8_t i = 0; i < 3; ++i)
-			atten[i] = values[i].get<archive_node::number_float>();
+			atten[i] = values[i].get<archive::number_float_t>();
 
 		this->setLightAttenuation(atten);
 	}
 
 	if (lightType.is_string())
 	{
-		const auto& name = lightType.get<archive_node::string_t>();
+		const auto& name = lightType.get<archive::string_t>();
 
 		if (name == "sun")
 			this->setLightType(LightType::LightTypeSun);
@@ -264,7 +264,7 @@ LightComponent::load(const archive_node& reader) noexcept
 
 	if (shadowMode.is_string())
 	{
-		const auto& name = shadowMode.get<archive_node::string_t>();
+		const auto& name = shadowMode.get<archive::string_t>();
 
 		if (name == "hard")
 			this->setShadowMode(ShadowMode::ShadowModeHard);
@@ -276,7 +276,7 @@ LightComponent::load(const archive_node& reader) noexcept
 }
 
 void
-LightComponent::save(archive_node& write) noexcept
+LightComponent::save(archivebuf& write) noexcept
 {
 	RenderComponent::save(write);
 }

@@ -154,7 +154,7 @@ PhysicsJointConfigurableComponent::load(iarchive& reader) noexcept
 }
 
 void 
-PhysicsJointConfigurableComponent::save(oarchive& write) noexcept
+PhysicsJointConfigurableComponent::save(archivebuf& write) noexcept
 {
 }
 

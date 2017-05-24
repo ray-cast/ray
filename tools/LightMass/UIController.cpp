@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "UIController.h"
+#include "UIView.h"
 
 #include "LightMass.h"
 #include "LightMapPack.h"
@@ -340,8 +341,52 @@ GuiControllerComponent::~GuiControllerComponent() noexcept
 {
 }
 
+bool
+GuiControllerComponent::onImportModel(const std::string& path, std::string& error) noexcept
+{
+	ray::StreamReaderPtr stream;
+	if (!ray::IoServer::instance()->openFile(stream, path))
+	{
+		error = "Failed to open file : " + path;
+		return false;
+	}
+
+	ray::PMXHandler header;
+	if (!header.doCanRead(*stream))
+	{
+		error = "Non readable PMX file : " + path;
+		return false;
+	}
+
+	auto model = std::make_unique<ray::PMX>();
+	if (!header.doLoad(*stream, *model))
+	{
+		error = "Non readable PMX file : " + path;
+		return false;
+	}
+
+	_model = std::move(model);
+
+	return true;
+}
+
 ray::GameComponentPtr
 GuiControllerComponent::clone() const noexcept
 {
 	return std::make_shared<GuiControllerComponent>();
+}
+
+void
+GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) except
+{
+	if (component->isInstanceOf<GuiViewComponent>())
+	{
+		auto view = component->downcast<GuiViewComponent>();
+		view->setImportModelListener(std::bind(&GuiControllerComponent::onImportModel, this, std::placeholders::_1, std::placeholders::_2));
+	}
+}
+
+void
+GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noexcept
+{
 }

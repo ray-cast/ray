@@ -66,9 +66,9 @@ GuiViewComponent::clone() const noexcept
 }
 
 void
-GuiViewComponent::setOpenFileListener(std::function<void()>& delegate)
+GuiViewComponent::setImportModelListener(std::function<bool(const std::string&, std::string&)> delegate)
 {
-	_onOpenFile = delegate;
+	_onImportModel = delegate;
 }
 
 void
@@ -83,34 +83,17 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 
 	if (_showFileBrowse)
 	{
-		_showFileBrowse = false;
-
 		std::string filepath;
-		if (!showFileBrowse(filepath))
-			return;
-
-		ray::StreamReaderPtr stream;
-		if (!ray::IoServer::instance()->openFile(stream, filepath))
+		if (showFileBrowse(filepath))
 		{
-			ray::Gui::text((std::string("Failed to open file : ") + filepath).c_str());
-			return;
+			if (_onImportModel)
+			{
+				std::string error;
+				_onImportModel(filepath, error);
+			}
 		}
 
-		ray::PMXHandler header;
-		if (!header.doCanRead(*stream))
-		{
-			ray::Gui::text((std::string("Non readable PMX file : ") + filepath).c_str());
-			return;
-		}
-
-		auto model = std::make_unique<ray::PMX>();
-		if (!header.doLoad(*stream, *model))
-		{
-			ray::Gui::text((std::string("Non readable PMX file : ") + filepath).c_str());
-			return;
-		}
-
-		_model = std::move(model);
+		_showFileBrowse = false;
 	}
 }
 
@@ -133,11 +116,13 @@ GuiViewComponent::showFileBrowse(std::string& path) noexcept
 	ofn.lpstrInitialDir = 0;
 	ofn.lpstrTitle = TEXT("Choose File");
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
 	if (::GetOpenFileName(&ofn))
 	{
 		path = filepath;
 		return true;
 	}
+
 	return false;
 #else
 	return false;

@@ -55,12 +55,13 @@ public:
 	using number_float4_t = Vector4t<number_float_t>;
 	using number_quaternion_t = Quaterniont<number_float_t>;
 	using string_t = std::string;
-	using object_t = std::list<std::pair<std::string, archivebuf>>;
+	using object_t = archivebuf;;
 	using array_t = std::vector<archivebuf>;
-	using iterator = object_t::iterator;
-	using reverse_iterator = object_t::reverse_iterator;
-	using const_iterator = object_t::const_iterator;
-	using const_reverse_iterator = object_t::const_reverse_iterator;
+	using map_t = std::list<std::pair<std::string, object_t>>;
+	using iterator = map_t::iterator;
+	using reverse_iterator = map_t::reverse_iterator;
+	using const_iterator = map_t::const_iterator;
+	using const_reverse_iterator = map_t::const_reverse_iterator;
 
 	using variant_t = std::variant<
 		void*,
@@ -70,7 +71,7 @@ public:
 		number_float_t,
 		std::unique_ptr<string_t>,
 		std::unique_ptr<array_t>,
-		std::unique_ptr<object_t>
+		std::unique_ptr<map_t>
 	>;
 
 	static const archivebuf& nil;
@@ -126,6 +127,9 @@ public:
 	template<type_t type, typename = std::enable_if_t<type == type_t::array>>
 	constexpr array_t& get() const { return *this->_get<type>(); }
 
+	template<type_t type, typename = std::enable_if_t<type == type_t::object>>
+	constexpr object_t& get() const { return this->_get<type>(); }
+
 	template<typename T, typename = std::enable_if_t<std::is_same<T, boolean_t>::value>>
 	constexpr boolean_t get() const { return this->get<archivebuf::type_t::boolean>(); }
 
@@ -143,6 +147,9 @@ public:
 
 	template<typename T, typename = std::enable_if_t<std::is_same<T, array_t>::value>>
 	constexpr array_t& get() const { return this->get<archivebuf::type_t::array>(); }
+
+	template<typename T, typename = std::enable_if_t<std::is_same<T, object_t>::value>>
+	constexpr object_t& get() const { return this->get<archivebuf::type_t::object>(); }
 
 	void push_back(const string_t& key, boolean_t value);
 	void push_back(const string_t& key, const number_integer_t& value);
@@ -435,13 +442,21 @@ private:
 		}
 	}
 
-	template<type_t type>
+	template<type_t type, std::enable_if_t<type != object, int> = 0>
 	constexpr decltype(auto) _get() const
 	{
 		if (this->type() != type)
 			throw failure(string_t("type must be ") + type_name(type) + " but is " + this->type_name());
 
 		return std::get<type>(_data);
+	}
+
+	template<type_t type, std::enable_if_t<type == object, int> = 0>
+	constexpr object_t& _get() const
+	{
+		if (this->type() != type)
+			throw failure(string_t("type must be ") + type_name(type) + " but is " + this->type_name());
+		return std::get<type>(_data)->front().second;
 	}
 
 private:

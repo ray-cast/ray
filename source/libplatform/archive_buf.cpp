@@ -98,7 +98,7 @@ archivebuf&
 archivebuf::at(const string_t& key)
 {
 	if (this->is_null())
-		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
+		_data.emplace<std::unique_ptr<map_t>>(std::make_unique<map_t>());
 
 	if (this->is_object())
 	{
@@ -121,7 +121,7 @@ archivebuf&
 archivebuf::at(const string_t::value_type* key)
 {
 	if (this->is_null())
-		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
+		_data.emplace<std::unique_ptr<map_t>>(std::make_unique<map_t>());
 
 	if (this->is_object())
 	{
@@ -549,7 +549,7 @@ archivebuf::emplace(type_t type) noexcept
 		_data.emplace<std::unique_ptr<array_t>>(std::make_unique<array_t>());
 		break;
 	case archivebuf::type_t::object:
-		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
+		_data.emplace<std::unique_ptr<map_t>>(std::make_unique<map_t>());
 		break;
 	default:
 		break;
@@ -627,7 +627,7 @@ archivebuf&
 archivebuf::operator[](const char* key)
 {
 	if (this->is_null())
-		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
+		_data.emplace<std::unique_ptr<map_t>>(std::make_unique<map_t>());
 
 	if (this->is_object())
 	{
@@ -650,7 +650,7 @@ archivebuf&
 archivebuf::operator[](const string_t& key)
 {
 	if (this->is_null())
-		_data.emplace<std::unique_ptr<object_t>>(std::make_unique<object_t>());
+		_data.emplace<std::unique_ptr<map_t>>(std::make_unique<map_t>());
 
 	if (this->is_object())
 	{

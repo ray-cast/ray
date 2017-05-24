@@ -114,6 +114,80 @@ void reader(archivebuf& node, const nlohmann::json& json) except
 	}
 }
 
+void write(nlohmann::json& node, archivebuf& json) except;
+
+void write(nlohmann::json& node, const archivebuf::array_t& arrays) except
+{
+	std::size_t index = 0;
+
+	for (auto& object : arrays)
+	{
+		switch (object.type())
+		{
+		case archivebuf::type_t::boolean:
+			node[index++] = object.get<archivebuf::boolean_t>();
+			break;
+		case archivebuf::type_t::number_float:
+			node[index++] = object.get<archivebuf::number_float_t>();
+			break;
+		case archivebuf::type_t::number_integer:
+			node[index++] = object.get<archivebuf::number_integer_t>();
+			break;
+		case archivebuf::type_t::number_unsigned:
+			node[index++] = object.get<archivebuf::number_unsigned_t>();
+			break;
+		case archivebuf::type_t::string:
+			node[index++] = object.get<archivebuf::string_t>();
+			break;
+		case archivebuf::type_t::object:
+			write(node[index++], object.get<archivebuf::object_t>());
+			break;
+		case archivebuf::type_t::array:
+			//node[index].emplace<nlohmann::json::array_t>(nlohmann::json());
+			write(node[index++], object.get<archivebuf::array_t>());
+			break;
+		}
+	}
+}
+
+void write(nlohmann::json& node, archivebuf& json) except
+{
+	for (auto& it : json)
+	{
+		auto& value = it.second;
+
+		switch (value.type())
+		{
+		case archivebuf::type_t::boolean:
+			node[it.first] = value.get<archivebuf::boolean_t>();
+			break;
+		case archivebuf::type_t::number_float:
+			node[it.first] = value.get<archivebuf::number_float_t>();
+			break;
+		case archivebuf::type_t::number_integer:
+			node[it.first] = value.get<archivebuf::number_integer_t>();
+			break;
+		case archivebuf::type_t::number_unsigned:
+			node[it.first] = value.get<archivebuf::number_unsigned_t>();
+			break;
+		case archivebuf::type_t::string:
+			node[it.first] = value.get<archivebuf::string_t>();
+			break;
+		case archivebuf::type_t::object:
+			write(node[it.first], value);
+			break;
+		case archivebuf::type_t::array:
+		{
+			//node[it.first].emplace<nlohmann::json::array_t>(nlohmann::json::array_t());
+			write(node.back(), value.get<archivebuf::array_t>());
+		}
+		break;
+		default:
+			break;
+		}
+	}
+}
+
 JsonReader::JsonReader() noexcept
 	: iarchive(&_json)
 {
@@ -200,29 +274,21 @@ JsonWrite::JsonWrite() noexcept
 {
 }
 
-JsonWrite::JsonWrite(StreamWrite& stream) except
-	: oarchive(&_json)
-{
-	this->open(stream);
-}
-
-JsonWrite::JsonWrite(const std::string& path) except
-	: oarchive(&_json)
-{
-	this->open(path);
-}
-
 JsonWrite::~JsonWrite() noexcept
 {
 	this->close();
 }
 
 JsonWrite&
-JsonWrite::open(StreamWrite& stream) except
+JsonWrite::save(StreamWrite& stream) except
 {
 	try
 	{
 		ios_base::clear(ios_base::failbit);
+
+		nlohmann::json json;
+		write(json, _json);
+
 		return *this;
 	}
 	catch (const std::exception& e)
@@ -233,11 +299,11 @@ JsonWrite::open(StreamWrite& stream) except
 }
 
 JsonWrite&
-JsonWrite::open(const std::string& path) except
+JsonWrite::save(const std::string& path) except
 {
 	ofstream stream;
 	if (stream.open(path))
-		return this->open(stream);
+		return this->save(stream);
 	else
 	{
 		this->setstate(ios_base::failbit);

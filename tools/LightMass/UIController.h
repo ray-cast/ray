@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/game_component.h>
 
+#include "modpmx.h"
+
 class GuiControllerComponent final : public ray::GameComponent
 {
 	__DeclareSubClass(GuiViewComponent, ray::GameComponent)
@@ -46,6 +48,15 @@ public:
 	ray::GameComponentPtr clone() const noexcept;
 
 private:
+	bool onImportModel(const std::string& path, std::string& error) noexcept;
+
+	virtual void onAttachComponent(ray::GameComponentPtr& component) except;
+	virtual void onDetachComponent(ray::GameComponentPtr& component) noexcept;
+
+private:
 	GuiControllerComponent(const GuiControllerComponent&) = delete;
 	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;
+
+private:
+	std::unique_ptr<ray::PMX> _model;
 };

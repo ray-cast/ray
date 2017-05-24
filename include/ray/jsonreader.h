@@ -68,12 +68,10 @@ class EXPORT JsonWrite final : public oarchive
 {
 public:
 	JsonWrite() noexcept;
-	JsonWrite(StreamWrite& stream) except;
-	JsonWrite(const std::string& path) except;
 	~JsonWrite() noexcept;
 
-	JsonWrite& open(StreamWrite& stream) except;
-	JsonWrite& open(const std::string& path) except;
+	JsonWrite& save(StreamWrite& stream) except;
+	JsonWrite& save(const std::string& path) except;
 
 	void close() noexcept;
 

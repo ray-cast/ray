@@ -1375,7 +1375,7 @@ namespace xml
 	archivebuf reader(StreamReader& stream)
 	{
 		auto length = stream.size();
-		if (length == 0 || length > std::numeric_limits<std::string::size_type>::max())
+		if (length == 0)
 			return false;
 
 		std::string data;

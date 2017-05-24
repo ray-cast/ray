@@ -38,7 +38,6 @@
 #define _H_UI_CONTROLLER_H_
 
 #include <ray/game_component.h>
-#include "modpmx.h"
 #include "UIParams.h"
 
 class GuiViewComponent final : public ray::GameComponent
@@ -50,7 +49,7 @@ public:
 
 	ray::GameComponentPtr clone() const noexcept;
 
-	void setOpenFileListener(std::function<void()>& delegate);
+	void setImportModelListener(std::function<bool(const std::string&, std::string&)> delegate);
 
 private:
 	virtual void onMessage(const ray::MessagePtr& message) noexcept;
@@ -80,9 +79,7 @@ private:
 	GuiParams _default;
 	GuiParams _setting;
 
-	std::function<void()> _onOpenFile;
-
-	std::unique_ptr<ray::PMX> _model;
+	std::function<bool(const std::string&, std::string&)> _onImportModel;
 };
 
 #endif

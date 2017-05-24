@@ -342,7 +342,7 @@ GuiViewComponent::showErrorMessage() noexcept
 	if (!_showErrorMessageFirst)
 		return;
 
-	if (ray::Gui::beginPopupModal("Error?", 0, ray::GuiWindowFlagAlwaysAutoResizeBit))
+	if (ray::Gui::beginPopupModal("Error?", 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
 	{
 		ray::Gui::text(_errorMessage.c_str());
 		ray::Gui::separator();
@@ -409,10 +409,8 @@ GuiViewComponent::showLightMass() noexcept
 
 	ray::Gui::setNextWindowPos(ray::float2(10, 40), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 
-	if (ray::Gui::begin("Light Mass", &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	if (ray::Gui::begin("Light Mass", &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
-		ray::Gui::text("Light Mass");
-
 		if (ray::Gui::collapsingHeader("Uvmapper", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::text("Output UV size");
@@ -451,7 +449,9 @@ GuiViewComponent::showLightMass() noexcept
 		if (ray::Gui::collapsingHeader("Light Mass", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::checkbox("Enable GI", &_setting.lightmass.enableGI);
-			ray::Gui::checkbox("Enable IBL", &_setting.lightmass.enableSkyLighting);
+
+			if (_setting.lightmass.enableGI)
+				ray::Gui::checkbox("Enable IBL", &_setting.lightmass.enableSkyLighting);
 
 			ray::Gui::text("Output Size");
 			ray::Gui::combo("##Output size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));

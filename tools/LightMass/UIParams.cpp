@@ -40,11 +40,13 @@ GUIUvmapper::GUIUvmapper() noexcept
 	: margin(2)
 	, stretch(1e-2)
 	, chart(0)
+	, slot(1)
 {
 }
 
 GUILightMass::GUILightMass() noexcept
 	: environmentColor(ray::float4::One)
+	, slot(1)
 	, hemisphereNear(0.1)
 	, hemisphereFar(100.0)
 	, interpolationPasses(2)

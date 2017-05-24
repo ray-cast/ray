@@ -435,12 +435,21 @@ public:
 	static bool sliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
 	static bool sliderFloat4(const char* label, float v[4], float v_min, float v_max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
 	static bool sliderFloatv(const char* label, const float2& size, float* v, float v_min, float v_max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
+	static bool sliderFloatWithRevert(const char* label, const char* name, float* v, float _default, float _min, float _max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
+	static bool sliderFloat2WithRevert(const char* label, const char* name, float v[2], const float _default[2], float _min, float _max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
+	static bool sliderFloat3WithRevert(const char* label, const char* name, float v[3], const float _default[3], float _min, float _max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
+	static bool sliderFloat4WithRevert(const char* label, const char* name, float v[4], const float _default[4], float _min, float _max, const char* display_format = "%.3f", float power = 1.0f) noexcept;
+
 	static bool sliderAngle(const char* label, float* v_rad, float v_degrees_min = -360.0f, float v_degrees_max = +360.0f) noexcept;
 	static bool sliderInt(const char* label, int* v, int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 	static bool sliderInt2(const char* label, int v[2], int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 	static bool sliderInt3(const char* label, int v[3], int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 	static bool sliderInt4(const char* label, int v[4], int v_min, int v_max, const char* display_format = "%.0f") noexcept;
 	static bool sliderIntv(const char* label, const float2& size, int* v, int v_min, int v_max, const char* display_format = "%.0f") noexcept;
+	static bool sliderIntWithRevert(const char* label, const char* name, int* v, int _default, int _min, int _max, const char* display_format = "%.0f") noexcept;
+	static bool sliderInt2WithRevert(const char* label, const char* name, int* v, const int _default[2], int _min, int _max, const char* display_format = "%.0f") noexcept;
+	static bool sliderInt3WithRevert(const char* label, const char* name, int* v, const int _default[3], int _min, int _max, const char* display_format = "%.0f") noexcept;
+	static bool sliderInt4WithRevert(const char* label, const char* name, int* v, const int _default[4], int _min, int _max, const char* display_format = "%.0f") noexcept;
 
 	static bool  treeNode(const char* label) noexcept;
 	static bool  treeNode(const char* str_id, const char* fmt, ...) noexcept;
@@ -556,6 +565,8 @@ public:
 	static void captureKeyboardFromApp(bool capture = true) noexcept;
 	static void captureMouseFromApp(bool capture = true) noexcept;
 
+	static bool colorPicker3(const char* label, float col[3], const float2& size = float2(160.f, 150.f), float hueSize = 12.0f, float crossHairSize = 7.0f) noexcept;
+	static bool colorPicker3WithRevert(const char* label, const char* name, float col[3], const float default[3], const float2& size = float2(160.f, 150.f), float hueSize = 12.0f, float crossHairSize = 7.0f) noexcept;
 private:
 	IMGUI(const IMGUI&) = delete;
 	IMGUI& operator=(const IMGUI&) = delete;

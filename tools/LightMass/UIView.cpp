@@ -41,6 +41,7 @@
 
 __ImplementSubClass(GuiViewComponent, ray::GameComponent, "GuiView")
 
+const char* itemsUVSlot[] = { "0", "1", "2", "3", "4" };
 const char* itemsImageSize[] = { "512", "1024", "2048", "4096", "8192" };
 const char* itemsSampleSize[] = { "32", "64", "128", "256", "512" };
 
@@ -51,7 +52,11 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showMainMenu = true;
 	_showLightMassWindow = true;
 	_showStyleEditor = false;
+	_showBakingButton = false;
 	_showAboutWindow = false;
+	_showAboutWindowFirst = false;
+	_showErrorMessage = false;
+	_showErrorMessageFirst = false;
 }
 
 GuiViewComponent::~GuiViewComponent() noexcept
@@ -104,6 +109,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 	this->showStyleEditor();
 	this->showLightMass();
 	this->showAboutWindow();
+	this->showErrorMessage();
 }
 
 void
@@ -140,7 +146,7 @@ GuiViewComponent::showMainMenu() noexcept
 
 		if (ray::Gui::beginMenu("Help"))
 		{
-			ray::Gui::menuItem("About", 0, &_showAboutWindow);
+			ray::Gui::menuItem("About", 0, &_showAboutWindowFirst);
 			ray::Gui::endMenu();
 		}
 
@@ -207,6 +213,65 @@ GuiViewComponent::showFileSaveBrowse(ray::util::string::pointer path, ray::util:
 }
 
 void
+GuiViewComponent::showProjectOpenBrowse() noexcept
+{
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
+		return;
+
+	if (_onProjectOpen)
+	{
+		ray::util::string error;
+		if (!_onProjectOpen(filepath, error))
+		{
+			if (!error.empty())
+				this->showErrorPopupMessage(error, std::hash<const char*>{}("showProjectOpenBrowse"));
+		}
+	}
+}
+
+void
+GuiViewComponent::showProjectSaveBrowse() noexcept
+{
+	if (_pathProject.empty())
+		return;
+
+	if (_onProjectSave)
+	{
+		ray::util::string error;
+		if (!_onProjectSave(_pathProject.c_str(), error))
+		{
+			if (!error.empty())
+				this->showErrorPopupMessage(error, std::hash<const char*>{}("showProjectSaveAsBrowse"));
+		}
+	}
+}
+
+void
+GuiViewComponent::showProjectSaveAsBrowse() noexcept
+{
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
+		return;
+
+	if (_onProjectOpen)
+	{
+		ray::util::string error;
+		if (_onProjectOpen(filepath, error))
+			_pathProject = filepath;
+		else
+		{
+			if (!error.empty())
+				this->showErrorPopupMessage(error, std::hash<const char*>{}("showProjectSaveAsBrowse"));
+		}
+	}
+}
+
+void
 GuiViewComponent::showModelImportBrowse() noexcept
 {
 	ray::util::string::value_type filepath[PATHLIMIT];
@@ -218,10 +283,12 @@ GuiViewComponent::showModelImportBrowse() noexcept
 	if (_onModelImport)
 	{
 		ray::util::string error;
-		if (!_onModelImport(filepath, error))
+		if (_onModelImport(filepath, error))
+			_showBakingButton = true;
+		else
 		{
 			if (!error.empty())
-				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
+				this->showErrorPopupMessage(error, std::hash<const char*>{}("showModelImportBrowse"));
 		}
 	}
 }
@@ -241,82 +308,83 @@ GuiViewComponent::showModelExportBrowse() noexcept
 		if (!_onModelSaveAs(filepath, error))
 		{
 			if (!error.empty())
-				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
+				this->showErrorPopupMessage(error, std::hash<const char*>{}("showModelExportBrowse"));
 		}
 	}
 }
 
 void
-GuiViewComponent::showProjectOpenBrowse() noexcept
+GuiViewComponent::showErrorPopupMessage(const ray::util::string& message, std::size_t hash) noexcept
 {
-	ray::util::string::value_type filepath[PATHLIMIT];
-	std::memset(filepath, 0, sizeof(filepath));
-
-	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
-		return;
-
-	if (_onProjectOpen)
+	if (!_showErrorMessage)
 	{
-		ray::util::string error;
-		if (!_onProjectOpen(filepath, error))
-		{
-			if (!error.empty())
-				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
-		}
+		_errorHash = hash;
+		_errorMessage = message;
+		_showErrorMessage = true;
 	}
 }
 
 void
-GuiViewComponent::showProjectSaveBrowse() noexcept
+GuiViewComponent::showErrorMessage() noexcept
 {
-	if (_pathProject.empty())
-		return;
-
-	if (_onProjectSave)
+	if (_showErrorMessage)
 	{
-		ray::util::string error;
-		if (!_onProjectSave(_pathProject.c_str(), error))
-		{
-			if (!error.empty())
-				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
-		}
+		_showErrorMessage = false;
+
+		if (_showError[_errorHash])
+			return;
+
+		ray::Gui::openPopup("Error?");
+
+		_showErrorMessageFirst = true;
 	}
-}
 
-void
-GuiViewComponent::showProjectSaveAsBrowse() noexcept
-{
-	ray::util::string::value_type filepath[PATHLIMIT];
-	std::memset(filepath, 0, sizeof(filepath));
-
-	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
+	if (!_showErrorMessageFirst)
 		return;
 
-	if (_onProjectOpen)
+	if (ray::Gui::beginPopupModal("Error?", 0, ray::GuiWindowFlagAlwaysAutoResizeBit))
 	{
-		ray::util::string error;
-		if (!_onProjectOpen(filepath, error))
-		{
-			if (!error.empty())
-				MessageBox(GetActiveWindow(), error.c_str(), "Error", MB_OK);
-		}
+		ray::Gui::text(_errorMessage.c_str());
+		ray::Gui::separator();
 
-		_pathProject = filepath;
+		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(0, 0));
+		ray::Gui::checkbox("Don't ask me next time", &_showError[_errorHash]);
+		ray::Gui::popStyleVar();
+
+		if (ray::Gui::button("OK", ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+		ray::Gui::sameLine();
+
+		if (ray::Gui::button("Cancel", ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+		ray::Gui::endPopup();
 	}
 }
 
 void
 GuiViewComponent::showAboutWindow() noexcept
 {
+	if (_showAboutWindowFirst)
+	{
+		ray::Gui::openPopup("About");
+
+		_showAboutWindow = true;
+		_showAboutWindowFirst = false;
+	}
+
 	if (!_showAboutWindow)
 		return;
 
-	if (ray::Gui::begin("About", &_showAboutWindow))
+	if (ray::Gui::beginPopupModal("About", 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
 	{
 		ray::Gui::text("LightMass Ver.0.1");
 		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
 		ray::Gui::text("Copyright (c) 2017-2018. All rights reserved.");
-		ray::Gui::end();
+
+		ray::Gui::separator();
+		ray::Gui::text("");
+		ray::Gui::sameLine(ray::Gui::getWindowWidth() - 130);
+		if (ray::Gui::button("OK", ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+
+		ray::Gui::endPopup();
 	}
 }
 
@@ -339,68 +407,69 @@ GuiViewComponent::showLightMass() noexcept
 	if (!_showLightMassWindow)
 		return;
 
-	ray::Gui::setNextWindowPos(ray::float2(0, 0), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
-	ray::Gui::setNextWindowSize(ray::float2(300, 700), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+	ray::Gui::setNextWindowPos(ray::float2(10, 40), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 
-	if (ray::Gui::begin("Light Mass", &_showLightMassWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	if (ray::Gui::begin("Light Mass", &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
 		ray::Gui::text("Light Mass");
 
 		if (ray::Gui::collapsingHeader("Uvmapper", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
-			ray::Gui::text("UV size");
+			ray::Gui::text("Output UV size");
 			ray::Gui::combo("##UV size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
 			{
 				ray::Gui::sameLine();
-				ray::Gui::pushID(0);
+				ray::Gui::pushID(std::hash<const char*>{}("##UV size"));
 				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
 				ray::Gui::popID();
 			}
 
-			ray::Gui::text("margin:");
-			ray::Gui::sliderFloat("##margin", &_setting.uvmapper.margin, 0.0f, 10.0f);
-			if (_setting.uvmapper.margin != _default.uvmapper.margin)
+			ray::Gui::text("Output UV slot");
+			ray::Gui::combo("##Output UV slot", &_setting.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
+			if (_setting.uvmapper.slot != _default.uvmapper.slot)
 			{
 				ray::Gui::sameLine();
-				ray::Gui::pushID(1);
-				if (ray::Gui::button("Revert")) _setting.uvmapper.margin = _default.uvmapper.margin;
+				ray::Gui::pushID(std::hash<const char*>{}("##Output UV slot"));
+				if (ray::Gui::button("Revert")) _setting.uvmapper.slot = _default.uvmapper.slot;
 				ray::Gui::popID();
 			}
+
+			ray::Gui::text("margin:");
+			ray::Gui::sliderFloatWithRevert("##margin", "Revert", &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
 
 			ray::Gui::text("stretch:");
-			ray::Gui::sliderFloat("##stretch", &_setting.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
-			if (_setting.uvmapper.stretch != _default.uvmapper.stretch)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(2);
-				if (ray::Gui::button("Revert")) _setting.uvmapper.stretch = _default.uvmapper.stretch;
-				ray::Gui::popID();
-			}
+			ray::Gui::sliderFloatWithRevert("##stretch", "Revert", &_setting.uvmapper.stretch, _default.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
 
 			ray::Gui::text("chart:");
-			ray::Gui::sliderInt("##chart", &_setting.uvmapper.chart, 0, 65535);
-			if (_setting.uvmapper.chart != _default.uvmapper.chart)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(3);
-				if (ray::Gui::button("Revert")) _setting.uvmapper.chart = _default.uvmapper.chart;
-				ray::Gui::popID();
-			}
+			ray::Gui::sliderIntWithRevert("##chart", "Revert", &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
+
+			if (_showBakingButton)
+				ray::Gui::button("Start UV mapper");
 		}
 
 		if (ray::Gui::collapsingHeader("Light Mass", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
-			ray::Gui::checkbox("Enable Global Illumination", &_setting.lightmass.enableGI);
-			ray::Gui::checkbox("Enable Image Based Lighting", &_setting.lightmass.enableSkyLighting);
+			ray::Gui::checkbox("Enable GI", &_setting.lightmass.enableGI);
+			ray::Gui::checkbox("Enable IBL", &_setting.lightmass.enableSkyLighting);
 
 			ray::Gui::text("Output Size");
 			ray::Gui::combo("##Output size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
 			{
 				ray::Gui::sameLine();
-				ray::Gui::pushID(4);
+				ray::Gui::pushID(std::hash<const char*>{}("##Output size"));
 				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
+				ray::Gui::popID();
+			}
+
+			ray::Gui::text("Input UV slot");
+			ray::Gui::combo("##Input UV slot", &_setting.lightmass.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
+			if (_setting.lightmass.slot != _default.lightmass.slot)
+			{
+				ray::Gui::sameLine();
+				ray::Gui::pushID(std::hash<const char*>{}("##Input UV slot"));
+				if (ray::Gui::button("Revert")) _setting.lightmass.slot = _default.lightmass.slot;
 				ray::Gui::popID();
 			}
 
@@ -409,69 +478,31 @@ GuiViewComponent::showLightMass() noexcept
 			if (_setting.lightmass.sampleCount != _default.lightmass.sampleCount)
 			{
 				ray::Gui::sameLine();
-				ray::Gui::pushID(5);
+				ray::Gui::pushID(std::hash<const char*>{}("##Sample Count"));
 				if (ray::Gui::button("Revert")) _setting.lightmass.sampleCount = _default.lightmass.sampleCount;
 				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Environment Color:");
-			ray::Gui::colorEdit3("##Environment Color", _setting.lightmass.environmentColor.ptr());
-			if (_setting.lightmass.environmentColor.xyz() != _default.lightmass.environmentColor.xyz())
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(6);
-				if (ray::Gui::button("Revert")) _setting.lightmass.environmentColor.set(_default.lightmass.environmentColor.xyz());
-				ray::Gui::popID();
-			}
+			ray::Gui::colorPicker3WithRevert("##Environment Color", "Revert", _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
 
 			ray::Gui::text("Environment Intensity:");
-			ray::Gui::sliderFloat("##Environment Intensity", &_setting.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
-			if (_setting.lightmass.environmentColor.w != _default.lightmass.environmentColor.w)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(7);
-				if (ray::Gui::button("Revert")) _setting.lightmass.environmentColor.w = _default.lightmass.environmentColor.w;
-				ray::Gui::popID();
-			}
+			ray::Gui::sliderFloatWithRevert("##Environment Intensity", "Revert", &_setting.lightmass.environmentColor.w, _default.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
 
 			ray::Gui::text("Ray tracing znear:");
-			ray::Gui::sliderFloat("##Ray tracing znear", &_setting.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
-			if (_setting.lightmass.hemisphereNear != _default.lightmass.hemisphereNear)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(8);
-				if (ray::Gui::button("Revert")) _setting.lightmass.hemisphereNear = _default.lightmass.hemisphereNear;
-				ray::Gui::popID();
-			}
+			ray::Gui::sliderFloatWithRevert("##Ray tracing znear", "Revert", &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
 
 			ray::Gui::text("Ray tracing zfar:");
-			ray::Gui::sliderFloat("##Ray tracing zfar", &_setting.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
-			if (_setting.lightmass.hemisphereFar != _default.lightmass.hemisphereFar) {
-				ray::Gui::sameLine();
-				ray::Gui::pushID(9);
-				if (ray::Gui::button("Revert")) _setting.lightmass.hemisphereFar = _default.lightmass.hemisphereFar;
-				ray::Gui::popID();
-			}
+			ray::Gui::sliderFloatWithRevert("##Ray tracing zfar", "Revert", &_setting.lightmass.hemisphereFar, _default.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
 
 			ray::Gui::text("Interpolation Passes");
-			ray::Gui::sliderInt("##Interpolation Passes", &_setting.lightmass.interpolationPasses, 1, 5);
-			if (_setting.lightmass.interpolationPasses != _default.lightmass.interpolationPasses)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(10);
-				if (ray::Gui::button("Revert")) _setting.lightmass.interpolationPasses = _default.lightmass.interpolationPasses;
-				ray::Gui::popID();
-			}
+			ray::Gui::sliderIntWithRevert("##Interpolation Passes", "Revert", &_setting.lightmass.interpolationPasses, _default.lightmass.interpolationPasses, 1, 5);
 
 			ray::Gui::text("Interpolation Threshold");
-			ray::Gui::sliderFloat("##Interpolation Threshold", &_setting.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
-			if (_setting.lightmass.interpolationThreshold != _default.lightmass.interpolationThreshold)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(11);
-				if (ray::Gui::button("Revert")) _setting.lightmass.interpolationThreshold = _default.lightmass.interpolationThreshold;
-				ray::Gui::popID();
-			}
+			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", "Revert", &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.5f", 2.2);
+
+			if (_showBakingButton)
+				ray::Gui::button("Start Baking");
 		}
 
 		ray::Gui::end();

@@ -65,6 +65,9 @@ private:
 	void showLightMass() noexcept;
 	void showAboutWindow() noexcept;
 
+	void showErrorMessage() noexcept;
+	void showErrorPopupMessage(const ray::util::string& message, std::size_t hash) noexcept;
+
 	bool showFileOpenBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept;
 	bool showFileSaveBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept;
 
@@ -86,8 +89,16 @@ private:
 	bool _showLightMassWindow;
 	bool _showStyleEditor;
 	bool _showAboutWindow;
+	bool _showAboutWindowFirst;
+	bool _showBakingButton;
+	bool _showErrorMessage;
+	bool _showErrorMessageFirst;
 
 	std::string _pathProject;
+
+	std::size_t _errorHash;
+	std::string _errorMessage;
+	std::map<int, bool> _showError;
 
 	ray::float4 _clearColor;
 

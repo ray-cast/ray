@@ -347,21 +347,21 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 	ray::StreamReaderPtr stream;
 	if (!ray::IoServer::instance()->openFile(stream, path))
 	{
-		error = "Failed to open file : ";
+		error = "Failed to open file.";
 		return false;
 	}
 
 	ray::PMXHandler header;
 	if (!header.doCanRead(*stream))
 	{
-		error = "Non readable PMX file : ";
+		error = "Non readable PMX file.";
 		return false;
 	}
 
 	auto model = std::make_unique<ray::PMX>();
 	if (!header.doLoad(*stream, *model))
 	{
-		error = "Non readable PMX file : ";
+		error = "Non readable PMX file.";
 		return false;
 	}
 

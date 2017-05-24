@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/imgui.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 _NAME_BEGIN
 
@@ -1726,6 +1727,304 @@ void
 IMGUI::captureMouseFromApp(bool capture) noexcept
 {
 	return ImGui::CaptureMouseFromApp(capture);
+}
+
+bool
+IMGUI::colorPicker3(const char* label, float col[3], const float2& size, float hueSize, float crossHairSize) noexcept
+{
+	// thanks to : https://github.com/ocornut/imgui/issues/346
+	bool value_changed = false;
+
+	ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+	ImVec2 picker_pos = ImGui::GetCursorScreenPos();
+
+	ImColor color(col[0], col[1], col[2]);
+	ImColor colors[] = { ImColor(255, 0, 0), ImColor(255, 255, 0), ImColor(0, 255, 0), ImColor(0, 255, 255), ImColor(0, 0, 255), ImColor(255, 0, 255), ImColor(255, 0, 0) };
+
+	for (int i = 0; i < 6; ++i)
+	{
+		draw_list->AddRectFilledMultiColor(
+			ImVec2(picker_pos.x + size.x + 10, picker_pos.y + i * (size.y / 6)),
+			ImVec2(picker_pos.x + size.x + 10 + hueSize,
+				picker_pos.y + (i + 1) * (size.y / 6)),
+			colors[i],
+			colors[i],
+			colors[i + 1],
+			colors[i + 1]);
+	}
+
+	float hue, saturation, value;
+	ImGui::ColorConvertRGBtoHSV(color.Value.x, color.Value.y, color.Value.z, hue, saturation, value);
+
+	draw_list->AddLine(
+		ImVec2(picker_pos.x + size.x + 8, picker_pos.y + hue * size.y),
+		ImVec2(picker_pos.x + size.x + 12 + hueSize, picker_pos.y + hue * size.y),
+		ImColor(255, 255, 255));
+
+	{
+		const int step = 5;
+		ImVec2 pos = ImVec2(0, 0);
+
+		ImVec4 c00(1, 1, 1, 1);
+		ImVec4 c10(1, 1, 1, 1);
+		ImVec4 c01(1, 1, 1, 1);
+		ImVec4 c11(1, 1, 1, 1);
+
+		for (int y = 0; y < step; y++)
+		{
+			for (int x = 0; x < step; x++)
+			{
+				float s0 = (float)x / (float)step;
+				float s1 = (float)(x + 1) / (float)step;
+				float v0 = 1.0 - (float)(y) / (float)step;
+				float v1 = 1.0 - (float)(y + 1) / (float)step;
+
+				ImGui::ColorConvertHSVtoRGB(hue, s0, v0, c00.x, c00.y, c00.z);
+				ImGui::ColorConvertHSVtoRGB(hue, s1, v0, c10.x, c10.y, c10.z);
+				ImGui::ColorConvertHSVtoRGB(hue, s0, v1, c01.x, c01.y, c01.z);
+				ImGui::ColorConvertHSVtoRGB(hue, s1, v1, c11.x, c11.y, c11.z);
+
+				draw_list->AddRectFilledMultiColor(
+					ImVec2(picker_pos.x + pos.x, picker_pos.y + pos.y),
+					ImVec2(picker_pos.x + pos.x + size.x / step, picker_pos.y + pos.y + size.y / step),
+					ImGui::ColorConvertFloat4ToU32(c00),
+					ImGui::ColorConvertFloat4ToU32(c10),
+					ImGui::ColorConvertFloat4ToU32(c11),
+					ImGui::ColorConvertFloat4ToU32(c01));
+
+				pos.x += size.x / step;
+			}
+			pos.x = 0;
+			pos.y += size.y / step;
+		}
+	}
+
+	float x = saturation * size.x;
+	float y = (1 - value) * size.y;
+	ImVec2 p(picker_pos.x + x, picker_pos.y + y);
+	draw_list->AddLine(ImVec2(p.x - crossHairSize, p.y), ImVec2(p.x - 2, p.y), ImColor(255, 255, 255));
+	draw_list->AddLine(ImVec2(p.x + crossHairSize, p.y), ImVec2(p.x + 2, p.y), ImColor(255, 255, 255));
+	draw_list->AddLine(ImVec2(p.x, p.y + crossHairSize), ImVec2(p.x, p.y + 2), ImColor(255, 255, 255));
+	draw_list->AddLine(ImVec2(p.x, p.y - crossHairSize), ImVec2(p.x, p.y - 2), ImColor(255, 255, 255));
+
+	IMGUI::invisibleButton("saturation_value_selector", size);
+
+	if (ImGui::IsItemActive() && ImGui::GetIO().MouseDown[0])
+	{
+		ImVec2 mouse_pos_in_canvas = ImVec2(ImGui::GetIO().MousePos.x - picker_pos.x, ImGui::GetIO().MousePos.y - picker_pos.y);
+
+		/**/ if (mouse_pos_in_canvas.x < 0) mouse_pos_in_canvas.x = 0;
+		else if (mouse_pos_in_canvas.x >= size.x - 1) mouse_pos_in_canvas.x = size.x - 1;
+
+		/**/ if (mouse_pos_in_canvas.y < 0) mouse_pos_in_canvas.y = 0;
+		else if (mouse_pos_in_canvas.y >= size.y - 1) mouse_pos_in_canvas.y = size.y - 1;
+
+		value = 1 - (mouse_pos_in_canvas.y / (size.y - 1));
+		saturation = mouse_pos_in_canvas.x / (size.x - 1);
+		value_changed = true;
+	}
+
+	ImGui::SetCursorScreenPos(ImVec2(picker_pos.x + size.x + 10, picker_pos.y));
+	ImGui::InvisibleButton("hue_selector", ImVec2(hueSize, size.y));
+
+	if ((ImGui::IsItemHovered() || ImGui::IsItemActive()) && ImGui::GetIO().MouseDown[0])
+	{
+		ImVec2 mouse_pos_in_canvas = ImVec2(ImGui::GetIO().MousePos.x - picker_pos.x, ImGui::GetIO().MousePos.y - picker_pos.y);
+
+		/* Previous horizontal bar will represent hue=1 (bottom) as hue=0 (top). Since both colors are red, we clamp at (-2, above edge) to avoid visual continuities */
+		/**/ if (mouse_pos_in_canvas.y < 0) mouse_pos_in_canvas.y = 0;
+		else if (mouse_pos_in_canvas.y >= size.y - 2) mouse_pos_in_canvas.y = size.y - 2;
+
+		hue = mouse_pos_in_canvas.y / (size.y - 1);
+		value_changed = true;
+	}
+
+	color = ImColor::HSV(hue > 0 ? hue : 1e-6, saturation > 0 ? saturation : 1e-6, value > 0 ? value : 1e-6);
+
+	col[0] = color.Value.x;
+	col[1] = color.Value.y;
+	col[2] = color.Value.z;
+
+	return value_changed | ImGui::ColorEdit3(label, col);
+}
+
+bool
+IMGUI::colorPicker3WithRevert(const char* label, const char* name, float col[3], const float _default[3], const float2& size, float hueSize, float crossHairSize) noexcept
+{
+	bool change = colorPicker3(label, col, size, hueSize, crossHairSize);
+	if (!math::equal(col[0], _default[0]) || !math::equal(col[1], _default[1]) || !math::equal(col[2], _default[2]))
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name))
+		{
+			col[0] = _default[0];
+			col[1] = _default[1];
+			col[2] = _default[2];
+			change = false;
+		};
+
+		popID();
+	}
+
+	return change;
+}
+
+bool
+IMGUI::sliderFloatWithRevert(const char* label, const char* name, float* v, float _default, float _min, float _max, const char* display_format, float power) noexcept
+{
+	bool change = sliderFloat(label, v, _min, _max, display_format, power);
+	if (!math::equal(*v, _default))
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name)) { *v = _default; change = false; };
+		popID();
+	}
+
+	return change;
+}
+
+bool
+IMGUI::sliderFloat2WithRevert(const char* label, const char* name, float v[2], const float _default[2], float _min, float _max, const char* display_format, float power) noexcept
+{
+	bool change = sliderFloat2(label, v, _min, _max, display_format);
+	if (v[0] != _default[0] || v[1] != _default[1])
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name))
+		{
+			v[0] = _default[0];
+			v[1] = _default[1];
+			change = false;
+		};
+		popID();
+	}
+
+	return change;
+}
+
+bool
+IMGUI::sliderFloat3WithRevert(const char* label, const char* name, float v[3], const float _default[3], float _min, float _max, const char* display_format, float power) noexcept
+{
+	bool change = sliderFloat2(label, v, _min, _max, display_format);
+	if (v[0] != _default[0] || v[1] != _default[1] || v[2] != _default[2])
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name))
+		{
+			v[0] = _default[0];
+			v[1] = _default[1];
+			v[2] = _default[2];
+			change = false;
+		};
+		popID();
+	}
+
+	return change;
+}
+
+bool
+IMGUI::sliderFloat4WithRevert(const char* label, const char* name, float v[4], const float _default[4], float _min, float _max, const char* display_format, float power) noexcept
+{
+	bool change = sliderFloat4(label, v, _min, _max, display_format);
+	if (v[0] != _default[0] || v[1] != _default[1] || v[2] != _default[2] || v[3] != _default[3])
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name))
+		{
+			v[0] = _default[0];
+			v[1] = _default[1];
+			v[2] = _default[2];
+			v[3] = _default[3];
+			change = false;
+		};
+		popID();
+	}
+
+	return change;
+}
+
+bool
+IMGUI::sliderIntWithRevert(const char* label, const char* name, int* v, int _default, int _min, int _max, const char* display_format) noexcept
+{
+	bool change = sliderInt(label, v, _min, _max, display_format);
+	if (v[0] != _default)
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name)) { *v = _default; change = false; };
+		popID();
+	}
+
+	return change;
+}
+
+bool
+IMGUI::sliderInt2WithRevert(const char* label, const char* name, int* v, const int _default[2], int _min, int _max, const char* display_format) noexcept
+{
+	bool change = sliderInt2(label, v, _min, _max, display_format);
+	if (v[0] != _default[0] || v[1] != _default[1])
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name))
+		{
+			v[0] = _default[0];
+			v[1] = _default[1];
+			change = false;
+		};
+		popID();
+	}
+
+	return change;
+}
+
+bool
+IMGUI::sliderInt3WithRevert(const char* label, const char* name, int* v, const int _default[3], int _min, int _max, const char* display_format) noexcept
+{
+	bool change = sliderInt3(label, v, _min, _max, display_format);
+	if (v[0] != _default[0] || v[1] != _default[1] || v[2] != _default[2])
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name))
+		{
+			v[0] = _default[0];
+			v[1] = _default[1];
+			v[2] = _default[2];
+			change = false;
+		};
+		popID();
+	}
+
+	return change;
+}
+
+bool
+IMGUI::sliderInt4WithRevert(const char* label, const char* name, int* v, const int _default[4], int _min, int _max, const char* display_format) noexcept
+{
+	bool change = sliderInt4(label, v, _min, _max, display_format);
+	if (v[0] != _default[0] || v[1] != _default[1] || v[2] != _default[2] || v[3] != _default[3])
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(name))
+		{
+			v[0] = _default[0];
+			v[1] = _default[1];
+			v[2] = _default[2];
+			v[3] = _default[3];
+			change = false;
+		};
+		popID();
+	}
+
+	return change;
 }
 
 _NAME_END

@@ -1727,7 +1727,7 @@ IMGUI::resetMouseDragDelta(int button) noexcept
 }
 
 void
-IMGUI::setMouseCursor(GuiMouseCursor type) noexcept
+IMGUI::setCursorIcon(GuiMouseCursor type) noexcept
 {
 	return ImGui::SetMouseCursor((ImGuiMouseCursor)type);
 }

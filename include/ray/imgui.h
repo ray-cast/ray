@@ -305,7 +305,12 @@ public:
 	static void setNextWindowCollapsed(bool collapsed, GuiSetCondFlags cond = 0) noexcept;
 	static void setNextWindowFocus() noexcept;
 
-	static void setMouseCursor(GuiMouseCursor type) noexcept;
+	static void setCursorPosX(float x) noexcept;
+	static void setCursorPosY(float y) noexcept;
+	static void setCursorPos(const float2& local_pos) noexcept;
+	static void setCursorScreenPos(const float2& pos) noexcept;
+	static void setCursorIcon(GuiMouseCursor type) noexcept;
+
 	static void setKeyboardFocusHere(int offset = 0) noexcept;
 
 	static bool isWindowHovered() noexcept;
@@ -339,19 +344,26 @@ public:
 	static float getWindowHeight() noexcept;
 	static float getWindowContentRegionWidth() noexcept;
 
-	static float2 getContentRegionMax() noexcept;
-	static float2 getContentRegionAvail() noexcept;
+	static float getCursorPosX() noexcept;
+	static float getCursorPosY() noexcept;
+
+	static float2 getCursorPos() noexcept;
+	static float2 getCursorStartPos() noexcept;
+	static float2 getCursorScreenPos() noexcept;
+
+	static float2 getMousePos() noexcept;
+	static float2 getMousePosOnOpeningCurrentPopup() noexcept;
+	static float2 getMouseDragDelta(int button = 0, float lock_threshold = -1.0f) noexcept;
 
 	static float2 getWindowPos() noexcept;
 	static float2 getWindowSize() noexcept;
 	static float2 getWindowContentRegionMin() noexcept;
 	static float2 getWindowContentRegionMax() noexcept;
 
-	static float2 getDisplaySize() noexcept;
+	static float2 getContentRegionMax() noexcept;
+	static float2 getContentRegionAvail() noexcept;
 
-	static float2 getMousePos() noexcept;
-	static float2 getMousePosOnOpeningCurrentPopup() noexcept;
-	static float2 getMouseDragDelta(int button = 0, float lock_threshold = -1.0f) noexcept;
+	static float2 getDisplaySize() noexcept;
 
 	static void resetMouseDragDelta(int button = 0) noexcept;
 
@@ -400,18 +412,6 @@ public:
 	static void unindent(float indent_w = 0.0f) noexcept;
 	static void beginGroup() noexcept;
 	static void endGroup() noexcept;
-
-	static float  getCursorPosX() noexcept;
-	static float  getCursorPosY() noexcept;
-
-	static float2 getCursorPos() noexcept;
-	static float2 getCursorStartPos() noexcept;
-	static float2 getCursorScreenPos() noexcept;
-
-	static void setCursorPosX(float x) noexcept;
-	static void setCursorPosY(float y) noexcept;
-	static void setCursorPos(const float2& local_pos) noexcept;
-	static void setCursorScreenPos(const float2& pos) noexcept;
 
 	static void alignFirstTextHeightToWidgets() noexcept;
 	static float getTextLineHeight() noexcept;

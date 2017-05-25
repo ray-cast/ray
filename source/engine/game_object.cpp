@@ -1025,7 +1025,7 @@ GameObject::save(archivebuf& write) except
 	write["layer"] << _layer;
 	write["position"] << this->_localTranslate;
 	write["scale"] << this->_localScaling;
-	write["rotate"] << this->_localRotation;
+	write["rotate"] << ray::EulerAngles(this->_localRotation);
 }
 
 GameObjectPtr

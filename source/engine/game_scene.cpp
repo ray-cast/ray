@@ -249,18 +249,25 @@ GameScene::load(const iarchive& reader) noexcept
 					continue;
 				}
 
-				auto actorComponent = rtti::make_shared<GameComponent>(className);
-				if (!actorComponent)
+				try
 				{
-					if (_gameListener)
-						_gameListener->onMessage("Failed to create component : " + className);
+					auto actorComponent = rtti::make_shared<GameComponent>(className);
+					if (!actorComponent)
+					{
+						if (_gameListener)
+							_gameListener->onMessage("Failed to create component : " + className);
 
-					continue;
+						continue;
+					}
+
+					actorComponent->load(component);
+
+					actor->addComponent(actorComponent);
 				}
-
-				actorComponent->load(component);
-
-				actor->addComponent(actorComponent);
+				catch (const std::exception& e)
+				{
+					throw failure("Failed to create component " + className + " with game object : " + actor->getName() + " : " + e.what());
+				}
 			}
 		}
 

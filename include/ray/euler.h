@@ -50,14 +50,30 @@ public:
 	EulerAnglest() noexcept {};
 	EulerAnglest(T xx, T yy, T zz) noexcept : x(xx), y(yy), z(zz) {}
 	EulerAnglest(const EulerAnglest<T>& e) noexcept : x(e.x), y(e.y), z(e.z) {}
-
-	explicit EulerAnglest(const Vector3t<T>& v) noexcept : x(v.x), y(v.y), z(v.z) {}
-	explicit EulerAnglest(const Quaterniont<T>& q) noexcept { this->makeRotate(q); }
+	EulerAnglest(const Vector3t<T>& v) noexcept : x(v.x), y(v.y), z(v.z) {}
+	EulerAnglest(const Quaterniont<T>& q) noexcept { this->makeRotate(q); }
 
 	EulerAnglest<T>& operator+=(const EulerAnglest<T>& e) noexcept { x += e.x; y += e.y; z += e.z; return *this; }
 	EulerAnglest<T>& operator-=(const EulerAnglest<T>& e) noexcept { x -= e.x; y -= e.y; z -= e.z; return *this; }
 	EulerAnglest<T>& operator*=(const EulerAnglest<T>& e) noexcept { x *= e.x; y *= e.y; z *= e.z; return *this; }
 	EulerAnglest<T>& operator/=(const EulerAnglest<T>& e) noexcept { x /= e.x; y /= e.y; z /= e.z; return *this; }
+
+	T operator[](std::uint8_t i) const noexcept
+	{
+		assert(i < 3);
+		return *(&x + i);
+	}
+
+	T& operator[](std::uint8_t i) noexcept
+	{
+		assert(i < 3);
+		return *(&x + i);
+	}
+
+	explicit operator Vector3t<T>() const noexcept
+	{
+		return Vector3t<T>(x, y, z);
+	}
 
 	EulerAnglest<T>& identity() noexcept
 	{
@@ -112,19 +128,19 @@ inline EulerAnglest<T> operator/(const EulerAnglest<T>& v1, const EulerAnglest<T
 template<typename ostream, typename T, std::enable_if_t<trait::has_left_shift<ostream, T>::value, int> = 0>
 inline ostream& operator << (ostream& os, const EulerAnglest<T>& v) noexcept
 {
-    os << v.x << ", " << v.y << ", " << v.z;
-    return os;
+	os << v.x << ", " << v.y << ", " << v.z;
+	return os;
 }
 
 template<typename istream, typename T, std::enable_if_t<trait::has_right_shift<istream>::value, int> = 0>
 inline istream& operator >> (istream& is, EulerAnglest<T>& v) noexcept
 {
-    is >> v.x;
-    is.ignore(2);
-    is >> v.y;
-    is.ignore(2);
-    is >> v.z;
-    return is;
+	is >> v.x;
+	is.ignore(2);
+	is >> v.y;
+	is.ignore(2);
+	is >> v.z;
+	return is;
 }
 
 _NAME_END

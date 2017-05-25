@@ -852,7 +852,7 @@ MaterialMaker::loadEffect(MaterialManager& manager, Material& material, ixmlarch
 {
 	std::string nodeName = reader.getCurrentNodeName();
 	if (nodeName != "effect")
-		throw failure(__TEXT("Unknown node name " + nodeName + ", so I can't open it"));
+		throw failure(__TEXT("Unknown node name : " + nodeName));
 
 	std::string language = reader.getValue<std::string>("language");
 	if (language == "hlsl")
@@ -860,10 +860,10 @@ MaterialMaker::loadEffect(MaterialManager& manager, Material& material, ixmlarch
 	else if (language == "bytecodes")
 		_isHlsl = false;
 	else
-		throw failure("Can't support language : " + language + ", so I can't open it");
+		throw failure("Unsupported language : " + language);
 
 	if (!reader.setToFirstChild())
-		throw failure("The file has been damaged and can't be recovered, so I can't open it");
+		throw failure("The file has been damaged and can't be recovered.");
 
 	_shaderCodes.clear();
 
@@ -896,7 +896,7 @@ MaterialMaker::loadMaterial(MaterialManager& manager, Material& material, ixmlar
 {
 	std::string nodeName = reader.getCurrentNodeName();
 	if (nodeName != "material")
-		throw failure(__TEXT("Unknown node name " + nodeName + ", so I can't open it"));
+		throw failure(__TEXT("Unknown node name : " + nodeName));
 
 	std::string name;
 	std::map<std::string, std::string> args;

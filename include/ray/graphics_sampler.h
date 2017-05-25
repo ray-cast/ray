@@ -45,15 +45,16 @@ class EXPORT GraphicsSamplerDesc final
 {
 public:
 	GraphicsSamplerDesc() noexcept;
+	GraphicsSamplerDesc(GraphicsSamplerWrap wrap, GraphicsSamplerFilter filter, GraphicsSamplerAnis anis = GraphicsSamplerAnis::GraphicsSamplerAnis0) noexcept;
 	~GraphicsSamplerDesc() noexcept;
 
 	void setSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
-	void setSamplerFilter(GraphicsSamplerFilter filter) noexcept;
 	void setSamplerAnis(GraphicsSamplerAnis anis) noexcept;
+	void setSamplerFilter(GraphicsSamplerFilter filter) noexcept;
 
 	GraphicsSamplerWrap getSamplerWrap() const noexcept;
-	GraphicsSamplerFilter getSamplerFilter() const noexcept;
 	GraphicsSamplerAnis getSamplerAnis() const noexcept;
+	GraphicsSamplerFilter getSamplerFilter() const noexcept;
 
 private:
 	GraphicsSamplerWrap _wrap;
@@ -61,7 +62,7 @@ private:
 	GraphicsSamplerFilter _filter;
 };
 
-class GraphicsSampler : public GraphicsChild
+class EXPORT GraphicsSampler : public GraphicsChild
 {
 	__DeclareSubInterface(GraphicsSampler, GraphicsChild)
 public:

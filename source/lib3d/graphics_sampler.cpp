@@ -42,8 +42,15 @@ __ImplementSubInterface(GraphicsSampler, GraphicsChild, "GraphicsSampler")
 
 GraphicsSamplerDesc::GraphicsSamplerDesc() noexcept
 	: _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat)
-	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis0)
 	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest)
+	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis0)
+{
+}
+
+GraphicsSamplerDesc::GraphicsSamplerDesc(GraphicsSamplerWrap wrap, GraphicsSamplerFilter filter, GraphicsSamplerAnis anis) noexcept
+	: _wrap(wrap)
+	, _filter(filter)
+	, _anis(anis)
 {
 }
 
@@ -58,15 +65,15 @@ GraphicsSamplerDesc::setSamplerWrap(GraphicsSamplerWrap wrap) noexcept
 }
 
 void
-GraphicsSamplerDesc::setSamplerFilter(GraphicsSamplerFilter filter) noexcept
-{
-	_filter = filter;
-}
-
-void
 GraphicsSamplerDesc::setSamplerAnis(GraphicsSamplerAnis anis) noexcept
 {
 	_anis = anis;
+}
+
+void
+GraphicsSamplerDesc::setSamplerFilter(GraphicsSamplerFilter filter) noexcept
+{
+	_filter = filter;
 }
 
 GraphicsSamplerWrap
@@ -75,16 +82,16 @@ GraphicsSamplerDesc::getSamplerWrap() const noexcept
 	return _wrap;
 }
 
-GraphicsSamplerFilter
-GraphicsSamplerDesc::getSamplerFilter() const noexcept
-{
-	return _filter;
-}
-
 GraphicsSamplerAnis
 GraphicsSamplerDesc::getSamplerAnis() const noexcept
 {
 	return _anis;
+}
+
+GraphicsSamplerFilter
+GraphicsSamplerDesc::getSamplerFilter() const noexcept
+{
+	return _filter;
 }
 
 GraphicsSampler::GraphicsSampler() noexcept

@@ -470,12 +470,12 @@ GameServer::start() noexcept
 		for (auto& it : _features)
 		{
 			if (_gameListener)
-				_gameListener->onMessage(util::string("GameServer : Starting : ") + it->type_name());
+				_gameListener->onMessage(util::string("GameServer : Start : ") + it->type_name());
 
 			it->setActive(true);
 
 			if (_gameListener)
-				_gameListener->onMessage(util::string("GameServer : Started : ") + it->type_name());
+				_gameListener->onMessage(util::string("GameServer : Starting : ") + it->type_name());
 		}
 
 		for (auto& it : _features)

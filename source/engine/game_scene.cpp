@@ -244,7 +244,7 @@ GameScene::load(const iarchive& reader) noexcept
 				if (className.empty())
 				{
 					if (_gameListener)
-						_gameListener->onMessage("Component name cannot be empty.");
+						_gameListener->onMessage("Component class entry cannot be empty.");
 
 					continue;
 				}
@@ -266,7 +266,10 @@ GameScene::load(const iarchive& reader) noexcept
 				}
 				catch (const std::exception& e)
 				{
-					throw failure("Failed to create component " + className + " with game object : " + actor->getName() + " : " + e.what());
+					if (_gameListener)
+						_gameListener->onMessage("Failed to create component " + className + " with game object  " + actor->getName() + " : \n" + e.what());
+
+					return false;
 				}
 			}
 		}

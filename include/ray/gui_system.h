@@ -37,8 +37,8 @@
 #ifndef _H_GUI_SYSTEM_H_
 #define _H_GUI_SYSTEM_H_
 
-#include <ray/gui_input_key.h>
-#include <ray/gui_input_button.h>
+#include <ray/input_key.h>
+#include <ray/input_button.h>
 #include <ray/gui_imageloader.h>
 
 _NAME_BEGIN
@@ -54,14 +54,12 @@ public:
 	virtual GuiImageLoaderPtr getImageLoader() const noexcept;
 
 	virtual bool injectMouseMove(float _absx, float _absy) noexcept = 0;
-	virtual bool injectMousePress(float _absx, float _absy, GuiInputButton::Code _id) noexcept = 0;
-	virtual bool injectMouseRelease(float _absx, float _absy, GuiInputButton::Code _id) noexcept = 0;
-	virtual bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept = 0;
-	virtual bool injectKeyRelease(GuiInputKey::Code _key) noexcept = 0;
-
-	virtual bool isFocusMouse() const noexcept = 0;
-	virtual bool isFocusKey() const noexcept = 0;
-	virtual bool isCaptureMouse() const noexcept = 0;
+	virtual bool injectMousePress(float _absx, float _absy, InputButton::Code _id) noexcept = 0;
+	virtual bool injectMouseRelease(float _absx, float _absy, InputButton::Code _id) noexcept = 0;
+	virtual bool injectMouseWheel(float wheel) noexcept = 0;
+	virtual bool injectKeyPress(InputKey::Code _key, GuiInputChar _char) noexcept = 0;
+	virtual bool injectKeyRelease(InputKey::Code _key) noexcept = 0;
+	virtual bool injectWindowFocus(bool focus) noexcept = 0;
 
 	virtual void setViewport(std::uint32_t w, std::uint32_t h) noexcept = 0;
 	virtual void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept = 0;

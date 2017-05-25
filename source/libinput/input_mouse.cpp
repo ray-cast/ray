@@ -113,13 +113,19 @@ DefaultInputMouse::isShowMouse() noexcept
 float
 DefaultInputMouse::getAxisX() const noexcept
 {
-	return _axisX;
+	float mouseX = 0.0f, mouseY = 0.0f;
+	this->getPosition(mouseX, mouseY);
+
+	return (float)(mouseX - _centerX) / _centerX;
 }
 
 float
 DefaultInputMouse::getAxisY() const noexcept
 {
-	return _axisY;
+	float mouseX = 0.0f, mouseY = 0.0f;
+	this->getPosition(mouseX, mouseY);
+
+	return (float)(mouseY - _centerY) / _centerY;
 }
 
 void
@@ -155,7 +161,7 @@ DefaultInputMouse::getButton(InputButton::Code key) const noexcept
 	return _buttonState[key].pressed;
 }
 
-InputMousePtr 
+InputMousePtr
 DefaultInputMouse::clone() const noexcept
 {
 	return std::make_shared<DefaultInputMouse>();
@@ -163,12 +169,12 @@ DefaultInputMouse::clone() const noexcept
 
 void
 DefaultInputMouse::onShowMouse() noexcept
-{	
+{
 }
 
 void
 DefaultInputMouse::onHideMouse() noexcept
-{	
+{
 }
 
 void
@@ -183,13 +189,7 @@ DefaultInputMouse::onFrameEnd() noexcept
 		this->setPosition(_centerX, _centerY);
 
 	for (auto& button : _buttonState)
-	{
-		if (button.up)
-			button.pressed = false;
-
-		button.up = false;
-		button.down = false;
-	}
+		button.doubleClick = false;
 }
 
 void
@@ -199,6 +199,15 @@ DefaultInputMouse::onObtainCapture() noexcept
 	{
 		this->hideMouse();
 		_isMouseLocked = true;
+	}
+
+	for (auto& button : _buttonState)
+	{
+		if (button.up)
+			button.pressed = false;
+
+		button.up = false;
+		button.down = false;
 	}
 }
 
@@ -212,9 +221,22 @@ DefaultInputMouse::onReleaseCapture() noexcept
 	}
 }
 
-void 
+void
+DefaultInputMouse::onReset() noexcept
+{
+	for (auto& button : _buttonState)
+	{
+		if (button.up)
+			button.pressed = false;
+
+		button.up = false;
+		button.down = false;
+	}
+}
+
+void
 DefaultInputMouse::onChangePosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept
-{	
+{
 }
 
 void
@@ -226,8 +248,6 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	{
 		_mouseX = event.motion.x;
 		_mouseY = event.motion.y;
-		_axisX = (float)(_mouseX - _centerX) / _centerX;
-		_axisY = (float)(_mouseY - _centerY) / _centerY;
 	}
 	break;
 	case InputEvent::MouseWheelDown:
@@ -253,7 +273,7 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	case InputEvent::MouseButtonDoubleClick:
 	{
 		auto& key = this->_buttonState[event.button.button];
-		key.click = true;
+		key.doubleClick = true;
 	}
 	break;
 	case InputEvent::GetFocus:

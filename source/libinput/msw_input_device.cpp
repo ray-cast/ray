@@ -50,13 +50,13 @@ InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_INSERT:   return InputKey::Code::Insert;
 		case VK_END:      return InputKey::Code::End;
-		case VK_DOWN:     return InputKey::Code::Down;
+		case VK_DOWN:     return InputKey::Code::ArrowDown;
+		case VK_LEFT:     return InputKey::Code::ArrowLeft;
+		case VK_RIGHT:    return InputKey::Code::ArrowRight;
+		case VK_UP:       return InputKey::Code::ArrowUp;
 		case VK_NEXT:     return InputKey::Code::PageDown;
-		case VK_LEFT:     return InputKey::Code::Left;
 		case VK_CLEAR:    return InputKey::Code::None;
-		case VK_RIGHT:    return InputKey::Code::Right;
 		case VK_HOME:     return InputKey::Code::Home;
-		case VK_UP:       return InputKey::Code::Up;
 		case VK_PRIOR:    return InputKey::Code::PageUp;
 		case VK_DIVIDE:   return InputKey::Code::KP_Divide;
 		case VK_MULTIPLY: return InputKey::Code::KP_Multiply;
@@ -132,10 +132,10 @@ InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	case VK_NEXT:          return InputKey::Code::PageDown;
 	case VK_INSERT:        return InputKey::Code::Insert;
 	case VK_DELETE:        return InputKey::Code::Delete;
-	case VK_LEFT:          return InputKey::Code::Left;
-	case VK_UP:            return InputKey::Code::Up;
-	case VK_RIGHT:         return InputKey::Code::Right;
-	case VK_DOWN:          return InputKey::Code::Down;
+	case VK_LEFT:          return InputKey::Code::ArrowLeft;
+	case VK_UP:            return InputKey::Code::ArrowUp;
+	case VK_RIGHT:         return InputKey::Code::ArrowRight;
+	case VK_DOWN:          return InputKey::Code::ArrowDown;
 	case VK_F1:            return InputKey::Code::F1;
 	case VK_F2:            return InputKey::Code::F2;
 	case VK_F3:            return InputKey::Code::F3;

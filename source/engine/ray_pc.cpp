@@ -125,10 +125,10 @@ ray::InputKey::Code KeyCodetoInputKey(int key) noexcept
 	case GLFW_KEY_BACKSPACE: return ray::InputKey::Code::Backspace;
 	case GLFW_KEY_INSERT: return ray::InputKey::Code::Insert;
 	case GLFW_KEY_DELETE: return ray::InputKey::Code::Delete;
-	case GLFW_KEY_RIGHT: return ray::InputKey::Code::Right;
-	case GLFW_KEY_LEFT: return ray::InputKey::Code::Left;
-	case GLFW_KEY_DOWN: return ray::InputKey::Code::Down;
-	case GLFW_KEY_UP: return ray::InputKey::Code::Up;
+	case GLFW_KEY_RIGHT: return ray::InputKey::Code::ArrowRight;
+	case GLFW_KEY_LEFT: return ray::InputKey::Code::ArrowLeft;
+	case GLFW_KEY_DOWN: return ray::InputKey::Code::ArrowDown;
+	case GLFW_KEY_UP: return ray::InputKey::Code::ArrowUp;
 	case GLFW_KEY_PAGE_UP: return ray::InputKey::Code::PageUp;
 	case GLFW_KEY_PAGE_DOWN: return ray::InputKey::Code::PageDown;
 	case GLFW_KEY_HOME: return ray::InputKey::Code::Home;
@@ -370,6 +370,19 @@ void onWindowMouseMotion(GLFWwindow* window, double x, double y)
 	}
 }
 
+void onWindowSchool(GLFWwindow* window, double x, double y)
+{
+	if (_gameApp)
+	{
+		ray::InputEvent event;
+		event.event = y > 0 ? ray::InputEvent::MouseWheelUp : ray::InputEvent::MouseWheelDown;
+		event.wheel.timestamp = glfwGetTimerFrequency();
+		event.wheel.windowID = (std::uint64_t)::glfwGetWinHandle(window);
+
+		_gameApp->sendInputEvent(event);
+	}
+}
+
 void RAY_CALL rayInit(const char* gamedir, const char* scenename) noexcept
 {
 	if (gamedir)
@@ -413,6 +426,7 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 			::glfwSetCursorPosCallback(_window, &onWindowMouseMotion);
 			::glfwSetKeyCallback(_window, &onWindowKey);
 			::glfwSetCharModsCallback(_window, &onWindowKeyChar);
+			::glfwSetScrollCallback(_window, &onWindowSchool);
 
 			auto screen = ::glfwGetVideoMode(::glfwGetPrimaryMonitor());
 			::glfwSetWindowPos(_window, (screen->width - w) >> 1, (screen->height - h) >> 1);

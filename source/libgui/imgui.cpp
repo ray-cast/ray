@@ -1857,9 +1857,9 @@ IMGUI::colorPicker3(const char* label, float col[3], const float2& size, float h
 
 	color = ImColor::HSV(hue > 0 ? hue : 1e-6, saturation > 0 ? saturation : 1e-6, value > 0 ? value : 1e-6);
 
-	col[0] = color.Value.x;
-	col[1] = color.Value.y;
-	col[2] = color.Value.z;
+	col[0] = ImClamp(color.Value.x, 0.0f, 1.0f);
+	col[1] = ImClamp(color.Value.y, 0.0f, 1.0f);
+	col[2] = ImClamp(color.Value.z, 0.0f, 1.0f);
 
 	return value_changed | ImGui::ColorEdit3(label, col);
 }

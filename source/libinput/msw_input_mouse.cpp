@@ -46,8 +46,25 @@ MSWInputMouse::MSWInputMouse() noexcept
 {
 }
 
+MSWInputMouse::MSWInputMouse(CaptureObject window) noexcept
+	: _focusWindow(false)
+	, _window(window)
+{
+}
+
 MSWInputMouse::~MSWInputMouse() noexcept
 {
+}
+
+void
+MSWInputMouse::getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept
+{
+	POINT pt;
+	::GetCursorPos(&pt);
+	::ScreenToClient(_window ? (HWND)_window : GetActiveWindow(), &pt);
+
+	x = pt.x;
+	y = pt.y;
 }
 
 void
@@ -62,7 +79,7 @@ MSWInputMouse::onHideMouse() noexcept
 	::ShowCursor(FALSE);
 }
 
-void 
+void
 MSWInputMouse::onChangePosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept
 {
 	if (_focusWindow)
@@ -83,13 +100,13 @@ MSWInputMouse::onInputEvent(const InputEvent& event) noexcept
 	{
 	case InputEvent::GetFocus:
 	{
-		_window = event.window.windowID;
+		_window = (CaptureObject)event.window.windowID;
 		_focusWindow = true;
 	}
 	break;
 	case InputEvent::LostFocus:
 	{
-		_window = event.window.windowID;
+		_window = (CaptureObject)event.window.windowID;
 		_focusWindow = false;
 	}
 	break;

@@ -54,9 +54,12 @@ IMGUISystem::~IMGUISystem() noexcept
 }
 
 bool
-IMGUISystem::open() except
+IMGUISystem::open(void* _window) except
 {
+	assert(_window);
+
 	ImGuiIO& io = ImGui::GetIO();
+	io.ImeWindowHandle = _window;
 
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.FrameRounding = 8.0f;
@@ -116,25 +119,25 @@ IMGUISystem::open() except
 
 	std::memcpy(&IMGUI::_defalutStyle, &style, sizeof(style));
 
-	io.KeyMap[ImGuiKey_Tab] = GuiInputKey::Tab;
-	io.KeyMap[ImGuiKey_LeftArrow] = GuiInputKey::ArrowLeft;
-	io.KeyMap[ImGuiKey_RightArrow] = GuiInputKey::ArrowRight;
-	io.KeyMap[ImGuiKey_UpArrow] = GuiInputKey::ArrowUp;
-	io.KeyMap[ImGuiKey_DownArrow] = GuiInputKey::ArrowDown;
-	io.KeyMap[ImGuiKey_PageUp] = GuiInputKey::PageUp;
-	io.KeyMap[ImGuiKey_PageDown] = GuiInputKey::PageDown;
-	io.KeyMap[ImGuiKey_Home] = GuiInputKey::Home;
-	io.KeyMap[ImGuiKey_End] = GuiInputKey::End;
-	io.KeyMap[ImGuiKey_Delete] = GuiInputKey::Delete;
-	io.KeyMap[ImGuiKey_Backspace] = GuiInputKey::Backspace;
-	io.KeyMap[ImGuiKey_Enter] = GuiInputKey::Return;
-	io.KeyMap[ImGuiKey_Escape] = GuiInputKey::Escape;
-	io.KeyMap[ImGuiKey_A] = GuiInputKey::A;
-	io.KeyMap[ImGuiKey_C] = GuiInputKey::C;
-	io.KeyMap[ImGuiKey_V] = GuiInputKey::V;
-	io.KeyMap[ImGuiKey_X] = GuiInputKey::X;
-	io.KeyMap[ImGuiKey_Y] = GuiInputKey::Y;
-	io.KeyMap[ImGuiKey_Z] = GuiInputKey::Z;
+	io.KeyMap[ImGuiKey_Tab] = InputKey::Tab;
+	io.KeyMap[ImGuiKey_LeftArrow] = InputKey::ArrowLeft;
+	io.KeyMap[ImGuiKey_RightArrow] = InputKey::ArrowRight;
+	io.KeyMap[ImGuiKey_UpArrow] = InputKey::ArrowUp;
+	io.KeyMap[ImGuiKey_DownArrow] = InputKey::ArrowDown;
+	io.KeyMap[ImGuiKey_PageUp] = InputKey::PageUp;
+	io.KeyMap[ImGuiKey_PageDown] = InputKey::PageDown;
+	io.KeyMap[ImGuiKey_Home] = InputKey::Home;
+	io.KeyMap[ImGuiKey_End] = InputKey::End;
+	io.KeyMap[ImGuiKey_Delete] = InputKey::Delete;
+	io.KeyMap[ImGuiKey_Backspace] = InputKey::Backspace;
+	io.KeyMap[ImGuiKey_Enter] = InputKey::Enter;
+	io.KeyMap[ImGuiKey_Escape] = InputKey::Escape;
+	io.KeyMap[ImGuiKey_A] = InputKey::A;
+	io.KeyMap[ImGuiKey_C] = InputKey::C;
+	io.KeyMap[ImGuiKey_V] = InputKey::V;
+	io.KeyMap[ImGuiKey_X] = InputKey::X;
+	io.KeyMap[ImGuiKey_Y] = InputKey::Y;
+	io.KeyMap[ImGuiKey_Z] = InputKey::Z;
 
 	static const ImWchar ranges[] =
 	{
@@ -198,7 +201,7 @@ IMGUISystem::injectMouseMove(float absx, float absy) noexcept
 }
 
 bool
-IMGUISystem::injectMousePress(float absx, float absy, GuiInputButton::Code code) noexcept
+IMGUISystem::injectMousePress(float absx, float absy, InputButton::Code code) noexcept
 {
 	auto& io = ImGui::GetIO();
 	io.MouseDown[code] = true;
@@ -208,7 +211,7 @@ IMGUISystem::injectMousePress(float absx, float absy, GuiInputButton::Code code)
 }
 
 bool
-IMGUISystem::injectMouseRelease(float absx, float absy, GuiInputButton::Code code) noexcept
+IMGUISystem::injectMouseRelease(float absx, float absy, InputButton::Code code) noexcept
 {
 	auto& io = ImGui::GetIO();
 	io.MouseDown[code] = false;
@@ -218,45 +221,67 @@ IMGUISystem::injectMouseRelease(float absx, float absy, GuiInputButton::Code cod
 }
 
 bool
-IMGUISystem::injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept
+IMGUISystem::injectMouseWheel(float wheel) noexcept
 {
 	auto& io = ImGui::GetIO();
-	if (_key == GuiInputKey::Code::LeftControl)
-		io.KeyCtrl = true;
-	else if (_key == GuiInputKey::Code::LeftAlt)
-		io.KeyAlt = true;
-	io.KeysDown[_key] = true;
+	io.MouseWheel = wheel;
 	return true;
 }
 
 bool
-IMGUISystem::injectKeyRelease(GuiInputKey::Code _key) noexcept
+IMGUISystem::injectKeyPress(InputKey::Code _key, GuiInputChar _char) noexcept
 {
 	auto& io = ImGui::GetIO();
-	if (_key == GuiInputKey::Code::LeftControl)
+	if (_key != InputKey::Code::None)
+	{
+		if (_key == InputKey::Code::LeftControl)
+			io.KeyCtrl = true;
+		else if (_key == InputKey::Code::LeftShift)
+			io.KeyShift = true;
+		else if (_key == InputKey::Code::LeftAlt)
+			io.KeyAlt = true;
+		else if (_key == InputKey::Code::LeftSuper)
+			io.KeySuper = true;
+
+		io.KeysDown[_key] = true;
+	}
+	else
+	{
+		io.AddInputCharacter(_char);
+	}
+
+	return true;
+}
+
+bool
+IMGUISystem::injectKeyRelease(InputKey::Code _key) noexcept
+{
+	auto& io = ImGui::GetIO();
+	if (_key == InputKey::Code::LeftControl)
 		io.KeyCtrl = false;
-	else if (_key == GuiInputKey::Code::LeftAlt)
+	else if (_key == InputKey::Code::LeftShift)
+		io.KeyShift = false;
+	else if (_key == InputKey::Code::LeftAlt)
 		io.KeyAlt = false;
+	else if (_key == InputKey::Code::LeftSuper)
+		io.KeySuper = false;
+
 	io.KeysDown[_key] = false;
 	return true;
 }
 
 bool
-IMGUISystem::isFocusMouse() const noexcept
+IMGUISystem::injectWindowFocus(bool focus) noexcept
 {
-	return false;
-}
+	if (focus)
+	{
+		auto& io = ImGui::GetIO();
 
-bool
-IMGUISystem::isFocusKey() const noexcept
-{
-	return false;
-}
+		std::memset(io.KeysDown, 0, sizeof(io.KeysDown));
+		std::memset(io.MouseDown, 0, sizeof(io.MouseDown));
+	}
 
-bool
-IMGUISystem::isCaptureMouse() const noexcept
-{
-	return false;
+	return true;
 }
 
 void
@@ -375,9 +400,9 @@ IMGUISystem::render(float delta) except
 			_materialDecal->uniformTexture(texture->downcast_pointer<ray::GraphicsTexture>());
 
 			auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-#if !defined(_BUILD_VULKAN)
-			scissor.y = io.DisplaySize.y - scissor.w - scissor.y;
-#endif
+
+			if (RenderSystem::instance()->getRenderSetting().deviceType != GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+				scissor.y = io.DisplaySize.y - scissor.w - scissor.y;
 
 			renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
 			renderer->drawIndexed(pcmd->ElemCount, 1, idx_buffer_offset, vdx_buffer_offset, 0);

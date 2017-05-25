@@ -46,9 +46,12 @@ class EXPORT MSWInputMouse final : public DefaultInputMouse
 	__DeclareSubClass(MSWInputMouse, DefaultInputMouse)
 public:
 	MSWInputMouse() noexcept;
+	MSWInputMouse(CaptureObject window) noexcept;
 	~MSWInputMouse() noexcept;
 
 	InputMousePtr clone() const noexcept;
+
+	void getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept;
 
 private:
 	void onShowMouse() noexcept;
@@ -64,7 +67,7 @@ private:
 
 private:
 	bool _focusWindow;
-	std::uint64_t _window;
+	CaptureObject _window;
 };
 
 _NAME_END

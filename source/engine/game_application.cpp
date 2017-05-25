@@ -170,7 +170,7 @@ GameApplication::open(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::ui
 	_renderFeature = std::make_shared<RenderFeature>(hwnd, w, h, dpi_w, dpi_h);
 #endif
 #if defined(_BUILD_GUI)
-	_guiFeature = std::make_shared<GuiFeature>(w, h, dpi_w, dpi_h);
+	_guiFeature = std::make_shared<GuiFeature>(hwnd, w, h, dpi_w, dpi_h);
 #endif
 
 #if defined(_BUILD_INPUT)

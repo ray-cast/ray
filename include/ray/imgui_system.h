@@ -50,33 +50,24 @@ public:
 	IMGUISystem() noexcept;
 	~IMGUISystem() noexcept;
 
-	bool open() except;
+	bool open(void* _window) except;
 	void close() noexcept;
 
 	void setStyle(GuiStyle* style);
 
 	bool injectMouseMove(float _absx, float _absy) noexcept;
-	bool injectMousePress(float _absx, float _absy, GuiInputButton::Code _id) noexcept;
-	bool injectMouseRelease(float _absx, float _absy, GuiInputButton::Code _id) noexcept;
-	bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept;
-	bool injectKeyRelease(GuiInputKey::Code _key) noexcept;
-
-	bool isFocusMouse() const noexcept;
-	bool isFocusKey() const noexcept;
-	bool isCaptureMouse() const noexcept;
+	bool injectMousePress(float _absx, float _absy, InputButton::Code _id) noexcept;
+	bool injectMouseRelease(float _absx, float _absy, InputButton::Code _id) noexcept;
+	bool injectMouseWheel(float wheel) noexcept;
+	bool injectKeyPress(InputKey::Code _key, GuiInputChar _char) noexcept;
+	bool injectKeyRelease(InputKey::Code _key) noexcept;
+	bool injectWindowFocus(bool focus) noexcept;
 
 	void setViewport(std::uint32_t w, std::uint32_t h) noexcept;
 	void getViewport(std::uint32_t& w, std::uint32_t& h) noexcept;
 
 	void setFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept;
 	void getFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexcept;
-
-	GuiWidgetPtr createWidget(const rtti::Rtti* rtti);
-	template<typename T>
-	typename std::enable_if<std::is_base_of<GuiWidget, T>::value, std::shared_ptr<T>>::type createWidget()
-	{
-		return std::dynamic_pointer_cast<T>(this->createWidget(T::getRtti()));
-	}
 
 	void render(float delta) except;
 
@@ -85,6 +76,8 @@ private:
 	IMGUISystem& operator=(const IMGUISystem&) noexcept = delete;
 
 private:
+	void* _window;
+
 	MaterialPtr _material;
 	MaterialTechPtr _materialTech;
 	MaterialParamPtr _materialDecal;

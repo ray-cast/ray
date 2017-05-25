@@ -89,10 +89,6 @@ struct MouseWheelEvent
 {
 	std::uint64_t timestamp;
 	std::uint64_t windowID;
-	std::uint64_t userdata;
-	std::uint8_t _state;
-	int x;
-	int y;
 };
 
 struct SizeChangeEvent

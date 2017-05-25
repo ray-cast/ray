@@ -76,6 +76,8 @@ protected:
 	virtual void onObtainCapture() noexcept;
 	virtual void onReleaseCapture() noexcept;
 
+	virtual void onReset() noexcept;
+
 	virtual void onInputEvent(const InputEvent& event) noexcept;
 
 	virtual void onShowMouse() noexcept;
@@ -93,9 +95,6 @@ protected:
 	bool _isMouseLocked;
 	bool _isMouseHide;
 
-	float _axisX;
-	float _axisY;
-
 	InputButton::mouse_t _mouseX;
 	InputButton::mouse_t _mouseY;
 
@@ -107,7 +106,7 @@ protected:
 		bool down;
 		bool up;
 		bool pressed;
-		bool click;
+		bool doubleClick;
 	};
 
 	ButtonState _buttonState[InputButton::NumButtonCodes];

@@ -295,7 +295,6 @@ public:
 	static float getWindowHeight() noexcept;
 	static float getWindowContentRegionWidth() noexcept;
 
-	static bool isWindowCollapsed() noexcept;
 	static void setWindowFontScale(float scale) noexcept;
 
 	static void setWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
@@ -537,6 +536,7 @@ public:
 
 	static bool isWindowHovered() noexcept;
 	static bool isWindowFocused() noexcept;
+	static bool isWindowCollapsed() noexcept;
 
 	static bool isRootWindowFocused() noexcept;
 	static bool isRootWindowOrAnyChildFocused() noexcept;

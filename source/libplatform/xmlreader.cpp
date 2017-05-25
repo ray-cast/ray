@@ -543,7 +543,7 @@ XmlBuf::getCurrentNodePath() const noexcept
 	std::size_t size = components.size();
 	if (size > 0)
 	{
-		for (std::size_t i = size - 1; i >= 0; i--)
+		for (std::size_t i = size - 1; i > 0; i--)
 		{
 			path.append(components[i]);
 			if (i > 0)

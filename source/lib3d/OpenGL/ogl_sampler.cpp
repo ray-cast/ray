@@ -127,6 +127,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 	if (GLEW_EXT_texture_filter_anisotropic)
 	{
 		GraphicsSamplerAnis anis = samplerDesc.getSamplerAnis();
+
 		if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
 			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
 		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
@@ -137,7 +138,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
 			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
-		else
+		else if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
 		{
 			GL_PLATFORM_LOG("Invalid SamplerAnis");
 			return false;

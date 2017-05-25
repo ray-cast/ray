@@ -57,7 +57,8 @@ const char* en_lang[] = {
 	"Error?",
 	"Ok",
 	"Cancel",
-	"Don't ask me next time?"
+	"Don't ask me next time?",
+	"Revert"
 };
 
 const char* cn_lang[] = {
@@ -81,7 +82,8 @@ const char* cn_lang[] = {
 	"错误?",
 	"确认",
 	"取消",
-	"下一次不再显示?"
+	"下一次不再显示?",
+	"重置"
 };
 
 std::vector<std::string> cn_lang_utf8;

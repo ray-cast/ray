@@ -260,7 +260,7 @@ GuiViewComponent::showProjectSaveBrowse() noexcept
 		if (!_onProjectSave(_pathProject.c_str(), error))
 		{
 			if (!error.empty())
-				this->showErrorPopupMessage(error, std::hash<const char*>{}("showProjectSaveAsBrowse"));
+				this->showErrorPopupMessage(error, std::hash<const char*>{}("showProjectSaveBrowse"));
 		}
 	}
 }
@@ -435,7 +435,7 @@ GuiViewComponent::showLightMass() noexcept
 			{
 				ray::Gui::sameLine();
 				ray::Gui::pushID(std::hash<const char*>{}("##UV size"));
-				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
+				if (ray::Gui::button(_langs[UILang::Revert])) _setting.lightmass.imageSize = _default.lightmass.imageSize;
 				ray::Gui::popID();
 			}
 
@@ -445,18 +445,18 @@ GuiViewComponent::showLightMass() noexcept
 			{
 				ray::Gui::sameLine();
 				ray::Gui::pushID(std::hash<const char*>{}("##Output UV slot"));
-				if (ray::Gui::button("Revert")) _setting.uvmapper.slot = _default.uvmapper.slot;
+				if (ray::Gui::button(_langs[UILang::Revert])) _setting.uvmapper.slot = _default.uvmapper.slot;
 				ray::Gui::popID();
 			}
 
 			ray::Gui::text("margin:");
-			ray::Gui::sliderFloatWithRevert("##margin", "Revert", &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
+			ray::Gui::sliderFloatWithRevert("##margin", _langs[UILang::Revert], &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
 
 			ray::Gui::text("stretch:");
-			ray::Gui::sliderFloatWithRevert("##stretch", "Revert", &_setting.uvmapper.stretch, _default.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
+			ray::Gui::sliderFloatWithRevert("##stretch", _langs[UILang::Revert], &_setting.uvmapper.stretch, _default.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
 
 			ray::Gui::text("chart:");
-			ray::Gui::sliderIntWithRevert("##chart", "Revert", &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
+			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert], &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
 
 			if (_showBakingButton)
 				ray::Gui::button("Start UV mapper");
@@ -475,7 +475,7 @@ GuiViewComponent::showLightMass() noexcept
 			{
 				ray::Gui::sameLine();
 				ray::Gui::pushID(std::hash<const char*>{}("##Output size"));
-				if (ray::Gui::button("Revert")) _setting.lightmass.imageSize = _default.lightmass.imageSize;
+				if (ray::Gui::button(_langs[UILang::Revert])) _setting.lightmass.imageSize = _default.lightmass.imageSize;
 				ray::Gui::popID();
 			}
 
@@ -485,7 +485,7 @@ GuiViewComponent::showLightMass() noexcept
 			{
 				ray::Gui::sameLine();
 				ray::Gui::pushID(std::hash<const char*>{}("##Input UV slot"));
-				if (ray::Gui::button("Revert")) _setting.lightmass.slot = _default.lightmass.slot;
+				if (ray::Gui::button(_langs[UILang::Revert])) _setting.lightmass.slot = _default.lightmass.slot;
 				ray::Gui::popID();
 			}
 
@@ -495,27 +495,27 @@ GuiViewComponent::showLightMass() noexcept
 			{
 				ray::Gui::sameLine();
 				ray::Gui::pushID(std::hash<const char*>{}("##Sample Count"));
-				if (ray::Gui::button("Revert")) _setting.lightmass.sampleCount = _default.lightmass.sampleCount;
+				if (ray::Gui::button(_langs[UILang::Revert])) _setting.lightmass.sampleCount = _default.lightmass.sampleCount;
 				ray::Gui::popID();
 			}
 
 			ray::Gui::text("Environment Color:");
-			ray::Gui::colorPicker3WithRevert("##Environment Color", "Revert", _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
+			ray::Gui::colorPicker3WithRevert("##Environment Color", _langs[UILang::Revert], _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
 
 			ray::Gui::text("Environment Intensity:");
-			ray::Gui::sliderFloatWithRevert("##Environment Intensity", "Revert", &_setting.lightmass.environmentColor.w, _default.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
+			ray::Gui::sliderFloatWithRevert("##Environment Intensity", _langs[UILang::Revert], &_setting.lightmass.environmentColor.w, _default.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
 
 			ray::Gui::text("Ray tracing znear:");
-			ray::Gui::sliderFloatWithRevert("##Ray tracing znear", "Revert", &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
+			ray::Gui::sliderFloatWithRevert("##Ray tracing znear", _langs[UILang::Revert], &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
 
 			ray::Gui::text("Ray tracing zfar:");
-			ray::Gui::sliderFloatWithRevert("##Ray tracing zfar", "Revert", &_setting.lightmass.hemisphereFar, _default.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
+			ray::Gui::sliderFloatWithRevert("##Ray tracing zfar", _langs[UILang::Revert], &_setting.lightmass.hemisphereFar, _default.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
 
 			ray::Gui::text("Interpolation Passes");
-			ray::Gui::sliderIntWithRevert("##Interpolation Passes", "Revert", &_setting.lightmass.interpolationPasses, _default.lightmass.interpolationPasses, 1, 5);
+			ray::Gui::sliderIntWithRevert("##Interpolation Passes", _langs[UILang::Revert], &_setting.lightmass.interpolationPasses, _default.lightmass.interpolationPasses, 1, 5);
 
 			ray::Gui::text("Interpolation Threshold");
-			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", "Revert", &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.5f", 2.2);
+			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.5f", 2.2);
 
 			if (_showBakingButton)
 				ray::Gui::button("Start Baking");

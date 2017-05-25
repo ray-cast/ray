@@ -64,7 +64,8 @@ public:
 		Error,
 		OK,
 		Cancel,
-		NoShowAgain
+		NoShowAgain,
+		Revert
 	};
 
 	enum class Lang

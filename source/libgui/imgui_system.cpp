@@ -136,7 +136,7 @@ IMGUISystem::open() except
 	std::uint8_t* pixels;
 	int width, height;
 	io.Fonts->ClearFonts();
-	io.Fonts->AddFontFromFileTTF("../../engine/fonts/msyh.TTF", 15.0f, 0, io.Fonts->GetGlyphRangesChinese());
+	io.Fonts->AddFontFromFileTTF("../../engine/fonts/NotoSansHans-DemiLight.otf", 12.0f, 0, io.Fonts->GetGlyphRangesChinese());
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 	ray::GraphicsTextureDesc fontDesc;

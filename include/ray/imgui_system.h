@@ -53,8 +53,6 @@ public:
 	bool open(void* _window) except;
 	void close() noexcept;
 
-	void setStyle(GuiStyle* style);
-
 	bool injectMouseMove(float _absx, float _absy) noexcept;
 	bool injectMousePress(float _absx, float _absy, InputButton::Code _id) noexcept;
 	bool injectMouseRelease(float _absx, float _absy, InputButton::Code _id) noexcept;

@@ -2062,4 +2062,48 @@ IMGUI::getDisplaySize() noexcept
 	return float2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
 }
 
+void
+IMGUI::setStyle(const GuiStyle& newStyle) noexcept
+{
+	static_assert(sizeof(ImGuiStyle::Colors) == sizeof(GuiStyle::Colors));
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.Alpha = newStyle.Alpha;
+	style.WindowPadding.x = newStyle.WindowPadding.x;
+	style.WindowPadding.y = newStyle.WindowPadding.y;
+	style.WindowMinSize.x = newStyle.WindowMinSize.x;
+	style.WindowMinSize.y = newStyle.WindowMinSize.y;
+	style.WindowRounding = newStyle.WindowRounding;
+	style.WindowTitleAlign.x = newStyle.WindowTitleAlign.x;
+	style.WindowTitleAlign.y = newStyle.WindowTitleAlign.y;
+	style.ChildWindowRounding = newStyle.ChildWindowRounding;
+	style.FramePadding.x = newStyle.FramePadding.x;
+	style.FramePadding.y = newStyle.FramePadding.y;
+	style.FrameRounding = newStyle.FrameRounding;
+	style.ItemSpacing.x = newStyle.ItemSpacing.x;
+	style.ItemSpacing.y = newStyle.ItemSpacing.y;
+	style.ItemInnerSpacing.x = newStyle.ItemInnerSpacing.x;
+	style.ItemInnerSpacing.y = newStyle.ItemInnerSpacing.y;
+	style.TouchExtraPadding.x = newStyle.TouchExtraPadding.x;
+	style.TouchExtraPadding.y = newStyle.TouchExtraPadding.y;
+	style.IndentSpacing = newStyle.IndentSpacing;
+	style.ColumnsMinSpacing = newStyle.ColumnsMinSpacing;
+	style.ScrollbarSize = newStyle.ScrollbarSize;
+	style.ScrollbarRounding = newStyle.ScrollbarRounding;
+	style.GrabMinSize = newStyle.GrabMinSize;
+	style.GrabRounding = newStyle.GrabRounding;
+	style.ButtonTextAlign.x = newStyle.ButtonTextAlign.x;
+	style.ButtonTextAlign.y = newStyle.ButtonTextAlign.y;
+	style.DisplayWindowPadding.x = newStyle.DisplayWindowPadding.x;
+	style.DisplayWindowPadding.y = newStyle.DisplayWindowPadding.y;
+	style.DisplaySafeAreaPadding.x = newStyle.DisplaySafeAreaPadding.x;
+	style.DisplaySafeAreaPadding.y = newStyle.DisplaySafeAreaPadding.y;
+	style.AntiAliasedLines = newStyle.AntiAliasedLines;
+	style.AntiAliasedShapes = newStyle.AntiAliasedShapes;
+	style.CurveTessellationTol = newStyle.CurveTessellationTol;
+
+	std::memcpy(&style.Colors, newStyle.Colors, sizeof(style.Colors));
+}
+
 _NAME_END

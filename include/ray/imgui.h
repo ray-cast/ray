@@ -267,6 +267,7 @@ public:
 	static void newFrame() noexcept;
 	static void render() noexcept;
 	static void shutdown() noexcept;
+
 	static void showUserGuide() noexcept;
 	static void showStyleEditor(GuiStyle* style = nullptr) noexcept;
 	static void showTestWindow(bool* isOpened = nullptr) noexcept;
@@ -274,10 +275,69 @@ public:
 
 	static bool begin(const char* name, bool* isOpened = nullptr, GuiWindowFlags flags = 0) noexcept;
 	static bool begin(const char* name, bool* isOpened, const float2& size_on_first_use, float bg_alpha = -1.0f, GuiWindowFlags flags = 0) noexcept;
-	static void end() noexcept;
+
 	static bool beginChild(const char* str_id, const float2& size = float2::Zero, bool border = false, GuiWindowFlags extraFlags = 0) noexcept;
 	static bool beginChild(GuiID id, const float2& size = float2::Zero, bool border = false, GuiWindowFlags extraFlags = 0) noexcept;
+	static bool beginChildFrame(GuiID id, const float2& size, GuiWindowFlags extraFlags = 0) noexcept;
+
+	static void end() noexcept;
 	static void endChild() noexcept;
+	static void endChildFrame() noexcept;
+
+	static void setStyle(const GuiStyle& style) noexcept;
+
+	static void setWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
+	static void setWindowSize(const float2& size, GuiSetCondFlags cond = 0) noexcept;
+	static void setWindowCollapsed(bool collapsed, GuiSetCondFlags cond = 0) noexcept;
+	static void setWindowFocus() noexcept;
+	static void setWindowPos(const char* name, const float2& pos, GuiSetCondFlags cond = 0) noexcept;
+	static void setWindowSize(const char* name, const float2& size, GuiSetCondFlags cond = 0) noexcept;
+	static void setWindowCollapsed(const char* name, bool collapsed, GuiSetCondFlags cond = 0) noexcept;
+	static void setWindowFocus(const char* name) noexcept;
+	static void setWindowFontScale(float scale) noexcept;
+
+	static void setNextWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
+	static void setNextWindowPosCenter(GuiSetCondFlags cond = 0) noexcept;
+	static void setNextWindowSize(const float2& size, GuiSetCondFlags cond = 0) noexcept;
+	static void setNextWindowSizeConstraints(const float2& size_min, const float2& size_max) noexcept;
+	static void setNextWindowContentSize(const float2& size) noexcept;
+	static void setNextWindowContentWidth(float width) noexcept;
+	static void setNextWindowCollapsed(bool collapsed, GuiSetCondFlags cond = 0) noexcept;
+	static void setNextWindowFocus() noexcept;
+
+	static void setMouseCursor(GuiMouseCursor type) noexcept;
+	static void setKeyboardFocusHere(int offset = 0) noexcept;
+
+	static bool isWindowHovered() noexcept;
+	static bool isWindowFocused() noexcept;
+	static bool isWindowCollapsed() noexcept;
+
+	static bool isRootWindowFocused() noexcept;
+	static bool isRootWindowOrAnyChildFocused() noexcept;
+	static bool isRootWindowOrAnyChildHovered() noexcept;
+
+	static bool isRectVisible(const float2& size) noexcept;
+
+	static bool isPosHoveringAnyWindow(const float2& pos) noexcept;
+
+	static bool isKeyDown(int key_index) noexcept;
+	static bool isKeyPressed(int key_index, bool repeat = true) noexcept;
+	static bool isKeyReleased(int key_index) noexcept;
+
+	static bool isMouseDown(int button) noexcept;
+	static bool isMouseClicked(int button, bool repeat = false) noexcept;
+	static bool isMouseDoubleClicked(int button) noexcept;
+	static bool isMouseReleased(int button) noexcept;
+	static bool isMouseHoveringWindow() noexcept;
+	static bool isMouseHoveringAnyWindow() noexcept;
+	static bool isMouseHoveringRect(const float2& min, const float2& max, bool clip = true) noexcept;
+	static bool isMouseDragging(int button = 0, float lock_threshold = -1.0f) noexcept;
+
+	static float getContentRegionAvailWidth() noexcept;
+
+	static float getWindowWidth() noexcept;
+	static float getWindowHeight() noexcept;
+	static float getWindowContentRegionWidth() noexcept;
 
 	static float2 getContentRegionMax() noexcept;
 	static float2 getContentRegionAvail() noexcept;
@@ -289,41 +349,24 @@ public:
 
 	static float2 getDisplaySize() noexcept;
 
-	static float getContentRegionAvailWidth() noexcept;
+	static float2 getMousePos() noexcept;
+	static float2 getMousePosOnOpeningCurrentPopup() noexcept;
+	static float2 getMouseDragDelta(int button = 0, float lock_threshold = -1.0f) noexcept;
 
-	static float getWindowWidth() noexcept;
-	static float getWindowHeight() noexcept;
-	static float getWindowContentRegionWidth() noexcept;
+	static void resetMouseDragDelta(int button = 0) noexcept;
 
-	static void setWindowFontScale(float scale) noexcept;
-
-	static void setWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
-	static void setWindowSize(const float2& size, GuiSetCondFlags cond = 0) noexcept;
-	static void setWindowCollapsed(bool collapsed, GuiSetCondFlags cond = 0) noexcept;
-	static void setWindowFocus() noexcept;
-	static void setWindowPos(const char* name, const float2& pos, GuiSetCondFlags cond = 0) noexcept;
-	static void setWindowSize(const char* name, const float2& size, GuiSetCondFlags cond = 0) noexcept;
-	static void setWindowCollapsed(const char* name, bool collapsed, GuiSetCondFlags cond = 0) noexcept;
-	static void setWindowFocus(const char* name) noexcept;
-
-	static void setNextWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
-	static void setNextWindowPosCenter(GuiSetCondFlags cond = 0) noexcept;
-	static void setNextWindowSize(const float2& size, GuiSetCondFlags cond = 0) noexcept;
-	static void setNextWindowSizeConstraints(const float2& size_min, const float2& size_max) noexcept;
-	static void setNextWindowContentSize(const float2& size) noexcept;
-	static void setNextWindowContentWidth(float width) noexcept;
-	static void setNextWindowCollapsed(bool collapsed, GuiSetCondFlags cond = 0) noexcept;
-	static void setNextWindowFocus() noexcept;
+	static void captureKeyboardFromApp(bool capture = true) noexcept;
+	static void captureMouseFromApp(bool capture = true) noexcept;
 
 	static float getScrollX() noexcept;
 	static float getScrollY() noexcept;
 	static float getScrollMaxX() noexcept;
 	static float getScrollMaxY() noexcept;
+
 	static void  setScrollX(float scroll_x) noexcept;
 	static void  setScrollY(float scroll_y) noexcept;
 	static void  setScrollHere(float center_y_ratio = 0.5f) noexcept;
 	static void  setScrollFromPosY(float pos_y, float center_y_ratio = 0.5f) noexcept;
-	static void  setKeyboardFocusHere(int offset = 0) noexcept;
 
 	static void          pushStyleColor(GuiCol idx, const float4& col) noexcept;
 	static void          popStyleColor(int count = 1) noexcept;
@@ -345,28 +388,35 @@ public:
 	static void  pushButtonRepeat(bool repeat) noexcept;
 	static void  popButtonRepeat() noexcept;
 
-	static void   separator() noexcept;
-	static void   sameLine(float pos_x = 0.0f, float spacing_w = -1.0f) noexcept;
-	static void   newLine() noexcept;
-	static void   spacing() noexcept;
-	static void   dummy(const float2& size) noexcept;
-	static void   indent(float indent_w = 0.0f) noexcept;
-	static void   unindent(float indent_w = 0.0f) noexcept;
-	static void   beginGroup() noexcept;
-	static void   endGroup() noexcept;
-	static float2 getCursorPos() noexcept;
+	static void pushClipRect(const float2& clip_rect_min, const float2& clip_rect_max, bool intersect_with_current_clip_rect) noexcept;
+	static void popClipRect() noexcept;
+
+	static void separator() noexcept;
+	static void sameLine(float pos_x = 0.0f, float spacing_w = -1.0f) noexcept;
+	static void newLine() noexcept;
+	static void spacing() noexcept;
+	static void dummy(const float2& size) noexcept;
+	static void indent(float indent_w = 0.0f) noexcept;
+	static void unindent(float indent_w = 0.0f) noexcept;
+	static void beginGroup() noexcept;
+	static void endGroup() noexcept;
+
 	static float  getCursorPosX() noexcept;
 	static float  getCursorPosY() noexcept;
-	static void   setCursorPos(const float2& local_pos) noexcept;
-	static void   setCursorPosX(float x) noexcept;
-	static void   setCursorPosY(float y) noexcept;
+
+	static float2 getCursorPos() noexcept;
 	static float2 getCursorStartPos() noexcept;
 	static float2 getCursorScreenPos() noexcept;
-	static void   setCursorScreenPos(const float2& pos) noexcept;
-	static void   alignFirstTextHeightToWidgets() noexcept;
-	static float  getTextLineHeight() noexcept;
-	static float  getTextLineHeightWithSpacing() noexcept;
-	static float  getItemsLineHeightWithSpacing() noexcept;
+
+	static void setCursorPosX(float x) noexcept;
+	static void setCursorPosY(float y) noexcept;
+	static void setCursorPos(const float2& local_pos) noexcept;
+	static void setCursorScreenPos(const float2& pos) noexcept;
+
+	static void alignFirstTextHeightToWidgets() noexcept;
+	static float getTextLineHeight() noexcept;
+	static float getTextLineHeightWithSpacing() noexcept;
+	static float getItemsLineHeightWithSpacing() noexcept;
 
 	static void columns(int count = 1, const char* id = nullptr, bool border = true) noexcept;
 
@@ -374,6 +424,7 @@ public:
 	static void pushID(const void* ptr_id) noexcept;
 	static void pushID(int int_id) noexcept;
 	static void popID() noexcept;
+
 	static GuiID getID(const char* str_id) noexcept;
 	static GuiID getID(const char* str_id_begin, const char* str_id_end) noexcept;
 	static GuiID getID(const void* ptr_id) noexcept;
@@ -517,9 +568,6 @@ public:
 	static void endPopup() noexcept;
 	static void closeCurrentPopup() noexcept;
 
-	static void pushClipRect(const float2& clip_rect_min, const float2& clip_rect_max, bool intersect_with_current_clip_rect) noexcept;
-	static void popClipRect() noexcept;
-
 	static bool isAnyItemActive() noexcept;
 	static float2 getItemRectMin() noexcept;
 	static float2 getItemRectMax() noexcept;
@@ -534,31 +582,6 @@ public:
 
 	static bool isAnyItemHovered() noexcept;
 
-	static bool isWindowHovered() noexcept;
-	static bool isWindowFocused() noexcept;
-	static bool isWindowCollapsed() noexcept;
-
-	static bool isRootWindowFocused() noexcept;
-	static bool isRootWindowOrAnyChildFocused() noexcept;
-	static bool isRootWindowOrAnyChildHovered() noexcept;
-
-	static bool isRectVisible(const float2& size) noexcept;
-
-	static bool isPosHoveringAnyWindow(const float2& pos) noexcept;
-
-	static bool isKeyDown(int key_index) noexcept;
-	static bool isKeyPressed(int key_index, bool repeat = true) noexcept;
-	static bool isKeyReleased(int key_index) noexcept;
-
-	static bool isMouseDown(int button) noexcept;
-	static bool isMouseClicked(int button, bool repeat = false) noexcept;
-	static bool isMouseDoubleClicked(int button) noexcept;
-	static bool isMouseReleased(int button) noexcept;
-	static bool isMouseHoveringWindow() noexcept;
-	static bool isMouseHoveringAnyWindow() noexcept;
-	static bool isMouseHoveringRect(const float2& min, const float2& max, bool clip = true) noexcept;
-	static bool isMouseDragging(int button = 0, float lock_threshold = -1.0f) noexcept;
-
 	static float getTime() noexcept;
 	static int getFrameCount() noexcept;
 	static const char* getStyleColName(GuiCol idx) noexcept;
@@ -566,24 +589,14 @@ public:
 	static float2 calcTextSize(const char* text, const char* text_end = nullptr, bool hide_text_after_double_hash = false, float wrap_width = -1.0f) noexcept;
 	static void calcListClipping(int items_count, float items_height, int* out_items_display_start, int* out_items_display_end) noexcept;
 
-	static bool beginChildFrame(GuiID id, const float2& size, GuiWindowFlags extraFlags = 0) noexcept;
-	static void endChildFrame() noexcept;
-
 	static float4 colorConvertU32ToFloat4(std::uint32_t in) noexcept;
 	static std::uint32_t colorConvertFloat4ToU32(const float4& in) noexcept;
 	static void colorConvertRGBtoHSV(float r, float g, float b, float& out_h, float& out_s, float& out_v) noexcept;
 	static void colorConvertHSVtoRGB(float h, float s, float v, float& out_r, float& out_g, float& out_b) noexcept;
 
-	static float2 getMousePos() noexcept;
-	static float2 getMousePosOnOpeningCurrentPopup() noexcept;
-	static float2 getMouseDragDelta(int button = 0, float lock_threshold = -1.0f) noexcept;
-	static void resetMouseDragDelta(int button = 0) noexcept;
-	static void setMouseCursor(GuiMouseCursor type) noexcept;
-	static void captureKeyboardFromApp(bool capture = true) noexcept;
-	static void captureMouseFromApp(bool capture = true) noexcept;
-
 	static bool colorPicker3(const char* label, float col[3], const float2& size = float2(160.f, 150.f), float hueSize = 12.0f, float crossHairSize = 7.0f) noexcept;
 	static bool colorPicker3WithRevert(const char* label, const char* name, float col[3], const float default[3], const float2& size = float2(160.f, 150.f), float hueSize = 12.0f, float crossHairSize = 7.0f) noexcept;
+
 	static void helpMarker(const char* text, const char* desc) noexcept;
 private:
 	IMGUI(const IMGUI&) = delete;

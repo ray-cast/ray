@@ -186,11 +186,6 @@ IMGUISystem::close() noexcept
 {
 }
 
-void
-IMGUISystem::setStyle(GuiStyle* style)
-{
-}
-
 bool
 IMGUISystem::injectMouseMove(float absx, float absy) noexcept
 {

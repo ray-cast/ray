@@ -113,7 +113,6 @@ enum GuiInputTextFlagBits
 	GuiInputTextFlagAlwaysInsertModeBit = 1 << 13,
 	GuiInputTextFlagReadOnlyBit = 1 << 14,
 	GuiInputTextFlagPasswordBit = 1 << 15,
-	GuiInputTextFlagMultilineBit = 1 << 20
 };
 
 typedef std::uint32_t GuiInputTextFlags;
@@ -222,7 +221,8 @@ enum class GuiStyleVar
 	GuiStyleVarItemSpacing,         // float2
 	GuiStyleVarItemInnerSpacing,    // float2
 	GuiStyleVarIndentSpacing,       // float
-	GuiStyleVarGrabMinSize          // float
+	GuiStyleVarGrabMinSize,         // float
+	GuiStyleVarButtonTextAlign
 };
 
 struct GuiStyle
@@ -568,6 +568,7 @@ public:
 
 	static bool colorPicker3(const char* label, float col[3], const float2& size = float2(160.f, 150.f), float hueSize = 12.0f, float crossHairSize = 7.0f) noexcept;
 	static bool colorPicker3WithRevert(const char* label, const char* name, float col[3], const float default[3], const float2& size = float2(160.f, 150.f), float hueSize = 12.0f, float crossHairSize = 7.0f) noexcept;
+	static void helpMarker(const char* text, const char* desc) noexcept;
 private:
 	IMGUI(const IMGUI&) = delete;
 	IMGUI& operator=(const IMGUI&) = delete;

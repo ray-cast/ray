@@ -424,13 +424,13 @@ GuiViewComponent::showLightMass() noexcept
 
 	if (ray::Gui::begin(_langs[UILang::LightMass], &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
-		if (ray::Gui::collapsingHeader("Uvmapper", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNode("Uvmapper"))
 		{
 			ray::Gui::text("Output UV size");
-			ray::Gui::comboWithRevert("##UV size", "Revert", &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
+			ray::Gui::comboWithRevert("##UV size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 
 			ray::Gui::text("Output UV slot");
-			ray::Gui::comboWithRevert("##Output UV slot", "Revert", &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
+			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
 			ray::Gui::text("margin:");
 			ray::Gui::sliderFloatWithRevert("##margin", _langs[UILang::Revert], &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
@@ -442,9 +442,11 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert], &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
 
 			ray::Gui::button("Start UV mapper");
+
+			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::collapsingHeader("Light Mass", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNode("Light Mass"))
 		{
 			ray::Gui::checkbox("Enable GI", &_setting.lightmass.enableGI);
 
@@ -479,6 +481,8 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
 
 			ray::Gui::button("Start Baking");
+
+			ray::Gui::treePop();
 		}
 
 		ray::Gui::end();

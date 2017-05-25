@@ -2042,4 +2042,18 @@ IMGUI::sliderInt4WithRevert(const char* label, const char* name, int* v, const i
 	return change;
 }
 
+void
+IMGUI::helpMarker(const char* text, const char* desc) noexcept
+{
+	ImGui::TextDisabled("(?)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(450.0f);
+		ImGui::TextUnformatted(desc);
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+}
+
 _NAME_END

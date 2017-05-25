@@ -1013,7 +1013,7 @@
             float4 FXAA3(in float4 coord : TEXCOORD0) : SV_Target
             {
                 FxaaTex decal;
-                decal.smpl = PointClamp;
+                decal.smpl = LinearClamp;
                 decal.tex = texelSource;
                 return FxaaPixelShader(coord.xy,
                             FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),     // FxaaFloat4 fxaaConsolePosPos,

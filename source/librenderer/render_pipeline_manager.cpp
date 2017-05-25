@@ -247,9 +247,9 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		}
 	}
 
-	if (_setting.enableFimic != setting.enableFimic)
+	if (_setting.enableHDR != setting.enableHDR)
 	{
-		if (setting.enableFimic)
+		if (setting.enableHDR)
 		{
 			_fimicToneMapping = std::make_shared<FimicToneMapping>();
 			this->addPostProcess(_fimicToneMapping);

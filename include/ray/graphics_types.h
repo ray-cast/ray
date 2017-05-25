@@ -562,17 +562,17 @@ enum class GraphicsTextureDim : std::uint8_t
 };
 
 enum class GraphicsSamplerAnis : std::uint8_t
-
 {
-	GraphicsSamplerAnis1 = 0,
-	GraphicsSamplerAnis2 = 1,
-	GraphicsSamplerAnis4 = 2,
-	GraphicsSamplerAnis8 = 3,
-	GraphicsSamplerAnis16 = 4,
-	GraphicsSamplerAnis32 = 5,
-	GraphicsSamplerAnis64 = 6,
-	GraphicsSamplerAnisBeginRange = GraphicsSamplerAnis1,
-	GraphicsSamplerAnisEndRange = GraphicsSamplerAnis16,
+	GraphicsSamplerAnis0 = 0,
+	GraphicsSamplerAnis1 = 1,
+	GraphicsSamplerAnis2 = 2,
+	GraphicsSamplerAnis4 = 3,
+	GraphicsSamplerAnis8 = 4,
+	GraphicsSamplerAnis16 = 5,
+	GraphicsSamplerAnis32 = 6,
+	GraphicsSamplerAnis64 = 7,
+	GraphicsSamplerAnisBeginRange = GraphicsSamplerAnis0,
+	GraphicsSamplerAnisEndRange = GraphicsSamplerAnis64,
 	GraphicsSamplerAnisRangeSize = (GraphicsSamplerAnisEndRange - GraphicsSamplerAnisBeginRange + 1)
 };
 

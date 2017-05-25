@@ -286,7 +286,7 @@ DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebu
 	this->renderIndirectLights(pipeline, target);
 }
 
-void 
+void
 DeferredLightingPipeline::renderAmbientLights(RenderPipeline& pipeline, GraphicsFramebufferPtr& target) noexcept
 {
 	pipeline.setFramebuffer(target);
@@ -1153,7 +1153,7 @@ DeferredLightingPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) 
 	return true;
 }
 
-bool 
+bool
 DeferredLightingPipeline::setupMRSII(RenderPipeline& pipeline) noexcept
 {
 	if (!this->setupMRSIIMaterials(*_pipeline))

@@ -65,7 +65,7 @@ struct EXPORT RenderSetting
 	bool enableFog;
 	bool enableDOF;
 	bool enableMotionBlur;
-	bool enableFimic;
+	bool enableHDR;
 	bool enableFXAA;
 	bool enableLightShaft;
 	bool enableColorGrading;

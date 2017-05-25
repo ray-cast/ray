@@ -42,7 +42,7 @@ __ImplementSubInterface(GraphicsSampler, GraphicsChild, "GraphicsSampler")
 
 GraphicsSamplerDesc::GraphicsSamplerDesc() noexcept
 	: _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat)
-	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis1)
+	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis0)
 	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest)
 {
 }

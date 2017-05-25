@@ -273,60 +273,6 @@ SphereMakerComponent::onActivate() except
 	if (!materialTemp)
 		return;
 
-	/*auto bunny = ray::ResManager::instance()->createGameObject("dlc:common/bunny.pmx");
-	if (!bunny)
-		return;
-
-	auto bunnyMaterial = materialTemp->clone();
-	bunnyMaterial->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 1.0));
-	bunnyMaterial->getParameter("diffuse")->uniform3f(0.5, 0.5, 0.5);
-	bunnyMaterial->getParameter("metalness")->uniform1f(0.0f);
-	bunnyMaterial->getParameter("smoothness")->uniform1f(0.9);
-	bunnyMaterial->getParameter("transmittance")->uniform3f(0.1, 0.0, 0.0);
-	bunnyMaterial->getParameter("texDiffuse")->uniformTexture(diffuseMap);
-	bunnyMaterial->getParameter("texNormal")->uniformTexture(normalMap);
-
-	bunny->getComponent<ray::MeshRenderComponent>()->setMaterial(bunnyMaterial);
-	bunny->setScale(ray::float3(2.0, 2.0, 2.0));
-	bunny->setTranslate(ray::float3(0, -0.25, 30));
-	bunny->setActive(true);
-
-	_objects.push_back(bunny);
-
-	auto bunny1Material = materialTemp->clone();
-	bunny1Material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
-	bunny1Material->getParameter("diffuse")->uniform3f(0.5, 0.5, 0.5);
-	bunny1Material->getParameter("metalness")->uniform1f(0.0f);
-	bunny1Material->getParameter("smoothness")->uniform1f(0.9);
-	bunny1Material->getParameter("transmittance")->uniform3f(0.0, 0.0, 0.0);
-	bunny1Material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
-	bunny1Material->getParameter("texNormal")->uniformTexture(normalMap);
-
-	auto bunny1 = bunny->clone();
-	bunny1->setScale(ray::float3(2.0, 2.0, 2.0));
-	bunny1->setTranslate(ray::float3(3, -0.25, 30));
-	bunny1->getComponent<ray::MeshRenderComponent>()->setMaterial(bunny1Material->clone());
-	bunny1->setActive(true);
-	_objects.push_back(bunny1);*/
-
-	materialTemp->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
-	materialTemp->getParameter("diffuse")->uniform3f(0.25, 0.25, 0.25);
-	materialTemp->getParameter("metalness")->uniform1f(0.0f);
-	materialTemp->getParameter("smoothness")->uniform1f(0.2);
-	materialTemp->getParameter("texDiffuse")->uniformTexture(diffuseMap);
-	materialTemp->getParameter("texNormal")->uniformTexture(normalMap);
-
-	/*auto planeMesh = std::make_shared<ray::MeshProperty>();
-	planeMesh->makeFloor(1.0, 1.0);
-
-	auto planeObject = std::make_shared<ray::GameObject>();
-	planeObject->setActive(true);
-	planeObject->addComponent(std::make_shared<ray::MeshComponent>(planeMesh));
-	planeObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
-	planeObject->setScale(ray::float3(80.0f));
-	planeObject->setTranslate(ray::float3(0.0, 0.5, 0.0));
-	_objects.push_back(planeObject);*/
-
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
 	sphereMesh->makeSphere(1.0, 64, 48);
 

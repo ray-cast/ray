@@ -53,11 +53,6 @@
 #include <ray/parse.h>
 #include <ray/except.h>
 
-#if defined(_BUILD_PLATFORM_WINDOWS)
-#	include <regex>
-#	include <d3dcompiler.h>
-#endif
-
 _NAME_BEGIN
 
 MaterialMaker::MaterialMaker() noexcept

@@ -58,7 +58,7 @@ const char* en_lang[] = {
 	"Ok",
 	"Cancel",
 	"Don't ask me next time?",
-	"Revert",
+	" Revert ",
 	"Non readable PMX file.",
 	"Output UV size:",
 	"Output UV slot:",
@@ -68,7 +68,7 @@ const char* en_lang[] = {
 	"margin:",
 	"stretch:",
 	"chart:",
-	"Start mapper",
+	" Start mapper ",
 	"Enable GI",
 	"Enable IBL",
 	"Sample Count:",
@@ -78,7 +78,7 @@ const char* en_lang[] = {
 	"Ray tracing zfar:",
 	"Interpolation Passes:",
 	"Interpolation Threshold:",
-	"Start Baking"
+	" Start Baking "
 };
 
 const char* cn_lang[] = {
@@ -109,7 +109,7 @@ const char* cn_lang[] = {
 	"输出的UV插槽:",
 	"输入的UV插槽:",
 	"输出的图像大小:",
-	"纹理坐标全展开:",
+	"纹理坐标全展开",
 	"展开间隔:",
 	"合并UV最小阈值:",
 	"展开三角最大数量:",

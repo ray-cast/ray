@@ -54,6 +54,8 @@ SET(COMPONENT_LIST
 	UIParams.cpp
 	UIController.h
 	UIController.cpp
+	UITexts.h
+	UITexts.cpp
 	first_person_camera.cpp
 	first_person_camera.h
 	sphere_maker.cpp

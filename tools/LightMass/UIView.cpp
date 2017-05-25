@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "UIView.h"
+#include "UITexts.h"
 #include <ray/gui.h>
 #include <ray/gui_message.h>
 #include <ray/ioserver.h>
@@ -57,6 +58,8 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showAboutWindowFirst = false;
 	_showErrorMessage = false;
 	_showErrorMessageFirst = false;
+
+	::GetLangPackage(UILang::Lang::English, _langs);
 }
 
 GuiViewComponent::~GuiViewComponent() noexcept
@@ -122,31 +125,44 @@ GuiViewComponent::showMainMenu() noexcept
 	{
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColBorder, ray::float4::Zero);
 
-		if (ray::Gui::beginMenu("File"))
+		if (ray::Gui::beginMenu(_langs[UILang::File]))
 		{
-			if (ray::Gui::menuItem("Open", "CTRL+O")) { this->showProjectOpenBrowse(); }
-			if (ray::Gui::menuItem("Save", "CTRL+S")) { this->showProjectSaveBrowse(); }
-			if (ray::Gui::menuItem("Save As", "CTRL+SHIFT+S")) { this->showProjectSaveAsBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::Open], "CTRL+O")) { this->showProjectOpenBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::Save], "CTRL+S")) { this->showProjectSaveBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::SaveAs], "CTRL+SHIFT+S")) { this->showProjectSaveAsBrowse(); }
 			ray::Gui::separator();
 			ray::Gui::separator();
-			if (ray::Gui::menuItem("Import Model", "")) { this->showModelImportBrowse(); }
-			if (ray::Gui::menuItem("Export Model", "")) { this->showModelExportBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::ImportModel], "")) { this->showModelImportBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::ExportModel], "")) { this->showModelExportBrowse(); }
 			ray::Gui::separator();
 			ray::Gui::separator();
-			if (ray::Gui::menuItem("Exit", "")) { std::exit(0); }
+			if (ray::Gui::menuItem(_langs[UILang::Exit], "")) { std::exit(0); }
 			ray::Gui::endMenu();
 		}
 
-		if (ray::Gui::beginMenu("Window"))
+		if (ray::Gui::beginMenu(_langs[UILang::Window]))
 		{
-			ray::Gui::menuItem("Light Mass", 0, &_showLightMassWindow);
-			ray::Gui::menuItem("Style Editor", 0, &_showStyleEditor);
+			ray::Gui::menuItem(_langs[UILang::LightMass], 0, &_showLightMassWindow);
+			ray::Gui::menuItem(_langs[UILang::StyleEditor], 0, &_showStyleEditor);
 			ray::Gui::endMenu();
 		}
 
-		if (ray::Gui::beginMenu("Help"))
+		if (ray::Gui::beginMenu(_langs[UILang::Setting]))
 		{
-			ray::Gui::menuItem("About", 0, &_showAboutWindowFirst);
+			if (ray::Gui::beginMenu(_langs[UILang::Language]))
+			{
+				if (ray::Gui::menuItem(_langs[UILang::English])) { switchLangPackage(UILang::Lang::English); }
+				if (ray::Gui::menuItem(_langs[UILang::Chinese])) { switchLangPackage(UILang::Lang::Chinese); }
+
+				ray::Gui::endMenu();
+			}
+
+			ray::Gui::endMenu();
+		}
+
+		if (ray::Gui::beginMenu(_langs[UILang::Help]))
+		{
+			ray::Gui::menuItem(_langs[UILang::About], 0, &_showAboutWindowFirst);
 			ray::Gui::endMenu();
 		}
 
@@ -172,7 +188,7 @@ GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, ray::util:
 	ofn.lpstrFile = path;
 	ofn.nMaxFile = max_length;
 	ofn.lpstrInitialDir = 0;
-	ofn.lpstrTitle = TEXT("Choose File");
+	ofn.lpstrTitle = _langs[UILang::ChooseFile];
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	if (::GetOpenFileName(&ofn))
@@ -200,7 +216,7 @@ GuiViewComponent::showFileSaveBrowse(ray::util::string::pointer path, ray::util:
 	ofn.lpstrFile = path;
 	ofn.nMaxFile = max_length;
 	ofn.lpstrInitialDir = 0;
-	ofn.lpstrTitle = TEXT("Save As File");
+	ofn.lpstrTitle = _langs[UILang::SaveAs];
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
 	if (::GetSaveFileName(&ofn))
@@ -316,45 +332,45 @@ GuiViewComponent::showModelExportBrowse() noexcept
 void
 GuiViewComponent::showErrorPopupMessage(const ray::util::string& message, std::size_t hash) noexcept
 {
-	if (!_showErrorMessage)
+	if (!_showErrorMessageFirst)
 	{
 		_errorHash = hash;
 		_errorMessage = message;
-		_showErrorMessage = true;
+		_showErrorMessageFirst = true;
 	}
 }
 
 void
 GuiViewComponent::showErrorMessage() noexcept
 {
-	if (_showErrorMessage)
+	if (_showErrorMessageFirst)
 	{
-		_showErrorMessage = false;
+		_showErrorMessageFirst = false;
 
 		if (_showError[_errorHash])
 			return;
 
-		ray::Gui::openPopup("Error?");
+		ray::Gui::openPopup(_langs[UILang::Error]);
 
-		_showErrorMessageFirst = true;
+		_showErrorMessage = true;
 	}
 
-	if (!_showErrorMessageFirst)
+	if (!_showErrorMessage)
 		return;
 
-	if (ray::Gui::beginPopupModal("Error?", 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
+	if (ray::Gui::beginPopupModal(_langs[UILang::Error], 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
 	{
 		ray::Gui::text(_errorMessage.c_str());
 		ray::Gui::separator();
 
 		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(0, 0));
-		ray::Gui::checkbox("Don't ask me next time", &_showError[_errorHash]);
+		ray::Gui::checkbox(_langs[UILang::NoShowAgain], &_showError[_errorHash]);
 		ray::Gui::popStyleVar();
 
-		if (ray::Gui::button("OK", ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
 		ray::Gui::sameLine();
 
-		if (ray::Gui::button("Cancel", ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+		if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
 		ray::Gui::endPopup();
 	}
 }
@@ -382,7 +398,7 @@ GuiViewComponent::showAboutWindow() noexcept
 		ray::Gui::separator();
 		ray::Gui::text("");
 		ray::Gui::sameLine(ray::Gui::getWindowWidth() - 130);
-		if (ray::Gui::button("OK", ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
 
 		ray::Gui::endPopup();
 	}
@@ -394,7 +410,7 @@ GuiViewComponent::showStyleEditor() noexcept
 	if (!_showStyleEditor)
 		return;
 
-	if (ray::Gui::begin("Style Editor", &_showStyleEditor, ray::float2(550, 500)))
+	if (ray::Gui::begin(_langs[UILang::StyleEditor], &_showStyleEditor, ray::float2(550, 500)))
 	{
 		ray::Gui::showStyleEditor();
 		ray::Gui::end();
@@ -409,7 +425,7 @@ GuiViewComponent::showLightMass() noexcept
 
 	ray::Gui::setNextWindowPos(ray::float2(10, 40), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 
-	if (ray::Gui::begin("Light Mass", &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	if (ray::Gui::begin(_langs[UILang::LightMass], &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
 		if (ray::Gui::collapsingHeader("Uvmapper", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
@@ -507,4 +523,10 @@ GuiViewComponent::showLightMass() noexcept
 
 		ray::Gui::end();
 	}
+}
+
+void
+GuiViewComponent::switchLangPackage(UILang::Lang type) noexcept
+{
+	GetLangPackage(type, _langs);
 }

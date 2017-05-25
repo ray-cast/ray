@@ -39,6 +39,7 @@
 
 #include <ray/game_component.h>
 #include "UIParams.h"
+#include "UITexts.h"
 
 class GuiViewComponent final : public ray::GameComponent
 {
@@ -78,6 +79,8 @@ private:
 	void showProjectSaveBrowse() noexcept;
 	void showProjectSaveAsBrowse() noexcept;
 
+	void switchLangPackage(UILang::Lang type) noexcept;
+
 private:
 	GuiViewComponent(const GuiViewComponent&) = delete;
 	GuiViewComponent& operator=(const GuiViewComponent&) = delete;
@@ -99,6 +102,7 @@ private:
 	std::size_t _errorHash;
 	std::string _errorMessage;
 	std::map<int, bool> _showError;
+	std::vector<const char*> _langs;
 
 	ray::float4 _clearColor;
 

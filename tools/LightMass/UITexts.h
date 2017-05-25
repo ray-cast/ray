@@ -65,7 +65,27 @@ public:
 		OK,
 		Cancel,
 		NoShowAgain,
-		Revert
+		Revert,
+		NonReadableFile,
+		OutputUVSize,
+		OutputUVSlot,
+		InputUVSlot,
+		OutputImageSize,
+		UvMapper,
+		UVMargin,
+		UVStretch,
+		UVChart,
+		StartUVMapper,
+		EnableGI,
+		EnableIBL,
+		SampleCount,
+		EnvironmentColor,
+		EnvironmentIntensity,
+		RayTracingZnear,
+		RayTracingZfar,
+		InterpolationPasses,
+		InterpolationThreshold,
+		StartBaking,
 	};
 
 	enum class Lang

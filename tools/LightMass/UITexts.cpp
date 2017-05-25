@@ -58,7 +58,27 @@ const char* en_lang[] = {
 	"Ok",
 	"Cancel",
 	"Don't ask me next time?",
-	"Revert"
+	"Revert",
+	"Non readable PMX file.",
+	"Output UV size:",
+	"Output UV slot:",
+	"Input UV slot:",
+	"Output image size:",
+	"Uv Mapper",
+	"margin:",
+	"stretch:",
+	"chart:",
+	"Start mapper",
+	"Enable GI",
+	"Enable IBL",
+	"Sample Count:",
+	"Environment Color:",
+	"Environment Intensity:",
+	"Ray tracing znear:",
+	"Ray tracing zfar:",
+	"Interpolation Passes:",
+	"Interpolation Threshold:",
+	"Start Baking"
 };
 
 const char* cn_lang[] = {
@@ -83,7 +103,27 @@ const char* cn_lang[] = {
 	"确认",
 	"取消",
 	"下一次不再显示?",
-	"重置"
+	" 重置 ",
+	"不可读的PMX文件",
+	"展开的UV大小:",
+	"输出的UV插槽:",
+	"输入的UV插槽:",
+	"输出的图像大小:",
+	"纹理坐标全展开:",
+	"展开间隔:",
+	"合并UV最小阈值:",
+	"展开三角最大数量:",
+	" 开始展开 ",
+	"使用全局光",
+	"使用HDR光源",
+	"采样数:",
+	"环境光颜色:",
+	"环境光强:",
+	"追踪的最小范围",
+	"追踪的最大范围",
+	"插值次数",
+	"插值阈值",
+	" 开始烘培 "
 };
 
 std::vector<std::string> cn_lang_utf8;

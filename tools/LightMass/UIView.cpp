@@ -301,7 +301,7 @@ GuiViewComponent::showModelImportBrowse() noexcept
 		if (!_onModelImport(filepath, error))
 		{
 			if (!error.empty())
-				this->showErrorPopupMessage(error, std::hash<const char*>{}("showModelImportBrowse"));
+				this->showErrorPopupMessage(_langs[UILang::NonReadableFile], std::hash<const char*>{}("showModelImportBrowse"));
 		}
 	}
 }
@@ -424,63 +424,63 @@ GuiViewComponent::showLightMass() noexcept
 
 	if (ray::Gui::begin(_langs[UILang::LightMass], &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
-		if (ray::Gui::treeNode("Uvmapper"))
+		if (ray::Gui::treeNode(_langs[UILang::UvMapper]))
 		{
-			ray::Gui::text("Output UV size");
+			ray::Gui::text(_langs[UILang::OutputUVSize]);
 			ray::Gui::comboWithRevert("##UV size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 
-			ray::Gui::text("Output UV slot");
+			ray::Gui::text(_langs[UILang::OutputUVSlot]);
 			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
-			ray::Gui::text("margin:");
+			ray::Gui::text(_langs[UILang::UVMargin]);
 			ray::Gui::sliderFloatWithRevert("##margin", _langs[UILang::Revert], &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
 
-			ray::Gui::text("stretch:");
+			ray::Gui::text(_langs[UILang::UVStretch]);
 			ray::Gui::sliderFloatWithRevert("##stretch", _langs[UILang::Revert], &_setting.uvmapper.stretch, _default.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
 
-			ray::Gui::text("chart:");
+			ray::Gui::text(_langs[UILang::UVChart]);
 			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert], &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
 
-			ray::Gui::button("Start UV mapper");
+			ray::Gui::button(_langs[UILang::StartUVMapper]);
 
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("Light Mass"))
+		if (ray::Gui::treeNode(_langs[UILang::LightMass]))
 		{
-			ray::Gui::checkbox("Enable GI", &_setting.lightmass.enableGI);
+			ray::Gui::checkbox(_langs[UILang::EnableGI], &_setting.lightmass.enableGI);
 
 			if (_setting.lightmass.enableGI)
-				ray::Gui::checkbox("Enable IBL", &_setting.lightmass.enableSkyLighting);
+				ray::Gui::checkbox(_langs[UILang::EnableIBL], &_setting.lightmass.enableSkyLighting);
 
-			ray::Gui::text("Output Size");
-			ray::Gui::comboWithRevert("##Output size", "Revert", &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
+			ray::Gui::text(_langs[UILang::OutputImageSize]);
+			ray::Gui::comboWithRevert("##Output size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 
-			ray::Gui::text("Input UV slot");
-			ray::Gui::comboWithRevert("##Input UV slot", "Revert", &_setting.lightmass.slot, _default.lightmass.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
+			ray::Gui::text(_langs[UILang::InputUVSlot]);
+			ray::Gui::comboWithRevert("##Input UV slot", _langs[UILang::Revert], &_setting.lightmass.slot, _default.lightmass.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
-			ray::Gui::text("Sample Count");
-			ray::Gui::comboWithRevert("##Sample Count", "Revert", &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
+			ray::Gui::text(_langs[UILang::SampleCount]);
+			ray::Gui::comboWithRevert("##Sample Count", _langs[UILang::Revert], &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
 
-			ray::Gui::text("Environment Color:");
+			ray::Gui::text(_langs[UILang::EnvironmentColor]);
 			ray::Gui::colorPicker3WithRevert("##Environment Color", _langs[UILang::Revert], _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
 
-			ray::Gui::text("Environment Intensity:");
+			ray::Gui::text(_langs[UILang::EnvironmentIntensity]);
 			ray::Gui::sliderFloatWithRevert("##Environment Intensity", _langs[UILang::Revert], &_setting.lightmass.environmentColor.w, _default.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
 
-			ray::Gui::text("Ray tracing znear:");
+			ray::Gui::text(_langs[UILang::RayTracingZnear]);
 			ray::Gui::sliderFloatWithRevert("##Ray tracing znear", _langs[UILang::Revert], &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
 
-			ray::Gui::text("Ray tracing zfar:");
+			ray::Gui::text(_langs[UILang::RayTracingZfar]);
 			ray::Gui::sliderFloatWithRevert("##Ray tracing zfar", _langs[UILang::Revert], &_setting.lightmass.hemisphereFar, _default.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
 
-			ray::Gui::text("Interpolation Passes");
+			ray::Gui::text(_langs[UILang::InterpolationPasses]);
 			ray::Gui::sliderIntWithRevert("##Interpolation Passes", _langs[UILang::Revert], &_setting.lightmass.interpolationPasses, _default.lightmass.interpolationPasses, 1, 5);
 
-			ray::Gui::text("Interpolation Threshold");
+			ray::Gui::text(_langs[UILang::InterpolationThreshold]);
 			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
 
-			ray::Gui::button("Start Baking");
+			ray::Gui::button(_langs[UILang::StartBaking]);
 
 			ray::Gui::treePop();
 		}

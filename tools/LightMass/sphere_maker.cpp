@@ -290,10 +290,10 @@ SphereMakerComponent::onActivate() except
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 
 			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
-			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[(9 - i) * 10 + (9 - j)].xyz());
+			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
 			material->getParameter("metalness")->uniform1f(diff_spec_parametes[j * 10 + i].w);
 
-			if (shininess_parametes[i * 10 + j] > 0.6 &&
+			if (shininess_parametes[i * 10 + j] > 0.4 &&
 				shininess_parametes[i * 10 + j] < 0.8 ||
 				shininess_parametes[i * 10 + j] > 0.95)
 			{

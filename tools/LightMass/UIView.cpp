@@ -50,6 +50,7 @@ GuiViewComponent::GuiViewComponent() noexcept
 	: _clearColor(ray::float4(114.f / 255.f, 144.f / 255.f, 154.f / 255.f))
 {
 	_fps = 0.0f;
+	_process = 0.0f;
 	_showMainMenu = true;
 	_showLightMassWindow = true;
 	_showStyleEditor = false;
@@ -57,6 +58,8 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showAboutWindowFirst = false;
 	_showErrorMessage = false;
 	_showErrorMessageFirst = false;
+	_showProcessMessage = false;
+	_showProcessMessageFirst = false;
 
 	::GetLangPackage(UILang::Lang::English, _langs);
 }
@@ -81,6 +84,18 @@ void
 GuiViewComponent::setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
 {
 	_onModelSaveAs = delegate;
+}
+
+void
+GuiViewComponent::setUVMapperWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept
+{
+	_onUVMapperWillStart = delegate;
+}
+
+void
+GuiViewComponent::setUVMapperStartListener(std::function<bool(const GuiParams&)> delegate) noexcept
+{
+	_onUVMapperStart = delegate;
 }
 
 void
@@ -112,6 +127,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 	this->showLightMass();
 	this->showAboutWindow();
 	this->showErrorMessage();
+	this->showProcessMessage();
 }
 
 void
@@ -172,7 +188,7 @@ GuiViewComponent::showMainMenu() noexcept
 }
 
 bool
-GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept
+GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept
 {
 	assert(path && max_length > 0 && ext_name);
 
@@ -200,7 +216,7 @@ GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, ray::util:
 }
 
 bool
-GuiViewComponent::showFileSaveBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept
+GuiViewComponent::showFileSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept
 {
 	assert(path && max_length > 0 && ext_name);
 
@@ -309,20 +325,26 @@ GuiViewComponent::showModelImportBrowse() noexcept
 void
 GuiViewComponent::showModelExportBrowse() noexcept
 {
+	if (!_onModelSaveAs)
+		return;
+
 	ray::util::string::value_type filepath[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
 
 	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
 		return;
 
-	if (_onModelSaveAs)
+	if (std::strlen(filepath) < (PATHLIMIT - 5))
 	{
-		ray::util::string error;
-		if (!_onModelSaveAs(filepath, error))
-		{
-			if (!error.empty())
-				this->showErrorPopupMessage(error, std::hash<const char*>{}("showModelExportBrowse"));
-		}
+		if (std::strstr(filepath, ".pmx") == 0)
+			std::strcat(filepath, ".pmx");
+	}
+
+	ray::util::string error;
+	if (!_onModelSaveAs(filepath, error))
+	{
+		if (!error.empty())
+			this->showErrorPopupMessage(error, std::hash<const char*>{}("showModelExportBrowse"));
 	}
 }
 
@@ -370,6 +392,34 @@ GuiViewComponent::showErrorMessage() noexcept
 		if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
 		ray::Gui::endPopup();
 	}
+}
+
+void
+GuiViewComponent::showProcessMessage() noexcept
+{
+	if (_showProcessMessageFirst)
+	{
+		_showProcessMessageFirst = false;
+
+		ray::Gui::openPopup(_langs[UILang::Process]);
+
+		_showProcessMessage = true;
+	}
+
+	if (!_showProcessMessage)
+		return;
+
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0);
+
+	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	{
+		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x, 150));
+		ray::Gui::text("%.2f", _process);
+
+		ray::Gui::endPopup();
+	}
+
+	ray::Gui::popStyleVar();
 }
 
 void
@@ -441,7 +491,8 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::text(_langs[UILang::UVChart]);
 			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert], &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
 
-			ray::Gui::button(_langs[UILang::StartUVMapper]);
+			if (ray::Gui::button(_langs[UILang::StartUVMapper]))
+				this->startUVMapper();
 
 			ray::Gui::treePop();
 		}
@@ -493,4 +544,31 @@ void
 GuiViewComponent::switchLangPackage(UILang::Lang type) noexcept
 {
 	GetLangPackage(type, _langs);
+}
+
+void
+GuiViewComponent::startUVMapper() noexcept
+{
+	if (this->_onUVMapperWillStart)
+	{
+		if (!this->_onUVMapperWillStart(_setting))
+		{
+			this->showErrorPopupMessage(_langs[UILang::UnsupportModel], std::hash<const char*>{}("UnsupportModel"));
+			return;
+		}
+	}
+
+	if (_showProcessMessage)
+	{
+		if (this->_onUVMapperStart)
+		{
+			if (!this->_onUVMapperStart(_setting))
+			{
+				this->showErrorPopupMessage(_langs[UILang::UnsupportModel], std::hash<const char*>{}("UnsupportModel"));
+				return;
+			}
+		}
+	}
+
+	_showProcessMessageFirst = true;
 }

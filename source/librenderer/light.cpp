@@ -190,7 +190,7 @@ Light::getShadowMode() const noexcept
 	return _shadowMode;
 }
 
-void 
+void
 Light::setGlobalIllumination(bool enable) noexcept
 {
 	if (_enableGlobalIllumination != enable)
@@ -201,10 +201,10 @@ Light::setGlobalIllumination(bool enable) noexcept
 			this->destroyReflectiveShadowMap();
 
 		_enableGlobalIllumination = enable;
-	}	
+	}
 }
 
-bool 
+bool
 Light::getGlobalIllumination() const noexcept
 {
 	return _enableGlobalIllumination;
@@ -241,7 +241,7 @@ Light::setShadowBias(float bias) noexcept
 	_shadowBias = bias;
 }
 
-void 
+void
 Light::setShadowFactor(float factor) noexcept
 {
 	_shadowFactor = factor;
@@ -388,7 +388,7 @@ Light::setupShadowMap() noexcept
 	return true;
 }
 
-bool 
+bool
 Light::setupReflectiveShadowMap() noexcept
 {
 	std::uint32_t shadowMapSize = 0;
@@ -559,7 +559,7 @@ Light::_updateBoundingBox() noexcept
 				float w = bound.size().x * 0.5f;
 				float h = bound.size().y * 0.5f;
 
-				camera->setOrtho(-w, w, -h, h);
+				camera->setOrtho(float4(-w, w, -h, h));
 				camera->setFar(zfar);
 				camera->setCameraType(CameraType::CameraTypeOrtho);
 			}

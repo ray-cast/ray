@@ -278,16 +278,23 @@ public:
 	static bool beginChild(const char* str_id, const float2& size = float2::Zero, bool border = false, GuiWindowFlags extraFlags = 0) noexcept;
 	static bool beginChild(GuiID id, const float2& size = float2::Zero, bool border = false, GuiWindowFlags extraFlags = 0) noexcept;
 	static void endChild() noexcept;
+
 	static float2 getContentRegionMax() noexcept;
 	static float2 getContentRegionAvail() noexcept;
-	static float getContentRegionAvailWidth() noexcept;
-	static float2 getWindowContentRegionMin() noexcept;
-	static float2 getWindowContentRegionMax() noexcept;
-	static float getWindowContentRegionWidth() noexcept;
+
 	static float2 getWindowPos() noexcept;
 	static float2 getWindowSize() noexcept;
+	static float2 getWindowContentRegionMin() noexcept;
+	static float2 getWindowContentRegionMax() noexcept;
+
+	static float2 getDisplaySize() noexcept;
+
+	static float getContentRegionAvailWidth() noexcept;
+
 	static float getWindowWidth() noexcept;
 	static float getWindowHeight() noexcept;
+	static float getWindowContentRegionWidth() noexcept;
+
 	static bool isWindowCollapsed() noexcept;
 	static void setWindowFontScale(float scale) noexcept;
 
@@ -514,24 +521,44 @@ public:
 	static void pushClipRect(const float2& clip_rect_min, const float2& clip_rect_max, bool intersect_with_current_clip_rect) noexcept;
 	static void popClipRect() noexcept;
 
-	static bool isItemHovered() noexcept;
-	static bool isItemHoveredRect() noexcept;
-	static bool isItemActive() noexcept;
-	static bool isItemClicked(int mouse_button = 0) noexcept;
-	static bool isItemVisible() noexcept;
-	static bool isAnyItemHovered() noexcept;
 	static bool isAnyItemActive() noexcept;
 	static float2 getItemRectMin() noexcept;
 	static float2 getItemRectMax() noexcept;
 	static float2 getItemRectSize() noexcept;
 	static void setItemAllowOverlap() noexcept;
+
+	static bool isItemHovered() noexcept;
+	static bool isItemHoveredRect() noexcept;
+	static bool isItemActive() noexcept;
+	static bool isItemClicked(int mouse_button = 0) noexcept;
+	static bool isItemVisible() noexcept;
+
+	static bool isAnyItemHovered() noexcept;
+
 	static bool isWindowHovered() noexcept;
 	static bool isWindowFocused() noexcept;
+
 	static bool isRootWindowFocused() noexcept;
 	static bool isRootWindowOrAnyChildFocused() noexcept;
 	static bool isRootWindowOrAnyChildHovered() noexcept;
+
 	static bool isRectVisible(const float2& size) noexcept;
+
 	static bool isPosHoveringAnyWindow(const float2& pos) noexcept;
+
+	static bool isKeyDown(int key_index) noexcept;
+	static bool isKeyPressed(int key_index, bool repeat = true) noexcept;
+	static bool isKeyReleased(int key_index) noexcept;
+
+	static bool isMouseDown(int button) noexcept;
+	static bool isMouseClicked(int button, bool repeat = false) noexcept;
+	static bool isMouseDoubleClicked(int button) noexcept;
+	static bool isMouseReleased(int button) noexcept;
+	static bool isMouseHoveringWindow() noexcept;
+	static bool isMouseHoveringAnyWindow() noexcept;
+	static bool isMouseHoveringRect(const float2& min, const float2& max, bool clip = true) noexcept;
+	static bool isMouseDragging(int button = 0, float lock_threshold = -1.0f) noexcept;
+
 	static float getTime() noexcept;
 	static int getFrameCount() noexcept;
 	static const char* getStyleColName(GuiCol idx) noexcept;
@@ -547,17 +574,6 @@ public:
 	static void colorConvertRGBtoHSV(float r, float g, float b, float& out_h, float& out_s, float& out_v) noexcept;
 	static void colorConvertHSVtoRGB(float h, float s, float v, float& out_r, float& out_g, float& out_b) noexcept;
 
-	static bool isKeyDown(int key_index) noexcept;
-	static bool isKeyPressed(int key_index, bool repeat = true) noexcept;
-	static bool isKeyReleased(int key_index) noexcept;
-	static bool isMouseDown(int button) noexcept;
-	static bool isMouseClicked(int button, bool repeat = false) noexcept;
-	static bool isMouseDoubleClicked(int button) noexcept;
-	static bool isMouseReleased(int button) noexcept;
-	static bool isMouseHoveringWindow() noexcept;
-	static bool isMouseHoveringAnyWindow() noexcept;
-	static bool isMouseHoveringRect(const float2& min, const float2& max, bool clip = true) noexcept;
-	static bool isMouseDragging(int button = 0, float lock_threshold = -1.0f) noexcept;
 	static float2 getMousePos() noexcept;
 	static float2 getMousePosOnOpeningCurrentPopup() noexcept;
 	static float2 getMouseDragDelta(int button = 0, float lock_threshold = -1.0f) noexcept;

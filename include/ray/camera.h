@@ -63,8 +63,8 @@ public:
 	float4 getPixelViewport() const noexcept;
 	float4 getPixelViewportDPI() const noexcept;
 
-	void setOrtho(float left, float right, float top, float bottom) noexcept;
-	void getOrtho(float& left, float& right, float& top, float& bottom) noexcept;
+	void setOrtho(const float4& ortho) noexcept;
+	const float4& getOrtho() const noexcept;
 
 	const float4x4& getView() const noexcept;
 	const float4x4& getViewInverse() const noexcept;
@@ -122,10 +122,7 @@ private:
 	Camera& operator=(const Camera&) noexcept = delete;
 
 private:
-	float _left;
-	float _right;
-	float _top;
-	float _bottom;
+	float4 _ortho;
 	float _aperture;
 	float _ratio;
 	float _znear;

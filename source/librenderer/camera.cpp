@@ -45,10 +45,7 @@ _NAME_BEGIN
 __ImplementSubClass(Camera, RenderObject, "Camera")
 
 Camera::Camera() noexcept
-	: _left(-1.0f)
-	, _right(1.0f)
-	, _top(1.0f)
-	, _bottom(-1.0f)
+	: _ortho(-1.0, 1.0, -1.0, 1.0) // left, right, bottom, top
 	, _aperture(45.0f)
 	, _ratio(1.0f)
 	, _znear(1.0f)
@@ -125,22 +122,16 @@ Camera::getRatio() const noexcept
 }
 
 void
-Camera::setOrtho(float left, float right, float bottom, float top) noexcept
+Camera::setOrtho(const float4& ortho) noexcept
 {
-	_left = left;
-	_right = right;
-	_top = top;
-	_bottom = bottom;
+	_ortho = ortho;
 	_needUpdateViewProject = true;
 }
 
-void
-Camera::getOrtho(float& left, float& right, float& bottom, float& top) noexcept
+const float4&
+Camera::getOrtho() const noexcept
 {
-	left = _left;
-	right = _right;
-	top = _top;
-	bottom = _bottom;
+	return _ortho;
 }
 
 const float4x4&
@@ -286,7 +277,7 @@ Camera::getClearColor() const noexcept
 	return _clearColor;
 }
 
-void 
+void
 Camera::setClearFlags(CameraClearFlags flags) noexcept
 {
 	_cameraClearType = flags;
@@ -435,7 +426,7 @@ Camera::getRenderDataManager() const noexcept
 void
 Camera::_updateOrtho() const noexcept
 {
-	_project.makeOrtho_lh(_left, _right, _bottom, _top, _znear, _zfar);
+	_project.makeOrtho_lh(_ortho.x, _ortho.y, _ortho.z, _ortho.w, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
 }
 
@@ -479,7 +470,7 @@ Camera::onMoveAfter() noexcept
 	_needUpdateViewProject = true;
 }
 
-void 
+void
 Camera::onRenderPre(const Camera& camera) noexcept
 {
 	RenderObject::onRenderPre(camera);

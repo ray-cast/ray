@@ -36,7 +36,10 @@
 // +----------------------------------------------------------------------
 #include <ray/game_component.h>
 
+#include "UIParams.h"
 #include "modpmx.h"
+#include "LightMass.h"
+#include "LightMapPack.h"
 
 class GuiControllerComponent final : public ray::GameComponent
 {
@@ -51,6 +54,9 @@ private:
 	bool onModelImport(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
 	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
 
+	bool onUVMapperWillStart(const GuiParams& params) noexcept;
+	bool onUVMapperStart(const GuiParams& params) noexcept;
+
 	virtual void onAttachComponent(ray::GameComponentPtr& component) except;
 	virtual void onDetachComponent(ray::GameComponentPtr& component) noexcept;
 
@@ -60,4 +66,7 @@ private:
 
 private:
 	std::unique_ptr<ray::PMX> _model;
+
+	ray::LightMapListenerPtr _lightMapListener;
+	ray::LightMassListenerPtr _lightMassListener;
 };

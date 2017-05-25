@@ -86,6 +86,8 @@ public:
 		InterpolationPasses,
 		InterpolationThreshold,
 		StartBaking,
+		UnsupportModel,
+		Process
 	};
 
 	enum class Lang

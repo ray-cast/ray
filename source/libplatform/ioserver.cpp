@@ -272,7 +272,7 @@ IoServer&
 IoServer::openFileFromDisk(StreamWritePtr& result, const util::string& path, open_mode mode) noexcept
 {
 	for (auto& listener : _ioListener)
-		listener->onMessage("loading resource : " + path);
+		listener->onMessage("export resource : " + path);
 
 	util::string resolvePath;
 	this->getResolveAssign(path, resolvePath);

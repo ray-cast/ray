@@ -62,8 +62,8 @@ public:
 	void setRatio(float ratio) noexcept;
 	float getRatio() const noexcept;
 
-	void setOrtho(float left, float right, float bottom, float top) noexcept;
-	void getOrtho(float& left, float& right, float& bottom, float& top) noexcept;
+	void setOrtho(const float4& ortho) noexcept;
+	const float4& getOrtho() const noexcept;
 
 	const Matrix4x4& getView() const noexcept;
 	const Matrix4x4& getViewInverse() const noexcept;

@@ -2056,4 +2056,10 @@ IMGUI::helpMarker(const char* text, const char* desc) noexcept
 	}
 }
 
+float2
+IMGUI::getDisplaySize() noexcept
+{
+	return float2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+}
+
 _NAME_END

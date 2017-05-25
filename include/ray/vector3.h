@@ -51,7 +51,18 @@ public:
 	typedef typename trait::_typeaddition<T>::reference reference;
 	typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
-	T x, y, z;
+	union
+	{
+		struct
+		{
+			T x, y, z;
+		};
+
+		struct
+		{
+			T r, g, b;
+		};
+	};
 
 	static const Vector3t<T> Zero;
 	static const Vector3t<T> One;
@@ -64,13 +75,13 @@ public:
 
 	Vector3t() noexcept {}
 	Vector3t(T xx, T yy, T zz) noexcept :x(xx), y(yy), z(zz) { }
-	Vector3t(T xx, const Vector2t<T>& yz) noexcept :x(xx), y(yz.x), z(yz.y) {}
-	Vector3t(const Vector2t<T>& xy, T zz) noexcept :x(xy.x), y(xy.y), z(zz) {}
-	explicit Vector3t(const Vector4t<T>& v) noexcept :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
-	explicit Vector3t(T xyz) noexcept :x(xyz), y(xyz), z(xyz) {}
+	Vector3t(T xx, const Vector2t<T>& yz) noexcept : x(xx), y(yz.x), z(yz.y) {}
+	Vector3t(const Vector2t<T>& xy, T zz) noexcept : x(xy.x), y(xy.y), z(zz) {}
+	explicit Vector3t(const Vector4t<T>& v) noexcept : x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
+	explicit Vector3t(T xyz) noexcept : x(xyz), y(xyz), z(xyz) {}
 
 	template<typename S, typename = std::enable_if_t<!std::is_same<S, T>::value && std::is_floating_point<S>::value>>
-	Vector3t(S xx, S yy, S zz) noexcept 
+	Vector3t(S xx, S yy, S zz) noexcept
 		: x(static_cast<T>(xx)), y(static_cast<T>(yy)), z(static_cast<T>(zz))
 	{
 	}
@@ -90,13 +101,13 @@ public:
 #pragma warning(disable : 4244) // float multiply with double
 	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
 	Vector3t<T>& operator+=(const S sz) noexcept { x += sz; y += sz; z += sz; return *this; }
-	
+
 	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
 	Vector3t<T>& operator-=(const S sz) noexcept { x -= sz; y -= sz; z -= sz; return *this; }
-	
+
 	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
 	Vector3t<T>& operator*=(const S sz) noexcept { x *= sz; y *= sz; z *= sz; return *this; }
-	
+
 	template<typename S, typename = std::enable_if_t<std::is_same<S, T>::value || !std::is_same<S, T>::value && std::is_floating_point<S>::value>>
 	Vector3t<T>& operator/=(const S sz) noexcept { x /= sz; y /= sz; z /= sz; return *this; }
 
@@ -191,15 +202,15 @@ public:
 	Vector3t<T>& set(const Vector4t<T>& v) noexcept { x = v.x / v.w; y = v.y / v.w; z = v.z / v.w; return *this; }
 
 	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
-	Vector3t<T>& set(S xyz[3]) noexcept 
+	Vector3t<T>& set(S xyz[3]) noexcept
 	{
 		assert(xyz[0] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
 		assert(xyz[1] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
 		assert(xyz[2] <= std::numeric_limits<typename trait::_typeaddition<S>::value_type>::max());
 
-		x = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[0]); 
-		y = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[1]); 
-		z = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[2]); 
+		x = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[0]);
+		y = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[1]);
+		z = static_cast<typename trait::_typeaddition<S>::value_type>(xyz[2]);
 
 		return *this;
 	}

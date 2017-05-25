@@ -37,9 +37,6 @@
 #include "UIController.h"
 #include "UIView.h"
 
-#include "LightMass.h"
-#include "LightMapPack.h"
-
 #include <chrono>
 #include <ctime>
 #include <cinttypes>
@@ -189,25 +186,6 @@ public:
 		return true;
 	}
 
-	bool save(const ray::util::string& path, ray::PMX& model)
-	{
-		ray::PMXHandler modelLoader;
-
-		if (_lightMassListener)
-			_lightMassListener->onMessage("Save as model : " + path);
-
-		ray::util::string error;
-		if (!modelLoader.doSave(path, model, error))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage(error);
-
-			return false;
-		}
-
-		return true;
-	}
-
 	bool saveLightMass(const ray::util::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
 	{
 		assert(channel == 1 || channel == 3 || channel == 4);
@@ -258,30 +236,6 @@ public:
 		return true;
 	}
 
-	void getParams(AppParams& params)
-	{
-		ray::StreamReaderPtr stream;
-		if (!ray::IoServer::instance()->openFile(stream, "root:config.json", ray::ios_base::in))
-			throw ray::failure(__TEXT("Opening file fail: config.json"));
-
-		/*auto json = ray::json::reader(*stream);
-
-		params.lightMass.lightMap.width = std::clamp<std::uint32_t>(json["lightmap"]["width"].get<float>(), 256, 8192);
-		params.lightMass.lightMap.height = std::clamp<std::uint32_t>(json["lightmap"]["height"].get<float>(), 256, 8192);
-		params.lightMass.lightMap.margin = std::clamp<std::uint32_t>(json["lightmap"]["margin"].get<float>(), 0, 16);
-
-		params.margin = std::clamp<float>(json["uvmapper"]["margin"].get<float>(), 0.0, 16.0);
-		params.stretch = std::clamp<float>(json["uvmapper"]["stretch"].get<float>(), 0.0, 1.0);
-		params.chart = std::max<std::uint32_t>(json["uvmapper"]["chart"].get<float>(), 0);
-
-		params.lightMass.baking.hemisphereSize = std::clamp<std::uint32_t>(json["lightmass"]["hemisphereSize"].get<float>(), 16, 512);
-		params.lightMass.baking.hemisphereNear = std::max<float>(json["lightmass"]["hemisphereNear"].get<float>(), 1e-5);
-		params.lightMass.baking.hemisphereFar = std::max<float>(json["lightmass"]["hemisphereFar"].get<float>(), params.lightMass.baking.hemisphereNear);
-		params.lightMass.baking.interpolationPasses = std::clamp<std::uint32_t>(json["lightmass"]["interpolationPasses"].get<float>(), 0, 16);
-		params.lightMass.baking.interpolationThreshold = json["lightmass"]["interpolationThreshold"].get<float>();
-		params.lightMass.enableGI = json["lightmass"]["enableGI"].get<float>() > 0 ? 1 : 0;*/
-	}
-
 	bool run(ray::util::string path)
 	{
 		while (path.empty())
@@ -293,21 +247,10 @@ public:
 		}
 
 		AppParams params;
-		this->getParams(params);
 
 		ray::PMX model;
 		if (!this->load(path, model))
 			return false;
-
-		if (model.header.addUVCount == 0)
-		{
-			ray::LightMapPack lightPack(_lightMapListener);
-			if (!lightPack.atlasUV1(model, params.lightMass.lightMap.width, params.lightMass.lightMap.height, params.chart, params.stretch, params.lightMass.lightMap.margin))
-				return false;
-
-			if (!this->save(ray::util::directory(path) + "stage.pmx", model))
-				return false;
-		}
 
 		auto lightMass = std::make_shared<ray::LightMass>(_lightMassListener);
 		if (!lightMass->open())
@@ -334,6 +277,8 @@ private:
 __ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")
 
 GuiControllerComponent::GuiControllerComponent() noexcept
+	: _lightMapListener(std::make_shared<AppMapListener>())
+	, _lightMassListener(std::make_shared<AppMassListener>())
 {
 }
 
@@ -346,24 +291,15 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 {
 	ray::StreamReaderPtr stream;
 	if (!ray::IoServer::instance()->openFile(stream, path))
-	{
-		error = "Failed to open file.";
 		return false;
-	}
 
 	ray::PMXHandler header;
 	if (!header.doCanRead(*stream))
-	{
-		error = "Non readable PMX file.";
 		return false;
-	}
 
 	auto model = std::make_unique<ray::PMX>();
 	if (!header.doLoad(*stream, *model))
-	{
-		error = "Non readable PMX file.";
 		return false;
-	}
 
 	_model = std::move(model);
 
@@ -374,6 +310,40 @@ bool
 GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray::util::string& error) noexcept
 {
 	if (!_model)
+		return false;
+
+	ray::StreamWritePtr stream;
+	if (!ray::IoServer::instance()->openFile(stream, path))
+		return false;
+
+	ray::PMXHandler header;
+	if (!header.doSave(*stream, *_model))
+		return false;
+
+	return true;
+}
+
+bool
+GuiControllerComponent::onUVMapperWillStart(const GuiParams& params) noexcept
+{
+	return _model ? true : false;
+}
+
+bool
+GuiControllerComponent::onUVMapperStart(const GuiParams& params) noexcept
+{
+	std::uint32_t size = 512;
+	if (params.lightmass.imageSize == 1)
+		size = 1024;
+	else if (params.lightmass.imageSize == 2)
+		size = 2048;
+	else if (params.lightmass.imageSize == 3)
+		size = 4096;
+	else if (params.lightmass.imageSize == 4)
+		size = 8192;
+
+	ray::LightMapPack lightPack(_lightMapListener);
+	if (!lightPack.atlasUV1(*_model, size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin))
 		return false;
 
 	return true;
@@ -393,10 +363,22 @@ GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) exce
 		auto view = component->downcast<GuiViewComponent>();
 		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
 		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
+
+		view->setUVMapperStartListener(std::bind(&GuiControllerComponent::onUVMapperStart, this, std::placeholders::_1));
+		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1));
 	}
 }
 
 void
 GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noexcept
 {
+	if (component->isInstanceOf<GuiViewComponent>())
+	{
+		auto view = component->downcast<GuiViewComponent>();
+		view->setModelImportListener(nullptr);
+		view->setModelSaveAsListener(nullptr);
+
+		view->setUVMapperStartListener(nullptr);
+		view->setUVMapperWillStartListener(nullptr);
+	}
 }

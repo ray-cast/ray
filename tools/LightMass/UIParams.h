@@ -34,6 +34,9 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifndef _H_UI_PARAMS_H_
+#define _H_UI_PARAMS_H_
+
 #include <ray/game_component.h>
 
 struct GUIUvmapper
@@ -71,3 +74,5 @@ struct GuiParams
 	GUIUvmapper uvmapper;
 	GUILightMass lightmass;
 };
+
+#endif

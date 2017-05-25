@@ -57,7 +57,23 @@ public:
 	static const Vector4t<T> UnitY;
 	static const Vector4t<T> UnitZ;
 
-	T x, y, z, w;
+	union
+	{
+		struct
+		{
+			T x, y, z, w;
+		};
+
+		struct
+		{
+			T r, g, b, a;
+		};
+
+		struct
+		{
+			T left, right, bottom, top;
+		};
+	};
 
 	Vector4t() noexcept {}
 	Vector4t(T xyz, T ww)  noexcept : x(xyz), y(xyz), z(xyz), w(ww) {}
@@ -479,7 +495,7 @@ public:
 		return *this;
 	}
 
-	 Vector4t<T>& set(const Vector3t<T>& v) noexcept
+	Vector4t<T>& set(const Vector3t<T>& v) noexcept
 	{
 		x = v.x; y = v.y; z = v.z;
 		return *this;

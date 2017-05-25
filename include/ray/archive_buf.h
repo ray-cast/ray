@@ -358,7 +358,7 @@ public:
 	}
 
 	template<typename T, std::enable_if_t<std::is_integral<T>::value || std::is_same<T, number_float_t>::value, int> = 0>
-	archivebuf& operator << (T& argv)
+	archivebuf& operator << (const T& argv)
 	{
 		this->operator=(argv);
 		return *this;

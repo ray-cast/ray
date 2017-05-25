@@ -78,7 +78,9 @@ const char* en_lang[] = {
 	"Ray tracing zfar:",
 	"Interpolation Passes:",
 	"Interpolation Threshold:",
-	" Start Baking "
+	" Start Baking ",
+	"Unsupported Model",
+	"Process"
 };
 
 const char* cn_lang[] = {
@@ -123,7 +125,9 @@ const char* cn_lang[] = {
 	"追踪的最大范围",
 	"插值次数",
 	"插值阈值",
-	" 开始烘培 "
+	" 开始烘培 ",
+	"不支持的模型",
+	"处理中"
 };
 
 std::vector<std::string> cn_lang_utf8;

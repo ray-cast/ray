@@ -57,6 +57,9 @@ public:
 	void setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
 	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
 
+	void setUVMapperWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
+	void setUVMapperStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
+
 private:
 	virtual void onMessage(const ray::MessagePtr& message) noexcept;
 
@@ -69,8 +72,10 @@ private:
 	void showErrorMessage() noexcept;
 	void showErrorPopupMessage(const ray::util::string& message, std::size_t hash) noexcept;
 
-	bool showFileOpenBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept;
-	bool showFileSaveBrowse(ray::util::string::pointer path, ray::util::string::size_type max_length, ray::util::string::const_pointer ext_name) noexcept;
+	void showProcessMessage() noexcept;
+
+	bool showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
+	bool showFileSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
 
 	void showModelImportBrowse() noexcept;
 	void showModelExportBrowse() noexcept;
@@ -79,6 +84,7 @@ private:
 	void showProjectSaveBrowse() noexcept;
 	void showProjectSaveAsBrowse() noexcept;
 
+	void startUVMapper() noexcept;
 	void switchLangPackage(UILang::Lang type) noexcept;
 
 private:
@@ -87,6 +93,7 @@ private:
 
 private:
 	float _fps;
+	float _process;
 
 	bool _showMainMenu;
 	bool _showLightMassWindow;
@@ -95,12 +102,14 @@ private:
 	bool _showAboutWindowFirst;
 	bool _showErrorMessage;
 	bool _showErrorMessageFirst;
+	bool _showProcessMessage;
+	bool _showProcessMessageFirst;
 
 	std::string _pathProject;
 
 	std::size_t _errorHash;
 	std::string _errorMessage;
-	std::map<int, bool> _showError;
+	std::map<std::size_t, bool> _showError;
 	std::vector<const char*> _langs;
 
 	ray::float4 _clearColor;
@@ -114,6 +123,9 @@ private:
 
 	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelImport;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelSaveAs;
+
+	std::function<bool(const GuiParams&)> _onUVMapperWillStart;
+	std::function<bool(const GuiParams&)> _onUVMapperStart;
 };
 
 #endif

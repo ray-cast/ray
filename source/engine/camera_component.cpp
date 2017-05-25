@@ -109,15 +109,15 @@ CameraComponent::getRatio() const noexcept
 }
 
 void
-CameraComponent::setOrtho(float left, float right, float bottom, float top) noexcept
+CameraComponent::setOrtho(const float4& ortho) noexcept
 {
-	_camera->setOrtho(left, right, bottom, top);
+	_camera->setOrtho(ortho);
 }
 
-void
-CameraComponent::getOrtho(float& left, float& right, float& bottom, float& top) noexcept
+const float4&
+CameraComponent::getOrtho() const noexcept
 {
-	_camera->getOrtho(left, right, bottom, top);
+	return _camera->getOrtho();
 }
 
 const Matrix4x4&
@@ -289,7 +289,7 @@ CameraComponent::load(const archivebuf& reader) noexcept
 		for (std::uint8_t i = 0; i < 4; ++i)
 			fru[i] = values[i].get<archive::number_float_t>();
 
-		this->setOrtho(fru.x, fru.y, fru.z, fru.w);
+		this->setOrtho(fru);
 	}
 
 	if (viewport.is_array())
@@ -386,6 +386,17 @@ CameraComponent::load(const archivebuf& reader) noexcept
 void
 CameraComponent::save(archivebuf& write) noexcept
 {
+	write["aperture"] << this->getAperture();
+	write["znear"] << this->getNear();
+	write["zfar"] << this->getFar();
+	write["ratio"] << this->getRatio();
+	write["ortho"] << this->getOrtho();
+	write["viewport"] << this->getViewport();
+	write["clear_color"] << this->getClearColor();
+	write["order"] << static_cast<archive::number_unsigned_t>(this->getCameraOrder());
+	write["camera_type"] << static_cast<archive::number_unsigned_t>(this->getCameraType());
+	write["clear_flags"] << this->getCameraClearFlags();
+	write["render_flags"] << this->getCameraRenderFlags();
 }
 
 void

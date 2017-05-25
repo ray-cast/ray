@@ -16,7 +16,7 @@
             	]
             },
             {
-                "name": "sky", "position": "0,50,0", "rotate": "90,0,0", "active": true,
+                "name": "sky", "position": "0,50,0", "active": true,
                 "components": [
                     {
                         "class": "Light",

@@ -1012,7 +1012,7 @@ GameObject::load(const archivebuf& reader) except
 	reader["position"] >> this->_localTranslate;
 	reader["scale"] >> this->_localScaling;
 
-	float3 euler;
+	float3 euler = float3::Zero;
 	reader["rotate"] >> euler;
 	this->setQuaternion(ray::Quaternion(euler));
 }

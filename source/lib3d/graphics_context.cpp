@@ -44,6 +44,11 @@ GraphicsContextDesc::GraphicsContextDesc() noexcept
 {
 }
 
+GraphicsContextDesc::GraphicsContextDesc(GraphicsSwapchainPtr swapchain) noexcept
+	: _swapchain(swapchain)
+{
+}
+
 GraphicsContextDesc::~GraphicsContextDesc() noexcept
 {
 }

@@ -51,7 +51,7 @@ public:
 	size_type x, y;
 
 	Sizet() noexcept : x(0), y(0) { }
-	Sizet(int xx, int yy) noexcept : x(xx), y(yy) { }
+	Sizet(size_type xx, size_type yy) noexcept : x(xx), y(yy) { }
 
 	_Myt& operator+=(const _Myt& sz) noexcept { x += sz.x; y += sz.y; return *this; }
 	_Myt& operator-=(const _Myt& sz) noexcept { x -= sz.x; y -= sz.y; return *this; }
@@ -66,7 +66,10 @@ public:
 	_Myt& operator/=(double i) noexcept { x = int(x / i); y = int(y / i); return *this; }
 	_Myt& operator*=(double i) noexcept { x = int(x*i); y = int(y*i); return *this; }
 
-	void set(int xx, int yy) { x = xx; y = yy; }
+	size_type& operator[](std::uint8_t n) noexcept { return ((size_type*)this)[n]; }
+	const size_type& operator[](std::uint8_t n) const noexcept { return ((size_type*)this)[n]; }
+
+	void set(size_type xx, size_type yy) { x = xx; y = yy; }
 };
 
 template<typename T>
@@ -191,9 +194,6 @@ public:
 	Pointt()  noexcept : x(0), y(0) { }
 	Pointt(size_type xx, size_type yy) noexcept : x(xx), y(yy) { }
 
-	// no copy ctor or assignment operator - the defaults are ok
-
-	//assignment operators
 	_Myt& operator+=(const _Myt& p) noexcept { x += p.x; y += p.y; return *this; }
 	_Myt& operator-=(const _Myt& p) noexcept { x -= p.x; y -= p.y; return *this; }
 	_Myt& operator*=(const _Myt& p) noexcept { x *= p.x; y *= p.y; return *this; }
@@ -204,18 +204,21 @@ public:
 	_Myt& operator*=(const _Mysize& s) noexcept { x *= s.x; y *= s.y; return *this; }
 	_Myt& operator/=(const _Mysize& s) noexcept { x /= s.x; y /= s.y; return *this; }
 
-	_Myt& operator*=(int scale) noexcept { x *= scale; y *= scale; return *this; }
-	_Myt& operator/=(int scale) noexcept { x /= scale; y /= scale; return *this; }
+	_Myt& operator*=(size_type scale) noexcept { x *= scale; y *= scale; return *this; }
+	_Myt& operator/=(size_type scale) noexcept { x /= scale; y /= scale; return *this; }
 
-	void set(int val) noexcept { x = y = val; }
-	void set(int xx, int yy) noexcept { x = xx; y = yy; }
+	size_type& operator[](std::uint8_t n) noexcept { return ((size_type*)this)[n]; }
+	const size_type& operator[](std::uint8_t n) const noexcept { return ((size_type*)this)[n]; }
+
+	void set(size_type val) noexcept { x = y = val; }
+	void set(size_type xx, size_type yy) noexcept { x = xx; y = yy; }
 
 	_Myt negate() const noexcept { return _Myt(-x, -y); }
 
-	int* ptr() noexcept { return (int*)this; }
-	const int* ptr() const noexcept { return (const int*)this; }
-	int* data() noexcept { return (int*)this; }
-	const int* data() const noexcept { return (const int*)this; }
+	size_type* ptr() noexcept { return (size_type*)this; }
+	const int* ptr() const noexcept { return (const size_type*)this; }
+	size_type* data() noexcept { return (size_type*)this; }
+	const int* data() const noexcept { return (const size_type*)this; }
 };
 
 template<typename T>
@@ -360,10 +363,11 @@ template<typename T>
 class Rectt
 {
 public:
-	typedef T size_type;
-	typedef Rectt<T> _Myt;
-	typedef Pointt<T> _Mypoint;
-	typedef Sizet<T> _Mysize;
+	using size_type = T;
+
+	using _Myt = Rectt<T>;
+	using _Mypoint = Pointt<T>;
+	using _Mysize = Sizet<T>;
 
 	size_type x, y, w, h;
 
@@ -380,10 +384,10 @@ public:
 
 	void set(int xx, int yy, int ww, int hh) noexcept { x = xx; y = yy; w = ww; h = hh; }
 
-	int* ptr() noexcept { return (int*)this; }
-	const int* ptr() const noexcept { return (const int*)this; }
-	int* data() noexcept { return (int*)this; }
-	const int* data() const noexcept { return (const int*)this; }
+	size_type* ptr() noexcept { return (size_type*)this; }
+	const size_type* ptr() const noexcept { return (const size_type*)this; }
+	size_type* data() noexcept { return (size_type*)this; }
+	const size_type* data() const noexcept { return (const size_type*)this; }
 
 	Pointt<T> xy() noexcept { return Pointt<T>(x, y); }
 };
@@ -487,8 +491,8 @@ public:
 		, maxDepth(_maxDepth)
 	{}
 
-	size_type& operator[](int n) noexcept { return ((size_type*)this)[n]; }
-	const size_type& operator[](int n) const noexcept { return ((size_type*)this)[n]; }
+	size_type& operator[](std::uint8_t n) noexcept { return ((size_type*)this)[n]; }
+	const size_type& operator[](std::uint8_t n) const noexcept { return ((size_type*)this)[n]; }
 
 	const T* ptr() const noexcept
 	{
@@ -539,8 +543,8 @@ public:
 		, height(_height)
 	{}
 
-	size_type& operator[](int n) noexcept { return ((size_type*)this)[n]; }
-	const size_type& operator[](int n) const noexcept { return ((size_type*)this)[n]; }
+	size_type& operator[](std::uint8_t n) noexcept { return ((size_type*)this)[n]; }
+	const size_type& operator[](std::uint8_t n) const noexcept { return ((size_type*)this)[n]; }
 
 	const T* ptr() const noexcept
 	{

@@ -418,7 +418,7 @@ OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 			std::uint32_t viewportCount = std::max<std::uint32_t>(1, static_cast<std::uint32_t>(colorAttachment.size()));
 			for (std::uint32_t i = 0; i < viewportCount; i++)
 			{
-				this->setViewport(i, Viewport(0.0f, 0.0f, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
+				this->setViewport(i, Viewport(0.0f, 0.0f, (float)framebufferDesc.getWidth(), (float)framebufferDesc.getHeight()));
 
 				glScissorIndexed(i, _scissors[i].left, framebufferDesc.getHeight() - _scissors[i].height - _scissors[i].top, _scissors[i].width, _scissors[i].height);
 			}
@@ -537,8 +537,8 @@ OGLCoreDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags
 	{
 		if (_framebuffer)
 		{
-			std::size_t viewportCount = std::max<std::size_t>(1, _framebuffer->getGraphicsFramebufferDesc().getColorAttachments().size());
-			for (std::size_t j = 0; j < viewportCount; j++)
+			GLuint viewportCount = std::max<GLuint>(1, _framebuffer->getGraphicsFramebufferDesc().getColorAttachments().size());
+			for (GLuint j = 0; j < viewportCount; j++)
 			{
 				glScissorIndexed(j, _scissors[j].left, _scissors[j].top, _scissors[j].width, _scissors[j].height);
 			}

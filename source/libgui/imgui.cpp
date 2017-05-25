@@ -849,6 +849,21 @@ IMGUI::combo(const char* label, int* current_item, const char** items, int items
 }
 
 bool
+IMGUI::comboWithRevert(const char* label, const char* revert, int* current_item, int _default, const char** items, int items_count, int height_in_items) noexcept
+{
+	bool change = ImGui::Combo(label, current_item, items, items_count, height_in_items);
+	if (*current_item != _default)
+	{
+		sameLine();
+		pushID(std::hash<const char*>{}(label));
+		if (button(revert)) { *current_item = _default; change = false; };
+		popID();
+	}
+
+	return change;
+}
+
+bool
 IMGUI::combo(const char* label, int* current_item, const char* items_separated_by_zeros, int height_in_items) noexcept
 {
 	return ImGui::Combo(label, current_item, items_separated_by_zeros, height_in_items);

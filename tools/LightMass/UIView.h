@@ -93,7 +93,6 @@ private:
 	bool _showStyleEditor;
 	bool _showAboutWindow;
 	bool _showAboutWindowFirst;
-	bool _showBakingButton;
 	bool _showErrorMessage;
 	bool _showErrorMessageFirst;
 

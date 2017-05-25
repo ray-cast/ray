@@ -396,6 +396,7 @@ public:
 	static bool radioButton(const char* label, bool active) noexcept;
 	static bool radioButton(const char* label, int* v, int v_button) noexcept;
 	static bool combo(const char* label, int* current_item, const char** items, int items_count, int height_in_items = -1) noexcept;
+	static bool comboWithRevert(const char* label, const char* revert, int* current_item, int _default, const char** items, int items_count, int height_in_items = -1) noexcept;
 	static bool combo(const char* label, int* current_item, const char* items_separated_by_zeros, int height_in_items = -1) noexcept;
 	static bool combo(const char* label, int* current_item, bool(*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int height_in_items = -1) noexcept;
 	static bool colorButton(const float4& col, bool small_height = false, bool outline_border = true) noexcept;

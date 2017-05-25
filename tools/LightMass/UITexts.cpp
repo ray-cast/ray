@@ -107,6 +107,8 @@ void ConvertGBKToUtf8(const char* strGBK)
 
 void GetLangPackage(UILang::Lang type, std::vector<const char*>& langs) noexcept
 {
+	static_assert(sizeof(cn_lang) == sizeof(en_lang));
+
 	langs.clear();
 
 	if (type == UILang::Lang::English)

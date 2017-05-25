@@ -1,63 +1,48 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<scene>
-    <attribute name="Skinning"/>
-    <object>
-        <attribute name="first_person_camera"/>
-        <attribute position="0,45,-85"/>
-        <attribute rotate="25,0,0"/>
-        <attribute active="true"/>
-        <component class="Camera">
-            <attribute aperture="45.0"/>
-            <attribute znear="0.1"/>
-            <attribute zfar="500.0"/>
-        </component>
-        <component class="FirstPersonCamera">
-        </component>
-    </object>
-    <object>
-        <attribute name="spot"/>
-        <attribute position="0,60,0"/>
-        <attribute rotate="90,0,0"/>
-        <attribute active="true"/>
-        <component class="Light">
-            <attribute type="spot"/>
-            <attribute color="1.0,1.0,1.0"/>
-            <attribute range="60.0"/>
-            <attribute intensity="4000.0"/>
-            <attribute atten="0,0,1"/>
-            <attribute shadow="soft"/>
-        </component>
-    </object>
-    <object>
-        <attribute name="light"/>
-        <attribute position="0, 0, 0"/>
-        <attribute rotate="0,0,0"/>
-        <attribute active="true"/>
-        <component class="Light">
-            <attribute type="ambient"/>
-            <attribute range="100.0"/>
-            <attribute color="1.0,0.6,0.6"/>
-            <attribute atten="1,0,0"/>
-            <attribute intensity="0.2"/>
-        </component>
-    </object>
-    <object>
-        <attribute name="light"/>
-        <attribute position="0, 0, 0"/>
-        <attribute rotate="180,0,0"/>
-        <attribute active="true"/>
-        <component class="Light">
-            <attribute type="ambient"/>
-            <attribute range="100.0"/>
-            <attribute color="1.0,0.6,0.6"/>
-            <attribute atten="1,0,0"/>
-            <attribute intensity="0.1"/>
-        </component>
-    </object>
-    <object>
-        <attribute name="skinning"/>
-        <attribute active="true"/>
-        <component class="Skinning">
-        </component>
-    </object>
-</scene>
+{
+	"scene" : {
+		"name" : "Skinning",
+		"objects" : [
+			{
+				"name" : "first_person_camera",
+				"position" : [0.0,45,-85],
+				"rotate":[25,0,0],
+				"active":true,
+				"components" : [
+					{"class" : "Camera", "aperture":45.0, "znear":0.1, "zfar":500.0},
+					{"class" : "FirstPersonCamera"}
+				]
+			},
+			{
+				"name" : "spot",
+				"position" : [0.0,60,10],
+				"rotate" : [90,0,0],
+				"components" : [
+					{"class":"Light", "type":"spot", "color":[1.0,1.0,1.0], "range":60.0, "intensity":1.0, "atten":[1,0,0], "shadow":"soft"}
+				]
+			},
+			{
+				"name" : "light",
+				"position" : [0.0,60,0],
+				"rotate" : [0,0,0],
+				"components" : [
+					{"class":"Light", "type":"ambient", "color":[1.0,0.6,0.6], "range":100.0, "intensity":0.1, "atten":[1,0,0]}
+				]
+			},
+			{
+				"name" : "light",
+				"position" : [0.0,60,0],
+				"rotate" : [180,0,0],
+				"components" : [
+					{"class":"Light", "type":"ambient", "color":[1.0,0.6,0.6], "range":100.0, "intensity":0.1, "atten":[1,0,0]}
+				]
+			},
+			{
+				"name":"skinning",
+				"active":true,
+				"components":[
+					{"class" : "Skinning"}
+				]
+			}
+		]
+	}
+}

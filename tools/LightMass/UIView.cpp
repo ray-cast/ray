@@ -53,7 +53,6 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showMainMenu = true;
 	_showLightMassWindow = true;
 	_showStyleEditor = false;
-	_showBakingButton = false;
 	_showAboutWindow = false;
 	_showAboutWindowFirst = false;
 	_showErrorMessage = false;
@@ -299,9 +298,7 @@ GuiViewComponent::showModelImportBrowse() noexcept
 	if (_onModelImport)
 	{
 		ray::util::string error;
-		if (_onModelImport(filepath, error))
-			_showBakingButton = true;
-		else
+		if (!_onModelImport(filepath, error))
 		{
 			if (!error.empty())
 				this->showErrorPopupMessage(error, std::hash<const char*>{}("showModelImportBrowse"));
@@ -430,24 +427,10 @@ GuiViewComponent::showLightMass() noexcept
 		if (ray::Gui::collapsingHeader("Uvmapper", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::text("Output UV size");
-			ray::Gui::combo("##UV size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
-			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(std::hash<const char*>{}("##UV size"));
-				if (ray::Gui::button(_langs[UILang::Revert])) _setting.lightmass.imageSize = _default.lightmass.imageSize;
-				ray::Gui::popID();
-			}
+			ray::Gui::comboWithRevert("##UV size", "Revert", &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 
 			ray::Gui::text("Output UV slot");
-			ray::Gui::combo("##Output UV slot", &_setting.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
-			if (_setting.uvmapper.slot != _default.uvmapper.slot)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(std::hash<const char*>{}("##Output UV slot"));
-				if (ray::Gui::button(_langs[UILang::Revert])) _setting.uvmapper.slot = _default.uvmapper.slot;
-				ray::Gui::popID();
-			}
+			ray::Gui::comboWithRevert("##Output UV slot", "Revert", &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
 			ray::Gui::text("margin:");
 			ray::Gui::sliderFloatWithRevert("##margin", _langs[UILang::Revert], &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
@@ -458,8 +441,7 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::text("chart:");
 			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert], &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
 
-			if (_showBakingButton)
-				ray::Gui::button("Start UV mapper");
+			ray::Gui::button("Start UV mapper");
 		}
 
 		if (ray::Gui::collapsingHeader("Light Mass", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
@@ -470,34 +452,13 @@ GuiViewComponent::showLightMass() noexcept
 				ray::Gui::checkbox("Enable IBL", &_setting.lightmass.enableSkyLighting);
 
 			ray::Gui::text("Output Size");
-			ray::Gui::combo("##Output size", &_setting.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
-			if (_setting.lightmass.imageSize != _default.lightmass.imageSize)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(std::hash<const char*>{}("##Output size"));
-				if (ray::Gui::button(_langs[UILang::Revert])) _setting.lightmass.imageSize = _default.lightmass.imageSize;
-				ray::Gui::popID();
-			}
+			ray::Gui::comboWithRevert("##Output size", "Revert", &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 
 			ray::Gui::text("Input UV slot");
-			ray::Gui::combo("##Input UV slot", &_setting.lightmass.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
-			if (_setting.lightmass.slot != _default.lightmass.slot)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(std::hash<const char*>{}("##Input UV slot"));
-				if (ray::Gui::button(_langs[UILang::Revert])) _setting.lightmass.slot = _default.lightmass.slot;
-				ray::Gui::popID();
-			}
+			ray::Gui::comboWithRevert("##Input UV slot", "Revert", &_setting.lightmass.slot, _default.lightmass.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
 			ray::Gui::text("Sample Count");
-			ray::Gui::combo("##Sample Count", &_setting.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
-			if (_setting.lightmass.sampleCount != _default.lightmass.sampleCount)
-			{
-				ray::Gui::sameLine();
-				ray::Gui::pushID(std::hash<const char*>{}("##Sample Count"));
-				if (ray::Gui::button(_langs[UILang::Revert])) _setting.lightmass.sampleCount = _default.lightmass.sampleCount;
-				ray::Gui::popID();
-			}
+			ray::Gui::comboWithRevert("##Sample Count", "Revert", &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
 
 			ray::Gui::text("Environment Color:");
 			ray::Gui::colorPicker3WithRevert("##Environment Color", _langs[UILang::Revert], _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
@@ -515,10 +476,9 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::sliderIntWithRevert("##Interpolation Passes", _langs[UILang::Revert], &_setting.lightmass.interpolationPasses, _default.lightmass.interpolationPasses, 1, 5);
 
 			ray::Gui::text("Interpolation Threshold");
-			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.5f", 2.2);
+			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
 
-			if (_showBakingButton)
-				ray::Gui::button("Start Baking");
+			ray::Gui::button("Start Baking");
 		}
 
 		ray::Gui::end();

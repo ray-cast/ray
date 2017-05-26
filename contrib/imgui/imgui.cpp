@@ -624,10 +624,6 @@
 #include <stdint.h>     // intptr_t
 #endif
 
-#if _WINDOWS
-#	include <Windows.h>
-#endif
-
 #ifdef _MSC_VER
 #pragma warning (disable: 4127) // condition expression is constant
 #pragma warning (disable: 4505) // unreferenced local function has been removed (stb stuff)
@@ -3237,18 +3233,8 @@ bool ImGui::IsMouseDragging(int button, float lock_threshold)
 
 ImVec2 ImGui::GetMousePos()
 {
-#if _WINDOWS
-	ImGuiContext& g = *GImGui;
-
-	POINT pt;
-	GetCursorPos(&pt);
-	ScreenToClient(g.IO.ImeWindowHandle ? (HWND)g.IO.ImeWindowHandle : GetActiveWindow(), &pt);
-
-	return ImVec2(pt.x, pt.y);
-#else
 	ImGuiContext& g = *GImGui;
 	return g.IO.MousePos;
-#endif
 }
 
 // NB: prefer to call right after BeginPopup(). At the time Selectable/MenuItem is activated, the popup is already closed!
@@ -7524,7 +7510,7 @@ namespace ImGuiStb
 		while (ImWchar c = *src++)
 			*dst++ = c;
 		*dst = '\0';
-	}
+}
 
 	static bool STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* obj, int pos, const ImWchar* new_text, int new_text_len)
 	{

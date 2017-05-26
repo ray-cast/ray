@@ -60,6 +60,8 @@ private:
 	virtual void onAttachComponent(ray::GameComponentPtr& component) except;
 	virtual void onDetachComponent(ray::GameComponentPtr& component) noexcept;
 
+	virtual void onActivate() except;
+
 private:
 	GuiControllerComponent(const GuiControllerComponent&) = delete;
 	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;

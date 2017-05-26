@@ -58,8 +58,6 @@ SET(COMPONENT_LIST
 	UITexts.cpp
 	first_person_camera.cpp
 	first_person_camera.h
-	sphere_maker.cpp
-	sphere_maker.h
 )
 SOURCE_GROUP("Components" FILES ${COMPONENT_LIST})
 

@@ -354,12 +354,12 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 			if (!stream.read((char*)&morph.morphType, sizeof(morph.morphType))) return false;
 			if (!stream.read((char*)&morph.morphCount, sizeof(morph.morphCount))) return false;
 
-			if (morph.morphType == MorphType::MorphTypeGroup)
+			if (morph.morphType == PMXMorphType::MorphTypeGroup)
 			{
 				if (!stream.read((char*)&morph.morphIndex, pmx.header.sizeOfMorph)) return false;
 				if (!stream.read((char*)&morph.morphRate, sizeof(morph.morphRate))) return false;
 			}
-			else if (morph.morphType == MorphType::MorphTypeVertex)
+			else if (morph.morphType == PMXMorphType::MorphTypeVertex)
 			{
 				morph.vertexList.resize(morph.morphCount);
 
@@ -369,7 +369,7 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 					if (!stream.read((char*)&vertex.offset, sizeof(vertex.offset))) return false;
 				}
 			}
-			else if (morph.morphType == MorphType::MorphTypeBone)
+			else if (morph.morphType == PMXMorphType::MorphTypeBone)
 			{
 				morph.boneList.resize(morph.morphCount);
 
@@ -380,9 +380,9 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 					if (!stream.read((char*)&bone.rotate, sizeof(bone.rotate))) return false;
 				}
 			}
-			else if (morph.morphType == MorphType::MorphTypeUV || morph.morphType == MorphType::MorphTypeExtraUV1 ||
-				morph.morphType == MorphType::MorphTypeExtraUV2 || morph.morphType == MorphType::MorphTypeExtraUV3 ||
-				morph.morphType == MorphType::MorphTypeExtraUV4)
+			else if (morph.morphType == PMXMorphType::MorphTypeUV || morph.morphType == PMXMorphType::MorphTypeExtraUV1 ||
+				morph.morphType == PMXMorphType::MorphTypeExtraUV2 || morph.morphType == PMXMorphType::MorphTypeExtraUV3 ||
+				morph.morphType == PMXMorphType::MorphTypeExtraUV4)
 			{
 				morph.texcoordList.resize(morph.morphCount);
 
@@ -392,7 +392,7 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 					if (!stream.read((char*)&texcoord.offset, sizeof(texcoord.offset))) return false;
 				}
 			}
-			else if (morph.morphType == MorphType::MorphTypeMaterial)
+			else if (morph.morphType == PMXMorphType::MorphTypeMaterial)
 			{
 				morph.materialList.resize(morph.morphCount);
 
@@ -755,12 +755,12 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			if (!stream.write((char*)&morph.morphType, sizeof(morph.morphType))) return false;
 			if (!stream.write((char*)&morph.morphCount, sizeof(morph.morphCount))) return false;
 
-			if (morph.morphType == MorphType::MorphTypeGroup)
+			if (morph.morphType == PMXMorphType::MorphTypeGroup)
 			{
 				if (!stream.write((char*)&morph.morphIndex, pmx.header.sizeOfMorph)) return false;
 				if (!stream.write((char*)&morph.morphRate, sizeof(morph.morphRate))) return false;
 			}
-			else if (morph.morphType == MorphType::MorphTypeVertex)
+			else if (morph.morphType == PMXMorphType::MorphTypeVertex)
 			{
 				for (auto& vertex : morph.vertexList)
 				{
@@ -768,7 +768,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 					if (!stream.write((char*)&vertex.offset, sizeof(vertex.offset))) return false;
 				}
 			}
-			else if (morph.morphType == MorphType::MorphTypeBone)
+			else if (morph.morphType == PMXMorphType::MorphTypeBone)
 			{
 				for (auto& bone : morph.boneList)
 				{
@@ -777,9 +777,9 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 					if (!stream.write((char*)&bone.rotate, sizeof(bone.rotate))) return false;
 				}
 			}
-			else if (morph.morphType == MorphType::MorphTypeUV || morph.morphType == MorphType::MorphTypeExtraUV1 ||
-				morph.morphType == MorphType::MorphTypeExtraUV2 || morph.morphType == MorphType::MorphTypeExtraUV3 ||
-				morph.morphType == MorphType::MorphTypeExtraUV4)
+			else if (morph.morphType == PMXMorphType::MorphTypeUV || morph.morphType == PMXMorphType::MorphTypeExtraUV1 ||
+				morph.morphType == PMXMorphType::MorphTypeExtraUV2 || morph.morphType == PMXMorphType::MorphTypeExtraUV3 ||
+				morph.morphType == PMXMorphType::MorphTypeExtraUV4)
 			{
 				for (auto& texcoord : morph.texcoordList)
 				{
@@ -787,7 +787,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 					if (!stream.write((char*)&texcoord.offset, sizeof(texcoord.offset))) return false;
 				}
 			}
-			else if (morph.morphType == MorphType::MorphTypeMaterial)
+			else if (morph.morphType == PMXMorphType::MorphTypeMaterial)
 			{
 				for (auto& material : morph.materialList)
 				{

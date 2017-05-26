@@ -67,7 +67,7 @@ typedef std::uint32_t PMX_uint32_t;
 
 typedef float PMX_Float;
 
-enum
+enum PMXBone
 {
 	PMX_BDEF1,
 	PMX_BDEF2,
@@ -76,7 +76,7 @@ enum
 	PMX_QDEF
 };
 
-enum MorphType
+enum PMXMorphType
 {
 	MorphTypeGroup = 0,
 	MorphTypeVertex = 1,
@@ -89,13 +89,13 @@ enum MorphType
 	MorphTypeMaterial = 8
 };
 
-enum ShapeType
+enum PMXShapeType
 {
 	ShapeTypeTriMesh,
 	ShapeTypeRope
 };
 
-enum ShapeFlags
+enum PMXShapeFlags
 {
 	ShapeFlagsB_Link,
 	ShapeFlags_ClusterCreation,

@@ -126,6 +126,24 @@ IMGUISystem::open(void* _window) except
 
 	_materialDecal->uniformTexture(_texture);
 
+	ray::GraphicsDataDesc dataDesc;
+	dataDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+	dataDesc.setStream(0);
+	dataDesc.setStreamSize(4096 * sizeof(float));
+	dataDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
+	_vbo = RenderSystem::instance()->createGraphicsData(dataDesc);
+	if (!_vbo)
+		return false;
+
+	ray::GraphicsDataDesc elementDesc;
+	elementDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+	elementDesc.setStream(0);
+	elementDesc.setStreamSize(4096 * sizeof(std::uint16_t));
+	elementDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
+	_ibo = RenderSystem::instance()->createGraphicsData(elementDesc);
+	if (!_ibo)
+		return false;
+
 	return true;
 }
 
@@ -342,7 +360,7 @@ IMGUISystem::render(float delta) except
 			auto texture = (ray::GraphicsTexture*)pcmd->TextureId;
 			_materialDecal->uniformTexture(texture->downcast_pointer<ray::GraphicsTexture>());
 
-			auto scissor = ImVec4((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+			ImVec4 scissor((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
 			if (RenderSystem::instance()->getRenderSetting().deviceType != GraphicsDeviceType::GraphicsDeviceTypeVulkan)
 				scissor.y = io.DisplaySize.y - scissor.w - scissor.y;

@@ -130,7 +130,7 @@ private:
 
 	OGLPipelinePtr _pipeline;
 	OGLDescriptorSetPtr _descriptorSet;
-	OGLFramebufferPtr _framebuffer;
+	GraphicsFramebufferPtr _framebuffer;
 	OGLVertexBuffers _vertexBuffers;
 	OGLGraphicsDataPtr _indexBuffer;
 	OGLProgramPtr _program;

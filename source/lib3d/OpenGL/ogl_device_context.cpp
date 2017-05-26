@@ -442,11 +442,11 @@ OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	assert(_glcontext->getActive());
 
-	if (target)
+	if (_framebuffer != target)
 	{
-		auto framebuffer = target->downcast_pointer<OGLFramebuffer>();
-		if (_framebuffer != framebuffer)
+		if (target)
 		{
+			auto framebuffer = target->downcast_pointer<OGLFramebuffer>();
 			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->getInstanceID());
 
 			auto& framebufferDesc = framebuffer->getGraphicsFramebufferDesc();
@@ -462,13 +462,13 @@ OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 
 			_framebuffer = framebuffer;
 		}
-	}
-	else
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-		this->setRenderPipeline(nullptr);
+		else
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+			this->setRenderPipeline(nullptr);
 
-		_framebuffer = nullptr;
+			_framebuffer = nullptr;
+		}
 	}
 }
 
@@ -742,7 +742,7 @@ OGLDeviceContext::drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, 
 	if (drawCount > 0)
 	{
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glMultiDrawElementsIndirect(drawType, GL_UNSIGNED_INT, (char*)nullptr + offset, drawCount, stride);
+		glMultiDrawElementsIndirect(drawType, _indexType, (char*)nullptr + offset, drawCount, stride);
 	}
 }
 

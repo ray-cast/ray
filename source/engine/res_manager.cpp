@@ -363,7 +363,7 @@ ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) 
 	std::uint32_t inputSize = 0;
 	if (!mesh.getVertexArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!mesh.getTangentArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+	if (!mesh.getTangentArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangentQuat)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 	if (!mesh.getColorArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
@@ -378,6 +378,7 @@ ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) 
 	auto _buildVertexBuffer = [&](const MeshProperty& mesh, std::size_t& offsetVertices, std::vector<std::uint8_t>& _vbo)
 	{
 		auto& vertices = mesh.getVertexArray();
+		auto& normals = mesh.getNormalArray();
 		auto& tangents = mesh.getTangentArray();
 		auto& colors = mesh.getColorArray();
 		auto& texcoords = mesh.getTexcoordArray();
@@ -398,7 +399,7 @@ ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) 
 			offset1 += sizeof(float3);
 		}
 
-		if (!tangents.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+		if (!tangents.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangentQuat)
 		{
 			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
 

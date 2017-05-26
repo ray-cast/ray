@@ -143,7 +143,16 @@ bool
 OGLCoreGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
 	assert(data);
-	*data = glMapNamedBufferRange(_buffer, offset, count, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+
+	GLbitfield flags = 0;
+
+	auto usage = _desc.getUsage();
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
+		flags |= GL_MAP_READ_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit)
+		flags |= GL_MAP_WRITE_BIT;
+
+	*data = glMapNamedBufferRange(_buffer, offset, count, flags);
 	return *data ? true : false;
 }
 

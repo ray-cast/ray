@@ -87,7 +87,12 @@ OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
 		flags = GL_STATIC_DRAW;
 	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit)
-		flags = GL_DYNAMIC_READ;
+	{
+		if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
+			flags = GL_DYNAMIC_READ;
+		else
+			flags = GL_DYNAMIC_DRAW;
+	}
 
 	glGenBuffers(1, &_buffer);
 	glBindBuffer(_target, _buffer);
@@ -124,8 +129,18 @@ OGLGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) n
 {
 	assert(data);
 	assert(!_data);
+
 	glBindBuffer(_target, _buffer);
-	_data = *data = glMapBufferRange(_target, offset, count, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+
+	GLbitfield flags = 0;
+
+	auto usage = _desc.getUsage();
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
+		flags |= GL_MAP_READ_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit)
+		flags |= GL_MAP_WRITE_BIT;
+
+	_data = *data = glMapBufferRange(_target, offset, count, flags);
 	return _data ? true : false;
 }
 

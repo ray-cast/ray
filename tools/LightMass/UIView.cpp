@@ -558,7 +558,7 @@ GuiViewComponent::showLightMass() noexcept
 	if (!_showLightMassWindow)
 		return;
 
-	ray::Gui::setNextWindowPos(ray::float2(10, 40), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+	ray::Gui::setNextWindowPos(ray::float2(10, 80), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 
 	if (ray::Gui::begin(_langs[UILang::LightMass], &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{

@@ -303,9 +303,97 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 	if (!header.doLoad(*stream, *model))
 		return false;
 
-	auto gameObject = ray::ResManager::instance()->createGameObject(path);
-	if (!gameObject)
-		return false;
+	auto gameObject = std::make_shared<ray::GameObject>();
+
+	ray::PMX_Index* indices = model->indices.data();
+	ray::MeshPropertyPtr root = nullptr;
+
+	for (auto& it : model->materials)
+	{
+		ray::Float3Array vertices;
+		ray::Float3Array normals;
+		ray::Float2Array texcoords;
+		ray::VertexWeights weights;
+		ray::UintArray faces;
+
+		for (std::uint32_t i = 0; i < it.IndicesCount; i++, indices += model->header.sizeOfIndices)
+		{
+			std::uint32_t index = 0;
+
+			if (model->header.sizeOfIndices == 1)
+				index = *(std::uint8_t*)indices;
+			else if (model->header.sizeOfIndices == 2)
+				index = *(std::uint16_t*)indices;
+			else if (model->header.sizeOfIndices == 4)
+				index = *(std::uint32_t*)indices;
+			else
+				return false;
+
+			ray::PMX_Vertex& v = model->vertices[index];
+
+			vertices.push_back(v.position);
+			normals.push_back(v.normal);
+			texcoords.push_back(v.coord);
+			faces.push_back(i);
+		}
+
+		auto mesh = std::make_shared<ray::MeshProperty>();
+		mesh->setVertexArray(std::move(vertices));
+		mesh->setNormalArray(std::move(normals));
+		mesh->setTexcoordArray(std::move(texcoords));
+		mesh->setWeightArray(std::move(weights));
+		mesh->setFaceArray(std::move(faces));
+
+		if (!root)
+			root = mesh;
+		else
+			root->addChild(std::move(mesh));
+	}
+
+	if (model->numMaterials)
+	{
+		ray::MaterialPtr materialTemp;
+		if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", materialTemp))
+			return false;
+
+		ray::Materials materials(model->numMaterials);
+
+		for (std::size_t i = 0; i < model->numMaterials; i++)
+		{
+			auto material = materialTemp->clone();
+
+			material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
+			material->getParameter("diffuse")->uniform3f(ray::math::srgb2linear(model->materials[i].Diffuse));
+			material->getParameter("metalness")->uniform1f(0.0);
+			material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
+			material->getParameter("smoothness")->uniform1f(model->materials[i].Shininess / 255);
+
+			std::int16_t textureID = 0;
+			if (model->header.sizeOfTexture == 1)
+				textureID = (model->materials[i].TextureIndex == 255) ? -1 : model->materials[i].TextureIndex;
+			else
+				textureID = (model->materials[i].TextureIndex >= 65535) ? -1 : model->materials[i].TextureIndex;
+
+			if (textureID > 0)
+			{
+				char name[MAX_PATH];
+				::wcstombs(name, model->textures[textureID].name, model->textures[textureID].length);
+
+				ray::GraphicsTexturePtr texture;
+				if (ray::ResManager::instance()->createTexture(ray::util::directory(path) + name, texture))
+				{
+					material->getParameter("quality")->uniform4f(ray::float4(1.0, 0.0, 0.0, 0.0));
+
+					material->getParameter("texDiffuse")->uniformTexture(texture);
+				}
+			}
+
+			materials[i] = material;
+		}
+
+		gameObject->addComponent(std::make_shared<ray::MeshComponent>(std::move(root)));
+		gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(std::move(materials)));
+	}
 
 	gameObject->setActive(true);
 
@@ -605,16 +693,18 @@ GuiControllerComponent::onActivate() except
 		0.423187627f
 	};
 
-	auto diffuseMap = ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds");
+	ray::GraphicsTexturePtr diffuseMap;
+	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds", diffuseMap);
 	if (!diffuseMap)
 		return;
 
-	auto normalMap = ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds");
+	ray::GraphicsTexturePtr normalMap;
+	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds", normalMap);
 	if (!normalMap)
 		return;
 
-	auto materialTemp = ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml");
-	if (!materialTemp)
+	ray::MaterialPtr material;
+	if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", material))
 		return;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
@@ -630,7 +720,7 @@ GuiControllerComponent::onActivate() except
 			gameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f));
 
 			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
-			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
+			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material->clone()));
 
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 

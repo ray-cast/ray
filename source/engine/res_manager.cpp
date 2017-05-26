@@ -71,32 +71,35 @@ ResManager::~ResManager() noexcept
 	_textures.clear();
 }
 
-MaterialPtr
-ResManager::createMaterial(const util::string& name) noexcept
+bool
+ResManager::createMaterial(const util::string& name, MaterialPtr& material) noexcept
 {
-	auto material = RenderSystem::instance()->createMaterial(name);
+	material = RenderSystem::instance()->createMaterial(name);
 	if (!material)
-		return nullptr;
-	return material;
+		return false;
+	return true;
 }
 
-GraphicsTexturePtr
-ResManager::createTexture(const util::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
+bool
+ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
 {
 	if (name.empty())
-		return nullptr;
+		return false;
 
 	auto texture = _textures[name];
 	if (texture)
-		return texture;
+	{
+		_texture = texture;
+		return true;
+	}
 
 	StreamReaderPtr stream;
 	if (!IoServer::instance()->openFile(stream, name))
-		return nullptr;
+		return false;
 
 	image::Image image;
 	if (!image.load(*stream))
-		return nullptr;
+		return false;
 
 	auto imageFormat = image.format();
 	GraphicsFormat format = GraphicsFormat::GraphicsFormatUndefined;
@@ -175,10 +178,10 @@ ResManager::createTexture(const util::string& name, GraphicsTextureDim dim, Grap
 
 	texture = RenderSystem::instance()->createTexture(textureDesc);
 	if (!texture)
-		return nullptr;
+		return false;
 
-	_textures[name] = texture;
-	return texture;
+	_texture = _textures[name] = texture;
+	return true;
 }
 
 void
@@ -209,37 +212,49 @@ ResManager::getTexture(const util::string& name) noexcept
 	return _textures[name];
 }
 
-GameObjectPtr
-ResManager::createGameObject(const util::string& name, const util::string& anim) noexcept
+bool
+ResManager::createModel(const util::string& filename, ModelPtr& model) noexcept
 {
-	ResLoader<Model> resource;
-	if (!this->loadModel(name, resource))
-		return nullptr;
+	StreamReaderPtr stream;
+	if (IoServer::instance()->openFile(stream, filename))
+	{
+		if (!model)
+			model = std::make_shared<Model>();
 
-	auto model = resource.getInstance();
-	if (!model->hasMeshes())
-		return nullptr;
+		return model->load(*stream);
+	}
 
-	auto gameObject = std::make_shared<GameObject>();
-	this->createMeshes(*model, gameObject);
+	return false;
+}
+
+bool
+ResManager::createGameObject(const Model& model, GameObjectPtr& gameObject) noexcept
+{
+	if (!gameObject)
+		gameObject = std::make_shared<GameObject>();
+
+	if (!this->createMeshes(model, gameObject))
+		return false;
 
 	GameObjects bones;
-	this->createBones(*model, bones);
-
-	this->createAnimation(*model, gameObject, bones, anim);
+	if (!this->createBones(model, bones))
+		return false;
 
 	GameObjects rigidbodys;
-	this->createRigidbodyToBone(*model, rigidbodys, bones);
+	if (!this->createRigidbodyToBone(model, bones, rigidbodys))
+		return false;
 
 	GameObjects joints;
-	this->createJoints(*model, rigidbodys, joints);
+	if (!this->createJoints(model, rigidbodys, joints))
+		return false;
 
 	Materials materials;
-	this->createMaterials(*model, materials);
+	if (!this->createMaterials(model, materials))
+		return false;
 
 	if (materials.size() > 0)
 	{
-		if (bones.empty() || anim.empty())
+		if (bones.empty())
 			gameObject->addComponent(std::make_shared<MeshRenderComponent>(std::move(materials)));
 		else
 		{
@@ -251,39 +266,24 @@ ResManager::createGameObject(const util::string& name, const util::string& anim)
 		}
 	}
 
-	return gameObject;
-}
-
-bool
-ResManager::loadModel(const util::string& filename, ResLoader<Model>& model) noexcept
-{
-	model.load(filename,
-		[&](ray::ModelPtr model, const util::string& filename)
-	{
-		model->setDirectory(util::directory(filename));
-
-		StreamReaderPtr stream;
-		if (IoServer::instance()->openFile(stream, filename))
-			return model->load(*stream);
-		return false;
-	});
-
-	if (!model.isLoaded())
-		return false;
-
 	return true;
 }
 
-void
+bool
 ResManager::createMeshes(const Model& model, GameObjectPtr& object) noexcept
 {
 	CombineMeshes combineMeshes;
 	for (auto& meshProp : model.getMeshsList())
 	{
+		if (meshProp->getTexcoordArray().empty())
+			return false;
+
 		if (meshProp->getTangentArray().empty())
 			meshProp->computeTangents();
+
 		if (meshProp->getTangentQuatArray().empty())
 			meshProp->computeTangentQuats();
+
 		combineMeshes.push_back(CombineMesh(std::move(meshProp)));
 	}
 
@@ -307,6 +307,8 @@ ResManager::createMeshes(const Model& model, GameObjectPtr& object) noexcept
 
 		object->addComponent(std::make_shared<MeshComponent>(mesh));
 	}
+
+	return true;
 }
 
 GraphicsDataPtr
@@ -485,7 +487,7 @@ ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) 
 	return RenderSystem::instance()->createGraphicsData(_vb);
 }
 
-void
+bool
 ResManager::createBones(const Model& model, GameObjects& bones) noexcept
 {
 	for (auto& it : model.getBonesList())
@@ -504,6 +506,7 @@ ResManager::createBones(const Model& model, GameObjects& bones) noexcept
 		auto parent = it->getParent();
 		if (parent >= 0 && (std::size_t)parent < bones.size())
 			bones[index]->setParent(bones[parent]);
+
 		++index;
 	}
 
@@ -528,10 +531,12 @@ ResManager::createBones(const Model& model, GameObjects& bones) noexcept
 
 		bones[it->boneIndex]->addComponent(std::move(iksolver));
 	}
+
+	return true;
 }
 
-void
-ResManager::createAnimation(const Model& model, GameObjectPtr& gameObject, GameObjects& bones, const util::string& file) noexcept
+bool
+ResManager::createAnimation(const util::string& file, const GameObjects& bones, GameComponentPtr& animation) noexcept
 {
 	if (!file.empty())
 	{
@@ -539,12 +544,14 @@ ResManager::createAnimation(const Model& model, GameObjectPtr& gameObject, GameO
 		animtor->setTransforms(bones);
 		animtor->play(file);
 
-		gameObject->addComponent(animtor);
+		animation = std::move(animtor);
 	}
+
+	return true;
 }
 
-void
-ResManager::createMaterials(const Model& model, Materials& materials) noexcept
+bool
+ResManager::createMaterials(const Model& model, Materials& materials, bool skinned) noexcept
 {
 	std::size_t numBones = model.getBonesList().size();
 
@@ -560,7 +567,7 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 		{
 			if (opacity == 1.0)
 			{
-				if (numBones == 0)
+				if (numBones == 0 || !skinned)
 					defaultMaterial = "sys:fx/opacity_skinning0.fxml";
 				else if (numBones <= 64)
 					defaultMaterial = "sys:fx/opacity_skinning64.fxml";
@@ -573,7 +580,7 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 			}
 			else
 			{
-				if (numBones == 0)
+				if (numBones == 0 || !skinned)
 					defaultMaterial = "sys:fx/transparent_skinning0.fxml";
 				else if (numBones <= 64)
 					defaultMaterial = "sys:fx/transparent_skinning64.fxml";
@@ -593,9 +600,11 @@ ResManager::createMaterials(const Model& model, Materials& materials) noexcept
 
 		materials.push_back(std::move(material));
 	}
+
+	return true;
 }
 
-void
+bool
 ResManager::createRigidbodys(const Model& model, GameObjects& rigidbodys) noexcept
 {
 #if defined(_BUILD_PHYSIC)
@@ -629,15 +638,19 @@ ResManager::createRigidbodys(const Model& model, GameObjects& rigidbodys) noexce
 
 		rigidbodys.push_back(std::move(gameObject));
 	}
+
+	return true;
+#else
+	return false;
 #endif
 }
 
-void
-ResManager::createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, GameObjects& bones)
+bool
+ResManager::createRigidbodyToBone(const Model& model, const GameObjects& bones, GameObjects& rigidbodys)
 {
 #if defined(_BUILD_PHYSIC)
 	if (bones.empty())
-		return;
+		return false;
 
 	for (auto& it : model.getRigidbodyList())
 	{
@@ -675,10 +688,14 @@ ResManager::createRigidbodyToBone(const Model& model, GameObjects& rigidbodys, G
 
 		rigidbodys.push_back(std::move(gameObject));
 	}
+
+	return true;
+#else
+	return false;
 #endif
 }
 
-void
+bool
 ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, GameObjects& joints) noexcept
 {
 #if defined(_BUILD_PHYSIC)
@@ -718,6 +735,10 @@ ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, Game
 			joints.push_back(joint->getGameObject());
 		}
 	}
+
+	return true;
+#else
+	return false;
 #endif
 }
 
@@ -754,8 +775,8 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const util:
 
 	if (!diffuseTexture.empty())
 	{
-		auto texture = this->createTexture(directory + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
-		if (texture)
+		GraphicsTexturePtr texture;
+		if (this->createTexture(directory + diffuseTexture, texture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterLinear))
 		{
 			quality.x = 1.0f;
 			effect->getParameter("texDiffuse")->uniformTexture(texture);
@@ -764,8 +785,8 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const util:
 
 	if (!normalTexture.empty())
 	{
-		auto texture = this->createTexture(directory + normalTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-		if (texture)
+		GraphicsTexturePtr texture;
+		if (this->createTexture(directory + normalTexture, texture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterNearest))
 		{
 			quality.y = 1.0f;
 			effect->getParameter("texNormal")->uniformTexture(texture);

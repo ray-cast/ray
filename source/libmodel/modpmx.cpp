@@ -252,7 +252,6 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 				if (!stream.read((char*)&material.mem, material.memLength)) return false;
 			}
 
-
 			if (!stream.read((char*)&material.FaceCount, sizeof(material.FaceCount))) return false;
 		}
 	}
@@ -550,8 +549,7 @@ PMXHandler::doLoad(StreamReader& stream, Model& model) noexcept
 			if ((texture.length >> 1) < MAX_PATH)
 			{
 				char name[MAX_PATH];
-
-				wcstombs(name, texture.name, MAX_PATH);
+				::wcstombs(name, texture.name, MAX_PATH);
 
 				material->set(MATKEY_TEXTURE_DIFFUSE(0), name);
 				material->set(MATKEY_TEXTURE_AMBIENT(0), name);
@@ -883,7 +881,6 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			{
 				if (!stream.write((char*)&material.mem, material.memLength)) return false;
 			}
-
 
 			if (!stream.write((char*)&material.FaceCount, sizeof(material.FaceCount))) return false;
 		}

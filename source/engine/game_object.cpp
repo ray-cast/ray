@@ -170,7 +170,7 @@ GameObject::getInstanceID() const noexcept
 }
 
 void
-GameObject::setParent(GameObjectPtr& parent) noexcept
+GameObject::setParent(const GameObjectPtr& parent) noexcept
 {
 	assert(this != parent.get());
 
@@ -203,12 +203,6 @@ GameObject::setParent(GameObjectPtr& parent) noexcept
 	}
 }
 
-void
-GameObject::setParent(GameObjectPtr&& parent) noexcept
-{
-	this->setParent(parent);
-}
-
 GameObject*
 GameObject::getParent() const noexcept
 {
@@ -217,13 +211,6 @@ GameObject::getParent() const noexcept
 
 void
 GameObject::addChild(GameObjectPtr& entity) noexcept
-{
-	assert(entity);
-	entity->setParent(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
-}
-
-void
-GameObject::addChild(GameObjectPtr&& entity) noexcept
 {
 	assert(entity);
 	entity->setParent(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
@@ -249,12 +236,6 @@ GameObject::removeChild(GameObjectPtr& entity) noexcept
 	{
 		_children.erase(it);
 	}
-}
-
-void
-GameObject::removeChild(GameObjectPtr&& entity) noexcept
-{
-	this->removeChild(entity);
 }
 
 void

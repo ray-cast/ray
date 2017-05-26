@@ -100,7 +100,7 @@ DefaultInputKeyboard::onObtainCapture() noexcept
 	{
 		it.down = false;
 		it.pressed = false;
-		it.up = false;
+		it.up = true;
 	}
 }
 
@@ -111,7 +111,7 @@ DefaultInputKeyboard::onReset() noexcept
 	{
 		it.down = false;
 		it.pressed = false;
-		it.up = false;
+		it.up = true;
 	}
 }
 

@@ -113,18 +113,8 @@ SkinnedMeshRenderComponent::onActivate() except
 
 	if (!_jointData)
 	{
-		std::size_t jointNums = _transforms.size();
-		if (jointNums <= 64)
-			jointNums = 64;
-		else if (jointNums <= 128)
-			jointNums = 128;
-		else if (jointNums <= 256)
-			jointNums = 256;
-		else
-			return;
-
 		GraphicsDataDesc jointDesc;
-		jointDesc.setStreamSize(sizeof(float4x4) * static_cast<std::uint16_t>(jointNums));
+		jointDesc.setStreamSize(sizeof(float4x4) * static_cast<std::uint16_t>(_transforms.size()));
 		jointDesc.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
 		jointDesc.setType(GraphicsDataType::GraphicsDataTypeUniformBuffer);
 

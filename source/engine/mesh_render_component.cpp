@@ -435,7 +435,7 @@ MeshRenderComponent::_buildMaterials(const util::string& filename) noexcept
 bool
 MeshRenderComponent::_buildDefaultMaterials(const util::string& filename) noexcept
 {
-	assert(!filename.empty());
+	/*assert(!filename.empty());
 
 	auto component = this->getGameObject()->getComponent<MeshComponent>();
 	if (!component)
@@ -490,7 +490,7 @@ MeshRenderComponent::_buildDefaultMaterials(const util::string& filename) noexce
 
 			_sharedMaterials.push_back(effect);
 		}
-	}
+	}*/
 
 	return true;
 }

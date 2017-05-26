@@ -328,11 +328,8 @@ SkyboxComponent::_loadSkybox(const util::string& texture) noexcept
 	if (texture.empty())
 		return false;
 
-	auto skyTexture = ResManager::instance()->createTexture(texture,
-		GraphicsTextureDim::GraphicsTextureDim2D,
-		GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
-
-	if (!skyTexture)
+	GraphicsTexturePtr skyTexture;
+	if (!ResManager::instance()->createTexture(texture, skyTexture, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter::GraphicsSamplerFilterLinear))
 		return false;
 
 	this->setSkyBox(skyTexture);
@@ -342,13 +339,15 @@ SkyboxComponent::_loadSkybox(const util::string& texture) noexcept
 bool
 SkyboxComponent::_loadSkyDiffuse(const util::string& texture) noexcept
 {
-	auto skyDiffTexture = ResManager::instance()->createTexture(texture,
+	GraphicsTexturePtr skyDiffTexture;
+
+	if (!ResManager::instance()->createTexture(texture, skyDiffTexture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
 		GraphicsSamplerFilter::GraphicsSamplerFilterLinear,
-		GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-
-	if (!skyDiffTexture)
+		GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge))
+	{
 		return false;
+	}
 
 	this->setSkyLightDiffuse(skyDiffTexture);
 	return true;
@@ -357,7 +356,8 @@ SkyboxComponent::_loadSkyDiffuse(const util::string& texture) noexcept
 bool
 SkyboxComponent::_loadSkySpecular(const util::string& texture) noexcept
 {
-	auto skySpecTexture = ResManager::instance()->createTexture(texture,
+	GraphicsTexturePtr skySpecTexture;
+	ResManager::instance()->createTexture(texture, skySpecTexture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
 		GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear,
 		GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);

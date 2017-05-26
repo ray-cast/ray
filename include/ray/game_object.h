@@ -63,14 +63,11 @@ public:
 
 	std::size_t getInstanceID() const noexcept;
 
-	void setParent(GameObjectPtr& parent) noexcept;
-	void setParent(GameObjectPtr&& parent) noexcept;
+	void setParent(const GameObjectPtr& parent) noexcept;
 	GameObject* getParent() const noexcept;
 
 	void addChild(GameObjectPtr& child) noexcept;
-	void addChild(GameObjectPtr&& child) noexcept;
 	void removeChild(GameObjectPtr& child) noexcept;
-	void removeChild(GameObjectPtr&& child) noexcept;
 	void cleanupChildren() noexcept;
 	GameObjectPtr findChild(const util::string& name, bool recurse = true) noexcept;
 

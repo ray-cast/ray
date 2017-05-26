@@ -767,7 +767,7 @@ MeshProperty::getBindposes() const noexcept
 	return _bindposes;
 }
 
-const std::size_t 
+const std::size_t
 MeshProperty::getTexcoordNums() const noexcept
 {
 	std::size_t count = 0;
@@ -1159,8 +1159,8 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 
 			Vector3 vertex;
 			vertex.x = -radius * sin(thetaStart + v * thetaLength) * cos(phiStart + u * phiLength);
-			vertex.y =  radius * cos(thetaStart + v * thetaLength);
-			vertex.z =  radius * sin(thetaStart + v * thetaLength) * sin(phiStart + u * phiLength);
+			vertex.y = radius * cos(thetaStart + v * thetaLength);
+			vertex.z = radius * sin(thetaStart + v * thetaLength) * sin(phiStart + u * phiLength);
 
 			_vertices.push_back(vertex);
 			_normals.push_back(math::normalize(vertex));
@@ -1405,7 +1405,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 
 			this->addChild(child);
 
-			vertices_= &child->_vertices;
+			vertices_ = &child->_vertices;
 			normals_ = &child->_normals;
 			tangent_ = &child->_tangent;
 			tangentQuat_ = &child->_tangentQuat;
@@ -1417,7 +1417,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 		}
 		else
 		{
-			vertices_= &this->_vertices;
+			vertices_ = &this->_vertices;
 			normals_ = &this->_normals;
 			tangent_ = &this->_tangent;
 			tangentQuat_ = &this->_tangentQuat;
@@ -1717,91 +1717,69 @@ MeshProperty::computeMorphNormals() noexcept
 }
 
 void
-MeshProperty::computeTangents() noexcept
+MeshProperty::computeTangents(std::uint8_t n) noexcept
 {
-	if (!_texcoords[0].empty())
+	assert(!_texcoords[n].empty());
+
+	std::vector<Vector3> tan1;
+	std::vector<Vector3> tan2;
+
+	tan1.resize(_vertices.size(), Vector3::Zero);
+	tan2.resize(_vertices.size(), Vector3::Zero);
+
+	std::size_t size = _faces.size();
+	for (std::size_t i = 0; i < size; i += 3)
 	{
-		std::vector<Vector3> tan1;
-		std::vector<Vector3> tan2;
+		std::uint32_t f1 = (_faces)[i];
+		std::uint32_t f2 = (_faces)[i + 1];
+		std::uint32_t f3 = (_faces)[i + 2];
 
-		tan1.resize(_vertices.size(), Vector3::Zero);
-		tan2.resize(_vertices.size(), Vector3::Zero);
+		auto& v1 = _vertices[f1];
+		auto& v2 = _vertices[f2];
+		auto& v3 = _vertices[f3];
 
-		std::size_t size = _faces.size();
-		for (std::size_t i = 0; i < size; i += 3)
+		auto& w1 = _texcoords[n][f1];
+		auto& w2 = _texcoords[n][f2];
+		auto& w3 = _texcoords[n][f3];
+
+		auto x1 = v2.x - v1.x;
+		auto x2 = v3.x - v1.x;
+		auto y1 = v2.y - v1.y;
+		auto y2 = v3.y - v1.y;
+		auto z1 = v2.z - v1.z;
+		auto z2 = v3.z - v1.z;
+
+		auto s1 = w2.x - w1.x;
+		auto s2 = w3.x - w1.x;
+		auto t1 = w2.y - w1.y;
+		auto t2 = w3.y - w1.y;
+
+		auto r = 1.0f / (s1 * t2 - s2 * t1);
+		if (!std::isinf(r))
 		{
-			std::uint32_t f1 = (_faces)[i];
-			std::uint32_t f2 = (_faces)[i + 1];
-			std::uint32_t f3 = (_faces)[i + 2];
+			Vector3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+			Vector3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
 
-			auto& v1 = _vertices[f1];
-			auto& v2 = _vertices[f2];
-			auto& v3 = _vertices[f3];
+			tan1[f1] += sdir;
+			tan1[f2] += sdir;
+			tan1[f3] += sdir;
 
-			auto& w1 = _texcoords[0][f1];
-			auto& w2 = _texcoords[0][f2];
-			auto& w3 = _texcoords[0][f3];
-
-			auto x1 = v2.x - v1.x;
-			auto x2 = v3.x - v1.x;
-			auto y1 = v2.y - v1.y;
-			auto y2 = v3.y - v1.y;
-			auto z1 = v2.z - v1.z;
-			auto z2 = v3.z - v1.z;
-
-			auto s1 = w2.x - w1.x;
-			auto s2 = w3.x - w1.x;
-			auto t1 = w2.y - w1.y;
-			auto t2 = w3.y - w1.y;
-
-			auto r = 1.0f / (s1 * t2 - s2 * t1);
-			if (!std::isinf(r))
-			{
-				Vector3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
-				Vector3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
-
-				tan1[f1] += sdir;
-				tan1[f2] += sdir;
-				tan1[f3] += sdir;
-
-				tan2[f1] += tdir;
-				tan2[f2] += tdir;
-				tan2[f3] += tdir;
-			}
-		}
-
-		_tangent.resize(_normals.size());
-
-		for (std::size_t i = 0; i < _normals.size(); i++)
-		{
-			auto& n = _normals[i];
-			auto& t = tan1[i];
-
-			float handedness = math::dot(math::cross(n, t), tan2[i]) < 0.0f ? 1.0f : -1.0f;
-
-			_tangent[i] = float4(math::normalize(t - n * math::dot(n, t)), handedness);
+			tan2[f1] += tdir;
+			tan2[f2] += tdir;
+			tan2[f3] += tdir;
 		}
 	}
-	else
+
+	_tangent.resize(_normals.size());
+
+	for (std::size_t i = 0; i < _normals.size(); i++)
 	{
-		_tangent.resize(_normals.size());
+		auto& n = _normals[i];
+		auto& t = tan1[i];
 
-		for (std::size_t i = 0; i < _normals.size(); i++)
-		{
-			float3 c1 = math::cross(_normals[i], float3(0.0, 0.0, 1.0));
-			float3 c2 = math::cross(_normals[i], float3(0.0, 1.0, 0.0));
+		float handedness = math::dot(math::cross(n, t), tan2[i]) < 0.0f ? 1.0f : -1.0f;
 
-			float3 tangent;
-			if (math::length(c1) > math::length(c2))
-				tangent = c1;
-			else
-				tangent = c2;
-
-			tangent = math::normalize(tangent);
-			tangent = math::normalize(tangent - _normals[i] * math::dot(_normals[i], tangent));
-
-			_tangent[i] = float4(tangent, 1.0);
-		}
+		_tangent[i] = float4(math::normalize(t - n * math::dot(n, t)), handedness);
 	}
 }
 
@@ -1852,7 +1830,7 @@ MeshProperty::computeBoundingBox() noexcept
 	}
 }
 
-void 
+void
 MeshProperty::computePlanarUnwrap(std::vector<float2>& lightmap) noexcept
 {
 	this->computeFaceNormals();
@@ -1882,7 +1860,7 @@ MeshProperty::computePlanarUnwrap(std::vector<float2>& lightmap) noexcept
 			uv[2].y = _vertices[c].z;
 		}
 		else if (polyNormal.y > polyNormal.x &&
-				 polyNormal.y > polyNormal.z)
+			polyNormal.y > polyNormal.z)
 		{
 			uv[0].x = _vertices[a].x;
 			uv[0].y = _vertices[a].z;

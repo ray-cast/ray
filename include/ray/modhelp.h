@@ -282,7 +282,7 @@ public:
 	void computeVertexNormals() noexcept;
 	void computeVertexNormals(std::size_t width, std::size_t height) noexcept;
 	void computeMorphNormals() noexcept;
-	void computeTangents() noexcept;
+	void computeTangents(std::uint8_t texSlot = 0) noexcept;
 	void computeTangentQuats() noexcept;
 	void computeBoundingBox() noexcept;
 	void computePlanarUnwrap(std::vector<float2>& lightmap) noexcept;

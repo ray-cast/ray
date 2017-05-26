@@ -383,6 +383,21 @@ void onWindowSchool(GLFWwindow* window, double x, double y)
 	}
 }
 
+void onWindowDrop(GLFWwindow* window, int count, const char** file_utf8)
+{
+	if (_gameApp)
+	{
+		ray::InputEvent event;
+		event.event = ray::InputEvent::Drop;
+		event.drop.timestamp = glfwGetTimerFrequency();
+		event.drop.count = count;
+		event.drop.files = file_utf8;
+		event.drop.windowID = (std::uint64_t)::glfwGetWinHandle(window);
+
+		_gameApp->sendInputEvent(event);
+	}
+}
+
 void RAY_CALL rayInit(const char* gamedir, const char* scenename) noexcept
 {
 	if (gamedir)
@@ -427,6 +442,7 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 			::glfwSetKeyCallback(_window, &onWindowKey);
 			::glfwSetCharModsCallback(_window, &onWindowKeyChar);
 			::glfwSetScrollCallback(_window, &onWindowSchool);
+			::glfwSetDropCallback(_window, &onWindowDrop);
 
 			auto screen = ::glfwGetVideoMode(::glfwGetPrimaryMonitor());
 			::glfwSetWindowPos(_window, (screen->width - w) >> 1, (screen->height - h) >> 1);

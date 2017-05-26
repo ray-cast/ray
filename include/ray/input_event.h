@@ -105,6 +105,14 @@ struct WindowEvent
 	std::uint64_t windowID;
 };
 
+struct DropEvent
+{
+	std::uint64_t timestamp;
+	std::uint64_t windowID;
+	std::uint32_t count;
+	const char** files;
+};
+
 struct JoyAxisEvent {};
 struct JoyBallEvent {};
 struct JoyHatEvent {};
@@ -141,6 +149,8 @@ public:
 		GetFocus,
 		LostFocus,
 
+		Drop,
+
 		Reset,
 
 		AppQuit
@@ -161,6 +171,7 @@ public:
 		JoyDeviceEvent jdevice;
 		SizeChangeEvent change;
 		WindowEvent window;
+		DropEvent drop;
 	};
 };
 

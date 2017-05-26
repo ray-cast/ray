@@ -57,6 +57,9 @@ bool
 IMGUISystem::open(void* _window) except
 {
 	assert(_window);
+#if _WINDOWS
+	assert(::IsWindow((HWND)_window));
+#endif
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ImeWindowHandle = _window;

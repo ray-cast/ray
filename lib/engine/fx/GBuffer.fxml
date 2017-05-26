@@ -18,6 +18,7 @@
                 float3 specular;
                 float3 transmittance;
                 float smoothness;
+                float metalness;
                 float occlusion;
                 int lightModel;
             };
@@ -81,14 +82,16 @@
 
             GbufferParam EncodeGbuffer(MaterialParam material)
             {
-                // http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf
                 GbufferParam gbuffer;
-                gbuffer.buffer1.xyz = material.albedo;
+                gbuffer.buffer1.xyz = material.albedo * saturate(1 - material.metalness);
                 gbuffer.buffer1.w = material.occlusion;
 
                 gbuffer.buffer2.xyz = EncodeNormal(material.normal);
                 gbuffer.buffer2.w = material.smoothness;
-
+                
+                material.specular *= 0.08;
+                material.specular = lerp(material.specular, min(material.specular, material.albedo), material.metalness);
+                
                 gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
                 gbuffer.buffer3.w = 0;
 
@@ -122,6 +125,7 @@
 
                 material.normal = DecodeNormal(buffer2.xyz);
                 material.smoothness = buffer2.w;
+                material.metalness = 0;
 
                 if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
                 {

@@ -243,6 +243,7 @@ private:
 	GraphicsFormat _deferredGbuffer1Format;
 	GraphicsFormat _deferredGbuffer2Format;
 	GraphicsFormat _deferredGbuffer3Format;
+	GraphicsFormat _deferredGbuffer4Format;
 	GraphicsFormat _deferredTransparentFormat;
 	GraphicsFormat _deferredLightFormat;
 	GraphicsFormat _deferredShadingFormat;
@@ -252,6 +253,7 @@ private:
 	GraphicsTexturePtr _deferredGbuffer1Map;
 	GraphicsTexturePtr _deferredGbuffer2Map;
 	GraphicsTexturePtr _deferredGbuffer3Map;
+	GraphicsTexturePtr _deferredGbuffer4Map;
 	GraphicsTexturePtr _deferredLightingMap;
 	GraphicsTexturePtr _deferredOpaqueShadingMap;
 	GraphicsTexturePtr _deferredTransparentShadingMap;
@@ -263,6 +265,7 @@ private:
 	GraphicsFramebufferLayoutPtr _deferredGbuffer1ImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredGbuffer2ImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredGbuffer3ImageLayout;
+	GraphicsFramebufferLayoutPtr _deferredGbuffer4ImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredGbuffersImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredLightingImageLayout;
 	GraphicsFramebufferLayoutPtr _deferredShadingImageLayout;
@@ -273,6 +276,7 @@ private:
 	GraphicsFramebufferPtr _deferredGbuffer1View;
 	GraphicsFramebufferPtr _deferredGbuffer2View;
 	GraphicsFramebufferPtr _deferredGbuffer3View;
+	GraphicsFramebufferPtr _deferredGbuffer4View;
 	GraphicsFramebufferPtr _deferredGbuffersView;
 	GraphicsFramebufferPtr _deferredLightingView;
 	GraphicsFramebufferPtr _deferredOpaqueShadingView;

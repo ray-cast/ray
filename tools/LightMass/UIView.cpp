@@ -441,8 +441,11 @@ GuiViewComponent::showAboutWindow() noexcept
 		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
 		ray::Gui::text("Copyright (c) 2017-2018. All rights reserved.");
 
+		ray::Gui::pushStyleColor(ray::GuiCol::GuiColBorder, ray::float4::Zero);
 		ray::Gui::separator();
-		ray::Gui::text("");
+		ray::Gui::separator();
+		ray::Gui::popStyleColor();
+
 		ray::Gui::sameLine(ray::Gui::getWindowWidth() - 130);
 		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
 

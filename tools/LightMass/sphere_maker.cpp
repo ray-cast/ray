@@ -282,16 +282,18 @@ SphereMakerComponent::onActivate() except
 		{
 			auto gameObject = std::make_shared<ray::GameObject>();
 			gameObject->setActive(true);
-			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
-			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
 			gameObject->setScaleAll(2.5f);
 			gameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f));
+
+			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
+			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(materialTemp->clone()));
 
 			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 
 			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
 			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
-			material->getParameter("metalness")->uniform1f(diff_spec_parametes[j * 10 + i].w);
+			material->getParameter("metalness")->uniform1f(diff_spec_parametes[i * 10 + j].w);
+			material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
 
 			if (shininess_parametes[i * 10 + j] > 0.4 &&
 				shininess_parametes[i * 10 + j] < 0.8 ||

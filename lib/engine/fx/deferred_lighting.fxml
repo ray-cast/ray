@@ -303,7 +303,7 @@
 				float mipLayer = EnvironmentMip(material.smoothness, envFactor.r);
 
 				float3 R = EnvironmentReflect(worldNormal, worldView);
-				CubemapBoxParallaxCorrection(R, worldPosition, envBoxCenter, envBoxMin, envBoxMax);
+				//CubemapBoxParallaxCorrection(R, worldPosition, envBoxCenter, envBoxMin, envBoxMax);
 
 				float3 prefilteredDiffuse = envDiffuse.Sample(PointClamp, worldNormal).rgb;
 				float3 prefilteredSpeculr = envSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;

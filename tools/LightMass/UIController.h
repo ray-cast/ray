@@ -65,6 +65,8 @@ private:
 	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;
 
 private:
+	ray::GameObjects _objects;
+
 	std::unique_ptr<ray::PMX> _model;
 
 	ray::LightMapListenerPtr _lightMapListener;

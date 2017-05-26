@@ -878,7 +878,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredDepthDesc.setTexFormat(_deferredDepthFormat);
 	_deferredDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredDepthMap = pipeline.createTexture(_deferredDepthDesc);
 	if (!_deferredDepthMap)
 		return false;
@@ -889,7 +889,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredDepthLinearDesc.setTexFormat(_deferredDepthLinearFormat);
 	_deferredDepthLinearDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredDepthLinearDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredDepthLinearDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredDepthLinearDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredDepthLinearMap = pipeline.createTexture(_deferredDepthLinearDesc);
 	if (!_deferredDepthLinearMap)
 		return false;
@@ -900,7 +900,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredGbufferDesc.setTexFormat(_deferredGbuffer1Format);
 	_deferredGbufferDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredGbufferDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredGbufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredGbufferDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredGbuffer1Map = pipeline.createTexture(_deferredGbufferDesc);
 	if (!_deferredGbuffer1Map)
 		return false;
@@ -911,7 +911,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredGbuffer2Desc.setTexFormat(_deferredGbuffer2Format);
 	_deferredGbuffer2Desc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredGbuffer2Desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredGbuffer2Desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredGbuffer2Desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredGbuffer2Map = pipeline.createTexture(_deferredGbuffer2Desc);
 	if (!_deferredGbuffer2Map)
 		return false;
@@ -922,7 +922,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredGbuffer3Desc.setTexFormat(_deferredGbuffer3Format);
 	_deferredGbuffer3Desc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredGbuffer3Desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredGbuffer3Desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredGbuffer3Desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredGbuffer3Map = pipeline.createTexture(_deferredGbuffer3Desc);
 	if (!_deferredGbuffer3Map)
 		return false;
@@ -933,7 +933,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredLightDesc.setTexFormat(_deferredLightFormat);
 	_deferredLightDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredLightDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredLightDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredLightDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredLightingMap = pipeline.createTexture(_deferredLightDesc);
 	if (!_deferredLightingMap)
 		return false;
@@ -955,7 +955,7 @@ DeferredLightingPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexce
 	_deferredTransparentDesc.setTexFormat(_deferredTransparentFormat);
 	_deferredTransparentDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	_deferredTransparentDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_deferredTransparentDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_deferredTransparentDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_deferredTransparentShadingMap = pipeline.createTexture(_deferredTransparentDesc);
 	if (!_deferredTransparentShadingMap)
 		return false;

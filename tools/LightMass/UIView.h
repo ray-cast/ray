@@ -37,7 +37,9 @@
 #ifndef _H_UI_CONTROLLER_H_
 #define _H_UI_CONTROLLER_H_
 
+#include <ray/gui.h>
 #include <ray/game_component.h>
+
 #include "UIParams.h"
 #include "UITexts.h"
 
@@ -113,6 +115,8 @@ private:
 	std::vector<const char*> _langs;
 
 	ray::float4 _clearColor;
+	ray::GuiStyle _style;
+	ray::GuiStyle _styleDefault;
 
 	GuiParams _default;
 	GuiParams _setting;

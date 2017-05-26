@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include "UIView.h"
 #include "UITexts.h"
-#include <ray/gui.h>
 #include <ray/gui_message.h>
 #include <ray/ioserver.h>
 
@@ -459,8 +458,94 @@ GuiViewComponent::showStyleEditor() noexcept
 
 	if (ray::Gui::begin(_langs[UILang::StyleEditor], &_showStyleEditor, ray::float2(550, 500)))
 	{
-		ray::Gui::showStyleEditor();
+		if (ray::Gui::button("Revert Style"))
+			_style = _styleDefault;
+
+		ray::Gui::sameLine();
+
+		if (ray::Gui::button("Save Style"))
+			_styleDefault = _style;
+
+		ray::Gui::pushItemWidth(ray::Gui::getWindowWidth() * 0.55f);
+
+		if (ray::Gui::treeNode("Rendering"))
+		{
+			ray::Gui::checkbox("Anti-aliased lines", &_style.AntiAliasedLines);
+			ray::Gui::checkbox("Anti-aliased shapes", &_style.AntiAliasedShapes);
+			ray::Gui::pushItemWidth(100);
+			ray::Gui::dragFloat("Curve Tessellation Tolerance", &_style.CurveTessellationTol, 0.02f, 0.10f, FLT_MAX, NULL, 2.0f);
+			if (_style.CurveTessellationTol < 0.0f) _style.CurveTessellationTol = 0.10f;
+			ray::Gui::dragFloat("Global Alpha", &_style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
+			ray::Gui::popItemWidth();
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Settings"))
+		{
+			ray::Gui::sliderFloat2("WindowPadding", (float*)&_style.WindowPadding, 0.0f, 20.0f, "%.0f");
+			ray::Gui::sliderFloat("WindowRounding", &_style.WindowRounding, 0.0f, 16.0f, "%.0f");
+			ray::Gui::sliderFloat("ChildWindowRounding", &_style.ChildWindowRounding, 0.0f, 16.0f, "%.0f");
+			ray::Gui::sliderFloat2("FramePadding", (float*)&_style.FramePadding, 0.0f, 20.0f, "%.0f");
+			ray::Gui::sliderFloat("FrameRounding", &_style.FrameRounding, 0.0f, 16.0f, "%.0f");
+			ray::Gui::sliderFloat2("ItemSpacing", (float*)&_style.ItemSpacing, 0.0f, 20.0f, "%.0f");
+			ray::Gui::sliderFloat2("ItemInnerSpacing", (float*)&_style.ItemInnerSpacing, 0.0f, 20.0f, "%.0f");
+			ray::Gui::sliderFloat2("TouchExtraPadding", (float*)&_style.TouchExtraPadding, 0.0f, 10.0f, "%.0f");
+			ray::Gui::sliderFloat("IndentSpacing", &_style.IndentSpacing, 0.0f, 30.0f, "%.0f");
+			ray::Gui::sliderFloat("ScrollbarSize", &_style.ScrollbarSize, 1.0f, 20.0f, "%.0f");
+			ray::Gui::sliderFloat("ScrollbarRounding", &_style.ScrollbarRounding, 0.0f, 16.0f, "%.0f");
+			ray::Gui::sliderFloat("GrabMinSize", &_style.GrabMinSize, 1.0f, 20.0f, "%.0f");
+			ray::Gui::sliderFloat("GrabRounding", &_style.GrabRounding, 0.0f, 16.0f, "%.0f");
+			ray::Gui::text("Alignment");
+			ray::Gui::sliderFloat2("WindowTitleAlign", (float*)&_style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
+			ray::Gui::sliderFloat2("ButtonTextAlign", (float*)&_style.ButtonTextAlign, 0.0f, 1.0f, "%.2f");
+			ray::Gui::sameLine();
+			ray::Gui::helpMarker("(?)", "Alignment applies when a button is larger than its text content.");
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Colors"))
+		{
+			static int edit_mode = (int)ray::GuiColorEditMode::GuiColorEditModeRGB;
+			ray::Gui::radioButton("RGB", &edit_mode, (int)ray::GuiColorEditMode::GuiColorEditModeRGB);
+			ray::Gui::sameLine();
+			ray::Gui::radioButton("HSV", &edit_mode, (int)ray::GuiColorEditMode::GuiColorEditModeHSV);
+			ray::Gui::sameLine();
+			ray::Gui::radioButton("HEX", &edit_mode, (int)ray::GuiColorEditMode::GuiColorEditModeHEX);
+
+			if (ray::Gui::beginChild("#colors", ray::float2(0, 300), true, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysVerticalScrollbarBit))
+			{
+				ray::Gui::pushItemWidth(-175);
+				ray::Gui::colorEditMode((ray::GuiColorEditMode)edit_mode);
+
+				for (std::uint8_t i = 0; i < (std::uint8_t)ray::GuiCol::GuiColCOUNT; i++)
+				{
+					const char* name = ray::Gui::getStyleColName((ray::GuiCol)i);
+
+					ray::Gui::pushID(i);
+					ray::Gui::colorEdit4(name, (float*)&_style.Colors[i], true);
+
+					if (_style.Colors[i] != _styleDefault.Colors[i])
+					{
+						ray::Gui::sameLine();
+
+						if (ray::Gui::button(_langs[UILang::Revert]))
+							_style.Colors[i] = _styleDefault.Colors[i];
+					}
+
+					ray::Gui::popID();
+				}
+
+				ray::Gui::popItemWidth();
+				ray::Gui::endChild();
+			}
+
+			ray::Gui::treePop();
+		}
+
+		ray::Gui::popItemWidth();
+
 		ray::Gui::end();
+		ray::Gui::setStyle(_style);
 	}
 }
 
@@ -508,7 +593,7 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::comboWithRevert("##Output size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 
 			ray::Gui::text(_langs[UILang::InputUVSlot]);
-			ray::Gui::comboWithRevert("##Input UV slot", _langs[UILang::Revert], &_setting.lightmass.slot, _default.lightmass.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
+			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
 			ray::Gui::text(_langs[UILang::SampleCount]);
 			ray::Gui::comboWithRevert("##Sample Count", _langs[UILang::Revert], &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));

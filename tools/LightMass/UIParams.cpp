@@ -46,7 +46,6 @@ GUIUvmapper::GUIUvmapper() noexcept
 
 GUILightMass::GUILightMass() noexcept
 	: environmentColor(ray::float4::One)
-	, slot(1)
 	, hemisphereNear(0.1)
 	, hemisphereFar(100.0)
 	, interpolationPasses(2)

@@ -54,6 +54,75 @@ float4 ImVec4ToFloat4(ImVec4 vec4)
 
 GuiStyle::GuiStyle() noexcept
 {
+	Alpha = 1.0f;
+	WindowPadding = float2(8, 8);
+	WindowMinSize = float2(32, 32);
+	WindowRounding = 9.0f;
+	WindowTitleAlign = float2(0.5f, 0.5f);
+	ChildWindowRounding = 0.0f;
+	FramePadding = float2(0, 3);
+	FrameRounding = 8.0f;
+	ItemSpacing = float2(8, 4);
+	ItemInnerSpacing = float2(4, 4);
+	TouchExtraPadding = float2(0, 0);
+	IndentSpacing = 15.0f;
+	ColumnsMinSpacing = 6.0f;
+	ScrollbarSize = 16.0f;
+	ScrollbarRounding = 9.0f;
+	GrabMinSize = 10.0f;
+	GrabRounding = 5.0f;
+	ButtonTextAlign = float2(0.5f, 0.5f);
+	DisplayWindowPadding = float2(9, 22);
+	DisplaySafeAreaPadding = float2(4, 4);
+	AntiAliasedLines = true;
+	AntiAliasedShapes = true;
+	CurveTessellationTol = 1.25f;
+
+	Colors[ImGuiCol_MenuBarBg] = float4(222, 150, 0, 255) / 255.0f;
+	Colors[ImGuiCol_Text] = float4(245, 245, 245, 255) / 255.0f;
+	Colors[ImGuiCol_TextDisabled] = float4(150, 150, 150, 255) / 255.0f;
+	Colors[ImGuiCol_WindowBg] = float4(0, 0, 0, 220) / 255.0f;
+	Colors[ImGuiCol_Header] = float4(0, 0, 0, 0) / 255.0f;
+	Colors[ImGuiCol_HeaderHovered] = float4(34, 134, 230, 179) / 255.0f;
+	Colors[ImGuiCol_HeaderActive] = float4(24, 96, 200, 179) / 255.0f;
+	Colors[ImGuiCol_TitleBg] = float4(0, 0, 0, 179) / 255.0f;
+	Colors[ImGuiCol_TitleBgCollapsed] = float4(0, 0, 0, 179) / 255.0f;
+	Colors[ImGuiCol_TitleBgActive] = float4(0, 0, 0, 179) / 255.0f;
+	Colors[ImGuiCol_Button] = float4(0, 95, 168, 255) / 255.0f;
+	Colors[ImGuiCol_ButtonHovered] = float4(230, 179, 0, 255) / 255.0f;
+	Colors[ImGuiCol_ButtonActive] = float4(255, 153, 0, 255) / 255.0f;
+	Colors[ImGuiCol_CloseButton] = float4(0.2f, 0.5f, 1.0f, 0.5f);
+	Colors[ImGuiCol_CloseButtonHovered] = float4(0.2f, 0.5f, 1.0f, 0.7f);
+	Colors[ImGuiCol_CloseButtonActive] = float4(0.2f, 0.5f, 1.0f, 1.0f);
+	Colors[ImGuiCol_CheckMark] = float4(0.0, 0.6, 1.0, 0.75f);
+	Colors[ImGuiCol_ScrollbarBg] = float4(0.20f, 0.20, 0.20f, 0.60f);
+	Colors[ImGuiCol_ScrollbarGrab] = float4(0, 0, 0, 255) / 255.0f;
+	Colors[ImGuiCol_ScrollbarGrabHovered] = float4(125, 125, 125, 100) / 255.0f;
+	Colors[ImGuiCol_ScrollbarGrabActive] = float4(75, 75, 75, 100) / 255.0f;
+	Colors[ImGuiCol_SliderGrab] = float4(1.00f, 0.7, 0.0, 1.00f);
+	Colors[ImGuiCol_SliderGrabActive] = float4(1.00f, 0.4, 0.0, 1.00f);
+	Colors[ImGuiCol_FrameBg] = float4(0.80f, 0.80f, 0.80f, 0.10f);
+	Colors[ImGuiCol_FrameBgHovered] = float4(0.90f, 0.80f, 0.80f, 0.20f);
+	Colors[ImGuiCol_FrameBgActive] = float4(0.90f, 0.65f, 0.65f, 0.25f);
+
+	Colors[ImGuiCol_PopupBg] = float4(0.05f, 0.05f, 0.05f, 0.90f);
+	Colors[ImGuiCol_ModalWindowDarkening] = float4(0.10f, 0.10f, 0.10f, 0.5f);
+
+	Colors[ImGuiCol_ChildWindowBg] = float4(0.00f, 0.00f, 0.00f, 0.00f);
+	Colors[ImGuiCol_Border] = float4(0.70f, 0.70f, 0.70f, 0.125f);
+	Colors[ImGuiCol_BorderShadow] = float4(0.00f, 0.00f, 0.00f, 0.00f);
+	Colors[ImGuiCol_ComboBg] = float4(0.20f, 0.20f, 0.20f, 0.99f);
+	Colors[ImGuiCol_Column] = float4(0.50f, 0.50f, 0.50f, 1.00f);
+	Colors[ImGuiCol_ColumnHovered] = float4(0.70f, 0.60f, 0.60f, 1.00f);
+	Colors[ImGuiCol_ColumnActive] = float4(0.90f, 0.70f, 0.70f, 1.00f);
+	Colors[ImGuiCol_ResizeGrip] = float4(1.00f, 1.00f, 1.00f, 0.30f);
+	Colors[ImGuiCol_ResizeGripHovered] = float4(1.00f, 1.00f, 1.00f, 0.60f);
+	Colors[ImGuiCol_ResizeGripActive] = float4(1.00f, 1.00f, 1.00f, 0.90f);
+	Colors[ImGuiCol_PlotLines] = float4(1.00f, 1.00f, 1.00f, 1.00f);
+	Colors[ImGuiCol_PlotLinesHovered] = float4(0.90f, 0.70f, 0.00f, 1.00f);
+	Colors[ImGuiCol_PlotHistogram] = float4(0.90f, 0.70f, 0.00f, 1.00f);
+	Colors[ImGuiCol_PlotHistogramHovered] = float4(1.00f, 0.60f, 0.00f, 1.00f);
+	Colors[ImGuiCol_TextSelectedBg] = float4(0.00f, 0.00f, 1.00f, 0.35f);
 }
 
 IMGUI::IMGUI() noexcept
@@ -2104,6 +2173,12 @@ IMGUI::setStyle(const GuiStyle& newStyle) noexcept
 	style.CurveTessellationTol = newStyle.CurveTessellationTol;
 
 	std::memcpy(&style.Colors, newStyle.Colors, sizeof(style.Colors));
+}
+
+const GuiStyle&
+IMGUI::getStyleDefault() noexcept
+{
+	return _defalutStyle;
 }
 
 _NAME_END

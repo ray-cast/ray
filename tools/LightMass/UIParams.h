@@ -55,7 +55,6 @@ struct GUILightMass
 
 	ray::float4 environmentColor;
 
-	int slot;
 	int imageSize;
 	int sampleCount;
 	int interpolationPasses;

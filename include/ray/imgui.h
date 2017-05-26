@@ -225,7 +225,7 @@ enum class GuiStyleVar
 	GuiStyleVarButtonTextAlign
 };
 
-struct GuiStyle
+struct EXPORT GuiStyle
 {
 	float       Alpha;
 	float2      WindowPadding;
@@ -285,6 +285,7 @@ public:
 	static void endChildFrame() noexcept;
 
 	static void setStyle(const GuiStyle& style) noexcept;
+	static const GuiStyle& getStyleDefault() noexcept;
 
 	static void setWindowPos(const float2& pos, GuiSetCondFlags cond = 0) noexcept;
 	static void setWindowSize(const float2& size, GuiSetCondFlags cond = 0) noexcept;
@@ -603,7 +604,6 @@ private:
 	IMGUI& operator=(const IMGUI&) = delete;
 
 private:
-	friend class IMGUISystem;
 	static GuiStyle _defalutStyle;
 };
 

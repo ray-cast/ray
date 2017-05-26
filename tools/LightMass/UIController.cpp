@@ -42,7 +42,6 @@
 #include <cinttypes>
 #include <iomanip>
 #include <sstream>
-#include <ios>
 
 #include <ray/fcntl.h>
 #include <ray/except.h>
@@ -303,6 +302,15 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 	auto model = std::make_unique<ray::PMX>();
 	if (!header.doLoad(*stream, *model))
 		return false;
+
+	auto gameObject = ray::ResManager::instance()->createGameObject(path);
+	if (!gameObject)
+		return false;
+
+	gameObject->setActive(true);
+
+	_objects.clear();
+	_objects.push_back(gameObject);
 
 	_model = std::move(model);
 
@@ -597,11 +605,11 @@ GuiControllerComponent::onActivate() except
 		0.423187627f
 	};
 
-	auto diffuseMap = ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
+	auto diffuseMap = ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds");
 	if (!diffuseMap)
 		return;
 
-	auto normalMap = ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds", ray::GraphicsTextureDim::GraphicsTextureDim2D);
+	auto normalMap = ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds");
 	if (!normalMap)
 		return;
 

@@ -67,7 +67,7 @@ public:
 	GraphicsColorMaskFlags getColorWriteMask() const noexcept;
 
 private:
-	bool _blendEnable;
+	bool _enable;
 
 	GraphicsBlendOp _blendOp;
 	GraphicsBlendOp _blendAlphaOp;
@@ -167,17 +167,17 @@ public:
 	GraphicsStencilOp getStencilBackPass() const noexcept;
 
 private:
-	bool _scissorTestEnable;
-	bool _srgbEnable;
-	bool _multisampleEnable;
-	bool _rasterizerDiscardEnable;
-	bool _depthEnable;
-	bool _depthWriteEnable;
-	bool _depthBoundsEnable;
-	bool _depthClampEnable;
-	bool _depthBiasEnable;
-	bool _depthBiasClamp;
-	bool _stencilEnable;
+	bool _enableScissorTest;
+	bool _enableSrgb;
+	bool _enableMultisample;
+	bool _enableRasterizerDiscard;
+	bool _enableDepth;
+	bool _enableDepthWrite;
+	bool _enableDepthBounds;
+	bool _enableDepthClamp;
+	bool _enableDepthBias;
+	bool _enableDepthBiasClamp;
+	bool _enableStencil;
 
 	float _lineWidth;
 

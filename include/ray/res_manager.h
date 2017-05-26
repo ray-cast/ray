@@ -81,7 +81,7 @@ public:
 		return ResLoader<T>::find(name);
 	}
 
-	GraphicsTexturePtr createTexture(const util::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
+	GraphicsTexturePtr createTexture(const util::string& name, GraphicsTextureDim dim = GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
 	GraphicsTexturePtr getTexture(const util::string& name) noexcept;
 
 	void destroyTexture(GraphicsTexturePtr texture) noexcept;

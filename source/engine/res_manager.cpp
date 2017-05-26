@@ -239,7 +239,7 @@ ResManager::createGameObject(const util::string& name, const util::string& anim)
 
 	if (materials.size() > 0)
 	{
-		if (bones.empty())
+		if (bones.empty() || anim.empty())
 			gameObject->addComponent(std::make_shared<MeshRenderComponent>(std::move(materials)));
 		else
 		{
@@ -684,6 +684,9 @@ ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, Game
 #if defined(_BUILD_PHYSIC)
 	for (auto& it : model.getJointList())
 	{
+		if (rigidbodys.size() <= it->bodyIndexA || rigidbodys.size() <= it->bodyIndexB)
+			continue;
+
 		auto transformA = rigidbodys[it->bodyIndexA];
 		auto trasnformB = rigidbodys[it->bodyIndexB];
 

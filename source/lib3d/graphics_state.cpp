@@ -41,7 +41,7 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsState, GraphicsChild, "GraphicsState")
 
 GraphicsColorBlend::GraphicsColorBlend() noexcept
-	: _blendEnable(false)
+	: _enable(false)
 	, _blendOp(GraphicsBlendOp::GraphicsBlendOpAdd)
 	, _blendAlphaOp(GraphicsBlendOp::GraphicsBlendOpAdd)
 	, _blendSrc(GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha)
@@ -59,7 +59,7 @@ GraphicsColorBlend::~GraphicsColorBlend() noexcept
 void
 GraphicsColorBlend::setBlendEnable(bool enable) noexcept
 {
-	_blendEnable = enable;
+	_enable = enable;
 }
 
 void
@@ -107,7 +107,7 @@ GraphicsColorBlend::setColorWriteMask(GraphicsColorMaskFlags mask) noexcept
 bool
 GraphicsColorBlend::getBlendEnable() const noexcept
 {
-	return _blendEnable;
+	return _enable;
 }
 
 GraphicsBlendOp
@@ -153,17 +153,17 @@ GraphicsColorBlend::getColorWriteMask() const noexcept
 }
 
 GraphicsStateDesc::GraphicsStateDesc() noexcept
-	: _scissorTestEnable(false)
-	, _srgbEnable(false)
-	, _multisampleEnable(false)
-	, _rasterizerDiscardEnable(false)
-	, _depthEnable(true)
-	, _depthBoundsEnable(false)
-	, _depthWriteEnable(true)
-	, _depthBiasEnable(false)
-	, _depthClampEnable(false)
-	, _depthBiasClamp(false)
-	, _stencilEnable(false)
+	: _enableScissorTest(false)
+	, _enableSrgb(false)
+	, _enableMultisample(false)
+	, _enableRasterizerDiscard(false)
+	, _enableDepth(true)
+	, _enableDepthBounds(false)
+	, _enableDepthWrite(true)
+	, _enableDepthBias(false)
+	, _enableDepthClamp(false)
+	, _enableDepthBiasClamp(false)
+	, _enableStencil(false)
 	, _lineWidth(1.0f)
 	, _cullMode(GraphicsCullMode::GraphicsCullModeBack)
 	, _polygonMode(GraphicsPolygonMode::GraphicsPolygonModeSolid)
@@ -207,7 +207,7 @@ GraphicsStateDesc::getColorBlends() noexcept
 	return _blends;
 }
 
-const GraphicsColorBlends& 
+const GraphicsColorBlends&
 GraphicsStateDesc::getColorBlends() const noexcept
 {
 	return _blends;
@@ -240,25 +240,25 @@ GraphicsStateDesc::setFrontFace(GraphicsFrontFace face) noexcept
 void
 GraphicsStateDesc::setScissorTestEnable(bool enable) noexcept
 {
-	_scissorTestEnable = enable;
+	_enableScissorTest = enable;
 }
 
 void
 GraphicsStateDesc::setLinear2sRGBEnable(bool enable) noexcept
 {
-	_srgbEnable = enable;
+	_enableSrgb = enable;
 }
 
 void
 GraphicsStateDesc::setMultisampleEnable(bool enable) noexcept
 {
-	_multisampleEnable = enable;
+	_enableMultisample = enable;
 }
 
 void
 GraphicsStateDesc::setRasterizerDiscardEnable(bool enable) noexcept
 {
-	_rasterizerDiscardEnable = enable;
+	_enableRasterizerDiscard = enable;
 }
 
 void
@@ -270,19 +270,19 @@ GraphicsStateDesc::setLineWidth(float width) noexcept
 void
 GraphicsStateDesc::setDepthEnable(bool enable) noexcept
 {
-	_depthEnable = enable;
+	_enableDepth = enable;
 }
 
 void
 GraphicsStateDesc::setDepthWriteEnable(bool enable) noexcept
 {
-	_depthWriteEnable = enable;
+	_enableDepthWrite = enable;
 }
 
 void
 GraphicsStateDesc::setDepthBoundsEnable(bool enable) noexcept
 {
-	_depthBoundsEnable = enable;
+	_enableDepthBounds = enable;
 }
 
 void
@@ -306,7 +306,7 @@ GraphicsStateDesc::setDepthFunc(GraphicsCompareFunc func) noexcept
 void
 GraphicsStateDesc::setDepthBiasEnable(bool enable) noexcept
 {
-	_depthBiasEnable = enable;
+	_enableDepthBias = enable;
 }
 
 void
@@ -324,19 +324,19 @@ GraphicsStateDesc::setDepthSlopeScaleBias(float bias) noexcept
 void
 GraphicsStateDesc::setDepthBiasClamp(bool bias) noexcept
 {
-	_depthBiasClamp = bias;
+	_enableDepthBiasClamp = bias;
 }
 
 void
 GraphicsStateDesc::setDepthClampEnable(bool enable) noexcept
 {
-	_depthClampEnable = enable;
+	_enableDepthClamp = enable;
 }
 
 void
 GraphicsStateDesc::setStencilEnable(bool enable) noexcept
 {
-	_stencilEnable = enable;
+	_enableStencil = enable;
 }
 
 void
@@ -450,25 +450,25 @@ GraphicsStateDesc::getFrontFace() const noexcept
 bool
 GraphicsStateDesc::getScissorTestEnable() const noexcept
 {
-	return _scissorTestEnable;
+	return _enableScissorTest;
 }
 
 bool
 GraphicsStateDesc::getLinear2sRGBEnable() const noexcept
 {
-	return _srgbEnable;
+	return _enableSrgb;
 }
 
 bool
 GraphicsStateDesc::getMultisampleEnable() const noexcept
 {
-	return _multisampleEnable;
+	return _enableMultisample;
 }
 
 bool
 GraphicsStateDesc::getRasterizerDiscardEnable() const noexcept
 {
-	return _rasterizerDiscardEnable;
+	return _enableRasterizerDiscard;
 }
 
 float
@@ -480,19 +480,19 @@ GraphicsStateDesc::getLineWidth() const noexcept
 bool
 GraphicsStateDesc::getDepthEnable() const noexcept
 {
-	return _depthEnable;
+	return _enableDepth;
 }
 
 bool
 GraphicsStateDesc::getDepthWriteEnable() const noexcept
 {
-	return _depthWriteEnable;
+	return _enableDepthWrite;
 }
 
 bool
 GraphicsStateDesc::getDepthBoundsEnable() const noexcept
 {
-	return _depthBoundsEnable;
+	return _enableDepthBounds;
 }
 
 float
@@ -516,7 +516,7 @@ GraphicsStateDesc::getDepthFunc() const noexcept
 bool
 GraphicsStateDesc::getDepthBiasEnable() const noexcept
 {
-	return _depthBiasEnable;
+	return _enableDepthBias;
 }
 
 float
@@ -534,19 +534,19 @@ GraphicsStateDesc::getDepthSlopeScaleBias() const noexcept
 bool
 GraphicsStateDesc::getDepthBiasClamp() const noexcept
 {
-	return _depthBiasClamp;
+	return _enableDepthBiasClamp;
 }
 
 bool
 GraphicsStateDesc::getDepthClampEnable() const noexcept
 {
-	return _depthClampEnable;
+	return _enableDepthClamp;
 }
 
 bool
 GraphicsStateDesc::getStencilEnable() const noexcept
 {
-	return _stencilEnable;
+	return _enableStencil;
 }
 
 std::uint32_t

@@ -281,9 +281,6 @@ ResManager::createMeshes(const Model& model, GameObjectPtr& object) noexcept
 		if (meshProp->getTangentArray().empty())
 			meshProp->computeTangents();
 
-		if (meshProp->getTangentQuatArray().empty())
-			meshProp->computeTangentQuats();
-
 		combineMeshes.push_back(CombineMesh(std::move(meshProp)));
 	}
 
@@ -366,7 +363,7 @@ ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) 
 	std::uint32_t inputSize = 0;
 	if (!mesh.getVertexArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!mesh.getTangentQuatArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+	if (!mesh.getTangentArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 	if (!mesh.getColorArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
@@ -381,7 +378,7 @@ ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) 
 	auto _buildVertexBuffer = [&](const MeshProperty& mesh, std::size_t& offsetVertices, std::vector<std::uint8_t>& _vbo)
 	{
 		auto& vertices = mesh.getVertexArray();
-		auto& tangentQuats = mesh.getTangentQuatArray();
+		auto& tangents = mesh.getTangentArray();
 		auto& colors = mesh.getColorArray();
 		auto& texcoords = mesh.getTexcoordArray();
 		auto& weight = mesh.getWeightArray();
@@ -401,9 +398,13 @@ ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) 
 			offset1 += sizeof(float3);
 		}
 
-		if (!tangentQuats.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
+		if (!tangents.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
 		{
 			std::uint8_t* data = mapBuffer + offset1 + offsetVertices;
+
+			Float4Array tangentQuats;
+			mesh.computeTangentQuats(tangentQuats);
+
 			for (auto& it : tangentQuats)
 			{
 				float4 unorm = math::snorm2unorm(it);

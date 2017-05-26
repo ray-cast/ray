@@ -582,12 +582,6 @@ MeshProperty::setTangentArray(const Float4Array& array) noexcept
 }
 
 void
-MeshProperty::setTangentQuatArray(const Float4Array& array) noexcept
-{
-	_tangentQuat = array;
-}
-
-void
 MeshProperty::setTexcoordArray(const Float2Array& array, std::size_t n) noexcept
 {
 	_texcoords[n] = array;
@@ -636,12 +630,6 @@ MeshProperty::setTangentArray(Float4Array&& array) noexcept
 }
 
 void
-MeshProperty::setTangentQuatArray(Float4Array&& array) noexcept
-{
-	_tangentQuat = std::move(array);
-}
-
-void
 MeshProperty::setTexcoordArray(Float2Array&& array, std::size_t n) noexcept
 {
 	_texcoords[n] = std::move(array);
@@ -681,12 +669,6 @@ Float4Array&
 MeshProperty::getTangentArray() noexcept
 {
 	return _tangent;
-}
-
-Float4Array&
-MeshProperty::getTangentQuatArray() noexcept
-{
-	return _tangentQuat;
 }
 
 Float4Array&
@@ -735,12 +717,6 @@ const Float4Array&
 MeshProperty::getTangentArray() const noexcept
 {
 	return _tangent;
-}
-
-const Float4Array&
-MeshProperty::getTangentQuatArray() const noexcept
-{
-	return _tangentQuat;
 }
 
 const Float4Array&
@@ -1024,7 +1000,6 @@ MeshProperty::makeFloor(float width, float height, std::uint32_t widthSegments, 
 	this->makePlane(width, height, 0, widthSegments, 0, heightSegments, 'x', 'z', 1.0, 1.0);
 
 	this->computeTangents();
-	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1096,7 +1071,6 @@ MeshProperty::makeNoise(float width, float height, std::uint32_t widthSegments, 
 
 	this->computeVertexNormals();
 	this->computeTangents();
-	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1117,7 +1091,6 @@ MeshProperty::makeCube(float width, float height, float depth, std::uint32_t wid
 	this->makePlane(width, height, -depthHalf, widthSegments, heightSegments, depthSegments, 'x', 'y', -1, -1, false); // nz
 
 	this->computeTangents();
-	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1205,7 +1178,6 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 	}
 
 	this->computeTangents();
-	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1306,7 +1278,6 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 	}
 
 	this->computeTangents();
-	this->computeTangentQuats();
 	this->computeBoundingBox();
 }
 
@@ -1324,7 +1295,6 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 	bool hasVertices = false;
 	bool hasNormal = false;
 	bool hasTangent = false;
-	bool hasTangentQuat = false;
 	bool hasTexcoord = false;
 	bool hasFace = false;
 	bool hasWeight = false;
@@ -1340,7 +1310,6 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			hasVertices |= !mesh->getVertexArray().empty();
 			hasNormal |= !mesh->getNormalArray().empty();
 			hasTangent |= !mesh->getTangentArray().empty();
-			hasTangentQuat |= !mesh->getTangentQuatArray().empty();
 			hasTexcoord |= !mesh->getTexcoordArray().empty();
 			hasFace |= !mesh->getFaceArray().empty();
 			hasWeight |= !mesh->getWeightArray().empty();
@@ -1357,9 +1326,6 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 
 	if (hasTangent)
 		this->_tangent.resize(maxVertices);
-
-	if (hasTangentQuat)
-		this->_tangentQuat.resize(maxVertices);
 
 	if (hasTexcoord)
 		this->_texcoords[0].resize(maxVertices);
@@ -1382,7 +1348,6 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 		std::vector<float3>* vertices_;
 		std::vector<float3>* normals_;
 		std::vector<float4>* tangent_;
-		std::vector<float4>* tangentQuat_;
 		std::vector<float4>* colors_;
 		std::vector<float2>* texcoords_;
 		std::vector<VertexWeight>* weights_;
@@ -1396,7 +1361,6 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			child->getVertexArray().resize(mesh->getVertexArray().size());
 			child->getNormalArray().resize(mesh->getNormalArray().size());
 			child->getTangentArray().resize(mesh->getTangentArray().size());
-			child->getTangentQuatArray().resize(mesh->getTangentQuatArray().size());
 			child->getColorArray().resize(mesh->getColorArray().size());
 			child->getTexcoordArray().resize(mesh->getTexcoordArray().size());
 			child->getWeightArray().resize(mesh->getWeightArray().size());
@@ -1408,7 +1372,6 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			vertices_ = &child->_vertices;
 			normals_ = &child->_normals;
 			tangent_ = &child->_tangent;
-			tangentQuat_ = &child->_tangentQuat;
 			colors_ = &child->_colors;
 			texcoords_ = &child->_texcoords[0];
 			weights_ = &child->_weights;
@@ -1420,7 +1383,6 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			vertices_ = &this->_vertices;
 			normals_ = &this->_normals;
 			tangent_ = &this->_tangent;
-			tangentQuat_ = &this->_tangentQuat;
 			colors_ = &this->_colors;
 			texcoords_ = &this->_texcoords[0];
 			weights_ = &this->_weights;
@@ -1441,10 +1403,6 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 			const auto& tangents = mesh->getTangentArray();
 			if (!tangents.empty())
 				std::memcpy((*tangent_).data() + offsetVertices, tangents.data(), numVertex * sizeof(Vector4));
-
-			const auto& tangentQuats = mesh->getTangentQuatArray();
-			if (!tangentQuats.empty())
-				std::memcpy((*tangentQuat_).data() + offsetVertices, tangentQuats.data(), numVertex * sizeof(Vector4));
 
 			const auto& colors = mesh->getColorArray();
 			if (!colors.empty())
@@ -1784,12 +1742,12 @@ MeshProperty::computeTangents(std::uint8_t n) noexcept
 }
 
 void
-MeshProperty::computeTangentQuats() noexcept
+MeshProperty::computeTangentQuats(Float4Array& tangentQuat) const noexcept
 {
 	assert(_tangent.size() > 1);
 	assert(_tangent.size() == _normals.size());
 
-	_tangentQuat.resize(_tangent.size());
+	tangentQuat.resize(_tangent.size());
 
 	std::size_t numTangent = _tangent.size();
 	for (std::size_t i = 0; i < numTangent; i++)
@@ -1808,7 +1766,7 @@ MeshProperty::computeTangentQuats() noexcept
 		if (_tangent[i].w < 0.0f)
 			quat = -quat;
 
-		_tangentQuat[i] = float4(quat.x, quat.y, quat.z, quat.w);
+		tangentQuat[i].set(quat.x, quat.y, quat.z, quat.w);
 	}
 }
 

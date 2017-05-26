@@ -85,13 +85,12 @@ public:
 	bool createRigidbodyToBone(const Model& model, const GameObjects& bones, GameObjects& rigidbodys);
 	bool createJoints(const Model& model, const GameObjects& rigidbodys, GameObjects& joints) noexcept;
 
+	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
 	GraphicsTexturePtr getTexture(const util::string& name) noexcept;
 
 	void destroyTexture(GraphicsTexturePtr texture) noexcept;
 	void destroyTexture(const util::string& name) noexcept;
-
-	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
-	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
 
 private:
 	MaterialPtr _buildDefaultMaterials(const MaterialProperty& material, const util::string& file, const util::string& directory) noexcept;

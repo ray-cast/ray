@@ -202,9 +202,6 @@ MeshComponent::load(const archivebuf& reader) noexcept
 					if (it->getTangentArray().empty())
 						it->computeTangents();
 
-					if (it->getTangentQuatArray().empty())
-						it->computeTangentQuats();
-
 					it->computeBoundingBox();
 					if (it != root)
 						root->addChild(it);
@@ -249,9 +246,6 @@ MeshComponent::_onSetMesh(MeshPropertyPtr& mesh) noexcept
 
 		if (it->getTangentArray().empty())
 			it->computeTangents();
-
-		if (it->getTangentQuatArray().empty())
-			it->computeTangentQuats();
 
 		if (it->getBoundingBox().empty())
 			it->computeBoundingBox();

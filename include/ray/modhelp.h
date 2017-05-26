@@ -194,6 +194,12 @@ private:
 	std::vector<MaterialParam*> _properties;
 };
 
+struct EXPORT MeshSubset final
+{
+	std::uint32_t indicesOffset;
+	std::uint32_t indicesCount;
+};
+
 class EXPORT MeshProperty final : public std::enable_shared_from_this<MeshProperty>
 {
 public:
@@ -224,7 +230,6 @@ public:
 	void setNormalArray(const Float3Array& array) noexcept;
 	void setColorArray(const Float4Array& array) noexcept;
 	void setTangentArray(const Float4Array& array) noexcept;
-	void setTangentQuatArray(const Float4Array& array) noexcept;
 	void setTexcoordArray(const Float2Array& array, std::size_t n = 0) noexcept;
 	void setWeightArray(const VertexWeights& array) noexcept;
 	void setFaceArray(const UintArray& array) noexcept;
@@ -234,7 +239,6 @@ public:
 	void setNormalArray(Float3Array&& array) noexcept;
 	void setColorArray(Float4Array&& array) noexcept;
 	void setTangentArray(Float4Array&& array) noexcept;
-	void setTangentQuatArray(Float4Array&& array) noexcept;
 	void setTexcoordArray(Float2Array&& array, std::size_t n = 0) noexcept;
 	void setWeightArray(VertexWeights&& array) noexcept;
 	void setFaceArray(UintArray&& array) noexcept;
@@ -243,7 +247,6 @@ public:
 	Float3Array& getVertexArray() noexcept;
 	Float3Array& getNormalArray() noexcept;
 	Float4Array& getTangentArray() noexcept;
-	Float4Array& getTangentQuatArray() noexcept;
 	Float4Array& getColorArray() noexcept;
 	Float2Array& getTexcoordArray(std::size_t n = 0) noexcept;
 	VertexWeights& getWeightArray() noexcept;
@@ -253,7 +256,6 @@ public:
 	const Float3Array& getVertexArray() const noexcept;
 	const Float3Array& getNormalArray() const noexcept;
 	const Float4Array& getTangentArray() const noexcept;
-	const Float4Array& getTangentQuatArray() const noexcept;
 	const Float4Array& getColorArray() const noexcept;
 	const Float2Array& getTexcoordArray(std::size_t n = 0) const noexcept;
 	const VertexWeights& getWeightArray() const noexcept;
@@ -283,7 +285,7 @@ public:
 	void computeVertexNormals(std::size_t width, std::size_t height) noexcept;
 	void computeMorphNormals() noexcept;
 	void computeTangents(std::uint8_t texSlot = 0) noexcept;
-	void computeTangentQuats() noexcept;
+	void computeTangentQuats(Float4Array& tangentQuat) const noexcept;
 	void computeBoundingBox() noexcept;
 	void computePlanarUnwrap(std::vector<float2>& lightmap) noexcept;
 
@@ -301,7 +303,6 @@ private:
 	Float4Array _colors;
 	Float2Array _texcoords[8];
 	Float4Array _tangent;
-	Float4Array _tangentQuat;
 	Float3Array _facesNormal;
 	VertexWeights _weights;
 	Float4x4Array _bindposes;

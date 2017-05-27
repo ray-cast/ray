@@ -391,7 +391,6 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 					if (ray::ResManager::instance()->createTexture(ray::util::directory(path) + name, texture))
 					{
 						material->getParameter("quality")->uniform4f(ray::float4(1.0, 0.0, 0.0, 0.0));
-
 						material->getParameter("texDiffuse")->uniformTexture(texture);
 					}
 				}

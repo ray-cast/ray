@@ -58,7 +58,7 @@ MeshRenderComponent::MeshRenderComponent() noexcept
 {
 }
 
-MeshRenderComponent::MeshRenderComponent(MaterialPtr& material, bool shared) noexcept
+MeshRenderComponent::MeshRenderComponent(const MaterialPtr& material, bool shared) noexcept
 {
 	if (shared)
 		this->setSharedMaterial(material);
@@ -66,7 +66,7 @@ MeshRenderComponent::MeshRenderComponent(MaterialPtr& material, bool shared) noe
 		this->setMaterial(material);
 }
 
-MeshRenderComponent::MeshRenderComponent(MaterialPtr&& material, bool shared) noexcept
+MeshRenderComponent::MeshRenderComponent(const MaterialPtr&& material, bool shared) noexcept
 {
 	if (shared)
 		this->setSharedMaterial(material);
@@ -127,7 +127,7 @@ MeshRenderComponent::getReceiveShadow() const noexcept
 }
 
 void
-MeshRenderComponent::setMaterial(MaterialPtr& material) noexcept
+MeshRenderComponent::setMaterial(const MaterialPtr& material) noexcept
 {
 	if (_materials.empty())
 		_materials.push_back(material);
@@ -138,7 +138,7 @@ MeshRenderComponent::setMaterial(MaterialPtr& material) noexcept
 }
 
 void
-MeshRenderComponent::setSharedMaterial(MaterialPtr& material) noexcept
+MeshRenderComponent::setSharedMaterial(const MaterialPtr& material) noexcept
 {
 	if (_sharedMaterials.empty())
 		_sharedMaterials.push_back(material);
@@ -294,20 +294,6 @@ MeshRenderComponent::onDetachComponent(GameComponentPtr& component) noexcept
 }
 
 void
-MeshRenderComponent::onMoveAfter() noexcept
-{
-	for (auto& it : _renderObjects)
-		it->setTransform(this->getGameObject()->getWorldTransform());
-}
-
-void
-MeshRenderComponent::onLayerChangeAfter() noexcept
-{
-	for (auto& it : _renderObjects)
-		it->setLayer(this->getGameObject()->getLayer());
-}
-
-void
 MeshRenderComponent::onActivate() except
 {
 	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
@@ -334,6 +320,20 @@ MeshRenderComponent::onDeactivate() noexcept
 
 	this->_destroyMaterials();
 	this->_destroyRenderhObjects();
+}
+
+void
+MeshRenderComponent::onMoveAfter() noexcept
+{
+	for (auto& it : _renderObjects)
+		it->setTransform(this->getGameObject()->getWorldTransform());
+}
+
+void
+MeshRenderComponent::onLayerChangeAfter() noexcept
+{
+	for (auto& it : _renderObjects)
+		it->setLayer(this->getGameObject()->getLayer());
 }
 
 void

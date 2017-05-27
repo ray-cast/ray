@@ -48,8 +48,8 @@ class EXPORT MeshRenderComponent : public RenderComponent
 	__DeclareSubClass(MeshRenderComponent, RenderComponent)
 public:
 	MeshRenderComponent() noexcept;
-	MeshRenderComponent(MaterialPtr& material, bool shared = true) noexcept;
-	MeshRenderComponent(MaterialPtr&& material, bool shared = true) noexcept;
+	MeshRenderComponent(const MaterialPtr& material, bool shared = true) noexcept;
+	MeshRenderComponent(const MaterialPtr&& material, bool shared = true) noexcept;
 	MeshRenderComponent(const Materials& materials, bool shared = true) noexcept;
 	MeshRenderComponent(Materials&& materials, bool shared = true) noexcept;
 	MeshRenderComponent(const archivebuf& reader) noexcept;
@@ -61,8 +61,8 @@ public:
 	void setReceiveShadow(bool value) noexcept;
 	bool getReceiveShadow() const noexcept;
 
-	void setMaterial(MaterialPtr& material) noexcept;
-	void setSharedMaterial(MaterialPtr& material) noexcept;
+	void setMaterial(const MaterialPtr& material) noexcept;
+	void setSharedMaterial(const MaterialPtr& material) noexcept;
 
 	void setMaterial(MaterialPtr&& material) noexcept;
 	void setSharedMaterial(MaterialPtr&& material) noexcept;

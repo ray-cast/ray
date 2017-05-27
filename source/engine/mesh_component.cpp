@@ -214,7 +214,7 @@ MeshComponent::clone() const noexcept
 	auto result = std::make_shared<MeshComponent>();
 	result->setName(this->getName());
 	result->setActive(this->getActive());
-	result->setSharedMesh(this->getSharedMesh());
+	result->setSharedMesh(this->getMesh());
 	if (_mesh) result->setMesh(_mesh->clone());
 
 	return result;

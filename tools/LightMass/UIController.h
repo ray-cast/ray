@@ -57,6 +57,8 @@ private:
 	bool onUVMapperWillStart(const GuiParams& params) noexcept;
 	bool onUVMapperStart(const GuiParams& params) noexcept;
 
+	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
+
 	virtual void onAttachComponent(ray::GameComponentPtr& component) except;
 	virtual void onDetachComponent(ray::GameComponentPtr& component) noexcept;
 

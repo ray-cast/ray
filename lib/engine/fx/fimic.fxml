@@ -24,18 +24,6 @@
     		#define TONEMAP_UNCHARTED2 4
     		#define TONEMAP_ACES 5
     		#define TONEMAP_OPERATOR TONEMAP_UNCHARTED2
-        
-            float3 Uncharted2Tonemap(float3 x)
-            {
-                const float A = 0.22; // Shoulder Strength
-                const float B = 0.30; // Linear Strength
-                const float C = 0.10; // Linear Angle
-                const float D = 0.20; // Toe Strength
-                const float E = 0.01; // Toe Numerator
-                const float F = 0.30; // Toe Denominator E/F = Toe Angle
-                const float W = 11.2; // Linear White Point Value
-                return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-            }
 
 			float3 TonemapACES(float3 x)
 			{
@@ -46,18 +34,29 @@
 				const float E = 0.14f;
 				return (x * (A * x + B)) / (x * (C * x + D) + E);
 			}
+			
+			float4 TonemapHable(float4 x) 
+			{
+				const float A = 0.22f;
+				const float B = 0.30f;
+				const float C = 0.10f;
+				const float D = 0.20f;
+				const float E = 0.01f;
+				const float F = 0.30f;
+				return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+			}
 
-            float TonemappingUncharted2Inverse(float x) 
+            float TonemapHableInverse(float x) 
             {
-                float A = 0.22;
-                float B = 0.30;
-                float C = 0.10;
-                float D = 0.20;
-                float E = 0.01;
-                float F = 0.30;
-                float W = 11.2;
-                float q = B*(F*(C-x) - E);
-                float d = A*(F*(x - 1.0) + E);
+                const float A = 0.22f;
+                const float B = 0.30f;
+                const float C = 0.10f;
+                const float D = 0.20f;
+                const float E = 0.01f;
+                const float F = 0.30f;
+                const float W = 11.2f;
+                const float q = B*(F*(C-x) - E);
+                const float d = A*(F*(x - 1.0) + E);
                 return (q -sqrt(q*q - 4.0*D*F*F*x*d)) / (2.0*d);
             }
 
@@ -83,10 +82,9 @@
                     color = xyz2rgb(Yxy2xyz(color));
                     return color;
                 #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
-                    color = Uncharted2Tonemap(exposure * color);
-                    float3 whiteScale = 1.0f / Uncharted2Tonemap(8.0);
-                    color *= whiteScale;
-                    return color;
+                    float4 curr = TonemapHable(float4(color * exposure, 8.0));
+                    curr /= curr.w;
+                    return curr.rgb;
                 #elif TONEMAP_OPERATOR == TONEMAP_ACES
                 	return TonemapACES(color * exposure);
                 #else

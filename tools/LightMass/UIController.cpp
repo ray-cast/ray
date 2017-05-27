@@ -721,19 +721,22 @@ GuiControllerComponent::onActivate() except
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
 	sphereMesh->makeSphere(1.0, 64, 48);
 
+	auto gameObject = std::make_shared<ray::GameObject>();
+	gameObject->setActive(true);
+	gameObject->setScaleAll(2.5f);
+
+	gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
+	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material));
+
 	for (std::size_t i = 0; i < 10; i++)
 	{
 		for (std::size_t j = 0; j < 10; j++)
 		{
-			auto gameObject = std::make_shared<ray::GameObject>();
-			gameObject->setActive(true);
-			gameObject->setScaleAll(2.5f);
-			gameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f));
+			auto newGameObject = gameObject->clone();
+			newGameObject->setActive(true);
+			newGameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f));
 
-			gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
-			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material->clone()));
-
-			auto material = gameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
+			auto material = newGameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 
 			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
 			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
@@ -751,7 +754,7 @@ GuiControllerComponent::onActivate() except
 			material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
 			material->getParameter("texNormal")->uniformTexture(normalMap);
 
-			_objects.push_back(gameObject);
+			_objects.push_back(newGameObject);
 		}
 	}
 }

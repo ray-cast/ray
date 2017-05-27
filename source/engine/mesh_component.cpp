@@ -215,7 +215,7 @@ MeshComponent::clone() const noexcept
 	result->setName(this->getName());
 	result->setActive(this->getActive());
 	result->setSharedMesh(this->getMesh());
-	if (_mesh) result->setMesh(_mesh->clone());
+	if (_mesh) result->setMesh(this->getMesh()->clone());
 
 	return result;
 }

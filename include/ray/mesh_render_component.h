@@ -105,7 +105,6 @@ protected:
 
 	void _destroyRenderhObject(GeometryPtr object) noexcept;
 	void _destroyRenderhObjects() noexcept;
-
 	void _destroyMaterials() noexcept;
 
 	bool _buildMaterials(const util::string& filename) noexcept;
@@ -119,21 +118,22 @@ private:
 	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;
 	MeshRenderComponent& operator=(const MeshRenderComponent&) noexcept = delete;
 
-protected:
+private:
+	util::string _material;
+
 	bool _isCastShadow;
 	bool _isReceiveShadow;
 
 	Materials _materials;
 	Materials _sharedMaterials;
 
-	GraphicsDataPtr _renderMeshVbo;
-	GraphicsDataPtr _renderMeshIbo;
-
-	Geometryes _renderObjects;
-
 	std::function<void()> _onMeshChange;
 
-	util::string _material;
+protected:
+	Geometryes _renderObjects;
+
+	GraphicsDataPtr _renderMeshVbo;
+	GraphicsDataPtr _renderMeshIbo;
 };
 
 _NAME_END

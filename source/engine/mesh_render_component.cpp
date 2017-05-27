@@ -129,35 +129,53 @@ MeshRenderComponent::getReceiveShadow() const noexcept
 void
 MeshRenderComponent::setMaterial(const MaterialPtr& material) noexcept
 {
-	if (_materials.empty())
+	auto _this = _materials.empty() ? nullptr : _materials.front().get();
+	if (_this != material.get())
+	{
+		_materials.clear();
 		_materials.push_back(material);
-	else
-		_materials[0] = material;
 
-	this->_updateMaterial(0);
+		this->_updateMaterials();
+	}
 }
 
 void
 MeshRenderComponent::setSharedMaterial(const MaterialPtr& material) noexcept
 {
-	if (_sharedMaterials.empty())
+	auto _this = _sharedMaterials.empty() ? nullptr : _sharedMaterials.front().get();
+	if (_this != material.get())
+	{
+		_sharedMaterials.clear();
 		_sharedMaterials.push_back(material);
-	else
-		_sharedMaterials[0] = material;
 
-	this->_updateMaterial(0);
+		this->_updateMaterials();
+	}
 }
 
 void
 MeshRenderComponent::setMaterial(MaterialPtr&& material) noexcept
 {
-	this->setMaterial(material);
+	auto _this = _materials.empty() ? nullptr : _materials.front().get();
+	if (_this != material.get())
+	{
+		_materials.clear();
+		_materials.push_back(std::move(material));
+
+		this->_updateMaterials();
+	}
 }
 
 void
 MeshRenderComponent::setSharedMaterial(MaterialPtr&& material) noexcept
 {
-	this->setSharedMaterial(material);
+	auto _this = _sharedMaterials.empty() ? nullptr : _sharedMaterials.front().get();
+	if (_this != material.get())
+	{
+		_sharedMaterials.clear();
+		_sharedMaterials.push_back(std::move(material));
+
+		this->_updateMaterials();
+	}
 }
 
 MaterialPtr
@@ -257,24 +275,17 @@ GameComponentPtr
 MeshRenderComponent::clone() const noexcept
 {
 	auto result = std::make_shared<MeshRenderComponent>();
+	result->setName(this->getName());
 	result->setActive(this->getActive());
 	result->setCastShadow(this->getCastShadow());
 	result->setReceiveShadow(this->getReceiveShadow());
 	result->setSharedMaterials(this->getMaterials());
 	result->_material = this->_material;
+	result->_renderMeshVbo = this->_renderMeshVbo;
+	result->_renderMeshIbo = this->_renderMeshIbo;
 
-	for (auto& material : this->_materials)
+	for (auto& material : this->getMaterials())
 		result->_materials.push_back(material->clone());
-
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (component)
-	{
-		if (component->getMesh() == component->getSharedMesh())
-		{
-			result->_renderMeshVbo = this->_renderMeshVbo;
-			result->_renderMeshIbo = this->_renderMeshIbo;
-		}
-	}
 
 	return result;
 }
@@ -297,20 +308,7 @@ void
 MeshRenderComponent::onActivate() except
 {
 	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
-
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (!component)
-		return;
-
-	auto mesh = component->getMesh();
-	if (!mesh)
-		return;
-
-	if (!this->hasMaterial() && !this->hasSharedMaterial())
-		return;
-
-	_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
-	_attacRenderObjects();
+	this->onMeshChange();
 }
 
 void
@@ -339,25 +337,28 @@ MeshRenderComponent::onLayerChangeAfter() noexcept
 void
 MeshRenderComponent::onMeshChange() except
 {
-	if (!this->getGameObject()->getActive())
+	if (!this->getActive())
 		return;
 
 	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (component)
+	if (!component)
 	{
-		auto mesh = component->getMesh();
-		if (!mesh)
-		{
-			this->_destroyRenderhObjects();
-			return;
-		}
-
-		if (!this->hasMaterial() && !this->hasSharedMaterial())
-			return;
-
-		_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
-		_attacRenderObjects();
+		this->_destroyRenderhObjects();
+		return;
 	}
+
+	auto mesh = component->getMesh();
+	if (!mesh)
+	{
+		this->_destroyRenderhObjects();
+		return;
+	}
+
+	if (!this->hasMaterial() && !this->hasSharedMaterial())
+		return;
+
+	_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
+	_attacRenderObjects();
 }
 
 void
@@ -425,24 +426,31 @@ MeshRenderComponent::_buildMaterials(const util::string& filename) noexcept
 bool
 MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
 {
-	_destroyRenderhObjects();
+	if (!_renderObjects.empty())
+	{
+		for (auto& it : _renderObjects)
+			it->setRenderScene(nullptr);
+
+		_renderObjects.clear();
+	}
 
 	if (mesh.getNumVertices())
 	{
-		_renderMeshVbo = ResManager::instance()->createVertexBuffer(mesh, flags);
+		if (!_renderMeshVbo)
+			_renderMeshVbo = ResManager::instance()->createVertexBuffer(mesh, flags);
+
 		if (!_renderMeshVbo)
 			return false;
 	}
 
 	if (mesh.getNumIndices())
 	{
-		_renderMeshIbo = ResManager::instance()->createIndexBuffer(mesh);
+		if (!_renderMeshIbo)
+			_renderMeshIbo = ResManager::instance()->createIndexBuffer(mesh);
+
 		if (!_renderMeshIbo)
 			return false;
 	}
-
-	std::size_t startVertice = 0;
-	std::size_t startIndice = 0;
 
 	auto& meshes = mesh.getMeshSubsets();
 	for (auto& it : meshes)
@@ -468,27 +476,27 @@ MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFla
 void
 MeshRenderComponent::_updateMaterial(std::size_t n) noexcept
 {
-	if (_renderObjects.size() <= n)
-		return;
+	assert(n < _renderObjects.size());
 
-	if (!_materials.empty())
-	{
-		if (_renderObjects.size() == _materials.size())
-		{
-			_renderObjects[n]->setMaterial(_materials[n]);
-			return;
-		}
-	}
+	if (_materials.empty() && _sharedMaterials.empty())
+		_renderObjects[n]->setMaterial(nullptr);
 	else
 	{
-		if (_renderObjects.size() == _sharedMaterials.size())
+		if (!_materials.empty())
 		{
-			_renderObjects[n]->setMaterial(_sharedMaterials[n]);
-			return;
+			if (_materials.size() > n)
+				_renderObjects[n]->setMaterial(_materials[n] ? _materials[n] : _materials[0]);
+			else
+				_renderObjects[n]->setMaterial(_materials[0]);
+		}
+		else
+		{
+			if (_sharedMaterials.size() > n)
+				_renderObjects[n]->setMaterial(_sharedMaterials[n] ? _sharedMaterials[n] : _sharedMaterials[0]);
+			else
+				_renderObjects[n]->setMaterial(_sharedMaterials[0]);
 		}
 	}
-
-	this->_updateMaterials();
 }
 
 void
@@ -496,27 +504,7 @@ MeshRenderComponent::_updateMaterials() noexcept
 {
 	std::size_t objectCount = _renderObjects.size();
 	for (std::size_t i = 0; i < objectCount; i++)
-	{
-		if (_materials.empty() && _sharedMaterials.empty())
-			_renderObjects[i]->setMaterial(nullptr);
-		else
-		{
-			if (!_materials.empty())
-			{
-				if (_materials.size() > i)
-					_renderObjects[i]->setMaterial(_materials[i] ? _materials[i] : _materials[0]);
-				else
-					_renderObjects[i]->setMaterial(_materials[0]);
-			}
-			else
-			{
-				if (_sharedMaterials.size() > i)
-					_renderObjects[i]->setMaterial(_sharedMaterials[i] ? _sharedMaterials[i] : _sharedMaterials[0]);
-				else
-					_renderObjects[i]->setMaterial(_sharedMaterials[0]);
-			}
-		}
-	}
+		this->_updateMaterial(i);
 }
 
 _NAME_END

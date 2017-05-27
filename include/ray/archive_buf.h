@@ -54,7 +54,6 @@ public:
 	using number_float3_t = Vector3t<number_float_t>;
 	using number_float4_t = Vector4t<number_float_t>;
 	using number_quaternion_t = Quaterniont<number_float_t>;
-	using number_euler_t = EulerAnglest<number_float_t>;
 	using string_t = std::string;
 	using object_t = archivebuf;;
 	using array_t = std::vector<archivebuf>;
@@ -324,25 +323,6 @@ public:
 		return *this;
 	}
 
-	const archivebuf& operator >> (archivebuf::number_euler_t& argv) const
-	{
-		if (this->is_array())
-		{
-			const auto& values = this->get<archivebuf::array_t>();
-			if (values.size() == 3)
-			{
-				for (std::uint8_t i = 0; i < 3; ++i)
-					argv[i] = values[i].get<archivebuf::number_float_t>();
-			}
-			else
-			{
-				throw failure(std::string("array length mismatch with 4"));
-			}
-		}
-
-		return *this;
-	}
-
 	const archivebuf& operator >> (archivebuf::string_t& argv) const
 	{
 		const auto& value = *this;
@@ -433,24 +413,6 @@ public:
 		if (this->is_array())
 		{
 			for (std::uint8_t i = 0; i < 4; ++i)
-				this->operator[](i) = argv[i];
-		}
-		else
-		{
-			throw failure(std::string("cannot use operator << with ") + this->type_name());
-		}
-
-		return *this;
-	}
-
-	archivebuf& operator << (const archivebuf::number_euler_t& argv)
-	{
-		if (!this->is_array())
-			this->emplace(archivebuf::array);
-
-		if (this->is_array())
-		{
-			for (std::uint8_t i = 0; i < 3; ++i)
 				this->operator[](i) = argv[i];
 		}
 		else

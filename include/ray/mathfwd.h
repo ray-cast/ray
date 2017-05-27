@@ -105,9 +105,6 @@ template<typename T = float>
 class Triangle3t;
 
 template<typename T = float>
-class EulerAnglest;
-
-template<typename T = float>
 class Quaterniont;
 
 template<typename T = float>
@@ -161,7 +158,6 @@ typedef Raycast3t<> Raycast3;
 typedef Triangle3t<> Triangle3;
 typedef Color3t<> Color3;
 typedef Color4t<> Color4;
-typedef EulerAnglest<> EulerAngles;
 typedef Quaterniont<> Quaternion;
 typedef Line3t<> Line3;
 typedef Box2t<> Box2;
@@ -193,7 +189,6 @@ typedef Raycast3t<float> Raycast3f;
 typedef Triangle3t<float> Triangle3f;
 typedef Color3t<float> Color3f;
 typedef Color4t<float> Color4f;
-typedef EulerAnglest<float> EulerAnglestf;
 typedef Quaterniont<float> Quaternionf;
 typedef Line3t<float> Line3f;
 typedef AABBt<float> AABBf;
@@ -224,7 +219,6 @@ typedef Raycast3t<double> Raycast3d;
 typedef Triangle3t<double> Triangle3d;
 typedef Color3t<double> Color3d;
 typedef Color4t<double> Color4d;
-typedef EulerAnglest<double> EulerAnglestd;
 typedef Quaterniont<double> Quaterniond;
 typedef Line3t<double> Line3d;
 typedef AABBt<double> AABBd;

@@ -41,7 +41,6 @@
 #include <ray/binary.h>
 #include <ray/boundingbox.h>
 #include <ray/dccmn.h>
-#include <ray/euler.h>
 #include <ray/frustum.h>
 #include <ray/line3.h>
 #include <ray/mat2.h>

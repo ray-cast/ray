@@ -996,7 +996,7 @@ GameObject::load(const archivebuf& reader) except
 	float3 euler = float3::Zero;
 	reader["rotate"] >> euler;
 
-	_localRotation.makeRotate(EulerAngles(euler));
+	_localRotation.makeRotate(euler);
 }
 
 void
@@ -1007,7 +1007,7 @@ GameObject::save(archivebuf& write) except
 	write["layer"] << _layer;
 	write["position"] << this->_localTranslate;
 	write["scale"] << this->_localScaling;
-	write["rotate"] << ray::EulerAngles(this->_localRotation);
+	write["rotate"] << math::eulerAngles(this->_localRotation);
 }
 
 GameObjectPtr

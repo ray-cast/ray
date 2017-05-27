@@ -58,11 +58,9 @@ public:
 	Quaterniont() noexcept {}
 	Quaterniont(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	Quaterniont(const Quaterniont& q) noexcept : x(q.x), y(q.y), z(q.z), w(q.w) {}
+	Quaterniont(const Vector3t<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
 	Quaterniont(const Vector3t<T>& axis, T angle) noexcept { this->makeRotate(axis, angle); }
 	Quaterniont(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept { this->makeRotate(forward, up, right); }
-
-	explicit Quaterniont(const Vector3t<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
-	explicit Quaterniont(const EulerAnglest<T>& eulerXYZ) noexcept { this->makeRotateZYX(eulerXYZ); }
 
 	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
 	explicit Quaterniont(S xyzw[4]) noexcept
@@ -169,6 +167,40 @@ public:
 		return *this;
 	}
 
+	Quaterniont<T>& makeRotate(const Vector3t<T>& euler) noexcept
+	{
+		T sp, sb, sh;
+		T cp, cb, ch;
+
+		math::sinCos(&sp, &cp, (T)DEG_TO_RAD(euler.x) * 0.5f);
+		math::sinCos(&sh, &ch, (T)DEG_TO_RAD(euler.y) * 0.5f);
+		math::sinCos(&sb, &cb, (T)DEG_TO_RAD(euler.z) * 0.5f);
+
+		x = cb * sp * ch + sb * cp * sh;
+		y = cb * cp * sh - sb * sp * ch;
+		z = sb * cp * ch - cb * sp * sh;
+		w = cb * cp * ch + sb * sp * sh;
+
+		return *this;
+	}
+
+	Quaterniont<T>& makeRotateZYX(const Vector3t<T>& euler) noexcept
+	{
+		T sp, sb, sh;
+		T cp, cb, ch;
+
+		math::sinCos(&sp, &cp, (T)DEG_TO_RAD(euler.x) * 0.5f);
+		math::sinCos(&sh, &ch, (T)DEG_TO_RAD(euler.y) * 0.5f);
+		math::sinCos(&sb, &cb, (T)DEG_TO_RAD(euler.z) * 0.5f);
+
+		x = sp * ch * cb - cp * sh * sb;
+		y = cp * sh * cb + sp * ch * sb;
+		z = cp * ch * sb - sp * sh * cb;
+		w = cp * ch * cb + sp * sh * sb;
+
+		return *this;
+	}
+
 	Quaterniont<T>& makeRotate(const Vector3t<T>& axis, T theta) noexcept
 	{
 		T thetaOver2 = DEG_TO_RAD(theta * 0.5f);
@@ -181,45 +213,6 @@ public:
 		z = axis.z * sin_a;
 		w = cos_a;
 		return *this;
-	}
-
-	Quaterniont<T>& makeRotate(const EulerAnglest<T>& euler)
-	{
-		T sp, sb, sh;
-		T cp, cb, ch;
-
-		math::sinCos(&sp, &cp, (float)DEG_TO_RAD(euler.x) * 0.5f);
-		math::sinCos(&sh, &ch, (float)DEG_TO_RAD(euler.y) * 0.5f);
-		math::sinCos(&sb, &cb, (float)DEG_TO_RAD(euler.z) * 0.5f);
-
-		x = cb * sp * ch + sb * cp * sh;
-		y = cb * cp * sh - sb * sp * ch;
-		z = sb * cp * ch - cb * sp * sh;
-		w = cb * cp * ch + sb * sp * sh;
-
-		return *this;
-	}
-
-	Quaterniont<T>& makeRotateZYX(const EulerAnglest<T>& euler) noexcept
-	{
-		T sp, sb, sh;
-		T cp, cb, ch;
-
-		math::sinCos(&sp, &cp, (float)DEG_TO_RAD(euler.x) * 0.5f);
-		math::sinCos(&sh, &ch, (float)DEG_TO_RAD(euler.y) * 0.5f);
-		math::sinCos(&sb, &cb, (float)DEG_TO_RAD(euler.z) * 0.5f);
-
-		x = sp * ch * cb - cp * sh * sb;
-		y = cp * sh * cb + sp * ch * sb;
-		z = cp * ch * sb - sp * sh * cb;
-		w = cp * ch * cb + sp * sh * sb;
-
-		return *this;
-	}
-
-	Quaterniont<T>& makeRotate(const Vector3t<T>& euler) noexcept
-	{
-		return this->makeRotateZYX(EulerAnglest<T>(euler));
 	}
 
 	Quaterniont<T>& makeRotate(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept
@@ -441,15 +434,6 @@ namespace math
 	}
 
 	template<typename T>
-	inline Vector3t<T> rotate(const Quaterniont<T>& q, const Vector3t<T>& v) noexcept
-	{
-		Quaterniont<T> q1(v.x, v.y, v.z, 0.f);
-		Quaterniont<T> qinv = math::inverse(q);
-		Quaterniont<T> q2 = cross(q, math::cross(q1, qinv));
-		return Vector3t<T>(q2.x, q2.y, q2.z);
-	}
-
-	template<typename T>
 	inline Quaterniont<T> slerp(const Quaterniont<T>& q1, const Quaterniont<T>& q2, T t) noexcept
 	{
 		if (t <= 0.0f) { return q1; }
@@ -497,6 +481,25 @@ namespace math
 			result.w = c0 * q1.w + c1 * q2.w;
 			return result;
 		}
+	}
+
+	template<typename T>
+	inline Vector3t<T> rotate(const Quaterniont<T>& q, const Vector3t<T>& v) noexcept
+	{
+		Quaterniont<T> q1(v.x, v.y, v.z, 0.f);
+		Quaterniont<T> qinv = math::inverse(q);
+		Quaterniont<T> q2 = cross(q, math::cross(q1, qinv));
+		return Vector3t<T>(q2.x, q2.y, q2.z);
+	}
+
+	template<typename T>
+	inline Vector3t<T> eulerAngles(const Quaterniont<T>& q) noexcept
+	{
+		return Vector3t<T>(
+			RAD_TO_DEG(math::asin(2.0f * (q.w * q.x - q.y * q.z))),
+			RAD_TO_DEG(math::atan2(q.w * q.y + q.x * q.z, 1.0f - 2.0f * (q.x * q.x + q.y * q.y))),
+			RAD_TO_DEG(math::atan2(q.w * q.z + q.x * q.y, 1.0f - 2.0f * (q.x * q.x + q.z * q.z)))
+			);
 	}
 }
 

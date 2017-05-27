@@ -128,7 +128,6 @@ SET(PLATFORM_MATH_LIST
     ${HEADER_PATH}/binary.h
     ${HEADER_PATH}/boundingbox.h
     ${HEADER_PATH}/dccmn.h
-    ${HEADER_PATH}/euler.h
     ${HEADER_PATH}/frustum.h
     ${HEADER_PATH}/gdicmn.h
     ${HEADER_PATH}/line3.h

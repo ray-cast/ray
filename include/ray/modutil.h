@@ -69,9 +69,9 @@ public:
 		transform = m;
 	}
 
-	void makeTransform(const float3& translate, const EulerAngles& euler, const float3& scale) noexcept
+	void makeTransform(const float3& translate, const Quaternion& quat, const float3& scale) noexcept
 	{
-		transform.makeTransform(translate, Quaternion().makeRotate(euler), scale);
+		transform.makeTransform(translate, quat, scale);
 	}
 
 	const float4x4& getTransform() const noexcept

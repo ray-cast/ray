@@ -74,7 +74,7 @@ RenderPostProcess::getActive() const noexcept
 }
 
 void
-RenderPostProcess::onActivate(RenderPipeline& pipeline) noexcept
+RenderPostProcess::onActivate(RenderPipeline& pipeline) except
 {
 }
 
@@ -99,7 +99,7 @@ RenderPostProcess::_setPipelineManager(RenderPipelineManager* pipelineManager) n
 	_pipelineManager = pipelineManager;
 }
 
-RenderPipeline* 
+RenderPipeline*
 RenderPostProcess::getPipeline() const noexcept
 {
 	return _pipelineManager->getRenderPipeline().get();

@@ -55,8 +55,8 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showStyleEditor = false;
 	_showAboutWindow = false;
 	_showAboutWindowFirst = false;
-	_showErrorMessage = false;
-	_showErrorMessageFirst = false;
+	_showMessage = false;
+	_showMessageFirst = false;
 	_showProcessMessage = false;
 	_showProcessMessageFirst = false;
 
@@ -354,32 +354,32 @@ GuiViewComponent::showModelExportBrowse() noexcept
 void
 GuiViewComponent::showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept
 {
-	if (!_showErrorMessageFirst)
+	if (!_showMessageFirst)
 	{
 		_messageHash = hash;
 		_messageText = message;
 		_messageTitle = title;
 
-		_showErrorMessageFirst = true;
+		_showMessageFirst = true;
 	}
 }
 
 void
 GuiViewComponent::showMessage() noexcept
 {
-	if (_showErrorMessageFirst)
+	if (_showMessageFirst)
 	{
-		_showErrorMessageFirst = false;
+		_showMessageFirst = false;
 
-		if (_showMessage[_messageHash])
+		if (_ignoreMessage[_messageHash])
 			return;
 
 		ray::Gui::openPopup(_messageTitle.c_str());
 
-		_showErrorMessage = true;
+		_showMessage = true;
 	}
 
-	if (!_showErrorMessage)
+	if (!_showMessage)
 		return;
 
 	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
@@ -388,7 +388,7 @@ GuiViewComponent::showMessage() noexcept
 		ray::Gui::separator();
 
 		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(0, 0));
-		ray::Gui::checkbox(_langs[UILang::NoShowAgain], &_showMessage[_messageHash]);
+		ray::Gui::checkbox(_langs[UILang::NoShowAgain], &_ignoreMessage[_messageHash]);
 		ray::Gui::popStyleVar();
 
 		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }

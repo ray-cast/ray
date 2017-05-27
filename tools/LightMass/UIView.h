@@ -102,8 +102,8 @@ private:
 	bool _showStyleEditor;
 	bool _showAboutWindow;
 	bool _showAboutWindowFirst;
-	bool _showErrorMessage;
-	bool _showErrorMessageFirst;
+	bool _showMessage;
+	bool _showMessageFirst;
 	bool _showProcessMessage;
 	bool _showProcessMessageFirst;
 
@@ -112,7 +112,7 @@ private:
 	std::size_t _messageHash;
 	std::string _messageTitle;
 	std::string _messageText;
-	std::map<std::size_t, bool> _showMessage;
+	std::map<std::size_t, bool> _ignoreMessage;
 	std::vector<const char*> _langs;
 
 	ray::float4 _clearColor;

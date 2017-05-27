@@ -526,7 +526,10 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 bool
 PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 {
-	if (!stream.write((char*)&pmx.header, sizeof(pmx.header))) return false;
+	PMX_Header header = pmx.header;
+	header.sizeOfBone = std::min<std::uint8_t>(1, pmx.header.sizeOfBone);
+
+	if (!stream.write((char*)&header, sizeof(header))) return false;
 
 	if (!stream.write((char*)&pmx.description.japanModelLength, sizeof(pmx.description.japanModelLength))) return false;
 	if (pmx.description.japanModelLength)
@@ -549,9 +552,9 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 	{
 		for (auto& vertex : pmx.vertices)
 		{
-			if (pmx.header.addUVCount > 0)
+			if (header.addUVCount > 0)
 			{
-				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord[0]) * pmx.header.addUVCount;
+				std::streamsize size = sizeof(vertex.position) + sizeof(vertex.normal) + sizeof(vertex.coord) + sizeof(vertex.addCoord[0]) * header.addUVCount;
 				if (!stream.write((char*)&vertex.position, size)) return false;
 			}
 			else
@@ -566,22 +569,22 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			{
 			case PMX_BDEF1:
 			{
-				if (!stream.write((char*)&vertex.weight.bone1, pmx.header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone1, header.sizeOfBone)) return false;
 			}
 			break;
 			case PMX_BDEF2:
 			{
-				if (!stream.write((char*)&vertex.weight.bone1, pmx.header.sizeOfBone)) return false;
-				if (!stream.write((char*)&vertex.weight.bone2, pmx.header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone1, header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone2, header.sizeOfBone)) return false;
 				if (!stream.write((char*)&vertex.weight.weight1, sizeof(vertex.weight.weight2))) return false;
 			}
 			break;
 			case PMX_BDEF4:
 			{
-				if (!stream.write((char*)&vertex.weight.bone1, pmx.header.sizeOfBone)) return false;
-				if (!stream.write((char*)&vertex.weight.bone2, pmx.header.sizeOfBone)) return false;
-				if (!stream.write((char*)&vertex.weight.bone3, pmx.header.sizeOfBone)) return false;
-				if (!stream.write((char*)&vertex.weight.bone4, pmx.header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone1, header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone2, header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone3, header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone4, header.sizeOfBone)) return false;
 				if (!stream.write((char*)&vertex.weight.weight1, sizeof(vertex.weight.weight1))) return false;
 				if (!stream.write((char*)&vertex.weight.weight2, sizeof(vertex.weight.weight2))) return false;
 				if (!stream.write((char*)&vertex.weight.weight3, sizeof(vertex.weight.weight3))) return false;
@@ -590,8 +593,8 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			break;
 			case PMX_SDEF:
 			{
-				if (!stream.write((char*)&vertex.weight.bone1, pmx.header.sizeOfBone)) return false;
-				if (!stream.write((char*)&vertex.weight.bone2, pmx.header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone1, header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone2, header.sizeOfBone)) return false;
 				if (!stream.write((char*)&vertex.weight.weight1, sizeof(vertex.weight.weight1))) return false;
 				if (!stream.write((char*)&vertex.weight.SDEF_C, sizeof(vertex.weight.SDEF_C))) return false;
 				if (!stream.write((char*)&vertex.weight.SDEF_R0, sizeof(vertex.weight.SDEF_R0))) return false;
@@ -600,8 +603,8 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			break;
 			case PMX_QDEF:
 			{
-				if (!stream.write((char*)&vertex.weight.bone1, pmx.header.sizeOfBone)) return false;
-				if (!stream.write((char*)&vertex.weight.bone2, pmx.header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone1, header.sizeOfBone)) return false;
+				if (!stream.write((char*)&vertex.weight.bone2, header.sizeOfBone)) return false;
 				if (!stream.write((char*)&vertex.weight.weight1, sizeof(vertex.weight.weight1))) return false;
 			}
 			default:
@@ -649,8 +652,8 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			if (!stream.write((char*)&material.Flag, sizeof(material.Flag))) return false;
 			if (!stream.write((char*)&material.EdgeColor, sizeof(material.EdgeColor))) return false;
 			if (!stream.write((char*)&material.EdgeSize, sizeof(material.EdgeSize))) return false;
-			if (!stream.write((char*)&material.TextureIndex, pmx.header.sizeOfTexture)) return false;
-			if (!stream.write((char*)&material.SphereTextureIndex, pmx.header.sizeOfTexture)) return false;
+			if (!stream.write((char*)&material.TextureIndex, header.sizeOfTexture)) return false;
+			if (!stream.write((char*)&material.SphereTextureIndex, header.sizeOfTexture)) return false;
 			if (!stream.write((char*)&material.SphereMode, sizeof(material.SphereMode))) return false;
 			if (!stream.write((char*)&material.ToonIndex, sizeof(material.ToonIndex))) return false;
 
@@ -660,7 +663,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			}
 			else
 			{
-				if (!stream.write((char*)&material.ToneTexture, pmx.header.sizeOfTexture)) return false;
+				if (!stream.write((char*)&material.ToneTexture, header.sizeOfTexture)) return false;
 			}
 
 			if (!stream.write((char*)&material.memLength, sizeof(material.memLength))) return false;
@@ -673,9 +676,10 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 		}
 	}
 
-	if (!stream.write((char*)&pmx.numBones, sizeof(pmx.numBones))) return false;
 	if (pmx.numBones)
 	{
+		if (!stream.write((char*)&pmx.numBones, sizeof(pmx.numBones))) return false;
+
 		for (auto& bone : pmx.bones)
 		{
 			if (!stream.write((char*)&bone.name.length, sizeof(bone.name.length))) return false;
@@ -686,13 +690,13 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 				if (!stream.write((char*)&bone.nameEng.name, bone.nameEng.length)) return false;
 
 			if (!stream.write((char*)&bone.position, sizeof(bone.position))) return false;
-			if (!stream.write((char*)&bone.Parent, pmx.header.sizeOfBone)) return false;
+			if (!stream.write((char*)&bone.Parent, header.sizeOfBone)) return false;
 			if (!stream.write((char*)&bone.Level, sizeof(bone.Level))) return false;
 			if (!stream.write((char*)&bone.Flag, sizeof(bone.Flag))) return false;
 
 			if (bone.Flag & PMX_BONE_INDEX)
 			{
-				if (!stream.write((char*)&bone.ConnectedBoneIndex, pmx.header.sizeOfBone)) return false;
+				if (!stream.write((char*)&bone.ConnectedBoneIndex, header.sizeOfBone)) return false;
 			}
 			else
 			{
@@ -701,7 +705,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 
 			if (bone.Flag & PMX_BONE_PARENT)
 			{
-				if (!stream.write((char*)&bone.ProvidedParentBoneIndex, pmx.header.sizeOfBone)) return false;
+				if (!stream.write((char*)&bone.ProvidedParentBoneIndex, header.sizeOfBone)) return false;
 				if (!stream.write((char*)&bone.ProvidedRatio, sizeof(bone.ProvidedRatio))) return false;
 			}
 
@@ -718,7 +722,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 
 			if (bone.Flag & PMX_BONE_IK)
 			{
-				if (!stream.write((char*)&bone.IKTargetBoneIndex, pmx.header.sizeOfBone)) return false;
+				if (!stream.write((char*)&bone.IKTargetBoneIndex, header.sizeOfBone)) return false;
 				if (!stream.write((char*)&bone.IKLoopCount, sizeof(bone.IKLoopCount))) return false;
 				if (!stream.write((char*)&bone.IKLimitedRadian, sizeof(bone.IKLimitedRadian))) return false;
 				if (!stream.write((char*)&bone.IKLinkCount, sizeof(bone.IKLinkCount))) return false;
@@ -727,13 +731,86 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 				{
 					for (std::size_t j = 0; j < bone.IKLinkCount; j++)
 					{
-						if (!stream.write((char*)&bone.IKList[j].BoneIndex, pmx.header.sizeOfBone)) return false;
+						if (!stream.write((char*)&bone.IKList[j].BoneIndex, header.sizeOfBone)) return false;
 						if (!stream.write((char*)&bone.IKList[j].rotateLimited, (std::streamsize)sizeof(bone.IKList[j].rotateLimited))) return false;
 						if (bone.IKList[j].rotateLimited)
 						{
 							if (!stream.write((char*)&bone.IKList[j].maximumRadian, (std::streamsize)sizeof(bone.IKList[j].maximumRadian))) return false;
 							if (!stream.write((char*)&bone.IKList[j].minimumRadian, (std::streamsize)sizeof(bone.IKList[j].minimumRadian))) return false;
 						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		ray::PMX_Bone bone;
+		std::memset(&bone, 0, sizeof(bone));
+
+		bone.name.length = sizeof(L"本件正奈");
+		bone.Parent = 255;
+		bone.Flag = PMX_BONE_MOVE | PMX_BONE_ROTATE | PMX_BONE_OPERATOR | PMX_BONE_DISPLAY | PMX_BONE_ROOT;
+		std::memcpy(bone.name.name, L"本件正奈", sizeof(L"本件正奈"));
+
+		PMX_uint32_t numBones = 1;
+		if (!stream.write((char*)&numBones, sizeof(numBones))) return false;
+
+		if (!stream.write((char*)&bone.name.length, sizeof(bone.name.length))) return false;
+		if (bone.name.length)
+			if (!stream.write((char*)&bone.name.name, bone.name.length)) return false;
+		if (!stream.write((char*)&bone.nameEng.length, sizeof(bone.nameEng.length))) return false;
+		if (bone.nameEng.length)
+			if (!stream.write((char*)&bone.nameEng.name, bone.nameEng.length)) return false;
+
+		if (!stream.write((char*)&bone.position, sizeof(bone.position))) return false;
+		if (!stream.write((char*)&bone.Parent, header.sizeOfBone)) return false;
+		if (!stream.write((char*)&bone.Level, sizeof(bone.Level))) return false;
+		if (!stream.write((char*)&bone.Flag, sizeof(bone.Flag))) return false;
+
+		if (bone.Flag & PMX_BONE_INDEX)
+		{
+			if (!stream.write((char*)&bone.ConnectedBoneIndex, header.sizeOfBone)) return false;
+		}
+		else
+		{
+			if (!stream.write((char*)&bone.Offset, sizeof(bone.Offset))) return false;
+		}
+
+		if (bone.Flag & PMX_BONE_PARENT)
+		{
+			if (!stream.write((char*)&bone.ProvidedParentBoneIndex, header.sizeOfBone)) return false;
+			if (!stream.write((char*)&bone.ProvidedRatio, sizeof(bone.ProvidedRatio))) return false;
+		}
+
+		if (bone.Flag & PMX_BONE_AXIS)
+		{
+			if (!stream.write((char*)&bone.AxisDirection, sizeof(bone.AxisDirection))) return false;
+		}
+
+		if (bone.Flag & PMX_BONE_ROTATE)
+		{
+			if (!stream.write((char*)&bone.DimentionXDirection, sizeof(bone.DimentionXDirection))) return false;
+			if (!stream.write((char*)&bone.DimentionZDirection, sizeof(bone.DimentionZDirection))) return false;
+		}
+
+		if (bone.Flag & PMX_BONE_IK)
+		{
+			if (!stream.write((char*)&bone.IKTargetBoneIndex, header.sizeOfBone)) return false;
+			if (!stream.write((char*)&bone.IKLoopCount, sizeof(bone.IKLoopCount))) return false;
+			if (!stream.write((char*)&bone.IKLimitedRadian, sizeof(bone.IKLimitedRadian))) return false;
+			if (!stream.write((char*)&bone.IKLinkCount, sizeof(bone.IKLinkCount))) return false;
+
+			if (bone.IKLinkCount > 0)
+			{
+				for (std::size_t j = 0; j < bone.IKLinkCount; j++)
+				{
+					if (!stream.write((char*)&bone.IKList[j].BoneIndex, header.sizeOfBone)) return false;
+					if (!stream.write((char*)&bone.IKList[j].rotateLimited, (std::streamsize)sizeof(bone.IKList[j].rotateLimited))) return false;
+					if (bone.IKList[j].rotateLimited)
+					{
+						if (!stream.write((char*)&bone.IKList[j].maximumRadian, (std::streamsize)sizeof(bone.IKList[j].maximumRadian))) return false;
+						if (!stream.write((char*)&bone.IKList[j].minimumRadian, (std::streamsize)sizeof(bone.IKList[j].minimumRadian))) return false;
 					}
 				}
 			}
@@ -757,14 +834,14 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 
 			if (morph.morphType == PMXMorphType::MorphTypeGroup)
 			{
-				if (!stream.write((char*)&morph.morphIndex, pmx.header.sizeOfMorph)) return false;
+				if (!stream.write((char*)&morph.morphIndex, header.sizeOfMorph)) return false;
 				if (!stream.write((char*)&morph.morphRate, sizeof(morph.morphRate))) return false;
 			}
 			else if (morph.morphType == PMXMorphType::MorphTypeVertex)
 			{
 				for (auto& vertex : morph.vertexList)
 				{
-					if (!stream.write((char*)&vertex.index, pmx.header.sizeOfIndices)) return false;
+					if (!stream.write((char*)&vertex.index, header.sizeOfIndices)) return false;
 					if (!stream.write((char*)&vertex.offset, sizeof(vertex.offset))) return false;
 				}
 			}
@@ -772,7 +849,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			{
 				for (auto& bone : morph.boneList)
 				{
-					if (!stream.write((char*)&bone.boneIndex, pmx.header.sizeOfBone)) return false;
+					if (!stream.write((char*)&bone.boneIndex, header.sizeOfBone)) return false;
 					if (!stream.write((char*)&bone.position, sizeof(bone.position))) return false;
 					if (!stream.write((char*)&bone.rotate, sizeof(bone.rotate))) return false;
 				}
@@ -783,7 +860,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			{
 				for (auto& texcoord : morph.texcoordList)
 				{
-					if (!stream.write((char*)&texcoord.index, pmx.header.sizeOfIndices)) return false;
+					if (!stream.write((char*)&texcoord.index, header.sizeOfIndices)) return false;
 					if (!stream.write((char*)&texcoord.offset, sizeof(texcoord.offset))) return false;
 				}
 			}
@@ -791,7 +868,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			{
 				for (auto& material : morph.materialList)
 				{
-					if (!stream.write((char*)&material.index, pmx.header.sizeOfMaterial)) return false;
+					if (!stream.write((char*)&material.index, header.sizeOfMaterial)) return false;
 					if (!stream.write((char*)&material.offset, sizeof(material.offset))) return false;
 					if (!stream.write((char*)&material.diffuse, sizeof(material.diffuse))) return false;
 					if (!stream.write((char*)&material.specular, sizeof(material.specular))) return false;
@@ -807,9 +884,9 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 		}
 	}
 
-	if (!stream.write((char*)&pmx.numDisplayFrames, sizeof(pmx.numDisplayFrames))) return false;
 	if (pmx.numDisplayFrames)
 	{
+		if (!stream.write((char*)&pmx.numDisplayFrames, sizeof(pmx.numDisplayFrames))) return false;
 		for (auto& displayFrame : pmx.displayFrames)
 		{
 			if (!stream.write((char*)&displayFrame.name.length, sizeof(displayFrame.name.length))) return false;
@@ -827,14 +904,50 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 
 				if (element.target == 0)
 				{
-					if (!stream.write((char*)&element.index, pmx.header.sizeOfBone))
+					if (!stream.write((char*)&element.index, header.sizeOfBone))
 						return false;
 				}
 				else if (element.target == 1)
 				{
-					if (!stream.write((char*)&element.index, pmx.header.sizeOfMorph))
+					if (!stream.write((char*)&element.index, header.sizeOfMorph))
 						return false;
 				}
+			}
+		}
+	}
+	else
+	{
+		ray::PMX_DisplayFrame displayFrame;
+		std::memset(&displayFrame, 0, sizeof(displayFrame));
+
+		displayFrame.name.length = sizeof(L"[Root]");
+		std::memcpy(displayFrame.name.name, L"[Root]", displayFrame.name.length);
+
+		PMX_uint32_t numDisplayFrames = 1;
+		if (!stream.write((char*)&numDisplayFrames, sizeof(numDisplayFrames))) return false;
+
+		if (!stream.write((char*)&displayFrame.name.length, sizeof(displayFrame.name.length))) return false;
+		if (displayFrame.name.length)
+			if (!stream.write((char*)&displayFrame.name.name, displayFrame.name.length)) return false;
+		if (!stream.write((char*)&displayFrame.nameEng.length, sizeof(displayFrame.nameEng.length))) return false;
+		if (displayFrame.nameEng.length)
+			if (!stream.write((char*)&displayFrame.nameEng.name, displayFrame.nameEng.length)) return false;
+		if (!stream.write((char*)&displayFrame.type, sizeof(displayFrame.type))) return false;
+		if (!stream.write((char*)&displayFrame.elementsWithinFrame, sizeof(displayFrame.elementsWithinFrame))) return false;
+
+		for (auto& element : displayFrame.elements)
+		{
+			if (!stream.write((char*)&element.target, sizeof(element.target))) return false;
+
+			if (element.target == 0)
+			{
+				if (!stream.write((char*)&element.index, header.sizeOfBone))
+					return false;
+			}
+			else if (element.target == 1)
+			{
+				if (!stream.write((char*)&element.index, header.sizeOfMorph))
+					return false;
 			}
 		}
 	}
@@ -851,7 +964,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			if (rigidbody.nameEng.length)
 				if (!stream.write((char*)&rigidbody.nameEng.name, rigidbody.nameEng.length)) return false;
 
-			if (!stream.write((char*)&rigidbody.bone, pmx.header.sizeOfBone)) return false;
+			if (!stream.write((char*)&rigidbody.bone, header.sizeOfBone)) return false;
 			if (!stream.write((char*)&rigidbody.group, sizeof(rigidbody.group))) return false;
 			if (!stream.write((char*)&rigidbody.groupMask, sizeof(rigidbody.groupMask))) return false;
 
@@ -887,8 +1000,8 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			if (joint.type != 0)
 				return false;
 
-			if (!stream.write((char*)&joint.relatedRigidBodyIndexA, pmx.header.sizeOfBody)) return false;
-			if (!stream.write((char*)&joint.relatedRigidBodyIndexB, pmx.header.sizeOfBody)) return false;
+			if (!stream.write((char*)&joint.relatedRigidBodyIndexA, header.sizeOfBody)) return false;
+			if (!stream.write((char*)&joint.relatedRigidBodyIndexB, header.sizeOfBody)) return false;
 
 			if (!stream.write((char*)&joint.position, sizeof(joint.position))) return false;
 			if (!stream.write((char*)&joint.rotation, sizeof(joint.rotation))) return false;

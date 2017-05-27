@@ -44,6 +44,9 @@ _NAME_BEGIN
 #define PMX_VERSION_2_0   2.0
 #define PMX_BONE_INDEX    1 << 0
 #define PMX_BONE_MOVE     1 << 1
+#define PMX_BONE_DISPLAY  1 << 2
+#define PMX_BONE_OPERATOR 1 << 3
+#define PMX_BONE_ROOT     1 << 4
 #define PMX_BONE_IK       1 << 5
 #define PMX_BONE_PARENT   1 << 8
 #define PMX_BONE_AXIS     1 << 10

@@ -719,7 +719,123 @@ GuiControllerComponent::onActivate() except
 		return;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
-	sphereMesh->makeSphere(1.0, 64, 48);
+	sphereMesh->makeSphere(1.0, 32, 24);
+
+	/*std::uint32_t out = 10;
+
+	_model = std::make_unique<ray::PMX>();
+	_model->header.version = 2.0;
+	_model->header.magic[0] = 'P';
+	_model->header.magic[1] = 'M';
+	_model->header.magic[2] = 'X';
+	_model->header.dataSize = 8;
+	_model->header.offset = 32;
+	_model->header.sizeOfBody = 1;
+	_model->header.sizeOfBone = 1;
+	_model->header.sizeOfIndices = 4;
+	_model->header.sizeOfMaterial = 1;
+	_model->header.sizeOfMorph = 1;
+	_model->header.sizeOfTexture = 1;
+	_model->header.encode = 0;
+	_model->numVertices = sphereMesh->getNumVertices() * out*out;
+	_model->numIndices = sphereMesh->getNumIndices() * out*out;
+	_model->numMaterials = out*out;
+
+	for (std::size_t i = 0; i < out; i++)
+	{
+		for (std::size_t j = 0; j < out; j++)
+		{
+			for (std::size_t k = 0; k < sphereMesh->getNumVertices(); k++)
+			{
+				ray::PMX_Vertex v;
+				std::memset(&v, 0, sizeof(v));
+
+				v.position = ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f) + sphereMesh->getVertexArray()[k] * 2.5;
+				v.normal = sphereMesh->getNormalArray()[k];
+				v.coord = sphereMesh->getTexcoordArray()[k];
+				v.edge = 1.0;
+
+				_model->vertices.push_back(v);
+			}
+		}
+	}
+
+	_model->indices.resize(out * out * sphereMesh->getNumIndices() * sizeof(std::uint32_t));
+
+	std::uint32_t startIndices = 0;
+	std::uint32_t* data = (std::uint32_t*)_model->indices.data();
+
+	for (std::size_t i = 0; i < out; i++)
+	{
+		for (std::size_t j = 0; j < out; j++)
+		{
+			for (std::size_t k = 0; k < sphereMesh->getNumIndices(); k++)
+				(*data++) = startIndices + sphereMesh->getIndicesArray()[k];
+
+			startIndices += sphereMesh->getNumVertices();
+		}
+	}
+
+	ray::PMX_Name diff;
+	diff.length = sizeof(L"Bricks_ao.dds") - 2;
+	std::memcpy(diff.name, L"Bricks_ao.dds", diff.length);
+
+	ray::PMX_Name spec;
+	spec.length = sizeof(L"Bricks_n.dds") - 2;
+	std::memcpy(spec.name, L"Bricks_n.dds", spec.length);
+
+	_model->numTextures = 2;
+	_model->textures.push_back(diff);
+	_model->textures.push_back(spec);
+
+	for (std::size_t i = 0; i < out; i++)
+	{
+		for (std::size_t j = 0; j < out; j++)
+		{
+			ray::PMX_Material material;
+			std::memset(&material, 0, sizeof(material));
+
+			std::memcpy(material.name.name, L"Material", sizeof(L"Material") - 2);
+			material.name.length = sizeof(L"Material") - 2;
+
+			std::memcpy(material.nameEng.name, L"Material", sizeof(L"Material") - 2);
+			material.nameEng.length = sizeof(L"Material") - 2;
+
+			material.Diffuse = ray::math::linear2srgb(diff_spec_parametes[i * 10 + j].xyz());
+			material.Specular = ray::float3(0.5);
+			material.Ambient = ray::float3(diff_spec_parametes[i * 10 + j].w);
+			material.Shininess = shininess_parametes[i * 10 + j];
+			material.IndicesCount = sphereMesh->getNumIndices();
+			material.TextureIndex = 255;
+			material.ToneTexture = 255;
+			material.SphereTextureIndex = 255;
+			material.EdgeSize = 1;
+			material.Flag = PMX_MATERIAL_DEFAULT;
+			material.Opacity = 1.0;
+
+			if (shininess_parametes[i * 10 + j] > 0.45 &&
+				shininess_parametes[i * 10 + j] < 0.8 ||
+				shininess_parametes[i * 10 + j] > 0.95)
+			{
+				_model->materials.push_back(material);
+			}
+			else
+			{
+				material.TextureIndex = 0;
+				material.SphereMode = 1;
+				material.SphereTextureIndex = 1;
+				_model->materials.push_back(material);
+			}
+		}
+	}
+
+	ray::StreamWritePtr stream;
+	if (!ray::IoServer::instance()->openFile(stream, "C:/Users/ray/Desktop/1.pmx"))
+		return;
+
+	ray::PMXHandler header;
+	if (!header.doSave(*stream, *_model))
+		return;*/
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setActive(true);
@@ -743,7 +859,7 @@ GuiControllerComponent::onActivate() except
 			material->getParameter("metalness")->uniform1f(diff_spec_parametes[i * 10 + j].w);
 			material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
 
-			if (shininess_parametes[i * 10 + j] > 0.4 &&
+			if (shininess_parametes[i * 10 + j] > 0.45 &&
 				shininess_parametes[i * 10 + j] < 0.8 ||
 				shininess_parametes[i * 10 + j] > 0.95)
 			{

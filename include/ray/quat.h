@@ -62,7 +62,7 @@ public:
 	Quaterniont(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept { this->makeRotate(forward, up, right); }
 
 	explicit Quaterniont(const Vector3t<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
-	explicit Quaterniont(const EulerAnglest<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
+	explicit Quaterniont(const EulerAnglest<T>& eulerXYZ) noexcept { this->makeRotateZYX(eulerXYZ); }
 
 	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
 	explicit Quaterniont(S xyzw[4]) noexcept
@@ -183,7 +183,24 @@ public:
 		return *this;
 	}
 
-	Quaterniont<T>& makeRotate(const EulerAnglest<T>& euler) noexcept
+	Quaterniont<T>& makeRotate(const EulerAnglest<T>& euler)
+	{
+		T sp, sb, sh;
+		T cp, cb, ch;
+
+		math::sinCos(&sp, &cp, (float)DEG_TO_RAD(euler.x) * 0.5f);
+		math::sinCos(&sh, &ch, (float)DEG_TO_RAD(euler.y) * 0.5f);
+		math::sinCos(&sb, &cb, (float)DEG_TO_RAD(euler.z) * 0.5f);
+
+		x = cb * sp * ch + sb * cp * sh;
+		y = cb * cp * sh - sb * sp * ch;
+		z = sb * cp * ch - cb * sp * sh;
+		w = cb * cp * ch + sb * sp * sh;
+
+		return *this;
+	}
+
+	Quaterniont<T>& makeRotateZYX(const EulerAnglest<T>& euler) noexcept
 	{
 		T sp, sb, sh;
 		T cp, cb, ch;
@@ -196,12 +213,13 @@ public:
 		y = cp * sh * cb + sp * ch * sb;
 		z = cp * ch * sb - sp * sh * cb;
 		w = cp * ch * cb + sp * sh * sb;
+
 		return *this;
 	}
 
 	Quaterniont<T>& makeRotate(const Vector3t<T>& euler) noexcept
 	{
-		return this->makeRotate(EulerAnglest<T>(euler));
+		return this->makeRotateZYX(EulerAnglest<T>(euler));
 	}
 
 	Quaterniont<T>& makeRotate(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept

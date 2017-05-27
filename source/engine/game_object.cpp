@@ -995,7 +995,8 @@ GameObject::load(const archivebuf& reader) except
 
 	float3 euler = float3::Zero;
 	reader["rotate"] >> euler;
-	this->setQuaternion(ray::Quaternion(euler));
+
+	_localRotation.makeRotate(EulerAngles(euler));
 }
 
 void

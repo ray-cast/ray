@@ -22,7 +22,7 @@
 
         float SmoothnessToShininess(float smoothness)
         {
-            return 2.0f / pow(1.0 - smoothness, 4) - 2.0f;
+            return 2.0f / max(1e-4, pow(1.0 - smoothness, 4)) - 2.0f;
         }
         
 		float ComputeSpecularMicroOcclusion(float f0)

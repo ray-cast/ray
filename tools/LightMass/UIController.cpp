@@ -493,6 +493,11 @@ GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noex
 	}
 }
 
+float SmoothnessToShininess(float smoothness)
+{
+	return 2.0f / std::max(1e-4f, pow(1.0f - smoothness, 4.0f)) - 2.0f;
+}
+
 void
 GuiControllerComponent::onActivate() except
 {
@@ -804,7 +809,7 @@ GuiControllerComponent::onActivate() except
 			material.Diffuse = ray::math::linear2srgb(diff_spec_parametes[i * 10 + j].xyz());
 			material.Specular = ray::float3(0.5);
 			material.Ambient = ray::float3(diff_spec_parametes[i * 10 + j].w);
-			material.Shininess = shininess_parametes[i * 10 + j];
+			material.Shininess = SmoothnessToShininess(shininess_parametes[i * 10 + j]);
 			material.IndicesCount = sphereMesh->getNumIndices();
 			material.TextureIndex = 255;
 			material.ToneTexture = 255;

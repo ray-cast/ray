@@ -7,6 +7,7 @@
 		#define InvPIE8 0.039788735767f
 		#define InvPIE4 0.079577471535f
 		#define PIE 3.141592654f
+		#define MIDPOINT_8_BIT (127.0f / 255.0f)
 
 		float3 srgb2linear(float3 rgb)
 		{
@@ -34,20 +35,20 @@
 
 		float3 rgb2ycbcr(float3 rgb)
 		{
-			// rgb2ycbcr
-			float Y = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
-			float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
-			float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
-			return float3(Y, Cb, Cr);
+			float3 encode;
+			encode.x = dot(float3(0.299, 0.587, 0.114),   rgb);
+			encode.y = dot(float3(-0.1687, -0.3312, 0.5), rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+			encode.z = dot(float3(0.5, -0.4186, -0.0813), rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+			return encode;
 		}
 
 		float3 ycbcr2rgb(float3 YCbCr)
 		{
-			// ycbcr2rgb
-			float R = YCbCr.r + 1.402 * (YCbCr.b - 0.5);
-			float G = YCbCr.r - 0.344 * (YCbCr.g - 0.5) - 0.714 * (YCbCr.b - 0.5);
-			float B = YCbCr.r + 1.772 * (YCbCr.g - 0.5);
-			return float3(R, G, B);
+			YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
+			float R = YCbCr.x + 1.402 * YCbCr.z;
+			float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
+			float B = YCbCr.x + 1.772 * YCbCr.y;
+			return max(0, float3(R, G, B));
 		}
 
 		float3 ycbcrMulycbcr(float3 YCbCr1, float3 YCbCr2)

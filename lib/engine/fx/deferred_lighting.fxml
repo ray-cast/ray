@@ -294,16 +294,13 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float3 V = normalize(viewdir);
-				float3 P = restorePosition(texDepthLinear, coord, V);
 
-				float3 worldPosition = mul(matViewInverse, P);
-				float3 worldNormal = mul((float3x3)matViewInverse, material.normal);
-				float3 worldView = mul((float3x3)matViewInverse, V);
+				float3 worldView = normalize(mul((float3x3)matViewInverse, V));
+				float3 worldNormal = normalize(mul((float3x3)matViewInverse, material.normal));
 
 				float mipLayer = EnvironmentMip(material.smoothness, envFactor.r);
 
 				float3 R = EnvironmentReflect(worldNormal, worldView);
-				//CubemapBoxParallaxCorrection(R, worldPosition, envBoxCenter, envBoxMin, envBoxMax);
 
 				float3 prefilteredDiffuse = envDiffuse.Sample(PointClamp, worldNormal).rgb;
 				float3 prefilteredSpeculr = envSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;

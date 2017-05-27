@@ -186,7 +186,7 @@ SSDO::onActivate(RenderPipeline& pipeline) noexcept
 	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
 
-	_ambientOcclusion = pipeline.createMaterial("sys:fx\\SSDO.fxml");
+	_ambientOcclusion = pipeline.createMaterial("sys:fx/SSDO.fxml");
 	assert(_ambientOcclusion);
 	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeAO");
 	_ambientOcclusionBlurXPass = _ambientOcclusion->getTech("BlurXAO");

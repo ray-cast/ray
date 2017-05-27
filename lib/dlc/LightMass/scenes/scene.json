@@ -1,49 +1,43 @@
 {
-    "scene": {
-        "name": "LightMass",
-        "objects": [
-            {
-                "name": "first_person_camera", "position": [0, 20,-50], "active": true,
-                "components": [
-                    { "class": "Camera", "aperture": 75, "znear": 0.1, "zfar": 2000 },
-                    { "class": "FirstPersonCamera" }
-                ]
-            },
-            {
-            	"active":true,
-            	"components":[
-            		{ "class":"SphereMaker" }
-            	]
-            },
-            {
-                "name": "sky", "position": "0,50,0", "active": true,
-                "components": [
-                    {
-                        "class": "Light",
-                        "type": "environment",
-                        "color": [1.0,1.0,1.0],
-                        "range": 60,
-                        "intensity": 1,
-                        "shadow": "none"
-                    },
-                    {
-                        "class": "Skybox",
-                        "flags": "skybox|skylighting",
-                        "skymap": "dlc:common/textures/uffizi_sky.hdr",
-                        "skydiffuse": "dlc:common/textures/uffizi_diff.dds",
-                        "skyspecular": "dlc:common/textures/uffizi_spec.dds"
-                    }
-                ]
-            },
-            {
-                "name": "UIRoot", "position": [0,0,0], "active": true,
-                "components": [
-                    { "class": "Camera", "type": "ortho", "order": "2D", "clear_color": [0.15,0.15,0.15,1], "clear_flags": "none" },
-                    { "class": "GuiCamera" },
-                    { "class": "GuiView" },
-                    { "class": "GuiController" }
-                ]
-            }
-        ]
-    }
+	"scene": {
+		"name": "LightMass",
+		"objects": [
+			{
+				"name": "first_person_camera", "position": [0, 20,-50], "active": true,
+				"components": [
+					{ "class": "Camera", "aperture": 75, "znear": 0.1, "zfar": 2000 },
+					{ "class": "FirstPersonCamera" }
+				]
+			},
+			{
+				"name": "sky", "position": "0,50,0", "active": true,
+				"components": [
+					{
+						"class": "Light",
+						"type": "environment",
+						"color": [1.0,1.0,1.0],
+						"range": 60,
+						"intensity": 1,
+						"shadow": "none"
+					},
+					{
+						"class": "Skybox",
+						"flags": "skybox|skylighting",
+						"skymap": "dlc:common/textures/uffizi_sky.hdr",
+						"skydiffuse": "dlc:common/textures/uffizi_diff.dds",
+						"skyspecular": "dlc:common/textures/uffizi_spec.dds"
+					}
+				]
+			},
+			{
+				"name": "UIRoot", "position": [0,0,0], "active": true,
+				"components": [
+					{ "class": "Camera", "type": "ortho", "order": "2D", "clear_color": [0.15,0.15,0.15,1], "clear_flags": "none" },
+					{ "class": "GuiCamera" },
+					{ "class": "GuiView" },
+					{ "class": "GuiController" }
+				]
+			}
+		]
+	}
 }

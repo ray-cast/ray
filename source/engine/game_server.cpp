@@ -46,6 +46,7 @@ __ImplementSubClass(GameServer, rtti::Interface, "GameServer")
 
 GameServer::GameServer() noexcept
 	: _isActive(false)
+	, _isStopping(false)
 	, _isQuitRequest(false)
 	, _gameApp(nullptr)
 {
@@ -169,6 +170,12 @@ bool
 GameServer::isActive() const noexcept
 {
 	return _isActive;
+}
+
+bool
+GameServer::isStopping() const noexcept
+{
+	return _isStopping;
 }
 
 bool
@@ -379,7 +386,6 @@ GameServer::getFeature(const rtti::Rtti& rtti) const noexcept
 			return it;
 	}
 
-	assert(false);
 	return nullptr;
 }
 
@@ -392,7 +398,6 @@ GameServer::getFeature(const rtti::Rtti* rtti) const noexcept
 			return it;
 	}
 
-	assert(false);
 	return nullptr;
 }
 
@@ -417,11 +422,11 @@ GameServer::getGameApp() noexcept
 bool
 GameServer::sendMessage(const MessagePtr& message) noexcept
 {
-	if (this->isQuitRequest())
-		return false;
-
 	try
 	{
+		if (this->isQuitRequest())
+			return false;
+
 		for (auto& it : _features)
 			it->onMessage(message);
 
@@ -470,12 +475,12 @@ GameServer::start() noexcept
 		for (auto& it : _features)
 		{
 			if (_gameListener)
-				_gameListener->onMessage(util::string("GameServer : Start : ") + it->type_name());
+				_gameListener->onMessage(util::string("GameServer : Starting : ") + it->type_name());
 
 			it->setActive(true);
 
 			if (_gameListener)
-				_gameListener->onMessage(util::string("GameServer : Starting : ") + it->type_name());
+				_gameListener->onMessage(util::string("GameServer : Started : ") + it->type_name());
 		}
 
 		for (auto& it : _features)
@@ -520,21 +525,24 @@ GameServer::start() noexcept
 void
 GameServer::stop() noexcept
 {
-	if (!this->isActive())
+	if (!this->isStopping())
+	{
+		if (_gameListener)
+			_gameListener->onMessage("GameServer : stopped.");
+
+		_isStopping = false;
+	}
+	else
 	{
 		if (_gameListener)
 			_gameListener->onMessage("GameServer : has already stopped.");
-
-		return;
 	}
-
-	_isActive = false;
 }
 
 void
 GameServer::update() noexcept
 {
-	if (this->isQuitRequest() || !this->isActive())
+	if (this->isQuitRequest() || !this->isActive() || this->isStopping())
 		return;
 
 	try

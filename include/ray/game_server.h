@@ -59,6 +59,7 @@ public:
 	const GameListenerPtr& getGameListener() const noexcept;
 
 	bool isActive() const noexcept;
+	bool isStopping() const noexcept;
 	bool isQuitRequest() const noexcept;
 
 	bool openScene(const util::string& sceneName) noexcept;
@@ -100,6 +101,7 @@ private:
 private:
 
 	bool _isActive;
+	bool _isStopping;
 	bool _isQuitRequest;
 
 	TimerPtr _timer;

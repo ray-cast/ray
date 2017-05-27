@@ -51,6 +51,7 @@ IMGUISystem::IMGUISystem() noexcept
 
 IMGUISystem::~IMGUISystem() noexcept
 {
+	this->close();
 }
 
 bool
@@ -116,20 +117,10 @@ IMGUISystem::open(void* _window) except
 
 	io.Fonts->TexID = (void*)_texture.get();
 
-	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml");
-	if (!_material)
-		return false;
-
-	_materialTech = _material->getTech("IMGUI");
-	_materialDecal = _material->getParameter("decal");
-	_materialProj = _material->getParameter("proj");
-
-	_materialDecal->uniformTexture(_texture);
-
 	ray::GraphicsDataDesc dataDesc;
 	dataDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 	dataDesc.setStream(0);
-	dataDesc.setStreamSize(4096 * sizeof(float));
+	dataDesc.setStreamSize(4096 * sizeof(ImDrawVert));
 	dataDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
 	_vbo = RenderSystem::instance()->createGraphicsData(dataDesc);
 	if (!_vbo)
@@ -138,11 +129,21 @@ IMGUISystem::open(void* _window) except
 	ray::GraphicsDataDesc elementDesc;
 	elementDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 	elementDesc.setStream(0);
-	elementDesc.setStreamSize(4096 * sizeof(std::uint16_t));
+	elementDesc.setStreamSize(4096 * sizeof(ImDrawIdx));
 	elementDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
 	_ibo = RenderSystem::instance()->createGraphicsData(elementDesc);
 	if (!_ibo)
 		return false;
+
+	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml");
+	if (!_material)
+		return false;
+
+	_materialTech = _material->getTech("IMGUI");
+	_materialDecal = _material->getParameter("decal");
+	_materialDecal->uniformTexture(_texture);
+
+	_materialProj = _material->getParameter("proj");
 
 	return true;
 }
@@ -150,6 +151,10 @@ IMGUISystem::open(void* _window) except
 void
 IMGUISystem::close() noexcept
 {
+	_vbo.reset();
+	_ibo.reset();
+	_texture.reset();
+	_material.reset();
 }
 
 bool

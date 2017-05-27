@@ -52,7 +52,7 @@ public:
 	bool getActive() const noexcept;
 
 public:
-	virtual void onActivate(RenderPipeline& pipeline) noexcept;
+	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
 
 	virtual void onResolutionChange(RenderPipeline& pipeline) noexcept;

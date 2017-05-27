@@ -53,6 +53,8 @@ _NAME_BEGIN
 #define PMX_BONE_AXIS     1 << 10
 #define PMX_BONE_ROTATE   1 << 11
 
+#define PMX_MATERIAL_DEFAULT 30
+
 typedef Vector2 PMX_Vector2;
 typedef Vector3 PMX_Vector3;
 typedef Vector4 PMX_Vector4;

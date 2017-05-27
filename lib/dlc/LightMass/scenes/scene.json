@@ -3,7 +3,7 @@
 		"name": "LightMass",
 		"objects": [
 			{
-				"name": "first_person_camera", "position": [0, 20,-50], "active": true,
+				"name": "first_person_camera", "position": [32, 15, 30], "rotate": [25, 226, 0], "active": true,
 				"components": [
 					{ "class": "Camera", "aperture": 75, "znear": 0.1, "zfar": 2000 },
 					{ "class": "FirstPersonCamera" }

@@ -527,6 +527,7 @@ bool
 PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 {
 	PMX_Header header = pmx.header;
+	header.sizeOfTexture = std::min<std::uint8_t>(1, pmx.header.sizeOfTexture);
 	header.sizeOfBone = std::min<std::uint8_t>(1, pmx.header.sizeOfBone);
 
 	if (!stream.write((char*)&header, sizeof(header))) return false;
@@ -656,15 +657,7 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 			if (!stream.write((char*)&material.SphereTextureIndex, header.sizeOfTexture)) return false;
 			if (!stream.write((char*)&material.SphereMode, sizeof(material.SphereMode))) return false;
 			if (!stream.write((char*)&material.ToonIndex, sizeof(material.ToonIndex))) return false;
-
-			if (material.ToonIndex == 1)
-			{
-				if (!stream.write((char*)&material.ToneTexture, 1)) return false;
-			}
-			else
-			{
-				if (!stream.write((char*)&material.ToneTexture, header.sizeOfTexture)) return false;
-			}
+			if (!stream.write((char*)&material.ToneTexture, header.sizeOfTexture)) return false;
 
 			if (!stream.write((char*)&material.memLength, sizeof(material.memLength))) return false;
 			if (material.memLength > 0)

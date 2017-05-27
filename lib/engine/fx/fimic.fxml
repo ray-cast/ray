@@ -84,7 +84,7 @@
                 #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
                     float4 curr = TonemapHable(float4(color * exposure, 8.0));
                     curr /= curr.w;
-                    return curr.rgb;
+                    return saturate(curr.rgb);
                 #elif TONEMAP_OPERATOR == TONEMAP_ACES
                 	return TonemapACES(color * exposure);
                 #else

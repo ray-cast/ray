@@ -373,7 +373,6 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Mate
 }
 
 MeshProperty::MeshProperty() noexcept
-	: _parent(nullptr)
 {
 }
 
@@ -393,158 +392,6 @@ MeshProperty::getName() const noexcept
 	return _name;
 }
 
-void
-MeshProperty::setParent(MeshPropertyPtr parent) noexcept
-{
-	assert(this != parent.get());
-
-	if (_parent != parent.get())
-	{
-		if (parent == nullptr)
-		{
-			auto it = _parent->_children.begin();
-			auto end = _parent->_children.end();
-
-			for (; it != end; ++it)
-			{
-				if ((*it).get() == this)
-				{
-					_parent->_children.erase(it);
-					break;
-				}
-			}
-
-			_parent = nullptr;
-		}
-		else
-		{
-			_parent = parent.get();
-			_parent->_children.push_back(std::dynamic_pointer_cast<MeshProperty>(this->shared_from_this()));
-		}
-	}
-}
-
-MeshPropertyPtr
-MeshProperty::getParent() const noexcept
-{
-	if (_parent)
-		return std::dynamic_pointer_cast<MeshProperty>(_parent->shared_from_this());
-	return nullptr;
-}
-
-void
-MeshProperty::addChild(MeshPropertyPtr& entity) noexcept
-{
-	assert(entity);
-	entity->setParent(std::dynamic_pointer_cast<MeshProperty>(this->shared_from_this()));
-}
-
-void
-MeshProperty::addChild(MeshPropertyPtr&& entity) noexcept
-{
-	assert(entity);
-	entity->setParent(std::dynamic_pointer_cast<MeshProperty>(this->shared_from_this()));
-}
-
-void
-MeshProperty::removeChild(MeshPropertyPtr& entity) noexcept
-{
-	assert(entity);
-
-	auto it = _children.begin();
-	auto end = _children.end();
-	for (; it != end; ++it)
-	{
-		if ((*it) == entity)
-		{
-			(*it)->setParent(nullptr);
-			break;
-		}
-	}
-
-	if (it != end)
-	{
-		_children.erase(it);
-	}
-}
-
-void
-MeshProperty::removeChild(MeshPropertyPtr&& entity) noexcept
-{
-	assert(entity);
-
-	auto it = _children.begin();
-	auto end = _children.end();
-	for (; it != end; ++it)
-	{
-		if ((*it) == entity)
-		{
-			(*it)->setParent(nullptr);
-			break;
-		}
-	}
-
-	if (it != end)
-	{
-		_children.erase(it);
-	}
-}
-
-void
-MeshProperty::cleanupChildren() noexcept
-{
-	for (auto& it : _children)
-	{
-		it.reset();
-	}
-
-	_children.clear();
-}
-
-MeshPropertyPtr
-MeshProperty::findChild(const std::string& name, bool recuse) noexcept
-{
-	for (auto& it : _children)
-	{
-		if (it->getName() == name)
-		{
-			return it;
-		}
-	}
-
-	if (recuse)
-	{
-		for (auto& it : _children)
-		{
-			auto result = it->findChild(name, recuse);
-			if (result)
-			{
-				return result;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-std::size_t
-MeshProperty::getChildCount() const noexcept
-{
-	return _children.size();
-}
-
-MeshPropertys&
-MeshProperty::getChildren() noexcept
-{
-	return _children;
-}
-
-const MeshPropertys&
-MeshProperty::getChildren() const noexcept
-{
-	return _children;
-}
-
 std::size_t
 MeshProperty::getNumVertices() const noexcept
 {
@@ -554,7 +401,20 @@ MeshProperty::getNumVertices() const noexcept
 std::size_t
 MeshProperty::getNumIndices() const noexcept
 {
-	return _faces.size();
+	return _indices.size();
+}
+
+std::size_t
+MeshProperty::getTexcoordNums() const noexcept
+{
+	std::size_t count = 0;
+	for (auto& it : _texcoords)
+	{
+		if (!it.empty())
+			count++;
+	}
+
+	return count;
 }
 
 void
@@ -578,25 +438,32 @@ MeshProperty::setColorArray(const Float4Array& array) noexcept
 void
 MeshProperty::setTangentArray(const Float4Array& array) noexcept
 {
-	_tangent = array;
+	_tangents = array;
 }
 
 void
-MeshProperty::setTexcoordArray(const Float2Array& array, std::size_t n) noexcept
+MeshProperty::setTexcoordArray(const Float2Array& array, std::uint8_t n) noexcept
 {
+	assert(n < sizeof(_texcoords) / sizeof(Float2Array));
 	_texcoords[n] = array;
 }
 
 void
-MeshProperty::setFaceArray(const UintArray& array) noexcept
+MeshProperty::setIndicesArray(const UintArray& array) noexcept
 {
-	_faces = array;
+	_indices = array;
 }
 
 void
 MeshProperty::setBindposes(const Float4x4Array& array) noexcept
 {
 	_bindposes = array;
+}
+
+void
+MeshProperty::setMeshSubsets(const MeshSubsets& subsets) noexcept
+{
+	_meshSubsets = subsets;
 }
 
 void
@@ -626,19 +493,20 @@ MeshProperty::setColorArray(Float4Array&& array) noexcept
 void
 MeshProperty::setTangentArray(Float4Array&& array) noexcept
 {
-	_tangent = std::move(array);
+	_tangents = std::move(array);
 }
 
 void
-MeshProperty::setTexcoordArray(Float2Array&& array, std::size_t n) noexcept
+MeshProperty::setTexcoordArray(Float2Array&& array, std::uint8_t n) noexcept
 {
+	assert(n < sizeof(_texcoords) / sizeof(Float2Array));
 	_texcoords[n] = std::move(array);
 }
 
 void
-MeshProperty::setFaceArray(UintArray&& array) noexcept
+MeshProperty::setIndicesArray(UintArray&& array) noexcept
 {
-	_faces = std::move(array);
+	_indices = std::move(array);
 }
 
 void
@@ -651,6 +519,12 @@ void
 MeshProperty::setBindposes(Float4x4Array&& array) noexcept
 {
 	_bindposes = std::move(array);
+}
+
+void
+MeshProperty::setMeshSubsets(MeshSubsets&& subsets) noexcept
+{
+	_meshSubsets = std::move(subsets);
 }
 
 Float3Array&
@@ -668,7 +542,7 @@ MeshProperty::getNormalArray() noexcept
 Float4Array&
 MeshProperty::getTangentArray() noexcept
 {
-	return _tangent;
+	return _tangents;
 }
 
 Float4Array&
@@ -677,9 +551,10 @@ MeshProperty::getColorArray() noexcept
 	return _colors;
 }
 
-std::vector<Vector2>&
-MeshProperty::getTexcoordArray(std::size_t n) noexcept
+Float2Array&
+MeshProperty::getTexcoordArray(std::uint8_t n) noexcept
 {
+	assert(n < sizeof(_texcoords) / sizeof(Float2Array));
 	return _texcoords[n];
 }
 
@@ -690,15 +565,21 @@ MeshProperty::getWeightArray() noexcept
 }
 
 UintArray&
-MeshProperty::getFaceArray() noexcept
+MeshProperty::getIndicesArray() noexcept
 {
-	return _faces;
+	return _indices;
 }
 
 Float4x4Array&
 MeshProperty::getBindposes() noexcept
 {
 	return _bindposes;
+}
+
+MeshSubsets&
+MeshProperty::getMeshSubsets() noexcept
+{
+	return _meshSubsets;
 }
 
 const Float3Array&
@@ -716,7 +597,7 @@ MeshProperty::getNormalArray() const noexcept
 const Float4Array&
 MeshProperty::getTangentArray() const noexcept
 {
-	return _tangent;
+	return _tangents;
 }
 
 const Float4Array&
@@ -726,8 +607,9 @@ MeshProperty::getColorArray() const noexcept
 }
 
 const Float2Array&
-MeshProperty::getTexcoordArray(std::size_t n) const noexcept
+MeshProperty::getTexcoordArray(std::uint8_t n) const noexcept
 {
+	assert(n < sizeof(_texcoords) / sizeof(Float2Array));
 	return _texcoords[n];
 }
 
@@ -743,17 +625,10 @@ MeshProperty::getBindposes() const noexcept
 	return _bindposes;
 }
 
-const std::size_t
-MeshProperty::getTexcoordNums() const noexcept
+const MeshSubsets&
+MeshProperty::getMeshSubsets() const noexcept
 {
-	std::size_t count = 0;
-	for (auto& it : _texcoords)
-	{
-		if (!it.empty())
-			count++;
-	}
-
-	return count;
+	return _meshSubsets;
 }
 
 const Bones&
@@ -763,9 +638,9 @@ MeshProperty::getBoneArray(const Bones& array) const noexcept
 }
 
 const UintArray&
-MeshProperty::getFaceArray() const noexcept
+MeshProperty::getIndicesArray() const noexcept
 {
-	return _faces;
+	return _indices;
 }
 
 const BoundingBox&
@@ -774,21 +649,14 @@ MeshProperty::getBoundingBox() const noexcept
 	return _boundingBox;
 }
 
-const BoundingBox&
-MeshProperty::getBoundingBoxDownwards() const noexcept
-{
-	return _boundingBoxChildren;
-}
-
 void
 MeshProperty::clear() noexcept
 {
 	_vertices = Float3Array();
 	_normals = Float3Array();
 	_colors = Float4Array();
-	_tangent = Float4Array();
-	_facesNormal = Float3Array();
-	_faces = UintArray();
+	_tangents = Float4Array();
+	_indices = UintArray();
 
 	for (std::size_t i = 0; i < 8; i++)
 		_texcoords[i] = Float2Array();
@@ -806,14 +674,9 @@ MeshProperty::clone() noexcept
 	mesh->setWeightArray(this->getWeightArray());
 	mesh->setTangentArray(this->getTangentArray());
 	mesh->setBindposes(this->getBindposes());
-	mesh->setFaceArray(this->getFaceArray());
+	mesh->setIndicesArray(this->getIndicesArray());
 	mesh->_boundingBox = this->_boundingBox;
-	mesh->_boundingBoxChildren = this->_boundingBoxChildren;
-
-	for (auto& it : _children)
-	{
-		mesh->addChild(it->clone());
-	}
+	mesh->_meshSubsets = this->_meshSubsets;
 
 	return mesh;
 }
@@ -829,8 +692,8 @@ MeshProperty::makeCircle(float radius, std::uint32_t segments, float thetaStart,
 
 		float segment = thetaStart + i / segments * thetaLength;
 
-		v.x = radius * cos(segment);
-		v.y = radius * sin(segment);
+		v.x = radius * math::cos(segment);
+		v.y = radius * math::sin(segment);
 		v.z = 0;
 
 		_vertices.push_back(v);
@@ -844,9 +707,9 @@ MeshProperty::makeCircle(float radius, std::uint32_t segments, float thetaStart,
 		std::uint32_t v2 = i + 1;
 		std::uint32_t v3 = 0;
 
-		_faces.push_back(v1);
-		_faces.push_back(v2);
-		_faces.push_back(v3);
+		_indices.push_back(v1);
+		_indices.push_back(v2);
+		_indices.push_back(v3);
 
 		_normals.push_back(Vector3::UnitZ);
 		_normals.push_back(Vector3::UnitZ);
@@ -902,13 +765,13 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 			std::int32_t c = static_cast<std::int32_t>(ix + gridX1 * (iy + 1) + 1);
 			std::int32_t d = static_cast<std::int32_t>(ix + gridX1 * iy + 1);
 
-			_faces.push_back(a);
-			_faces.push_back(b);
-			_faces.push_back(c);
+			_indices.push_back(a);
+			_indices.push_back(b);
+			_indices.push_back(c);
 
-			_faces.push_back(c);
-			_faces.push_back(d);
-			_faces.push_back(a);
+			_indices.push_back(c);
+			_indices.push_back(d);
+			_indices.push_back(a);
 		}
 	}
 
@@ -982,13 +845,13 @@ MeshProperty::makePlane(float width, float height, float depth, std::uint32_t wi
 			std::int32_t c = static_cast<std::int32_t>(ix + gridX1 * (iy + 1) + 1);
 			std::int32_t d = static_cast<std::int32_t>(ix + gridX1 * iy + 1);
 
-			_faces.push_back((std::int32_t)(a + offset));
-			_faces.push_back((std::int32_t)(b + offset));
-			_faces.push_back((std::int32_t)(c + offset));
+			_indices.push_back((std::int32_t)(a + offset));
+			_indices.push_back((std::int32_t)(b + offset));
+			_indices.push_back((std::int32_t)(c + offset));
 
-			_faces.push_back((std::int32_t)(c + offset));
-			_faces.push_back((std::int32_t)(d + offset));
-			_faces.push_back((std::int32_t)(a + offset));
+			_indices.push_back((std::int32_t)(c + offset));
+			_indices.push_back((std::int32_t)(d + offset));
+			_indices.push_back((std::int32_t)(a + offset));
 		}
 	}
 }
@@ -1059,13 +922,13 @@ MeshProperty::makeNoise(float width, float height, std::uint32_t widthSegments, 
 	{
 		for (std::uint32_t ix = 0; ix < gridY; ix++)
 		{
-			_faces.push_back(ix + gridX1 * iy);
-			_faces.push_back(ix + gridX1 * (iy + 1));
-			_faces.push_back(ix + gridX1 * (iy + 1) + 1);
+			_indices.push_back(ix + gridX1 * iy);
+			_indices.push_back(ix + gridX1 * (iy + 1));
+			_indices.push_back(ix + gridX1 * (iy + 1) + 1);
 
-			_faces.push_back(ix + gridX1 * iy);
-			_faces.push_back(ix + gridX1 * (iy + 1) + 1);
-			_faces.push_back(ix + gridX1 * iy + 1);
+			_indices.push_back(ix + gridX1 * iy);
+			_indices.push_back(ix + gridX1 * (iy + 1) + 1);
+			_indices.push_back(ix + gridX1 * iy + 1);
 		}
 	}
 
@@ -1154,25 +1017,25 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 
 			if (math::abs((_vertices)[v2].y) == radius)
 			{
-				_faces.push_back(v2);
-				_faces.push_back(v3);
-				_faces.push_back(v4);
+				_indices.push_back(v2);
+				_indices.push_back(v3);
+				_indices.push_back(v4);
 			}
 			else if (math::abs((_vertices)[v3].y) == radius)
 			{
-				_faces.push_back(v2);
-				_faces.push_back(v1);
-				_faces.push_back(v3);
+				_indices.push_back(v2);
+				_indices.push_back(v1);
+				_indices.push_back(v3);
 			}
 			else
 			{
-				_faces.push_back(v2);
-				_faces.push_back(v3);
-				_faces.push_back(v4);
+				_indices.push_back(v2);
+				_indices.push_back(v3);
+				_indices.push_back(v4);
 
-				_faces.push_back(v2);
-				_faces.push_back(v1);
-				_faces.push_back(v3);
+				_indices.push_back(v2);
+				_indices.push_back(v1);
+				_indices.push_back(v3);
 			}
 		}
 	}
@@ -1261,9 +1124,9 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		std::uint32_t v2 = 0;
 		std::uint32_t v3 = i + 1;
 
-		_faces.push_back(v1);
-		_faces.push_back(v2);
-		_faces.push_back(v3);
+		_indices.push_back(v1);
+		_indices.push_back(v2);
+		_indices.push_back(v3);
 	}
 
 	for (std::uint32_t i = 2; i <= segments + 1; i++)
@@ -1272,22 +1135,19 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		std::uint32_t v2 = 1;
 		std::uint32_t v3 = i + 1;
 
-		_faces.push_back(v3);
-		_faces.push_back(v2);
-		_faces.push_back(v1);
+		_indices.push_back(v3);
+		_indices.push_back(v2);
+		_indices.push_back(v1);
 	}
 
 	this->computeTangents();
 	this->computeBoundingBox();
 }
 
-void
+bool
 MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstance, bool merge) noexcept
 {
 	this->clear();
-
-	std::size_t offsetVertices = 0;
-	std::size_t offsetIndices = 0;
 
 	std::size_t maxIndices = 0;
 	std::size_t maxVertices = 0;
@@ -1295,46 +1155,9 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 	bool hasVertices = false;
 	bool hasNormal = false;
 	bool hasTangent = false;
-	bool hasTexcoord = false;
-	bool hasFace = false;
+	bool hasTexcoord[TEXTURE_ARRAY_COUNT] = { false };
+	bool hasIndices = false;
 	bool hasWeight = false;
-
-	for (std::size_t i = 0; i < numInstance; i++)
-	{
-		auto mesh = instances[i].getMesh();
-		if (mesh)
-		{
-			maxVertices += mesh->getNumVertices();
-			maxIndices += mesh->getNumIndices();
-
-			hasVertices |= !mesh->getVertexArray().empty();
-			hasNormal |= !mesh->getNormalArray().empty();
-			hasTangent |= !mesh->getTangentArray().empty();
-			hasTexcoord |= !mesh->getTexcoordArray().empty();
-			hasFace |= !mesh->getFaceArray().empty();
-			hasWeight |= !mesh->getWeightArray().empty();
-
-			if (!merge) break;
-		}
-	}
-
-	if (hasVertices)
-		this->_vertices.resize(maxVertices);
-
-	if (hasNormal)
-		this->_normals.resize(maxVertices);
-
-	if (hasTangent)
-		this->_tangent.resize(maxVertices);
-
-	if (hasTexcoord)
-		this->_texcoords[0].resize(maxVertices);
-
-	if (hasWeight)
-		this->_weights.resize(maxVertices);
-
-	if (hasFace)
-		this->_faces.resize(maxIndices);
 
 	for (std::size_t i = 0; i < numInstance; i++)
 	{
@@ -1342,138 +1165,84 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 		if (!mesh)
 			continue;
 
-		std::size_t numVertex = mesh->getNumVertices();
-		std::size_t numIndex = mesh->getNumIndices();
+		maxVertices += mesh->getNumVertices();
+		maxIndices += mesh->getNumIndices();
 
-		std::vector<float3>* vertices_;
-		std::vector<float3>* normals_;
-		std::vector<float4>* tangent_;
-		std::vector<float4>* colors_;
-		std::vector<float2>* texcoords_;
-		std::vector<VertexWeight>* weights_;
-		std::vector<float4x4>* bindposes_;
+		hasVertices |= !mesh->getVertexArray().empty();
+		hasNormal |= !mesh->getNormalArray().empty();
+		hasTangent |= !mesh->getTangentArray().empty();
+		hasIndices |= !mesh->getIndicesArray().empty();
+		hasWeight |= !mesh->getWeightArray().empty();
 
-		UintArray* faces_;
+		for (std::uint8_t i = 0; i < TEXTURE_ARRAY_COUNT; i++)
+			hasTexcoord[i] |= !mesh->getTexcoordArray().empty();
+	}
 
-		if (!merge && i != 0)
+	for (std::size_t i = 0; i < numInstance; i++)
+	{
+		auto mesh = instances[i].getMesh();
+		if (!mesh)
+			continue;
+
+		if (hasVertices) if (mesh->getVertexArray().empty()) return false;
+		if (hasNormal)  if (mesh->getNormalArray().empty()) return false;
+		if (hasTangent) if (mesh->getTangentArray().empty()) return false;
+		if (hasIndices) if (mesh->getIndicesArray().empty()) return false;
+		if (hasWeight) if (mesh->getWeightArray().empty()) return false;
+
+		for (std::uint8_t i = 0; i < TEXTURE_ARRAY_COUNT; i++)
 		{
-			auto child = std::make_shared<MeshProperty>();
-			child->getVertexArray().resize(mesh->getVertexArray().size());
-			child->getNormalArray().resize(mesh->getNormalArray().size());
-			child->getTangentArray().resize(mesh->getTangentArray().size());
-			child->getColorArray().resize(mesh->getColorArray().size());
-			child->getTexcoordArray().resize(mesh->getTexcoordArray().size());
-			child->getWeightArray().resize(mesh->getWeightArray().size());
-			child->getFaceArray().resize(mesh->getFaceArray().size());
-			child->getBindposes().resize(mesh->getBindposes().size());
-
-			this->addChild(child);
-
-			vertices_ = &child->_vertices;
-			normals_ = &child->_normals;
-			tangent_ = &child->_tangent;
-			colors_ = &child->_colors;
-			texcoords_ = &child->_texcoords[0];
-			weights_ = &child->_weights;
-			bindposes_ = &child->_bindposes;
-			faces_ = &child->_faces;
-		}
-		else
-		{
-			vertices_ = &this->_vertices;
-			normals_ = &this->_normals;
-			tangent_ = &this->_tangent;
-			colors_ = &this->_colors;
-			texcoords_ = &this->_texcoords[0];
-			weights_ = &this->_weights;
-			bindposes_ = &this->_bindposes;
-			faces_ = &this->_faces;
-		}
-
-		if (numVertex)
-		{
-			const auto& vertices = mesh->getVertexArray();
-			if (!vertices.empty())
-				std::memcpy((*vertices_).data() + offsetVertices, vertices.data(), numVertex * sizeof(Vector3));
-
-			const auto& normals = mesh->getNormalArray();
-			if (!normals.empty())
-				std::memcpy((*normals_).data() + offsetVertices, normals.data(), numVertex * sizeof(Vector3));
-
-			const auto& tangents = mesh->getTangentArray();
-			if (!tangents.empty())
-				std::memcpy((*tangent_).data() + offsetVertices, tangents.data(), numVertex * sizeof(Vector4));
-
-			const auto& colors = mesh->getColorArray();
-			if (!colors.empty())
-				std::memcpy((*colors_).data() + offsetVertices, colors.data(), numVertex * sizeof(Vector3));
-
-			const auto& texcoords = mesh->getTexcoordArray();
-			if (!texcoords.empty())
-				std::memcpy((*texcoords_).data() + offsetVertices, texcoords.data(), numVertex * sizeof(Vector2));
-
-			const auto& weights = mesh->getWeightArray();
-			if (!weights.empty())
-				std::memcpy((*weights_).data() + offsetVertices, weights.data(), numVertex * sizeof(VertexWeight));
-
-			const auto& bindposes = mesh->getBindposes();
-			for (auto& bindpose : bindposes)
-				bindposes_->push_back(bindpose);
-
-			const auto& transform = instances[i].getTransform();
-			if (!math::isIdentity(transform))
+			if (hasTexcoord[i])
 			{
-				if (math::isOnlyTranslate(transform))
-				{
-					auto translate = transform.getTranslate();
-
-					for (std::size_t j = offsetIndices; j < vertices.size(); j++)
-						(*vertices_)[j] += translate;
-				}
-				else
-				{
-					auto transformInverse = math::transformInverse(transform);
-					auto transformInverseTranspose = (float3x3)math::transpose(transformInverse);
-
-					for (std::size_t j = offsetIndices; j < vertices.size(); j++)
-						(*vertices_)[j] *= transform;
-
-					for (std::size_t j = offsetIndices; j < vertices.size(); j++)
-						(*normals_)[j] *= transformInverseTranspose;
-				}
+				if (mesh->getTexcoordArray(i).empty())
+					return false;
 			}
-		}
-
-		if (numIndex)
-		{
-			auto faces = mesh->getFaceArray();
-			std::size_t size = faces.size();
-
-			if (offsetIndices == 0)
-			{
-				(*faces_) = faces;
-			}
-			else
-			{
-				for (std::size_t j = 0; j < size; j++)
-					(*faces_)[j + offsetIndices] = (faces[j] + offsetIndices);
-			}
-		}
-
-		if (merge)
-		{
-			offsetVertices += numVertex;
-			offsetIndices += numIndex;
 		}
 	}
 
+	if (hasVertices) this->_vertices.resize(maxVertices);
+	if (hasNormal)   this->_normals.resize(maxVertices);
+	if (hasTangent)  this->_tangents.resize(maxVertices);
+	if (hasWeight)   this->_weights.resize(maxVertices);
+	if (hasIndices)  this->_indices.resize(maxIndices);
+
+	for (std::uint8_t i = 0; i < TEXTURE_ARRAY_COUNT; i++)
+		if (hasTexcoord) this->_texcoords[i].resize(maxVertices);
+
+	std::size_t offsetVertices = 0;
+	std::size_t offsetIndices = 0;
+
+	for (std::size_t i = 0; i < numInstance; i++)
+	{
+		auto mesh = instances[i].getMesh();
+		if (!mesh)
+			continue;
+
+		if (hasVertices) std::memcpy(&_vertices[offsetVertices], mesh->_vertices.data(), mesh->_vertices.size());
+		if (hasNormal)   std::memcpy(&_normals[offsetVertices], mesh->_normals.data(), mesh->_normals.size());
+		if (hasTangent)  std::memcpy(&_tangents[offsetVertices], mesh->_tangents.data(), mesh->_tangents.size());
+		if (hasWeight)   std::memcpy(&_weights[offsetVertices], mesh->_weights.data(), mesh->_weights.size());
+		if (hasIndices)  std::memcpy(&_indices[offsetVertices], mesh->_indices.data(), mesh->_indices.size());
+
+		for (std::uint8_t i = 0; i < TEXTURE_ARRAY_COUNT; i++)
+		{
+			if (hasTexcoord[i])
+				std::memcpy(&_texcoords[i][offsetVertices], mesh->_texcoords[i].data(), mesh->_texcoords[i].size());
+		}
+
+		offsetVertices += mesh->getNumVertices();
+		offsetIndices += mesh->getNumIndices();
+	}
+
 	this->computeBoundingBox();
+
+	return true;
 }
 
-void
+bool
 MeshProperty::combineMeshes(const CombineMeshes& instances, bool merge) noexcept
 {
-	this->combineMeshes(instances.data(), instances.size(), merge);
+	return this->combineMeshes(instances.data(), instances.size(), merge);
 }
 
 void
@@ -1485,21 +1254,20 @@ MeshProperty::mergeVertices() noexcept
 	if (_normals.empty())
 		this->computeVertexNormals();
 
-	std::map<float, std::uint32_t> vectorMap;
+	std::map<std::pair<float, float>, std::uint32_t> vectorMap;
 
 	Float3Array changeVertex;
 	Float3Array changeNormal;
 
-	for (auto& it : _faces)
+	for (auto& it : _indices)
 	{
 		const Vector3& v = (_vertices)[it];
 		const Vector3& n = (_normals)[it];
 
 		float vkey = math::hash_float(v.x, v.y, v.z);
 		float nkey = math::hash_float(n.z, n.y, n.x);
-		float key = vkey + nkey;
 
-		std::uint32_t value = vectorMap[key];
+		std::uint32_t value = vectorMap[std::make_pair(vkey, nkey)];
 		if (value == 0)
 		{
 			changeVertex.push_back(v);
@@ -1507,7 +1275,7 @@ MeshProperty::mergeVertices() noexcept
 
 			std::size_t size = changeVertex.size();
 			it = size - 1;
-			vectorMap[key] = size;
+			vectorMap[std::make_pair(vkey, nkey)] = size;
 		}
 		else
 		{
@@ -1520,19 +1288,18 @@ MeshProperty::mergeVertices() noexcept
 }
 
 void
-MeshProperty::computeFaceNormals() noexcept
+MeshProperty::computeFaceNormals(Float3Array& faceNormals) noexcept
 {
-	if (_vertices.empty() && _faces.empty())
-		return;
+	assert(!_vertices.empty() && !_indices.empty());
 
-	_facesNormal.resize(_vertices.size());
+	faceNormals.resize(_vertices.size());
 
-	std::size_t size = _faces.size();
+	std::size_t size = _indices.size();
 	for (std::size_t i = 0; i < size; i += 3)
 	{
-		std::size_t f1 = _faces[i];
-		std::size_t f2 = _faces[i + 1];
-		std::size_t f3 = _faces[i + 2];
+		std::size_t f1 = _indices[i];
+		std::size_t f2 = _indices[i + 1];
+		std::size_t f3 = _indices[i + 2];
 
 		const Vector3& a = _vertices[f1];
 		const Vector3& b = _vertices[f2];
@@ -1543,57 +1310,66 @@ MeshProperty::computeFaceNormals() noexcept
 
 		Vector3 normal = math::normalize(math::cross(edge1, edge2));
 
-		_facesNormal[f1] = normal;
-		_facesNormal[f2] = normal;
-		_facesNormal[f3] = normal;
+		faceNormals[f1] = normal;
+		faceNormals[f2] = normal;
+		faceNormals[f3] = normal;
 	}
 }
 
 void
 MeshProperty::computeVertexNormals() noexcept
 {
-	assert(!_vertices.empty() && !_faces.empty());
+	assert(!_vertices.empty() && !_indices.empty());
+
+	std::size_t size = _indices.size();
+
+	_normals.resize(_vertices.size());
+	std::memset(_normals.data(), 0, _normals.size() * sizeof(float3));
+
+	for (size_t i = 0; i < size; i += 3)
+	{
+		std::uint32_t f1 = (_indices)[i];
+		std::uint32_t f2 = (_indices)[i + 1];
+		std::uint32_t f3 = (_indices)[i + 2];
+
+		Vector3& a = _vertices.at(f1);
+		Vector3& b = _vertices.at(f2);
+		Vector3& c = _vertices.at(f3);
+
+		Vector3 edge1 = c - b;
+		Vector3 edge2 = a - b;
+
+		Vector3 n(math::normalize(math::cross(edge1, edge2)));
+
+		_normals[f1] += n;
+		_normals[f2] += n;
+		_normals[f3] += n;
+	}
+
+	for (auto& it : _normals)
+		it = math::normalize(it);
+}
+
+void
+MeshProperty::computeVertexNormals(const Float3Array& faceNormals) noexcept
+{
+	assert(faceNormals.size() == _vertices.size());
+	assert(!_vertices.empty() && !_indices.empty());
 
 	Float3Array normal;
 	normal.resize(_vertices.size());
 	std::memset(normal.data(), 0, normal.size() * sizeof(float3));
 
-	if (!_facesNormal.empty())
+	std::size_t size = _indices.size();
+	for (size_t i = 0; i < size; i += 3)
 	{
-		std::size_t size = _faces.size();
-		for (size_t i = 0; i < size; i += 3)
-		{
-			std::uint32_t a = (_faces)[i];
-			std::uint32_t b = (_faces)[i + 1];
-			std::uint32_t c = (_faces)[i + 2];
+		std::uint32_t a = (_indices)[i];
+		std::uint32_t b = (_indices)[i + 1];
+		std::uint32_t c = (_indices)[i + 2];
 
-			normal[a] += _facesNormal[a];
-			normal[b] += _facesNormal[b];
-			normal[c] += _facesNormal[c];
-		}
-	}
-	else
-	{
-		std::size_t size = _faces.size();
-		for (size_t i = 0; i < size; i += 3)
-		{
-			std::uint32_t f1 = (_faces)[i];
-			std::uint32_t f2 = (_faces)[i + 1];
-			std::uint32_t f3 = (_faces)[i + 2];
-
-			Vector3& va = _vertices.at(f1);
-			Vector3& vb = _vertices.at(f2);
-			Vector3& vc = _vertices.at(f3);
-
-			Vector3 edge1 = vb - va;
-			Vector3 edge2 = vc - va;
-
-			Vector3 n(math::normalize(math::cross(edge1, edge2)));
-
-			normal[f1] += n;
-			normal[f2] += n;
-			normal[f3] += n;
-		}
+		normal[a] += faceNormals[a];
+		normal[b] += faceNormals[b];
+		normal[c] += faceNormals[c];
 	}
 
 	for (auto& it : normal)
@@ -1670,27 +1446,19 @@ MeshProperty::computeVertexNormals(std::size_t width, std::size_t height) noexce
 }
 
 void
-MeshProperty::computeMorphNormals() noexcept
-{
-}
-
-void
 MeshProperty::computeTangents(std::uint8_t n) noexcept
 {
 	assert(!_texcoords[n].empty());
 
-	std::vector<Vector3> tan1;
-	std::vector<Vector3> tan2;
+	Vector3Array tan1(_vertices.size(), Vector3::Zero);
+	Vector3Array tan2(_vertices.size(), Vector3::Zero);
 
-	tan1.resize(_vertices.size(), Vector3::Zero);
-	tan2.resize(_vertices.size(), Vector3::Zero);
-
-	std::size_t size = _faces.size();
+	std::size_t size = _indices.size();
 	for (std::size_t i = 0; i < size; i += 3)
 	{
-		std::uint32_t f1 = (_faces)[i];
-		std::uint32_t f2 = (_faces)[i + 1];
-		std::uint32_t f3 = (_faces)[i + 2];
+		std::uint32_t f1 = (_indices)[i];
+		std::uint32_t f2 = (_indices)[i + 1];
+		std::uint32_t f3 = (_indices)[i + 2];
 
 		auto& v1 = _vertices[f1];
 		auto& v2 = _vertices[f2];
@@ -1728,7 +1496,7 @@ MeshProperty::computeTangents(std::uint8_t n) noexcept
 		}
 	}
 
-	_tangent.resize(_normals.size());
+	_tangents.resize(_normals.size());
 
 	for (std::size_t i = 0; i < _normals.size(); i++)
 	{
@@ -1737,24 +1505,24 @@ MeshProperty::computeTangents(std::uint8_t n) noexcept
 
 		float handedness = math::dot(math::cross(n, t), tan2[i]) < 0.0f ? 1.0f : -1.0f;
 
-		_tangent[i] = float4(math::normalize(t - n * math::dot(n, t)), handedness);
+		_tangents[i] = float4(math::normalize(t - n * math::dot(n, t)), handedness);
 	}
 }
 
 void
 MeshProperty::computeTangentQuats(Float4Array& tangentQuat) const noexcept
 {
-	assert(_tangent.size() > 1);
-	assert(_tangent.size() == _normals.size());
+	assert(_tangents.size() > 1);
+	assert(_tangents.size() == _normals.size());
 
-	tangentQuat.resize(_tangent.size());
+	tangentQuat.resize(_tangents.size());
 
-	std::size_t numTangent = _tangent.size();
+	std::size_t numTangent = _tangents.size();
 	for (std::size_t i = 0; i < numTangent; i++)
 	{
 		auto& normal = _normals[i];
 
-		auto tangent = _tangent[i].xyz();
+		auto tangent = _tangents[i].xyz();
 		auto binormal = math::cross(normal, tangent);
 
 		Quaternion quat;
@@ -1763,7 +1531,7 @@ MeshProperty::computeTangentQuats(Float4Array& tangentQuat) const noexcept
 		if (quat.w < 0.0f)
 			quat = -quat;
 
-		if (_tangent[i].w < 0.0f)
+		if (_tangents[i].w < 0.0f)
 			quat = -quat;
 
 		tangentQuat[i].set(quat.x, quat.y, quat.z, quat.w);
@@ -1773,93 +1541,16 @@ MeshProperty::computeTangentQuats(Float4Array& tangentQuat) const noexcept
 void
 MeshProperty::computeBoundingBox() noexcept
 {
+	if (_meshSubsets.empty() && !_indices.empty())
+		_meshSubsets.push_back(MeshSubset(0, 0, _indices.size(), 0, 0));
+
 	_boundingBox.reset();
 
-	if (!_vertices.empty())
-		_boundingBox.encapsulate(_vertices.data(), _vertices.size());
+	for (auto& it : _meshSubsets)
+		it.boundingBox.encapsulate(_vertices.data(), _indices.data() + it.startIndices, it.indicesCount);
 
-	_boundingBoxChildren = _boundingBox;
-
-	for (auto& it : _children)
-	{
-		it->computeBoundingBox();
-
-		_boundingBoxChildren.encapsulate(it->getBoundingBox());
-	}
-}
-
-void
-MeshProperty::computePlanarUnwrap(std::vector<float2>& lightmap) noexcept
-{
-	this->computeFaceNormals();
-
-	std::size_t size = _faces.size();
-
-	lightmap.resize(_vertices.size());
-
-	for (size_t i = 0; i < size; i += 3)
-	{
-		std::uint32_t a = (_faces)[i];
-		std::uint32_t b = (_faces)[i + 1];
-		std::uint32_t c = (_faces)[i + 2];
-
-		float3 polyNormal = math::abs(_facesNormal[i]);
-
-		float2 uv[3];
-
-		if (polyNormal.x > polyNormal.y &&
-			polyNormal.x > polyNormal.z)
-		{
-			uv[0].x = _vertices[a].y;
-			uv[0].y = _vertices[a].z;
-			uv[1].x = _vertices[b].y;
-			uv[1].y = _vertices[b].z;
-			uv[2].x = _vertices[c].y;
-			uv[2].y = _vertices[c].z;
-		}
-		else if (polyNormal.y > polyNormal.x &&
-			polyNormal.y > polyNormal.z)
-		{
-			uv[0].x = _vertices[a].x;
-			uv[0].y = _vertices[a].z;
-			uv[1].x = _vertices[b].x;
-			uv[1].y = _vertices[b].z;
-			uv[2].x = _vertices[c].x;
-			uv[2].y = _vertices[c].z;
-		}
-		else
-		{
-			uv[0].x = _vertices[a].x;
-			uv[0].y = _vertices[a].y;
-			uv[1].x = _vertices[b].x;
-			uv[1].y = _vertices[b].y;
-			uv[2].x = _vertices[c].x;
-			uv[2].y = _vertices[c].y;
-		}
-
-		float2 minUV = uv[0];
-		float2 maxUV = uv[0];
-
-		for (int i = 0; i < 3; i++)
-		{
-			minUV = math::min(minUV, uv[i]);
-			maxUV = math::max(maxUV, uv[i]);
-		}
-
-		float2 delteUV = maxUV - minUV;
-
-		uv[0] -= minUV;
-		uv[1] -= minUV;
-		uv[2] -= minUV;
-
-		uv[0] /= delteUV;
-		uv[1] /= delteUV;
-		uv[2] /= delteUV;
-
-		lightmap[a] = uv[0];
-		lightmap[b] = uv[1];
-		lightmap[c] = uv[2];
-	}
+	for (auto& it : _meshSubsets)
+		_boundingBox.encapsulate(it.boundingBox);
 }
 
 _NAME_END

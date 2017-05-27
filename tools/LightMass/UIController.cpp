@@ -307,46 +307,55 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 
 		auto gameObject = std::make_shared<ray::GameObject>();
 
-		ray::PMX_Index* indices = model->indices.data();
-		ray::MeshPropertyPtr root = nullptr;
+		ray::MeshPropertyPtr mesh = nullptr;
 
-		for (auto& it : model->materials)
+		if (model->numVertices > 0 && model->numIndices > 0)
 		{
-			ray::Float3Array vertices;
-			ray::Float3Array normals;
-			ray::Float2Array texcoords;
-			ray::UintArray faces;
+			ray::PMX_Index* indicesData = model->indices.data();
 
-			for (std::uint32_t i = 0; i < it.IndicesCount; i++, indices += model->header.sizeOfIndices)
+			ray::Float3Array vertices(model->numVertices);
+			ray::Float3Array normals(model->numVertices);
+			ray::Float2Array texcoords(model->numVertices);
+			ray::UintArray indices(model->numIndices);
+
+			for (std::size_t i = 0; i < model->numVertices; i++)
 			{
-				std::uint32_t index = 0;
+				const auto& v = model->vertices[i];
+
+				vertices[i] = v.position;
+				normals[i] = v.normal;
+				texcoords[i] = v.coord;
+			}
+
+			for (std::uint32_t i = 0; i < model->numIndices; i++, indicesData += model->header.sizeOfIndices)
+			{
 				if (model->header.sizeOfIndices == 1)
-					index = *(std::uint8_t*)indices;
+					indices[i] = *(std::uint8_t*)indicesData;
 				else if (model->header.sizeOfIndices == 2)
-					index = *(std::uint16_t*)indices;
+					indices[i] = *(std::uint16_t*)indicesData;
 				else if (model->header.sizeOfIndices == 4)
-					index = *(std::uint32_t*)indices;
+					indices[i] = *(std::uint32_t*)indicesData;
 				else
 					return false;
+			}
 
-				ray::PMX_Vertex& v = model->vertices[index];
+			ray::MeshSubsets subsets;
+			std::uint32_t startIndices = 0;
 
-				vertices.push_back(v.position);
-				normals.push_back(v.normal);
-				texcoords.push_back(v.coord);
-				faces.push_back(i);
+			for (auto& it : model->materials)
+			{
+				subsets.push_back(ray::MeshSubset(0, startIndices, it.IndicesCount, 0, 0));
+				startIndices += it.IndicesCount;
 			}
 
 			auto mesh = std::make_shared<ray::MeshProperty>();
 			mesh->setVertexArray(std::move(vertices));
 			mesh->setNormalArray(std::move(normals));
 			mesh->setTexcoordArray(std::move(texcoords));
-			mesh->setFaceArray(std::move(faces));
+			mesh->setIndicesArray(std::move(indices));
+			mesh->setMeshSubsets(std::move(subsets));
 
-			if (!root)
-				root = mesh;
-			else
-				root->addChild(std::move(mesh));
+			gameObject->addComponent(std::make_shared<ray::MeshComponent>(std::move(mesh)));
 		}
 
 		if (model->numMaterials)
@@ -390,7 +399,6 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 				materials[i] = material;
 			}
 
-			gameObject->addComponent(std::make_shared<ray::MeshComponent>(std::move(root)));
 			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(std::move(materials)));
 		}
 

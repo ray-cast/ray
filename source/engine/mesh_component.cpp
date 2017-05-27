@@ -138,16 +138,6 @@ MeshComponent::getBoundingBox() const noexcept
 	return BoundingBox::Empty;
 }
 
-const BoundingBox&
-MeshComponent::getBoundingBoxDownwards() const noexcept
-{
-	if (_mesh)
-		_mesh->getBoundingBoxDownwards();
-	else if (_sharedMesh)
-		_sharedMesh->getBoundingBoxDownwards();
-	return BoundingBox::Empty;
-}
-
 void
 MeshComponent::addMeshChangeListener(std::function<void()>* func) noexcept
 {
@@ -172,45 +162,6 @@ void
 MeshComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);
-
-	ResLoader<Model> model;
-
-	model.load(this->getName(),
-		[&](ray::ModelPtr model, const util::string& filename)
-	{
-		StreamReaderPtr stream;
-		if (IoServer::instance()->openFile(stream, filename))
-			return model->load(*stream);
-		return false;
-	});
-
-	if (model.isLoaded())
-	{
-		auto instance = model.getInstance();
-		if (instance->hasMeshes())
-		{
-			instance->setDirectory(util::directory(this->getName()));
-
-			auto& meshes = instance->getMeshsList();
-
-			MeshPropertyPtr root = meshes.front();
-
-			if (root)
-			{
-				for (auto& it : meshes)
-				{
-					if (it->getTangentArray().empty())
-						it->computeTangents();
-
-					it->computeBoundingBox();
-					if (it != root)
-						root->addChild(it);
-				}
-
-				this->setSharedMesh(root);
-			}
-		}
-	}
 }
 
 void
@@ -236,22 +187,13 @@ MeshComponent::clone() const noexcept
 void
 MeshComponent::_onSetMesh(MeshPropertyPtr& mesh) noexcept
 {
-	std::stack<MeshPropertyPtr> meshes;
-	meshes.push(mesh);
-
-	while (!meshes.empty())
+	if (mesh)
 	{
-		auto it = meshes.top();
-		meshes.pop();
+		if (mesh->getTangentArray().empty())
+			mesh->computeTangents();
 
-		if (it->getTangentArray().empty())
-			it->computeTangents();
-
-		if (it->getBoundingBox().empty())
-			it->computeBoundingBox();
-
-		for (auto& child : it->getChildren())
-			meshes.push(child);
+		if (mesh->getBoundingBox().empty())
+			mesh->computeBoundingBox();
 	}
 }
 

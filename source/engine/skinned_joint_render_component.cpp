@@ -71,15 +71,22 @@ SkinnedJointRenderComponent::_buildJointObject() noexcept
 
 	meshes.computeBoundingBox();
 
-	_geometry = std::make_shared<Geometry>();
-	_geometry->setMaterial(RenderSystem::instance()->createMaterial("sys:fx/debug.fxml"));
-	_geometry->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
-
 	_renderMeshVbo = ResManager::instance()->createVertexBuffer(meshes, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 	if (!_renderMeshVbo)
 		return false;
 
-	_buildRenderObject(_geometry, meshes, _renderMeshVbo, nullptr);
+	_geometry = std::make_shared<Geometry>();
+	_geometry->setMaterial(RenderSystem::instance()->createMaterial("sys:fx/debug.fxml"));
+	_geometry->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
+	_geometry->setVertexBuffer(_renderMeshVbo, 0);
+	_geometry->setIndexBuffer(_renderMeshIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	_geometry->setBoundingBox(meshes.getBoundingBox());
+	_geometry->setOwnerListener(this);
+	_geometry->setCastShadow(this->getCastShadow());
+	_geometry->setReceiveShadow(this->getReceiveShadow());
+	_geometry->setLayer(this->getGameObject()->getLayer());
+	_geometry->setTransform(this->getGameObject()->getWorldTransform());
+	_geometry->setGraphicsIndirect(std::make_shared<GraphicsIndirect>(meshes.getNumVertices(), meshes.getNumIndices()));
 
 	return true;
 }

@@ -42,6 +42,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(Geometry, RenderObject, "Geometry")
+
 GraphicsIndirect::GraphicsIndirect() noexcept
 	: startVertice(0)
 	, startIndice(0)
@@ -52,7 +54,15 @@ GraphicsIndirect::GraphicsIndirect() noexcept
 {
 }
 
-__ImplementSubClass(Geometry, RenderObject, "Geometry")
+GraphicsIndirect::GraphicsIndirect(std::uint32_t _numVertices, std::uint32_t _numIndices, std::uint32_t _numInstance, std::uint32_t _startVertice, std::uint32_t _startIndice, std::uint32_t _startInstance) noexcept
+	: startVertice(_startVertice)
+	, startIndice(_startIndice)
+	, startInstances(_startInstance)
+	, numVertices(_numVertices)
+	, numIndices(_numIndices)
+	, numInstances(_numInstance)
+{
+}
 
 Geometry::Geometry() noexcept
 	: _isCastShadow(true)
@@ -124,7 +134,7 @@ Geometry::getMaterial() noexcept
 	return _material;
 }
 
-void 
+void
 Geometry::setVertexBuffer(GraphicsDataPtr data, std::intptr_t offset) noexcept
 {
 	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer));
@@ -132,13 +142,13 @@ Geometry::setVertexBuffer(GraphicsDataPtr data, std::intptr_t offset) noexcept
 	_vertexOffset = offset;
 }
 
-const GraphicsDataPtr& 
+const GraphicsDataPtr&
 Geometry::getVertexBuffer() const noexcept
 {
 	return _vbo;
 }
 
-void 
+void
 Geometry::setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer));
@@ -154,7 +164,13 @@ Geometry::getIndexBuffer() const noexcept
 }
 
 void
-Geometry::setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept
+Geometry::setGraphicsIndirect(GraphicsIndirectPtr&& renderable) noexcept
+{
+	_renderable = std::move(renderable);
+}
+
+void
+Geometry::setGraphicsIndirect(const GraphicsIndirectPtr& renderable) noexcept
 {
 	_renderable = renderable;
 }

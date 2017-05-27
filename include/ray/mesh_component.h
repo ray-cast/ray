@@ -64,7 +64,6 @@ public:
 	std::size_t getNumIndices() const noexcept;
 
 	const BoundingBox& getBoundingBox() const noexcept;
-	const BoundingBox& getBoundingBoxDownwards() const noexcept;
 
 	void addMeshChangeListener(std::function<void()>* func) noexcept;
 	void removeMeshChangeListener(std::function<void()>* func) noexcept;

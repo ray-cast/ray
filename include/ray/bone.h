@@ -62,7 +62,7 @@ public:
 	std::uint8_t rotateLimited;
 
 	float angleWeight;
-	
+
 	float3 minimumDegrees;
 	float3 maximumDegrees;
 };

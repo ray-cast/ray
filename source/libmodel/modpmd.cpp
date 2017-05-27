@@ -82,55 +82,55 @@ PMDHandler::doLoad(StreamReader& stream, PMD& pmd) noexcept
 	if (!stream.read((char*)&pmd.numVertices, sizeof(pmd.numVertices))) return false;
 	if (pmd.numVertices > 0)
 	{
-		pmd.VertexList.resize(pmd.numVertices);
+		pmd.vertices.resize(pmd.numVertices);
 
-		if (!stream.read((char*)&pmd.VertexList[0], (std::streamsize)(sizeof(PMD_Vertex)* pmd.numVertices))) return false;
+		if (!stream.read((char*)&pmd.vertices[0], (std::streamsize)(sizeof(PMD_Vertex)* pmd.numVertices))) return false;
 	}
 
 	if (!stream.read((char*)&pmd.numIndices, sizeof(pmd.numIndices))) return false;
 
 	if (pmd.numIndices > 0)
 	{
-		pmd.IndexList.resize(pmd.numIndices);
+		pmd.indices.resize(pmd.numIndices);
 
-		if (!stream.read((char*)&pmd.IndexList[0], (std::streamsize)(sizeof(PMD_Index)* pmd.numIndices))) return false;
+		if (!stream.read((char*)&pmd.indices[0], (std::streamsize)(sizeof(PMD_Index)* pmd.numIndices))) return false;
 	}
 
 	if (!stream.read((char*)&pmd.numMaterials, sizeof(pmd.numMaterials))) return false;
 
 	if (pmd.numMaterials > 0)
 	{
-		pmd.MaterialList.resize(pmd.numMaterials);
+		pmd.materials.resize(pmd.numMaterials);
 
-		if (!stream.read((char*)&pmd.MaterialList[0], (std::streamsize)(sizeof(PMD_Material)* pmd.numMaterials))) return false;
+		if (!stream.read((char*)&pmd.materials[0], (std::streamsize)(sizeof(PMD_Material)* pmd.numMaterials))) return false;
 	}
 
 	if (!stream.read((char*)&pmd.numBones, sizeof(pmd.numBones))) return false;
 
 	if (pmd.numBones > 0)
 	{
-		pmd.BoneList.resize(pmd.numBones);
+		pmd.bones.resize(pmd.numBones);
 
-		if (!stream.read((char*)&pmd.BoneList[0], (std::streamsize)(sizeof(PMD_Bone)* pmd.numBones))) return false;
+		if (!stream.read((char*)&pmd.bones[0], (std::streamsize)(sizeof(PMD_Bone)* pmd.numBones))) return false;
 	}
 
 	if (!stream.read((char*)&pmd.numIKs, sizeof(pmd.numIKs))) return false;
 
 	if (pmd.numIKs > 0)
 	{
-		pmd.IkList.resize(pmd.numIKs);
+		pmd.iks.resize(pmd.numIKs);
 
 		for (std::size_t i = 0; i < (std::size_t)pmd.numIKs; i++)
 		{
-			if (!stream.read((char*)&pmd.IkList[i].IK, sizeof(pmd.IkList[i].IK))) return false;
-			if (!stream.read((char*)&pmd.IkList[i].Target, sizeof(pmd.IkList[i].Target))) return false;
-			if (!stream.read((char*)&pmd.IkList[i].LinkCount, sizeof(pmd.IkList[i].LinkCount))) return false;
-			if (!stream.read((char*)&pmd.IkList[i].LoopCount, sizeof(pmd.IkList[i].LoopCount))) return false;
-			if (!stream.read((char*)&pmd.IkList[i].Weight, sizeof(pmd.IkList[i].Weight))) return false;
+			if (!stream.read((char*)&pmd.iks[i].IK, sizeof(pmd.iks[i].IK))) return false;
+			if (!stream.read((char*)&pmd.iks[i].Target, sizeof(pmd.iks[i].Target))) return false;
+			if (!stream.read((char*)&pmd.iks[i].LinkCount, sizeof(pmd.iks[i].LinkCount))) return false;
+			if (!stream.read((char*)&pmd.iks[i].LoopCount, sizeof(pmd.iks[i].LoopCount))) return false;
+			if (!stream.read((char*)&pmd.iks[i].Weight, sizeof(pmd.iks[i].Weight))) return false;
 
-			pmd.IkList[i].LinkList.resize(pmd.IkList[i].LinkCount);
+			pmd.iks[i].LinkList.resize(pmd.iks[i].LinkCount);
 
-			if (!stream.read((char*)&pmd.IkList[i].LinkList[0], (std::streamsize)(sizeof(PMD_Link)* pmd.IkList[i].LinkCount))) return false;
+			if (!stream.read((char*)&pmd.iks[i].LinkList[0], (std::streamsize)(sizeof(PMD_Link)* pmd.iks[i].LinkCount))) return false;
 		}
 	}
 
@@ -138,19 +138,19 @@ PMDHandler::doLoad(StreamReader& stream, PMD& pmd) noexcept
 
 	if (pmd.numMorphs > 0)
 	{
-		pmd.MorphList.resize(pmd.numMorphs);
+		pmd.morphs.resize(pmd.numMorphs);
 
 		for (std::size_t i = 0; i < (std::size_t)pmd.numMorphs; i++)
 		{
-			if (!stream.read((char*)&pmd.MorphList[i].Name, sizeof(pmd.MorphList[i].Name))) return false;
-			if (!stream.read((char*)&pmd.MorphList[i].VertexCount, sizeof(pmd.MorphList[i].VertexCount))) return false;
-			if (!stream.read((char*)&pmd.MorphList[i].Category, sizeof(pmd.MorphList[i].Category))) return false;
+			if (!stream.read((char*)&pmd.morphs[i].Name, sizeof(pmd.morphs[i].Name))) return false;
+			if (!stream.read((char*)&pmd.morphs[i].VertexCount, sizeof(pmd.morphs[i].VertexCount))) return false;
+			if (!stream.read((char*)&pmd.morphs[i].Category, sizeof(pmd.morphs[i].Category))) return false;
 
-			if (pmd.MorphList[i].VertexCount > 0)
+			if (pmd.morphs[i].VertexCount > 0)
 			{
-				pmd.MorphList[i].VertexList.resize(pmd.MorphList[i].VertexCount);
+				pmd.morphs[i].VertexList.resize(pmd.morphs[i].VertexCount);
 
-				if (!stream.read((char*)&pmd.MorphList[i].VertexList[0], (std::streamsize)(sizeof(PMD_MorphVertex)* pmd.MorphList[i].VertexCount))) return false;
+				if (!stream.read((char*)&pmd.morphs[i].VertexList[0], (std::streamsize)(sizeof(PMD_MorphVertex)* pmd.morphs[i].VertexCount))) return false;
 			}
 		}
 	}
@@ -220,9 +220,9 @@ PMDHandler::doLoad(StreamReader& stream, PMD& pmd) noexcept
 
 	pmd.numToons = PMD_NUM_TOON;
 
-	pmd.ToonList.resize(pmd.numToons);
+	pmd.toons.resize(pmd.numToons);
 
-	if (!stream.read((char*)&pmd.ToonList[0].Name, (std::streamsize)(sizeof(PMD_Toon) * pmd.numToons))) return false;
+	if (!stream.read((char*)&pmd.toons[0].Name, (std::streamsize)(sizeof(PMD_Toon) * pmd.numToons))) return false;
 
 	if (!stream.read((char*)&pmd.numRigidbodys, sizeof(pmd.numRigidbodys))) return false;
 
@@ -252,9 +252,9 @@ PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 	if (!this->doLoad(stream, pmd))
 		return false;
 
-	for (std::size_t index = 0; index < pmd.MaterialList.size(); index++)
+	for (std::size_t index = 0; index < pmd.materials.size(); index++)
 	{
-		auto& it = pmd.MaterialList[index];
+		auto& it = pmd.materials[index];
 
 		auto material = std::make_shared<MaterialProperty>();
 		material->set(MATKEY_COLOR_DIFFUSE, ray::math::srgb2linear(it.Diffuse));
@@ -276,26 +276,20 @@ PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 		model.addMaterial(material);
 	}
 
-	PMD_Index* indices = pmd.IndexList.data();
-
-	MeshPropertyPtr root = nullptr;
-
-	for (auto& it : pmd.MaterialList)
+	if (pmd.numVertices > 0 && pmd.numIndices > 0 && pmd.numMaterials > 0)
 	{
 		Float3Array vertices;
 		Float3Array normals;
 		Float2Array texcoords;
 		VertexWeights weights;
-		UintArray faces;
 
-		for (PMD_IndexCount i = 0; i < it.FaceVertexCount; i++, indices++)
+		for (std::uint32_t i = 0; i < pmd.numVertices; i++)
 		{
-			PMD_Vertex& v = pmd.VertexList[*indices];
+			PMD_Vertex& v = pmd.vertices[i];
 
 			vertices.push_back(v.Position);
 			normals.push_back(v.Normal);
 			texcoords.push_back(v.UV);
-			faces.push_back(i);
 
 			VertexWeight weight;
 			weight.weight1 = v.Weight / 100.0f;
@@ -310,17 +304,28 @@ PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 			weights.push_back(weight);
 		}
 
+		UintArray indices(pmd.numIndices);
+		for (std::uint32_t i = 0; i < pmd.numIndices; i++)
+			indices[i] = pmd.indices[i];
+
+		MeshSubsets subsets;
+		std::size_t startIndices = 0;
+
+		for (auto& it : pmd.materials)
+		{
+			subsets.push_back(ray::MeshSubset(0, startIndices, it.FaceVertexCount, 0, 0));
+			startIndices += it.FaceVertexCount;
+		}
+
 		auto mesh = std::make_shared<MeshProperty>();
 		mesh->setVertexArray(std::move(vertices));
 		mesh->setNormalArray(std::move(normals));
 		mesh->setTexcoordArray(std::move(texcoords));
 		mesh->setWeightArray(std::move(weights));
-		mesh->setFaceArray(std::move(faces));
+		mesh->setIndicesArray(std::move(indices));
+		mesh->setMeshSubsets(std::move(subsets));
 
-		if (!root)
-			root = mesh;
-
-		model.addMesh(mesh);
+		model.addMesh(std::move(mesh));
 	}
 
 	if (pmd.numBones > 1)
@@ -328,7 +333,7 @@ PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 		Bones bones;
 		InverseKinematics iks;
 
-		for (auto& it : pmd.BoneList)
+		for (auto& it : pmd.bones)
 		{
 			Bone bone;
 
@@ -358,7 +363,7 @@ PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 			model.addBone(std::make_shared<Bone>(bone));
 		}
 
-		for (auto& it : pmd.IkList)
+		for (auto& it : pmd.iks)
 		{
 			IKAttr attr;
 			attr.boneIndex = it.IK;
@@ -409,7 +414,7 @@ PMDHandler::doLoad(StreamReader& stream, Model& model) noexcept
 		body->groupMask = it.groupMask;
 		body->shape = (ShapeType)it.shape;
 		body->scale = it.scale;
-		body->position = it.position + pmd.BoneList[it.bone].Position;
+		body->position = it.position + pmd.bones[it.bone].Position;
 		body->rotation = it.rotate;
 		body->mass = it.mass;
 		body->movementDecay = it.movementDecay;

@@ -71,18 +71,14 @@ typedef float PMD_Float;
 struct PMD_Header
 {
 	PMD_uint8_t Magic[3];      // 始终为Pmd
-
 	PMD_Float   Version;       // 版本 1.0f
-
 	PMD_uint8_t ModelName[20]; // 模型名称
-
 	PMD_uint8_t Comment[256];  // 模型说明
 };
 
 struct PMD_BoneIndex
 {
 	PMD_uint16_t Bone1; // 骨骼1
-
 	PMD_uint16_t Bone2; // 骨骼2
 };
 
@@ -91,15 +87,10 @@ typedef PMD_uint32_t PMD_VertexCount;
 struct PMD_Vertex
 {
 	PMD_Vector3 Position;     // 顶点坐标
-
 	PMD_Vector3 Normal;       // 顶点法线
-
 	PMD_Vector2 UV;           // 顶点贴图坐标
-
 	PMD_BoneIndex Bone;       // 骨骼索引
-
 	PMD_uint8_t  Weight;      // 权重
-
 	PMD_uint8_t  NonEdgeFlag; // 无边标志（说明：当这个字节不为0时NonEdgeFlag=true）
 };
 
@@ -112,21 +103,13 @@ typedef PMD_uint32_t PMD_MaterialCount;
 struct PMD_Material
 {
 	PMD_Color3   Diffuse;         // 漫射光
-
 	PMD_Float    Opacity;         // 不透明度
-
 	PMD_Float    Shininess;       // 发光度
-
 	PMD_Color3   Specular;        // 镜面光
-
 	PMD_Color3   Ambient;         // 环境光
-
 	PMD_uint8_t  ToonIndex;       // 有符号，卡通着色纹理编号
-
 	PMD_uint8_t  Edge;            // 是否带边，当该字节 > 0时为true
-
 	PMD_uint32_t FaceVertexCount; // 顶点索引数
-
 	PMD_char     TextureName[20]; // 包含了纹理名称，使用*分割  枚举：NONE、ADD、MUL
 };
 
@@ -140,15 +123,10 @@ typedef PMD_uint16_t PMD_BoneCount;
 struct PMD_Bone
 {
 	PMD_BoneName Name;     // 骨骼名字
-
 	PMD_uint16_t Parent;   // 父亲骨骼
-
 	PMD_uint16_t Child;    // 连接到
-
 	PMD_uint8_t  Type;     // 类型（枚举：Rotate,RotateMove,IK, Unknown, IKLink, RotateEffect, IKTo, Unvisible, Twist,RotateRatio）
-
 	PMD_uint16_t IKCount;  // IK（反向运动学）数值
-
 	PMD_Vector3  Position; // 骨骼位置
 };
 
@@ -158,22 +136,16 @@ typedef PMD_uint16_t PMD_IKCount;
 struct PMD_IK
 {
 	PMD_uint16_t IK;
-
 	PMD_uint16_t Target;
-
 	PMD_uint8_t  LinkCount;
-
 	PMD_uint16_t LoopCount;
-
 	PMD_Float    Weight;
-
 	std::vector<PMD_Link> LinkList; // LinkList[LinkCount];
 };
 
 struct PMD_MorphVertex
 {
 	PMD_uint32_t Index;    // 皮肤对应的组成顶点
-
 	PMD_Vector3  Offset;   // 顶点位移
 };
 
@@ -186,12 +158,9 @@ typedef PMD_uint16_t PMD_MorphCount;
 
 struct PMD_Morph
 {
-	PMD_MorphName Name;        // 表情名字
-
+	PMD_MorphName Name;       // 表情名字
 	PMD_uint32_t VertexCount; // 表情含有的顶点数量
-
 	PMD_uint8_t  Category;    // 分类
-
 	std::vector<PMD_MorphVertex>  VertexList;    // FaceVertex[VertexCount];  // 表情包含的所有顶点信息
 };
 
@@ -203,7 +172,6 @@ struct PMD_NodeName
 struct PMD_BoneToNode
 {
 	PMD_uint16_t Bone;
-
 	PMD_uint8_t  Node;
 };
 
@@ -217,13 +185,9 @@ struct PMD_ToonName
 struct PMD_Description
 {
 	PMD_uint8_t ModelName[20];
-
 	PMD_uint8_t Comment[256];
-
 	std::vector<PMD_BoneName> BoneName;  // Name[BoneCount];
-
-	std::vector<PMD_MorphName> FaceName;  // Name[PMD_FrameWindow.ExpressionListCount];
-
+	std::vector<PMD_MorphName> FaceName; // Name[PMD_FrameWindow.ExpressionListCount];
 	std::vector<PMD_NodeName> FrameName; // Name[PMD_FrameWindow.NodeNameCount];
 };
 
@@ -300,13 +264,13 @@ struct PMD
 	PMD_uint8_t               numNodeNames;
 	PMD_uint32_t              numNodeBones;
 
-	std::vector<PMD_Vertex>   VertexList;
-	std::vector<PMD_Index>    IndexList;
-	std::vector<PMD_Material> MaterialList;
-	std::vector<PMD_Bone>     BoneList;
-	std::vector<PMD_IK>       IkList;
-	std::vector<PMD_Morph>    MorphList;
-	std::vector<PMD_Toon>     ToonList;
+	std::vector<PMD_Vertex>   vertices;
+	std::vector<PMD_Index>    indices;
+	std::vector<PMD_Material> materials;
+	std::vector<PMD_Bone>     bones;
+	std::vector<PMD_IK>       iks;
+	std::vector<PMD_Morph>    morphs;
+	std::vector<PMD_Toon>     toons;
 	std::vector<PMD_Body>     rigidbodys;
 	std::vector<PMD_Joint>    joints;
 	std::vector<PMD_Expression> ExpressionList;   // ExpressionList[ExpressionListCount]; // 读取后减1，对应皮肤数量

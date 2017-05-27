@@ -112,8 +112,6 @@ protected:
 	bool _buildDefaultMaterials(const util::string& filename) noexcept;
 
 	bool _buildRenderObjects(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
-	bool _buildRenderObject(const MeshProperty& mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept;
-	bool _buildRenderObject(GeometryPtr geometry, const MeshProperty& mesh, GraphicsDataPtr vbo, GraphicsDataPtr ibo) noexcept;
 
 	void _updateMaterial(std::size_t n) noexcept;
 	void _updateMaterials() noexcept;

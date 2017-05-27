@@ -77,6 +77,8 @@ _NAME_BEGIN
 #define MATKEY_TEXTURE_LIGHTMAP(N)     MATKEY_TEXTURE(TextureTypeLightmap, N)
 #define MATKEY_TEXTURE_REFLECTION(N)   MATKEY_TEXTURE(TextureTypeReflection, N)
 
+#define TEXTURE_ARRAY_COUNT 4
+
 enum ShapeType
 {
 	ShapeTypeCircle,
@@ -196,9 +198,36 @@ private:
 
 struct EXPORT MeshSubset final
 {
-	std::uint32_t indicesOffset;
+	MeshSubset() noexcept
+		: startVertices(0)
+		, startIndices(0)
+		, indicesCount(0)
+		, offsetVertices(0)
+		, offsetIndices(0)
+	{
+	}
+
+	MeshSubset(std::uint32_t startVertices, std::uint32_t startIndices, std::uint32_t _indicesCount, std::uint32_t _verticesOffset, std::uint32_t _indicesOffset) noexcept
+		: startVertices(startVertices)
+		, startIndices(startIndices)
+		, indicesCount(_indicesCount)
+		, offsetVertices(_verticesOffset)
+		, offsetIndices(_indicesOffset)
+	{
+	}
+
+	std::uint32_t offsetVertices;
+	std::uint32_t offsetIndices;
+
 	std::uint32_t indicesCount;
+
+	std::uint32_t startIndices;
+	std::uint32_t startVertices;
+
+	BoundingBox boundingBox;
 };
+
+typedef std::vector<MeshSubset> MeshSubsets;
 
 class EXPORT MeshProperty final : public std::enable_shared_from_this<MeshProperty>
 {
@@ -209,60 +238,51 @@ public:
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setParent(MeshPropertyPtr parent) noexcept;
-	MeshPropertyPtr getParent() const noexcept;
-
-	void addChild(MeshPropertyPtr& child) noexcept;
-	void addChild(MeshPropertyPtr&& child) noexcept;
-	void removeChild(MeshPropertyPtr& child) noexcept;
-	void removeChild(MeshPropertyPtr&& child) noexcept;
-	void cleanupChildren() noexcept;
-	MeshPropertyPtr findChild(const std::string& name, bool recurse = true) noexcept;
-
-	std::size_t getChildCount() const noexcept;
-	MeshPropertys& getChildren() noexcept;
-	const MeshPropertys& getChildren() const noexcept;
-
-	std::size_t getNumVertices() const noexcept;
-	std::size_t getNumIndices() const noexcept;
-
 	void setVertexArray(const Float3Array& array) noexcept;
 	void setNormalArray(const Float3Array& array) noexcept;
 	void setColorArray(const Float4Array& array) noexcept;
 	void setTangentArray(const Float4Array& array) noexcept;
-	void setTexcoordArray(const Float2Array& array, std::size_t n = 0) noexcept;
+	void setTexcoordArray(const Float2Array& array, std::uint8_t n = 0) noexcept;
 	void setWeightArray(const VertexWeights& array) noexcept;
-	void setFaceArray(const UintArray& array) noexcept;
+	void setIndicesArray(const UintArray& array) noexcept;
 	void setBindposes(const Float4x4Array& array) noexcept;
+	void setMeshSubsets(const MeshSubsets& subsets) noexcept;
 
 	void setVertexArray(Float3Array&& array) noexcept;
 	void setNormalArray(Float3Array&& array) noexcept;
 	void setColorArray(Float4Array&& array) noexcept;
 	void setTangentArray(Float4Array&& array) noexcept;
-	void setTexcoordArray(Float2Array&& array, std::size_t n = 0) noexcept;
+	void setTexcoordArray(Float2Array&& array, std::uint8_t n = 0) noexcept;
 	void setWeightArray(VertexWeights&& array) noexcept;
-	void setFaceArray(UintArray&& array) noexcept;
+	void setIndicesArray(UintArray&& array) noexcept;
 	void setBindposes(Float4x4Array&& array) noexcept;
+	void setMeshSubsets(MeshSubsets&& subsets) noexcept;
 
 	Float3Array& getVertexArray() noexcept;
 	Float3Array& getNormalArray() noexcept;
 	Float4Array& getTangentArray() noexcept;
 	Float4Array& getColorArray() noexcept;
-	Float2Array& getTexcoordArray(std::size_t n = 0) noexcept;
+	Float2Array& getTexcoordArray(std::uint8_t n = 0) noexcept;
 	VertexWeights& getWeightArray() noexcept;
-	UintArray& getFaceArray() noexcept;
+	UintArray& getIndicesArray() noexcept;
 	Float4x4Array& getBindposes() noexcept;
+	MeshSubsets& getMeshSubsets() noexcept;
 
 	const Float3Array& getVertexArray() const noexcept;
 	const Float3Array& getNormalArray() const noexcept;
 	const Float4Array& getTangentArray() const noexcept;
 	const Float4Array& getColorArray() const noexcept;
-	const Float2Array& getTexcoordArray(std::size_t n = 0) const noexcept;
+	const Float2Array& getTexcoordArray(std::uint8_t n = 0) const noexcept;
 	const VertexWeights& getWeightArray() const noexcept;
+	const UintArray& getIndicesArray() const noexcept;
+	const MeshSubsets& getMeshSubsets() const noexcept;
+
 	const Bones& getBoneArray(const Bones& array) const noexcept;
-	const UintArray& getFaceArray() const noexcept;
 	const Float4x4Array& getBindposes() const noexcept;
-	const std::size_t getTexcoordNums() const noexcept;
+
+	std::size_t getNumVertices() const noexcept;
+	std::size_t getNumIndices() const noexcept;
+	std::size_t getTexcoordNums() const noexcept;
 
 	void makeCircle(float radius, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
 	void makePlane(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
@@ -273,24 +293,22 @@ public:
 	void makeRing(float innerRadius, float outerRadius, std::uint32_t thetaSegments, std::uint32_t phiSegments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
 	void makeSphere(float radius, std::uint32_t widthSegments = 8, std::uint32_t heightSegments = 6, float phiStart = 0.0, float phiLength = M_TWO_PI, float thetaStart = 0, float thetaLength = M_PI) noexcept;
 	void makeVolumes(float fovy, float znear, float zfar) noexcept;
-	void makeCone(float radius, float height, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_TWO_PI) noexcept;
+	void makeCone(float radius, float height, std::uint32_t segments = 32, float thetaStart = 0, float thetaLength = M_TWO_PI) noexcept;
 
-	void combineMeshes(const CombineMesh instances[], std::size_t numInstance, bool merge) noexcept;
-	void combineMeshes(const CombineMeshes& instances, bool merge) noexcept;
+	bool combineMeshes(const CombineMesh instances[], std::size_t numInstance, bool merge) noexcept;
+	bool combineMeshes(const CombineMeshes& instances, bool merge) noexcept;
 
 	void mergeVertices() noexcept;
 
-	void computeFaceNormals() noexcept;
+	void computeFaceNormals(Float3Array& faceNormals) noexcept;
 	void computeVertexNormals() noexcept;
+	void computeVertexNormals(const Float3Array& faceNormals) noexcept;
 	void computeVertexNormals(std::size_t width, std::size_t height) noexcept;
-	void computeMorphNormals() noexcept;
 	void computeTangents(std::uint8_t texSlot = 0) noexcept;
 	void computeTangentQuats(Float4Array& tangentQuat) const noexcept;
 	void computeBoundingBox() noexcept;
-	void computePlanarUnwrap(std::vector<float2>& lightmap) noexcept;
 
 	const BoundingBox& getBoundingBox() const noexcept;
-	const BoundingBox& getBoundingBoxDownwards() const noexcept;
 
 	void clear() noexcept;
 	MeshPropertyPtr clone() noexcept;
@@ -301,21 +319,17 @@ private:
 	Float3Array _vertices;
 	Float3Array _normals;
 	Float4Array _colors;
-	Float2Array _texcoords[8];
-	Float4Array _tangent;
-	Float3Array _facesNormal;
+	Float2Array _texcoords[TEXTURE_ARRAY_COUNT];
+	Float4Array _tangents;
 	VertexWeights _weights;
 	Float4x4Array _bindposes;
 
-	UintArray _faces;
+	UintArray _indices;
 
 	Bones _bones;
-
 	BoundingBox _boundingBox;
-	BoundingBox _boundingBoxChildren;
 
-	MeshProperty* _parent;
-	MeshPropertys _children;
+	MeshSubsets _meshSubsets;
 };
 
 _NAME_END

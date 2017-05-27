@@ -572,39 +572,22 @@ PMXHandler::doLoad(StreamReader& stream, Model& model) noexcept
 		model.addMaterial(std::move(material));
 	}
 
-	PMX_Index* indices = pmx.indices.data();
-
-	MeshPropertyPtr root = nullptr;
-
-	for (auto& it : pmx.materials)
+	if (pmx.numVertices > 0 && pmx.numIndices > 0 && pmx.numMaterials > 0)
 	{
 		Float3Array vertices;
 		Float3Array normals;
 		Float2Array texcoords;
 		VertexWeights weights;
-		UintArray faces;
 
-		for (std::uint32_t i = 0; i < it.FaceCount; i++, indices += pmx.header.sizeOfIndices)
+		for (std::uint32_t i = 0; i < pmx.numVertices; i++)
 		{
-			std::uint32_t index = 0;
-
-			if (pmx.header.sizeOfIndices == 1)
-				index = *(std::uint8_t*)indices;
-			else if (pmx.header.sizeOfIndices == 2)
-				index = *(std::uint16_t*)indices;
-			else if (pmx.header.sizeOfIndices == 4)
-				index = *(std::uint32_t*)indices;
-			else
-				return false;
-
-			PMX_Vertex& v = pmx.vertices[index];
+			PMX_Vertex& v = pmx.vertices[i];
 
 			vertices.push_back(v.position);
 			normals.push_back(v.normal);
 			texcoords.push_back(v.coord);
-			faces.push_back(i);
 
-			if (pmx.bones.size() > 1)
+			if (pmx.numBones > 1)
 			{
 				VertexWeight weight;
 				weight.weight1 = v.weight.weight1;
@@ -620,15 +603,37 @@ PMXHandler::doLoad(StreamReader& stream, Model& model) noexcept
 			}
 		}
 
+		UintArray indices(pmx.numIndices);
+		ray::PMX_Index* indicesData = pmx.indices.data();
+
+		for (std::uint32_t i = 0; i < pmx.numIndices; i++, indicesData += pmx.header.sizeOfIndices)
+		{
+			if (pmx.header.sizeOfIndices == 1)
+				indices[i] = *(std::uint8_t*)indicesData;
+			else if (pmx.header.sizeOfIndices == 2)
+				indices[i] = *(std::uint16_t*)indicesData;
+			else if (pmx.header.sizeOfIndices == 4)
+				indices[i] = *(std::uint16_t*)indicesData;
+			else
+				return false;
+		}
+
+		ray::MeshSubsets subsets;
+		std::size_t startIndices = 0;
+
+		for (auto& it : pmx.materials)
+		{
+			subsets.push_back(ray::MeshSubset(0, startIndices, it.FaceCount, 0, 0));
+			startIndices += it.FaceCount;
+		}
+
 		MeshPropertyPtr mesh = std::make_shared<MeshProperty>();
 		mesh->setVertexArray(std::move(vertices));
 		mesh->setNormalArray(std::move(normals));
 		mesh->setTexcoordArray(std::move(texcoords));
 		mesh->setWeightArray(std::move(weights));
-		mesh->setFaceArray(std::move(faces));
-
-		if (!root)
-			root = mesh;
+		mesh->setIndicesArray(std::move(indices));
+		mesh->setMeshSubsets(std::move(subsets));
 
 		model.addMesh(std::move(mesh));
 	}

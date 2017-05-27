@@ -400,13 +400,21 @@ SkyboxComponent::_buildQuadRenderMesh(const MeshProperty& mesh) noexcept
 bool
 SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept
 {
-	MeshProperty sphere;
-	sphere.makeSphere(1, 16, 12);
 	_quadObject = std::make_shared<Geometry>();
 	_quadObject->setMaterial(technique);
 	_quadObject->setCastShadow(false);
 	_quadObject->setReceiveShadow(false);
-	return _buildRenderObject(_quadObject, sphere, _renderScreenQuadVbo, _renderScreenQuadIbo);
+	_quadObject->setVertexBuffer(_renderScreenQuadVbo, 0);
+	_quadObject->setIndexBuffer(_renderScreenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	_quadObject->setBoundingBox(mesh.getBoundingBox());
+	_quadObject->setOwnerListener(this);
+	_quadObject->setCastShadow(this->getCastShadow());
+	_quadObject->setReceiveShadow(this->getReceiveShadow());
+	_quadObject->setLayer(this->getGameObject()->getLayer());
+	_quadObject->setTransform(this->getGameObject()->getWorldTransform());
+	_quadObject->setGraphicsIndirect(std::make_shared<GraphicsIndirect>(mesh.getNumVertices(), mesh.getNumIndices()));
+
+	return true;
 }
 
 bool
@@ -429,7 +437,17 @@ SkyboxComponent::_buildSphereRenderObject(const MeshProperty& mesh, MaterialPtr 
 	_sphereObject->setMaterial(technique);
 	_sphereObject->setCastShadow(false);
 	_sphereObject->setReceiveShadow(false);
-	return _buildRenderObject(_sphereObject, mesh, _renderSphereVbo, _renderSphereIbo);
+	_sphereObject->setVertexBuffer(_renderSphereVbo, 0);
+	_sphereObject->setIndexBuffer(_renderSphereIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
+	_sphereObject->setBoundingBox(mesh.getBoundingBox());
+	_sphereObject->setOwnerListener(this);
+	_sphereObject->setCastShadow(this->getCastShadow());
+	_sphereObject->setReceiveShadow(this->getReceiveShadow());
+	_sphereObject->setLayer(this->getGameObject()->getLayer());
+	_sphereObject->setTransform(this->getGameObject()->getWorldTransform());
+	_sphereObject->setGraphicsIndirect(std::make_shared<GraphicsIndirect>(mesh.getNumVertices(), mesh.getNumIndices()));
+
+	return true;
 }
 
 bool

@@ -312,40 +312,14 @@ GraphicsDataPtr
 ResManager::createIndexBuffer(const MeshProperty& mesh) noexcept
 {
 	std::size_t numIndices = mesh.getNumIndices();
-	for (auto& it : mesh.getChildren())
-		numIndices += it->getNumIndices();
-
 	if (numIndices == 0)
 		return nullptr;
-
-	auto _buildIndiceBuffer = [&](const MeshProperty& mesh, std::size_t& offsetIndices, std::vector<std::uint8_t>& _ibo)
-	{
-		auto& array = mesh.getFaceArray();
-		if (!array.empty())
-		{
-			char* indices = (char*)_ibo.data() + offsetIndices;
-			std::memcpy(indices, array.data(), array.size() * sizeof(std::uint32_t));
-			offsetIndices += mesh.getFaceArray().size() * sizeof(std::uint32_t);
-		}
-	};
-
-	std::vector<std::uint8_t> faces(numIndices * sizeof(std::uint32_t));
-	std::size_t offsetIndices = 0;
-
-	_buildIndiceBuffer(mesh, offsetIndices, faces);
-
-	auto subMeshCount = mesh.getChildCount();
-	for (std::size_t i = 0; i < subMeshCount; i++)
-	{
-		auto submesh = mesh.getChildren()[i];
-		_buildIndiceBuffer(*submesh, offsetIndices, faces);
-	}
 
 	GraphicsDataDesc _ib;
 	_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 	_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
-	_ib.setStream((std::uint8_t*)faces.data());
-	_ib.setStreamSize(faces.size());
+	_ib.setStream((std::uint8_t*)mesh.getIndicesArray().data());
+	_ib.setStreamSize(numIndices * sizeof(std::uint32_t));
 
 	return RenderSystem::instance()->createGraphicsData(_ib);
 }
@@ -354,9 +328,6 @@ GraphicsDataPtr
 ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
 {
 	std::size_t numVertex = mesh.getNumVertices();
-	for (auto& it : mesh.getChildren())
-		numVertex += it->getNumVertices();
-
 	if (numVertex == 0)
 		return nullptr;
 
@@ -472,13 +443,6 @@ ResManager::createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) 
 	std::size_t offsetVertices = 0;
 
 	_buildVertexBuffer(mesh, offsetVertices, _data);
-
-	auto subMeshCount = mesh.getChildCount();
-	for (std::size_t i = 0; i < subMeshCount; i++)
-	{
-		auto submesh = mesh.getChildren()[i];
-		_buildVertexBuffer(*submesh, offsetVertices, _data);
-	}
 
 	GraphicsDataDesc _vb;
 	_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);

@@ -45,6 +45,7 @@ class EXPORT GraphicsIndirect final
 {
 public:
 	GraphicsIndirect() noexcept;
+	GraphicsIndirect(std::uint32_t numVertices, std::uint32_t numIndices, std::uint32_t numInstance = 1, std::uint32_t startVertice = 0, std::uint32_t startIndice = 0, std::uint32_t startInstance = 0) noexcept;
 
 	std::uint32_t startVertice;
 	std::uint32_t startIndice;
@@ -76,7 +77,8 @@ public:
 	void setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 	const GraphicsDataPtr& getIndexBuffer() const noexcept;
 
-	void setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept;
+	void setGraphicsIndirect(GraphicsIndirectPtr&& renderable) noexcept;
+	void setGraphicsIndirect(const GraphicsIndirectPtr& renderable) noexcept;
 	GraphicsIndirectPtr getGraphicsIndirect() noexcept;
 
 private:

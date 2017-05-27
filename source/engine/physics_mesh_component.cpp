@@ -109,7 +109,7 @@ PhysicsMeshComponent::_buildShapeMesh() noexcept
 		if (mesh->getNumVertices() > 0)
 		{
 			auto meshShape = std::make_shared<PhysicsShapeMesh>();
-			meshShape->setup(mesh->getVertexArray(), mesh->getFaceArray(), mesh->getBoundingBox().aabb());
+			meshShape->setup(mesh->getVertexArray(), mesh->getIndicesArray(), mesh->getBoundingBox().aabb());
 			_shape = meshShape;
 
 			this->needUpdate();

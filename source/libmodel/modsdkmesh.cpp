@@ -312,19 +312,19 @@ SDKMeshHandler::doLoad(StreamReader& stream, Model& model) noexcept
 
 			faces.push_back(buffer);
 		}
-
-		MeshPropertyPtr subset = std::make_shared<MeshProperty>();
-		subset->setVertexArray(std::move(vertices));
-		subset->setNormalArray(std::move(normals));
-		subset->setTexcoordArray(std::move(texcoord));
-		subset->setTangentArray(std::move(tangets));
-		subset->setFaceArray(std::move(faces));
-
-		if (root)
-			root->addChild(subset);
-		else
-			root = subset;
 	}
+
+	MeshSubsets subsets;
+	for (auto& mesh : meshes)
+		subsets.push_back(MeshSubset(0, ibs[mesh.IndexBuffer].DataOffset, ibs[mesh.IndexBuffer].NumIndices, 0, 0));
+
+	MeshPropertyPtr subset = std::make_shared<MeshProperty>();
+	subset->setVertexArray(std::move(vertices));
+	subset->setNormalArray(std::move(normals));
+	subset->setTexcoordArray(std::move(texcoord));
+	subset->setTangentArray(std::move(tangets));
+	subset->setIndicesArray(std::move(faces));
+	subset->setMeshSubsets(subsets);
 
 	model.addMesh(std::move(root));
 

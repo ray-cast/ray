@@ -500,12 +500,15 @@ MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFla
 {
 	_destroyRenderhObjects();
 
-	if (!_renderMeshVbo)
+	if (mesh.getNumVertices())
 	{
 		_renderMeshVbo = ResManager::instance()->createVertexBuffer(mesh, flags);
 		if (!_renderMeshVbo)
 			return false;
+	}
 
+	if (mesh.getNumIndices())
+	{
 		_renderMeshIbo = ResManager::instance()->createIndexBuffer(mesh);
 		if (!_renderMeshIbo)
 			return false;
@@ -514,66 +517,24 @@ MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFla
 	std::size_t startVertice = 0;
 	std::size_t startIndice = 0;
 
-	if (!_buildRenderObject(mesh, startVertice, startIndice))
-		return false;
-
-	auto& meshes = mesh.getChildren();
+	auto& meshes = mesh.getMeshSubsets();
 	for (auto& it : meshes)
 	{
-		if (!_buildRenderObject(*it, startVertice, startIndice))
-			return false;
+		auto renderObject = std::make_shared<Geometry>();
+		renderObject->setVertexBuffer(_renderMeshVbo, it.offsetVertices);
+		renderObject->setIndexBuffer(_renderMeshIbo, it.offsetIndices, GraphicsIndexType::GraphicsIndexTypeUInt32);
+		renderObject->setBoundingBox(mesh.getBoundingBox());
+		renderObject->setOwnerListener(this);
+		renderObject->setCastShadow(this->getCastShadow());
+		renderObject->setReceiveShadow(this->getReceiveShadow());
+		renderObject->setLayer(this->getGameObject()->getLayer());
+		renderObject->setTransform(this->getGameObject()->getWorldTransform());
+		renderObject->setGraphicsIndirect(std::make_shared<GraphicsIndirect>(it.indicesCount * 3, it.indicesCount, 1, it.startVertices, it.startIndices));
+
+		_renderObjects.push_back(renderObject);
 	};
 
 	_updateMaterials();
-	return true;
-}
-
-bool
-MeshRenderComponent::_buildRenderObject(const MeshProperty& mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept
-{
-	auto renderObject = std::make_shared<Geometry>();
-
-	if (this->_buildRenderObject(renderObject, mesh, _renderMeshVbo, _renderMeshIbo))
-	{
-		auto renderable = renderObject->getGraphicsIndirect();
-
-		renderable->startVertice = startVertice;
-		renderable->startIndice = startIndice;
-		renderable->numVertices = mesh.getNumVertices();
-		renderable->numIndices = mesh.getNumIndices();
-
-		startVertice += mesh.getNumVertices();
-		startIndice += mesh.getNumIndices();
-
-		_renderObjects.push_back(renderObject);
-		return true;
-	}
-
-	return false;
-}
-
-bool
-MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, const MeshProperty& mesh, GraphicsDataPtr vbo, GraphicsDataPtr ibo) noexcept
-{
-	renderObject->setVertexBuffer(vbo, 0);
-	renderObject->setIndexBuffer(ibo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
-
-	renderObject->setBoundingBox(mesh.getBoundingBox());
-	renderObject->setOwnerListener(this);
-
-	renderObject->setCastShadow(this->getCastShadow());
-	renderObject->setReceiveShadow(this->getReceiveShadow());
-
-	renderObject->setLayer(this->getGameObject()->getLayer());
-
-	renderObject->setTransform(this->getGameObject()->getWorldTransform());
-
-	auto renderable = std::make_shared<GraphicsIndirect>();
-	renderable->numVertices = mesh.getNumVertices();
-	renderable->numIndices = mesh.getNumIndices();
-
-	renderObject->setGraphicsIndirect(renderable);
-
 	return true;
 }
 

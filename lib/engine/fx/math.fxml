@@ -6,7 +6,10 @@
 		#define InvPIE 0.318309886142f
 		#define InvPIE8 0.039788735767f
 		#define InvPIE4 0.079577471535f
-		#define PIE 3.141592654f
+
+		#define PI 3.1415926535f
+		#define PI_2 (3.1415926535f * 2.0f)
+
 		#define MIDPOINT_8_BIT (127.0f / 255.0f)
 
 		float3 srgb2linear(float3 rgb)
@@ -50,123 +53,6 @@
 			float B = YCbCr.x + 1.772 * YCbCr.y;
 			return max(0, float3(R, G, B));
 		}
-
-		float3 ycbcrMulycbcr(float3 YCbCr1, float3 YCbCr2)
-		{
-			float Y = YCbCr1.r * YCbCr2.r;
-			float Cb = (YCbCr1.g + YCbCr2.g) * 0.5;
-			float Cr = (YCbCr1.b + YCbCr2.b) * 0.5;
-			return float3(Y, Cb, Cr);
-		}
-
-		float3 ycbcrAddycbcr(float3 YCbCr1, float3 YCbCr2)
-		{
-			float Y = (YCbCr1.r + YCbCr2.r);
-			float Cb = (YCbCr1.g + YCbCr2.g) * 0.5;
-			float Cr = (YCbCr1.b + YCbCr2.b) * 0.5;
-			return float3(Y, Cb, Cr);
-		}
-
-		float3 rgb2xyz(float3 rgb)
-		{
-			const float3x3 m = float3x3 (
-				0.5141364, 0.3238786, 0.16036376,
-				0.265068, 0.67023428, 0.06409157,
-				0.0241188, 0.1228178, 0.84442666);
-			return mul(m, rgb);
-		}
-
-		float3 xyz2rgb(float3 xyz)
-		{
-			const float3x3 m = float3x3(
-				2.5651, -1.1665, -0.3986,
-				-1.0217, 1.9777, 0.0439,
-				0.0753, -0.2543, 1.1892);
-			return mul(m, xyz);
-		}
-
-		float3 xyz2yxy(float3 xyz)
-		{
-			float w = xyz.r + xyz.g + xyz.b;
-			if (w > 0.0)
-			{
-				float3 Yxy;
-				Yxy.r = xyz.g;
-				Yxy.g = xyz.r / w;
-				Yxy.b = xyz.g / w;
-				return Yxy;
-			}
-			else
-			{
-				return float3(0.0, 0.0, 0.0);
-			}
-		}
-
-		float3 yxy2xyz(float3 Yxy)
-		{
-			float3 xyz;
-			xyz.g = Yxy.r;
-			if (Yxy.b > 0.0f)
-			{
-				xyz.r = Yxy.r * Yxy.g / Yxy.b;
-				xyz.b = Yxy.r * (1.0f - Yxy.g - Yxy.b) / Yxy.b;
-			}
-			else
-			{
-				xyz.rb = float2(0.0, 0.0);
-			}
-			return xyz;
-		}
-
-        float3 rgb2hsv(float3 rgb) 
-        {
-            float minValue = min(min(rgb.r, rgb.g), rgb.b);
-            float maxValue = max(max(rgb.r, rgb.g), rgb.b);
-            float d = maxValue - minValue;
-
-            float3 hsv = 0.0;
-            hsv.b = maxValue;
-            if (d != 0) 
-            {
-                hsv.g = d / maxValue;
-
-                float3 delrgb = (((maxValue.xxx - rgb) / 6.0) + d / 2.0) / d;
-                if      (maxValue == rgb.r) { hsv.r = delrgb.b - delrgb.g; }
-                else if (maxValue == rgb.g) { hsv.r = 1.0 / 3.0 + delrgb.r - delrgb.b; }
-                else if (maxValue == rgb.b) { hsv.r = 2.0 / 3.0 + delrgb.g - delrgb.r; }
-
-                if (hsv.r < 0.0) { hsv.r += 1.0; }
-                if (hsv.r > 1.0) { hsv.r -= 1.0; }
-            }
-            return hsv;
-        }
-
-
-        float3 hsv2rgb(float3 hsv)
-        {
-            float h = hsv.r;
-            float s = hsv.g;
-            float v = hsv.b;
-
-            float3 rgb = v;
-            if (hsv.g != 0.0)
-            {
-                float h_i = floor(6 * h);
-                float f = 6 * h - h_i;
-
-                float p = v * (1.0f - s);
-                float q = v * (1.0f - f * s);
-                float t = v * (1.0f - (1.0f - f) * s);
-
-                if (h_i == 0) { rgb = float3(v, t, p); }
-                else if (h_i == 1) { rgb = float3(q, v, p); }
-                else if (h_i == 2) { rgb = float3(p, v, t); }
-                else if (h_i == 3) { rgb = float3(p, q, v); }
-                else if (h_i == 4) { rgb = float3(t, p, v); }
-                else { rgb = float3(v, p, q); }
-            }
-            return rgb;
-        }
 
 		float luminance(float3 rgb)
 		{
@@ -353,12 +239,32 @@
             return float3x3(normalize(T), normalize(B), N);
         }
 
-        float2 computeSphereCoord(float3 normal)
+        float2 ComputeSphereCoord(float3 normal)
         {
-            const float invPI = 1.0f / 3.1415926;
-            float2 coord = float2(atan2(normal.x, normal.z) * invPI * 0.5f + 0.5f, fastAcos(normal.y) * invPI);
+			normal = clamp(normal, -1.0, 1.0);
+			float2 coord = float2(1 - (atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
             return coord;
         }
+        
+		float3 ComputeSphereNormal(float2 coord, float phiStart = 0.0, float phiLength = PI_2, float thetaStart = 0, float thetaLength = PI)
+		{
+			float3 normal;
+			normal.x = -sin(thetaStart + coord.y * thetaLength) * sin(phiStart + coord.x * phiLength);
+			normal.y =  cos(thetaStart + coord.y * thetaLength);
+			normal.z = -sin(thetaStart + coord.y * thetaLength) * cos(phiStart + coord.x * phiLength);
+			return normal;
+		}
+		
+		float GetJitterOffset(float2 uv)
+		{
+			return dot(frac(uv * 0.25), float2(0.25, 0.25));
+		}
+		
+		float3 DecodeRGBT(float4 rgbt, float range = 1024)
+		{
+			rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
+			return rgbt.rgb * rgbt.a;
+		}
     	]]>
     </shader>
  </effect>

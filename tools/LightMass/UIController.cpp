@@ -484,6 +484,11 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 
 			ray::Materials materials(model->numMaterials);
 
+			auto ShininessToSmoothness = [](float spec)
+			{
+				return 1.0f - pow(std::max(0.0f, 2.0f / (spec + 2)), 0.25f);
+			};
+
 			for (std::size_t i = 0; i < model->numMaterials; i++)
 			{
 				auto material = materialTemp->clone();
@@ -492,7 +497,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 				material->getParameter("diffuse")->uniform3f(ray::math::srgb2linear(model->materials[i].Diffuse));
 				material->getParameter("metalness")->uniform1f(0.0);
 				material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
-				material->getParameter("smoothness")->uniform1f(model->materials[i].Shininess / 255);
+				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(model->materials[i].Shininess));
 
 				std::int16_t textureID = 0;
 				if (model->header.sizeOfTexture == 1)
@@ -500,7 +505,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 				else
 					textureID = (model->materials[i].TextureIndex >= 65535) ? -1 : model->materials[i].TextureIndex;
 
-				if (textureID > 0)
+				if (textureID >= 0)
 				{
 					char name[MAX_PATH];
 					::wcstombs(name, model->textures[textureID].name, model->textures[textureID].length);

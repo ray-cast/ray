@@ -58,7 +58,7 @@
 
             float s = lv - nl * nv;
             float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
-            float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PIE)) * sigma2);
+            float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PI)) * sigma2);
             float B = sigma2 * A;
 
             return nl * (A + B * (s / t));

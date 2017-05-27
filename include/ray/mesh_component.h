@@ -47,12 +47,12 @@ class EXPORT MeshComponent final : public GameComponent
 	__DeclareSubClass(MeshComponent, GameComponent)
 public:
 	MeshComponent() noexcept;
-	MeshComponent(MeshPropertyPtr sharedMesh, bool shared = true) noexcept;
+	MeshComponent(const MeshPropertyPtr& sharedMesh, bool shared = true) noexcept;
 	MeshComponent(const archivebuf& reader) noexcept;
 	~MeshComponent() noexcept;
 
-	void setMesh(MeshPropertyPtr& mesh) noexcept;
-	void setSharedMesh(MeshPropertyPtr& mesh) noexcept;
+	void setMesh(const MeshPropertyPtr& mesh) noexcept;
+	void setSharedMesh(const MeshPropertyPtr& mesh) noexcept;
 
 	void setMesh(MeshPropertyPtr&& mesh) noexcept;
 	void setSharedMesh(MeshPropertyPtr&& mesh) noexcept;
@@ -60,13 +60,13 @@ public:
 	MeshPropertyPtr getMesh() const noexcept;
 	MeshPropertyPtr getSharedMesh() const noexcept;
 
+	void addMeshChangeListener(std::function<void()>* func) noexcept;
+	void removeMeshChangeListener(std::function<void()>* func) noexcept;
+
 	std::size_t getNumVertices() const noexcept;
 	std::size_t getNumIndices() const noexcept;
 
 	const BoundingBox& getBoundingBox() const noexcept;
-
-	void addMeshChangeListener(std::function<void()>* func) noexcept;
-	void removeMeshChangeListener(std::function<void()>* func) noexcept;
 
 	void needUpdate() noexcept;
 
@@ -76,17 +76,19 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 private:
-	void _onSetMesh(MeshPropertyPtr& mesh) noexcept;
-
-private:
 	void onActivate() noexcept;
 	void onDeactivate() noexcept;
+
+	void onMeshChangeBefore() noexcept;
+	void onMeshChangeAfter() noexcept;
 
 private:
 	MeshComponent(const MeshComponent&) noexcept = delete;
 	MeshComponent& operator=(const MeshComponent&) noexcept = delete;
 
 private:
+	bool _needUpdate;
+
 	MeshPropertyPtr _mesh;
 	MeshPropertyPtr _sharedMesh;
 

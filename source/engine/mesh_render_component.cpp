@@ -321,12 +321,7 @@ MeshRenderComponent::onActivate() except
 		return;
 
 	if (!this->hasMaterial() && !this->hasSharedMaterial())
-	{
-		if (!_material.empty())
-			_buildMaterials(_material);
-		else
-			_buildDefaultMaterials("sys:fx/opacity.fxml");
-	}
+		return;
 
 	_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
 	_attacRenderObjects();
@@ -358,12 +353,7 @@ MeshRenderComponent::onMeshChange() except
 		}
 
 		if (!this->hasMaterial() && !this->hasSharedMaterial())
-		{
-			if (!_material.empty())
-				_buildMaterials(_material);
-			else
-				_buildDefaultMaterials("sys:fx/opacity_skinning0.fxml");
-		}
+			return;
 
 		_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
 		_attacRenderObjects();
@@ -430,69 +420,6 @@ MeshRenderComponent::_buildMaterials(const util::string& filename) noexcept
 	}
 
 	return false;
-}
-
-bool
-MeshRenderComponent::_buildDefaultMaterials(const util::string& filename) noexcept
-{
-	/*assert(!filename.empty());
-
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (!component)
-		return false;
-
-	auto model = ResManager::instance()->find<Model>(component->getName());
-	if (!model)
-		return false;
-
-	auto& materials = model->getMaterialsList();
-	if (materials.empty())
-		return false;
-
-	for (auto& material : materials)
-	{
-		float3 specular(0.5f);
-		float3 diffuseColor(1.0f);
-		float4 quality(0.0f);
-		float shininess = 0.0;
-		float opacity = 1.0;
-		util::string diffuseTexture;
-
-		material->get(MATKEY_OPACITY, opacity);
-		material->get(MATKEY_SHININESS, shininess);
-		material->get(MATKEY_COLOR_DIFFUSE, diffuseColor);
-		material->get(MATKEY_COLOR_SPECULAR, specular);
-		material->get(MATKEY_TEXTURE_DIFFUSE(0), diffuseTexture);
-
-		MaterialPtr effect;
-		effect = RenderSystem::instance()->createMaterial("sys:fx/opacity_skinning0.fxml");
-		if (!effect)
-			_sharedMaterials.push_back(nullptr);
-		else
-		{
-			auto luminance = [](const float3& rgb)
-			{
-				const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
-				return math::dot(rgb, lumfact);
-			};
-
-			auto texture = ResManager::instance()->createTexture(model->getDirectory() + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D);
-			if (texture)
-			{
-				quality.x = 1.0f;
-				effect->getParameter("texDiffuse")->uniformTexture(texture);
-			}
-
-			effect->getParameter("quality")->uniform4f(quality);
-			effect->getParameter("diffuse")->uniform3f(diffuseColor);
-			effect->getParameter("specular")->uniform1f(luminance(specular));
-			effect->getParameter("shininess")->uniform1f(shininess);
-
-			_sharedMaterials.push_back(effect);
-		}
-	}*/
-
-	return true;
 }
 
 bool

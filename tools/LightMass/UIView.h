@@ -71,8 +71,8 @@ private:
 	void showLightMass() noexcept;
 	void showAboutWindow() noexcept;
 
-	void showErrorMessage() noexcept;
-	void showErrorPopupMessage(const ray::util::string& message, std::size_t hash) noexcept;
+	void showMessage() noexcept;
+	void showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept;
 
 	void showProcessMessage() noexcept;
 
@@ -109,9 +109,10 @@ private:
 
 	std::string _pathProject;
 
-	std::size_t _errorHash;
-	std::string _errorMessage;
-	std::map<std::size_t, bool> _showError;
+	std::size_t _messageHash;
+	std::string _messageTitle;
+	std::string _messageText;
+	std::map<std::size_t, bool> _showMessage;
 	std::vector<const char*> _langs;
 
 	ray::float4 _clearColor;

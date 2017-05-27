@@ -80,7 +80,8 @@ const char* en_lang[] = {
 	"Interpolation Threshold:",
 	" Start Baking ",
 	"Unsupported Model",
-	"Process"
+	"Process",
+	"Succeeded"
 };
 
 const char* cn_lang[] = {
@@ -127,7 +128,8 @@ const char* cn_lang[] = {
 	"插值阈值",
 	" 开始烘培 ",
 	"不支持的模型",
-	"处理中"
+	"处理中",
+	"保存成功"
 };
 
 std::vector<std::string> cn_lang_utf8;

@@ -125,7 +125,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 	this->showStyleEditor();
 	this->showLightMass();
 	this->showAboutWindow();
-	this->showErrorMessage();
+	this->showMessage();
 	this->showProcessMessage();
 }
 
@@ -257,7 +257,7 @@ GuiViewComponent::showProjectOpenBrowse() noexcept
 		if (!_onProjectOpen(filepath, error))
 		{
 			if (!error.empty())
-				this->showErrorPopupMessage(error, std::hash<const char*>{}("showProjectOpenBrowse"));
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showProjectOpenBrowse"));
 		}
 	}
 }
@@ -274,7 +274,7 @@ GuiViewComponent::showProjectSaveBrowse() noexcept
 		if (!_onProjectSave(_pathProject.c_str(), error))
 		{
 			if (!error.empty())
-				this->showErrorPopupMessage(error, std::hash<const char*>{}("showProjectSaveBrowse"));
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showProjectSaveBrowse"));
 		}
 	}
 }
@@ -296,7 +296,7 @@ GuiViewComponent::showProjectSaveAsBrowse() noexcept
 		else
 		{
 			if (!error.empty())
-				this->showErrorPopupMessage(error, std::hash<const char*>{}("showProjectSaveAsBrowse"));
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showProjectSaveAsBrowse"));
 		}
 	}
 }
@@ -316,7 +316,7 @@ GuiViewComponent::showModelImportBrowse() noexcept
 		if (!_onModelImport(filepath, error))
 		{
 			if (!error.empty())
-				this->showErrorPopupMessage(_langs[UILang::NonReadableFile], std::hash<const char*>{}("showModelImportBrowse"));
+				this->showPopupMessage(_langs[UILang::Error], _langs[UILang::NonReadableFile], std::hash<const char*>{}("showModelImportBrowse"));
 		}
 	}
 }
@@ -343,32 +343,38 @@ GuiViewComponent::showModelExportBrowse() noexcept
 	if (!_onModelSaveAs(filepath, error))
 	{
 		if (!error.empty())
-			this->showErrorPopupMessage(error, std::hash<const char*>{}("showModelExportBrowse"));
+			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showModelExportBrowse"));
+	}
+	else
+	{
+		this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}("showModelExportBrowse"));
 	}
 }
 
 void
-GuiViewComponent::showErrorPopupMessage(const ray::util::string& message, std::size_t hash) noexcept
+GuiViewComponent::showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept
 {
 	if (!_showErrorMessageFirst)
 	{
-		_errorHash = hash;
-		_errorMessage = message;
+		_messageHash = hash;
+		_messageText = message;
+		_messageTitle = title;
+
 		_showErrorMessageFirst = true;
 	}
 }
 
 void
-GuiViewComponent::showErrorMessage() noexcept
+GuiViewComponent::showMessage() noexcept
 {
 	if (_showErrorMessageFirst)
 	{
 		_showErrorMessageFirst = false;
 
-		if (_showError[_errorHash])
+		if (_showMessage[_messageHash])
 			return;
 
-		ray::Gui::openPopup(_langs[UILang::Error]);
+		ray::Gui::openPopup(_messageTitle.c_str());
 
 		_showErrorMessage = true;
 	}
@@ -376,19 +382,23 @@ GuiViewComponent::showErrorMessage() noexcept
 	if (!_showErrorMessage)
 		return;
 
-	if (ray::Gui::beginPopupModal(_langs[UILang::Error], 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
+	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
 	{
-		ray::Gui::text(_errorMessage.c_str());
+		ray::Gui::text(_messageText.c_str());
 		ray::Gui::separator();
 
 		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(0, 0));
-		ray::Gui::checkbox(_langs[UILang::NoShowAgain], &_showError[_errorHash]);
+		ray::Gui::checkbox(_langs[UILang::NoShowAgain], &_showMessage[_messageHash]);
 		ray::Gui::popStyleVar();
 
 		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
 		ray::Gui::sameLine();
 
 		if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+
+		if (ray::Gui::isKeyDown(ray::InputKey::Enter) || ray::Gui::isKeyDown(ray::InputKey::KP_Enter))
+			ray::Gui::closeCurrentPopup();
+
 		ray::Gui::endPopup();
 	}
 }
@@ -641,7 +651,7 @@ GuiViewComponent::startUVMapper() noexcept
 	{
 		if (!this->_onUVMapperWillStart(_setting))
 		{
-			this->showErrorPopupMessage(_langs[UILang::UnsupportModel], std::hash<const char*>{}("UnsupportModel"));
+			this->showPopupMessage(_langs[UILang::Error], _langs[UILang::UnsupportModel], std::hash<const char*>{}("UnsupportModel"));
 			return;
 		}
 	}
@@ -652,7 +662,7 @@ GuiViewComponent::startUVMapper() noexcept
 		{
 			if (!this->_onUVMapperStart(_setting))
 			{
-				this->showErrorPopupMessage(_langs[UILang::UnsupportModel], std::hash<const char*>{}("UnsupportModel"));
+				this->showPopupMessage(_langs[UILang::Error], _langs[UILang::UnsupportModel], std::hash<const char*>{}("UnsupportModel"));
 				return;
 			}
 		}

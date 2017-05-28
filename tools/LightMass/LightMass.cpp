@@ -38,8 +38,6 @@
 #include "LightMassAmbientOcclusion.h"
 #include "LightMassGlobalIllumination.h"
 
-#include <GL\glew.h>
-
 _NAME_BEGIN
 
 LightMass::LightMass() noexcept
@@ -64,11 +62,44 @@ LightMass::open() noexcept
 	if (_initialize)
 		return true;
 
-	if (::glewInit() != GLEW_OK)
+	GraphicsDeviceDesc deviceDesc;
+	deviceDesc.setDeviceType(ray::GraphicsDeviceType::GraphicsDeviceTypeOpenGL);
+	_graphicsDevice = GraphicsSystem::instance()->createDevice(deviceDesc);
+	if (!_graphicsDevice)
 	{
 		auto listener = this->getLightMassListener();
 		if (listener)
-			listener->onMessage("Could not initialize with OpenGL.");
+			listener->onMessage("Could not initialize with GraphicsDevice.");
+
+		return false;
+	}
+
+	ray::GraphicsSwapchainDesc swapchainDesc;
+	swapchainDesc.setWindHandle(nullptr);
+	swapchainDesc.setWidth(1);
+	swapchainDesc.setHeight(1);
+	swapchainDesc.setSwapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree);
+	swapchainDesc.setImageNums(2);
+	swapchainDesc.setColorFormat(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
+	swapchainDesc.setDepthStencilFormat(GraphicsFormat::GraphicsFormatD24UNorm_S8UInt);
+	_graphicsSwapchain = _graphicsDevice->createSwapchain(swapchainDesc);
+	if (!_graphicsSwapchain)
+	{
+		auto listener = this->getLightMassListener();
+		if (listener)
+			listener->onMessage("Could not initialize with GraphicsSwapchain.");
+
+		return false;
+	}
+
+	ray::GraphicsContextDesc contextDesc;
+	contextDesc.setSwapchain(_graphicsSwapchain);
+	_graphicsContext = _graphicsDevice->createDeviceContext(contextDesc);
+	if (!_graphicsContext)
+	{
+		auto listener = this->getLightMassListener();
+		if (listener)
+			listener->onMessage("Could not initialize with GraphicsContext.");
 
 		return false;
 	}

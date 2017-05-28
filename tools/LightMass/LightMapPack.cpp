@@ -40,9 +40,6 @@
 #include <UVAtlas/UVAtlas.h>
 #include <DirectXMesh/DirectXMesh.h>
 
-#define TRIANGLEPACKER_IMPLEMENTATION
-#include <trianglepacker.h>
-
 _NAME_BEGIN
 
 LightMapPack::LightMapPack() noexcept

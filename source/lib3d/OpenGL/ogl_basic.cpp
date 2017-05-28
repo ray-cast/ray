@@ -401,19 +401,18 @@ PFNWGLGETPIXELFORMATATTRIBIVARBPROC __wglGetPixelFormatAttribivARB;
 #	define GetProcAddress dlsym
 #endif
 
-bool initGLExtention = false;
-
 bool initGLExtenstion() noexcept
 {
+	static thread_local bool initGLExtention = false;
 	if (initGLExtention)
 		return true;
 
-	if (glewInit() != GLEW_OK)
+	if (::glewInit() != GLEW_OK)
 	{
 		GL_PLATFORM_LOG("glewInit() failed.");
 		return false;
 	}
-	
+
 #if defined(GLEW_MX)
 #	if	defined(_BUILD_PLATFORM_WINDOWS)
 	if (wglewInit() != GLEW_OK)
@@ -444,7 +443,7 @@ bool initGLExtenstion() noexcept
 	{
 		GL_PLATFORM_LOG("OpenGL dynamic library is not found.");
 		return false;
-	}
+}
 #endif
 
 #if defined(_BUILD_OPENGL_ES)

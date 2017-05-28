@@ -45,16 +45,13 @@ class EXPORT GraphicsDeviceDesc final
 {
 public:
 	GraphicsDeviceDesc() noexcept;
+	GraphicsDeviceDesc(GraphicsDeviceType type) noexcept;
 	~GraphicsDeviceDesc() noexcept;
-
-	void setWindHandle(WindHandle hwnd) noexcept;
-	WindHandle getWindHandle() const noexcept;
 
 	void setDeviceType(GraphicsDeviceType type) noexcept;
 	GraphicsDeviceType getDeviceType() const noexcept;
 
 private:
-	WindHandle _hwnd;
 	GraphicsDeviceType _deviceType;
 };
 

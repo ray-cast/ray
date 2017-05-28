@@ -42,25 +42,17 @@ __ImplementSubInterface(GraphicsDevice, rtti::Interface, "GraphicsDevice")
 __ImplementSubInterface(GraphicsDevice2, GraphicsDevice, "GraphicsDevice2")
 
 GraphicsDeviceDesc::GraphicsDeviceDesc() noexcept
-	: _hwnd(nullptr)
-	, _deviceType(GraphicsDeviceType::GraphicsDeviceTypeUndefined)
+	: _deviceType(GraphicsDeviceType::GraphicsDeviceTypeUndefined)
+{
+}
+
+GraphicsDeviceDesc::GraphicsDeviceDesc(GraphicsDeviceType type) noexcept
+	: _deviceType(type)
 {
 }
 
 GraphicsDeviceDesc::~GraphicsDeviceDesc() noexcept
 {
-}
-
-void 
-GraphicsDeviceDesc::setWindHandle(WindHandle hwnd) noexcept
-{
-	_hwnd = hwnd;
-}
-
-WindHandle 
-GraphicsDeviceDesc::getWindHandle() const noexcept
-{
-	return _hwnd;
 }
 
 void

@@ -50,6 +50,9 @@ public:
 	bool setup() noexcept;
 	void close() noexcept;
 
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
 	const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept;
 
 private:
@@ -119,6 +122,7 @@ private:
 	OGLDeviceProperty& operator=(const OGLDeviceProperty&) = delete;
 
 private:
+	GraphicsDeviceWeakPtr _device;
 	GraphicsDeviceProperties _deviceProperties;
 };
 

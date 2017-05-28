@@ -37,7 +37,7 @@
 #ifndef _H_GRAPHICS_SYSTEM_H_
 #define _H_GRAPHICS_SYSTEM_H_
 
-#include <ray/graphics_child.h>
+#include <ray/graphics_types.h>
 
 _NAME_BEGIN
 

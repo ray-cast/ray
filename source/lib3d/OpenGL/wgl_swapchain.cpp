@@ -41,7 +41,7 @@ _NAME_BEGIN
 
 __ImplementSubClass(WGLSwapchain, GraphicsSwapchain, "WGLSwapchain")
 
-WGLSwapchain* WGLSwapchain::_swapchain = nullptr;
+thread_local WGLSwapchain* WGLSwapchain::_swapchain = nullptr;
 
 WGLSwapchain::WGLSwapchain() noexcept
 	: _hdc(nullptr)
@@ -49,6 +49,8 @@ WGLSwapchain::WGLSwapchain() noexcept
 	, _isActive(false)
 	, _major(3)
 	, _minor(3)
+	, _hwnd(nullptr)
+	, _hinstance(nullptr)
 {
 }
 
@@ -58,6 +60,8 @@ WGLSwapchain::WGLSwapchain(GLuint major, GLuint minor) noexcept
 	, _isActive(false)
 	, _major(major)
 	, _minor(minor)
+	, _hwnd(nullptr)
+	, _hinstance(nullptr)
 {
 }
 
@@ -69,8 +73,6 @@ WGLSwapchain::~WGLSwapchain() noexcept
 bool
 WGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
-	assert(swapchainDesc.getWindHandle());
-
 	if (!initSurface(swapchainDesc))
 		return false;
 
@@ -89,16 +91,28 @@ WGLSwapchain::close() noexcept
 {
 	this->setActive(false);
 
-	if (_hdc)
-	{
-		::ReleaseDC((HWND)_swapchainDesc.getWindHandle(), _hdc);
-		_hdc = nullptr;
-	}
-
 	if (_context)
 	{
 		::wglDeleteContext(_context);
 		_context = nullptr;
+	}
+
+	if (_hdc)
+	{
+		::ReleaseDC(_hwnd ? _hwnd : (HWND)_swapchainDesc.getWindHandle(), _hdc);
+		_hdc = nullptr;
+	}
+
+	if (_hwnd)
+	{
+		::DestroyWindow(_hwnd);
+		_hwnd = nullptr;
+	}
+
+	if (_hinstance)
+	{
+		::UnregisterClass("OGL", GetModuleHandle(NULL));
+		_hinstance = nullptr;
 	}
 }
 
@@ -171,6 +185,18 @@ WGLSwapchain::getSwapInterval() const noexcept
 }
 
 void
+WGLSwapchain::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+WGLSwapchain::getDevice() noexcept
+{
+	return _device.lock();
+}
+
+void
 WGLSwapchain::present() noexcept
 {
 	SwapBuffers(_hdc);
@@ -179,18 +205,46 @@ WGLSwapchain::present() noexcept
 bool
 WGLSwapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
 {
-	if (!IsWindow((HWND)swapchainDesc.getWindHandle()))
+	if (swapchainDesc.getWindHandle())
 	{
-		GL_PLATFORM_LOG("Invlid HWND");
-		return false;
-	}
+		if (!IsWindow((HWND)swapchainDesc.getWindHandle()))
+		{
+			GL_PLATFORM_LOG("Invlid HWND");
+			return false;
+		}
 
-	HWND hwnd = (HWND)swapchainDesc.getWindHandle();
-	_hdc = ::GetDC(hwnd);
-	if (!_hdc)
+		HWND hwnd = (HWND)swapchainDesc.getWindHandle();
+		_hdc = ::GetDC(hwnd);
+		if (!_hdc)
+		{
+			GL_PLATFORM_LOG("GetDC() fail");
+			return false;
+		}
+	}
+	else
 	{
-		GL_PLATFORM_LOG("GetDC() fail");
-		return false;
+		WNDCLASSEXA wc;
+		std::memset(&wc, 0, sizeof(wc));
+		wc.cbSize = sizeof(wc);
+		wc.hInstance = _hinstance = ::GetModuleHandle(NULL);
+		wc.lpfnWndProc = ::DefWindowProc;
+		wc.lpszClassName = "OGL";
+		if (!::RegisterClassEx(&wc))
+			return false;
+
+		_hwnd = CreateWindowEx(WS_EX_APPWINDOW, "OGL", "OGL", 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, wc.hInstance, NULL);
+		if (!_hwnd)
+		{
+			GL_PLATFORM_LOG("CreateWindowEx() fail");
+			return false;
+		}
+
+		_hdc = ::GetDC(_hwnd);
+		if (!_hdc)
+		{
+			GL_PLATFORM_LOG("GetDC() fail");
+			return false;
+		}
 	}
 
 	return true;
@@ -217,14 +271,13 @@ WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexce
 	pfd.dwVisibleMask = 0;
 	pfd.dwDamageMask = 0;
 
-	if (swapchainDesc.getImageNums() != 1 && swapchainDesc.getImageNums() != 2)
+	if (swapchainDesc.getImageNums() == 2)
+		pfd.dwFlags |= PFD_DOUBLEBUFFER;
+	else if (swapchainDesc.getImageNums() != 1)
 	{
 		GL_PLATFORM_LOG("Invalid image number");
 		return false;
 	}
-
-	if (swapchainDesc.getImageNums() == 2)
-		pfd.dwFlags |= PFD_DOUBLEBUFFER;
 
 	auto colorFormat = swapchainDesc.getColorFormat();
 	if (colorFormat == GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
@@ -326,55 +379,64 @@ WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexce
 bool
 WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
-	int index = 0;
-	int mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
-	int flags = 0;
-
-#if _DEBUG
-	flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
-#endif
-
-	int major = 0;
-	int minor = 0;
-
-	auto deviceType = this->getDevice()->getGraphicsDeviceDesc().getDeviceType();
-	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
-	{
-		major = 4;
-		minor = 5;
-	}
+	if (!__wglCreateContextAttribsARB)
+		_context = wglCreateContext(_hdc);
 	else
 	{
-		major = 3;
-		minor = 3;
+		int index = 0;
+		int mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+		int flags = 0;
+
+#if _DEBUG
+		flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
+#endif
+
+		int major = 0;
+		int minor = 0;
+
+		auto deviceType = this->getDevice()->getGraphicsDeviceDesc().getDeviceType();
+		if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+		{
+			major = 4;
+			minor = 5;
+		}
+		else
+		{
+			major = 3;
+			minor = 3;
+		}
+
+		int attribs[40];
+		attribs[index++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
+		attribs[index++] = major;
+
+		attribs[index++] = WGL_CONTEXT_MINOR_VERSION_ARB;
+		attribs[index++] = minor;
+
+		attribs[index++] = WGL_CONTEXT_FLAGS_ARB;
+		attribs[index++] = flags;
+
+		attribs[index++] = WGL_CONTEXT_PROFILE_MASK_ARB;
+		attribs[index++] = mask;
+
+		attribs[index] = 0;
+		attribs[index] = 0;
+
+		_context = __wglCreateContextAttribsARB(_hdc, nullptr, attribs);
 	}
 
-	int attribs[40];
-	attribs[index++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
-	attribs[index++] = major;
-
-	attribs[index++] = WGL_CONTEXT_MINOR_VERSION_ARB;
-	attribs[index++] = minor;
-
-	attribs[index++] = WGL_CONTEXT_FLAGS_ARB;
-	attribs[index++] = flags;
-
-	attribs[index++] = WGL_CONTEXT_PROFILE_MASK_ARB;
-	attribs[index++] = mask;
-
-	attribs[index] = 0;
-	attribs[index] = 0;
-
-	_context = __wglCreateContextAttribsARB(_hdc, nullptr, attribs);
 	if (!_context)
 	{
 		GL_PLATFORM_LOG("wglCreateContextAttribs fail");
 		return false;
 	}
 
-	this->setActive(true);
-	this->setSwapInterval(swapchainDesc.getSwapInterval());
-	this->setActive(false);
+	if (__wglCreateContextAttribsARB)
+	{
+		this->setActive(true);
+		this->setSwapInterval(swapchainDesc.getSwapInterval());
+		this->setActive(false);
+	}
 
 	return true;
 }
@@ -383,18 +445,6 @@ const GraphicsSwapchainDesc&
 WGLSwapchain::getGraphicsSwapchainDesc() const noexcept
 {
 	return _swapchainDesc;
-}
-
-void
-WGLSwapchain::setDevice(GraphicsDevicePtr device) noexcept
-{
-	_device = device;
-}
-
-GraphicsDevicePtr
-WGLSwapchain::getDevice() noexcept
-{
-	return _device.lock();
 }
 
 _NAME_END

@@ -72,6 +72,7 @@ bool
 OGLDevice::setup(const GraphicsDeviceDesc& desc) noexcept
 {
 	auto deviceProperty = std::make_shared<OGLDeviceProperty>();
+	deviceProperty->setDevice(this->downcast_pointer<OGLDevice>());
 	if (!deviceProperty->setup())
 		return false;
 
@@ -304,7 +305,7 @@ OGLDevice::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
 	return nullptr;
 }
 
-void 
+void
 OGLDevice::enableDebugControl(bool enable) noexcept
 {
 	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)

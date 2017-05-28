@@ -36,9 +36,13 @@
 // +----------------------------------------------------------------------
 #include "ogl_device_property.h"
 
+#if defined(_BUILD_PLATFORM_WINDOWS)
+#include "wgl_swapchain.h"
+#endif
+
 _NAME_BEGIN
 
-extern "C" 
+extern "C"
 {
 	EXPORT DWORD NvOptimusEnablement = 0x00000001;
 }
@@ -54,36 +58,60 @@ OGLDeviceProperty::~OGLDeviceProperty() noexcept
 bool
 OGLDeviceProperty::setup() noexcept
 {
-	CreateParam param;
+	assert(_device.lock());
 
-	if (!setupGLEnvironment(param))
+	GraphicsSwapchainDesc swapchainDesc;
+	swapchainDesc.setWindHandle(nullptr);
+	swapchainDesc.setWidth(1);
+	swapchainDesc.setHeight(1);
+	swapchainDesc.setSwapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree);
+	swapchainDesc.setImageNums(2);
+	swapchainDesc.setColorFormat(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
+	swapchainDesc.setDepthStencilFormat(GraphicsFormat::GraphicsFormatD24UNorm_S8UInt);
+
+#if defined(_BUILD_PLATFORM_WINDOWS)
+	WGLSwapchain swapchain;
+	swapchain.setDevice(this->getDevice());
+
+	if (!swapchain.setup(swapchainDesc))
 	{
-		GL_PLATFORM_LOG("setupGLEnvironment fail");
-		closeGLEnvironment(param);
+		GL_PLATFORM_LOG("init WGLSwapchain fail");
 		return false;
 	}
+
+	swapchain.setActive(true);
+#endif
 
 	if (!initGLExtenstion())
 	{
 		GL_PLATFORM_LOG("initGLExtenstion fail");
-		closeGLEnvironment(param);
 		return false;
 	}
 
 	if (!initDeviceProperties())
 	{
 		GL_PLATFORM_LOG("initDeviceProperties fail");
-		closeGLEnvironment(param);
 		return false;
 	}
 
-	closeGLEnvironment(param);
 	return true;
 }
 
 void
 OGLDeviceProperty::close() noexcept
 {
+}
+
+void
+OGLDeviceProperty::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLDeviceProperty::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 #if defined(_BUILD_PLATFORM_WINDOWS)
@@ -174,7 +202,7 @@ OGLDeviceProperty::closeGLEnvironment(const CreateParam& param) noexcept
 	}
 }
 #elif defined(_BUILD_PLATFORM_LINUX)
-bool 
+bool
 OGLDeviceProperty::setupGLEnvironment(CreateParam& param) noexcept
 {
 	param.dpy = XOpenDisplay(NULL);
@@ -229,7 +257,7 @@ OGLDeviceProperty::setupGLEnvironment(CreateParam& param) noexcept
 	return true;
 }
 
-void 
+void
 OGLDeviceProperty::closeGLEnvironment(const CreateParam& param) noexcept
 {
 	if (param.dpy && param.ctx) glXDestroyContext(param.dpy, param.ctx);
@@ -307,7 +335,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	this->initVertexSupports();
 	this->initTextureDimSupports();
 	this->initShaderSupports();
-	
+
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&_deviceProperties.maxImageDimension1D);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&_deviceProperties.maxImageDimension2D);
 	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, (GLint*)&_deviceProperties.maxImageDimension3D);
@@ -401,12 +429,14 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetFloatv(GL_VIEWPORT_BOUNDS_RANGE, &_deviceProperties.minViewportBoundsRange);
 	glGetIntegerv(GL_VIEWPORT_SUBPIXEL_BITS, (GLint*)&_deviceProperties.viewportSubPixelBits);
 	glGetIntegerv(GL_MIN_MAP_BUFFER_ALIGNMENT, (GLint*)&_deviceProperties.minMemoryMapAlignment);
+
 	if (glGetInteger64v)
 	{
 		glGetInteger64v(GL_TEXTURE_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minTexelBufferOffsetAlignment);
 		glGetInteger64v(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minUniformBufferOffsetAlignment);
 		glGetInteger64v(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, (GLint64*)&_deviceProperties.minStorageBufferOffsetAlignment);
 	}
+
 	glGetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, (GLint*)&_deviceProperties.minTexelOffset);
 	glGetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET, (GLint*)&_deviceProperties.maxTexelOffset);
 	glGetIntegerv(GL_MIN_PROGRAM_TEXTURE_GATHER_OFFSET, (GLint*)&_deviceProperties.minTexelGatherOffset);
@@ -428,6 +458,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetIntegerv(GL_MAX_DEPTH_TEXTURE_SAMPLES, (GLint*)&_deviceProperties.sampledImageStencilSampleCounts);
 	glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, (GLint*)&_deviceProperties.storageImageSampleCounts);
 	glGetIntegerv(GL_MAX_SAMPLE_MASK_WORDS, (GLint*)&_deviceProperties.maxSampleMaskWords);
+
 	_deviceProperties.timestampComputeAndGraphics;
 	_deviceProperties.timestampPeriod;
 
@@ -444,6 +475,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetFloatv(GL_LINE_WIDTH_RANGE, &_deviceProperties.minLineWidthRange);
 	glGetFloatv(GL_LINE_WIDTH_GRANULARITY, &_deviceProperties.lineWidthGranularity);
 	glGetIntegerv(GL_LINE_WIDTH, (GLint*)&_deviceProperties.strictLines);
+
 	_deviceProperties.standardSampleLocations;
 	_deviceProperties.optimalBufferCopyOffsetAlignment;
 	_deviceProperties.optimalBufferCopyRowPitchAlignment;

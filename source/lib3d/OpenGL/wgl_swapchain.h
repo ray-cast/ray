@@ -55,6 +55,9 @@ public:
 	void setActive(bool active) noexcept;
 	bool getActive() const noexcept;
 
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
 	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
 	GraphicsSwapInterval getSwapInterval() const noexcept;
 
@@ -68,20 +71,16 @@ private:
 	bool initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
 
 private:
-	friend class OGLDevice;
-	void setDevice(GraphicsDevicePtr device) noexcept;
-	GraphicsDevicePtr getDevice() noexcept;
-
-private:
 	WGLSwapchain(const WGLSwapchain&) noexcept = delete;
 	WGLSwapchain& operator=(const WGLSwapchain&) noexcept = delete;
 
 private:
-
 	bool _isActive;
 
 	HDC _hdc;
 	HGLRC _context;
+	HWND _hwnd;
+	HINSTANCE _hinstance;
 
 	GLuint _major;
 	GLuint _minor;
@@ -89,7 +88,7 @@ private:
 	GraphicsSwapchainDesc _swapchainDesc;
 	GraphicsDeviceWeakPtr _device;
 
-	static WGLSwapchain* _swapchain;
+	static thread_local WGLSwapchain* _swapchain;
 };
 
 _NAME_END

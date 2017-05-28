@@ -37,6 +37,11 @@
 #ifndef _H_LIGHT_MASS_H_
 #define _H_LIGHT_MASS_H_
 
+#include <ray/graphics_system.h>
+#include <ray/graphics_device.h>
+#include <ray/graphics_context.h>
+#include <ray/graphics_swapchain.h>
+
 #include "LightMassParams.h"
 #include "LightMassListener.h"
 
@@ -68,6 +73,10 @@ public:
 
 private:
 	bool _initialize;
+
+	ray::GraphicsDevicePtr _graphicsDevice;
+	ray::GraphicsContextPtr _graphicsContext;
+	ray::GraphicsSwapchainPtr _graphicsSwapchain;
 
 	LightMassListenerPtr _lightMassListener;
 };

@@ -66,10 +66,10 @@ public:
 	ResManager() noexcept;
 	~ResManager() noexcept;
 
-	bool createModel(const util::string& filename, ModelPtr& model) noexcept;
-	bool createMaterial(const util::string& name, MaterialPtr& material) noexcept;
-	bool createTexture(const util::string& name, GraphicsTexturePtr& texture, GraphicsTextureDim dim = GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
-	bool createAnimation(const util::string& file, const GameObjects& bones, GameComponentPtr& animation) noexcept;
+	bool createModel(const util::string& path, ModelPtr& model) noexcept;
+	bool createMaterial(const util::string& path, MaterialPtr& material) noexcept;
+	bool createTexture(const util::string& path, GraphicsTexturePtr& texture, GraphicsTextureDim dim = GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
+	bool createAnimation(const util::string& path, const GameObjects& bones, GameComponentPtr& animation) noexcept;
 
 	bool createGameObject(const Model& model, GameObjectPtr& gameObject) noexcept;
 	bool createMeshes(const Model& model, GameObjectPtr& meshes) noexcept;

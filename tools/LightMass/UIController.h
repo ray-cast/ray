@@ -54,6 +54,7 @@ private:
 	bool onModelImport(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
 	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
 
+	bool onUVMapperCancel() noexcept;
 	bool onUVMapperWillStart(const GuiParams& params) noexcept;
 	bool onUVMapperProcessing(const GuiParams& params, float& progressing) noexcept;
 
@@ -72,7 +73,6 @@ private:
 	ray::GameObjects _objects;
 
 	bool _progressed;
-	float _progressUvmapper;
 
 	std::unique_ptr<ray::PMX> _model;
 	std::unique_ptr<std::thread> _thread;

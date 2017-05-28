@@ -71,9 +71,8 @@ struct AppParams
 class AppMapListener : public ray::LightMapListener
 {
 public:
-	AppMapListener(float& progressUvmapper) noexcept
+	AppMapListener() noexcept
 		: _lastProgress(0)
-		, _progressUvmapper(progressUvmapper)
 	{
 	}
 
@@ -91,7 +90,6 @@ public:
 		if (_lastProgress != progress)
 		{
 			_lastProgress = progress;
-			_progressUvmapper = progress;
 		}
 	}
 
@@ -109,7 +107,6 @@ public:
 
 private:
 	float _lastProgress;
-	float& _progressUvmapper;
 	std::time_t _startTime;
 	std::time_t _endTime;
 };
@@ -409,10 +406,9 @@ float metalnessParams[] =
 };
 
 GuiControllerComponent::GuiControllerComponent() noexcept
-	: _lightMapListener(std::make_shared<AppMapListener>(_progressUvmapper))
+	: _lightMapListener(std::make_shared<AppMapListener>())
 	, _lightMassListener(std::make_shared<AppMassListener>())
 	, _progressed(false)
-	, _progressUvmapper(0)
 {
 }
 
@@ -582,53 +578,71 @@ GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray
 bool
 GuiControllerComponent::onUVMapperWillStart(const GuiParams& params) noexcept
 {
-	auto thread = [&]()
+	return _model ? true : false;
+}
+
+bool
+GuiControllerComponent::onUVMapperCancel() noexcept
+{
+	if (_thread)
 	{
-		std::uint32_t size = 512;
-		if (params.lightmass.imageSize == 1)
-			size = 1024;
-		else if (params.lightmass.imageSize == 2)
-			size = 2048;
-		else if (params.lightmass.imageSize == 3)
-			size = 4096;
-		else if (params.lightmass.imageSize == 4)
-			size = 8192;
-
-		ray::LightMapPack lightPack(_lightMapListener);
-		if (!lightPack.atlasUV1(*_model, size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin))
-		{
-			_progressed = true;
-			return false;
-		}
-
-		_progressed = true;
-		return true;
-	};
-
-	if (_model)
-	{
-		_progressed = false;
-		_progressUvmapper = 0;
-		_thread = std::make_unique<std::thread>(thread);
+		if (_thread->joinable())
+			_thread->detach();
 	}
 
-	return _model ? true : false;
+	return true;
 }
 
 bool
 GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& progressing) noexcept
 {
-	if (!_progressed)
+	if (!_thread)
 	{
-		progressing = _progressUvmapper;
-		return true;
+		auto progress = [&progressing](float progress) -> bool
+		{
+			progressing = progress;
+			return true;
+		};
+
+		auto thread = [&]() -> bool
+		{
+			std::uint32_t size = 512;
+			if (params.lightmass.imageSize == 1)
+				size = 1024;
+			else if (params.lightmass.imageSize == 2)
+				size = 2048;
+			else if (params.lightmass.imageSize == 3)
+				size = 4096;
+			else if (params.lightmass.imageSize == 4)
+				size = 8192;
+
+			ray::LightMapPack lightPack(_lightMapListener);
+			if (!lightPack.atlasUV(*_model, size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin, progress))
+			{
+				_progressed = true;
+				return false;
+			}
+
+			_progressed = true;
+			return true;
+		};
+
+		if (_model)
+		{
+			_progressed = false;
+			_thread = std::make_unique<std::thread>(thread);
+		}
 	}
 
-	if (_thread->joinable())
-		_thread->join();
+	if (_progressed)
+	{
+		if (_thread->joinable())
+			_thread->join();
 
-	_thread.reset();
-	return false;
+		_thread.reset();
+	}
+
+	return !_progressed;
 }
 
 ray::GameComponentPtr
@@ -646,8 +660,9 @@ GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) exce
 		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
 		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
 
-		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2));
+		view->setUVMapperCancel(std::bind(&GuiControllerComponent::onUVMapperCancel, this));
 		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1));
+		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2));
 	}
 }
 
@@ -660,6 +675,7 @@ GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noex
 		view->setModelImportListener(nullptr);
 		view->setModelSaveAsListener(nullptr);
 
+		view->setUVMapperCancel(nullptr);
 		view->setUVMapperProgressListener(nullptr);
 		view->setUVMapperWillStartListener(nullptr);
 	}

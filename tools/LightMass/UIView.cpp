@@ -86,6 +86,12 @@ GuiViewComponent::setModelSaveAsListener(std::function<bool(ray::util::string::c
 }
 
 void
+GuiViewComponent::setUVMapperCancel(std::function<bool()> delegate) noexcept
+{
+	_onUVMapperCancel = delegate;
+}
+
+void
 GuiViewComponent::setUVMapperWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept
 {
 	_onUVMapperWillStart = delegate;
@@ -660,7 +666,13 @@ GuiViewComponent::showProcessMessage() noexcept
 			ray::Gui::text("");
 			ray::Gui::text("");
 			ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
-			ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25));
+
+			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
+			{
+				if (_onUVMapperCancel)
+					_onUVMapperCancel();
+				ray::Gui::closeCurrentPopup();
+			}
 		}
 
 		ray::Gui::endPopup();

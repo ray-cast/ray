@@ -59,6 +59,7 @@ public:
 	void setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
 	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
 
+	void setUVMapperCancel(std::function<bool()> delegate) noexcept;
 	void setUVMapperWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
 	void setUVMapperProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
 
@@ -129,6 +130,7 @@ private:
 	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelImport;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelSaveAs;
 
+	std::function<bool()> _onUVMapperCancel;
 	std::function<bool(const GuiParams&)> _onUVMapperWillStart;
 	std::function<bool(const GuiParams&, float&)> _onUVMapperProcess;
 };

@@ -673,7 +673,7 @@ GuiControllerComponent::onActivate() except
 
 			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
 			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
-			material->getParameter("metalness")->uniform1f(metalnessParams[i * 10 + j]);
+			material->getParameter("metalness")->uniform1f(0);
 			material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
 
 			if (shininessParams[i * 10 + j] > 0.45 &&

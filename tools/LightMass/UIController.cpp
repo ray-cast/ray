@@ -71,8 +71,9 @@ struct AppParams
 class AppMapListener : public ray::LightMapListener
 {
 public:
-	AppMapListener() noexcept
+	AppMapListener(float& progressUvmapper) noexcept
 		: _lastProgress(0)
+		, _progressUvmapper(progressUvmapper)
 	{
 	}
 
@@ -81,36 +82,34 @@ public:
 	void onUvmapperStart()
 	{
 		_startTime = std::time(nullptr);
-		std::cout << "Calculating the Light map pack of the model : ";
-		std::cout << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+		std::cerr << "Calculating the Light map pack of the model : ";
+		std::cerr << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
 
 	void onUvmapperProgressing(float progress)
 	{
 		if (_lastProgress != progress)
 		{
-			std::cout.precision(2);
-			std::cout << "Processing : " << progress * 100 << "%" << std::fixed;
-			std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
 			_lastProgress = progress;
+			_progressUvmapper = progress;
 		}
 	}
 
 	void onUvmapperEnd()
 	{
 		_endTime = std::time(nullptr);
-		std::cout << "Processing : " << "100.00%" << std::fixed << std::endl;
-		std::cout << "Calculated the Light map pack of the model : ";
-		std::cout << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+		std::cerr << "Calculated the Light map pack of the model : ";
+		std::cerr << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
 
 	virtual void onMessage(const ray::util::string& message) noexcept
 	{
-		std::cout << message << std::endl;
+		std::cerr << message << std::endl;
 	}
 
 private:
 	float _lastProgress;
+	float& _progressUvmapper;
 	std::time_t _startTime;
 	std::time_t _endTime;
 };
@@ -124,28 +123,28 @@ public:
 	virtual void onBakingStart() noexcept
 	{
 		_startTime = std::time(nullptr);
-		std::cout << "Calculating the radiosity of the model : ";
-		std::cout << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+		std::cerr << "Calculating the radiosity of the model : ";
+		std::cerr << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
 
 	virtual void onBakingEnd() noexcept
 	{
 		_endTime = std::time(nullptr);
-		std::cout << "Processing : " << "100.00%" << std::fixed << std::endl;
-		std::cout << "Calculated the radiosity of the model : ";
-		std::cout << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+		std::cerr << "Processing : " << "100.00%" << std::fixed << std::endl;
+		std::cerr << "Calculated the radiosity of the model : ";
+		std::cerr << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
 
 	virtual void onBakingProgressing(float progress) noexcept
 	{
-		std::cout.precision(2);
-		std::cout << "Processing : " << progress * 100 << "%" << std::fixed;
-		std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+		std::cerr.precision(2);
+		std::cerr << "Processing : " << progress * 100 << "%" << std::fixed;
+		std::cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
 	}
 
 	virtual void onMessage(const ray::util::string& message) noexcept
 	{
-		std::cout << message << std::endl;
+		std::cerr << message << std::endl;
 	}
 
 private:
@@ -157,8 +156,7 @@ class Application
 {
 public:
 	Application() noexcept
-		: _lightMapListener(std::make_shared<AppMapListener>())
-		, _lightMassListener(std::make_shared<AppMassListener>())
+		: _lightMassListener(std::make_shared<AppMassListener>())
 	{
 	}
 
@@ -214,7 +212,7 @@ public:
 		ray::image::Image image;
 		if (!image.create(w, h, format))
 		{
-			std::cout << "Failed to create image : " << path << std::endl;
+			std::cerr << "Failed to create image : " << path << std::endl;
 			return false;
 		}
 
@@ -242,7 +240,7 @@ public:
 	{
 		while (path.empty())
 		{
-			std::cout << "Input a path to your pmx model : ";
+			std::cerr << "Input a path to your pmx model : ";
 			char paths[PATHLIMIT];
 			std::cin.getline(paths, PATHLIMIT);
 			path.append(paths);
@@ -263,7 +261,7 @@ public:
 			return false;
 
 		ray::util::string outputPath = ray::util::directory(path) + "ao.tga";
-		std::cout << "Save as image : " << outputPath << std::endl;
+		std::cerr << "Save as image : " << outputPath << std::endl;
 
 		if (!this->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMass.lightMap.margin))
 			return false;
@@ -411,13 +409,20 @@ float metalnessParams[] =
 };
 
 GuiControllerComponent::GuiControllerComponent() noexcept
-	: _lightMapListener(std::make_shared<AppMapListener>())
+	: _lightMapListener(std::make_shared<AppMapListener>(_progressUvmapper))
 	, _lightMassListener(std::make_shared<AppMassListener>())
+	, _progressed(false)
+	, _progressUvmapper(0)
 {
 }
 
 GuiControllerComponent::~GuiControllerComponent() noexcept
 {
+	if (_thread)
+	{
+		if (_thread->joinable())
+			_thread->detach();
+	}
 }
 
 bool
@@ -577,27 +582,53 @@ GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray
 bool
 GuiControllerComponent::onUVMapperWillStart(const GuiParams& params) noexcept
 {
+	auto thread = [&]()
+	{
+		std::uint32_t size = 512;
+		if (params.lightmass.imageSize == 1)
+			size = 1024;
+		else if (params.lightmass.imageSize == 2)
+			size = 2048;
+		else if (params.lightmass.imageSize == 3)
+			size = 4096;
+		else if (params.lightmass.imageSize == 4)
+			size = 8192;
+
+		ray::LightMapPack lightPack(_lightMapListener);
+		if (!lightPack.atlasUV1(*_model, size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin))
+		{
+			_progressed = true;
+			return false;
+		}
+
+		_progressed = true;
+		return true;
+	};
+
+	if (_model)
+	{
+		_progressed = false;
+		_progressUvmapper = 0;
+		_thread = std::make_unique<std::thread>(thread);
+	}
+
 	return _model ? true : false;
 }
 
 bool
-GuiControllerComponent::onUVMapperStart(const GuiParams& params) noexcept
+GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& progressing) noexcept
 {
-	std::uint32_t size = 512;
-	if (params.lightmass.imageSize == 1)
-		size = 1024;
-	else if (params.lightmass.imageSize == 2)
-		size = 2048;
-	else if (params.lightmass.imageSize == 3)
-		size = 4096;
-	else if (params.lightmass.imageSize == 4)
-		size = 8192;
+	if (!_progressed)
+	{
+		progressing = _progressUvmapper;
+		return true;
+	}
 
-	ray::LightMapPack lightPack(_lightMapListener);
-	if (!lightPack.atlasUV1(*_model, size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin))
-		return false;
+	if (_thread->joinable())
+		_thread->join();
 
-	return true;
+	_thread.reset();
+	return false;
 }
 
 ray::GameComponentPtr
@@ -615,7 +646,7 @@ GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) exce
 		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
 		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
 
-		view->setUVMapperStartListener(std::bind(&GuiControllerComponent::onUVMapperStart, this, std::placeholders::_1));
+		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2));
 		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1));
 	}
 }
@@ -629,7 +660,7 @@ GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noex
 		view->setModelImportListener(nullptr);
 		view->setModelSaveAsListener(nullptr);
 
-		view->setUVMapperStartListener(nullptr);
+		view->setUVMapperProgressListener(nullptr);
 		view->setUVMapperWillStartListener(nullptr);
 	}
 }

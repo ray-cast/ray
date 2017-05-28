@@ -49,7 +49,7 @@ GuiViewComponent::GuiViewComponent() noexcept
 	: _clearColor(ray::float4(114.f / 255.f, 144.f / 255.f, 154.f / 255.f))
 {
 	_fps = 0.0f;
-	_process = 0.0f;
+	_progress = 0.0f;
 	_showMainMenu = true;
 	_showLightMassWindow = true;
 	_showStyleEditor = false;
@@ -92,9 +92,9 @@ GuiViewComponent::setUVMapperWillStartListener(std::function<bool(const GuiParam
 }
 
 void
-GuiViewComponent::setUVMapperStartListener(std::function<bool(const GuiParams&)> delegate) noexcept
+GuiViewComponent::setUVMapperProgressListener(std::function<bool(const GuiParams&, float&)> delegate) noexcept
 {
-	_onUVMapperStart = delegate;
+	_onUVMapperProcess = delegate;
 }
 
 void
@@ -404,34 +404,6 @@ GuiViewComponent::showMessage() noexcept
 }
 
 void
-GuiViewComponent::showProcessMessage() noexcept
-{
-	if (_showProcessMessageFirst)
-	{
-		_showProcessMessageFirst = false;
-
-		ray::Gui::openPopup(_langs[UILang::Process]);
-
-		_showProcessMessage = true;
-	}
-
-	if (!_showProcessMessage)
-		return;
-
-	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0);
-
-	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
-	{
-		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x, 150));
-		ray::Gui::text("%.2f", _process);
-
-		ray::Gui::endPopup();
-	}
-
-	ray::Gui::popStyleVar();
-}
-
-void
 GuiViewComponent::showAboutWindow() noexcept
 {
 	if (_showAboutWindowFirst)
@@ -656,17 +628,43 @@ GuiViewComponent::startUVMapper() noexcept
 		}
 	}
 
-	if (_showProcessMessage)
+	_showProcessMessageFirst = true;
+}
+
+void
+GuiViewComponent::showProcessMessage() noexcept
+{
+	if (_showProcessMessageFirst)
 	{
-		if (this->_onUVMapperStart)
-		{
-			if (!this->_onUVMapperStart(_setting))
-			{
-				this->showPopupMessage(_langs[UILang::Error], _langs[UILang::UnsupportModel], std::hash<const char*>{}("UnsupportModel"));
-				return;
-			}
-		}
+		ray::Gui::openPopup(_langs[UILang::Process]);
+		_showProcessMessage = true;
+		_showProcessMessageFirst = false;
 	}
 
-	_showProcessMessageFirst = true;
+	if (!_showProcessMessage)
+		return;
+
+	if (!_onUVMapperProcess)
+		return;
+
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0);
+
+	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	{
+		if (!this->_onUVMapperProcess(_setting, _progress))
+			ray::Gui::closeCurrentPopup();
+		else
+		{
+			ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 100));
+			ray::Gui::progressBar(_progress);
+			ray::Gui::text("");
+			ray::Gui::text("");
+			ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
+			ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25));
+		}
+
+		ray::Gui::endPopup();
+	}
+
+	ray::Gui::popStyleVar();
 }

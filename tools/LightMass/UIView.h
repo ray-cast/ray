@@ -60,7 +60,7 @@ public:
 	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
 
 	void setUVMapperWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
-	void setUVMapperStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
+	void setUVMapperProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
 
 private:
 	virtual void onMessage(const ray::MessagePtr& message) noexcept;
@@ -74,8 +74,6 @@ private:
 	void showMessage() noexcept;
 	void showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept;
 
-	void showProcessMessage() noexcept;
-
 	bool showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
 	bool showFileSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
 
@@ -87,6 +85,8 @@ private:
 	void showProjectSaveAsBrowse() noexcept;
 
 	void startUVMapper() noexcept;
+	void showProcessMessage() noexcept;
+
 	void switchLangPackage(UILang::Lang type) noexcept;
 
 private:
@@ -95,7 +95,7 @@ private:
 
 private:
 	float _fps;
-	float _process;
+	float _progress;
 
 	bool _showMainMenu;
 	bool _showLightMassWindow;
@@ -130,7 +130,7 @@ private:
 	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelSaveAs;
 
 	std::function<bool(const GuiParams&)> _onUVMapperWillStart;
-	std::function<bool(const GuiParams&)> _onUVMapperStart;
+	std::function<bool(const GuiParams&, float&)> _onUVMapperProcess;
 };
 
 #endif

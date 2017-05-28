@@ -90,7 +90,7 @@
                 gbuffer.buffer2.w = material.smoothness;
                 
                 material.specular *= 0.08;
-                material.specular = lerp(material.specular, min(material.specular, material.albedo), material.metalness);
+                material.specular = lerp(material.specular, max(material.specular, material.albedo), material.metalness);
                 
                 gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
                 gbuffer.buffer3.w = 0;

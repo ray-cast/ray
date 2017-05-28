@@ -46,9 +46,7 @@ const char* itemsImageSize[] = { "512", "1024", "2048", "4096", "8192" };
 const char* itemsSampleSize[] = { "32", "64", "128", "256", "512" };
 
 GuiViewComponent::GuiViewComponent() noexcept
-	: _clearColor(ray::float4(114.f / 255.f, 144.f / 255.f, 154.f / 255.f))
 {
-	_fps = 0.0f;
 	_progress = 0.0f;
 	_showMainMenu = true;
 	_showLightMassWindow = true;
@@ -74,13 +72,13 @@ GuiViewComponent::clone() const noexcept
 }
 
 void
-GuiViewComponent::setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+GuiViewComponent::setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept
 {
 	_onModelImport = delegate;
 }
 
 void
-GuiViewComponent::setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+GuiViewComponent::setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept
 {
 	_onModelSaveAs = delegate;
 }
@@ -104,19 +102,37 @@ GuiViewComponent::setUVMapperProgressListener(std::function<bool(const GuiParams
 }
 
 void
-GuiViewComponent::setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+GuiViewComponent::setLightMassCancel(std::function<bool()> delegate) noexcept
+{
+	_onLightMassCancel = delegate;
+}
+
+void
+GuiViewComponent::setLightMassWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept
+{
+	_onLightMassWillStart = delegate;
+}
+
+void
+GuiViewComponent::setLightMassProgressListener(std::function<bool(const GuiParams&, float&)> delegate) noexcept
+{
+	_onLightMassProcess = delegate;
+}
+
+void
+GuiViewComponent::setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept
 {
 	_onProjectOpen = delegate;
 }
 
 void
-GuiViewComponent::setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+GuiViewComponent::setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept
 {
 	_onProjectSave = delegate;
 }
 
 void
-GuiViewComponent::setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate)
+GuiViewComponent::setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept
 {
 	_onProjectSaveAs = delegate;
 }
@@ -358,19 +374,6 @@ GuiViewComponent::showModelExportBrowse() noexcept
 }
 
 void
-GuiViewComponent::showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept
-{
-	if (!_showMessageFirst)
-	{
-		_messageHash = hash;
-		_messageText = message;
-		_messageTitle = title;
-
-		_showMessageFirst = true;
-	}
-}
-
-void
 GuiViewComponent::showMessage() noexcept
 {
 	if (_showMessageFirst)
@@ -407,6 +410,78 @@ GuiViewComponent::showMessage() noexcept
 
 		ray::Gui::endPopup();
 	}
+}
+
+void
+GuiViewComponent::showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept
+{
+	if (!_showMessageFirst)
+	{
+		_messageHash = hash;
+		_messageText = message;
+		_messageTitle = title;
+
+		_showMessageFirst = true;
+	}
+}
+
+void
+GuiViewComponent::showProcessMessage() noexcept
+{
+	if (_showProcessMessageFirst)
+	{
+		ray::Gui::openPopup(_langs[UILang::Process]);
+		_showProcessMessage = true;
+		_showProcessMessageFirst = false;
+	}
+
+	if (!_showProcessMessage)
+		return;
+
+	if (!_onUVMapperProcess)
+		return;
+
+	//ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0);
+
+	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	{
+		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 100));
+		ray::Gui::progressBar(_progress);
+		ray::Gui::text("");
+		ray::Gui::text("");
+		ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
+
+		if (_lightMassType == LightMassType::UVMapper)
+		{
+			if (!this->_onUVMapperProcess(_setting, _progress))
+				ray::Gui::closeCurrentPopup();
+
+			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
+			{
+				ray::Gui::closeCurrentPopup();
+
+				if (_onUVMapperCancel)
+					_onUVMapperCancel();
+			}
+		}
+		else if (_lightMassType == LightMassType::LightBaking)
+		{
+			if (!this->_onLightMassProcess(_setting, _progress))
+				ray::Gui::closeCurrentPopup();
+
+			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
+			{
+				ray::Gui::closeCurrentPopup();
+
+				if (_onLightMassCancel)
+					_onLightMassCancel();
+			}
+		}
+
+		ray::Gui::endPopup();
+	}
+
+	//ray::Gui::popStyleVar();
 }
 
 void
@@ -607,7 +682,8 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::text(_langs[UILang::InterpolationThreshold]);
 			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
 
-			ray::Gui::button(_langs[UILang::StartBaking]);
+			if (ray::Gui::button(_langs[UILang::StartLightMass]))
+				this->startLightMass();
 
 			ray::Gui::treePop();
 		}
@@ -619,7 +695,7 @@ GuiViewComponent::showLightMass() noexcept
 void
 GuiViewComponent::switchLangPackage(UILang::Lang type) noexcept
 {
-	GetLangPackage(type, _langs);
+	::GetLangPackage(type, _langs);
 }
 
 void
@@ -629,54 +705,27 @@ GuiViewComponent::startUVMapper() noexcept
 	{
 		if (!this->_onUVMapperWillStart(_setting))
 		{
-			this->showPopupMessage(_langs[UILang::Error], _langs[UILang::UnsupportModel], std::hash<const char*>{}("UnsupportModel"));
+			this->showPopupMessage(_langs[UILang::Error], _langs[UILang::ChooseModel], std::hash<const char*>{}("ChooseModel"));
 			return;
 		}
 	}
 
+	_lightMassType = LightMassType::UVMapper;
 	_showProcessMessageFirst = true;
 }
 
 void
-GuiViewComponent::showProcessMessage() noexcept
+GuiViewComponent::startLightMass() noexcept
 {
-	if (_showProcessMessageFirst)
+	if (this->_onLightMassWillStart)
 	{
-		ray::Gui::openPopup(_langs[UILang::Process]);
-		_showProcessMessage = true;
-		_showProcessMessageFirst = false;
-	}
-
-	if (!_showProcessMessage)
-		return;
-
-	if (!_onUVMapperProcess)
-		return;
-
-	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0);
-
-	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
-	{
-		if (!this->_onUVMapperProcess(_setting, _progress))
-			ray::Gui::closeCurrentPopup();
-		else
+		if (!this->_onLightMassWillStart(_setting))
 		{
-			ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 100));
-			ray::Gui::progressBar(_progress);
-			ray::Gui::text("");
-			ray::Gui::text("");
-			ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
-
-			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
-			{
-				if (_onUVMapperCancel)
-					_onUVMapperCancel();
-				ray::Gui::closeCurrentPopup();
-			}
+			this->showPopupMessage(_langs[UILang::Error], _langs[UILang::ChooseModel], std::hash<const char*>{}("ChooseModel"));
+			return;
 		}
-
-		ray::Gui::endPopup();
 	}
 
-	ray::Gui::popStyleVar();
+	_lightMassType = LightMassType::LightBaking;
+	_showProcessMessageFirst = true;
 }

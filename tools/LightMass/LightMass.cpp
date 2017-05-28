@@ -42,27 +42,6 @@
 
 _NAME_BEGIN
 
-#pragma pack(push)
-#pragma pack(1)
-
-struct TGAHeader
-{
-	std::uint8_t  id_length;
-	std::uint8_t  colormap_type;
-	std::uint8_t  image_type;
-	std::uint16_t colormap_index;
-	std::uint16_t colormap_length;
-	std::uint8_t  colormap_size;
-	std::uint16_t x_origin;
-	std::uint16_t y_origin;
-	std::uint16_t width;
-	std::uint16_t height;
-	std::uint8_t  pixel_size;
-	std::uint8_t  attributes;
-};
-
-#pragma pack(pop)
-
 LightMass::LightMass() noexcept
 	: _initialize(false)
 	, _lightMassListener(std::make_shared<LightMassListener>())
@@ -85,7 +64,7 @@ LightMass::open() noexcept
 	if (_initialize)
 		return true;
 
-	if (glewInit() != GLEW_OK)
+	if (::glewInit() != GLEW_OK)
 	{
 		auto listener = this->getLightMassListener();
 		if (listener)

@@ -97,9 +97,9 @@ LightMassBaking::setup(const LightSampleParams& params) noexcept
 	context->hemisphere.size = params.hemisphereSize;
 	context->hemisphere.znear = params.hemisphereNear;
 	context->hemisphere.zfar = params.hemisphereFar;
-	context->hemisphere.clearColor.r = params.clearColor.x;
-	context->hemisphere.clearColor.g = params.clearColor.y;
-	context->hemisphere.clearColor.b = params.clearColor.z;
+	context->hemisphere.clearColor.r = params.environmentColor.x;
+	context->hemisphere.clearColor.g = params.environmentColor.y;
+	context->hemisphere.clearColor.b = params.environmentColor.z;
 	context->hemisphere.fbHemiCountX = 1536 / (3 * context->hemisphere.size);
 	context->hemisphere.fbHemiCountY = 512 / context->hemisphere.size;
 
@@ -355,6 +355,9 @@ LightMassBaking::baking(const LightBakingParams& params) noexcept
 			{
 				if (_lightMassListener)
 					_lightMassListener->onBakingProgressing(this->getSampleProcess());
+
+				if (params.baking.listener)
+					params.baking.listener(this->getSampleProcess());
 
 				baseIndex = _ctx->meshPosition.triangle.baseIndex;
 			}

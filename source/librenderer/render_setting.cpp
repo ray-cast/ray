@@ -66,7 +66,7 @@ RenderSetting::RenderSetting() noexcept
 	, dpi_w(0)
 	, dpi_h(0)
 	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
-	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
+	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
 	, pipelineType(RenderPipelineType::RenderPipelineTypeDeferredLighting)
 	, shadowMode(ShadowMode::ShadowModeSoft)
 	, shadowQuality(ShadowQuality::ShadowQualityMedium)

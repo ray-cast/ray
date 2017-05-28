@@ -87,4 +87,48 @@ std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data
 	return out_size;
 }
 
+bool mbs2wCs(const char* pszSrc, wchar_t* dest, std::size_t max_length)
+{
+#if defined(_linux_)
+	::setlocale(LC_ALL, "zh_CN.GB2312");
+	int size = mbstowcs(NULL, pszSrc, 0);
+	if (size <= 0)
+		return false;
+	if (max_length < size)
+		return false;
+
+	size = mbstowcs(dest, pszSrc, size + 1);
+	dest[size] = 0;
+	return true;
+#else
+	int size = ::MultiByteToWideChar(20936, 0, pszSrc, -1, 0, 0);
+	if (size <= 0)
+		return false;
+	if (max_length < size)
+		return false;
+
+	::MultiByteToWideChar(20936, 0, pszSrc, -1, dest, size);
+	return true;
+#endif
+}
+
+bool wcs2mbs(const wchar_t * wcharStr, char* dest, std::size_t max_length)
+{
+#if defined(_linux_)
+	setlocale(LC_ALL, "zh_CN.UTF8");
+	int size = wcstombs(NULL, wcharStr, 0);
+	str = new char[size + 1];
+	wcstombs(str, wcharStr, size);
+	str[size] = '\0';
+	return str;
+#else
+	int size = WideCharToMultiByte(CP_UTF8, 0, wcharStr, -1, NULL, NULL, NULL, NULL);
+	if (size >= max_length)
+		return false;
+
+	WideCharToMultiByte(CP_UTF8, 0, wcharStr, -1, dest, size, 0, 0);
+	return true;
+#endif
+}
+
 _NAME_END

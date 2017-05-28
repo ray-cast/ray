@@ -64,7 +64,6 @@ struct GUILightMass
 
 	float hemisphereNear;
 	float hemisphereFar;
-	float hemisphereSize;
 	float interpolationThreshold;
 };
 
@@ -72,6 +71,12 @@ struct GuiParams
 {
 	GUIUvmapper uvmapper;
 	GUILightMass lightmass;
+};
+
+enum class LightMassType
+{
+	UVMapper,
+	LightBaking,
 };
 
 #endif

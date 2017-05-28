@@ -1346,6 +1346,6 @@ namespace util
 
 		return out.size();
 	}
-} // namespace util
+}
 
 _NAME_END

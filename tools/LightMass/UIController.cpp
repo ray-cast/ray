@@ -60,14 +60,6 @@
 
 #include <ray/SH.h>
 
-struct AppParams
-{
-	std::uint32_t chart;
-	float stretch;
-	float margin;
-	ray::LightMassParams lightMass;
-};
-
 class AppMapListener : public ray::LightMapListener
 {
 public:
@@ -127,16 +119,12 @@ public:
 	virtual void onBakingEnd() noexcept
 	{
 		_endTime = std::time(nullptr);
-		std::cerr << "Processing : " << "100.00%" << std::fixed << std::endl;
 		std::cerr << "Calculated the radiosity of the model : ";
 		std::cerr << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
 	}
 
 	virtual void onBakingProgressing(float progress) noexcept
 	{
-		std::cerr.precision(2);
-		std::cerr << "Processing : " << progress * 100 << "%" << std::fixed;
-		std::cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
 	}
 
 	virtual void onMessage(const ray::util::string& message) noexcept
@@ -147,128 +135,6 @@ public:
 private:
 	std::time_t _startTime;
 	std::time_t _endTime;
-};
-
-class Application
-{
-public:
-	Application() noexcept
-		: _lightMassListener(std::make_shared<AppMassListener>())
-	{
-	}
-
-	Application::~Application() noexcept
-	{
-	}
-
-	bool load(const ray::util::string& path, ray::PMX& model)
-	{
-		ray::PMXHandler modelLoader;
-
-		if (_lightMassListener)
-			_lightMassListener->onMessage("loading model : " + path);
-
-		ray::util::string error;
-		if (!modelLoader.doLoad(path, model, error))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage(error);
-
-			return false;
-		}
-
-		if (_lightMassListener)
-			_lightMassListener->onMessage("loaded model : " + path);
-
-		return true;
-	}
-
-	bool saveLightMass(const ray::util::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
-	{
-		assert(channel == 1 || channel == 3 || channel == 4);
-
-		bool isGreyscale = channel == 1;
-		bool hasAlpha = channel == 1 ? false : true;
-
-		if (margin > 0)
-		{
-			std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * channel);
-			std::memset(lightmapTemp.get(), 0, w * h * channel * sizeof(float));
-
-			for (std::uint32_t j = 0; j < std::max<std::uint32_t>(margin >> 1, 1); j++)
-			{
-				ray::image::smoothFilter(data, lightmapTemp.get(), w, h, channel);
-				ray::image::dilateFilter(lightmapTemp.get(), data, w, h, channel);
-			}
-		}
-
-		ray::image::format_t format = isGreyscale ? ray::image::format_t::R8SRGB : ray::image::format_t::R8G8B8SRGB;
-		if (hasAlpha)
-			format = ray::image::format_t::R8G8B8A8SRGB;
-
-		ray::image::Image image;
-		if (!image.create(w, h, format))
-		{
-			std::cerr << "Failed to create image : " << path << std::endl;
-			return false;
-		}
-
-		auto temp = (std::uint8_t*)image.data();
-
-		if (channel == 1)
-			ray::image::r32f_to_r8uint(data, temp, w, h, channel);
-		else
-			ray::image::rgb32f_to_rgbt8(data, temp, w, h, channel);
-
-		ray::image::flipHorizontal(temp, w, h, channel);
-
-		if (!isGreyscale)
-		{
-			for (std::size_t i = 0; i < w * h * channel; i += channel)
-				std::swap(temp[i], temp[i + 2]);
-		}
-
-		image.save(path);
-
-		return true;
-	}
-
-	bool run(ray::util::string path)
-	{
-		while (path.empty())
-		{
-			std::cerr << "Input a path to your pmx model : ";
-			char paths[PATHLIMIT];
-			std::cin.getline(paths, PATHLIMIT);
-			path.append(paths);
-		}
-
-		AppParams params;
-
-		ray::PMX model;
-		if (!this->load(path, model))
-			return false;
-
-		auto lightMass = std::make_shared<ray::LightMass>(_lightMassListener);
-		if (!lightMass->open())
-			return false;
-
-		ray::LightMapData lightMap;
-		if (!lightMass->baking(params.lightMass, model, lightMap))
-			return false;
-
-		ray::util::string outputPath = ray::util::directory(path) + "ao.tga";
-		std::cerr << "Save as image : " << outputPath << std::endl;
-
-		if (!this->saveLightMass(outputPath, lightMap.data.get(), lightMap.width, lightMap.height, lightMap.channel, params.lightMass.lightMap.margin))
-			return false;
-
-		return true;
-	}
-
-private:
-	ray::LightMapListenerPtr _lightMapListener;
-	ray::LightMassListenerPtr _lightMassListener;
 };
 
 __ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")
@@ -418,6 +284,108 @@ GuiControllerComponent::~GuiControllerComponent() noexcept
 	{
 		if (_thread->joinable())
 			_thread->detach();
+	}
+}
+
+ray::GameComponentPtr
+GuiControllerComponent::clone() const noexcept
+{
+	return std::make_shared<GuiControllerComponent>();
+}
+
+void
+GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) except
+{
+	if (component->isInstanceOf<GuiViewComponent>())
+	{
+		auto view = component->downcast<GuiViewComponent>();
+		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
+		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
+
+		view->setUVMapperCancel(std::bind(&GuiControllerComponent::onUVMapperCancel, this));
+		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1));
+		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2));
+
+		view->setLightMassCancel(std::bind(&GuiControllerComponent::onLightMassCancel, this));
+		view->setLightMassWillStartListener(std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1));
+		view->setLightMassProgressListener(std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2));
+	}
+}
+
+void
+GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noexcept
+{
+	if (component->isInstanceOf<GuiViewComponent>())
+	{
+		auto view = component->downcast<GuiViewComponent>();
+		view->setModelImportListener(nullptr);
+		view->setModelSaveAsListener(nullptr);
+
+		view->setUVMapperCancel(nullptr);
+		view->setUVMapperProgressListener(nullptr);
+		view->setUVMapperWillStartListener(nullptr);
+
+		view->setLightMassCancel(nullptr);
+		view->setLightMassProgressListener(nullptr);
+		view->setLightMassWillStartListener(nullptr);
+	}
+}
+
+void
+GuiControllerComponent::onActivate() except
+{
+	ray::GraphicsTexturePtr diffuseMap;
+	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds", diffuseMap);
+	if (!diffuseMap)
+		return;
+
+	ray::GraphicsTexturePtr normalMap;
+	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds", normalMap);
+	if (!normalMap)
+		return;
+
+	ray::MaterialPtr material;
+	if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", material))
+		return;
+
+	auto sphereMesh = std::make_shared<ray::MeshProperty>();
+	sphereMesh->makeSphere(1.0, 48, 36);
+
+	auto gameObject = std::make_shared<ray::GameObject>();
+	gameObject->setActive(true);
+	gameObject->setScaleAll(2.5f);
+
+	gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
+	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material));
+
+	for (std::size_t i = 0; i < 10; i++)
+	{
+		for (std::size_t j = 0; j < 10; j++)
+		{
+			auto newGameObject = gameObject->clone();
+			newGameObject->setActive(true);
+			newGameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f));
+
+			auto material = newGameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
+
+			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
+			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
+			material->getParameter("metalness")->uniform1f(0);
+			material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
+
+			if (shininessParams[i * 10 + j] > 0.45 &&
+				shininessParams[i * 10 + j] < 0.8 ||
+				shininessParams[i * 10 + j] > 0.95)
+			{
+				material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
+			}
+
+			material->getParameter("smoothness")->uniform1f(shininessParams[i * 10 + j]);
+			material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
+			material->getParameter("texNormal")->uniformTexture(normalMap);
+
+			_objects.push_back(newGameObject);
+		}
 	}
 }
 
@@ -596,6 +564,9 @@ GuiControllerComponent::onUVMapperCancel() noexcept
 bool
 GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& progressing) noexcept
 {
+	if (!_model)
+		return false;
+
 	if (!_thread)
 	{
 		auto progress = [&progressing](float progress) -> bool
@@ -645,98 +616,97 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 	return !_progressed;
 }
 
-ray::GameComponentPtr
-GuiControllerComponent::clone() const noexcept
+bool
+GuiControllerComponent::onLightMassCancel() noexcept
 {
-	return std::make_shared<GuiControllerComponent>();
-}
-
-void
-GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) except
-{
-	if (component->isInstanceOf<GuiViewComponent>())
+	if (_thread)
 	{
-		auto view = component->downcast<GuiViewComponent>();
-		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
-		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
-
-		view->setUVMapperCancel(std::bind(&GuiControllerComponent::onUVMapperCancel, this));
-		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1));
-		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2));
+		if (_thread->joinable())
+			_thread->detach();
 	}
+
+	return true;
 }
 
-void
-GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noexcept
+bool
+GuiControllerComponent::onLightMassWillStart(const GuiParams& params) noexcept
 {
-	if (component->isInstanceOf<GuiViewComponent>())
-	{
-		auto view = component->downcast<GuiViewComponent>();
-		view->setModelImportListener(nullptr);
-		view->setModelSaveAsListener(nullptr);
-
-		view->setUVMapperCancel(nullptr);
-		view->setUVMapperProgressListener(nullptr);
-		view->setUVMapperWillStartListener(nullptr);
-	}
+	return _model ? true : false;
 }
 
-void
-GuiControllerComponent::onActivate() except
+bool
+GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& progressing) noexcept
 {
-	ray::GraphicsTexturePtr diffuseMap;
-	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds", diffuseMap);
-	if (!diffuseMap)
-		return;
+	if (!_model)
+		return false;
 
-	ray::GraphicsTexturePtr normalMap;
-	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds", normalMap);
-	if (!normalMap)
-		return;
-
-	ray::MaterialPtr material;
-	if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", material))
-		return;
-
-	auto sphereMesh = std::make_shared<ray::MeshProperty>();
-	sphereMesh->makeSphere(1.0, 48, 36);
-
-	auto gameObject = std::make_shared<ray::GameObject>();
-	gameObject->setActive(true);
-	gameObject->setScaleAll(2.5f);
-
-	gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
-	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material));
-
-	for (std::size_t i = 0; i < 10; i++)
+	if (!_thread)
 	{
-		for (std::size_t j = 0; j < 10; j++)
+		auto progress = [&](float progress) -> bool
 		{
-			auto newGameObject = gameObject->clone();
-			newGameObject->setActive(true);
-			newGameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f));
+			progressing = progress;
+			return true;
+		};
 
-			auto material = newGameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
+		auto thread = [&]() -> bool
+		{
+			std::uint32_t size = 512;
+			if (options.lightmass.imageSize == 1)
+				size = 1024;
+			else if (options.lightmass.imageSize == 2)
+				size = 2048;
+			else if (options.lightmass.imageSize == 3)
+				size = 4096;
+			else if (options.lightmass.imageSize == 4)
+				size = 8192;
 
-			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
-			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
-			material->getParameter("metalness")->uniform1f(0);
-			material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
+			ray::LightMassParams params;
+			params.lightMap.width = size;
+			params.lightMap.height = size;
+			params.lightMap.margin = options.uvmapper.margin;
+			params.enableGI = options.lightmass.enableGI;
+			params.baking.environmentColor = options.lightmass.environmentColor.xyz() * options.lightmass.environmentColor.w;
+			params.baking.hemisphereFar = options.lightmass.hemisphereFar;
+			params.baking.hemisphereNear = options.lightmass.hemisphereNear;
+			params.baking.hemisphereSize = options.lightmass.sampleCount * 32 + 32;
+			params.baking.interpolationPasses = options.lightmass.interpolationPasses;
+			params.baking.interpolationThreshold = options.lightmass.interpolationThreshold;
+			params.baking.listener = progress;
 
-			if (shininessParams[i * 10 + j] > 0.45 &&
-				shininessParams[i * 10 + j] < 0.8 ||
-				shininessParams[i * 10 + j] > 0.95)
+			ray::LightMass lightMass(_lightMassListener);
+			if (!lightMass.open())
 			{
-				material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
+				_progressed = true;
+				return false;
 			}
 
-			material->getParameter("smoothness")->uniform1f(shininessParams[i * 10 + j]);
-			material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
-			material->getParameter("texNormal")->uniformTexture(normalMap);
+			ray::LightMapData lightMap;
+			if (!lightMass.baking(params, *_model, lightMap))
+			{
+				_progressed = true;
+				return false;
+			}
 
-			_objects.push_back(newGameObject);
+			_progressed = true;
+			return true;
+		};
+
+		if (_model)
+		{
+			_progressed = false;
+			_thread = std::make_unique<std::thread>(thread);
 		}
 	}
+
+	if (_progressed)
+	{
+		if (_thread->joinable())
+			_thread->join();
+
+		_thread.reset();
+	}
+
+	return !_progressed;
 }
 
 bool
@@ -865,6 +835,57 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 	ray::PMXHandler header;
 	if (!header.doSave(*stream, *model))
 		return false;
+
+	return true;
+}
+
+bool
+GuiControllerComponent::onSaveLightMass(const ray::util::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
+{
+	assert(channel == 1 || channel == 3 || channel == 4);
+
+	bool isGreyscale = channel == 1;
+	bool hasAlpha = channel == 1 ? false : true;
+
+	if (margin > 0)
+	{
+		std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * channel);
+		std::memset(lightmapTemp.get(), 0, w * h * channel * sizeof(float));
+
+		for (std::uint32_t j = 0; j < std::max<std::uint32_t>(margin >> 1, 1); j++)
+		{
+			ray::image::smoothFilter(data, lightmapTemp.get(), w, h, channel);
+			ray::image::dilateFilter(lightmapTemp.get(), data, w, h, channel);
+		}
+	}
+
+	ray::image::format_t format = isGreyscale ? ray::image::format_t::R8SRGB : ray::image::format_t::R8G8B8SRGB;
+	if (hasAlpha)
+		format = ray::image::format_t::R8G8B8A8SRGB;
+
+	ray::image::Image image;
+	if (!image.create(w, h, format))
+	{
+		std::cerr << "Failed to create image : " << path << std::endl;
+		return false;
+	}
+
+	auto temp = (std::uint8_t*)image.data();
+
+	if (channel == 1)
+		ray::image::r32f_to_r8uint(data, temp, w, h, channel);
+	else
+		ray::image::rgb32f_to_rgbt8(data, temp, w, h, channel);
+
+	ray::image::flipHorizontal(temp, w, h, channel);
+
+	if (!isGreyscale)
+	{
+		for (std::size_t i = 0; i < w * h * channel; i += channel)
+			std::swap(temp[i], temp[i + 2]);
+	}
+
+	image.save(path);
 
 	return true;
 }

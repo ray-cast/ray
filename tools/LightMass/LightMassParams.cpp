@@ -86,7 +86,7 @@ LightSampleParams::LightSampleParams() noexcept
 	, hemisphereNear(0.1)
 	, hemisphereFar(100)
 	, hemisphereWeights(nullptr)
-	, clearColor(float3::One)
+	, environmentColor(float3::One)
 	, interpolationPasses(1)
 	, interpolationThreshold(1e-4)
 {

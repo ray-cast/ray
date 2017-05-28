@@ -52,19 +52,23 @@ public:
 
 	ray::GameComponentPtr clone() const noexcept;
 
-	void setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
-	void setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
-	void setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
+	void setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
+	void setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
+	void setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
 
-	void setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
-	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate);
+	void setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
+	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
 
 	void setUVMapperCancel(std::function<bool()> delegate) noexcept;
 	void setUVMapperWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
 	void setUVMapperProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
 
+	void setLightMassCancel(std::function<bool()> delegate) noexcept;
+	void setLightMassWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
+	void setLightMassProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
+
 private:
-	virtual void onMessage(const ray::MessagePtr& message) noexcept;
+	void onMessage(const ray::MessagePtr& message) noexcept;
 
 private:
 	void showMainMenu() noexcept;
@@ -74,6 +78,7 @@ private:
 
 	void showMessage() noexcept;
 	void showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept;
+	void showProcessMessage() noexcept;
 
 	bool showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
 	bool showFileSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
@@ -86,7 +91,7 @@ private:
 	void showProjectSaveAsBrowse() noexcept;
 
 	void startUVMapper() noexcept;
-	void showProcessMessage() noexcept;
+	void startLightMass() noexcept;
 
 	void switchLangPackage(UILang::Lang type) noexcept;
 
@@ -95,7 +100,6 @@ private:
 	GuiViewComponent& operator=(const GuiViewComponent&) = delete;
 
 private:
-	float _fps;
 	float _progress;
 
 	bool _showMainMenu;
@@ -108,15 +112,16 @@ private:
 	bool _showProcessMessage;
 	bool _showProcessMessageFirst;
 
+	LightMassType _lightMassType;
+
 	std::string _pathProject;
+	std::vector<const char*> _langs;
 
 	std::size_t _messageHash;
 	std::string _messageTitle;
 	std::string _messageText;
 	std::map<std::size_t, bool> _ignoreMessage;
-	std::vector<const char*> _langs;
 
-	ray::float4 _clearColor;
 	ray::GuiStyle _style;
 	ray::GuiStyle _styleDefault;
 
@@ -133,6 +138,10 @@ private:
 	std::function<bool()> _onUVMapperCancel;
 	std::function<bool(const GuiParams&)> _onUVMapperWillStart;
 	std::function<bool(const GuiParams&, float&)> _onUVMapperProcess;
+
+	std::function<bool()> _onLightMassCancel;
+	std::function<bool(const GuiParams&)> _onLightMassWillStart;
+	std::function<bool(const GuiParams&, float&)> _onLightMassProcess;
 };
 
 #endif

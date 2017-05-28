@@ -81,7 +81,8 @@ const char* en_lang[] = {
 	" Start Baking ",
 	"Unsupported Model",
 	"Process",
-	"Succeeded"
+	"Succeeded",
+	"Please load a model before start baking."
 };
 
 const char* cn_lang[] = {
@@ -129,7 +130,8 @@ const char* cn_lang[] = {
 	" 开始烘培 ",
 	"不支持的模型",
 	"处理中",
-	"保存成功"
+	"保存成功",
+	"请先载入一个模型"
 };
 
 std::vector<std::string> cn_lang_utf8;

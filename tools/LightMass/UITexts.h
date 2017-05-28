@@ -85,10 +85,11 @@ public:
 		RayTracingZfar,
 		InterpolationPasses,
 		InterpolationThreshold,
-		StartBaking,
+		StartLightMass,
 		UnsupportModel,
 		Process,
-		Succeeded
+		Succeeded,
+		ChooseModel
 	};
 
 	enum class Lang

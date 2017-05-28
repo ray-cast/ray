@@ -109,9 +109,11 @@ struct LightSampleParams
 	float hemisphereFar;
 	const HemisphereWeight<float>* hemisphereWeights;
 
-	float3 clearColor;
+	float3 environmentColor;
 	int interpolationPasses;
 	float interpolationThreshold;
+
+	std::function<bool(float progress)> listener;
 };
 
 struct LightBakingParams

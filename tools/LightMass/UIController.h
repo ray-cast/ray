@@ -51,6 +51,11 @@ public:
 	ray::GameComponentPtr clone() const noexcept;
 
 private:
+	void onAttachComponent(ray::GameComponentPtr& component) except;
+	void onDetachComponent(ray::GameComponentPtr& component) noexcept;
+
+	void onActivate() except;
+
 	bool onModelImport(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
 	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
 
@@ -58,12 +63,12 @@ private:
 	bool onUVMapperWillStart(const GuiParams& params) noexcept;
 	bool onUVMapperProcessing(const GuiParams& params, float& progressing) noexcept;
 
+	bool onLightMassCancel() noexcept;
+	bool onLightMassWillStart(const GuiParams& params) noexcept;
+	bool onLightMassProcessing(const GuiParams& params, float& progressing) noexcept;
+
+	bool onSaveLightMass(const ray::util::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin);
 	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
-
-	virtual void onAttachComponent(ray::GameComponentPtr& component) except;
-	virtual void onDetachComponent(ray::GameComponentPtr& component) noexcept;
-
-	virtual void onActivate() except;
 
 private:
 	GuiControllerComponent(const GuiControllerComponent&) = delete;

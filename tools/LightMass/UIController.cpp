@@ -555,7 +555,8 @@ GuiControllerComponent::onUVMapperCancel() noexcept
 	if (_thread)
 	{
 		if (_thread->joinable())
-			_thread->detach();
+			_thread->join();
+		_progressed = true;
 	}
 
 	return true;
@@ -617,21 +618,22 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 }
 
 bool
+GuiControllerComponent::onLightMassWillStart(const GuiParams& params) noexcept
+{
+	return _model ? true : false;
+}
+
+bool
 GuiControllerComponent::onLightMassCancel() noexcept
 {
 	if (_thread)
 	{
 		if (_thread->joinable())
-			_thread->detach();
+			_thread->join();
+		_progressed = true;
 	}
 
 	return true;
-}
-
-bool
-GuiControllerComponent::onLightMassWillStart(const GuiParams& params) noexcept
-{
-	return _model ? true : false;
 }
 
 bool

@@ -81,6 +81,7 @@ private:
 
 	std::unique_ptr<ray::PMX> _model;
 	std::unique_ptr<std::thread> _thread;
+	std::unique_ptr<ray::LightMapData> _lightMap;
 
 	ray::LightMapListenerPtr _lightMapListener;
 	ray::LightMassListenerPtr _lightMassListener;

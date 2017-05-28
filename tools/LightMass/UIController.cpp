@@ -680,13 +680,14 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 				return false;
 			}
 
-			ray::LightMapData lightMap;
-			if (!lightMass.baking(params, *_model, lightMap))
+			auto lightMap = std::make_unique<ray::LightMapData>();
+			if (!lightMass.baking(params, *_model, *lightMap))
 			{
 				_progressed = true;
 				return false;
 			}
 
+			_lightMap = std::move(lightMap);
 			_progressed = true;
 			return true;
 		};

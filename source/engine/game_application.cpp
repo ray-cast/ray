@@ -76,7 +76,7 @@ class GameAppListener final : public GameListener
 public:
 	virtual void onMessage(const util::string& message) noexcept
 	{
-		std::cout << message << std::endl;
+		std::cerr << message << std::endl;
 	}
 };
 
@@ -85,7 +85,7 @@ class GameIoListener final : public IoListener
 public:
 	virtual void onMessage(const util::string& message) noexcept
 	{
-		std::cout << message << std::endl;
+		std::cerr << message << std::endl;
 	}
 };
 

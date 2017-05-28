@@ -784,8 +784,8 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 			material.nameEng.length = sizeof(L"Material") - 2;
 
 			material.Diffuse = ray::math::linear2srgb(diff_spec_parametes[i * 10 + j].xyz());
-			material.Specular = ray::float3(i / 9.0f, j / 9.0f, 0.5);
-			material.Ambient = ray::float3(metalnessParams[i * 10 + j]);
+			material.Specular = ray::float3(i / 9.0f, j / 9.0f, metalnessParams[i * 10 + j]);
+			material.Ambient = ray::float3(0.5, 0.5, 0.5);
 			material.Shininess = SmoothnessToShininess(shininessParams[i * 10 + j]);
 			material.IndicesCount = sphereMesh->getNumIndices();
 			material.TextureIndex = 255;

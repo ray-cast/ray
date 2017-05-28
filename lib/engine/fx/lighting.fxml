@@ -37,7 +37,7 @@
 
         float3 fresnelSchlick(float3 f0, float f9, float LdotH)
         {
-            return lerp(f0, f9, pow(1 - LdotH, 5));
+            return lerp(f0, f9, pow5(1 - LdotH));
         }
 
         float LambertBRDF(float3 N, float3 L)

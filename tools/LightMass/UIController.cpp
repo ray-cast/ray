@@ -652,7 +652,7 @@ GuiControllerComponent::onActivate() except
 		return;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
-	sphereMesh->makeSphere(1.0, 32, 24);
+	sphereMesh->makeSphere(1.0, 48, 36);
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setActive(true);
@@ -784,7 +784,7 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 			material.nameEng.length = sizeof(L"Material") - 2;
 
 			material.Diffuse = ray::math::linear2srgb(diff_spec_parametes[i * 10 + j].xyz());
-			material.Specular = ray::float3(0.5);
+			material.Specular = ray::float3(i / 9.0f, j / 9.0f, 0.5);
 			material.Ambient = ray::float3(metalnessParams[i * 10 + j]);
 			material.Shininess = SmoothnessToShininess(shininessParams[i * 10 + j]);
 			material.IndicesCount = sphereMesh->getNumIndices();

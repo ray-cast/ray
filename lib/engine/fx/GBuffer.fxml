@@ -79,6 +79,25 @@
                 normal.z = f / 2 - 1;
                 return normalize(normal);
             }
+            
+			float3 EncodeYcbcr(float3 rgb)
+			{
+				rgb = sqrt(rgb);
+				float3 encode;
+				encode.x = dot(float3(0.299, 0.587, 0.114),   rgb);
+				encode.y = dot(float3(-0.1687, -0.3312, 0.5), rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+				encode.z = dot(float3(0.5, -0.4186, -0.0813), rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+				return encode;
+			}
+
+			float3 DecodeYcbcr(float3 YCbCr)
+			{
+				YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
+				float R = YCbCr.x + 1.402 * YCbCr.z;
+				float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
+				float B = YCbCr.x + 1.772 * YCbCr.y;
+				return pow2(float3(R, G, B));
+			}
 
             GbufferParam EncodeGbuffer(MaterialParam material)
             {
@@ -92,12 +111,12 @@
                 material.specular *= 0.08;
                 material.specular = lerp(material.specular, max(material.specular, material.albedo), material.metalness);
                 
-                gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
+                gbuffer.buffer3.xyz = EncodeYcbcr(material.specular);
                 gbuffer.buffer3.w = 0;
 
                 if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
                 {
-                    material.transmittance = rgb2ycbcr(material.transmittance);
+                    material.transmittance = EncodeYcbcr(material.transmittance);
                     gbuffer.buffer3.yz = material.transmittance.gb;
                     gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
                 }
@@ -130,11 +149,11 @@
                 if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
                 {
                     material.specular = buffer3.xxx;
-                    material.transmittance = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+                    material.transmittance = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
                 }
                 else
                 {
-                    material.specular = ycbcr2rgb(buffer3.xyz);
+                    material.specular = DecodeYcbcr(buffer3.xyz);
                     material.transmittance = 0;
                 }
             }
@@ -184,7 +203,7 @@
                 return viewdir * depth / viewdir.z;
             }
 
-            float computeWeightBlendOIT(float linearDepth)
+            float WeightBlendOIT(float linearDepth)
             {
                 return clamp(0.03 / (1e-5 + pow(linearDepth, 4.0)), 1e-2, 3e3);
             }

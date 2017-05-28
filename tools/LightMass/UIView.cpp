@@ -441,11 +441,9 @@ GuiViewComponent::showProcessMessage() noexcept
 	if (!_onUVMapperProcess)
 		return;
 
-	//ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0);
-
 	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
-		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 100));
+		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
 		ray::Gui::progressBar(_progress);
 		ray::Gui::text("");
 		ray::Gui::text("");
@@ -480,8 +478,6 @@ GuiViewComponent::showProcessMessage() noexcept
 
 		ray::Gui::endPopup();
 	}
-
-	//ray::Gui::popStyleVar();
 }
 
 void

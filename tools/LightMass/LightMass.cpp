@@ -54,6 +54,9 @@ LightMass::LightMass(LightMassListenerPtr listener) noexcept
 
 LightMass::~LightMass() noexcept
 {
+	_graphicsContext.reset();
+	_graphicsSwapchain.reset();
+	_graphicsDevice.reset();
 }
 
 bool

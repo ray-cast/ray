@@ -106,6 +106,8 @@ LightBakingAO::open(const LightModelData& params) noexcept
 
 	auto glcontext = std::make_unique<GLContext>();
 
+	::glewInit();
+
 	glGenBuffers(1, &glcontext->vbo);
 	if (glcontext->vbo == GL_NONE)
 	{
@@ -214,51 +216,26 @@ LightBakingAO::doSampleHemisphere(const LightBakingParams& params, const Viewpor
 	Frustum fru;
 	fru.extract(mvp);
 
-	if (glMultiDrawElementsIndirect)
+	for (auto& it : params.model.subsets)
 	{
-		_drawcalls.clear();
+		if (!fru.contains(it.boundingBox.aabb()))
+			continue;
 
-		for (auto& it : params.model.subsets)
+		if (glDrawElementsInstancedBaseVertexBaseInstance)
 		{
-			if (!fru.contains(it.boundingBox.aabb()))
-				continue;
-
-			GLDrawElementsIndirectCommand command;
-			command.baseInstance = it.drawcall.baseInstance;
-			command.baseVertex = it.drawcall.baseVertex;
-			command.count = it.drawcall.count;
-			command.firstIndex = it.drawcall.firstIndex;
-			command.instanceCount = it.drawcall.instanceCount;
-
-			_drawcalls.push_back(command);
+			glDrawElementsInstancedBaseVertexBaseInstance(
+				GL_TRIANGLES,
+				it.drawcall.count,
+				faceType,
+				(char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices,
+				it.drawcall.instanceCount,
+				it.drawcall.baseVertex,
+				it.drawcall.baseInstance
+			);
 		}
-
-		assert(_drawcalls.size() < std::numeric_limits<GLsizei>::max());
-		glMultiDrawElementsIndirect(GL_TRIANGLES, faceType, _drawcalls.data(), (GLsizei)_drawcalls.size(), 0);
-	}
-	else
-	{
-		for (auto& it : params.model.subsets)
+		else
 		{
-			if (!fru.contains(it.boundingBox.aabb()))
-				continue;
-
-			if (glDrawElementsInstancedBaseVertexBaseInstance)
-			{
-				glDrawElementsInstancedBaseVertexBaseInstance(
-					GL_TRIANGLES,
-					it.drawcall.count,
-					faceType,
-					(char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices,
-					it.drawcall.instanceCount,
-					it.drawcall.baseVertex,
-					it.drawcall.baseInstance
-				);
-			}
-			else
-			{
-				glDrawElements(GL_TRIANGLES, it.drawcall.count, faceType, (char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices);
-			}
+			glDrawElements(GL_TRIANGLES, it.drawcall.count, faceType, (char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices);
 		}
 	}
 }

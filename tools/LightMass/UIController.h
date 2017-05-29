@@ -41,6 +41,8 @@
 #include "LightMass.h"
 #include "LightMapPack.h"
 
+#include <future>
+
 class GuiControllerComponent final : public ray::GameComponent
 {
 	__DeclareSubClass(GuiViewComponent, ray::GameComponent)
@@ -77,10 +79,8 @@ private:
 private:
 	ray::GameObjects _objects;
 
-	bool _progressed;
-
 	std::unique_ptr<ray::PMX> _model;
-	std::unique_ptr<std::thread> _thread;
+	std::unique_ptr<std::future<bool>> _future;
 	std::unique_ptr<ray::LightMapData> _lightMap;
 
 	ray::LightMapListenerPtr _lightMapListener;

@@ -41,8 +41,6 @@ _NAME_BEGIN
 
 __ImplementSubClass(WGLSwapchain, GraphicsSwapchain, "WGLSwapchain")
 
-thread_local WGLSwapchain* WGLSwapchain::_swapchain = nullptr;
-
 WGLSwapchain::WGLSwapchain() noexcept
 	: _hdc(nullptr)
 	, _context(nullptr)
@@ -119,6 +117,8 @@ WGLSwapchain::close() noexcept
 void
 WGLSwapchain::setActive(bool active) noexcept
 {
+	static thread_local WGLSwapchain* _swapchain = nullptr;
+
 	if (_isActive != active)
 	{
 		if (active)

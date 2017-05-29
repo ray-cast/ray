@@ -274,17 +274,13 @@ float metalnessParams[] =
 GuiControllerComponent::GuiControllerComponent() noexcept
 	: _lightMapListener(std::make_shared<AppMapListener>())
 	, _lightMassListener(std::make_shared<AppMassListener>())
-	, _progressed(false)
 {
 }
 
 GuiControllerComponent::~GuiControllerComponent() noexcept
 {
-	if (_thread)
-	{
-		if (_thread->joinable())
-			_thread->detach();
-	}
+	if (_future)
+		_future->wait();
 }
 
 ray::GameComponentPtr
@@ -552,12 +548,8 @@ GuiControllerComponent::onUVMapperWillStart(const GuiParams& params) noexcept
 bool
 GuiControllerComponent::onUVMapperCancel() noexcept
 {
-	if (_thread)
-	{
-		if (_thread->joinable())
-			_thread->join();
-		_progressed = true;
-	}
+	if (_future)
+		_future->wait();
 
 	return true;
 }
@@ -568,7 +560,7 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 	if (!_model)
 		return false;
 
-	if (!_thread)
+	if (!_future)
 	{
 		auto progress = [&progressing](float progress) -> bool
 		{
@@ -576,7 +568,8 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 			return true;
 		};
 
-		auto thread = [&]() -> bool
+		_future = std::make_unique<std::future<bool>>(
+			std::async(std::launch::async, [&]() -> bool
 		{
 			std::uint32_t size = 512;
 			if (params.lightmass.imageSize == 1)
@@ -590,31 +583,24 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 
 			ray::LightMapPack lightPack(_lightMapListener);
 			if (!lightPack.atlasUV(*_model, size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin, progress))
-			{
-				_progressed = true;
 				return false;
-			}
 
-			_progressed = true;
 			return true;
-		};
+		}));
 
-		if (_model)
-		{
-			_progressed = false;
-			_thread = std::make_unique<std::thread>(thread);
-		}
+		return true;
 	}
-
-	if (_progressed)
+	else
 	{
-		if (_thread->joinable())
-			_thread->join();
+		std::chrono::milliseconds span(100);
+		if (_future->wait_for(span) == std::future_status::timeout)
+			return true;
 
-		_thread.reset();
+		bool succeeded = _future.get();
+		_future.reset();
+
+		return false;
 	}
-
-	return !_progressed;
 }
 
 bool
@@ -626,12 +612,8 @@ GuiControllerComponent::onLightMassWillStart(const GuiParams& params) noexcept
 bool
 GuiControllerComponent::onLightMassCancel() noexcept
 {
-	if (_thread)
-	{
-		if (_thread->joinable())
-			_thread->join();
-		_progressed = true;
-	}
+	if (_future)
+		_future->wait();
 
 	return true;
 }
@@ -642,7 +624,7 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 	if (!_model)
 		return false;
 
-	if (!_thread)
+	if (!_future)
 	{
 		auto progress = [&](float progress) -> bool
 		{
@@ -650,7 +632,8 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 			return true;
 		};
 
-		auto thread = [&]() -> bool
+		_future = std::make_unique<std::future<bool>>(
+			std::async(std::launch::async, [&]() -> bool
 		{
 			std::uint32_t size = 512;
 			if (options.lightmass.imageSize == 1)
@@ -677,39 +660,29 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 
 			ray::LightMass lightMass(_lightMassListener);
 			if (!lightMass.open())
-			{
-				_progressed = true;
 				return false;
-			}
 
 			auto lightMap = std::make_unique<ray::LightMapData>();
 			if (!lightMass.baking(params, *_model, *lightMap))
-			{
-				_progressed = true;
 				return false;
-			}
 
 			_lightMap = std::move(lightMap);
-			_progressed = true;
 			return true;
-		};
+		}));
 
-		if (_model)
-		{
-			_progressed = false;
-			_thread = std::make_unique<std::thread>(thread);
-		}
+		return true;
 	}
-
-	if (_progressed)
+	else
 	{
-		if (_thread->joinable())
-			_thread->join();
+		std::chrono::milliseconds span(100);
+		if (_future->wait_for(span) == std::future_status::timeout)
+			return true;
 
-		_thread.reset();
+		bool succeeded = _future.get();
+		_future.reset();
+
+		return false;
 	}
-
-	return !_progressed;
 }
 
 bool

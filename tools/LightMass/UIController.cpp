@@ -568,8 +568,7 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 			return true;
 		};
 
-		_future = std::make_unique<std::future<bool>>(
-			std::async(std::launch::async, [&]() -> bool
+		_future = std::make_unique<std::future<bool>>(std::async(std::launch::async, [&]() -> bool
 		{
 			std::uint32_t size = 512;
 			if (params.lightmass.imageSize == 1)
@@ -592,8 +591,7 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 	}
 	else
 	{
-		std::chrono::milliseconds span(100);
-		if (_future->wait_for(span) == std::future_status::timeout)
+		if (_future->wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
 			return true;
 
 		bool succeeded = _future->get();
@@ -632,8 +630,7 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 			return true;
 		};
 
-		_future = std::make_unique<std::future<bool>>(
-			std::async(std::launch::async, [&]() -> bool
+		_future = std::make_unique<std::future<bool>>(std::async(std::launch::async, [&]() -> bool
 		{
 			std::uint32_t size = 512;
 			if (options.lightmass.imageSize == 1)
@@ -674,8 +671,7 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 	}
 	else
 	{
-		std::chrono::milliseconds span(100);
-		if (_future->wait_for(span) == std::future_status::timeout)
+		if (_future->wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
 			return true;
 
 		bool succeeded = _future->get();
@@ -709,7 +705,11 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 	model->header.encode = 0;
 	model->numVertices = sphereMesh->getNumVertices() * out * out;
 	model->numIndices = sphereMesh->getNumIndices() * out * out;
-	model->numMaterials = out*out;
+	model->numMaterials = out * out;
+	model->vertices.resize(out * out * sphereMesh->getNumVertices());
+	model->indices.resize(out * out * sphereMesh->getNumIndices() * sizeof(std::uint32_t));
+
+	ray::PMX_Vertex* data = model->vertices.data();
 
 	for (std::size_t i = 0; i < out; i++)
 	{
@@ -725,25 +725,20 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 				v.coord = sphereMesh->getTexcoordArray()[k];
 				v.edge = 1.0;
 
-				model->vertices.push_back(v);
+				*(data++) = v;
 			}
 		}
 	}
 
-	model->indices.resize(out * out * sphereMesh->getNumIndices() * sizeof(std::uint32_t));
-
 	std::uint32_t startIndices = 0;
-	std::uint32_t* data = (std::uint32_t*)model->indices.data();
+	std::uint32_t* indicesData = (std::uint32_t*)model->indices.data();
 
-	for (std::size_t i = 0; i < out; i++)
+	for (std::size_t i = 0; i < out * out; i++)
 	{
-		for (std::size_t j = 0; j < out; j++)
-		{
-			for (std::size_t k = 0; k < sphereMesh->getNumIndices(); k++)
-				(*data++) = startIndices + sphereMesh->getIndicesArray()[k];
+		for (std::size_t k = 0; k < sphereMesh->getNumIndices(); k++)
+			*(indicesData++) = startIndices + sphereMesh->getIndicesArray()[k];
 
-			startIndices += sphereMesh->getNumVertices();
-		}
+		startIndices += sphereMesh->getNumVertices();
 	}
 
 	ray::PMX_Name diff;

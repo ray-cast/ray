@@ -596,7 +596,7 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 		if (_future->wait_for(span) == std::future_status::timeout)
 			return true;
 
-		bool succeeded = _future.get();
+		bool succeeded = _future->get();
 		_future.reset();
 
 		return false;
@@ -678,7 +678,7 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 		if (_future->wait_for(span) == std::future_status::timeout)
 			return true;
 
-		bool succeeded = _future.get();
+		bool succeeded = _future->get();
 		_future.reset();
 
 		return false;

@@ -81,7 +81,7 @@ private:
 
 	std::unique_ptr<ray::PMX> _model;
 	std::unique_ptr<std::future<bool>> _future;
-	std::unique_ptr<ray::LightMapData> _lightMap;
+	std::unique_ptr<ray::LightMass> _lightMass;
 
 	ray::LightMapListenerPtr _lightMapListener;
 	ray::LightMassListenerPtr _lightMassListener;

@@ -41,16 +41,21 @@
 
 _NAME_BEGIN
 
-class LightBakingGI : public LightMassBaking
+class LightBakingGI final : public LightMassBaking
 {
 public:
 	LightBakingGI() noexcept;
+	LightBakingGI(const LightBakingParams& params) noexcept;
 	~LightBakingGI() noexcept;
 
-	bool open(const LightModelData& params) noexcept;
+	bool open(const LightBakingParams& params) noexcept;
 	void close() noexcept;
 
-	void doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& viewport, const float4x4& mvp);
+private:
+	bool setupContext(const LightModelData& params) noexcept;
+
+	void doSampleHemisphere(const Viewportt<int>& viewport, const float4x4& mvp);
+	void computeBoundingBox(const LightModelData& params, ray::BoundingBox& boundingBox, std::uint32_t firstFace, std::size_t faceCount) noexcept;
 
 private:
 	struct GLContext
@@ -72,16 +77,21 @@ private:
 
 	struct GLDrawElementsIndirectCommand
 	{
+		float3 emissive;
 		std::uint32_t count;
 		std::uint32_t instanceCount;
 		std::uint32_t firstIndex;
 		std::uint32_t baseVertex;
 		std::uint32_t baseInstance;
+		std::uint32_t faceType;
 	};
 
 	std::unique_ptr<GLContext> _glcontext;
 
+	std::vector<BoundingBox> _boundingBoxs;
 	std::vector<GLDrawElementsIndirectCommand> _drawcalls;
+
+	std::function<bool(float progress)> _progress;
 };
 
 _NAME_END

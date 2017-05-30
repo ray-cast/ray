@@ -70,6 +70,7 @@ LightMassBaking::HemiContext::~HemiContext() noexcept
 }
 
 LightMassBaking::LightMassBaking() noexcept
+	: _isStopped(false)
 {
 	_camera.view = float4x4::One;
 	_camera.project = float4x4::One;
@@ -312,52 +313,28 @@ LightMassBaking::getWorldTransform() const noexcept
 }
 
 bool
-LightMassBaking::baking(const LightBakingParams& params) noexcept
+LightMassBaking::isStopped() const noexcept
 {
-	assert(params.lightMap.data);
-	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
-	assert(params.lightMap.channel == 1 || params.lightMap.channel == 2 || params.lightMap.channel == 3 || params.lightMap.channel == 4);
+	return _isStopped;
+}
 
+bool
+LightMassBaking::start() noexcept
+{
 	try
 	{
-		if (!this->setup(params.baking))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Could not initialize with BakeTools.");
-
-			return false;
-		}
-
-		if (_lightMassListener)
-			_lightMassListener->onBakingStart();
-
-		GLenum faceType = GL_UNSIGNED_INT;
-		if (params.model.sizeofIndices == 1)
-			faceType = GL_UNSIGNED_BYTE;
-		else if (params.model.sizeofIndices == 2)
-			faceType = GL_UNSIGNED_SHORT;
-
-		this->setRenderTarget(params.lightMap.data.get(), params.lightMap.width, params.lightMap.height, params.lightMap.channel);
-		this->setGeometry(
-			GL_FLOAT, params.model.vertices + params.model.strideVertices, params.model.sizeofVertices,
-			GL_FLOAT, params.model.vertices + params.model.strideTexcoord, params.model.sizeofVertices,
-			params.model.numIndices, faceType, params.model.indices);
-
 		Viewportt<int> vp;
 
 		std::size_t baseIndex = 0;
 
-		while (this->beginSampleHemisphere(vp.ptr()))
+		while (!_isStopped && this->beginSampleHemisphere(vp.ptr()))
 		{
-			this->doSampleHemisphere(params, vp, _camera.viewProject);
+			this->doSampleHemisphere(vp, _camera.viewProject);
 
 			if (baseIndex != _ctx->meshPosition.triangle.baseIndex)
 			{
 				if (_lightMassListener)
 					_lightMassListener->onBakingProgressing(this->getSampleProcess());
-
-				if (params.baking.listener)
-					params.baking.listener(this->getSampleProcess());
 
 				baseIndex = _ctx->meshPosition.triangle.baseIndex;
 			}
@@ -365,11 +342,6 @@ LightMassBaking::baking(const LightBakingParams& params) noexcept
 			if (!this->endSampleHemisphere())
 				return false;
 		}
-
-		if (_lightMassListener)
-			_lightMassListener->onBakingEnd();
-
-		this->close();
 	}
 	catch (...)
 	{
@@ -380,7 +352,14 @@ LightMassBaking::baking(const LightBakingParams& params) noexcept
 }
 
 void
-LightMassBaking::setRenderTarget(float *outLightmap, int w, int h, int c)
+LightMassBaking::stop() noexcept
+{
+	if (!_isStopped)
+		_isStopped = true;
+}
+
+void
+LightMassBaking::setRenderTarget(float outLightmap[], int w, int h, int c)
 {
 	_ctx->lightmap.data = outLightmap;
 	_ctx->lightmap.width = w;
@@ -865,12 +844,11 @@ LightMassBaking::beginProcessHemisphereBatch()
 	_ctx->hemisphere.transfer.pboTransferStarted = true;
 	_ctx->hemisphere.transfer.fbHemiCount = _ctx->hemisphere.fbHemiIndex;
 	_ctx->hemisphere.transfer.fbHemiToLightmapLocation.swap(_ctx->hemisphere.fbHemiToLightmapLocation);
+	_ctx->hemisphere.fbHemiIndex = 0;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindVertexArray(0);
 	glEnable(GL_DEPTH_TEST);
-
-	_ctx->hemisphere.fbHemiIndex = 0;
 }
 
 bool

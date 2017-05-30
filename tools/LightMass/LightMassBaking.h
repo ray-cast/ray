@@ -54,13 +54,16 @@ public:
 	void setWorldTransform(const float4x4& transform) noexcept;
 	const float4x4& getWorldTransform() const noexcept;
 
-	bool baking(const LightBakingParams& options) noexcept;
+	bool isStopped() const noexcept;
+
+	bool start() noexcept;
+	void stop() noexcept;
 
 protected:
 	bool setup(const LightSampleParams& params) noexcept;
 	void close() noexcept;
 
-	void setRenderTarget(float* lightmap, int w, int h, int channels);
+	void setRenderTarget(float lightmap[], int w, int h, int channels);
 	void setGeometry(int positionsType, const void *positionsXYZ, int positionsStride, int lightmapCoordsType, const void *lightmapCoordsUV, int lightmapCoordsStride, int count, int indicesType, const void *indices);
 	void setSamplePosition(std::size_t indicesTriangleBaseIndex);
 
@@ -90,7 +93,7 @@ protected:
 	bool beginSampleHemisphere(int* outViewport4);
 	bool endSampleHemisphere();
 
-	virtual void doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& viewport, const float4x4& mvp) = 0;
+	virtual void doSampleHemisphere(const Viewportt<int>& viewport, const float4x4& mvp) = 0;
 
 	float getSampleProcess() noexcept;
 
@@ -206,10 +209,11 @@ private:
 		~HemiContext() noexcept;
 	};
 
+	bool _isStopped;
+
 	HemiCamera _camera;
 
 	std::unique_ptr<HemiContext> _ctx;
-
 	std::vector<LightModelDrawCall> _drawcalls;
 
 	LightMassListenerPtr _lightMassListener;

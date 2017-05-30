@@ -37,13 +37,15 @@
 #ifndef _H_LIGHTMASS_PARAMS_H_
 #define _H_LIGHTMASS_PARAMS_H_
 
-#include "HemisphereWeight.h"
+#include "LightMassTypes.h"
 
 _NAME_BEGIN
 
-struct LightMapData
+class LightMapData
 {
+public:
 	LightMapData() noexcept;
+	LightMapData(std::uint16_t w, std::uint16_t h, std::uint16_t c) noexcept;
 
 	std::uint16_t width;
 	std::uint16_t height;
@@ -76,7 +78,6 @@ struct LightModelSubset
 	LightModelSubset() noexcept;
 
 	float3 emissive;
-	BoundingBox boundingBox;
 	LightModelDrawCall drawcall;
 };
 
@@ -119,16 +120,15 @@ struct LightSampleParams
 struct LightBakingParams
 {
 	LightModelData model;
-	LightMapData lightMap;
+	LightMapDataPtr lightMap;
 	LightSampleParams baking;
 };
 
 struct LightMassParams
 {
-	LightMassParams();
+	LightMassParams() noexcept;
 
-	bool enableGI;
-	LightMapParams lightMap;
+	LightModelData model;
 	LightSampleParams baking;
 };
 

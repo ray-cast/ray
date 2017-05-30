@@ -43,27 +43,28 @@ _NAME_BEGIN
 LightMass::LightMass() noexcept
 	: _initialize(false)
 	, _lightMassListener(std::make_shared<LightMassListener>())
+	, _lightMapData(std::make_shared<LightMapData>())
+	, _isStopped(true)
 {
 }
 
 LightMass::LightMass(LightMassListenerPtr listener) noexcept
 	: _initialize(false)
 	, _lightMassListener(listener)
+	, _lightMapData(std::make_shared<LightMapData>())
+	, _isStopped(true)
 {
 }
 
 LightMass::~LightMass() noexcept
 {
-	_graphicsContext.reset();
-	_graphicsSwapchain.reset();
-	_graphicsDevice.reset();
+	this->close();
 }
 
 bool
-LightMass::open() noexcept
+LightMass::open(const LightMassParams& params) noexcept
 {
-	if (_initialize)
-		return true;
+	assert(!_initialize);
 
 	GraphicsDeviceDesc deviceDesc;
 	deviceDesc.setDeviceType(ray::GraphicsDeviceType::GraphicsDeviceTypeOpenGL);
@@ -107,6 +108,26 @@ LightMass::open() noexcept
 		return false;
 	}
 
+	LightBakingParams option;
+	option.model = params.model;
+	option.baking = params.baking;
+	option.lightMap = _lightMapData;
+
+	if (option.lightMap->channel == 4)
+	{
+		auto lightMass = std::make_shared<LightBakingGI>();
+		lightMass->setLightMassListener(_lightMassListener);
+		lightMass->open(option);
+		_lightMass = std::move(lightMass);
+	}
+	else
+	{
+		auto lightMass = std::make_shared<LightBakingAO>();
+		lightMass->setLightMassListener(_lightMassListener);
+		lightMass->open(option);
+		_lightMass = std::move(lightMass);
+	}
+
 	_initialize = true;
 
 	return true;
@@ -115,6 +136,18 @@ LightMass::open() noexcept
 void
 LightMass::close() noexcept
 {
+	if (_lightMass)
+		_lightMass->stop();
+
+	if (_graphicsContext)
+		_graphicsContext.reset();
+
+	if (_graphicsSwapchain)
+		_graphicsSwapchain.reset();
+
+	if (_graphicsDevice)
+		_graphicsDevice.reset();
+
 	_initialize = false;
 }
 
@@ -139,134 +172,54 @@ LightMass::getLightMassListener() const noexcept
 	return _lightMassListener;
 }
 
-bool
-LightMass::baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept
+void
+LightMass::setLightMapData(LightMapDataPtr data) noexcept
 {
-	assert(_initialize);
-	assert(params.lightMap.width >= 0 && params.lightMap.height >= 0);
+	assert(data->data);
+	assert(data->width >= 0 && data->height >= 0);
+	assert(data->channel == 4 || data->channel == 1);
 
-	LightBakingParams option;
-	option.baking = params.baking;
-	option.lightMap.width = map.width = params.lightMap.width;
-	option.lightMap.height = map.height = params.lightMap.height;
-	option.lightMap.channel = map.channel = params.enableGI ? 4 : 1;
+	_lightMapData = data;
+}
 
-	if (map.data)
-		option.lightMap.data = std::move(map.data);
-	else
+LightMapDataPtr
+LightMass::getLightMapData() const noexcept
+{
+	return _lightMapData;
+}
+
+bool
+LightMass::start() noexcept
+{
+	if (_isStopped)
+		_isStopped = false;
+
+	if (this->getLightMassListener())
+		this->getLightMassListener()->onBakingStart();
+
+	if (!_lightMass->start())
 	{
-		auto lightmap = std::make_unique<float[]>(params.lightMap.width * params.lightMap.height * option.lightMap.channel);
-		std::memset(lightmap.get(), 0, params.lightMap.width * params.lightMap.height * sizeof(float));
-		option.lightMap.data = std::move(lightmap);
+		if (_lightMassListener)
+			_lightMassListener->onMessage("Failed to baking the model");
+
+		return false;
 	}
 
-	option.model.vertices = (std::uint8_t*)model.vertices.data();
-	option.model.indices = model.indices.data();
-	option.model.sizeofVertices = sizeof(PMX_Vertex);
-	option.model.sizeofIndices = model.header.sizeOfIndices;
-	option.model.strideVertices = offsetof(PMX_Vertex, position);
-	option.model.strideTexcoord = offsetof(PMX_Vertex, addCoord[0]);
-	option.model.numVertices = model.numVertices;
-	option.model.numIndices = model.numIndices;
-	option.model.subsets.resize(model.numMaterials);
+	if (this->getLightMassListener())
+		this->getLightMassListener()->onBakingEnd();
 
-	for (std::uint32_t i = 0; i < model.numMaterials; i++)
-	{
-		std::uint32_t offset = 0;
-
-		for (std::uint32_t j = 0; j < i; j++)
-			offset += model.materials[j].IndicesCount;
-
-		option.model.subsets[i].emissive = math::srgb2linear(model.materials[i].Ambient) * model.materials[i].Shininess;
-
-		option.model.subsets[i].drawcall.count = model.materials[i].IndicesCount;
-		option.model.subsets[i].drawcall.instanceCount = 1;
-		option.model.subsets[i].drawcall.firstIndex = offset;
-		option.model.subsets[i].drawcall.baseInstance = 0;
-		option.model.subsets[i].drawcall.baseVertex = 0;
-	}
-
-	if (_lightMassListener)
-		_lightMassListener->onMessage("Calculating the bounding box of the model.");
-
-	for (std::uint32_t i = 0; i < model.numMaterials; i++)
-	{
-		BoundingBox bound;
-		this->computeBoundingBox(model, bound, option.model.subsets[i].drawcall.firstIndex * option.model.sizeofIndices, option.model.subsets[i].drawcall.count);
-		option.model.subsets[i].boundingBox = bound;
-	}
-
-	if (_lightMassListener)
-		_lightMassListener->onMessage("Calculated the bounding box of the model.");
-
-	if (params.enableGI)
-	{
-		auto lightMassBaking = std::make_shared<LightBakingGI>();
-		lightMassBaking->open(option.model);
-		lightMassBaking->setLightMassListener(_lightMassListener);
-
-		if (!lightMassBaking->baking(option))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Failed to baking the model");
-		}
-	}
-	else
-	{
-		auto lightMassBaking = std::make_shared<LightBakingAO>();
-		lightMassBaking->open(option.model);
-		lightMassBaking->setLightMassListener(_lightMassListener);
-
-		if (!lightMassBaking->baking(option))
-		{
-			if (_lightMassListener)
-				_lightMassListener->onMessage("Failed to baking the model");
-		}
-	}
-
-	map.data = std::move(option.lightMap.data);
 	return true;
 }
 
-std::uint32_t
-LightMass::getFace(const PMX& model, std::size_t n) noexcept
-{
-	std::uint8_t* data = (std::uint8_t*)model.indices.data();
-
-	if (model.header.sizeOfIndices == 1)
-		return *(std::uint8_t*)(data + n * model.header.sizeOfIndices);
-	else if (model.header.sizeOfIndices == 2)
-		return *(std::uint16_t*)(data + n * model.header.sizeOfIndices);
-	else if (model.header.sizeOfIndices == 4)
-		return *(std::uint32_t*)(data + n * model.header.sizeOfIndices);
-	else
-		return false;
-}
-
-std::uint32_t
-LightMass::getFace(const PMX& model, std::size_t n, std::uint32_t firstIndex) noexcept
-{
-	std::uint8_t* data = (std::uint8_t*)model.indices.data() + firstIndex;
-
-	if (model.header.sizeOfIndices == 1)
-		return *(std::uint8_t*)(data + n * model.header.sizeOfIndices);
-	else if (model.header.sizeOfIndices == 2)
-		return *(std::uint16_t*)(data + n * model.header.sizeOfIndices);
-	else if (model.header.sizeOfIndices == 4)
-		return *(std::uint32_t*)(data + n * model.header.sizeOfIndices);
-	else
-		return false;
-}
-
 void
-LightMass::computeBoundingBox(const PMX& model, BoundingBox& boundingBox, std::uint32_t firstFace, std::size_t faceCount) noexcept
+LightMass::stop() noexcept
 {
-	boundingBox.reset();
-
-	for (std::size_t i = 0; i < faceCount; i++)
+	if (!_isStopped)
 	{
-		std::uint32_t face = this->getFace(model, i, firstFace);
-		boundingBox.encapsulate(model.vertices[face].position);
+		if (_lightMass)
+			_lightMass->stop();
+
+		_isStopped = true;
 	}
 }
 

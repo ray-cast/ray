@@ -45,40 +45,38 @@
 #include "LightMassParams.h"
 #include "LightMassListener.h"
 
-#include "modpmx.h"
-
 _NAME_BEGIN
 
-class LightMass
+class LightMass final
 {
 public:
 	LightMass() noexcept;
 	LightMass(LightMassListenerPtr listener) noexcept;
 	~LightMass() noexcept;
 
-	bool open() noexcept;
+	bool open(const LightMassParams& params) noexcept;
 	void close() noexcept;
+
+	bool start() noexcept;
+	void stop() noexcept;
+
+	void setLightMapData(LightMapDataPtr data) noexcept;
+	LightMapDataPtr getLightMapData() const noexcept;
 
 	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
 	LightMassListenerPtr getLightMassListener() const noexcept;
 
-	bool saveLightMass(const std::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t c, std::uint32_t margin);
-
-	bool baking(const LightMassParams& params, const PMX& model, LightMapData& map) noexcept;
-
-	void computeBoundingBox(const PMX& model, BoundingBox& boundingBox, std::uint32_t firstFace, std::size_t faceCount) noexcept;
-
-	std::uint32_t getFace(const PMX& pmx, std::size_t n) noexcept;
-	std::uint32_t getFace(const PMX& pmx, std::size_t n, std::uint32_t firstIndex) noexcept;
-
 private:
 	bool _initialize;
+	bool _isStopped;
 
 	ray::GraphicsDevicePtr _graphicsDevice;
 	ray::GraphicsContextPtr _graphicsContext;
 	ray::GraphicsSwapchainPtr _graphicsSwapchain;
 
+	LightMassBakingPtr _lightMass;
 	LightMassListenerPtr _lightMassListener;
+	LightMapDataPtr _lightMapData;
 };
 
 _NAME_END

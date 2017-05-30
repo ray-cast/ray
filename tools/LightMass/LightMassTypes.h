@@ -38,16 +38,19 @@
 #define _H_LIGHTMASS_TYPES_H_
 
 #include <ray/math.h>
+#include "HemisphereWeight.h"
 
 _NAME_BEGIN
 
 typedef std::shared_ptr<class LightMass> LightMassPtr;
 typedef std::shared_ptr<class LightMassBaking> LightMassBakingPtr;
 typedef std::shared_ptr<class LightMassListener> LightMassListenerPtr;
+typedef std::shared_ptr<class LightMapData> LightMapDataPtr;
 
 typedef std::weak_ptr<class LightMass> LightMassWeakPtr;
 typedef std::weak_ptr<class LightMassBaking> LightMassBakingWeakPtr;
 typedef std::weak_ptr<class LightMassListener> LightMassListenerWeakPtr;
+typedef std::weak_ptr<class LightMapData> LightMapDataWeakPtr;
 
 _NAME_END
 

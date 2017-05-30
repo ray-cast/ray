@@ -610,8 +610,13 @@ GuiControllerComponent::onLightMassWillStart(const GuiParams& params) noexcept
 bool
 GuiControllerComponent::onLightMassCancel() noexcept
 {
-	if (_future)
-		_future->wait();
+	if (_lightMass)
+	{
+		_lightMass->stop();
+
+		if (_future)
+			_future->wait();
+	}
 
 	return true;
 }
@@ -624,7 +629,7 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 
 	if (!_future)
 	{
-		auto progress = [&](float progress) -> bool
+		static auto progress = [&](float progress) -> bool
 		{
 			progressing = progress;
 			return true;
@@ -643,10 +648,6 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 				size = 8192;
 
 			ray::LightMassParams params;
-			params.lightMap.width = size;
-			params.lightMap.height = size;
-			params.lightMap.margin = options.uvmapper.margin;
-			params.enableGI = options.lightmass.enableGI;
 			params.baking.environmentColor = options.lightmass.environmentColor.xyz() * options.lightmass.environmentColor.w;
 			params.baking.hemisphereFar = options.lightmass.hemisphereFar;
 			params.baking.hemisphereNear = options.lightmass.hemisphereNear;
@@ -655,16 +656,40 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 			params.baking.interpolationThreshold = options.lightmass.interpolationThreshold;
 			params.baking.listener = progress;
 
-			ray::LightMass lightMass(_lightMassListener);
-			if (!lightMass.open())
+			params.model.vertices = (std::uint8_t*)_model->vertices.data();
+			params.model.indices = _model->indices.data();
+			params.model.sizeofVertices = sizeof(ray::PMX_Vertex);
+			params.model.sizeofIndices = _model->header.sizeOfIndices;
+			params.model.strideVertices = offsetof(ray::PMX_Vertex, position);
+			params.model.strideTexcoord = options.uvmapper.slot ? offsetof(ray::PMX_Vertex, addCoord[options.uvmapper.slot - 1]) : offsetof(ray::PMX_Vertex, coord);
+			params.model.numVertices = _model->numVertices;
+			params.model.numIndices = _model->numIndices;
+			params.model.subsets.resize(_model->numMaterials);
+
+			for (std::uint32_t i = 0; i < _model->numMaterials; i++)
+			{
+				std::uint32_t offset = 0;
+
+				for (std::uint32_t j = 0; j < i; j++)
+					offset += _model->materials[j].IndicesCount;
+
+				params.model.subsets[i].emissive = ray::math::srgb2linear(_model->materials[i].Ambient) * _model->materials[i].Shininess;
+
+				params.model.subsets[i].drawcall.count = _model->materials[i].IndicesCount;
+				params.model.subsets[i].drawcall.instanceCount = 1;
+				params.model.subsets[i].drawcall.firstIndex = offset;
+				params.model.subsets[i].drawcall.baseInstance = 0;
+				params.model.subsets[i].drawcall.baseVertex = 0;
+			}
+
+			_lightMass = std::make_unique<ray::LightMass>();
+			_lightMass->setLightMapData(std::make_shared<ray::LightMapData>(size, size, options.lightmass.enableGI ? 4 : 1));
+			_lightMass->setLightMassListener(_lightMassListener);
+
+			if (!_lightMass->open(params))
 				return false;
 
-			auto lightMap = std::make_unique<ray::LightMapData>();
-			if (!lightMass.baking(params, *_model, *lightMap))
-				return false;
-
-			_lightMap = std::move(lightMap);
-			return true;
+			return _lightMass->start();
 		}));
 
 		return true;
@@ -675,6 +700,9 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 			return true;
 
 		bool succeeded = _future->get();
+		if (succeeded)
+			this->onSaveLightMass("C:/Users/ray/Desktop/1.tga", _lightMass->getLightMapData()->data.get(), _lightMass->getLightMapData()->width, _lightMass->getLightMapData()->height, _lightMass->getLightMapData()->channel, 2);
+
 		_future.reset();
 
 		return false;

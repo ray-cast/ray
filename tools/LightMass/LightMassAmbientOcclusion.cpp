@@ -89,13 +89,129 @@ LightBakingAO::LightBakingAO() noexcept
 {
 }
 
+LightBakingAO::LightBakingAO(const LightBakingParams& params)
+{
+	this->open(params);
+}
+
 LightBakingAO::~LightBakingAO() noexcept
 {
 	this->close();
 }
 
 bool
-LightBakingAO::open(const LightModelData& params) noexcept
+LightBakingAO::open(const LightBakingParams& params) noexcept
+{
+	assert(params.lightMap);
+	assert(params.lightMap->data);
+	assert(params.lightMap->width >= 0 && params.lightMap->height >= 0);
+	assert(params.lightMap->channel == 1 || params.lightMap->channel == 2 || params.lightMap->channel == 3 || params.lightMap->channel == 4);
+
+	if (!this->setupContext(params.model))
+		return false;
+
+	if (!this->setup(params.baking))
+	{
+		if (this->getLightMassListener())
+			this->getLightMassListener()->onMessage("Could not initialize with BakeTools.");
+
+		return false;
+	}
+
+	GLenum faceType = GL_UNSIGNED_INT;
+	if (params.model.sizeofIndices == 1)
+		faceType = GL_UNSIGNED_BYTE;
+	else if (params.model.sizeofIndices == 2)
+		faceType = GL_UNSIGNED_SHORT;
+
+	this->setRenderTarget(params.lightMap->data.get(), params.lightMap->width, params.lightMap->height, params.lightMap->channel);
+	this->setGeometry(
+		GL_FLOAT, params.model.vertices + params.model.strideVertices, params.model.sizeofVertices,
+		GL_FLOAT, params.model.vertices + params.model.strideTexcoord, params.model.sizeofVertices,
+		params.model.numIndices, faceType, params.model.indices);
+
+	if (this->getLightMassListener())
+		this->getLightMassListener()->onMessage("Calculating the bounding box of the model.");
+
+	_boundingBoxs.resize(params.model.subsets.size());
+	_drawcalls.resize(params.model.subsets.size());
+
+	for (std::uint32_t i = 0; i < params.model.subsets.size(); i++)
+	{
+		ray::BoundingBox bound;
+		this->computeBoundingBox(params.model, bound, params.model.subsets[i].drawcall.firstIndex * params.model.sizeofIndices, params.model.subsets[i].drawcall.count);
+		_boundingBoxs[i] = bound;
+
+		GLDrawElementsIndirectCommand cmd;
+		cmd.baseInstance = params.model.subsets[i].drawcall.baseInstance;
+		cmd.baseVertex = params.model.subsets[i].drawcall.baseVertex;
+		cmd.count = params.model.subsets[i].drawcall.count;
+		cmd.firstIndex = params.model.subsets[i].drawcall.firstIndex * params.model.sizeofIndices;
+		cmd.instanceCount = params.model.subsets[i].drawcall.instanceCount;
+		cmd.faceType = faceType;
+
+		_drawcalls[i] = cmd;
+	}
+
+	if (this->getLightMassListener())
+		this->getLightMassListener()->onMessage("Calculated the bounding box of the model.");
+
+	_progress = params.baking.listener;
+
+	return true;
+}
+
+void
+LightBakingAO::close() noexcept
+{
+	_glcontext.reset();
+}
+
+void
+LightBakingAO::doSampleHemisphere(const Viewportt<int>& vp, const float4x4& mvp)
+{
+	assert(_glcontext);
+
+	if (_progress)
+		_progress(this->getSampleProcess());
+
+	Frustum fru;
+	fru.extract(mvp);
+
+	glViewport(vp.left, vp.top, vp.width, vp.height);
+
+	glEnable(GL_DEPTH_TEST);
+
+	glUseProgram(_glcontext->program);
+	glUniformMatrix4fv(_glcontext->mvp, 1, GL_FALSE, mvp.ptr());
+	glBindVertexArray(_glcontext->vao);
+
+	for (std::size_t i = 0; i < _drawcalls.size(); i++)
+	{
+		/*if (!fru.contains(_boundingBoxs[i].aabb()))
+			continue;*/
+
+		if (glDrawElementsInstancedBaseVertexBaseInstance)
+		{
+			glDrawElementsInstancedBaseVertexBaseInstance(
+				GL_TRIANGLES,
+				_drawcalls[i].count,
+				_drawcalls[i].faceType,
+				(char*)nullptr + _drawcalls[i].firstIndex,
+				_drawcalls[i].instanceCount,
+				_drawcalls[i].baseVertex,
+				_drawcalls[i].baseInstance
+			);
+		}
+		else
+		{
+			glDrawElements(GL_TRIANGLES, _drawcalls[i].count, _drawcalls[i].faceType, (char*)nullptr + _drawcalls[i].firstIndex);
+		}
+	}
+}
+
+bool
+LightBakingAO::setupContext(const LightModelData& params) noexcept
 {
 	assert(params.vertices >= 0 && params.indices >= 0);
 	assert(params.numVertices > 0 && params.numIndices > 0);
@@ -106,7 +222,17 @@ LightBakingAO::open(const LightModelData& params) noexcept
 
 	auto glcontext = std::make_unique<GLContext>();
 
-	::glewInit();
+	if (::glewInit() != GLEW_OK)
+	{
+		auto listener = this->getLightMassListener();
+		if (listener)
+			listener->onMessage("Failed to init GLEW.");
+
+		return false;
+	}
+
+	glDisable(GL_CULL_FACE);
+	glFrontFace(GL_CCW);
 
 	glGenBuffers(1, &glcontext->vbo);
 	if (glcontext->vbo == GL_NONE)
@@ -156,11 +282,23 @@ LightBakingAO::open(const LightModelData& params) noexcept
 
 	glcontext->vs = loadShader(GL_VERTEX_SHADER, OcclusionVS);
 	if (!glcontext->vs)
+	{
+		auto listener = this->getLightMassListener();
+		if (listener)
+			listener->onMessage("Failed to load vs.");
+
 		return false;
+	}
 
 	glcontext->fs = loadShader(GL_FRAGMENT_SHADER, OcclusionPS);
 	if (!glcontext->fs)
+	{
+		auto listener = this->getLightMassListener();
+		if (listener)
+			listener->onMessage("Failed to load ps.");
+
 		return false;
+	}
 
 	glcontext->program = loadProgram(glcontext->vs, glcontext->fs, OcclusionAttribs, 1);
 	if (!glcontext->program)
@@ -188,55 +326,30 @@ LightBakingAO::open(const LightModelData& params) noexcept
 }
 
 void
-LightBakingAO::close() noexcept
+LightBakingAO::computeBoundingBox(const LightModelData& model, ray::BoundingBox& boundingBox, std::uint32_t firstFace, std::size_t faceCount) noexcept
 {
-	_glcontext.reset();
-}
+	boundingBox.reset();
 
-void
-LightBakingAO::doSampleHemisphere(const LightBakingParams& params, const Viewportt<int>& vp, const float4x4& mvp)
-{
-	assert(_glcontext);
+	auto data = model.vertices + model.strideVertices;
 
-	GLenum faceType = GL_UNSIGNED_INT;
-	if (params.model.sizeofIndices == 1)
-		faceType = GL_UNSIGNED_BYTE;
-	else if (params.model.sizeofIndices == 2)
-		faceType = GL_UNSIGNED_SHORT;
-
-	glViewport(vp.left, vp.top, vp.width, vp.height);
-
-	glEnable(GL_DEPTH_TEST);
-
-	glUseProgram(_glcontext->program);
-	glUniformMatrix4fv(_glcontext->mvp, 1, GL_FALSE, mvp.ptr());
-
-	glBindVertexArray(_glcontext->vao);
-
-	Frustum fru;
-	fru.extract(mvp);
-
-	for (auto& it : params.model.subsets)
+	auto getFace = [](const LightModelData& model, std::size_t n, std::uint32_t firstIndex) -> std::uint32_t
 	{
-		if (!fru.contains(it.boundingBox.aabb()))
-			continue;
+		std::uint8_t* data = (std::uint8_t*)model.indices + firstIndex;
 
-		if (glDrawElementsInstancedBaseVertexBaseInstance)
-		{
-			glDrawElementsInstancedBaseVertexBaseInstance(
-				GL_TRIANGLES,
-				it.drawcall.count,
-				faceType,
-				(char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices,
-				it.drawcall.instanceCount,
-				it.drawcall.baseVertex,
-				it.drawcall.baseInstance
-			);
-		}
+		if (model.sizeofIndices == 1)
+			return *(std::uint8_t*)(data + n * model.sizeofIndices);
+		else if (model.sizeofIndices == 2)
+			return *(std::uint16_t*)(data + n * model.sizeofIndices);
+		else if (model.sizeofIndices == 4)
+			return *(std::uint32_t*)(data + n * model.sizeofIndices);
 		else
-		{
-			glDrawElements(GL_TRIANGLES, it.drawcall.count, faceType, (char*)nullptr + it.drawcall.firstIndex * params.model.sizeofIndices);
-		}
+			return false;
+	};
+
+	for (std::size_t i = 0; i < faceCount; i++)
+	{
+		std::uint32_t face = getFace(model, i, firstFace);
+		boundingBox.encapsulate(*(float3*)(data + face * model.sizeofVertices));
 	}
 }
 

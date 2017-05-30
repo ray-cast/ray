@@ -41,11 +41,20 @@
 _NAME_BEGIN
 
 LightMapData::LightMapData() noexcept
-	: width(1024)
-	, height(1024)
-	, channel(1)
+	: width(0)
+	, height(0)
+	, channel(0)
 	, data(nullptr)
 {
+}
+
+LightMapData::LightMapData(std::uint16_t w, std::uint16_t h, std::uint16_t c) noexcept
+	: width(w)
+	, height(h)
+	, channel(c)
+	, data(std::make_unique<float[]>(w * h * c))
+{
+	std::memset(data.get(), 0, w * h * c * sizeof(float));
 }
 
 LightMapParams::LightMapParams() noexcept
@@ -92,8 +101,7 @@ LightSampleParams::LightSampleParams() noexcept
 {
 }
 
-LightMassParams::LightMassParams()
-	: enableGI(false)
+LightMassParams::LightMassParams() noexcept
 {
 }
 

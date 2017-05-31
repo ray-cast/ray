@@ -52,21 +52,21 @@ public:
 
 	ray::GameComponentPtr clone() const noexcept;
 
-	void setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
-	void setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
-	void setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
+	void setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
+	void setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
+	void setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
 
-	void setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
-	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
+	void setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
+	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
 
 	void setUVMapperCancel(std::function<bool()> delegate) noexcept;
-	void setUVMapperWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
+	void setUVMapperWillStartListener(std::function<bool(const GuiParams&, ray::util::string::pointer&)> delegate) noexcept;
 	void setUVMapperProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
 
 	void setLightMassCancel(std::function<bool()> delegate) noexcept;
-	void setLightMassWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
+	void setLightMassWillStartListener(std::function<bool(const GuiParams&, ray::util::string::pointer&)> delegate) noexcept;
 	void setLightMassProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
-	void setLightMassSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
+	void setLightMassSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
 
 private:
 	void onMessage(const ray::MessagePtr& message) noexcept;
@@ -90,6 +90,8 @@ private:
 	void showProjectOpenBrowse() noexcept;
 	void showProjectSaveBrowse() noexcept;
 	void showProjectSaveAsBrowse() noexcept;
+
+	void showMaterialEditor() noexcept;
 
 	void startUVMapper() noexcept;
 	void startLightMass() noexcept;
@@ -130,21 +132,21 @@ private:
 	GuiParams _default;
 	GuiParams _setting;
 
-	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onProjectOpen;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onProjectSave;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onProjectSaveAs;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onProjectOpen;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onProjectSave;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onProjectSaveAs;
 
-	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelImport;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onModelSaveAs;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onModelImport;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onModelSaveAs;
 
 	std::function<bool()> _onUVMapperCancel;
-	std::function<bool(const GuiParams&)> _onUVMapperWillStart;
+	std::function<bool(const GuiParams&, ray::util::string::pointer&)> _onUVMapperWillStart;
 	std::function<bool(const GuiParams&, float&)> _onUVMapperProcess;
 
 	std::function<bool()> _onLightMassCancel;
-	std::function<bool(const GuiParams&)> _onLightMassWillStart;
+	std::function<bool(const GuiParams&, ray::util::string::pointer&)> _onLightMassWillStart;
 	std::function<bool(const GuiParams&, float&)> _onLightMassProcess;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onLightMassSave;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onLightMassSave;
 };
 
 #endif

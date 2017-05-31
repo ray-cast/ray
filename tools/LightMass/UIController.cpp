@@ -300,11 +300,11 @@ GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) exce
 		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
 
 		view->setUVMapperCancel(std::bind(&GuiControllerComponent::onUVMapperCancel, this));
-		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1));
+		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1, std::placeholders::_2));
 		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2));
 
 		view->setLightMassCancel(std::bind(&GuiControllerComponent::onLightMassCancel, this));
-		view->setLightMassWillStartListener(std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1));
+		view->setLightMassWillStartListener(std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1, std::placeholders::_2));
 		view->setLightMassProgressListener(std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2));
 		view->setLightMassSaveAsListener(std::bind(&GuiControllerComponent::onLightMassSave, this, std::placeholders::_1, std::placeholders::_2));
 	}
@@ -389,7 +389,7 @@ GuiControllerComponent::onActivate() except
 }
 
 bool
-GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray::util::string& error) noexcept
+GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	try
 	{
@@ -522,7 +522,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 }
 
 bool
-GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray::util::string& error) noexcept
+GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	if (_model)
 	{
@@ -543,9 +543,15 @@ GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray
 }
 
 bool
-GuiControllerComponent::onUVMapperWillStart(const GuiParams& params) noexcept
+GuiControllerComponent::onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept
 {
-	return _model ? true : false;
+	if (!_model)
+	{
+		error = "Please load model before start uv mapper";
+		return false;
+	}
+
+	return  true;
 }
 
 bool
@@ -609,9 +615,15 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 }
 
 bool
-GuiControllerComponent::onLightMassWillStart(const GuiParams& params) noexcept
+GuiControllerComponent::onLightMassWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept
 {
-	return _model ? true : false;
+	if (!_model)
+	{
+		error = "Please load model before start baking";
+		return false;
+	}
+
+	return  true;
 }
 
 bool
@@ -724,7 +736,7 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 }
 
 bool
-GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, ray::util::string& error) noexcept
+GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	if (!_lightMass)
 	{
@@ -758,7 +770,7 @@ GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, r
 	ray::image::Image image;
 	if (!image.create(data->width, data->height, format))
 	{
-		std::cerr << "Failed to create image : " << path << std::endl;
+		error = "Failed to create image.";
 		return false;
 	}
 
@@ -783,7 +795,7 @@ GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, r
 }
 
 bool
-GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ray::util::string& error) noexcept
+GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
 	sphereMesh->makeSphere(1.0, 48, 36);
@@ -831,7 +843,7 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 		}
 	}
 
-	std::uint32_t startIndices = 0;
+	std::size_t startIndices = 0;
 	std::uint32_t* indicesData = (std::uint32_t*)model->indices.data();
 
 	for (std::size_t i = 0; i < out * out; i++)

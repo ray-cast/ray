@@ -212,13 +212,25 @@ IMGUI::showMetricsWindow(bool* isOpened) noexcept
 bool
 IMGUI::begin(const char* name, bool* isOpened, GuiWindowFlags flags) noexcept
 {
-	return ImGui::Begin(name, isOpened, flags);
+	if (!ImGui::Begin(name, isOpened, flags))
+	{
+		ImGui::End();
+		return false;
+	}
+
+	return true;
 }
 
 bool
 IMGUI::begin(const char* name, bool* isOpened, const float2& size_on_first_use, float alpha, GuiWindowFlags flags) noexcept
 {
-	return ImGui::Begin(name, isOpened, (const ImVec2&)size_on_first_use, alpha, flags);
+	if (!ImGui::Begin(name, isOpened, (const ImVec2&)size_on_first_use, alpha, flags))
+	{
+		ImGui::End();
+		return false;
+	}
+
+	return true;
 }
 
 void
@@ -230,13 +242,25 @@ IMGUI::end() noexcept
 bool
 IMGUI::beginChild(const char* str_id, const float2& size, bool border, GuiWindowFlags extraFlags) noexcept
 {
-	return ImGui::BeginChild(str_id, (ImVec2&)size, border, extraFlags);
+	if (!ImGui::BeginChild(str_id, (ImVec2&)size, border, extraFlags))
+	{
+		ImGui::EndChild();
+		return false;
+	}
+
+	return true;
 }
 
 bool
 IMGUI::beginChild(GuiID id, const float2& size, bool border, GuiWindowFlags extraFlags) noexcept
 {
-	return ImGui::BeginChild((ImGuiID)id, (ImVec2&)size, border, extraFlags);
+	if (!ImGui::BeginChild((ImGuiID)id, (ImVec2&)size, border, extraFlags))
+	{
+		ImGui::EndChild();
+		return false;
+	}
+
+	return true;
 }
 
 void
@@ -1672,7 +1696,13 @@ IMGUI::calcListClipping(int items_count, float items_height, int* out_items_disp
 bool
 IMGUI::beginChildFrame(GuiID id, const float2& size, GuiWindowFlags extraFlags) noexcept
 {
-	return ImGui::BeginChildFrame(id, (const ImVec2&)size, extraFlags);
+	if (!ImGui::BeginChildFrame(id, (const ImVec2&)size, extraFlags))
+	{
+		ImGui::EndChildFrame();
+		return false;
+	}
+
+	return true;
 }
 
 void

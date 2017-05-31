@@ -154,6 +154,8 @@ IMGUISystem::close() noexcept
 	_ibo.reset();
 	_texture.reset();
 	_material.reset();
+
+	ImGui::Shutdown();
 }
 
 bool

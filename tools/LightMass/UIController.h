@@ -58,20 +58,20 @@ private:
 
 	void onActivate() except;
 
-	bool onModelImport(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
-	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
+	bool onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
 	bool onUVMapperCancel() noexcept;
-	bool onUVMapperWillStart(const GuiParams& params) noexcept;
+	bool onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;
 	bool onUVMapperProcessing(const GuiParams& params, float& progressing) noexcept;
 
 	bool onLightMassCancel() noexcept;
-	bool onLightMassWillStart(const GuiParams& params) noexcept;
+	bool onLightMassWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;
 	bool onLightMassProcessing(const GuiParams& params, float& progressing) noexcept;
-	bool onLightMassSave(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
+	bool onLightMassSave(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
 	bool onSaveLightMass(const ray::util::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin);
-	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string& error) noexcept;
+	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
 private:
 	GuiControllerComponent(const GuiControllerComponent&) = delete;

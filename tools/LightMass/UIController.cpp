@@ -620,13 +620,14 @@ GuiControllerComponent::onLightMassCancel() noexcept
 	if (_lightMass)
 	{
 		_lightMass->stop();
-		_lightMass.reset();
 
 		if (_future)
 		{
 			_future->wait();
 			_future.reset();
 		}
+
+		_lightMass.reset();
 	}
 
 	return true;
@@ -640,6 +641,9 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 
 	if (!_future)
 	{
+		if (options.uvmapper.slot > _model->header.addUVCount)
+			return false;
+
 		static auto progress = [&](float progress) -> bool
 		{
 			progressing = progress;

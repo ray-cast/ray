@@ -305,6 +305,7 @@ GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) exce
 		view->setLightMassCancel(std::bind(&GuiControllerComponent::onLightMassCancel, this));
 		view->setLightMassWillStartListener(std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1));
 		view->setLightMassProgressListener(std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2));
+		view->setLightMassSaveAsListener(std::bind(&GuiControllerComponent::onLightMassSave, this, std::placeholders::_1, std::placeholders::_2));
 	}
 }
 
@@ -324,6 +325,7 @@ GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noex
 		view->setLightMassCancel(nullptr);
 		view->setLightMassProgressListener(nullptr);
 		view->setLightMassWillStartListener(nullptr);
+		view->setLightMassSaveAsListener(nullptr);
 	}
 }
 
@@ -699,14 +701,69 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 		if (_future->wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
 			return true;
 
-		bool succeeded = _future->get();
-		if (succeeded)
-			this->onSaveLightMass("C:/Users/ray/Desktop/1.tga", _lightMass->getLightMapData()->data.get(), _lightMass->getLightMapData()->width, _lightMass->getLightMapData()->height, _lightMass->getLightMapData()->channel, 2);
+		if (!_future.get())
+			_lightMass.reset();
 
 		_future.reset();
 
 		return false;
 	}
+}
+
+bool
+GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, ray::util::string& error) noexcept
+{
+	if (!_lightMass)
+		return false;
+
+	auto data = _lightMass->getLightMapData();
+
+	bool isGreyscale = data->channel == 1;
+	bool hasAlpha = data->channel == 1 ? false : true;
+
+	int margin = 2;
+
+	if (margin > 0)
+	{
+		std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(data->width * data->height * data->channel);
+		std::memset(lightmapTemp.get(), 0, data->width * data->height * data->channel * sizeof(float));
+
+		for (std::uint32_t j = 0; j < std::max<std::uint32_t>(margin >> 1, 1); j++)
+		{
+			ray::image::smoothFilter(data->data.get(), lightmapTemp.get(), data->width, data->height, data->channel);
+			ray::image::dilateFilter(lightmapTemp.get(), data->data.get(), data->width, data->height, data->channel);
+		}
+	}
+
+	ray::image::format_t format = isGreyscale ? ray::image::format_t::R8SRGB : ray::image::format_t::R8G8B8SRGB;
+	if (hasAlpha)
+		format = ray::image::format_t::R8G8B8A8SRGB;
+
+	ray::image::Image image;
+	if (!image.create(data->width, data->height, format))
+	{
+		std::cerr << "Failed to create image : " << path << std::endl;
+		return false;
+	}
+
+	auto temp = (std::uint8_t*)image.data();
+
+	if (data->channel == 1)
+		ray::image::r32f_to_r8uint(data->data.get(), temp, data->width, data->height, data->channel);
+	else
+		ray::image::rgb32f_to_rgbt8(data->data.get(), temp, data->width, data->height, data->channel);
+
+	ray::image::flipHorizontal(temp, data->width, data->height, data->channel);
+
+	if (!isGreyscale)
+	{
+		for (std::size_t i = 0; i < data->width * data->height * data->channel; i += data->channel)
+			std::swap(temp[i], temp[i + 2]);
+	}
+
+	image.save(path);
+
+	return true;
 }
 
 bool
@@ -834,57 +891,6 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 	ray::PMXHandler header;
 	if (!header.doSave(*stream, *model))
 		return false;
-
-	return true;
-}
-
-bool
-GuiControllerComponent::onSaveLightMass(const ray::util::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin)
-{
-	assert(channel == 1 || channel == 3 || channel == 4);
-
-	bool isGreyscale = channel == 1;
-	bool hasAlpha = channel == 1 ? false : true;
-
-	if (margin > 0)
-	{
-		std::unique_ptr<float[]> lightmapTemp = std::make_unique<float[]>(w * h * channel);
-		std::memset(lightmapTemp.get(), 0, w * h * channel * sizeof(float));
-
-		for (std::uint32_t j = 0; j < std::max<std::uint32_t>(margin >> 1, 1); j++)
-		{
-			ray::image::smoothFilter(data, lightmapTemp.get(), w, h, channel);
-			ray::image::dilateFilter(lightmapTemp.get(), data, w, h, channel);
-		}
-	}
-
-	ray::image::format_t format = isGreyscale ? ray::image::format_t::R8SRGB : ray::image::format_t::R8G8B8SRGB;
-	if (hasAlpha)
-		format = ray::image::format_t::R8G8B8A8SRGB;
-
-	ray::image::Image image;
-	if (!image.create(w, h, format))
-	{
-		std::cerr << "Failed to create image : " << path << std::endl;
-		return false;
-	}
-
-	auto temp = (std::uint8_t*)image.data();
-
-	if (channel == 1)
-		ray::image::r32f_to_r8uint(data, temp, w, h, channel);
-	else
-		ray::image::rgb32f_to_rgbt8(data, temp, w, h, channel);
-
-	ray::image::flipHorizontal(temp, w, h, channel);
-
-	if (!isGreyscale)
-	{
-		for (std::size_t i = 0; i < w * h * channel; i += channel)
-			std::swap(temp[i], temp[i + 2]);
-	}
-
-	image.save(path);
 
 	return true;
 }

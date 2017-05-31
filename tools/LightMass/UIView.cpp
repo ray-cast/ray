@@ -120,6 +120,12 @@ GuiViewComponent::setLightMassProgressListener(std::function<bool(const GuiParam
 }
 
 void
+GuiViewComponent::setLightMassSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept
+{
+	_onLightMassSave = delegate;
+}
+
+void
 GuiViewComponent::setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept
 {
 	_onProjectOpen = delegate;
@@ -309,6 +315,12 @@ GuiViewComponent::showProjectSaveAsBrowse() noexcept
 
 	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
 		return;
+
+	if (std::strlen(filepath) < (PATHLIMIT - 5))
+	{
+		if (std::strstr(filepath, ".map") == 0)
+			std::strcat(filepath, ".map");
+	}
 
 	if (_onProjectOpen)
 	{
@@ -681,6 +693,9 @@ GuiViewComponent::showLightMass() noexcept
 			if (ray::Gui::button(_langs[UILang::StartLightMass]))
 				this->startLightMass();
 
+			if (ray::Gui::button(_langs[UILang::SaveAs]))
+				this->saveLightMass();
+
 			ray::Gui::treePop();
 		}
 
@@ -724,4 +739,30 @@ GuiViewComponent::startLightMass() noexcept
 
 	_lightMassType = LightMassType::LightBaking;
 	_showProcessMessageFirst = true;
+}
+
+void
+GuiViewComponent::saveLightMass() noexcept
+{
+	if (_onLightMassSave)
+	{
+		ray::util::string::value_type filepath[PATHLIMIT];
+		std::memset(filepath, 0, sizeof(filepath));
+
+		if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.tga)\0*.tga;\0All File(*.*)\0*.*;\0\0")))
+			return;
+
+		if (std::strlen(filepath) < (PATHLIMIT - 5))
+		{
+			if (std::strstr(filepath, ".tga") == 0)
+				std::strcat(filepath, ".tga");
+		}
+
+		std::string error;
+		if (!_onLightMassSave(filepath, error))
+		{
+			if (!error.empty())
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("saveLightMass"));
+		}
+	}
 }

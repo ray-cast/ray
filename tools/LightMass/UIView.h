@@ -66,6 +66,7 @@ public:
 	void setLightMassCancel(std::function<bool()> delegate) noexcept;
 	void setLightMassWillStartListener(std::function<bool(const GuiParams&)> delegate) noexcept;
 	void setLightMassProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
+	void setLightMassSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string&)> delegate) noexcept;
 
 private:
 	void onMessage(const ray::MessagePtr& message) noexcept;
@@ -92,6 +93,7 @@ private:
 
 	void startUVMapper() noexcept;
 	void startLightMass() noexcept;
+	void saveLightMass() noexcept;
 
 	void switchLangPackage(UILang::Lang type) noexcept;
 
@@ -142,6 +144,7 @@ private:
 	std::function<bool()> _onLightMassCancel;
 	std::function<bool(const GuiParams&)> _onLightMassWillStart;
 	std::function<bool(const GuiParams&, float&)> _onLightMassProcess;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string&)> _onLightMassSave;
 };
 
 #endif

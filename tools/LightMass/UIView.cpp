@@ -38,6 +38,9 @@
 #include "UITexts.h"
 #include <ray/gui_message.h>
 #include <ray/ioserver.h>
+#include <ray/input.h>
+#include <ray/input_feature.h>
+#include <ray/game_server.h>
 
 __ImplementSubClass(GuiViewComponent, ray::GameComponent, "GuiView")
 
@@ -148,21 +151,32 @@ GuiViewComponent::setProjectSaveAsListener(std::function<bool(ray::util::string:
 void
 GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 {
-	if (!message->isInstanceOf<ray::GuiMessage>())
-		return;
-
-	/*if (ray::Gui::isKeyDown(ray::InputKey::Code::Tab))
-		_showWindowAll = !_showWindowAll;*/
-
-	if (_showWindowAll)
+	if (message->isInstanceOf<ray::InputMessage>())
 	{
-		this->showMainMenu();
-		this->showStyleEditor();
-		this->showLightMass();
-		this->showMaterialEditor();
-		this->showAboutWindow();
-		this->showMessage();
-		this->showProcessMessage();
+		auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
+		if (inputFeature)
+		{
+			auto input = inputFeature->getInput();
+			if (!input)
+				return;
+
+			if (input->getKeyDown(ray::InputKey::Code::Escape))
+				_showWindowAll = !_showWindowAll;
+		}
+	}
+
+	if (message->isInstanceOf<ray::GuiMessage>())
+	{
+		if (_showWindowAll)
+		{
+			this->showMainMenu();
+			this->showStyleEditor();
+			this->showLightMass();
+			this->showMaterialEditor();
+			this->showAboutWindow();
+			this->showMessage();
+			this->showProcessMessage();
+		}
 	}
 }
 

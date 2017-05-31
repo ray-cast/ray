@@ -92,8 +92,7 @@ private:
 	MaterialTechPtr _sunLumLog;
 	MaterialTechPtr _avgLuminance;
 	MaterialTechPtr _bloom;
-	MaterialTechPtr _blurh;
-	MaterialTechPtr _blurv;
+	MaterialTechPtr _blur;
 	MaterialTechPtr _tone;
 
 	MaterialParamPtr _bloomThreshold;

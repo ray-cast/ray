@@ -139,11 +139,11 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
-	_texSourceSizeInv->uniform2f(1.0f / dest->getGraphicsFramebufferDesc().getWidth(), 1.0f / dest->getGraphicsFramebufferDesc().getHeight());
+	_texSourceSizeInv->uniform2f(1.0f / dest->getGraphicsFramebufferDesc().getWidth(), 0.0);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
-	pipeline.drawScreenQuad(*_blurh);
+	pipeline.drawScreenQuad(*_blur);
 }
 
 void
@@ -151,11 +151,11 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
-	_texSourceSizeInv->uniform2f(1.0f / dest->getGraphicsFramebufferDesc().getWidth(), 1.0f / dest->getGraphicsFramebufferDesc().getHeight());
+	_texSourceSizeInv->uniform2f(0.0, 1.0f / dest->getGraphicsFramebufferDesc().getHeight());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
-	pipeline.drawScreenQuad(*_blurv);
+	pipeline.drawScreenQuad(*_blur);
 }
 
 void
@@ -255,8 +255,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	_sunLumLog = _fimic->getTech("SumLumLog");
 	_avgLuminance = _fimic->getTech("AvgLuminance");
 	_bloom = _fimic->getTech("GenerateBloom");
-	_blurh = _fimic->getTech("BlurBloomh");
-	_blurv = _fimic->getTech("BlurBloomv");
+	_blur = _fimic->getTech("BlurBloom");
 	_tone = _fimic->getTech("FimicTongMapping");
 
 	_bloomThreshold = _fimic->getParameter("bloomThreshold");
@@ -295,8 +294,7 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) noexcept
 	_sunLumLog.reset();
 	_avgLuminance.reset();
 	_bloom.reset();
-	_blurh.reset();
-	_blurv.reset();
+	_blur.reset();
 	_tone.reset();
 	_bloomThreshold.reset();
 	_bloomIntensity.reset();

@@ -199,7 +199,7 @@
                 out float4 oPosition : SV_Position)
             {
                 oPosition = Position;
-                oTexcoord.xy = PosToCoord(Position.xy);
+                oTexcoord = PosToCoord(Position.xy);
             }
 
             float4 BlurPS(in float2 coord : TEXCOORD0) : SV_Target0
@@ -279,19 +279,7 @@
             <state name="cullmode" value="none"/>
         </pass>
     </technique>
-    <technique name="BlurBloomh">
-        <pass name="p0">
-            <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="BlurVS" />
-            <state name="fragment" value="BlurPS" />
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="none"/>
-        </pass>
-    </technique>
-    <technique name="BlurBloomv">
+    <technique name="BlurBloom">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="BlurVS" />

@@ -301,11 +301,11 @@ GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) exce
 
 		view->setUVMapperCancel(std::bind(&GuiControllerComponent::onUVMapperCancel, this));
 		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1, std::placeholders::_2));
-		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2));
+		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
 		view->setLightMassCancel(std::bind(&GuiControllerComponent::onLightMassCancel, this));
 		view->setLightMassWillStartListener(std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1, std::placeholders::_2));
-		view->setLightMassProgressListener(std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2));
+		view->setLightMassProgressListener(std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		view->setLightMassSaveAsListener(std::bind(&GuiControllerComponent::onLightMassSave, this, std::placeholders::_1, std::placeholders::_2));
 	}
 }
@@ -568,10 +568,13 @@ GuiControllerComponent::onUVMapperCancel() noexcept
 }
 
 bool
-GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& progressing) noexcept
+GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& progressing, ray::util::string::pointer& error) noexcept
 {
 	if (!_model)
+	{
+		error = "Please load model before start uv mapper";
 		return false;
+	}
 
 	if (!_future)
 	{
@@ -619,7 +622,7 @@ GuiControllerComponent::onLightMassWillStart(const GuiParams& params, ray::util:
 {
 	if (!_model)
 	{
-		error = "Please load model before start baking";
+		error = "Please load model before start lightmass";
 		return false;
 	}
 
@@ -646,10 +649,13 @@ GuiControllerComponent::onLightMassCancel() noexcept
 }
 
 bool
-GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& progressing) noexcept
+GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& progressing, ray::util::string::pointer& error) noexcept
 {
 	if (!_model)
+	{
+		error = "Please load model before start lightmass";
 		return false;
+	}
 
 	if (!_future)
 	{

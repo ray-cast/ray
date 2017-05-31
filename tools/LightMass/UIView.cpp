@@ -48,8 +48,10 @@ const char* itemsSampleSize[] = { "32", "64", "128", "256", "512" };
 GuiViewComponent::GuiViewComponent() noexcept
 {
 	_progress = 0.0f;
+	_showWindowAll = true;
 	_showMainMenu = true;
 	_showLightMassWindow = true;
+	_showMaterialEditorWindow = true;
 	_showStyleEditor = false;
 	_showAboutWindow = false;
 	_showAboutWindowFirst = false;
@@ -96,7 +98,7 @@ GuiViewComponent::setUVMapperWillStartListener(std::function<bool(const GuiParam
 }
 
 void
-GuiViewComponent::setUVMapperProgressListener(std::function<bool(const GuiParams&, float&)> delegate) noexcept
+GuiViewComponent::setUVMapperProgressListener(std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> delegate) noexcept
 {
 	_onUVMapperProcess = delegate;
 }
@@ -114,7 +116,7 @@ GuiViewComponent::setLightMassWillStartListener(std::function<bool(const GuiPara
 }
 
 void
-GuiViewComponent::setLightMassProgressListener(std::function<bool(const GuiParams&, float&)> delegate) noexcept
+GuiViewComponent::setLightMassProgressListener(std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> delegate) noexcept
 {
 	_onLightMassProcess = delegate;
 }
@@ -149,13 +151,19 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 	if (!message->isInstanceOf<ray::GuiMessage>())
 		return;
 
-	this->showMainMenu();
-	this->showStyleEditor();
-	this->showLightMass();
-	this->showMaterialEditor();
-	this->showAboutWindow();
-	this->showMessage();
-	this->showProcessMessage();
+	/*if (ray::Gui::isKeyDown(ray::InputKey::Code::Tab))
+		_showWindowAll = !_showWindowAll;*/
+
+	if (_showWindowAll)
+	{
+		this->showMainMenu();
+		this->showStyleEditor();
+		this->showLightMass();
+		this->showMaterialEditor();
+		this->showAboutWindow();
+		this->showMessage();
+		this->showProcessMessage();
+	}
 }
 
 void
@@ -286,7 +294,7 @@ GuiViewComponent::showProjectOpenBrowse() noexcept
 		if (!_onProjectOpen(filepath, error))
 		{
 			if (error)
-				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showProjectOpenBrowse"));
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 		}
 	}
 }
@@ -303,7 +311,7 @@ GuiViewComponent::showProjectSaveBrowse() noexcept
 		if (!_onProjectSave(_pathProject.c_str(), error))
 		{
 			if (error)
-				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showProjectSaveBrowse"));
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 		}
 	}
 }
@@ -331,7 +339,7 @@ GuiViewComponent::showProjectSaveAsBrowse() noexcept
 		else
 		{
 			if (error)
-				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showProjectSaveAsBrowse"));
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 		}
 	}
 }
@@ -351,7 +359,7 @@ GuiViewComponent::showModelImportBrowse() noexcept
 		if (!_onModelImport(filepath, error))
 		{
 			if (error)
-				this->showPopupMessage(_langs[UILang::Error], _langs[UILang::NonReadableFile], std::hash<const char*>{}("showModelImportBrowse"));
+				this->showPopupMessage(_langs[UILang::Error], _langs[UILang::NonReadableFile], std::hash<const char*>{}(error));
 		}
 	}
 }
@@ -378,11 +386,11 @@ GuiViewComponent::showModelExportBrowse() noexcept
 	if (!_onModelSaveAs(filepath, error))
 	{
 		if (error)
-			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showModelExportBrowseFailed"));
+			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 	}
 	else
 	{
-		this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}("showModelExportBrowse"));
+		this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}(error));
 	}
 }
 
@@ -464,8 +472,12 @@ GuiViewComponent::showProcessMessage() noexcept
 
 		if (_lightMassType == LightMassType::UVMapper)
 		{
-			if (!this->_onUVMapperProcess(_setting, _progress))
+			ray::util::string::pointer error = nullptr;
+			if (!this->_onUVMapperProcess(_setting, _progress, error))
+			{
 				ray::Gui::closeCurrentPopup();
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+			}
 
 			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
 			{
@@ -477,8 +489,12 @@ GuiViewComponent::showProcessMessage() noexcept
 		}
 		else if (_lightMassType == LightMassType::LightBaking)
 		{
-			if (!this->_onLightMassProcess(_setting, _progress))
+			ray::util::string::pointer error = nullptr;
+			if (!this->_onLightMassProcess(_setting, _progress, error))
+			{
 				ray::Gui::closeCurrentPopup();
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+			}
 
 			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
 			{
@@ -636,7 +652,7 @@ GuiViewComponent::showLightMass() noexcept
 
 	ray::Gui::setNextWindowPos(ray::float2(10, 80), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 
-	if (ray::Gui::begin(_langs[UILang::LightMass], &_showLightMassWindow, ray::float2(260, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	if (ray::Gui::begin(_langs[UILang::LightMass], &_showLightMassWindow, ray::float2(270, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
 		if (ray::Gui::treeNode(_langs[UILang::UvMapper]))
 		{
@@ -713,6 +729,275 @@ GuiViewComponent::showLightMass() noexcept
 void
 GuiViewComponent::showMaterialEditor() noexcept
 {
+	static auto albedoFrom = 0;
+	static auto albedoFilp = 0;
+	static auto albedoApplyColor = 0;
+	static auto albedoApplyDiffuse = false;
+	static auto albedoApplyScale = false;
+	static auto albedoColor = ray::float3::One;
+	static auto albedoLoopNum = ray::float2::One;
+
+	static auto specularFrom = 0;
+	static auto specularFilp = 0;
+	static auto specularApplyColor = 0;
+	static auto specularColor = ray::float3::One;
+	static auto specularLoopNum = ray::float2::One;
+
+	static auto smoothnessFrom = 0;
+	static auto smoothnessType = 0;
+	static auto smoothnessFilp = 0;
+	static auto smoothnessApplyScale = 0;
+	static auto smoothness = 0.0f;
+	static auto smoothnessLoopNum = ray::float2::One;
+
+	static auto metalness = 0.0f;
+	static auto metalnessFrom = 0;
+	static auto metalnessFilp = 0;
+	static auto metalnessLoopNum = ray::float2::One;
+
+	static auto occlusion = 1.0f;
+	static auto occlusionFrom = 0;
+	static auto occlusionFilp = 0;
+	static auto occlusionLoopNum = ray::float2::One;
+
+	static auto emissiveFrom = 0;
+	static auto emissiveFilp = 0;
+	static auto emissiveApplyColor = 0;
+	static auto emissiveColor = ray::float3::One;
+	static auto emissiveLoopNum = ray::float2::One;
+
+	static const char* TEXTURE_MAP_FROM[] = { "Constant color", "Static Image", "Animation Image", "Diffuse map", "Sphere map", "Toon map", "Ambient color", "Specular color" };
+	static const char* TEXTURE_MAP_UV_FLIP[] = { "None", "axis X", "axis Y", "axis X & Y" };
+	static const char* TEXTURE_ALBEDO_MAP_TYPE[] = { "None", "Mulplay", "Exponent", "Add", "Melain", "Alpha Blend" };
+	static const char* TEXTURE_SMOOTHNESS_TYPE[] = { "Smoothness", "Roughness", "Roughness" };
+	static const char* TEXTURE_NORMAL_TYPE[] = { "RGB tangent space", "RG tangent space", "PerturbNormalLQ", "PerturbNormalHQ" };
+	static const char* TEXTURE_SPECULAR_TYPE[] = { "Specular color", "Specular color", "Specular gray", "Specular gray" };
+	static const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second UV", "sRGB with second UV" };
+
+	if (!_showMaterialEditorWindow)
+		return;
+
+	if (ray::Gui::begin("Material Editor", &_showMaterialEditorWindow, ray::float2(320, 720), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	{
+		if (ray::Gui::treeNode("Albedo:"))
+		{
+			ray::Gui::text("Texture :");
+			ray::Gui::combo("##albedo texture", &albedoFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+
+			ray::Gui::text("Texture filp :");
+			ray::Gui::combo("##albedo filp", &albedoFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+
+			ray::Gui::text("Texture loop x :");
+			ray::Gui::sliderFloat("##Texture loop x", &albedoLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture loop y :");
+			ray::Gui::sliderFloat("##Texture loop y", &albedoLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::checkbox("Apply diffuse color", &albedoApplyDiffuse);
+
+			ray::Gui::text("Color :");
+			ray::Gui::colorPicker3("##Albedo Color", albedoColor.ptr());
+
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("AlbedoSub"))
+		{
+			ray::Gui::text("Texture:");
+			ray::Gui::combo("##albedo texture", &albedoFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+
+			ray::Gui::text("Texture type:");
+			ray::Gui::combo("##albedo type", &albedoFilp, TEXTURE_ALBEDO_MAP_TYPE, sizeof(TEXTURE_ALBEDO_MAP_TYPE) / sizeof(TEXTURE_ALBEDO_MAP_TYPE[0]));
+
+			ray::Gui::text("Texture filp:");
+			ray::Gui::combo("##albedo filp", &albedoFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+
+			ray::Gui::text("Texture loop x :");
+			ray::Gui::sliderFloat("##Texture loop x", &albedoLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture loop y :");
+			ray::Gui::sliderFloat("##Texture loop y", &albedoLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Color :");
+			ray::Gui::colorPicker3("##Albedo Color", albedoColor.ptr());
+
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Normals"))
+		{
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("NormalsSub"))
+		{
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Smoothness"))
+		{
+			ray::Gui::text("Texture :");
+			ray::Gui::combo("##smoothness texture", &smoothnessFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+
+			ray::Gui::text("Texture type :");
+			ray::Gui::combo("##smoothness type", &smoothnessFrom, TEXTURE_SMOOTHNESS_TYPE, sizeof(TEXTURE_SMOOTHNESS_TYPE) / sizeof(TEXTURE_SMOOTHNESS_TYPE[0]));
+
+			ray::Gui::text("Texture filp :");
+			ray::Gui::combo("##smoothness filp", &smoothnessFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+
+			ray::Gui::text("Texture loop x :");
+			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture loop y :");
+			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture swizzle :");
+			ray::Gui::button("R", ray::float2(40, 20));
+
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::sameLine();
+			ray::Gui::button("G", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::sameLine();
+			ray::Gui::button("B", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::sameLine();
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::button("A", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::text("Smoothness :");
+			ray::Gui::sliderFloat("##Smoothness", &smoothness, 0.0f, 1.0f, "%.03f");
+
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Metalness"))
+		{
+			ray::Gui::text("Texture :");
+			ray::Gui::combo("##metalness texture", &metalnessFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+
+			ray::Gui::text("Texture filp :");
+			ray::Gui::combo("##metalness filp", &metalnessFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+
+			ray::Gui::text("Texture loop x :");
+			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture loop y :");
+			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture swizzle :");
+			ray::Gui::button("R", ray::float2(40, 20));
+
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::sameLine();
+			ray::Gui::button("G", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::sameLine();
+			ray::Gui::button("B", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::sameLine();
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::button("A", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::text("Metalness :");
+			ray::Gui::sliderFloat("##Metalness", &metalness, 0.0f, 1.0f, "%.03f");
+
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Specular"))
+		{
+			ray::Gui::text("Texture :");
+			ray::Gui::combo("##specular texture", &specularFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+
+			ray::Gui::text("Texture filp :");
+			ray::Gui::combo("##specular filp", &specularFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+
+			ray::Gui::text("Texture loop x :");
+			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture loop y :");
+			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Color :");
+			ray::Gui::colorPicker3("##Specular Color", specularColor.ptr());
+
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Occlusion"))
+		{
+			ray::Gui::text("Texture :");
+			ray::Gui::combo("##occlusion texture", &occlusionFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+
+			ray::Gui::text("Texture filp :");
+			ray::Gui::combo("##occlusion filp", &occlusionFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+
+			ray::Gui::text("Texture loop x :");
+			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture loop y :");
+			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture swizzle :");
+			ray::Gui::button("R", ray::float2(40, 20));
+
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::sameLine();
+			ray::Gui::button("G", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::sameLine();
+			ray::Gui::button("B", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::sameLine();
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+			ray::Gui::button("A", ray::float2(40, 20));
+			ray::Gui::popStyleColor();
+
+			ray::Gui::text("Occlusion :");
+			ray::Gui::sliderFloat("##occlusion", &occlusion, 0.0f, 1.0f, "%.03f");
+
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Emissive"))
+		{
+			ray::Gui::text("Texture :");
+			ray::Gui::combo("##emissive texture", &emissiveFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+
+			ray::Gui::text("Texture filp :");
+			ray::Gui::combo("##emissive filp", &emissiveFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+
+			ray::Gui::text("Texture loop x :");
+			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Texture loop y :");
+			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+
+			ray::Gui::text("Color :");
+			ray::Gui::colorPicker3("##emissive Color", emissiveColor.ptr());
+
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNode("Shading Model"))
+		{
+			ray::Gui::treePop();
+		}
+
+		ray::Gui::end();
+	}
 }
 
 void

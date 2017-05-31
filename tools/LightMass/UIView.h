@@ -61,11 +61,11 @@ public:
 
 	void setUVMapperCancel(std::function<bool()> delegate) noexcept;
 	void setUVMapperWillStartListener(std::function<bool(const GuiParams&, ray::util::string::pointer&)> delegate) noexcept;
-	void setUVMapperProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
+	void setUVMapperProgressListener(std::function<bool(const GuiParams&, float& progressing, ray::util::string::pointer&)> delegate) noexcept;
 
 	void setLightMassCancel(std::function<bool()> delegate) noexcept;
 	void setLightMassWillStartListener(std::function<bool(const GuiParams&, ray::util::string::pointer&)> delegate) noexcept;
-	void setLightMassProgressListener(std::function<bool(const GuiParams&, float& progressing)> delegate) noexcept;
+	void setLightMassProgressListener(std::function<bool(const GuiParams&, float& progressing, ray::util::string::pointer&)> delegate) noexcept;
 	void setLightMassSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
 
 private:
@@ -106,8 +106,10 @@ private:
 private:
 	float _progress;
 
+	bool _showWindowAll;
 	bool _showMainMenu;
 	bool _showLightMassWindow;
+	bool _showMaterialEditorWindow;
 	bool _showStyleEditor;
 	bool _showAboutWindow;
 	bool _showAboutWindowFirst;
@@ -141,11 +143,11 @@ private:
 
 	std::function<bool()> _onUVMapperCancel;
 	std::function<bool(const GuiParams&, ray::util::string::pointer&)> _onUVMapperWillStart;
-	std::function<bool(const GuiParams&, float&)> _onUVMapperProcess;
+	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> _onUVMapperProcess;
 
 	std::function<bool()> _onLightMassCancel;
 	std::function<bool(const GuiParams&, ray::util::string::pointer&)> _onLightMassWillStart;
-	std::function<bool(const GuiParams&, float&)> _onLightMassProcess;
+	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> _onLightMassProcess;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onLightMassSave;
 };
 

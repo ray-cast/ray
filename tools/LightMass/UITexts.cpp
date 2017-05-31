@@ -37,14 +37,14 @@
 #include "UITexts.h"
 
 const char* en_lang[] = {
-	"File",
-	"Open",
-	"Save",
-	"Save as",
-	"Choose File",
-	"Import Model",
-	"Export Model",
-	"Exit",
+	" File ",
+	" Open ",
+	" Save ",
+	" Save as ",
+	" Choose File ",
+	" Import Model ",
+	" Export Model ",
+	" Exit ",
 	"Window",
 	"Setting",
 	"Language",

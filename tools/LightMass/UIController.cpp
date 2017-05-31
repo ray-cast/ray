@@ -714,7 +714,10 @@ bool
 GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, ray::util::string& error) noexcept
 {
 	if (!_lightMass)
+	{
+		error = "Light map cannot be empty";
 		return false;
+	}
 
 	auto data = _lightMass->getLightMapData();
 

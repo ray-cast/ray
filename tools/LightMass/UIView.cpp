@@ -693,6 +693,8 @@ GuiViewComponent::showLightMass() noexcept
 			if (ray::Gui::button(_langs[UILang::StartLightMass]))
 				this->startLightMass();
 
+			ray::Gui::sameLine();
+
 			if (ray::Gui::button(_langs[UILang::SaveAs]))
 				this->saveLightMass();
 

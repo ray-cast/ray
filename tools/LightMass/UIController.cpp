@@ -279,8 +279,6 @@ GuiControllerComponent::GuiControllerComponent() noexcept
 
 GuiControllerComponent::~GuiControllerComponent() noexcept
 {
-	if (_future)
-		_future->wait();
 }
 
 ray::GameComponentPtr
@@ -564,7 +562,7 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 
 	if (!_future)
 	{
-		auto progress = [&progressing](float progress) -> bool
+		static auto progress = [&progressing](float progress) -> bool
 		{
 			progressing = progress;
 			return true;

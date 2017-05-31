@@ -377,7 +377,7 @@ GuiViewComponent::showModelExportBrowse() noexcept
 	if (!_onModelSaveAs(filepath, error))
 	{
 		if (!error.empty())
-			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showModelExportBrowse"));
+			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("showModelExportBrowseFailed"));
 	}
 	else
 	{
@@ -455,27 +455,22 @@ GuiViewComponent::showProcessMessage() noexcept
 
 	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
-		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
-		ray::Gui::progressBar(_progress);
-		ray::Gui::text("");
-		ray::Gui::text("");
-		ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
-
 		if (_lightMassType == LightMassType::UVMapper)
 		{
+			ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 45));
+			ray::Gui::progressBar(_progress);
+
 			if (!this->_onUVMapperProcess(_setting, _progress))
 				ray::Gui::closeCurrentPopup();
-
-			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
-			{
-				ray::Gui::closeCurrentPopup();
-
-				if (_onUVMapperCancel)
-					_onUVMapperCancel();
-			}
 		}
 		else if (_lightMassType == LightMassType::LightBaking)
 		{
+			ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
+			ray::Gui::progressBar(_progress);
+			ray::Gui::text("");
+			ray::Gui::text("");
+			ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
+
 			if (!this->_onLightMassProcess(_setting, _progress))
 				ray::Gui::closeCurrentPopup();
 
@@ -486,6 +481,10 @@ GuiViewComponent::showProcessMessage() noexcept
 				if (_onLightMassCancel)
 					_onLightMassCancel();
 			}
+		}
+		else
+		{
+			assert(false);
 		}
 
 		ray::Gui::endPopup();
@@ -670,7 +669,7 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
 			ray::Gui::text(_langs[UILang::SampleCount]);
-			ray::Gui::comboWithRevert("##Sample Count", _langs[UILang::Revert], &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
+			ray::Gui::comboWithRevert("Sample Count", _langs[UILang::Revert], &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
 
 			ray::Gui::text(_langs[UILang::EnvironmentColor]);
 			ray::Gui::colorPicker3WithRevert("##Environment Color", _langs[UILang::Revert], _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
@@ -679,7 +678,7 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::sliderFloatWithRevert("##Environment Intensity", _langs[UILang::Revert], &_setting.lightmass.environmentColor.w, _default.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
 
 			ray::Gui::text(_langs[UILang::RayTracingZnear]);
-			ray::Gui::sliderFloatWithRevert("##Ray tracing znear", _langs[UILang::Revert], &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
+			ray::Gui::sliderFloatWithRevert("#Ray tracing znear", _langs[UILang::Revert], &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
 
 			ray::Gui::text(_langs[UILang::RayTracingZfar]);
 			ray::Gui::sliderFloatWithRevert("##Ray tracing zfar", _langs[UILang::Revert], &_setting.lightmass.hemisphereFar, _default.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
@@ -764,7 +763,11 @@ GuiViewComponent::saveLightMass() noexcept
 		if (!_onLightMassSave(filepath, error))
 		{
 			if (!error.empty())
-				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("saveLightMass"));
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("saveLightMassFailed"));
+		}
+		else
+		{
+			this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}("saveLightMass"));
 		}
 	}
 }

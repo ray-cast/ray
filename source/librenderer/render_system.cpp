@@ -89,6 +89,7 @@ RenderSystem::getRenderSetting() const noexcept
 void
 RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
 {
+	assert(w > 0 && h > 0);
 	assert(_pipelineManager);
 	_pipelineManager->setWindowResolution(w, h);
 }
@@ -103,6 +104,7 @@ RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noex
 void
 RenderSystem::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept
 {
+	assert(w > 0 && h > 0);
 	assert(_pipelineManager);
 	_pipelineManager->setWindowResolutionDPI(w, h);
 }

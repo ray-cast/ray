@@ -55,4 +55,4 @@ GUILightMass::GUILightMass() noexcept
 	, enableGI(false)
 	, enableSkyLighting(false)
 {
-};
+}

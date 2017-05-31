@@ -81,7 +81,7 @@ const char* en_lang[] = {
 	" Start Baking ",
 	"Unsupported Model",
 	"Process",
-	"Succeeded",
+	"Saved successfully",
 	"Please load a model before start baking."
 };
 

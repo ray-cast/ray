@@ -78,6 +78,8 @@ private:
 	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;
 
 private:
+	bool _stopUVMapper;
+
 	ray::GameObjects _objects;
 
 	std::unique_ptr<ray::PMX> _model;

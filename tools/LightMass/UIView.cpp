@@ -455,22 +455,27 @@ GuiViewComponent::showProcessMessage() noexcept
 
 	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
+		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
+		ray::Gui::progressBar(_progress);
+		ray::Gui::text("");
+		ray::Gui::text("");
+		ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
+
 		if (_lightMassType == LightMassType::UVMapper)
 		{
-			ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 45));
-			ray::Gui::progressBar(_progress);
-
 			if (!this->_onUVMapperProcess(_setting, _progress))
 				ray::Gui::closeCurrentPopup();
+
+			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
+			{
+				ray::Gui::closeCurrentPopup();
+
+				if (_onUVMapperCancel)
+					_onUVMapperCancel();
+			}
 		}
 		else if (_lightMassType == LightMassType::LightBaking)
 		{
-			ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
-			ray::Gui::progressBar(_progress);
-			ray::Gui::text("");
-			ray::Gui::text("");
-			ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
-
 			if (!this->_onLightMassProcess(_setting, _progress))
 				ray::Gui::closeCurrentPopup();
 

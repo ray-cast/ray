@@ -274,11 +274,14 @@ float metalnessParams[] =
 GuiControllerComponent::GuiControllerComponent() noexcept
 	: _lightMapListener(std::make_shared<AppMapListener>())
 	, _lightMassListener(std::make_shared<AppMassListener>())
+	, _stopUVMapper(false)
 {
 }
 
 GuiControllerComponent::~GuiControllerComponent() noexcept
 {
+	this->onUVMapperCancel();
+	this->onLightMassCancel();
 }
 
 ray::GameComponentPtr
@@ -549,7 +552,11 @@ bool
 GuiControllerComponent::onUVMapperCancel() noexcept
 {
 	if (_future)
+	{
+		_stopUVMapper = true;
 		_future->wait();
+		_future.reset();
+	}
 
 	return true;
 }
@@ -562,10 +569,10 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 
 	if (!_future)
 	{
-		static auto progress = [&progressing](float progress) -> bool
+		static auto progress = [&](float progress) -> HRESULT
 		{
 			progressing = progress;
-			return true;
+			return _stopUVMapper ? -1 : S_OK;
 		};
 
 		_future = std::make_unique<std::future<bool>>(std::async(std::launch::async, [&]() -> bool
@@ -613,9 +620,13 @@ GuiControllerComponent::onLightMassCancel() noexcept
 	if (_lightMass)
 	{
 		_lightMass->stop();
+		_lightMass.reset();
 
 		if (_future)
+		{
 			_future->wait();
+			_future.reset();
+		}
 	}
 
 	return true;

@@ -52,7 +52,7 @@ public:
 	void setLightMapListener(LightMapListenerPtr pointer) noexcept;
 	LightMapListenerPtr getLightMapListener() const noexcept;
 
-	bool atlasUV(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32_t chart, float stretch, float margin, std::function<bool(float)> progress = nullptr) noexcept;
+	bool atlasUV(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32_t chart, float stretch, float margin, std::function<HRESULT(float)> progress = nullptr) noexcept;
 
 private:
 	std::uint32_t getFace(const PMX& pmx, std::size_t n) noexcept;

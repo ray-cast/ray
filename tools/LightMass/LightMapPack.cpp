@@ -78,7 +78,7 @@ LightMapPack::getLightMapListener() const noexcept
 }
 
 bool
-LightMapPack::atlasUV(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32_t chart, float stretch, float margin, std::function<bool(float)> progress) noexcept
+LightMapPack::atlasUV(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32_t chart, float stretch, float margin, std::function<HRESULT(float)> progress) noexcept
 {
 	if (_lightMapListener)
 		_lightMapListener->onUvmapperStart();
@@ -122,12 +122,12 @@ LightMapPack::atlasUV(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32_
 	std::vector<uint8_t> ib;
 	std::vector<uint32_t> remap;
 
-	auto callback = [&](float percentComplete)
+	auto callback = [&](float percentComplete) -> HRESULT
 	{
 		if (_lightMapListener)
 			_lightMapListener->onUvmapperProgressing(percentComplete);
 
-		return true;
+		return S_OK;
 	};
 
 	if (model.header.sizeOfIndices == 1)

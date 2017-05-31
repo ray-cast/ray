@@ -186,7 +186,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
 	_texBloom1Map = pipeline.createTexture(samplerBloomDesc);
 	_texBloom2Map = pipeline.createTexture(samplerBloomDesc);
-	
+
 	GraphicsTextureDesc samplerLogDesc;
 	samplerLogDesc.setWidth(256);
 	samplerLogDesc.setHeight(256);
@@ -229,8 +229,8 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	sampleLog1ViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
 	_texSampleLumView = pipeline.createFramebuffer(sampleLog1ViewDesc);
 
-	_texBloom1View.resize(2);
-	_texBloom2View.resize(2);
+	_texBloom1View.resize(1);
+	_texBloom2View.resize(1);
 
 	for (std::uint8_t i = 0; i < 1; i++)
 	{
@@ -261,7 +261,6 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 
 	_bloomThreshold = _fimic->getParameter("bloomThreshold");
 	_bloomIntensity = _fimic->getParameter("bloomIntensity");
-	_bloomOffset = _fimic->getParameter("bloomOffset");
 	_bloomWeight = _fimic->getParameter("bloomWeight");
 
 	_toneBloom = _fimic->getParameter("texBloom");
@@ -277,10 +276,8 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	_texLumAve->uniformTexture(_texSampleLumMap);
 	_toneLumExposure->uniform1f(_setting.exposure);
 
-	float offset[] = { -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f,	};
-	float weight[] = { 0.2f, 0.02f, 0.044f, 0.0716f, 0.1046f, 0.1686f, 0.1686f, 0.1046f, 0.0716f, 0.044f, 0.02f };
+	float weight[] = { 0.048297,0.08393,0.124548,0.157829,0.170793,0.157829,0.124548,0.08393,0.048297 };
 
-	_bloomOffset->uniform1fv(sizeof(offset) / sizeof(offset[0]), (float*)offset);
 	_bloomWeight->uniform1fv(sizeof(weight) / sizeof(weight[0]), weight);
 
 	_timer = std::make_shared<Timer>();
@@ -303,7 +300,6 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) noexcept
 	_tone.reset();
 	_bloomThreshold.reset();
 	_bloomIntensity.reset();
-	_bloomOffset.reset();
 	_bloomWeight.reset();
 	_toneBloom.reset();
 	_toneLumAve.reset();

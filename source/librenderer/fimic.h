@@ -98,7 +98,6 @@ private:
 
 	MaterialParamPtr _bloomThreshold;
 	MaterialParamPtr _bloomIntensity;
-	MaterialParamPtr _bloomOffset;
 	MaterialParamPtr _bloomWeight;
 
 	MaterialParamPtr _toneBloom;

@@ -188,8 +188,8 @@ LightBakingAO::doSampleHemisphere(const Viewportt<int>& vp, const float4x4& mvp)
 
 	for (std::size_t i = 0; i < _drawcalls.size(); i++)
 	{
-		/*if (!fru.contains(_boundingBoxs[i].aabb()))
-			continue;*/
+		if (!fru.contains(_boundingBoxs[i].aabb()))
+			continue;
 
 		if (glDrawElementsInstancedBaseVertexBaseInstance)
 		{

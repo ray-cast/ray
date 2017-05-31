@@ -10,8 +10,7 @@
     <parameter name="texLumAve" type="texture2D" />
     <parameter name="bloomThreshold" type="float" />
     <parameter name="bloomIntensity" type="float" />
-    <parameter name="bloomOffset[10]" type="float[]" />
-    <parameter name="bloomWeight[11]" type="float[]" />
+    <parameter name="bloomWeight[9]" type="float[]" />
     <parameter name="texSourceLevel" type="int"/>
     <parameter name="exposure" type="float" />
     <parameter name="delta" type="float2" />
@@ -194,73 +193,38 @@
                 return max(0, (color - bloomThreshold) * bloomIntensity);
             }
 
-            void BlurXVS(
+            void BlurVS(
                 in float4 Position : POSITION0,
-                out float4 oTexcoord0 : TEXCOORD0,
-                out float4 oTexcoord1 : TEXCOORD1,
-                out float4 oTexcoord2 : TEXCOORD2,
-                out float4 oTexcoord3 : TEXCOORD3,
-                out float4 oTexcoord4 : TEXCOORD4,
-                out float4 oTexcoord5 : TEXCOORD5,
+                out float2 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
                 oPosition = Position;
-                oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(bloomOffset[0], 0), float2(bloomOffset[1].x, 0)) * texSourceSizeInv.x;
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(bloomOffset[2], 0), float2(bloomOffset[3].x, 0)) * texSourceSizeInv.x;
-                oTexcoord3 = oTexcoord0.xyxy + float4(float2(bloomOffset[4], 0), float2(bloomOffset[5].x, 0)) * texSourceSizeInv.x;
-                oTexcoord4 = oTexcoord0.xyxy + float4(float2(bloomOffset[6], 0), float2(bloomOffset[7].x, 0)) * texSourceSizeInv.x;
-                oTexcoord5 = oTexcoord0.xyxy + float4(float2(bloomOffset[8], 0), float2(bloomOffset[9].x, 0)) * texSourceSizeInv.x;
+                oTexcoord.xy = PosToCoord(Position.xy);
             }
 
-            void BlurYVS(
-                in float4 Position : POSITION0,
-                out float4 oTexcoord0 : TEXCOORD0,
-                out float4 oTexcoord1 : TEXCOORD1,
-                out float4 oTexcoord2 : TEXCOORD2,
-                out float4 oTexcoord3 : TEXCOORD3,
-                out float4 oTexcoord4 : TEXCOORD4,
-                out float4 oTexcoord5 : TEXCOORD5,
-                out float4 oPosition : SV_Position)
+            float4 BlurPS(in float2 coord : TEXCOORD0) : SV_Target0
             {
-                oPosition = Position;
-                oTexcoord0.xy = PosToCoord(Position.xy);
-                oTexcoord1 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[0]), float2(0, bloomOffset[1])) * texSourceSizeInv.y;
-                oTexcoord2 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[2]), float2(0, bloomOffset[3])) * texSourceSizeInv.y;
-                oTexcoord3 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[4]), float2(0, bloomOffset[5])) * texSourceSizeInv.y;
-                oTexcoord4 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[6]), float2(0, bloomOffset[7])) * texSourceSizeInv.y;
-                oTexcoord5 = oTexcoord0.xyxy + float4(float2(0, bloomOffset[8]), float2(0, bloomOffset[9])) * texSourceSizeInv.y;
-            }
+            	float2 coords = coord - texSourceSizeInv * 4.0;
 
-            float4 BlurPS(
-                in float4 coord0 : TEXCOORD0,
-                in float4 coord1 : TEXCOORD1,
-                in float4 coord2 : TEXCOORD2,
-                in float4 coord3 : TEXCOORD3,
-                in float4 coord4 : TEXCOORD4,
-                in float4 coord5 : TEXCOORD5) : SV_Target0
-            {
                 float4 color = 0;
-                color += texSource.SampleLevel(PointClamp, coord0.xy, texSourceLevel) * bloomWeight[0];
-                color += texSource.SampleLevel(PointClamp, coord1.xy, texSourceLevel) * bloomWeight[1];
-                color += texSource.SampleLevel(PointClamp, coord1.zw, texSourceLevel) * bloomWeight[2];
-                color += texSource.SampleLevel(PointClamp, coord2.xy, texSourceLevel) * bloomWeight[3];
-                color += texSource.SampleLevel(PointClamp, coord2.zw, texSourceLevel) * bloomWeight[4];
-                color += texSource.SampleLevel(PointClamp, coord3.xy, texSourceLevel) * bloomWeight[5];
-                color += texSource.SampleLevel(PointClamp, coord3.zw, texSourceLevel) * bloomWeight[6];
-                color += texSource.SampleLevel(PointClamp, coord4.xy, texSourceLevel) * bloomWeight[7];
-                color += texSource.SampleLevel(PointClamp, coord4.zw, texSourceLevel) * bloomWeight[8];
-                color += texSource.SampleLevel(PointClamp, coord5.xy, texSourceLevel) * bloomWeight[9];
-                color += texSource.SampleLevel(PointClamp, coord5.zw, texSourceLevel) * bloomWeight[10];
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[0]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[1]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[2]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[3]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[4]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[5]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[6]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[7]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[8];
 
                 return color;
             }
 
             float4 FimicTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
-                float avgLum = texLumAve.Sample(PointClamp, float2(0, 0)).r;
-                float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
-                float3 bloom = texBloom.Sample(LinearClamp, coord.xy).rgb;
+                float avgLum = texLumAve.Sample(PointClamp, float2(0, 0), 0).r;
+                float3 color = texSource.Sample(PointClamp, coord.xy, 0).rgb;
+                float3 bloom = texBloom.SampleLevel(LinearClamp, coord.xy, 0).rgb;
                 float3 LDR = ToneMapping(color, bloom, avgLum, exposure);
                 LDR = ColorBanding(LDR, coord.xy);
                 return float4(LDR, luminance(LDR));
@@ -318,7 +282,7 @@
     <technique name="BlurBloomh">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="BlurXVS" />
+            <state name="vertex" value="BlurVS" />
             <state name="fragment" value="BlurPS" />
 
             <state name="depthtest" value="false"/>
@@ -330,7 +294,7 @@
     <technique name="BlurBloomv">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="BlurYVS" />
+            <state name="vertex" value="BlurVS" />
             <state name="fragment" value="BlurPS" />
 
             <state name="depthtest" value="false"/>

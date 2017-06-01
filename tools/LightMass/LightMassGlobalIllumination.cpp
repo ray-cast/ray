@@ -179,10 +179,16 @@ LightBakingGI::close() noexcept
 	_glcontext.reset();
 }
 
-void
+bool
 LightBakingGI::doSampleHemisphere(const Viewportt<int>& vp, const float4x4& mvp)
 {
 	assert(_glcontext);
+
+	if (_progress)
+	{
+		if (!_progress(this->getSampleProcess()))
+			return false;
+	}
 
 	glViewport(vp.left, vp.top, vp.width, vp.height);
 
@@ -225,6 +231,8 @@ LightBakingGI::doSampleHemisphere(const Viewportt<int>& vp, const float4x4& mvp)
 			glDrawElements(GL_TRIANGLES, _drawcalls[i].count, _drawcalls[i].faceType, (char*)nullptr + _drawcalls[i].firstIndex);
 		}
 	}
+
+	return false;
 }
 
 void

@@ -76,7 +76,7 @@ public:
 	const AABBt<T>& aabb() const noexcept { return _sp.aabb(); }
 	const Spheret<T>& sphere() const noexcept { return _sp; }
 
-	void encapsulate(const Vector3t<T>& pt) noexcept { _sp.encapsulate(pt);}
+	void encapsulate(const Vector3t<T>& pt) noexcept { _sp.encapsulate(pt); }
 	void encapsulate(const Vector3t<T> pt[], std::size_t n) noexcept { _sp.encapsulate(pt, n); }
 	void encapsulate(const Vector3t<T> pt[], const std::uint8_t* indices, std::size_t indicesCount) noexcept { _sp.encapsulate(pt, indices, indicesCount); }
 	void encapsulate(const Vector3t<T> pt[], const std::uint16_t* indices, std::size_t indicesCount) noexcept { _sp.encapsulate(pt, indices, indicesCount); }
@@ -84,7 +84,12 @@ public:
 	void encapsulate(const BoundingBoxt<T>& bound) noexcept { _sp.encapsulate(bound._sp); }
 
 	bool empty() const noexcept { return _sp.empty(); }
+
 	bool intersects(const Raycast3t<T>& ray) const noexcept { return _sp.intersects(ray); }
+	bool intersects(const Spheret<T>& sphere) const noexcept { return _sp.intersects(sphere); }
+	bool intersects(const Plane3t<T>& p) const noexcept { return _sp.intersects(p); }
+	bool intersects(const AABBt<T>& aabb) const noexcept { return _sp.intersects(aabb); }
+	bool intersects(const Vector3t<T>& pt1, const Vector3t<T>& pt2) const noexcept { return _sp.intersects(pt1, pt2); }
 
 	void applyMatrix(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
 	{

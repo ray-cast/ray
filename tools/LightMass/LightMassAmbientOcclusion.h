@@ -54,7 +54,7 @@ public:
 private:
 	bool setupContext(const LightModelData& params) noexcept;
 
-	void doSampleHemisphere(const Viewportt<int>& viewport, const float4x4& mvp);
+	bool doSampleHemisphere(const Viewportt<int>& viewport, const float4x4& mvp);
 	void computeBoundingBox(const LightModelData& params, ray::BoundingBox& boundingBox, std::uint32_t firstFace, std::size_t faceCount) noexcept;
 
 private:

@@ -167,13 +167,16 @@ LightBakingAO::close() noexcept
 	_glcontext.reset();
 }
 
-void
+bool
 LightBakingAO::doSampleHemisphere(const Viewportt<int>& vp, const float4x4& mvp)
 {
 	assert(_glcontext);
 
 	if (_progress)
-		_progress(this->getSampleProcess());
+	{
+		if (!_progress(this->getSampleProcess()))
+			return false;
+	}
 
 	Frustum fru;
 	fru.extract(mvp);
@@ -208,6 +211,8 @@ LightBakingAO::doSampleHemisphere(const Viewportt<int>& vp, const float4x4& mvp)
 			glDrawElements(GL_TRIANGLES, _drawcalls[i].count, _drawcalls[i].faceType, (char*)nullptr + _drawcalls[i].firstIndex);
 		}
 	}
+
+	return true;
 }
 
 bool

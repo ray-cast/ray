@@ -34,49 +34,29 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
+#ifndef _H_MATERIAL_PICKER_H_
+#define _H_MATERIAL_PICKER_H_
 
-#include <ray/graphics_system.h>
-#include <ray/graphics_device.h>
-#include <ray/graphics_context.h>
-#include <ray/graphics_swapchain.h>
-
-#include "LightMassParams.h"
-#include "LightMassListener.h"
+#include <ray/game_component.h>
 
 _NAME_BEGIN
 
-class LightMass final
+class MaterialPicker : public GameComponent
 {
 public:
-	LightMass() noexcept;
-	LightMass(LightMassListenerPtr listener) noexcept;
-	~LightMass() noexcept;
+	MaterialPicker() noexcept;
+	~MaterialPicker() noexcept;
 
-	bool open(const LightMassParams& params) noexcept;
-	void close() noexcept;
-
-	bool start() noexcept;
-	void stop() noexcept;
-
-	void setLightMapData(LightMapDataPtr data) noexcept;
-	LightMapDataPtr getLightMapData() const noexcept;
-
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
+	void onMessage(const MessagePtr& message) noexcept;
 
 private:
-	bool _initialize;
-	bool _isStopped;
+	void onMaterialPicker(float x, float y) noexcept;
 
-	ray::GraphicsDevicePtr _graphicsDevice;
-	ray::GraphicsContextPtr _graphicsContext;
-	ray::GraphicsSwapchainPtr _graphicsSwapchain;
+private:
+	MaterialPicker(const MaterialPicker&) = delete;
+	MaterialPicker& operator=(const MaterialPicker&) = delete;
 
-	LightMassBakingPtr _lightMassBaking;
-	LightMassListenerPtr _lightMassListener;
-	LightMapDataPtr _lightMapData;
+private:
 };
 
 _NAME_END

@@ -198,11 +198,11 @@ GuiViewComponent::showMainMenu() noexcept
 		if (ray::Gui::menuItem(_langs[UILang::SaveAs], "CTRL+SHIFT+S")) { this->showProjectSaveAsBrowse(); }
 		ray::Gui::separator();
 		ray::Gui::separator();
-		if (ray::Gui::menuItem(_langs[UILang::ImportModel], "")) { this->showModelImportBrowse(); }
-		if (ray::Gui::menuItem(_langs[UILang::ExportModel], "")) { this->showModelExportBrowse(); }
+		if (ray::Gui::menuItem(_langs[UILang::ImportModel])) { this->showModelImportBrowse(); }
+		if (ray::Gui::menuItem(_langs[UILang::ExportModel])) { this->showModelExportBrowse(); }
 		ray::Gui::separator();
 		ray::Gui::separator();
-		if (ray::Gui::menuItem(_langs[UILang::Exit], "")) { std::exit(0); }
+		if (ray::Gui::menuItem(_langs[UILang::Exit])) { std::exit(0); }
 		ray::Gui::endMenu();
 	}
 
@@ -473,9 +473,6 @@ GuiViewComponent::showProcessMessage() noexcept
 	if (!_showProcessMessage)
 		return;
 
-	if (!_onUVMapperProcess)
-		return;
-
 	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
 		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
@@ -487,10 +484,11 @@ GuiViewComponent::showProcessMessage() noexcept
 		if (_lightMassType == LightMassType::UVMapper)
 		{
 			ray::util::string::pointer error = nullptr;
-			if (!this->_onUVMapperProcess(_setting, _progress, error))
+			if (!_onUVMapperProcess || !_onUVMapperProcess(_setting, _progress, error))
 			{
 				ray::Gui::closeCurrentPopup();
-				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+				if (error)
+					this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 			}
 
 			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
@@ -504,10 +502,11 @@ GuiViewComponent::showProcessMessage() noexcept
 		else if (_lightMassType == LightMassType::LightBaking)
 		{
 			ray::util::string::pointer error = nullptr;
-			if (!this->_onLightMassProcess(_setting, _progress, error))
+			if (!_onLightMassProcess || !_onLightMassProcess(_setting, _progress, error))
 			{
 				ray::Gui::closeCurrentPopup();
-				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+				if (error)
+					this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 			}
 
 			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
@@ -664,7 +663,7 @@ GuiViewComponent::showLightMass() noexcept
 	if (!_showLightMassWindow)
 		return;
 
-	ray::Gui::setNextWindowPos(ray::float2(10, 80), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
+	ray::Gui::setNextWindowPos(ray::float2(10, 60), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
 
 	if (ray::Gui::begin(_langs[UILang::LightMass], &_showLightMassWindow, ray::float2(270, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{

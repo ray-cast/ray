@@ -109,13 +109,11 @@ public:
 	Raycast3t(const Vector3t<T>& pt1, const Vector3t<T>& pt2)
 	{
 		origin = pt1;
-		normal = ~(pt2 - pt1);
-		this->min = pt1.z < pt2.z ? pt1 : pt2;
-		this->max = pt1.z > pt2.z ? pt1 : pt2;
+		normal = math::normalize(pt2 - pt1);
 	}
 
 	Raycast3t(const Raycast3t& o)
-		:origin(o.origin)
+		: origin(o.origin)
 		, normal(o.normal)
 	{
 	}

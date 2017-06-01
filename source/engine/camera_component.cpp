@@ -169,9 +169,9 @@ CameraComponent::screenToWorld(const Vector3& pos) const noexcept
 }
 
 Vector3
-CameraComponent::screenToDirection(const Vector2& pos) const noexcept
+CameraComponent::screenToView(const Vector2& pos) const noexcept
 {
-	return _camera->screenToDirection(pos);
+	return _camera->screenToView(pos);
 }
 
 void

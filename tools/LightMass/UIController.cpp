@@ -49,93 +49,23 @@
 #include <ray/mstream.h>
 #include <ray/jsonreader.h>
 
-#include <ray/mesh_render_component.h>
 #include <ray/mesh_component.h>
+#include <ray/camera_component.h>
+#include <ray/mesh_render_component.h>
+
+#include <ray/input.h>
+#include <ray/input_feature.h>
+#include <ray/game_server.h>
+
 #include <ray/res_manager.h>
 #include <ray/material.h>
+#include <ray/game_object_manager.h>
 
 #include <ray/image.h>
 #include <ray/imagutil.h>
 #include <ray/imagcubemap.h>
 
 #include <ray/SH.h>
-
-class AppMapListener : public ray::LightMapListener
-{
-public:
-	AppMapListener() noexcept
-		: _lastProgress(0)
-	{
-	}
-
-	~AppMapListener() noexcept {}
-
-	void onUvmapperStart()
-	{
-		_startTime = std::time(nullptr);
-		std::cerr << "Calculating the Light map pack of the model : ";
-		std::cerr << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
-	}
-
-	void onUvmapperProgressing(float progress)
-	{
-		if (_lastProgress != progress)
-		{
-			_lastProgress = progress;
-		}
-	}
-
-	void onUvmapperEnd()
-	{
-		_endTime = std::time(nullptr);
-		std::cerr << "Calculated the Light map pack of the model : ";
-		std::cerr << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
-	}
-
-	virtual void onMessage(const ray::util::string& message) noexcept
-	{
-		std::cerr << message << std::endl;
-	}
-
-private:
-	float _lastProgress;
-	std::time_t _startTime;
-	std::time_t _endTime;
-};
-
-class AppMassListener : public ray::LightMassListener
-{
-public:
-	AppMassListener() noexcept {}
-	~AppMassListener() noexcept {}
-
-	virtual void onBakingStart() noexcept
-	{
-		_startTime = std::time(nullptr);
-		std::cerr << "Calculating the radiosity of the model : ";
-		std::cerr << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
-	}
-
-	virtual void onBakingEnd() noexcept
-	{
-		_endTime = std::time(nullptr);
-		std::cerr << "Calculated the radiosity of the model : ";
-		std::cerr << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
-	}
-
-	virtual void onBakingProgressing(float progress) noexcept
-	{
-	}
-
-	virtual void onMessage(const ray::util::string& message) noexcept
-	{
-		std::cerr << message << std::endl;
-	}
-
-private:
-	std::time_t _startTime;
-	std::time_t _endTime;
-};
 
 __ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")
 
@@ -271,10 +201,88 @@ float metalnessParams[] =
 	0.01779272f, 0.000694197f, 	0.004880858f, 0.01029147f, 0.000683875f, 0.006194334f, 0.005380284f, 0.000367343f, 0.003435382f, 0.00373529
 };
 
+class AppMapListener : public ray::LightMapListener
+{
+public:
+	AppMapListener() noexcept
+		: _lastProgress(0)
+	{
+	}
+
+	~AppMapListener() noexcept {}
+
+	void onUvmapperStart()
+	{
+		_startTime = std::time(nullptr);
+		std::cerr << "Calculating the Light map pack of the model : ";
+		std::cerr << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	void onUvmapperProgressing(float progress)
+	{
+		if (_lastProgress != progress)
+		{
+			_lastProgress = progress;
+		}
+	}
+
+	void onUvmapperEnd()
+	{
+		_endTime = std::time(nullptr);
+		std::cerr << "Calculated the Light map pack of the model : ";
+		std::cerr << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	virtual void onMessage(const ray::util::string& message) noexcept
+	{
+		std::cerr << message << std::endl;
+	}
+
+private:
+	float _lastProgress;
+	std::time_t _startTime;
+	std::time_t _endTime;
+};
+
+class AppMassListener : public ray::LightMassListener
+{
+public:
+	AppMassListener() noexcept {}
+	~AppMassListener() noexcept {}
+
+	virtual void onBakingStart() noexcept
+	{
+		_startTime = std::time(nullptr);
+		std::cerr << "Calculating the radiosity of the model : ";
+		std::cerr << std::put_time(std::localtime(&_startTime), "start time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	virtual void onBakingEnd() noexcept
+	{
+		_endTime = std::time(nullptr);
+		std::cerr << "Calculated the radiosity of the model : ";
+		std::cerr << std::put_time(std::localtime(&_endTime), "end time %Y-%m-%d %H.%M.%S") << "." << std::endl;
+	}
+
+	virtual void onBakingProgressing(float progress) noexcept
+	{
+	}
+
+	virtual void onMessage(const ray::util::string& message) noexcept
+	{
+		std::cerr << message << std::endl;
+	}
+
+private:
+	std::time_t _startTime;
+	std::time_t _endTime;
+};
+
 GuiControllerComponent::GuiControllerComponent() noexcept
 	: _lightMapListener(std::make_shared<AppMapListener>())
 	, _lightMassListener(std::make_shared<AppMassListener>())
 	, _stopUVMapper(false)
+	, _stopLightmass(false)
 {
 }
 
@@ -357,11 +365,15 @@ GuiControllerComponent::onActivate() except
 	gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
 	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material));
 
-	for (std::size_t i = 0; i < 10; i++)
+	for (std::uint8_t i = 0; i < 10; i++)
 	{
-		for (std::size_t j = 0; j < 10; j++)
+		for (std::uint8_t j = 0; j < 10; j++)
 		{
+			char buf[MAX_PATH];
+			std::sprintf(buf, "sphere_%u_%u", i, j);
+
 			auto newGameObject = gameObject->clone();
+			newGameObject->setName(buf);
 			newGameObject->setActive(true);
 			newGameObject->setTranslate(ray::float3(-25.0f + i * 5.5f, 3, -25.0f + j * 5.5f));
 
@@ -388,6 +400,33 @@ GuiControllerComponent::onActivate() except
 	}
 }
 
+void
+GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
+{
+	if (message->isInstanceOf<ray::InputMessage>())
+	{
+		auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
+		if (inputFeature)
+		{
+			auto input = inputFeature->getInput();
+			if (!input)
+				return;
+
+			if (input->getButtonDown(ray::InputButton::LEFT))
+			{
+				if (input->getKey(ray::InputKey::LeftControl) && !input->isLockedCursor())
+				{
+					float x;
+					float y;
+					input->getMousePos(x, y);
+
+					this->onModelPicker(x, y);
+				}
+			}
+		}
+	}
+}
+
 bool
 GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
@@ -395,45 +434,46 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 	{
 		ray::StreamReaderPtr stream;
 		if (!ray::IoServer::instance()->openFile(stream, path))
+		{
+			error = "Failed to open file.";
 			return false;
+		}
 
 		ray::PMXHandler header;
 		if (!header.doCanRead(*stream))
 			return false;
 
-		auto model = std::make_unique<ray::PMX>();
-		if (!header.doLoad(*stream, *model))
+		_model = std::make_unique<ray::PMX>();
+		if (!header.doLoad(*stream, *_model))
 			return false;
 
 		auto gameObject = std::make_shared<ray::GameObject>();
 
-		ray::MeshPropertyPtr mesh = nullptr;
-
-		if (model->numVertices > 0 && model->numIndices > 0)
+		if (_model->numVertices > 0 && _model->numIndices > 0)
 		{
-			ray::PMX_Index* indicesData = model->indices.data();
+			ray::PMX_Index* indicesData = _model->indices.data();
 
-			ray::Float3Array vertices(model->numVertices);
-			ray::Float3Array normals(model->numVertices);
-			ray::Float2Array texcoords(model->numVertices);
-			ray::UintArray indices(model->numIndices);
+			ray::Float3Array vertices(_model->numVertices);
+			ray::Float3Array normals(_model->numVertices);
+			ray::Float2Array texcoords(_model->numVertices);
+			ray::UintArray indices(_model->numIndices);
 
-			for (std::size_t i = 0; i < model->numVertices; i++)
+			for (std::size_t i = 0; i < _model->numVertices; i++)
 			{
-				const auto& v = model->vertices[i];
+				const auto& v = _model->vertices[i];
 
 				vertices[i] = v.position;
 				normals[i] = v.normal;
 				texcoords[i] = v.coord;
 			}
 
-			for (std::uint32_t i = 0; i < model->numIndices; i++, indicesData += model->header.sizeOfIndices)
+			for (std::uint32_t i = 0; i < _model->numIndices; i++, indicesData += _model->header.sizeOfIndices)
 			{
-				if (model->header.sizeOfIndices == 1)
+				if (_model->header.sizeOfIndices == 1)
 					indices[i] = *(std::uint8_t*)indicesData;
-				else if (model->header.sizeOfIndices == 2)
+				else if (_model->header.sizeOfIndices == 2)
 					indices[i] = *(std::uint16_t*)indicesData;
-				else if (model->header.sizeOfIndices == 4)
+				else if (_model->header.sizeOfIndices == 4)
 					indices[i] = *(std::uint32_t*)indicesData;
 				else
 					return false;
@@ -442,7 +482,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 			ray::MeshSubsets subsets;
 			std::uint32_t startIndices = 0;
 
-			for (auto& it : model->materials)
+			for (auto& it : _model->materials)
 			{
 				subsets.push_back(ray::MeshSubset(0, startIndices, it.IndicesCount, 0, 0));
 				startIndices += it.IndicesCount;
@@ -458,39 +498,39 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 			gameObject->addComponent(std::make_shared<ray::MeshComponent>(std::move(mesh)));
 		}
 
-		if (model->numMaterials)
+		if (_model->numMaterials)
 		{
 			ray::MaterialPtr materialTemp;
 			if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", materialTemp))
 				return false;
 
-			ray::Materials materials(model->numMaterials);
+			ray::Materials materials(_model->numMaterials);
 
 			auto ShininessToSmoothness = [](float spec)
 			{
 				return 1.0f - pow(std::max(0.0f, 2.0f / (spec + 2)), 0.25f);
 			};
 
-			for (std::size_t i = 0; i < model->numMaterials; i++)
+			for (std::size_t i = 0; i < _model->numMaterials; i++)
 			{
 				auto material = materialTemp->clone();
 
 				material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
-				material->getParameter("diffuse")->uniform3f(ray::math::srgb2linear(model->materials[i].Diffuse));
+				material->getParameter("diffuse")->uniform3f(ray::math::srgb2linear(_model->materials[i].Diffuse));
 				material->getParameter("metalness")->uniform1f(0.0);
 				material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
-				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(model->materials[i].Shininess));
+				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(_model->materials[i].Shininess));
 
 				std::int16_t textureID = 0;
-				if (model->header.sizeOfTexture == 1)
-					textureID = (model->materials[i].TextureIndex == 255) ? -1 : model->materials[i].TextureIndex;
+				if (_model->header.sizeOfTexture == 1)
+					textureID = (_model->materials[i].TextureIndex == 255) ? -1 : _model->materials[i].TextureIndex;
 				else
-					textureID = (model->materials[i].TextureIndex >= 65535) ? -1 : model->materials[i].TextureIndex;
+					textureID = (_model->materials[i].TextureIndex >= 65535) ? -1 : _model->materials[i].TextureIndex;
 
 				if (textureID >= 0)
 				{
 					char name[MAX_PATH];
-					::wcstombs(name, model->textures[textureID].name, model->textures[textureID].length);
+					::wcstombs(name, _model->textures[textureID].name, _model->textures[textureID].length);
 
 					ray::GraphicsTexturePtr texture;
 					if (ray::ResManager::instance()->createTexture(ray::util::directory(path) + name, texture))
@@ -511,12 +551,12 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 		_objects.clear();
 		_objects.push_back(gameObject);
 
-		_model = std::move(model);
-
 		return true;
 	}
-	catch (...)
+	catch (const std::exception&)
 	{
+		_model.reset();
+		error = "Unkonwn error.";
 		return false;
 	}
 }
@@ -542,6 +582,42 @@ GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray
 	}
 }
 
+void
+GuiControllerComponent::onModelPicker(float x, float y) noexcept
+{
+	auto cameraObject = _camera.lock();
+	if (!cameraObject)
+		cameraObject = ray::GameObjectManager::instance()->findObject("first_person_camera");
+
+	if (!cameraObject)
+		return;
+
+	auto start = cameraObject->getComponent<ray::CameraComponent>()->screenToWorld(ray::float3(x, y, 0));
+	auto end = cameraObject->getComponent<ray::CameraComponent>()->screenToWorld(ray::float3(x, y, 1));
+	auto ray = ray::Raycast3(start, end);
+
+	std::vector<ray::GameObjectPtr> hits;
+
+	for (auto& object : _objects)
+	{
+		auto component = object->getComponent<ray::MeshComponent>();
+		if (!component)
+			continue;
+
+		auto mesh = component->getMesh();
+		if (!mesh)
+			continue;
+
+		auto boundingBox = mesh->getBoundingBox();
+		boundingBox.applyMatrix(object->getTransform());
+
+		if (!boundingBox.intersects(ray))
+			continue;
+
+		hits.push_back(object);
+	}
+}
+
 bool
 GuiControllerComponent::onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept
 {
@@ -560,6 +636,7 @@ GuiControllerComponent::onUVMapperCancel() noexcept
 	if (_future)
 	{
 		_stopUVMapper = true;
+		_stopLightmass = true;
 		_future->wait();
 		_future.reset();
 	}
@@ -632,17 +709,12 @@ GuiControllerComponent::onLightMassWillStart(const GuiParams& params, ray::util:
 bool
 GuiControllerComponent::onLightMassCancel() noexcept
 {
-	if (_lightMass)
+	if (_future)
 	{
-		_lightMass->stop();
-
-		if (_future)
-		{
-			_future->wait();
-			_future.reset();
-		}
-
-		_lightMass.reset();
+		_stopUVMapper = true;
+		_stopLightmass = true;
+		_future->wait();
+		_future.reset();
 	}
 
 	return true;
@@ -665,7 +737,7 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 		static auto progress = [&](float progress) -> bool
 		{
 			progressing = progress;
-			return true;
+			return !_stopLightmass;
 		};
 
 		_future = std::make_unique<std::future<bool>>(std::async(std::launch::async, [&]() -> bool
@@ -715,14 +787,18 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 				params.model.subsets[i].drawcall.baseVertex = 0;
 			}
 
-			_lightMass = std::make_unique<ray::LightMass>();
-			_lightMass->setLightMapData(std::make_shared<ray::LightMapData>(size, size, options.lightmass.enableGI ? 4 : 1));
-			_lightMass->setLightMassListener(_lightMassListener);
+			auto lightMass = std::make_unique<ray::LightMass>();
+			lightMass->setLightMapData(std::make_shared<ray::LightMapData>(size, size, options.lightmass.enableGI ? 4 : 1));
+			lightMass->setLightMassListener(_lightMassListener);
 
-			if (!_lightMass->open(params))
+			if (!lightMass->open(params))
 				return false;
 
-			return _lightMass->start();
+			if (!lightMass->start())
+				return false;
+
+			_lightMapData = lightMass->getLightMapData();
+			return true;
 		}));
 
 		return true;
@@ -731,9 +807,6 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 	{
 		if (_future->wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
 			return true;
-
-		if (!_future.get())
-			_lightMass.reset();
 
 		_future.reset();
 
@@ -744,13 +817,13 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 bool
 GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
-	if (!_lightMass)
+	if (!_lightMapData)
 	{
 		error = "Light map cannot be empty";
 		return false;
 	}
 
-	auto data = _lightMass->getLightMapData();
+	auto data = _lightMapData;
 
 	bool isGreyscale = data->channel == 1;
 	bool hasAlpha = data->channel == 1 ? false : true;
@@ -895,9 +968,9 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 			material.Ambient = ray::float3(0.5, 0.5, 0.5);
 			material.Shininess = SmoothnessToShininess(shininessParams[i * 10 + j]);
 			material.IndicesCount = sphereMesh->getNumIndices();
-			material.TextureIndex = 255;
-			material.ToneTexture = 255;
-			material.SphereTextureIndex = 255;
+			material.TextureIndex = std::numeric_limits<std::uint8_t>::max();
+			material.ToneTexture = std::numeric_limits<std::uint8_t>::max();
+			material.SphereTextureIndex = std::numeric_limits<std::uint8_t>::max();
 			material.EdgeSize = 1;
 			material.Flag = PMX_MATERIAL_DEFAULT;
 			material.Opacity = 1.0;

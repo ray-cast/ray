@@ -78,7 +78,7 @@ public:
 	float3 worldToScreen(const float3& pos) const noexcept;
 	float3 worldToProject(const float3& pos) const noexcept;
 	float3 screenToWorld(const float3& pos) const noexcept;
-	float3 screenToDirection(const float2& pos) const noexcept;
+	float3 screenToView(const float2& pos) const noexcept;
 
 	void setClearColor(const float4& color) noexcept;
 	const float4& getClearColor() const noexcept;

@@ -93,7 +93,7 @@ protected:
 	bool beginSampleHemisphere(int* outViewport4);
 	bool endSampleHemisphere();
 
-	virtual void doSampleHemisphere(const Viewportt<int>& viewport, const float4x4& mvp) = 0;
+	virtual bool doSampleHemisphere(const Viewportt<int>& viewport, const float4x4& mvp) = 0;
 
 	float getSampleProcess() noexcept;
 

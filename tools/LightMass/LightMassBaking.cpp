@@ -329,7 +329,8 @@ LightMassBaking::start() noexcept
 
 		while (!_isStopped && this->beginSampleHemisphere(vp.ptr()))
 		{
-			this->doSampleHemisphere(vp, _camera.viewProject);
+			if (!this->doSampleHemisphere(vp, _camera.viewProject))
+				return false;
 
 			if (baseIndex != _ctx->meshPosition.triangle.baseIndex)
 			{

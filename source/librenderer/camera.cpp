@@ -233,14 +233,11 @@ Camera::screenToWorld(const float3& pos) const noexcept
 {
 	float4 viewport = this->getPixelViewport();
 
-	float w = viewport.z * 0.5f;
-	float h = viewport.w * 0.5f;
-
 	float4 v(pos, 1.0);
 	v.y = viewport.w - pos.y;
 
-	v.x = v.x / w - 1.0f - viewport.x;
-	v.y = v.y / h - 1.0f - viewport.y;
+	v.x = ((v.x - viewport.x) / viewport.z) * 2.0f - 1.0f;
+	v.y = ((v.y - viewport.y) / viewport.w) * 2.0f - 1.0f;
 
 	v = this->getViewProjectInverse() * v;
 	if (v.w != 0)
@@ -250,17 +247,15 @@ Camera::screenToWorld(const float3& pos) const noexcept
 }
 
 float3
-Camera::screenToDirection(const float2& pos) const noexcept
+Camera::screenToView(const float2& pos) const noexcept
 {
 	float4 viewport = this->getPixelViewport();
 
-	float w = viewport.z * 0.5f;
-	float h = viewport.w * 0.5f;
-
 	float4 v(pos, 1.0, 1.0);
+	v.y = viewport.w - v.y;
 
-	v.x = v.x / w - 1.0f - viewport.x;
-	v.y = v.y / h - 1.0f - viewport.y;
+	v.x = ((v.x - viewport.x) / viewport.z) * 2.0f - 1.0f;
+	v.y = ((v.y - viewport.y) / viewport.w) * 2.0f - 1.0f;
 
 	return (this->getProjectInverse() * v).xyz();
 }

@@ -57,9 +57,11 @@ private:
 	void onDetachComponent(ray::GameComponentPtr& component) noexcept;
 
 	void onActivate() except;
+	void onMessage(const ray::MessagePtr& message) noexcept;
 
 	bool onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	void onModelPicker(float x, float y) noexcept;
 
 	bool onUVMapperCancel() noexcept;
 	bool onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;
@@ -70,7 +72,6 @@ private:
 	bool onLightMassProcessing(const GuiParams& params, float& progressing, ray::util::string::pointer& error) noexcept;
 	bool onLightMassSave(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
-	bool onSaveLightMass(const ray::util::string& path, float* data, std::uint32_t w, std::uint32_t h, std::uint32_t channel, std::uint32_t margin);
 	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
 private:
@@ -79,12 +80,14 @@ private:
 
 private:
 	bool _stopUVMapper;
+	bool _stopLightmass;
 
 	ray::GameObjects _objects;
+	ray::GameObjectWeakPtr _camera;
 
 	std::unique_ptr<ray::PMX> _model;
 	std::unique_ptr<std::future<bool>> _future;
-	std::unique_ptr<ray::LightMass> _lightMass;
+	std::shared_ptr<ray::LightMapData> _lightMapData;
 
 	ray::LightMapListenerPtr _lightMapListener;
 	ray::LightMassListenerPtr _lightMassListener;

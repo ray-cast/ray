@@ -189,7 +189,14 @@ DefaultInputMouse::onFrameEnd() noexcept
 		this->setPosition(_centerX, _centerY);
 
 	for (auto& button : _buttonState)
+	{
+		if (button.up)
+			button.pressed = false;
+
+		button.up = false;
+		button.down = false;
 		button.doubleClick = false;
+	}
 }
 
 void

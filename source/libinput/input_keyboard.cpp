@@ -84,9 +84,7 @@ DefaultInputKeyboard::onFrameEnd() noexcept
 		auto& key = _keyState[i];
 
 		if (key.up)
-		{
 			key.pressed = false;
-		}
 
 		key.up = false;
 		key.down = false;

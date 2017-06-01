@@ -677,6 +677,18 @@ namespace math
 		return length2(v1 - v2);
 	}
 
+	template <typename T>
+	inline T min(const Vector4t<T>& v) noexcept
+	{
+		return std::min(std::min(std::min(v.x, v.y), v.z), v.w);
+	}
+
+	template <typename T>
+	inline T max(const Vector4t<T>& v) noexcept
+	{
+		return std::max(std::max(std::max(v.x, v.y), v.z), v.w);
+	}
+
 	template<typename T>
 	inline bool equal(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
 	{

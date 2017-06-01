@@ -118,14 +118,14 @@ LightMass::open(const LightMassParams& params) noexcept
 		auto lightMass = std::make_shared<LightBakingGI>();
 		lightMass->setLightMassListener(_lightMassListener);
 		lightMass->open(option);
-		_lightMass = std::move(lightMass);
+		_lightMassBaking = std::move(lightMass);
 	}
 	else
 	{
 		auto lightMass = std::make_shared<LightBakingAO>();
 		lightMass->setLightMassListener(_lightMassListener);
 		lightMass->open(option);
-		_lightMass = std::move(lightMass);
+		_lightMassBaking = std::move(lightMass);
 	}
 
 	_initialize = true;
@@ -136,8 +136,8 @@ LightMass::open(const LightMassParams& params) noexcept
 void
 LightMass::close() noexcept
 {
-	if (_lightMass)
-		_lightMass->stop();
+	if (_lightMassBaking)
+		_lightMassBaking->stop();
 
 	if (_graphicsContext)
 		_graphicsContext.reset();
@@ -197,7 +197,7 @@ LightMass::start() noexcept
 	if (this->getLightMassListener())
 		this->getLightMassListener()->onBakingStart();
 
-	if (!_lightMass->start())
+	if (!_lightMassBaking->start())
 	{
 		if (_lightMassListener)
 			_lightMassListener->onMessage("Failed to baking the model");
@@ -216,8 +216,8 @@ LightMass::stop() noexcept
 {
 	if (!_isStopped)
 	{
-		if (_lightMass)
-			_lightMass->stop();
+		if (_lightMassBaking)
+			_lightMassBaking->stop();
 
 		_isStopped = true;
 	}

@@ -34,51 +34,56 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_MASS_H_
-#define _H_LIGHT_MASS_H_
-
-#include <ray/graphics_system.h>
-#include <ray/graphics_device.h>
-#include <ray/graphics_context.h>
-#include <ray/graphics_swapchain.h>
-
-#include "LightMassParams.h"
-#include "LightMassListener.h"
+#include "MaterialPicker.h"
+#include <ray/input.h>
+#include <ray/input_feature.h>
+#include <ray/game_server.h>
+#include <ray/camera_component.h>
 
 _NAME_BEGIN
 
-class LightMass final
+MaterialPicker::MaterialPicker() noexcept
 {
-public:
-	LightMass() noexcept;
-	LightMass(LightMassListenerPtr listener) noexcept;
-	~LightMass() noexcept;
+}
 
-	bool open(const LightMassParams& params) noexcept;
-	void close() noexcept;
+MaterialPicker::~MaterialPicker() noexcept
+{
+}
 
-	bool start() noexcept;
-	void stop() noexcept;
+void
+MaterialPicker::onMessage(const MessagePtr& message) noexcept
+{
+	if (message->isInstanceOf<ray::InputMessage>())
+	{
+		auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
+		if (inputFeature)
+		{
+			auto input = inputFeature->getInput();
+			if (!input)
+				return;
 
-	void setLightMapData(LightMapDataPtr data) noexcept;
-	LightMapDataPtr getLightMapData() const noexcept;
+			if (input->getButtonDown(ray::InputButton::LEFT))
+			{
+				if (input->getKey(ray::InputKey::LeftControl) && !input->isLockedCursor())
+				{
+					float x;
+					float y;
+					input->getMousePos(x, y);
+				}
+			}
+		}
+	}
+}
 
-	void setLightMassListener(LightMassListenerPtr pointer) noexcept;
-	LightMassListenerPtr getLightMassListener() const noexcept;
+void
+MaterialPicker::onMaterialPicker(float x, float y) noexcept
+{
+	ray::Vector3 pos(x, y, 1);
 
-private:
-	bool _initialize;
-	bool _isStopped;
+	auto translate = this->getGameObject()->getTranslate();
 
-	ray::GraphicsDevicePtr _graphicsDevice;
-	ray::GraphicsContextPtr _graphicsContext;
-	ray::GraphicsSwapchainPtr _graphicsSwapchain;
-
-	LightMassBakingPtr _lightMassBaking;
-	LightMassListenerPtr _lightMassListener;
-	LightMapDataPtr _lightMapData;
-};
+	auto world = this->getComponent<ray::CameraComponent>()->screenToWorld(pos);
+	auto view = ray::math::normalize(world - translate);
+}
 
 _NAME_END
-
-#endif

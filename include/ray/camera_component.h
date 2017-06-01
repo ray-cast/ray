@@ -76,7 +76,7 @@ public:
 
 	Vector3 worldToScreen(const Vector3& pos) const noexcept;
 	Vector3 screenToWorld(const Vector3& pos) const noexcept;
-	Vector3 screenToDirection(const Vector2& pos) const noexcept;
+	Vector3 screenToView(const Vector2& pos) const noexcept;
 
 	void setClearColor(const float4& color) noexcept;
 	const float4& getClearColor() const noexcept;

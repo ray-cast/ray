@@ -234,7 +234,17 @@ Camera::screenToWorld(const float3& pos) const noexcept
 	float4 viewport = this->getPixelViewport();
 
 	float4 v(pos, 1.0);
-	v.y = viewport.w - pos.y;
+
+	auto deviceType = RenderSystem::instance()->getRenderSetting().deviceType;
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES32)
+	{
+		v.y = viewport.w - v.y;
+	}
 
 	v.x = ((v.x - viewport.x) / viewport.z) * 2.0f - 1.0f;
 	v.y = ((v.y - viewport.y) / viewport.w) * 2.0f - 1.0f;
@@ -252,7 +262,17 @@ Camera::screenToView(const float2& pos) const noexcept
 	float4 viewport = this->getPixelViewport();
 
 	float4 v(pos, 1.0, 1.0);
-	v.y = viewport.w - v.y;
+
+	auto deviceType = RenderSystem::instance()->getRenderSetting().deviceType;
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES32)
+	{
+		v.y = viewport.w - v.y;
+	}
 
 	v.x = ((v.x - viewport.x) / viewport.z) * 2.0f - 1.0f;
 	v.y = ((v.y - viewport.y) / viewport.w) * 2.0f - 1.0f;

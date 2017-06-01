@@ -215,7 +215,7 @@ RenderScene::computVisiable(const float4x4& viewProject, OcclusionCullList& list
 	for (auto& it : _renderObjectList)
 	{
 		if (it->onVisiableTest(fru))
-			list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
+			list.insert(it, math::sqrDistance(eyePosition, it->getBoundingBoxInWorld().center()));
 	}
 }
 

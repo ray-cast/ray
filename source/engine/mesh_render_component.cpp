@@ -458,7 +458,7 @@ MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFla
 		auto renderObject = std::make_shared<Geometry>();
 		renderObject->setVertexBuffer(_renderMeshVbo, it.offsetVertices);
 		renderObject->setIndexBuffer(_renderMeshIbo, it.offsetIndices, GraphicsIndexType::GraphicsIndexTypeUInt32);
-		renderObject->setBoundingBox(mesh.getBoundingBox());
+		renderObject->setBoundingBox(it.boundingBox);
 		renderObject->setOwnerListener(this);
 		renderObject->setCastShadow(this->getCastShadow());
 		renderObject->setReceiveShadow(this->getReceiveShadow());

@@ -182,7 +182,7 @@ RenderObject::getTransformInverse() const noexcept
 	return _transformInverse;
 }
 
-void 
+void
 RenderObject::onRenderPre(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
@@ -190,7 +190,7 @@ RenderObject::onRenderPre(const Camera& camera) noexcept
 		listener->onRenderObjectPre(camera);
 }
 
-void 
+void
 RenderObject::onRenderPost(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
@@ -221,7 +221,7 @@ RenderObject::onSceneChangeAfter() noexcept
 bool
 RenderObject::onVisiableTest(const Frustum& fru) noexcept
 {
-	return true;// fru.contains(this->getBoundingBox().aabb());
+	return fru.contains(this->getBoundingBoxInWorld().aabb());
 }
 
 void

@@ -50,7 +50,7 @@ __ImplementSubClass(SkyboxComponent, MeshRenderComponent, "Skybox")
 SkyboxComponent::SkyboxComponent() noexcept
 	: _enableSkyBox(false)
 	, _enableSkyLighting(false)
-	, _skyboxSize(1000.0f)
+	, _skyboxSize(10000.0f)
 	, _skyDiffuseIntensity(1.0f)
 	, _skySpecularIntensity(1.0f)
 {

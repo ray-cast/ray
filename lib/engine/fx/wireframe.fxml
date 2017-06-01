@@ -20,17 +20,17 @@
 		]]>
 	</shader>
 		<technique name="OpaqueSpecific">
-		<pass name="p0">
-			<state name="inputlayout" value="POS3F_T4F_UV2F" />
-			<state name="vertex" value="WireframeVS" />
-			<state name="fragment" value="WireframePS" />
-			<state name="primitive" value="line" />
-			<state name="polygonMode" value="line"/>
-			<state name="linewidth" value="1.5"/>
-			<state name="cullmode" value="none" />
-			<state name="blend" value="true"/>
-			<state name="blendsrc" value="srcalpha"/>
-			<state name="blenddst" value="invsrcalpha"/>
-		</pass>
+			<pass name="p0">
+				<state name="inputlayout" value="POS3F_T4F_UV2F" />
+				<state name="vertex" value="WireframeVS" />
+				<state name="fragment" value="WireframePS" />
+				<state name="primitive" value="line" />
+				<state name="polygonMode" value="line"/>
+				<state name="linewidth" value="1.5"/>
+				<state name="cullmode" value="none" />
+				<state name="blend" value="true"/>
+				<state name="blendsrc" value="srcalpha"/>
+				<state name="blenddst" value="invsrcalpha"/>
+			</pass>
 		</technique>
 </effect>

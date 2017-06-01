@@ -529,8 +529,8 @@ public:
 		scaling.z = math::length(forward);
 
 		T det = (this->a1 * this->b2 - this->a2 * this->b1) * (this->c3) -
-				(this->a1 * this->b3 - this->a3 * this->b1) * (this->c2) +
-				(this->a2 * this->b3 - this->a3 * this->b2) * (this->c1);
+			(this->a1 * this->b3 - this->a3 * this->b1) * (this->c2) +
+			(this->a2 * this->b3 - this->a3 * this->b2) * (this->c1);
 
 		if (det < 0)
 		{
@@ -613,8 +613,8 @@ public:
 		scaling.z = math::length(forward);
 
 		T det = (this->a1 * this->b2 - this->a2 * this->b1) * (this->c3) -
-				(this->a1 * this->b3 - this->a3 * this->b1) * (this->c2) +
-				(this->a2 * this->b3 - this->a3 * this->b2) * (this->c1);
+			(this->a1 * this->b3 - this->a3 * this->b1) * (this->c2) +
+			(this->a2 * this->b3 - this->a3 * this->b2) * (this->c1);
 
 		if (det < 0)
 		{
@@ -658,7 +658,7 @@ public:
 		set(cx, 0.0, 0.0, 0.0,
 			0.0, cy, 0.0, 0.0,
 			0.0, 0.0, cz, 0.0,
-			 tx,  ty, tz, 1.0);
+			tx, ty, tz, 1.0);
 
 		return *this;
 	}
@@ -675,7 +675,7 @@ public:
 		set(cx, 0.0, 0.0, 0.0,
 			0.0, cy, 0.0, 0.0,
 			0.0, 0.0, cz, 0.0,
-			 tx,  ty, tz, 1.0);
+			tx, ty, tz, 1.0);
 
 		return *this;
 	}
@@ -708,7 +708,7 @@ public:
 		set(cx, 0.0, 0.0, 0.0,
 			0.0, cy, 0.0, 0.0,
 			0.0, 0.0, C, 1.0,
-			  A,   B, D, 0.0);
+			A, B, D, 0.0);
 
 		return *this;
 	}
@@ -725,7 +725,7 @@ public:
 		set(cx, 0.0, 0.0, 0.0,
 			0.0, cy, 0.0, 0.0,
 			0.0, 0.0, C, -1.0,
-			  A,   B, D, 0.0);
+			A, B, D, 0.0);
 
 		return *this;
 	}
@@ -924,10 +924,10 @@ public:
 		T A = cx + left;
 		T B = cy + top;
 
-		set( cx, 0.0, 0.0, 0.0,
-			0.0,  cy, 0.0, 0.0,
+		set(cx, 0.0, 0.0, 0.0,
+			0.0, cy, 0.0, 0.0,
 			0.0, 0.0, 0.5, 0.0,
-			  A,   B, 0.5, 1.0);
+			A, B, 0.5, 1.0);
 
 		return *this;
 	}
@@ -1197,24 +1197,9 @@ namespace math
 	{
 		Matrix4x4t<T> out;
 
-		T d = (m.a1 * m.b2 - m.a2 * m.b1) * (m.c3) -
-			  (m.a1 * m.b3 - m.a3 * m.b1) * (m.c2) +
-			  (m.a2 * m.b3 - m.a3 * m.b2) * (m.c1);
-
-		if (std::fabs(d) < 0.00001f)
-		{
-			const T nan = std::numeric_limits<T>::quiet_NaN();
-			out.set
-				(
-					nan, nan, nan, nan,
-					nan, nan, nan, nan,
-					nan, nan, nan, nan,
-					nan, nan, nan, nan
-					);
-
-			assert(false);
-			return out;
-		}
+		T d = (m.a1 * m.b2 - m.a2 * m.b1) * (m.c3) - (m.a1 * m.b3 - m.a3 * m.b1) * (m.c2) + (m.a2 * m.b3 - m.a3 * m.b2) * (m.c1);
+		if (d == static_cast<T>(0.0))
+			return Matrix4x4t<T>::One;
 
 		d = 1.0f / d;
 

@@ -301,18 +301,18 @@ GuiControllerComponent::clone() const noexcept
 bool
 GuiControllerComponent::makeCubeObject() noexcept
 {
-	auto cubeMesh = std::make_shared<ray::MeshProperty>();
-	cubeMesh->makeCubeWireframe(1.0, 1.0, 1.0);
-
 	ray::MaterialPtr material;
 	if (!ray::ResManager::instance()->createMaterial("sys:fx/wireframe.fxml", material))
 		return false;
+
+	auto cubeMesh = std::make_shared<ray::MeshProperty>();
+	cubeMesh->makeCubeWireframe(1.0, 1.0, 1.0);
 
 	material->getParameter("diffuse")->uniform4f(0.3, 0.3, 0.3, 1.0);
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setActive(true);
-	gameObject->setScaleAll(2.5f);
+	gameObject->setScaleAll(0.0f);
 
 	gameObject->addComponent(std::make_shared<ray::MeshComponent>(cubeMesh));
 	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material));

@@ -138,9 +138,9 @@ const BoundingBox&
 MeshComponent::getBoundingBox() const noexcept
 {
 	if (_mesh)
-		_mesh->getBoundingBox();
+		return _mesh->getBoundingBox();
 	else if (_sharedMesh)
-		_sharedMesh->getBoundingBox();
+		return _sharedMesh->getBoundingBox();
 	return BoundingBox::Empty;
 }
 

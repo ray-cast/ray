@@ -298,62 +298,46 @@ GuiControllerComponent::clone() const noexcept
 	return std::make_shared<GuiControllerComponent>();
 }
 
-void
-GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) except
+bool
+GuiControllerComponent::makeCubeObject() noexcept
 {
-	if (component->isInstanceOf<GuiViewComponent>())
-	{
-		auto view = component->downcast<GuiViewComponent>();
-		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
-		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
+	auto cubeMesh = std::make_shared<ray::MeshProperty>();
+	cubeMesh->makeCubeWireframe(1.0, 1.0, 1.0);
 
-		view->setUVMapperCancel(std::bind(&GuiControllerComponent::onUVMapperCancel, this));
-		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1, std::placeholders::_2));
-		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	ray::MaterialPtr material;
+	if (!ray::ResManager::instance()->createMaterial("sys:fx/wireframe.fxml", material))
+		return false;
 
-		view->setLightMassCancel(std::bind(&GuiControllerComponent::onLightMassCancel, this));
-		view->setLightMassWillStartListener(std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1, std::placeholders::_2));
-		view->setLightMassProgressListener(std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		view->setLightMassSaveAsListener(std::bind(&GuiControllerComponent::onLightMassSave, this, std::placeholders::_1, std::placeholders::_2));
-	}
+	material->getParameter("diffuse")->uniform4f(0.3, 0.3, 0.3, 1.0);
+
+	auto gameObject = std::make_shared<ray::GameObject>();
+	gameObject->setActive(true);
+	gameObject->setScaleAll(2.5f);
+
+	gameObject->addComponent(std::make_shared<ray::MeshComponent>(cubeMesh));
+	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material));
+
+	_cube = std::move(gameObject);
+
+	return true;
 }
 
-void
-GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noexcept
-{
-	if (component->isInstanceOf<GuiViewComponent>())
-	{
-		auto view = component->downcast<GuiViewComponent>();
-		view->setModelImportListener(nullptr);
-		view->setModelSaveAsListener(nullptr);
-
-		view->setUVMapperCancel(nullptr);
-		view->setUVMapperProgressListener(nullptr);
-		view->setUVMapperWillStartListener(nullptr);
-
-		view->setLightMassCancel(nullptr);
-		view->setLightMassProgressListener(nullptr);
-		view->setLightMassWillStartListener(nullptr);
-		view->setLightMassSaveAsListener(nullptr);
-	}
-}
-
-void
-GuiControllerComponent::onActivate() except
+bool
+GuiControllerComponent::makeSphereObjects() noexcept
 {
 	ray::GraphicsTexturePtr diffuseMap;
 	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds", diffuseMap);
 	if (!diffuseMap)
-		return;
+		return false;
 
 	ray::GraphicsTexturePtr normalMap;
 	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds", normalMap);
 	if (!normalMap)
-		return;
+		return false;
 
 	ray::MaterialPtr material;
 	if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", material))
-		return;
+		return false;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
 	sphereMesh->makeSphere(1.0, 48, 36);
@@ -398,6 +382,55 @@ GuiControllerComponent::onActivate() except
 			_objects.push_back(newGameObject);
 		}
 	}
+
+	return true;
+}
+
+void
+GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) except
+{
+	if (component->isInstanceOf<GuiViewComponent>())
+	{
+		auto view = component->downcast<GuiViewComponent>();
+		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
+		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
+
+		view->setUVMapperCancel(std::bind(&GuiControllerComponent::onUVMapperCancel, this));
+		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1, std::placeholders::_2));
+		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+		view->setLightMassCancel(std::bind(&GuiControllerComponent::onLightMassCancel, this));
+		view->setLightMassWillStartListener(std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1, std::placeholders::_2));
+		view->setLightMassProgressListener(std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		view->setLightMassSaveAsListener(std::bind(&GuiControllerComponent::onLightMassSave, this, std::placeholders::_1, std::placeholders::_2));
+	}
+}
+
+void
+GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noexcept
+{
+	if (component->isInstanceOf<GuiViewComponent>())
+	{
+		auto view = component->downcast<GuiViewComponent>();
+		view->setModelImportListener(nullptr);
+		view->setModelSaveAsListener(nullptr);
+
+		view->setUVMapperCancel(nullptr);
+		view->setUVMapperProgressListener(nullptr);
+		view->setUVMapperWillStartListener(nullptr);
+
+		view->setLightMassCancel(nullptr);
+		view->setLightMassProgressListener(nullptr);
+		view->setLightMassWillStartListener(nullptr);
+		view->setLightMassSaveAsListener(nullptr);
+	}
+}
+
+void
+GuiControllerComponent::onActivate() except
+{
+	this->makeCubeObject();
+	this->makeSphereObjects();
 }
 
 void
@@ -615,6 +648,15 @@ GuiControllerComponent::onModelPicker(float x, float y) noexcept
 			continue;
 
 		hits.push_back(object);
+	}
+
+	if (!hits.empty())
+	{
+		auto boundingBox = hits.front()->getComponent<ray::MeshComponent>()->getBoundingBox();
+		boundingBox.applyMatrix(hits.front()->getTransform());
+
+		_cube->setTranslate(boundingBox.center());
+		_cube->setScale(boundingBox.size());
 	}
 }
 

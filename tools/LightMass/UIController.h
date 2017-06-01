@@ -53,6 +53,10 @@ public:
 	ray::GameComponentPtr clone() const noexcept;
 
 private:
+	bool makeCubeObject() noexcept;
+	bool makeSphereObjects() noexcept;
+
+private:
 	void onAttachComponent(ray::GameComponentPtr& component) except;
 	void onDetachComponent(ray::GameComponentPtr& component) noexcept;
 
@@ -83,6 +87,7 @@ private:
 	bool _stopLightmass;
 
 	ray::GameObjects _objects;
+	ray::GameObjectPtr _cube;
 	ray::GameObjectWeakPtr _camera;
 
 	std::unique_ptr<ray::PMX> _model;

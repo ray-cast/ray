@@ -53,7 +53,7 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_progress = 0.0f;
 	_showWindowAll = true;
 	_showMainMenu = true;
-	_showLightMassWindow = true;
+	_showLightMassWindow = false;
 	_showMaterialEditorWindow = true;
 	_showStyleEditor = false;
 	_showAboutWindow = false;
@@ -750,6 +750,11 @@ GuiViewComponent::showMaterialEditor() noexcept
 	static auto albedoColor = ray::float3::One;
 	static auto albedoLoopNum = ray::float2::One;
 
+	static auto albedoSubFrom = 0;
+	static auto albedoSubFilp = 0;
+	static auto albedoSubColor = ray::float3::One;
+	static auto albedoSubLoopNum = ray::float2::One;
+
 	static auto specularFrom = 0;
 	static auto specularFilp = 0;
 	static auto specularApplyColor = 0;
@@ -779,7 +784,7 @@ GuiViewComponent::showMaterialEditor() noexcept
 	static auto emissiveColor = ray::float3::One;
 	static auto emissiveLoopNum = ray::float2::One;
 
-	static const char* TEXTURE_MAP_FROM[] = { "Constant color", "Static Image", "Animation Image", "Diffuse map", "Sphere map", "Toon map", "Ambient color", "Specular color" };
+	static const char* TEXTURE_MAP_FROM[] = { "Constant color", "Static Image", "Animation Image", "Diffuse map from model", "Sphere map from model", "Toon map from model", "Screen map (cannot preview)", "Ambient color from model", "Specular color from model" };
 	static const char* TEXTURE_MAP_UV_FLIP[] = { "None", "axis X", "axis Y", "axis X & Y" };
 	static const char* TEXTURE_ALBEDO_MAP_TYPE[] = { "None", "Mulplay", "Exponent", "Add", "Melain", "Alpha Blend" };
 	static const char* TEXTURE_SMOOTHNESS_TYPE[] = { "Smoothness", "Roughness", "Roughness" };
@@ -792,19 +797,22 @@ GuiViewComponent::showMaterialEditor() noexcept
 
 	if (ray::Gui::begin("Material Editor", &_showMaterialEditorWindow, ray::float2(320, 720), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
-		if (ray::Gui::treeNode("Albedo:"))
+		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::text("Texture :");
 			ray::Gui::combo("##albedo texture", &albedoFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
 
-			ray::Gui::text("Texture filp :");
-			ray::Gui::combo("##albedo filp", &albedoFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+			if (albedoFrom >= 1 && albedoFrom <= 6)
+			{
+				ray::Gui::text("Texture filp :");
+				ray::Gui::combo("##albedo filp", &albedoFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
 
-			ray::Gui::text("Texture loop x :");
-			ray::Gui::sliderFloat("##Texture loop x", &albedoLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop x :");
+				ray::Gui::sliderFloat("##Texture loop x", &albedoLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture loop y :");
-			ray::Gui::sliderFloat("##Texture loop y", &albedoLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop y :");
+				ray::Gui::sliderFloat("##Texture loop y", &albedoLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+			}
 
 			ray::Gui::checkbox("Apply diffuse color", &albedoApplyDiffuse);
 
@@ -817,22 +825,25 @@ GuiViewComponent::showMaterialEditor() noexcept
 		if (ray::Gui::treeNode("AlbedoSub"))
 		{
 			ray::Gui::text("Texture:");
-			ray::Gui::combo("##albedo texture", &albedoFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+			ray::Gui::combo("##albedo texture", &albedoSubFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
 
-			ray::Gui::text("Texture type:");
-			ray::Gui::combo("##albedo type", &albedoFilp, TEXTURE_ALBEDO_MAP_TYPE, sizeof(TEXTURE_ALBEDO_MAP_TYPE) / sizeof(TEXTURE_ALBEDO_MAP_TYPE[0]));
+			if (albedoSubFrom >= 1 && albedoSubFrom <= 6)
+			{
+				ray::Gui::text("Texture type:");
+				ray::Gui::combo("##albedo type", &albedoSubFilp, TEXTURE_ALBEDO_MAP_TYPE, sizeof(TEXTURE_ALBEDO_MAP_TYPE) / sizeof(TEXTURE_ALBEDO_MAP_TYPE[0]));
 
-			ray::Gui::text("Texture filp:");
-			ray::Gui::combo("##albedo filp", &albedoFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				ray::Gui::text("Texture filp:");
+				ray::Gui::combo("##albedo filp", &albedoSubFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
 
-			ray::Gui::text("Texture loop x :");
-			ray::Gui::sliderFloat("##Texture loop x", &albedoLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop x :");
+				ray::Gui::sliderFloat("##Texture loop x", &albedoSubLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture loop y :");
-			ray::Gui::sliderFloat("##Texture loop y", &albedoLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop y :");
+				ray::Gui::sliderFloat("##Texture loop y", &albedoSubLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+			}
 
 			ray::Gui::text("Color :");
-			ray::Gui::colorPicker3("##Albedo Color", albedoColor.ptr());
+			ray::Gui::colorPicker3("##Albedo Color", albedoSubColor.ptr());
 
 			ray::Gui::treePop();
 		}
@@ -847,40 +858,43 @@ GuiViewComponent::showMaterialEditor() noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("Smoothness"))
+		if (ray::Gui::treeNodeEx("Smoothness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::text("Texture :");
 			ray::Gui::combo("##smoothness texture", &smoothnessFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
 
-			ray::Gui::text("Texture type :");
-			ray::Gui::combo("##smoothness type", &smoothnessFrom, TEXTURE_SMOOTHNESS_TYPE, sizeof(TEXTURE_SMOOTHNESS_TYPE) / sizeof(TEXTURE_SMOOTHNESS_TYPE[0]));
+			if (smoothnessFrom >= 1 && smoothnessFrom <= 6)
+			{
+				ray::Gui::text("Texture type :");
+				ray::Gui::combo("##smoothness type", &smoothnessFrom, TEXTURE_SMOOTHNESS_TYPE, sizeof(TEXTURE_SMOOTHNESS_TYPE) / sizeof(TEXTURE_SMOOTHNESS_TYPE[0]));
 
-			ray::Gui::text("Texture filp :");
-			ray::Gui::combo("##smoothness filp", &smoothnessFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				ray::Gui::text("Texture filp :");
+				ray::Gui::combo("##smoothness filp", &smoothnessFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
 
-			ray::Gui::text("Texture loop x :");
-			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop x :");
+				ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture loop y :");
-			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop y :");
+				ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture swizzle :");
-			ray::Gui::button("R", ray::float2(40, 20));
+				ray::Gui::text("Texture swizzle :");
+				ray::Gui::button("R", ray::float2(40, 20));
 
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::sameLine();
-			ray::Gui::button("G", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::sameLine();
+				ray::Gui::button("G", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
 
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::sameLine();
-			ray::Gui::button("B", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::sameLine();
+				ray::Gui::button("B", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
 
-			ray::Gui::sameLine();
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::button("A", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::sameLine();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::button("A", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
+			}
 
 			ray::Gui::text("Smoothness :");
 			ray::Gui::sliderFloat("##Smoothness", &smoothness, 0.0f, 1.0f, "%.03f");
@@ -888,37 +902,40 @@ GuiViewComponent::showMaterialEditor() noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("Metalness"))
+		if (ray::Gui::treeNodeEx("Metalness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			ray::Gui::text("Texture :");
 			ray::Gui::combo("##metalness texture", &metalnessFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
 
-			ray::Gui::text("Texture filp :");
-			ray::Gui::combo("##metalness filp", &metalnessFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+			if (metalnessFrom >= 1 && metalnessFrom <= 6)
+			{
+				ray::Gui::text("Texture filp :");
+				ray::Gui::combo("##metalness filp", &metalnessFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
 
-			ray::Gui::text("Texture loop x :");
-			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop x :");
+				ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture loop y :");
-			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop y :");
+				ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture swizzle :");
-			ray::Gui::button("R", ray::float2(40, 20));
+				ray::Gui::text("Texture swizzle :");
+				ray::Gui::button("R", ray::float2(40, 20));
 
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::sameLine();
-			ray::Gui::button("G", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::sameLine();
+				ray::Gui::button("G", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
 
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::sameLine();
-			ray::Gui::button("B", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::sameLine();
+				ray::Gui::button("B", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
 
-			ray::Gui::sameLine();
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::button("A", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::sameLine();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::button("A", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
+			}
 
 			ray::Gui::text("Metalness :");
 			ray::Gui::sliderFloat("##Metalness", &metalness, 0.0f, 1.0f, "%.03f");
@@ -931,14 +948,17 @@ GuiViewComponent::showMaterialEditor() noexcept
 			ray::Gui::text("Texture :");
 			ray::Gui::combo("##specular texture", &specularFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
 
-			ray::Gui::text("Texture filp :");
-			ray::Gui::combo("##specular filp", &specularFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+			if (specularFrom >= 1 && specularFrom <= 6)
+			{
+				ray::Gui::text("Texture filp :");
+				ray::Gui::combo("##specular filp", &specularFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
 
-			ray::Gui::text("Texture loop x :");
-			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop x :");
+				ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture loop y :");
-			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop y :");
+				ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+			}
 
 			ray::Gui::text("Color :");
 			ray::Gui::colorPicker3("##Specular Color", specularColor.ptr());
@@ -951,32 +971,35 @@ GuiViewComponent::showMaterialEditor() noexcept
 			ray::Gui::text("Texture :");
 			ray::Gui::combo("##occlusion texture", &occlusionFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
 
-			ray::Gui::text("Texture filp :");
-			ray::Gui::combo("##occlusion filp", &occlusionFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+			if (occlusionFrom >= 1 && occlusionFrom <= 6)
+			{
+				ray::Gui::text("Texture filp :");
+				ray::Gui::combo("##occlusion filp", &occlusionFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
 
-			ray::Gui::text("Texture loop x :");
-			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop x :");
+				ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture loop y :");
-			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop y :");
+				ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture swizzle :");
-			ray::Gui::button("R", ray::float2(40, 20));
+				ray::Gui::text("Texture swizzle :");
+				ray::Gui::button("R", ray::float2(40, 20));
 
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::sameLine();
-			ray::Gui::button("G", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::sameLine();
+				ray::Gui::button("G", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
 
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::sameLine();
-			ray::Gui::button("B", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::sameLine();
+				ray::Gui::button("B", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
 
-			ray::Gui::sameLine();
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
-			ray::Gui::button("A", ray::float2(40, 20));
-			ray::Gui::popStyleColor();
+				ray::Gui::sameLine();
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::button("A", ray::float2(40, 20));
+				ray::Gui::popStyleColor();
+			}
 
 			ray::Gui::text("Occlusion :");
 			ray::Gui::sliderFloat("##occlusion", &occlusion, 0.0f, 1.0f, "%.03f");
@@ -989,14 +1012,17 @@ GuiViewComponent::showMaterialEditor() noexcept
 			ray::Gui::text("Texture :");
 			ray::Gui::combo("##emissive texture", &emissiveFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
 
-			ray::Gui::text("Texture filp :");
-			ray::Gui::combo("##emissive filp", &emissiveFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+			if (emissiveFrom >= 1 && emissiveFrom <= 6)
+			{
+				ray::Gui::text("Texture filp :");
+				ray::Gui::combo("##emissive filp", &emissiveFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
 
-			ray::Gui::text("Texture loop x :");
-			ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop x :");
+				ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
 
-			ray::Gui::text("Texture loop y :");
-			ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				ray::Gui::text("Texture loop y :");
+				ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+			}
 
 			ray::Gui::text("Color :");
 			ray::Gui::colorPicker3("##emissive Color", emissiveColor.ptr());

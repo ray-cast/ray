@@ -74,8 +74,8 @@ private:
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
 
-	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
+	virtual void onAttachComponent(const GameComponentPtr& component) noexcept;
+	virtual void onDetachComponent(const GameComponentPtr& component) noexcept;
 
 	virtual void onMeshChange() noexcept;
 	virtual void onMeshWillRender(const class Camera&) noexcept;

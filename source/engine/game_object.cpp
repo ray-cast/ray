@@ -209,6 +209,24 @@ GameObject::getParent() const noexcept
 	return _parent.lock().get();
 }
 
+GameScene*
+GameObject::getGameScene() noexcept
+{
+	auto parent = this->getParent();
+	if (parent)
+		return parent->getGameScene();
+	return nullptr;
+}
+
+const GameScene*
+GameObject::getGameScene() const noexcept
+{
+	auto parent = this->getParent();
+	if (parent)
+		return parent->getGameScene();
+	return nullptr;
+}
+
 void
 GameObject::addChild(GameObjectPtr& entity) noexcept
 {
@@ -568,7 +586,7 @@ GameObject::getWorldTransformInverse() const noexcept
 }
 
 void
-GameObject::addComponent(GameComponentPtr& gameComponent) except
+GameObject::addComponent(const GameComponentPtr& gameComponent) except
 {
 	assert(gameComponent);
 	assert(gameComponent->_gameObject == nullptr);
@@ -599,7 +617,7 @@ GameObject::addComponent(GameComponentPtr&& component) except
 }
 
 void
-GameObject::removeComponent(GameComponentPtr& gameComponent) noexcept
+GameObject::removeComponent(const GameComponentPtr& gameComponent) noexcept
 {
 	assert(gameComponent);
 	assert(gameComponent->_gameObject == this);
@@ -987,8 +1005,10 @@ GameObject::sendMessageDownwards(const MessagePtr& message, GameComponent* ignor
 void
 GameObject::load(const archivebuf& reader) except
 {
+	bool active = false;;
+
 	reader["name"] >> _name;
-	reader["active"] >> _active;
+	reader["active"] >> active;
 	reader["layer"] >> _layer;
 	reader["position"] >> this->_localTranslate;
 	reader["scale"] >> this->_localScaling;
@@ -996,7 +1016,8 @@ GameObject::load(const archivebuf& reader) except
 	float3 euler = float3::Zero;
 	reader["rotate"] >> euler;
 
-	_localRotation.makeRotate(euler);
+	this->setActive(active);
+	this->setQuaternion((Quaternion)euler);
 }
 
 void

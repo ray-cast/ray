@@ -61,7 +61,7 @@ public:
 
 	std::size_t getInstanceID() const noexcept;
 
-	GameObjectPtr getRootObject() noexcept;
+	GameObjectPtr getRootObject() const noexcept;
 
 	void sendMessage(const MessagePtr& message) except;
 
@@ -79,6 +79,9 @@ private:
 	public:
 		RootObject(GameScene* scene) noexcept;
 		virtual ~RootObject() noexcept;
+
+		virtual GameScene* getGameScene() noexcept;
+		virtual const GameScene* getGameScene() const noexcept;
 
 	private:
 		GameScene* _scene;

@@ -96,8 +96,8 @@ protected:
 	virtual void onMoveAfter() noexcept;
 	virtual void onLayerChangeAfter() noexcept;
 
-	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
+	virtual void onAttachComponent(const GameComponentPtr& component) noexcept;
+	virtual void onDetachComponent(const GameComponentPtr& component) noexcept;
 
 protected:
 	void _attacRenderObject(GeometryPtr object) noexcept;

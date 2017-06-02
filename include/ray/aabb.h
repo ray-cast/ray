@@ -172,20 +172,15 @@ public:
 		max = pos1;
 	}
 
-	const Vector3t<T>& getMin() const noexcept
-	{
-		return min;
-	}
-
-	const Vector3t<T>& getMax() const noexcept
-	{
-		return max;
-	}
-
 	void reset() noexcept
 	{
 		min.set(BIG_NUMBER);
 		max.set(-BIG_NUMBER);
+	}
+
+	bool empty() const noexcept
+	{
+		return min.x > max.x || min.y > max.y || max.z > max.z;
 	}
 
 	Vector3t<T> size() const noexcept
@@ -222,19 +217,6 @@ public:
 		if (z < min.x) z = min.x;
 		if (z > max.x) z = max.y;
 		return Vector3t<T>(x, y, z);
-	}
-
-	bool empty() const noexcept
-	{
-		return min.x > max.x || min.y > max.y || max.z > max.z;
-	}
-
-	bool contains(const Vector3t<T>& pt) const noexcept
-	{
-		if (pt > min && pt < max)
-			return true;
-
-		return false;
 	}
 
 	AABBt<T>& expand(const Vector3t<T>& amount) noexcept
@@ -323,7 +305,7 @@ public:
 		return *this;
 	}
 
-	void applyMatrix(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
+	AABBt<T>& transform(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
 	{
 		assert(!empty());
 
@@ -332,12 +314,12 @@ public:
 		aabb.min.y = aabb.max.y = translate.y;
 		aabb.min.z = aabb.max.z = translate.z;
 
-		for (int i = 0; i < 3; i++)
+		for (std::uint8_t i = 0; i < 3; i++)
 		{
-			for (int j = 0; j < 3; j++)
+			for (std::uint8_t j = 0; j < 3; j++)
 			{
-				float e = m[j * 3 + i] * min[j];
-				float f = m[j * 3 + i] * max[j];
+				T e = m[j * 3 + i] * min[j];
+				T f = m[j * 3 + i] * max[j];
 
 				if (e < f)
 				{
@@ -354,9 +336,11 @@ public:
 
 		min = aabb.min;
 		max = aabb.max;
+
+		return *this;
 	}
 
-	void applyMatrix(const Matrix4x4t<T>& m) noexcept
+	AABBt<T>& transform(const Matrix4x4t<T>& m) noexcept
 	{
 		assert(!empty());
 
@@ -365,12 +349,12 @@ public:
 		aabb.min.y = aabb.max.y = m.d2;
 		aabb.min.z = aabb.max.z = m.d3;
 
-		for (int i = 0; i < 3; i++)
+		for (std::uint8_t i = 0; i < 3; i++)
 		{
-			for (int j = 0; j < 3; j++)
+			for (std::uint8_t j = 0; j < 3; j++)
 			{
-				float e = m[j * 4 + i] * min[j];
-				float f = m[j * 4 + i] * max[j];
+				T e = m[j * 4 + i] * min[j];
+				T f = m[j * 4 + i] * max[j];
 
 				if (e < f)
 				{
@@ -387,13 +371,15 @@ public:
 
 		min = aabb.min;
 		max = aabb.max;
+
+		return *this;
 	}
 
-	T intersects(const Line3t<T>& line, Vector3t<T>* returnNormal) const noexcept
+	bool contains(const Vector3t<T>& pt) const noexcept
 	{
-		line;
-		returnNormal;
-		return  0;
+		if (pt > min && pt < max)
+			return true;
+		return false;
 	}
 
 	bool contains(const Raycast3t<T>& ray, Vector3t<T>* result = nullptr) noexcept
@@ -468,7 +454,12 @@ public:
 		return true;
 	}
 
-	T intersects(const Raycast3t<T>& ray, Vector3t<T>* returnNormal) const noexcept
+	bool contains(const Vector3t<T>& pt1, const Vector3t<T>& pt2) const noexcept
+	{
+		return contains(Raycast3(pt1, pt2));
+	}
+
+	T intersects(const Raycast3t<T>& ray, Vector3t<T>* returnNormal = nullptr) const noexcept
 	{
 		const T kNointersection = 1e30f;
 
@@ -492,7 +483,7 @@ public:
 		else if (rayOrg.x > max.x)
 		{
 			xt = max.x - rayOrg.x;
-			if (xt <rayDelta.x) return kNointersection;
+			if (xt < rayDelta.x) return kNointersection;
 			xt /= rayDelta.x;
 			inside = false;
 			xn = 1.0f;
@@ -509,7 +500,7 @@ public:
 		else if (rayOrg.y > max.y)
 		{
 			yt = max.y - rayOrg.y;
-			if (yt <rayDelta.y) return kNointersection;
+			if (yt < rayDelta.y) return kNointersection;
 			yt /= rayDelta.y;
 			inside = false;
 			yn = 1.0f;
@@ -537,7 +528,7 @@ public:
 			if (returnNormal)
 			{
 				*returnNormal = -rayDelta;
-				returnNormal->normalize();
+				*returnNormal = math::normalize(*returnNormal);
 			}
 
 			return 0.0f;
@@ -562,9 +553,9 @@ public:
 		case 0:
 		{
 			T y = rayOrg.y + rayDelta.y * t;
-			if (y <min.y || y > max.y) return kNointersection;
+			if (y < min.y || y > max.y) return kNointersection;
 			T z = rayOrg.z + rayDelta.z * t;
-			if (z <min.z || z > max.z) return kNointersection;
+			if (z < min.z || z > max.z) return kNointersection;
 			if (returnNormal)
 			{
 				returnNormal->x = xn;
@@ -614,7 +605,12 @@ public:
 		return t;
 	}
 
-	int intersects(const Plane3t<T>& plane) const noexcept
+	bool intersects(const Vector3t<T>& pt1, const Vector3t<T>& pt2) const noexcept
+	{
+		return intersects(Raycast3(pt1, pt2)) != 1e30f;
+	}
+
+	bool intersects(const Plane3t<T>& plane) const noexcept
 	{
 		T minD, maxD;
 
@@ -666,9 +662,9 @@ public:
 
 	bool intersects(const AABBt<T>& box) const noexcept
 	{
-		if (max.x <box.min.x || min.x > box.max.x) { return false; }
-		if (max.y <box.min.y || min.y > box.max.y) { return false; }
-		if (max.z <box.min.z || min.z > box.max.z) { return false; }
+		if (max.x < box.min.x || min.x > box.max.x) { return false; }
+		if (max.y < box.min.y || min.y > box.max.y) { return false; }
+		if (max.z < box.min.z || min.z > box.max.z) { return false; }
 
 		return true;
 	}

@@ -157,7 +157,7 @@ SkinnedMeshRenderComponent::onDeactivate() noexcept
 }
 
 void
-SkinnedMeshRenderComponent::onAttachComponent(GameComponentPtr& component) noexcept
+SkinnedMeshRenderComponent::onAttachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 	{
@@ -167,7 +167,7 @@ SkinnedMeshRenderComponent::onAttachComponent(GameComponentPtr& component) noexc
 }
 
 void
-SkinnedMeshRenderComponent::onDetachComponent(GameComponentPtr& component) noexcept
+SkinnedMeshRenderComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 	{

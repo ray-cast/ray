@@ -308,7 +308,7 @@ LightComponent::onDeactivate() noexcept
 }
 
 void
-LightComponent::onAttachComponent(GameComponentPtr& component) noexcept
+LightComponent::onAttachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<SkyboxComponent>())
 	{
@@ -334,7 +334,7 @@ LightComponent::onAttachComponent(GameComponentPtr& component) noexcept
 }
 
 void
-LightComponent::onDetachComponent(GameComponentPtr& component) noexcept
+LightComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<SkyboxComponent>())
 	{

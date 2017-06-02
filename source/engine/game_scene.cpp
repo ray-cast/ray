@@ -41,7 +41,6 @@
 
 #include <ray/rtti_factory.h>
 
-#include <ray/xmlreader.h>
 #include <ray/jsonreader.h>
 
 _NAME_BEGIN
@@ -56,6 +55,18 @@ GameScene::RootObject::RootObject(GameScene* scene) noexcept
 
 GameScene::RootObject::~RootObject() noexcept
 {
+}
+
+GameScene*
+GameScene::RootObject::getGameScene() noexcept
+{
+	return _scene;
+}
+
+const GameScene*
+GameScene::RootObject::getGameScene() const noexcept
+{
+	return _scene;
 }
 
 GameScene::GameScene() noexcept
@@ -135,7 +146,7 @@ GameScene::getInstanceID() const noexcept
 }
 
 GameObjectPtr
-GameScene::getRootObject() noexcept
+GameScene::getRootObject() const noexcept
 {
 	return _root;
 }

@@ -58,9 +58,9 @@ public:
 	Quaterniont() noexcept {}
 	Quaterniont(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	Quaterniont(const Quaterniont& q) noexcept : x(q.x), y(q.y), z(q.z), w(q.w) {}
-	Quaterniont(const Vector3t<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
 	Quaterniont(const Vector3t<T>& axis, T angle) noexcept { this->makeRotate(axis, angle); }
 	Quaterniont(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept { this->makeRotate(forward, up, right); }
+	explicit Quaterniont(const Vector3t<T>& eulerXYZ) noexcept { this->makeRotate(eulerXYZ); }
 
 	template<typename S, typename = std::enable_if<std::is_pointer<S>::value>>
 	explicit Quaterniont(S xyzw[4]) noexcept

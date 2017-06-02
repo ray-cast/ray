@@ -584,6 +584,8 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 		_objects.clear();
 		_objects.push_back(gameObject);
 
+		_cube->setScaleAll(0.0f);
+
 		return true;
 	}
 	catch (const std::exception&)
@@ -625,35 +627,15 @@ GuiControllerComponent::onModelPicker(float x, float y) noexcept
 	if (!cameraObject)
 		return;
 
-	auto start = cameraObject->getComponent<ray::CameraComponent>()->screenToWorld(ray::float3(x, y, 0));
+	auto start = cameraObject->getTranslate();
 	auto end = cameraObject->getComponent<ray::CameraComponent>()->screenToWorld(ray::float3(x, y, 1));
-	auto ray = ray::Raycast3(start, end);
 
-	std::vector<ray::GameObjectPtr> hits;
-
-	for (auto& object : _objects)
+	ray::RaycastHit hit;
+	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit))
 	{
-		auto component = object->getComponent<ray::MeshComponent>();
-		if (!component)
-			continue;
-
-		auto mesh = component->getMesh();
-		if (!mesh)
-			continue;
-
-		auto boundingBox = mesh->getBoundingBox();
-		boundingBox.applyMatrix(object->getTransform());
-
-		if (!boundingBox.intersects(ray))
-			continue;
-
-		hits.push_back(object);
-	}
-
-	if (!hits.empty())
-	{
-		auto boundingBox = hits.front()->getComponent<ray::MeshComponent>()->getBoundingBox();
-		boundingBox.applyMatrix(hits.front()->getTransform());
+		auto meshComponent = hit.object->getComponent<ray::MeshComponent>();
+		auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[hit.mesh].boundingBox;
+		boundingBox.transform(hit.object->getTransform());
 
 		_cube->setTranslate(boundingBox.center());
 		_cube->setScale(boundingBox.size());

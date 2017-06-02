@@ -73,14 +73,14 @@ GuiCameraComponent::onDeactivate() noexcept
 }
 
 void
-GuiCameraComponent::onAttachComponent(GameComponentPtr& component) noexcept
+GuiCameraComponent::onAttachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<CameraComponent>())
 		component->downcast<CameraComponent>()->addPostRenderListener(&_onPostRender);
 }
 
 void
-GuiCameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
+GuiCameraComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<CameraComponent>())
 		component->downcast<CameraComponent>()->removePostRenderListener(&_onPostRender);

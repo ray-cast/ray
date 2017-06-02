@@ -46,6 +46,13 @@ _NAME_BEGIN
 
 __ImplementSingleton(GameObjectManager)
 
+RaycastHit::RaycastHit() noexcept
+	: object(0)
+	, mesh(0)
+	, distance(FLT_MAX)
+{
+}
+
 GameObjectManager::GameObjectManager() noexcept
 {
 }
@@ -154,6 +161,63 @@ GameObjectManager::activeObject(const util::string& name) noexcept
 	}
 
 	return false;
+}
+
+std::size_t
+GameObjectManager::raycastHit(const Raycast3& ray, RaycastHit& hit) noexcept
+{
+	std::size_t result = 0;
+
+	for (auto& object : _instanceLists)
+	{
+		if (!object)
+			continue;
+
+		if (!object->getActive())
+			continue;
+
+		auto component = object->getComponent<ray::MeshComponent>();
+		if (!component)
+			continue;
+
+		auto mesh = component->getMesh();
+		if (!mesh)
+			continue;
+
+		auto boundingBox = mesh->getBoundingBox();
+		boundingBox.transform(object->getTransform());
+
+		if (!boundingBox.intersects(ray))
+			continue;
+
+		auto& subsets = mesh->getMeshSubsets();
+		for (std::size_t i = 0; i < subsets.size(); i++)
+		{
+			auto boundingBox = subsets[i].boundingBox;
+			boundingBox.transform(object->getTransform());
+
+			if (!boundingBox.intersects(ray))
+				continue;
+
+			float distance = ray::math::sqrDistance(boundingBox.center(), ray.origin);
+			if (distance < hit.distance)
+			{
+				hit.object = object;
+				hit.mesh = i;
+				hit.distance = distance;
+
+				result++;
+			}
+		}
+	}
+
+	return result;
+}
+
+std::size_t
+GameObjectManager::raycastHit(const Vector3& orgin, const Vector3& end, RaycastHit& hit) noexcept
+{
+	return this->raycastHit(Raycast3(orgin, end), hit);
 }
 
 void

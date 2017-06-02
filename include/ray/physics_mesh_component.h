@@ -59,8 +59,8 @@ private:
 
 	virtual void onMeshChange() noexcept;
 
-	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
+	virtual void onAttachComponent(const GameComponentPtr& component) noexcept;
+	virtual void onDetachComponent(const GameComponentPtr& component) noexcept;
 
 	virtual PhysicsShapePtr getCollisionShape() noexcept;
 

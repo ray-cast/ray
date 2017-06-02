@@ -291,14 +291,14 @@ MeshRenderComponent::clone() const noexcept
 }
 
 void
-MeshRenderComponent::onAttachComponent(GameComponentPtr& component) noexcept
+MeshRenderComponent::onAttachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 		component->downcast<MeshComponent>()->addMeshChangeListener(&_onMeshChange);
 }
 
 void
-MeshRenderComponent::onDetachComponent(GameComponentPtr& component) noexcept
+MeshRenderComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 		component->downcast<MeshComponent>()->removeMeshChangeListener(&_onMeshChange);

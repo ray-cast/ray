@@ -91,14 +91,14 @@ public:
 	bool intersects(const AABBt<T>& aabb) const noexcept { return _sp.intersects(aabb); }
 	bool intersects(const Vector3t<T>& pt1, const Vector3t<T>& pt2) const noexcept { return _sp.intersects(pt1, pt2); }
 
-	void applyMatrix(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
+	void transform(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
 	{
-		_sp.applyMatrix(m, translate);
+		_sp.transform(m, translate);
 	}
 
-	void applyMatrix(const Matrix4x4t<T>& m) noexcept
+	void transform(const Matrix4x4t<T>& m) noexcept
 	{
-		_sp.applyMatrix(m);
+		_sp.transform(m);
 	}
 
 private:

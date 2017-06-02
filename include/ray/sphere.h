@@ -137,16 +137,16 @@ public:
 		_radius = math::max(_box.size()) * 0.5f;
 	}
 
-	void applyMatrix(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
+	void transform(const Matrix3x3t<T>& m, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
 	{
-		_box.applyMatrix(m, translate);
+		_box.transform(m, translate);
 		_center = _box.center();
 		_radius = math::max(_box.size()) * 0.5f;
 	}
 
-	void applyMatrix(const Matrix4x4t<T>& m) noexcept
+	void transform(const Matrix4x4t<T>& m) noexcept
 	{
-		_box.applyMatrix(m);
+		_box.transform(m);
 		_center = _box.center();
 		_radius = math::max(_box.size()) * 0.5f;
 	}

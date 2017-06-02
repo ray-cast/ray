@@ -41,6 +41,15 @@
 
 _NAME_BEGIN
 
+struct EXPORT RaycastHit
+{
+	RaycastHit() noexcept;
+
+	GameObject* object;
+	std::size_t mesh;
+	float distance;
+};
+
 class EXPORT GameObjectManager final
 {
 	__DeclareSingleton(GameObjectManager)
@@ -52,6 +61,9 @@ public:
 	GameObjectPtr findActiveObject(const util::string& name) noexcept;
 
 	GameObjectPtr instantiate(const util::string& name) noexcept;
+
+	std::size_t raycastHit(const Raycast3& ray, RaycastHit& hit) noexcept;
+	std::size_t raycastHit(const Vector3& orgin, const Vector3& end, RaycastHit& hit) noexcept;
 
 	bool activeObject(const util::string& name) noexcept;
 
@@ -67,7 +79,6 @@ private:
 	void _activeObject(GameObject* entity, bool active) noexcept;
 
 private:
-
 	bool _hasEmptyActors;
 
 	std::vector<std::size_t> _emptyLists;

@@ -65,7 +65,7 @@ PhysicsBodyComponent::setMass(float value) noexcept
 	_body->setMass(value);
 }
 
-void 
+void
 PhysicsBodyComponent::setRestitution(float value) noexcept
 {
 	_body->setRestitution(value);
@@ -137,7 +137,7 @@ PhysicsBodyComponent::setCollisionMask(std::uint16_t mask) noexcept
 	_body->setLayerMask(mask);
 }
 
-std::uint16_t 
+std::uint16_t
 PhysicsBodyComponent::getCollisionMask() const noexcept
 {
 	return _body->getLayerMask();
@@ -161,7 +161,7 @@ PhysicsBodyComponent::isKinematic(bool isKinematic) noexcept
 	_body->isKinematic(isKinematic);
 }
 
-bool 
+bool
 PhysicsBodyComponent::isKinematic() const noexcept
 {
 	return _body->isKinematic();
@@ -263,7 +263,7 @@ PhysicsBodyComponent::addImpulse(const Vector3& force, const Vector3& axis) noex
 	_body->addImpulse(force, axis);
 }
 
-PhysicsBody* 
+PhysicsBody*
 PhysicsBodyComponent::getPhysicsBody() const noexcept
 {
 	return _body.get();
@@ -312,14 +312,14 @@ PhysicsBodyComponent::onDeactivate() noexcept
 }
 
 void
-PhysicsBodyComponent::onAttachComponent(GameComponentPtr& component) noexcept
+PhysicsBodyComponent::onAttachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isA<PhysicsShapeComponent>())
 		component->downcast<PhysicsShapeComponent>()->addShapeChangeListener(&_onCollisionChange);
 }
 
 void
-PhysicsBodyComponent::onDetachComponent(GameComponentPtr& component) noexcept
+PhysicsBodyComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isA<PhysicsShapeComponent>())
 		component->downcast<PhysicsShapeComponent>()->removeShapeChangeListener(&_onCollisionChange);
@@ -341,12 +341,12 @@ PhysicsBodyComponent::onCollisionChange() noexcept
 	_buildRigibody();
 }
 
-void 
+void
 PhysicsBodyComponent::onCollisionEnter() noexcept
 {
 }
 
-void 
+void
 PhysicsBodyComponent::onCollisionExit() noexcept
 {
 }
@@ -356,7 +356,7 @@ PhysicsBodyComponent::onCollisionStay() noexcept
 {
 }
 
-void 
+void
 PhysicsBodyComponent::onFetchResult() noexcept
 {
 	float4x4 transform;

@@ -128,9 +128,9 @@ OcclusionCullList::sort(iterator begin, iterator end) noexcept
 {
 	std::sort(begin, end,
 		[](const OcclusionCullNode& lhs, const OcclusionCullNode& rhs)
-		{
-			return lhs.getDistanceSqrt() < rhs.getDistanceSqrt();
-		}
+	{
+		return lhs.getDistanceSqrt() < rhs.getDistanceSqrt();
+	}
 	);
 }
 
@@ -220,26 +220,6 @@ RenderScene::computVisiable(const float4x4& viewProject, OcclusionCullList& list
 }
 
 void
-RenderScene::computVisiableObject(const float4x4& viewProject, OcclusionCullList& list) noexcept
-{
-	Frustum fru;
-	fru.extract(viewProject);
-
-	const auto& eyePosition = viewProject.getTranslate();
-
-	for (auto& it : _renderObjectList)
-	{
-		if (!it->isInstanceOf<Geometry>())
-			continue;
-
-		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
-			continue;
-
-		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
-	}
-}
-
-void
 RenderScene::computVisiableLight(const float4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
@@ -259,7 +239,7 @@ RenderScene::computVisiableLight(const float4x4& viewProject, OcclusionCullList&
 	}
 }
 
-const RenderScenes& 
+const RenderScenes&
 RenderScene::getSceneAll() noexcept
 {
 	return _sceneList;

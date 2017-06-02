@@ -52,113 +52,113 @@ PhysicsJointConfigurableComponent::~PhysicsJointConfigurableComponent() noexcept
 {
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::setLinearSpring(const float3& spring) noexcept
 {
 	_joint->setLinearSpring(spring);
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::setAngularSprint(const Quaternion& spring) noexcept
 {
 	_joint->setAngularSprint(spring);
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::setLinearLowerLimit(const float3& limit) noexcept
 {
 	_joint->setLinearLowerLimit(limit);
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::setLinearHighLimit(const float3& limit) noexcept
 {
 	_joint->setLinearHighLimit(limit);
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::setAngularLowerLimit(const float3& limit) noexcept
 {
 	_joint->setAngularLowerLimit(limit);
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::setAngularHighLimit(const float3& limit) noexcept
 {
 	_joint->setAngularHighLimit(limit);
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::setMovementConstant(const float3& constant) noexcept
 {
 	_joint->setMovementConstant(constant);
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::setRotationConstant(const float3& constant) noexcept
 {
 	_joint->setRotationConstant(constant);
 }
 
-const float3& 
+const float3&
 PhysicsJointConfigurableComponent::getLinearSpring() const noexcept
 {
 	return _joint->getLinearSpring();
 }
 
-const Quaternion& 
+const Quaternion&
 PhysicsJointConfigurableComponent::getAngularSprint() const noexcept
 {
 	return _joint->getAngularSprint();
 }
 
-const float3& 
+const float3&
 PhysicsJointConfigurableComponent::getLinearLowerLimit() const noexcept
 {
 	return _joint->getLinearLowerLimit();
 }
 
-const float3& 
+const float3&
 PhysicsJointConfigurableComponent::getLinearHighLimit() const noexcept
 {
 	return _joint->getLinearHighLimit();
 }
 
-const float3& 
+const float3&
 PhysicsJointConfigurableComponent::getAngularLowerLimit() const noexcept
 {
 	return _joint->getAngularLowerLimit();
 }
 
-const float3& 
+const float3&
 PhysicsJointConfigurableComponent::getAngularHighLimit() const noexcept
 {
 	return _joint->getAngularHighLimit();
 }
 
-const float3& 
+const float3&
 PhysicsJointConfigurableComponent::getMovementConstant() const noexcept
 {
 	return _joint->getMovementConstant();
 }
 
-const float3& 
+const float3&
 PhysicsJointConfigurableComponent::getRotationConstant() const noexcept
 {
 	return _joint->getRotationConstant();
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::load(iarchive& reader) noexcept
 {
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::save(archivebuf& write) noexcept
 {
 }
 
-GameComponentPtr 
+GameComponentPtr
 PhysicsJointConfigurableComponent::clone() const noexcept
 {
 	auto joint = std::make_shared<PhysicsJointConfigurableComponent>();
@@ -174,7 +174,7 @@ PhysicsJointConfigurableComponent::clone() const noexcept
 	return joint;
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::onActivate() except
 {
 	if (!_joint->getActive())
@@ -191,14 +191,14 @@ PhysicsJointConfigurableComponent::onActivate() except
 	}
 }
 
-void 
+void
 PhysicsJointConfigurableComponent::onDeactivate() noexcept
 {
 	_joint->setActive(false);
 }
 
-void 
-PhysicsJointConfigurableComponent::onAttachComponent(GameComponentPtr& component) except
+void
+PhysicsJointConfigurableComponent::onAttachComponent(const GameComponentPtr& component) except
 {
 	if (component->isInstanceOf<PhysicsBodyComponent>())
 	{
@@ -207,8 +207,8 @@ PhysicsJointConfigurableComponent::onAttachComponent(GameComponentPtr& component
 	}
 }
 
-void 
-PhysicsJointConfigurableComponent::onDetachComponent(GameComponentPtr& component) noexcept
+void
+PhysicsJointConfigurableComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<PhysicsBodyComponent>())
 	{

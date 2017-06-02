@@ -539,18 +539,18 @@ Light::_updateBoundingBox() noexcept
 			float zfar = _lightRange;
 
 			float3 corners[8];
-			corners[0] = float3(-znear, +znear, znear);
-			corners[1] = float3(+znear, +znear, znear);
-			corners[2] = float3(-znear, -znear, znear);
-			corners[3] = float3(+znear, -znear, znear);
-			corners[4] = float3(-zfar, +zfar, zfar);
-			corners[5] = float3(+zfar, +zfar, zfar);
-			corners[6] = float3(-zfar, -zfar, zfar);
-			corners[7] = float3(+zfar, -zfar, zfar);
+			corners[0].set(-znear, +znear, znear);
+			corners[1].set(+znear, +znear, znear);
+			corners[2].set(-znear, -znear, znear);
+			corners[3].set(+znear, -znear, znear);
+			corners[4].set(-zfar, +zfar, zfar);
+			corners[5].set(+zfar, +zfar, zfar);
+			corners[6].set(-zfar, -zfar, zfar);
+			corners[7].set(+zfar, -zfar, zfar);
 
 			BoundingBox bound;
 			bound.encapsulate(corners, 8);
-			bound.applyMatrix((float3x3)camera->getTransform());
+			bound.transform((float3x3)camera->getTransform());
 
 			boundingBox.encapsulate(bound);
 

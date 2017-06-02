@@ -100,8 +100,6 @@ public:
 	Vector3t<T> origin;
 	Vector3t<T> normal;
 
-	Vector3t<T> min, max;
-
 	Raycast3t()
 	{
 	}

@@ -289,12 +289,12 @@ GameComponent::onLayerChangeAfter() except
 }
 
 void
-GameComponent::onAttachComponent(GameComponentPtr& component) except
+GameComponent::onAttachComponent(const GameComponentPtr& component) except
 {
 }
 
 void
-GameComponent::onDetachComponent(GameComponentPtr& component) noexcept
+GameComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 {
 }
 

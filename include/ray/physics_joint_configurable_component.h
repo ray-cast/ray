@@ -81,9 +81,9 @@ private:
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
 
-	virtual void onAttachComponent(GameComponentPtr& component) except;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
-	
+	virtual void onAttachComponent(const GameComponentPtr& component) except;
+	virtual void onDetachComponent(const GameComponentPtr& component) noexcept;
+
 	virtual void onBodyChange() noexcept;
 
 private:

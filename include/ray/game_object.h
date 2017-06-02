@@ -66,6 +66,9 @@ public:
 	void setParent(const GameObjectPtr& parent) noexcept;
 	GameObject* getParent() const noexcept;
 
+	virtual GameScene* getGameScene() noexcept;
+	virtual const GameScene* getGameScene() const noexcept;
+
 	void addChild(GameObjectPtr& child) noexcept;
 	void removeChild(GameObjectPtr& child) noexcept;
 	void cleanupChildren() noexcept;
@@ -114,9 +117,9 @@ public:
 	const float4x4& getWorldTransform() const noexcept;
 	const float4x4& getWorldTransformInverse() const noexcept;
 
-	void addComponent(GameComponentPtr& component) except;
+	void addComponent(const GameComponentPtr& component) except;
 	void addComponent(GameComponentPtr&& component) except;
-	void removeComponent(GameComponentPtr& component) noexcept;
+	void removeComponent(const GameComponentPtr& component) noexcept;
 	void removeComponent(GameComponentPtr&& component) noexcept;
 	void cleanupComponents() noexcept;
 

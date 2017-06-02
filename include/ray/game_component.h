@@ -88,8 +88,8 @@ private:
 	virtual void onAttach() except;
 	virtual void onDetach() noexcept;
 
-	virtual void onAttachComponent(GameComponentPtr& component) except;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
+	virtual void onAttachComponent(const GameComponentPtr& component) except;
+	virtual void onDetachComponent(const GameComponentPtr& component) noexcept;
 
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;

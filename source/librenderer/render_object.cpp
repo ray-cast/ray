@@ -80,7 +80,7 @@ void
 RenderObject::setBoundingBox(const BoundingBox& bound) noexcept
 {
 	_worldBoundingxBox = _boundingBox = bound;
-	_worldBoundingxBox.applyMatrix(_transform);
+	_worldBoundingxBox.transform(_transform);
 }
 
 const BoundingBox&
@@ -141,7 +141,7 @@ RenderObject::setTransform(const float4x4& transform) noexcept
 	_transformInverse = math::transformInverse(transform);
 
 	_worldBoundingxBox = _boundingBox;
-	_worldBoundingxBox.applyMatrix(_transform);
+	_worldBoundingxBox.transform(_transform);
 
 	this->onMoveAfter();
 }

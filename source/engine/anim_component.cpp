@@ -154,14 +154,14 @@ AnimationComponent::onDeactivate() noexcept
 }
 
 void
-AnimationComponent::onAttachComponent(GameComponentPtr& component) noexcept
+AnimationComponent::onAttachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isA<RenderComponent>())
 		component->downcast<RenderComponent>()->addPreRenderListener(&_onMeshWillRender);
 }
 
 void
-AnimationComponent::onDetachComponent(GameComponentPtr& component) noexcept
+AnimationComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 {
 	if (component->isA<RenderComponent>())
 		component->downcast<RenderComponent>()->removePreRenderListener(&_onMeshWillRender);

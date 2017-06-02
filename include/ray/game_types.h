@@ -81,7 +81,7 @@ typedef std::vector<GameFeaturePtr> GameFeatures;
 
 typedef void* WindHandle;
 
-enum GameDispatchType
+enum GameDispatchType : std::uint8_t
 {
 	GameDispatchTypeFrameBegin,
 	GameDispatchTypeFrame,
@@ -91,7 +91,6 @@ enum GameDispatchType
 	GameDispatchTypeBeginRange = GameDispatchTypeFrameBegin,
 	GameDispatchTypeEndRange = GameDispatchTypeMoveAfter,
 	GameDispatchTypeRangeSize = (GameDispatchTypeEndRange - GameDispatchTypeBeginRange + 1),
-	GameDispatchTypeMaxEnum = 0x7FFFFFFF
 };
 
 _NAME_END

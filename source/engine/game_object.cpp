@@ -57,7 +57,7 @@ GameObject::GameObject() noexcept
 	GameObjectManager::instance()->_instanceObject(this, _instanceID);
 }
 
-GameObject::GameObject(const archivebuf& reader) noexcept
+GameObject::GameObject(const archivebuf& reader) except
 	: GameObject()
 {
 	this->load(reader);
@@ -767,9 +767,9 @@ GameObject::addComponentDispatch(GameDispatchType type, GameComponentPtr compone
 			type == GameDispatchType::GameDispatchTypeFrameBegin ||
 			type == GameDispatchType::GameDispatchTypeFrameEnd)
 		{
-			if (_dispatchComponents[GameDispatchTypeFrame].empty() &&
-				_dispatchComponents[GameDispatchTypeFrameBegin].empty() &&
-				_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+			if (_dispatchComponents[GameDispatchType::GameDispatchTypeFrame].empty() &&
+				_dispatchComponents[GameDispatchType::GameDispatchTypeFrameBegin].empty() &&
+				_dispatchComponents[GameDispatchType::GameDispatchTypeFrameEnd].empty())
 			{
 				GameObjectManager::instance()->_activeObject(this, true);
 			}
@@ -797,9 +797,9 @@ GameObject::removeComponentDispatch(GameDispatchType type, GameComponentPtr comp
 			type == GameDispatchType::GameDispatchTypeFrameBegin ||
 			type == GameDispatchType::GameDispatchTypeFrameEnd)
 		{
-			if (_dispatchComponents[GameDispatchTypeFrame].empty() &&
-				_dispatchComponents[GameDispatchTypeFrameBegin].empty() &&
-				_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+			if (_dispatchComponents[GameDispatchType::GameDispatchTypeFrame].empty() &&
+				_dispatchComponents[GameDispatchType::GameDispatchTypeFrameBegin].empty() &&
+				_dispatchComponents[GameDispatchType::GameDispatchTypeFrameEnd].empty())
 			{
 				GameObjectManager::instance()->_activeObject(this, false);
 			}
@@ -1032,7 +1032,7 @@ GameObject::save(archivebuf& write) except
 }
 
 GameObjectPtr
-GameObject::clone() const noexcept
+GameObject::clone() const except
 {
 	auto instance = std::make_shared<GameObject>();
 	instance->setParent(_parent.lock());
@@ -1092,9 +1092,9 @@ GameObject::_onActivate() except
 
 	if (!_dispatchComponents.empty())
 	{
-		if (!_dispatchComponents[GameDispatchTypeFrame].empty() ||
-			!_dispatchComponents[GameDispatchTypeFrameBegin].empty() ||
-			!_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+		if (!_dispatchComponents[GameDispatchType::GameDispatchTypeFrame].empty() ||
+			!_dispatchComponents[GameDispatchType::GameDispatchTypeFrameBegin].empty() ||
+			!_dispatchComponents[GameDispatchType::GameDispatchTypeFrameEnd].empty())
 		{
 			GameObjectManager::instance()->_activeObject(this, true);
 		}
@@ -1102,13 +1102,13 @@ GameObject::_onActivate() except
 }
 
 void
-GameObject::_onDeactivate() except
+GameObject::_onDeactivate() noexcept
 {
 	if (!_dispatchComponents.empty())
 	{
-		if (!_dispatchComponents[GameDispatchTypeFrame].empty() ||
-			!_dispatchComponents[GameDispatchTypeFrameBegin].empty() ||
-			!_dispatchComponents[GameDispatchTypeFrameEnd].empty())
+		if (!_dispatchComponents[GameDispatchType::GameDispatchTypeFrame].empty() ||
+			!_dispatchComponents[GameDispatchType::GameDispatchTypeFrameBegin].empty() ||
+			!_dispatchComponents[GameDispatchType::GameDispatchTypeFrameEnd].empty())
 		{
 			GameObjectManager::instance()->_activeObject(this, false);
 		}

@@ -1,4 +1,4 @@
-// dear imgui, v1.50 WIP
+// dear imgui, v1.50
 // (main code and documentation)
 
 // See ImGui::ShowTestWindow() in imgui_demo.cpp for demo code.
@@ -148,7 +148,8 @@
  Here is a change-log of API breaking changes, if you are using one of the functions listed, expect to have to fix some code.
  Also read releases logs https://github.com/ocornut/imgui/releases for more details.
 
- - 2017/05/01 (1.50) - Renamed ImDrawList::PathFill() to ImDrawList::PathFillConvex() for clarity.
+ - 2017/05/26 (1.50) - Removed ImFontConfig::MergeGlyphCenterV in favor of a more multipurpose ImFontConfig::GlyphOffset.
+ - 2017/05/01 (1.50) - Renamed ImDrawList::PathFill() (rarely used directly) to ImDrawList::PathFillConvex() for clarity.
  - 2016/11/06 (1.50) - BeginChild(const char*) now applies the stack id to the provided label, consistently with other functions as it should always have been. It shouldn't affect you unless (extremely unlikely) you were appending multiple times to a same child from different locations of the stack id. If that's the case, generate an id with GetId() and use it instead of passing string to BeginChild().
  - 2016/10/15 (1.50) - avoid 'void* user_data' parameter to io.SetClipboardTextFn/io.GetClipboardTextFn pointers. We pass io.ClipboardUserData to it.
  - 2016/09/25 (1.50) - style.WindowTitleAlign is now a ImVec2 (ImGuiAlign enum was removed). set to (0.5f,0.5f) for horizontal+vertical centering, (0.0f,0.0f) for upper-left, etc.
@@ -274,8 +275,9 @@
 	  stb_textedit.h
 	  stb_truetype.h
 	Don't overwrite imconfig.h if you have made modification to your copy.
-	Check the "API BREAKING CHANGES" sections for a list of occasional API breaking changes. If you have a problem with a function, search for its name
-	in the code, there will likely be a comment about it. Please report any issue to the GitHub page!
+	If you have a problem with a missing function/symbols, search for its name in the code, there will likely be a comment about it.
+	Check the "API BREAKING CHANGES" sections for a list of occasional API breaking changes.
+	Please report any issue to the GitHub page!
 
  Q: What is ImTextureID and how do I display an image?
  A: ImTextureID is a void* used to pass renderer-agnostic texture references around until it hits your render function.
@@ -3140,25 +3142,26 @@ static bool IsKeyPressedMap(ImGuiKey key, bool repeat)
 	return ImGui::IsKeyPressed(key_index, repeat);
 }
 
-int ImGui::GetKeyIndex(ImGuiKey key)
+int ImGui::GetKeyIndex(ImGuiKey imgui_key)
 {
-	IM_ASSERT(key >= 0 && key < ImGuiKey_COUNT);
-	return GImGui->IO.KeyMap[key];
+	IM_ASSERT(imgui_key >= 0 && imgui_key < ImGuiKey_COUNT);
+	return GImGui->IO.KeyMap[imgui_key];
 }
 
-bool ImGui::IsKeyDown(int key_index)
+// Note that imgui doesn't know the semantic of each entry of io.KeyDown[]. Use your own indices/enums according to how your backend/engine stored them into KeyDown[]!
+bool ImGui::IsKeyDown(int user_key_index)
 {
-	if (key_index < 0) return false;
-	IM_ASSERT(key_index >= 0 && key_index < IM_ARRAYSIZE(GImGui->IO.KeysDown));
-	return GImGui->IO.KeysDown[key_index];
+	if (user_key_index < 0) return false;
+	IM_ASSERT(user_key_index >= 0 && user_key_index < IM_ARRAYSIZE(GImGui->IO.KeysDown));
+	return GImGui->IO.KeysDown[user_key_index];
 }
 
-bool ImGui::IsKeyPressed(int key_index, bool repeat)
+bool ImGui::IsKeyPressed(int user_key_index, bool repeat)
 {
 	ImGuiContext& g = *GImGui;
-	if (key_index < 0) return false;
-	IM_ASSERT(key_index >= 0 && key_index < IM_ARRAYSIZE(g.IO.KeysDown));
-	const float t = g.IO.KeysDownDuration[key_index];
+	if (user_key_index < 0) return false;
+	IM_ASSERT(user_key_index >= 0 && user_key_index < IM_ARRAYSIZE(g.IO.KeysDown));
+	const float t = g.IO.KeysDownDuration[user_key_index];
 	if (t == 0.0f)
 		return true;
 
@@ -3171,12 +3174,12 @@ bool ImGui::IsKeyPressed(int key_index, bool repeat)
 	return false;
 }
 
-bool ImGui::IsKeyReleased(int key_index)
+bool ImGui::IsKeyReleased(int user_key_index)
 {
 	ImGuiContext& g = *GImGui;
-	if (key_index < 0) return false;
-	IM_ASSERT(key_index >= 0 && key_index < IM_ARRAYSIZE(g.IO.KeysDown));
-	if (g.IO.KeysDownDurationPrev[key_index] >= 0.0f && !g.IO.KeysDown[key_index])
+	if (user_key_index < 0) return false;
+	IM_ASSERT(user_key_index >= 0 && user_key_index < IM_ARRAYSIZE(g.IO.KeysDown));
+	if (g.IO.KeysDownDurationPrev[user_key_index] >= 0.0f && !g.IO.KeysDown[user_key_index])
 		return true;
 	return false;
 }
@@ -3233,8 +3236,7 @@ bool ImGui::IsMouseDragging(int button, float lock_threshold)
 
 ImVec2 ImGui::GetMousePos()
 {
-	ImGuiContext& g = *GImGui;
-	return g.IO.MousePos;
+	return GImGui->IO.MousePos;
 }
 
 // NB: prefer to call right after BeginPopup(). At the time Selectable/MenuItem is activated, the popup is already closed!
@@ -7510,7 +7512,7 @@ namespace ImGuiStb
 		while (ImWchar c = *src++)
 			*dst++ = c;
 		*dst = '\0';
-}
+	}
 
 	static bool STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* obj, int pos, const ImWchar* new_text, int new_text_len)
 	{

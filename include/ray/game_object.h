@@ -46,7 +46,7 @@ class EXPORT GameObject : public rtti::Interface
 	__DeclareSubClass(GameObject, rtti::Interface)
 public:
 	GameObject() noexcept;
-	GameObject(const archivebuf& reader) noexcept;
+	GameObject(const archivebuf& reader) except;
 	virtual ~GameObject() noexcept;
 
 	void setName(const util::string& name) noexcept;
@@ -158,17 +158,17 @@ public:
 	void load(const archivebuf& reader) except;
 	void save(archivebuf& write) except;
 
-	GameObjectPtr clone() const noexcept;
+	GameObjectPtr clone() const except;
 
 private:
 	friend GameObjectManager;
 
+	void _onActivate() except;
+	void _onDeactivate() noexcept;
+
 	void _onFrameBegin() except;
 	void _onFrame() except;
 	void _onFrameEnd() except;
-
-	void _onActivate() except;
-	void _onDeactivate() except;
 
 	void _onMoveBefore() except;
 	void _onMoveAfter() except;

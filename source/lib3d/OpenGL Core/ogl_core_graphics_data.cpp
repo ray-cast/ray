@@ -162,9 +162,12 @@ OGLCoreGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** dat
 	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagFlushExplicitBit)
 		flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
 
+	if (!_data && usage & GraphicsUsageFlagBits::GraphicsUsageFlagPersistentBit)
+		_data = glMapNamedBuffer(_buffer, flags);
+
 	if (_data && usage & GraphicsUsageFlagBits::GraphicsUsageFlagPersistentBit)
 	{
-		*data = _data;
+		*data = (std::uint8_t*)_data + offset;
 		return true;
 	}
 

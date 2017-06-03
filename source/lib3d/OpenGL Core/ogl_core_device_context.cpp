@@ -868,7 +868,6 @@ OGLCoreDeviceContext::initStateSystem() noexcept
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	glDisable(GL_STENCIL_TEST);
 	glStencilMask(0xFFFFFFFF);

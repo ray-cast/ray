@@ -80,7 +80,7 @@ GuiStyle::GuiStyle() noexcept
 	CurveTessellationTol = 1.25f;
 
 	Colors[ImGuiCol_MenuBarBg] = float4(0.8705, 0.58823f, 0.0, 1.0);
-	Colors[ImGuiCol_Text] = float4(0.9607f, 0.9607f, 0.9607f, 1.0);
+	Colors[ImGuiCol_Text] = float4(1.0f, 1.0f, 1.0f, 1.0);
 	Colors[ImGuiCol_TextDisabled] = float4(0.58823f, 0.58823f, 0.58823f, 1.0);
 	Colors[ImGuiCol_WindowBg] = float4(0.0f, 0.0, 0.0, 0.8627f);
 	Colors[ImGuiCol_Header] = float4(0.13333f, 0.52549f, 0.9019f, 0.70196f);

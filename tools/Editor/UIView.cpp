@@ -85,7 +85,9 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_styleDefault.ItemSpacing.y = 3;
 	_styleDefault.WindowPadding.x = 5;
 	_styleDefault.WindowPadding.y = 9;
+	_styleDefault.FramePadding.x = 6;
 	_styleDefault.ScrollbarSize = 15;
+	_styleDefault.IndentSpacing = 25;
 	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgActive] = ray::float4(0.3f, 0.3f, 0.3f, 0.58f);
 	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgHovered] = ray::float4(0.4f, 0.4f, 0.4f, 0.75f);
 	_styleDefault.Colors[ray::GuiCol::GuiColWindowBg] = ray::float4(0.075f, 0.075f, 0.075f, 1.0f);
@@ -741,6 +743,9 @@ GuiViewComponent::showMeshesLists() noexcept
 	const ray::GameObjects* objects = nullptr;
 	_event.onMeshesFetch(objects);
 
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(_style.FramePadding.x * 2.0, _style.FramePadding.y));
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 1.5f);
+
 	if (ray::Gui::beginDock("Inspector", &_showInspectorWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		ray::Gui::setWindowSize(ray::Gui::getWindowSize() + _style.WindowPadding, true);
@@ -749,6 +754,21 @@ GuiViewComponent::showMeshesLists() noexcept
 			ray::Gui::text("(No data)");
 		else
 		{
+			if (ray::Gui::treeNodeEx("camera"))
+			{
+				ray::Gui::treePop();
+			}
+
+			if (ray::Gui::treeNodeEx("lights"))
+			{
+				ray::Gui::treePop();
+			}
+
+			if (ray::Gui::treeNodeEx("light probes"))
+			{
+				ray::Gui::treePop();
+			}
+
 			if (ray::Gui::treeNodeEx("meshes", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 			{
 				for (std::size_t i = 0; i < objects->size(); i++)
@@ -770,6 +790,8 @@ GuiViewComponent::showMeshesLists() noexcept
 
 		ray::Gui::endDock();
 	}
+
+	ray::Gui::popStyleVar(2);
 }
 
 void

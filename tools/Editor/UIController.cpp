@@ -306,7 +306,7 @@ GuiControllerComponent::makeCubeObject() noexcept
 	auto cubeMesh = std::make_shared<ray::MeshProperty>();
 	cubeMesh->makeCubeWireframe(1.0, 1.0, 1.0);
 
-	material->getParameter("diffuse")->uniform4f(0.3, 1.0, 0.3, 1.0);
+	material->getParameter("diffuse")->uniform4f(0.0, 1.0, 0.0, 0.9);
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setActive(true);

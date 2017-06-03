@@ -64,6 +64,7 @@ const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second U
 
 GuiViewComponent::GuiViewComponent() noexcept
 	: _selectedMesh(0)
+	, _lightMassType(LightMassType::UVMapper)
 {
 	_progress = 0.0f;
 	_showWindowAll = true;
@@ -82,11 +83,15 @@ GuiViewComponent::GuiViewComponent() noexcept
 
 	_styleDefault.AntiAliasedLines = false;
 	_styleDefault.ItemSpacing.y = 3;
-	_styleDefault.WindowPadding.y = 10;
-	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgActive] = ray::float4(0.3, 0.3, 0.3, 1.0);
-	_styleDefault.Colors[ray::GuiCol::GuiColWindowBg] = ray::float4(18, 18, 18, 255) / 255.0f;
-	_styleDefault.Colors[ray::GuiCol::GuiColChildWindowBg] = ray::float4(80, 80, 85, 60) / 255.0f;
-	_styleDefault.Colors[ray::GuiCol::GuiColScrollbarGrab] = ray::float4(80, 80, 85, 255) / 255.0f;
+	_styleDefault.WindowPadding.x = 5;
+	_styleDefault.WindowPadding.y = 9;
+	_styleDefault.ScrollbarSize = 15;
+	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgActive] = ray::float4(0.3f, 0.3f, 0.3f, 0.58f);
+	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgHovered] = ray::float4(0.4f, 0.4f, 0.4f, 0.75f);
+	_styleDefault.Colors[ray::GuiCol::GuiColWindowBg] = ray::float4(0.075f, 0.075f, 0.075f, 1.0f);
+	_styleDefault.Colors[ray::GuiCol::GuiColChildWindowBg] = ray::float4(0.33333f, 0.33333f, 0.33333f, 0.45f);
+	_styleDefault.Colors[ray::GuiCol::GuiColScrollbarGrab] = ray::float4(0.314f, 0.314f, 0.33333f, 1.0f);
+	_styleDefault.Colors[ray::GuiCol::GuiColBorder] = ray::float4(0.0f, 0.0f, 0.0f, 1.0f);
 	_style = _styleDefault;
 
 	ray::Gui::setStyle(_styleDefault);
@@ -189,8 +194,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 			}
 		}
 	}
-
-	if (message->isInstanceOf<ray::GuiMessage>())
+	else if (message->isInstanceOf<ray::GuiMessage>())
 	{
 		if (_showWindowAll)
 		{
@@ -533,6 +537,8 @@ GuiViewComponent::showPopupMessage(const ray::util::string& title, const ray::ut
 void
 GuiViewComponent::showProcessMessage() noexcept
 {
+	assert(_lightMassType == LightMassType::UVMapper || _lightMassType == LightMassType::LightBaking);
+
 	if (_showProcessMessageFirst)
 	{
 		ray::Gui::openPopup(_langs[UILang::Process]);
@@ -587,10 +593,6 @@ GuiViewComponent::showProcessMessage() noexcept
 					_event.onLightMassCancel();
 			}
 		}
-		else
-		{
-			assert(false);
-		}
 
 		ray::Gui::endPopup();
 	}
@@ -612,7 +614,7 @@ GuiViewComponent::showAboutWindow() noexcept
 
 	if (ray::Gui::beginPopupModal("About", 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
 	{
-		ray::Gui::text("LightMass Ver.0.1");
+		ray::Gui::text("Editor Ver.0.1");
 		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
 		ray::Gui::text("Copyright (c) 2017-2018. All rights reserved.");
 
@@ -741,6 +743,8 @@ GuiViewComponent::showMeshesLists() noexcept
 
 	if (ray::Gui::beginDock("Inspector", &_showInspectorWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
+		ray::Gui::setWindowSize(ray::Gui::getWindowSize() + _style.WindowPadding, true);
+
 		if (!objects)
 			ray::Gui::text("(No data)");
 		else
@@ -751,7 +755,7 @@ GuiViewComponent::showMeshesLists() noexcept
 				{
 					auto& name = (*objects)[i]->getName();
 					char buffer[MAX_PATH];
-					sprintf_s(buffer, MAX_PATH, "subset%zu (%s)", i, name.empty() ? "empty" : name.c_str());
+					sprintf_s(buffer, MAX_PATH, "|-subset%zu (%s)", i, name.empty() ? "empty" : name.c_str());
 
 					if (ray::Gui::selectable(buffer, _selectedMesh == i))
 					{
@@ -774,23 +778,27 @@ GuiViewComponent::showAssertLists() noexcept
 	if (!_showAssertWindow)
 		return;
 
-	static ray::float2 imageSize = ray::float2(86, 86);
+	static ray::float2 imageSize = ray::float2(64, 64);
 
 	if (ray::Gui::beginDock("Assert", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		std::size_t id = 0;
 
-		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColBorder]);
+		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
+		ray::Gui::sameLine(_style.ItemInnerSpacing.x);
 
 		const auto& textures = ray::ResManager::instance()->getTextureAll();
 		for (auto& texture : textures)
 		{
 			if (ray::Gui::getContentRegionAvailWidth() < imageSize.x)
+			{
 				ray::Gui::newLine();
+				ray::Gui::sameLine(_style.ItemInnerSpacing.x);
+			}
 
 			ray::Gui::pushID(id++);
 
-			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, 3, ray::float4::UnitW);
+			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, _style.ItemInnerSpacing.x, ray::float4::UnitW);
 
 			ray::Gui::popID();
 			ray::Gui::sameLine(0, _style.ItemSpacing.y);
@@ -805,9 +813,9 @@ GuiViewComponent::showAssertLists() noexcept
 void
 GuiViewComponent::showCameraWindow() noexcept
 {
-	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoScrollbarBit))
+	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagAlwaysUseWindowPaddingBit | ray::GuiWindowFlagNoScrollbarBit))
 	{
-		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize() - _style.WindowPadding);
+		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize());
 
 		ray::Gui::image(_renderTexture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
 

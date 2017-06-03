@@ -672,12 +672,10 @@ namespace ImGui
 						draw_list->AddLine(center + ImVec2(-3.5f, -3.5f), center + ImVec2(3.5f, 3.5f), text_color);
 						draw_list->AddLine(center + ImVec2(3.5f, -3.5f), center + ImVec2(-3.5f, 3.5f), text_color);
 
-						draw_list->PathClear();
 						draw_list->AddRectFilled(pos + ImVec2(-15.0f, 0.0), pos + size, hovered ? color_hovered : (dock_tab->active ? color_active : color), 5.0, 3);
 					}
 					else
 					{
-						draw_list->PathClear();
 						draw_list->AddRectFilled(pos + ImVec2(-10.0f, 0.0), pos + size + ImVec2(10.0, 0.0), hovered ? color_hovered : (dock_tab->active ? color_active : color), 5.0, 3);
 					}
 
@@ -693,10 +691,8 @@ namespace ImGui
 
 					dock_tab = dock_tab->next_tab;
 				}
-
-				ImVec2 cp(dock.pos.x, tab_base + line_height);
-				draw_list->AddLine(cp, cp + ImVec2(dock.size.x, 0), color);
 			}
+
 			EndChild();
 			return tab_closed;
 		}
@@ -913,11 +909,7 @@ namespace ImGui
 			{
 				SetNextWindowPos(dock.pos);
 				SetNextWindowSize(dock.size);
-				bool ret = Begin(label,
-					opened,
-					dock.size,
-					-1.0f,
-					ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders | extra_flags);
+				bool ret = Begin(label, opened, dock.size, -1.0f, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders | extra_flags);
 				m_end_action = EndAction_End;
 				dock.pos = GetWindowPos();
 				dock.size = GetWindowSize();
@@ -953,12 +945,17 @@ namespace ImGui
 			SetCursorScreenPos(pos);
 			ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
 				ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-				ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus |
+				ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoScrollbar |
 				extra_flags;
 			char tmp[256];
 			strcpy(tmp, label);
 			strcat(tmp, "_docked"); // to avoid https://github.com/ocornut/imgui/issues/713
-			bool ret = BeginChild(tmp, size, true, flags);
+
+			bool ret = BeginChild(tmp, size, false, flags);
+			if (!(extra_flags & ImGuiWindowFlags_AlwaysUseWindowPadding))
+				ItemSize(ImVec2(0.0f, ImGui::GetStyle().WindowPadding.y - 3));
+			BeginChild(tmp);
+
 			PopStyleColor();
 			PopStyleColor();
 			return ret;
@@ -974,6 +971,7 @@ namespace ImGui
 			{
 				PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
 				PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0, 0, 0, 0));
+				EndChild();
 				EndChild();
 				PopStyleColor();
 				PopStyleColor();

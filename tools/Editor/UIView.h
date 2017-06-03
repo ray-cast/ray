@@ -152,7 +152,7 @@ private:
 	std::string _pathProject;
 	std::vector<const char*> _langs;
 
-	std::size_t _selectedMesh;
+	int _selectedMesh;
 
 	std::size_t _messageHash;
 	std::string _messageTitle;

@@ -367,6 +367,8 @@ IMGUISystem::render(float delta) except
 	_ibo->unmap();
 
 	auto& io = ImGui::GetIO();
+
+	renderer->clearFramebuffer(0, ray::GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1, 0);
 	renderer->setViewport(0, ray::Viewport(0, 0, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y));
 	renderer->setScissor(0, ray::Scissor(0, 0, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y));
 

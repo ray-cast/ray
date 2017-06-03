@@ -135,7 +135,7 @@ private:
 	bool _showWindowAll;
 	bool _showMainMenu;
 	bool _showLightMassWindow;
-	bool _showMeshesWindow;
+	bool _showInspectorWindow;
 	bool _showAssertWindow;
 	bool _showCameraWindow;
 	bool _showMaterialEditorWindow;

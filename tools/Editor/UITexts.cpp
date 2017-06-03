@@ -85,7 +85,8 @@ const char* en_lang[] = {
 	"Please load a model before start baking.",
 	"Camera",
 	"Assert",
-	"Material"
+	"Material",
+	"Inspector"
 };
 
 const char* cn_lang[] = {
@@ -137,7 +138,8 @@ const char* cn_lang[] = {
 	"请先载入一个模型",
 	"相机",
 	"资源",
-	"材质"
+	"材质",
+	"监视"
 };
 
 std::vector<std::string> cn_lang_utf8;

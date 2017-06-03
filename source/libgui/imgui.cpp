@@ -2227,7 +2227,13 @@ IMGUI::rootDock(const float2& pos, const float2& size)
 bool
 IMGUI::beginDock(const char* label, bool* opened, GuiWindowFlags extra_flags, const float2& default_size)
 {
-	return ImGui::BeginDock(label, opened, extra_flags, (ImVec2&)default_size);
+	if (!ImGui::BeginDock(label, opened, extra_flags, (ImVec2&)default_size))
+	{
+		ImGui::EndDock();
+		return false;
+	}
+
+	return true;
 }
 
 void

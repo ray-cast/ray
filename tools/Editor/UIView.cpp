@@ -60,8 +60,8 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_progress = 0.0f;
 	_showWindowAll = true;
 	_showMainMenu = true;
-	_showLightMassWindow = false;
-	_showMeshesWindow = true;
+	_showLightMassWindow = true;
+	_showInspectorWindow = true;
 	_showCameraWindow = true;
 	_showMaterialEditorWindow = true;
 	_showStyleEditor = false;
@@ -72,6 +72,7 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showProcessMessage = false;
 	_showProcessMessageFirst = false;
 
+	_styleDefault.AntiAliasedLines = false;
 	_styleDefault.ItemSpacing.y = 3;
 	_styleDefault.WindowPadding.y = 10;
 	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgActive] = ray::float4(0.3, 0.3, 0.3, 1.0);
@@ -264,7 +265,11 @@ GuiViewComponent::showMainMenu() noexcept
 
 		if (ray::Gui::beginMenu(_langs[UILang::Window]))
 		{
+			ray::Gui::menuItem(_langs[UILang::Assert], 0, &_showAssertWindow);
+			ray::Gui::menuItem(_langs[UILang::Camera], 0, &_showCameraWindow);
+			ray::Gui::menuItem(_langs[UILang::Inspector], 0, &_showInspectorWindow);
 			ray::Gui::menuItem(_langs[UILang::LightMass], 0, &_showLightMassWindow);
+			ray::Gui::menuItem(_langs[UILang::Material], 0, &_showMaterialEditorWindow);
 			ray::Gui::menuItem(_langs[UILang::StyleEditor], 0, &_showStyleEditor);
 			ray::Gui::endMenu();
 		}
@@ -715,100 +720,18 @@ GuiViewComponent::showStyleEditor() noexcept
 }
 
 void
-GuiViewComponent::showLightMass() noexcept
-{
-	if (!_showLightMassWindow)
-		return;
-
-	ray::Gui::setNextWindowPos(ray::float2(10, 60), ray::GuiSetCondFlagBits::GuiSetCondFlagFirstUseEverBit);
-
-	if (ray::Gui::begin(_langs[UILang::LightMass], &_showLightMassWindow, ray::float2(270, 700), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
-	{
-		if (ray::Gui::treeNode(_langs[UILang::UvMapper]))
-		{
-			ray::Gui::text(_langs[UILang::OutputUVSize]);
-			ray::Gui::comboWithRevert("##UV size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
-
-			ray::Gui::text(_langs[UILang::OutputUVSlot]);
-			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
-
-			ray::Gui::text(_langs[UILang::UVMargin]);
-			ray::Gui::sliderFloatWithRevert("##margin", _langs[UILang::Revert], &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
-
-			ray::Gui::text(_langs[UILang::UVStretch]);
-			ray::Gui::sliderFloatWithRevert("##stretch", _langs[UILang::Revert], &_setting.uvmapper.stretch, _default.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
-
-			ray::Gui::text(_langs[UILang::UVChart]);
-			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert], &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
-
-			if (ray::Gui::button(_langs[UILang::StartUVMapper]))
-				this->startUVMapper();
-
-			ray::Gui::treePop();
-		}
-
-		if (ray::Gui::treeNode(_langs[UILang::LightMass]))
-		{
-			ray::Gui::checkbox(_langs[UILang::EnableGI], &_setting.lightmass.enableGI);
-
-			if (_setting.lightmass.enableGI)
-				ray::Gui::checkbox(_langs[UILang::EnableIBL], &_setting.lightmass.enableSkyLighting);
-
-			ray::Gui::text(_langs[UILang::OutputImageSize]);
-			ray::Gui::comboWithRevert("##Output size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
-
-			ray::Gui::text(_langs[UILang::InputUVSlot]);
-			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
-
-			ray::Gui::text(_langs[UILang::SampleCount]);
-			ray::Gui::comboWithRevert("##Sample Count", _langs[UILang::Revert], &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
-
-			ray::Gui::text(_langs[UILang::EnvironmentColor]);
-			ray::Gui::colorPicker3WithRevert("##Environment Color", _langs[UILang::Revert], _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
-
-			ray::Gui::text(_langs[UILang::EnvironmentIntensity]);
-			ray::Gui::sliderFloatWithRevert("##Environment Intensity", _langs[UILang::Revert], &_setting.lightmass.environmentColor.w, _default.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
-
-			ray::Gui::text(_langs[UILang::RayTracingZnear]);
-			ray::Gui::sliderFloatWithRevert("##Ray tracing znear", _langs[UILang::Revert], &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
-
-			ray::Gui::text(_langs[UILang::RayTracingZfar]);
-			ray::Gui::sliderFloatWithRevert("##Ray tracing zfar", _langs[UILang::Revert], &_setting.lightmass.hemisphereFar, _default.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
-
-			ray::Gui::text(_langs[UILang::InterpolationPasses]);
-			ray::Gui::sliderIntWithRevert("##Interpolation Passes", _langs[UILang::Revert], &_setting.lightmass.interpolationPasses, _default.lightmass.interpolationPasses, 1, 5);
-
-			ray::Gui::text(_langs[UILang::InterpolationThreshold]);
-			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
-
-			if (ray::Gui::button(_langs[UILang::StartLightMass]))
-				this->startLightMass();
-
-			ray::Gui::sameLine();
-
-			if (ray::Gui::button(_langs[UILang::SaveAs]))
-				this->saveLightMass();
-
-			ray::Gui::treePop();
-		}
-
-		ray::Gui::end();
-	}
-}
-
-void
 GuiViewComponent::showMeshesLists() noexcept
 {
 	assert(_event.onMeshesFetch);
 	assert(_event.onMeshesSeleted);
 
-	if (!_showMeshesWindow)
+	if (!_showInspectorWindow)
 		return;
 
 	const ray::GameObjects* objects = nullptr;
 	_event.onMeshesFetch(objects);
 
-	if (ray::Gui::beginDock("Inspector", &_showMeshesWindow))
+	if (ray::Gui::beginDock("Inspector", &_showInspectorWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		if (!objects)
 			ray::Gui::text("(No data)");
@@ -845,11 +768,11 @@ GuiViewComponent::showAssertLists() noexcept
 
 	static ray::float2 imageSize = ray::float2(86, 86);
 
-	ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColBorder]);
-
-	if (ray::Gui::beginDock(_langs[UILang::Assert], &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	if (ray::Gui::beginDock("Assert", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		std::size_t id = 0;
+
+		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColBorder]);
 
 		const auto& textures = ray::ResManager::instance()->getTextureAll();
 		for (auto& texture : textures)
@@ -865,10 +788,38 @@ GuiViewComponent::showAssertLists() noexcept
 			ray::Gui::sameLine(0, _style.ItemSpacing.y);
 		}
 
+		ray::Gui::popStyleColor();
+
 		ray::Gui::endDock();
 	}
+}
 
-	ray::Gui::popStyleColor();
+void
+GuiViewComponent::showCameraWindow() noexcept
+{
+	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoScrollbarBit))
+	{
+		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize() - _style.WindowPadding);
+
+		ray::Gui::image(_renderTexture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
+
+		ray::Gui::endDock();
+	}
+}
+
+void
+GuiViewComponent::showSceneWindow() noexcept
+{
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
+
+	if (ray::Gui::begin("Scene", 0, ray::Gui::getDisplaySize(), -1.0, ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagNoScrollbarBit))
+	{
+		ray::Gui::setWindowPos(ray::float2::Zero);
+		ray::Gui::image(_renderTexture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
+		ray::Gui::end();
+	}
+
+	ray::Gui::popStyleVar();
 }
 
 void
@@ -927,7 +878,7 @@ GuiViewComponent::showMaterialEditor() noexcept
 	if (!_showMaterialEditorWindow)
 		return;
 
-	if (ray::Gui::beginDock(_langs[UILang::Material], &_showMaterialEditorWindow))
+	if (ray::Gui::beginDock("Material", &_showMaterialEditorWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
@@ -1172,30 +1123,83 @@ GuiViewComponent::showMaterialEditor() noexcept
 }
 
 void
-GuiViewComponent::showCameraWindow() noexcept
+GuiViewComponent::showLightMass() noexcept
 {
-	if (ray::Gui::beginDock(_langs[UILang::Camera], &_showCameraWindow, ray::GuiWindowFlagNoInputsBit | ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoScrollbarBit))
+	if (!_showLightMassWindow)
+		return;
+
+	if (ray::Gui::beginDock("Lightmass", &_showLightMassWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
-		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize());
-		ray::Gui::image(_renderTexture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
+		if (ray::Gui::treeNodeEx(_langs[UILang::UvMapper], ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		{
+			ray::Gui::text(_langs[UILang::OutputUVSize]);
+			ray::Gui::comboWithRevert("##UV size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
+
+			ray::Gui::text(_langs[UILang::OutputUVSlot]);
+			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
+
+			ray::Gui::text(_langs[UILang::UVMargin]);
+			ray::Gui::sliderFloatWithRevert("##margin", _langs[UILang::Revert], &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
+
+			ray::Gui::text(_langs[UILang::UVStretch]);
+			ray::Gui::sliderFloatWithRevert("##stretch", _langs[UILang::Revert], &_setting.uvmapper.stretch, _default.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
+
+			ray::Gui::text(_langs[UILang::UVChart]);
+			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert], &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
+
+			if (ray::Gui::button(_langs[UILang::StartUVMapper]))
+				this->startUVMapper();
+
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNodeEx(_langs[UILang::LightMass], ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		{
+			ray::Gui::checkbox(_langs[UILang::EnableGI], &_setting.lightmass.enableGI);
+
+			if (_setting.lightmass.enableGI)
+				ray::Gui::checkbox(_langs[UILang::EnableIBL], &_setting.lightmass.enableSkyLighting);
+
+			ray::Gui::text(_langs[UILang::OutputImageSize]);
+			ray::Gui::comboWithRevert("##Output size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
+
+			ray::Gui::text(_langs[UILang::InputUVSlot]);
+			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
+
+			ray::Gui::text(_langs[UILang::SampleCount]);
+			ray::Gui::comboWithRevert("##Sample Count", _langs[UILang::Revert], &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
+
+			ray::Gui::text(_langs[UILang::EnvironmentColor]);
+			ray::Gui::colorPicker3WithRevert("##Environment Color", _langs[UILang::Revert], _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
+
+			ray::Gui::text(_langs[UILang::EnvironmentIntensity]);
+			ray::Gui::sliderFloatWithRevert("##Environment Intensity", _langs[UILang::Revert], &_setting.lightmass.environmentColor.w, _default.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
+
+			ray::Gui::text(_langs[UILang::RayTracingZnear]);
+			ray::Gui::sliderFloatWithRevert("##Ray tracing znear", _langs[UILang::Revert], &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
+
+			ray::Gui::text(_langs[UILang::RayTracingZfar]);
+			ray::Gui::sliderFloatWithRevert("##Ray tracing zfar", _langs[UILang::Revert], &_setting.lightmass.hemisphereFar, _default.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
+
+			ray::Gui::text(_langs[UILang::InterpolationPasses]);
+			ray::Gui::sliderIntWithRevert("##Interpolation Passes", _langs[UILang::Revert], &_setting.lightmass.interpolationPasses, _default.lightmass.interpolationPasses, 1, 5);
+
+			ray::Gui::text(_langs[UILang::InterpolationThreshold]);
+			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
+
+			if (ray::Gui::button(_langs[UILang::StartLightMass]))
+				this->startLightMass();
+
+			ray::Gui::sameLine();
+
+			if (ray::Gui::button(_langs[UILang::SaveAs]))
+				this->saveLightMass();
+
+			ray::Gui::treePop();
+		}
+
 		ray::Gui::endDock();
 	}
-}
-
-void
-GuiViewComponent::showSceneWindow() noexcept
-{
-	ray::Gui::setNextWindowPos(ray::float2(0, 0));
-
-	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
-
-	if (ray::Gui::begin("Scene", 0, ray::Gui::getDisplaySize(), -1.0, ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagNoScrollbarBit))
-	{
-		ray::Gui::image(_renderTexture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
-		ray::Gui::end();
-	}
-
-	ray::Gui::popStyleVar();
 }
 
 void

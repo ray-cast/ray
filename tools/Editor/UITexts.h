@@ -93,6 +93,7 @@ public:
 		Camera,
 		Assert,
 		Material,
+		Inspector,
 	};
 
 	enum class Lang

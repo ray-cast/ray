@@ -39,8 +39,6 @@
 
 #include <ray/gui.h>
 #include <ray/game_component.h>
-#include <ray/graphics_texture.h>
-#include <ray/graphics_framebuffer.h>
 
 #include "UIParams.h"
 #include "UITexts.h"
@@ -56,8 +54,15 @@ struct GuiViewDelegates
 	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> onLightMassProcess;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onLightMassSave;
 
-	std::function<bool(const ray::GameObjects*&)> onMeshesFetch;
-	std::function<bool(const ray::GameObject*, std::size_t)> onMeshesSeleted;
+	std::function<bool(const ray::GameObjects*&)> onFetchMeshes;
+	std::function<bool(const ray::GameObjects*&)> onFetchCamera;
+	std::function<bool(const ray::GameObjects*&)> onFetchLights;
+	std::function<bool(const ray::GameObjects*&)> onFetchLightProbes;
+
+	std::function<bool(const ray::GameObject*)> onSeletedCamera;
+	std::function<bool(const ray::GameObject*)> onSeletedLight;
+	std::function<bool(const ray::GameObject*)> onSeletedLightProbe;
+	std::function<bool(const ray::GameObject*, std::size_t)> onSeletedMesh;
 
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectOpen;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSave;
@@ -123,10 +128,8 @@ private:
 	GuiViewComponent& operator=(const GuiViewComponent&) = delete;
 
 private:
+	ray::GameObject* _selectedObject;
 	ray::GameObjectWeakPtr _camera;
-	ray::GraphicsFramebufferLayoutPtr _framebufferLayout;
-	ray::GraphicsFramebufferPtr _framebuffer;
-	ray::GraphicsTexturePtr _renderTexture;
 
 	ray::float4 _viewport;
 
@@ -151,8 +154,6 @@ private:
 
 	std::string _pathProject;
 	std::vector<const char*> _langs;
-
-	int _selectedMesh;
 
 	std::size_t _messageHash;
 	std::string _messageTitle;

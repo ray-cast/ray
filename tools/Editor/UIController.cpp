@@ -49,8 +49,16 @@
 #include <ray/mstream.h>
 #include <ray/jsonreader.h>
 
+#include "first_person_camera.h"
+
+#include <ray/camera_component.h>
+#include <ray/light_component.h>
 #include <ray/mesh_component.h>
 #include <ray/mesh_render_component.h>
+
+#include <ray/graphics_texture.h>
+#include <ray/graphics_framebuffer.h>
+#include <ray/render_system.h>
 
 #include <ray/input.h>
 #include <ray/input_feature.h>
@@ -321,6 +329,54 @@ GuiControllerComponent::makeCubeObject() noexcept
 }
 
 bool
+GuiControllerComponent::makeMainCamera() noexcept
+{
+	ray::GraphicsTextureDesc textureDesc;
+	textureDesc.setWidth(ray::Gui::getDisplaySize().x);
+	textureDesc.setHeight(ray::Gui::getDisplaySize().y);
+	textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+	if (!renderTexture)
+		return false;
+
+	ray::GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+	framebufferLayoutDesc.addComponent(ray::GraphicsAttachmentLayout(0, ray::GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm));
+	auto framebufferLayout = ray::RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
+	if (!framebufferLayout)
+		return false;
+
+	ray::GraphicsFramebufferDesc framebufferDesc;
+	framebufferDesc.setWidth(ray::Gui::getDisplaySize().x);
+	framebufferDesc.setHeight(ray::Gui::getDisplaySize().y);
+	framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(renderTexture, 0, 0));
+	framebufferDesc.setGraphicsFramebufferLayout(framebufferLayout);
+	auto framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
+	if (!framebuffer)
+		return false;
+
+	auto camera = std::make_shared<ray::CameraComponent>();
+	camera->setAperture(65.0f);
+	camera->setNear(0.1f);
+	camera->setFar(20000.0f);
+	camera->setFramebuffer(framebuffer);
+	camera->setCameraRenderFlags(ray::CameraRenderFlagBits::CameraRenderTextureBit | ray::CameraRenderFlagBits::CameraRenderShadingBit);
+
+	auto object = std::make_shared<ray::GameObject>();
+	object->setName("MainCamera");
+	object->addComponent(camera);
+	object->addComponent(std::make_shared<FirstPersonCameraComponent>());
+	object->setActive(true);
+	object->setTranslate(ray::float3(32, 15, 30));
+	object->setQuaternion(ray::Quaternion(ray::float3(25.0f, 226.0f, 0.0f)));
+
+	this->getGameObject()->addChild(object);
+
+	_cameras.push_back(object);
+
+	return true;
+}
+
+bool
 GuiControllerComponent::makeSphereObjects() noexcept
 {
 	ray::GraphicsTexturePtr diffuseMap;
@@ -405,8 +461,15 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		delegate.onLightMassProcess = std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 		delegate.onLightMassSave = std::bind(&GuiControllerComponent::onLightMassSave, this, std::placeholders::_1, std::placeholders::_2);
 
-		delegate.onMeshesFetch = std::bind(&GuiControllerComponent::onMeshesFetch, this, std::placeholders::_1);
-		delegate.onMeshesSeleted = std::bind(&GuiControllerComponent::onMeshesSeleted, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onFetchCamera = std::bind(&GuiControllerComponent::onFetchCamera, this, std::placeholders::_1);
+		delegate.onFetchMeshes = std::bind(&GuiControllerComponent::onFetchMeshes, this, std::placeholders::_1);
+		delegate.onFetchLights = std::bind(&GuiControllerComponent::onFetchLights, this, std::placeholders::_1);
+		delegate.onFetchLightProbes = std::bind(&GuiControllerComponent::onFetchLightProbes, this, std::placeholders::_1);
+
+		delegate.onSeletedCamera = std::bind(&GuiControllerComponent::onSeletedCamera, this, std::placeholders::_1);
+		delegate.onSeletedMesh = std::bind(&GuiControllerComponent::onSeletedMesh, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onSeletedLight = std::bind(&GuiControllerComponent::onSeletedLight, this, std::placeholders::_1);
+		delegate.onSeletedLightProbe = std::bind(&GuiControllerComponent::onSeletedLightProbe, this, std::placeholders::_1);
 
 		view->setGuiViewDelegates(delegate);
 	}
@@ -428,6 +491,7 @@ void
 GuiControllerComponent::onActivate() except
 {
 	this->makeCubeObject();
+	this->makeMainCamera();
 	this->makeSphereObjects();
 }
 
@@ -844,14 +908,65 @@ GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, r
 }
 
 bool
-GuiControllerComponent::onMeshesFetch(const ray::GameObjects*& objects) noexcept
+GuiControllerComponent::onFetchCamera(const ray::GameObjects*& cameras) noexcept
 {
-	objects = &_objects;
+	cameras = &_cameras;
+	return false;
+}
+
+bool
+GuiControllerComponent::onFetchLights(const ray::GameObjects*& lights) noexcept
+{
+	lights = &_lights;
+	return false;
+}
+
+bool
+GuiControllerComponent::onFetchLightProbes(const ray::GameObjects*& lightprobes) noexcept
+{
+	lightprobes = &_lightProbes;
+	return false;
+}
+
+bool
+GuiControllerComponent::onFetchMeshes(const ray::GameObjects*& meshes) noexcept
+{
+	meshes = &_objects;
 	return true;
 }
 
 bool
-GuiControllerComponent::onMeshesSeleted(const ray::GameObject* object, std::size_t subset) noexcept
+GuiControllerComponent::onSeletedCamera(const ray::GameObject* cameras) noexcept
+{
+	assert(_cube);
+
+	/*auto cameraComponent = cameras->getComponent<ray::CameraComponent>();
+	auto boundingBox = cameraComponent->getMesh()->getMeshSubsets()[subset].boundingBox;
+	boundingBox.transform(object->getTransform());
+
+	_cube->setTranslate(boundingBox.center());
+	_cube->setScale(boundingBox.size());*/
+	return false;
+}
+
+bool
+GuiControllerComponent::onSeletedLight(const ray::GameObject* object) noexcept
+{
+	assert(_cube);
+
+	return false;
+}
+
+bool
+GuiControllerComponent::onSeletedLightProbe(const ray::GameObject* object) noexcept
+{
+	assert(_cube);
+
+	return false;
+}
+
+bool
+GuiControllerComponent::onSeletedMesh(const ray::GameObject* object, std::size_t subset) noexcept
 {
 	assert(_cube);
 

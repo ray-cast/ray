@@ -3,13 +3,6 @@
 		"name": "LightMass",
 		"objects": [
 			{
-				"name": "first_person_camera", "position": [32, 15, 30], "rotate": [25, 226, 0], "active": true,
-				"components": [
-					{ "class": "Camera", "aperture": 65, "znear": 0.1, "zfar": 20000, "render_flags":"render_to_texture|shading" },
-					{ "class": "FirstPersonCamera" }
-				]
-			},
-			{
 				"name": "sky", "position": "0,50,0", "active": true,
 				"components": [
 					{

@@ -54,6 +54,7 @@ public:
 
 private:
 	bool makeCubeObject() noexcept;
+	bool makeMainCamera() noexcept;
 	bool makeSphereObjects() noexcept;
 
 private:
@@ -74,8 +75,15 @@ private:
 	bool onLightMassProcessing(const GuiParams& params, float& progressing, ray::util::string::pointer& error) noexcept;
 	bool onLightMassSave(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
-	bool onMeshesFetch(const ray::GameObjects*& objects) noexcept;
-	bool onMeshesSeleted(const ray::GameObject* object, std::size_t subset) noexcept;
+	bool onFetchCamera(const ray::GameObjects*& objects) noexcept;
+	bool onFetchMeshes(const ray::GameObjects*& objects) noexcept;
+	bool onFetchLights(const ray::GameObjects*& objects) noexcept;
+	bool onFetchLightProbes(const ray::GameObjects*& objects) noexcept;
+
+	bool onSeletedCamera(const ray::GameObject* object) noexcept;
+	bool onSeletedLight(const ray::GameObject* object) noexcept;
+	bool onSeletedLightProbe(const ray::GameObject* object) noexcept;
+	bool onSeletedMesh(const ray::GameObject* object, std::size_t subset) noexcept;
 
 	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
@@ -87,7 +95,11 @@ private:
 	bool _stopUVMapper;
 	bool _stopLightmass;
 
+	ray::GameObjects _cameras;
+	ray::GameObjects _lights;
+	ray::GameObjects _lightProbes;
 	ray::GameObjects _objects;
+
 	ray::GameObjectPtr _cube;
 
 	std::unique_ptr<ray::PMX> _model;

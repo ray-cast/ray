@@ -42,8 +42,8 @@
 #include <ray/input_feature.h>
 #include <ray/game_server.h>
 #include <ray/game_object_manager.h>
+#include <ray/graphics_framebuffer.h>
 
-#include <ray/render_system.h>
 #include <ray/res_manager.h>
 
 #include <ray/camera_component.h>
@@ -63,7 +63,7 @@ const char* TEXTURE_SPECULAR_TYPE[] = { "Specular color", "Specular color", "Spe
 const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second UV", "sRGB with second UV" };
 
 GuiViewComponent::GuiViewComponent() noexcept
-	: _selectedMesh(0)
+	: _selectedObject(nullptr)
 	, _lightMassType(LightMassType::UVMapper)
 {
 	_progress = 0.0f;
@@ -126,41 +126,6 @@ GuiViewComponent::getGuiViewDelegates() const noexcept
 void
 GuiViewComponent::onActivate() except
 {
-	auto cameraObject = _camera.lock();
-	if (!cameraObject)
-		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("first_person_camera");
-
-	if (cameraObject)
-	{
-		auto component = cameraObject->getComponent<ray::CameraComponent>();
-		if (!component)
-			return;
-
-		ray::GraphicsTextureDesc textureDesc;
-		textureDesc.setWidth(ray::Gui::getDisplaySize().x);
-		textureDesc.setHeight(ray::Gui::getDisplaySize().y);
-		textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
-		_renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
-		if (!_renderTexture)
-			return;
-
-		ray::GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-		framebufferLayoutDesc.addComponent(ray::GraphicsAttachmentLayout(0, ray::GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm));
-		_framebufferLayout = ray::RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
-		if (!_framebufferLayout)
-			return;
-
-		ray::GraphicsFramebufferDesc framebufferDesc;
-		framebufferDesc.setWidth(ray::Gui::getDisplaySize().x);
-		framebufferDesc.setHeight(ray::Gui::getDisplaySize().y);
-		framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(_renderTexture, 0, 0));
-		framebufferDesc.setGraphicsFramebufferLayout(_framebufferLayout);
-		_framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
-		if (!_framebuffer)
-			return;
-
-		component->setFramebuffer(_framebuffer);
-	}
 }
 
 void
@@ -223,11 +188,11 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 void
 GuiViewComponent::onModelPicker(float x, float y) noexcept
 {
-	assert(_event.onMeshesSeleted);
+	assert(_event.onSeletedMesh);
 
 	auto cameraObject = _camera.lock();
 	if (!cameraObject)
-		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("first_person_camera");
+		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("MainCamera");
 
 	if (!cameraObject)
 		return;
@@ -243,8 +208,8 @@ GuiViewComponent::onModelPicker(float x, float y) noexcept
 	ray::RaycastHit hit;
 	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit))
 	{
-		_selectedMesh = std::numeric_limits<std::size_t>::max();
-		_event.onMeshesSeleted(hit.object, hit.mesh);
+		_selectedObject = nullptr;
+		_event.onSeletedMesh(hit.object, hit.mesh);
 	}
 }
 
@@ -734,42 +699,60 @@ GuiViewComponent::showStyleEditor() noexcept
 void
 GuiViewComponent::showMeshesLists() noexcept
 {
-	assert(_event.onMeshesFetch);
-	assert(_event.onMeshesSeleted);
+	assert(_event.onFetchCamera);
+	assert(_event.onFetchMeshes);
+	assert(_event.onSeletedMesh);
 
 	if (!_showInspectorWindow)
 		return;
 
-	const ray::GameObjects* objects = nullptr;
-	_event.onMeshesFetch(objects);
-
-	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(_style.FramePadding.x * 2.0, _style.FramePadding.y));
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(_style.FramePadding.x * 2.0f, _style.FramePadding.y));
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 1.5f);
 
 	if (ray::Gui::beginDock("Inspector", &_showInspectorWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		ray::Gui::setWindowSize(ray::Gui::getWindowSize() + _style.WindowPadding, true);
 
-		if (!objects)
-			ray::Gui::text("(No data)");
-		else
+		if (ray::Gui::treeNodeEx("camera"))
 		{
-			if (ray::Gui::treeNodeEx("camera"))
+			const ray::GameObjects* objects = nullptr;
+			_event.onFetchCamera(objects);
+
+			if (objects)
 			{
-				ray::Gui::treePop();
+				for (std::size_t i = 0; i < objects->size(); i++)
+				{
+					auto& name = (*objects)[i]->getName();
+					char buffer[MAX_PATH];
+					sprintf_s(buffer, MAX_PATH, "|-%s", name.empty() ? "empty" : name.c_str());
+
+					if (ray::Gui::selectable(buffer, _selectedObject == (*objects)[i].get() ? true : false))
+					{
+						_event.onSeletedCamera((*objects)[i].get());
+						_selectedObject = (*objects)[i].get();
+					}
+				}
 			}
 
-			if (ray::Gui::treeNodeEx("lights"))
-			{
-				ray::Gui::treePop();
-			}
+			ray::Gui::treePop();
+		}
 
-			if (ray::Gui::treeNodeEx("light probes"))
-			{
-				ray::Gui::treePop();
-			}
+		if (ray::Gui::treeNodeEx("lights"))
+		{
+			ray::Gui::treePop();
+		}
 
-			if (ray::Gui::treeNodeEx("meshes", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("light probes"))
+		{
+			ray::Gui::treePop();
+		}
+
+		if (ray::Gui::treeNodeEx("meshes", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		{
+			const ray::GameObjects* objects = nullptr;
+			_event.onFetchMeshes(objects);
+
+			if (objects)
 			{
 				for (std::size_t i = 0; i < objects->size(); i++)
 				{
@@ -777,15 +760,15 @@ GuiViewComponent::showMeshesLists() noexcept
 					char buffer[MAX_PATH];
 					sprintf_s(buffer, MAX_PATH, "|-subset%zu (%s)", i, name.empty() ? "empty" : name.c_str());
 
-					if (ray::Gui::selectable(buffer, _selectedMesh == i))
+					if (ray::Gui::selectable(buffer, _selectedObject == (*objects)[i].get() ? true : false))
 					{
-						_event.onMeshesSeleted((*objects)[i].get(), 0);
-						_selectedMesh = i;
+						_event.onSeletedMesh((*objects)[i].get(), 0);
+						_selectedObject = (*objects)[i].get();
 					}
 				}
-
-				ray::Gui::treePop();
 			}
+
+			ray::Gui::treePop();
 		}
 
 		ray::Gui::endDock();
@@ -804,7 +787,7 @@ GuiViewComponent::showAssertLists() noexcept
 
 	if (ray::Gui::beginDock("Assert", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
-		std::size_t id = 0;
+		int id = 0;
 
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
 		ray::Gui::sameLine(_style.ItemInnerSpacing.x);
@@ -820,7 +803,7 @@ GuiViewComponent::showAssertLists() noexcept
 
 			ray::Gui::pushID(id++);
 
-			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, _style.ItemInnerSpacing.x, ray::float4::UnitW);
+			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, ray::float4::UnitW);
 
 			ray::Gui::popID();
 			ray::Gui::sameLine(0, _style.ItemSpacing.y);
@@ -835,11 +818,17 @@ GuiViewComponent::showAssertLists() noexcept
 void
 GuiViewComponent::showCameraWindow() noexcept
 {
+	auto cameraObject = _camera.lock();
+	if (!cameraObject)
+		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("MainCamera");
+
 	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagAlwaysUseWindowPaddingBit | ray::GuiWindowFlagNoScrollbarBit))
 	{
 		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize());
 
-		ray::Gui::image(_renderTexture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
+		auto texture = cameraObject->getComponent<ray::CameraComponent>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
+		if (texture)
+			ray::Gui::image(texture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
 
 		ray::Gui::endDock();
 	}
@@ -848,12 +837,19 @@ GuiViewComponent::showCameraWindow() noexcept
 void
 GuiViewComponent::showSceneWindow() noexcept
 {
+	auto cameraObject = _camera.lock();
+	if (!cameraObject)
+		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("MainCamera");
+
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
 
 	if (ray::Gui::begin("Scene", 0, ray::Gui::getDisplaySize(), -1.0, ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagNoScrollbarBit))
 	{
 		ray::Gui::setWindowPos(ray::float2::Zero);
-		ray::Gui::image(_renderTexture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
+
+		auto texture = cameraObject->getComponent<ray::CameraComponent>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
+		if (texture)
+			ray::Gui::image(texture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
 		ray::Gui::end();
 	}
 

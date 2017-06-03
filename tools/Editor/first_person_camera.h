@@ -47,7 +47,6 @@ public:
 	~FirstPersonCameraComponent() noexcept;
 
 private:
-
 	virtual void onActivate() noexcept;
 	virtual void onDectivate() noexcept;
 

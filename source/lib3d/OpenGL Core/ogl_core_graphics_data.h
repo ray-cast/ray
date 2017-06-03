@@ -74,6 +74,7 @@ private:
 private:
 	GLuint _buffer;
 	GLuint64 _bufferAddr;
+	GLvoid* _data;
 	GraphicsDataDesc _desc;
 	GraphicsDeviceWeakPtr _device;
 };

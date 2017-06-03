@@ -113,9 +113,7 @@ OGLGraphicsData::close() noexcept
 	assert(!_data);
 
 	if (_data)
-	{
 		this->unmap();
-	}
 
 	if (_buffer)
 	{

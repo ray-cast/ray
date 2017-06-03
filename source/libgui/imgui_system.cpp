@@ -327,7 +327,7 @@ IMGUISystem::render(float delta) except
 		dataDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 		dataDesc.setStream(0);
 		dataDesc.setStreamSize(totalVertexSize);
-		dataDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
+		dataDesc.setUsage(_vbo->getGraphicsDataDesc().getUsage());
 		_vbo = renderer->createGraphicsData(dataDesc);
 		if (!_vbo)
 			return;
@@ -339,7 +339,7 @@ IMGUISystem::render(float delta) except
 		elementDesc.setType(ray::GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 		elementDesc.setStream(0);
 		elementDesc.setStreamSize(totalIndirectSize);
-		elementDesc.setUsage(ray::GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
+		elementDesc.setUsage(_ibo->getGraphicsDataDesc().getUsage());
 		_ibo = renderer->createGraphicsData(elementDesc);
 		if (!_ibo)
 			return;
@@ -348,8 +348,11 @@ IMGUISystem::render(float delta) except
 	ImDrawVert* vbo;
 	ImDrawIdx* ibo;
 
-	_vbo->map(0, totalVertexSize, (void**)&vbo);
-	_ibo->map(0, totalIndirectSize, (void**)&ibo);
+	if (!_vbo->map(0, totalVertexSize, (void**)&vbo))
+		return;
+
+	if (!_ibo->map(0, totalIndirectSize, (void**)&ibo))
+		return;
 
 	for (int n = 0; n < drawData->CmdListsCount; n++)
 	{

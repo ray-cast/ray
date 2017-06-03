@@ -43,6 +43,7 @@ __ImplementSubInterface(OGLCoreGraphicsData, GraphicsData, "OGLCoreGraphicsData"
 OGLCoreGraphicsData::OGLCoreGraphicsData() noexcept
 	: _buffer(GL_NONE)
 	, _bufferAddr(GL_NONE)
+	, _data(nullptr)
 {
 }
 
@@ -119,6 +120,9 @@ OGLCoreGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 void
 OGLCoreGraphicsData::close() noexcept
 {
+	if (_data)
+		glUnmapNamedBuffer(_buffer);
+
 	if (_buffer)
 	{
 		glDeleteBuffers(1, &_buffer);
@@ -151,15 +155,30 @@ OGLCoreGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** dat
 		flags |= GL_MAP_READ_BIT;
 	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit)
 		flags |= GL_MAP_WRITE_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagPersistentBit)
+		flags |= GL_MAP_PERSISTENT_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagCoherentBit)
+		flags |= GL_MAP_COHERENT_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagFlushExplicitBit)
+		flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
 
-	*data = glMapNamedBufferRange(_buffer, offset, count, flags);
+	if (_data && usage & GraphicsUsageFlagBits::GraphicsUsageFlagPersistentBit)
+	{
+		*data = _data;
+		return true;
+	}
+
+	*data = _data = glMapNamedBufferRange(_buffer, offset, count, flags);
 	return *data ? true : false;
 }
 
 void
 OGLCoreGraphicsData::unmap() noexcept
 {
-	glUnmapNamedBuffer(_buffer);
+	auto usage = _desc.getUsage();
+	if (!(usage & GraphicsUsageFlagBits::GraphicsUsageFlagPersistentBit))
+		glUnmapNamedBuffer(_buffer);
+	_data = nullptr;
 }
 
 GLuint

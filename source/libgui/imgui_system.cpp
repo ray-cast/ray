@@ -40,12 +40,14 @@
 #include <ray/graphics_texture.h>
 #include <ray/material.h>
 #include <imgui.h>
+#include <imgui_dock.h>
 
 _NAME_BEGIN
 
 __ImplementSingleton(IMGUISystem)
 
 IMGUISystem::IMGUISystem() noexcept
+	: _initialize(false)
 {
 }
 
@@ -58,12 +60,18 @@ bool
 IMGUISystem::open(void* _window) except
 {
 	assert(_window);
+	assert(!_initialize);
+
 #if _WINDOWS
 	assert(::IsWindow((HWND)_window));
 #endif
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ImeWindowHandle = _window;
+
+#if __DEBUG__
+	io.IniFilename = 0;
+#endif
 
 	GuiStyle style;
 	IMGUI::setStyle(style);
@@ -144,6 +152,9 @@ IMGUISystem::open(void* _window) except
 
 	_materialProj = _material->getParameter("proj");
 
+	ImGui::LoadDock();
+
+	_initialize = true;
 	return true;
 }
 
@@ -155,7 +166,14 @@ IMGUISystem::close() noexcept
 	_texture.reset();
 	_material.reset();
 
-	ImGui::Shutdown();
+	if (_initialize)
+	{
+		ImGui::SaveDock();
+		ImGui::ShutdownDock();
+		ImGui::Shutdown();
+
+		_initialize = false;
+	}
 }
 
 bool
@@ -352,8 +370,6 @@ IMGUISystem::render(float delta) except
 	renderer->setVertexBuffer(0, _vbo, 0);
 	renderer->setIndexBuffer(_ibo, 0, ray::GraphicsIndexType::GraphicsIndexTypeUInt16);
 
-	renderer->setMaterialPass(_materialTech->getPass(0));
-
 	std::uint32_t vdx_buffer_offset = 0;
 	std::uint32_t idx_buffer_offset = 0;
 
@@ -364,7 +380,10 @@ IMGUISystem::render(float delta) except
 		for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end(); pcmd++)
 		{
 			auto texture = (ray::GraphicsTexture*)pcmd->TextureId;
-			_materialDecal->uniformTexture(texture->downcast_pointer<ray::GraphicsTexture>());
+			if (texture)
+				_materialDecal->uniformTexture(texture->downcast_pointer<ray::GraphicsTexture>());
+			else
+				_materialDecal->uniformTexture(nullptr);
 
 			ImVec4 scissor((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
@@ -372,6 +391,8 @@ IMGUISystem::render(float delta) except
 				scissor.y = io.DisplaySize.y - scissor.w - scissor.y;
 
 			renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
+			renderer->setMaterialPass(_materialTech->getPass(0));
+
 			renderer->drawIndexed(pcmd->ElemCount, 1, idx_buffer_offset, vdx_buffer_offset, 0);
 
 			idx_buffer_offset += pcmd->ElemCount;

@@ -41,6 +41,12 @@
 #include <ray/input.h>
 #include <ray/input_feature.h>
 #include <ray/game_server.h>
+#include <ray/game_object_manager.h>
+
+#include <ray/render_system.h>
+#include <ray/res_manager.h>
+
+#include <ray/camera_component.h>
 
 __ImplementSubClass(GuiViewComponent, ray::GameComponent, "GuiView")
 
@@ -49,11 +55,14 @@ const char* itemsImageSize[] = { "512", "1024", "2048", "4096", "8192" };
 const char* itemsSampleSize[] = { "32", "64", "128", "256", "512" };
 
 GuiViewComponent::GuiViewComponent() noexcept
+	: _selectedMesh(0)
 {
 	_progress = 0.0f;
 	_showWindowAll = true;
 	_showMainMenu = true;
 	_showLightMassWindow = false;
+	_showMeshesWindow = true;
+	_showCameraWindow = true;
 	_showMaterialEditorWindow = true;
 	_showStyleEditor = false;
 	_showAboutWindow = false;
@@ -62,6 +71,13 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showMessageFirst = false;
 	_showProcessMessage = false;
 	_showProcessMessageFirst = false;
+
+	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgActive] = ray::float4(0.3, 0.3, 0.3, 1.0);
+	_styleDefault.Colors[ray::GuiCol::GuiColWindowBg] = ray::float4(18, 18, 18, 255) / 255.0f;
+	_styleDefault.Colors[ray::GuiCol::GuiColChildWindowBg] = ray::float4(80, 80, 90, 60) / 255.0f;
+	_style = _styleDefault;
+
+	ray::Gui::setStyle(_styleDefault);
 
 	::GetLangPackage(UILang::Lang::English, _langs);
 }
@@ -77,75 +93,60 @@ GuiViewComponent::clone() const noexcept
 }
 
 void
-GuiViewComponent::setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept
+GuiViewComponent::setGuiViewDelegates(const GuiViewDelegates& delegate) noexcept
 {
-	_onModelImport = delegate;
+	_event = delegate;
+}
+
+const GuiViewDelegates&
+GuiViewComponent::getGuiViewDelegates() const noexcept
+{
+	return _event;
 }
 
 void
-GuiViewComponent::setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept
+GuiViewComponent::onActivate() except
 {
-	_onModelSaveAs = delegate;
+	auto cameraObject = _camera.lock();
+	if (!cameraObject)
+		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("first_person_camera");
+
+	if (cameraObject)
+	{
+		auto component = cameraObject->getComponent<ray::CameraComponent>();
+		if (!component)
+			return;
+
+		ray::GraphicsTextureDesc textureDesc;
+		textureDesc.setWidth(ray::Gui::getDisplaySize().x);
+		textureDesc.setHeight(ray::Gui::getDisplaySize().y);
+		textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+		_renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+		if (!_renderTexture)
+			return;
+
+		ray::GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+		framebufferLayoutDesc.addComponent(ray::GraphicsAttachmentLayout(0, ray::GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm));
+		_framebufferLayout = ray::RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
+		if (!_framebufferLayout)
+			return;
+
+		ray::GraphicsFramebufferDesc framebufferDesc;
+		framebufferDesc.setWidth(ray::Gui::getDisplaySize().x);
+		framebufferDesc.setHeight(ray::Gui::getDisplaySize().y);
+		framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(_renderTexture, 0, 0));
+		framebufferDesc.setGraphicsFramebufferLayout(_framebufferLayout);
+		_framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
+		if (!_framebuffer)
+			return;
+
+		component->setFramebuffer(_framebuffer);
+	}
 }
 
 void
-GuiViewComponent::setUVMapperCancel(std::function<bool()> delegate) noexcept
+GuiViewComponent::onDeactivate() noexcept
 {
-	_onUVMapperCancel = delegate;
-}
-
-void
-GuiViewComponent::setUVMapperWillStartListener(std::function<bool(const GuiParams&, ray::util::string::pointer&)> delegate) noexcept
-{
-	_onUVMapperWillStart = delegate;
-}
-
-void
-GuiViewComponent::setUVMapperProgressListener(std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> delegate) noexcept
-{
-	_onUVMapperProcess = delegate;
-}
-
-void
-GuiViewComponent::setLightMassCancel(std::function<bool()> delegate) noexcept
-{
-	_onLightMassCancel = delegate;
-}
-
-void
-GuiViewComponent::setLightMassWillStartListener(std::function<bool(const GuiParams&, ray::util::string::pointer&)> delegate) noexcept
-{
-	_onLightMassWillStart = delegate;
-}
-
-void
-GuiViewComponent::setLightMassProgressListener(std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> delegate) noexcept
-{
-	_onLightMassProcess = delegate;
-}
-
-void
-GuiViewComponent::setLightMassSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept
-{
-	_onLightMassSave = delegate;
-}
-
-void
-GuiViewComponent::setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept
-{
-	_onProjectOpen = delegate;
-}
-
-void
-GuiViewComponent::setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept
-{
-	_onProjectSave = delegate;
-}
-
-void
-GuiViewComponent::setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept
-{
-	_onProjectSaveAs = delegate;
 }
 
 void
@@ -162,6 +163,18 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 
 			if (input->getKeyDown(ray::InputKey::Code::Escape))
 				_showWindowAll = !_showWindowAll;
+
+			if (input->getButtonDown(ray::InputButton::LEFT))
+			{
+				if (input->getKey(ray::InputKey::LeftControl) && !input->isLockedCursor())
+				{
+					float x;
+					float y;
+					input->getMousePos(x, y);
+
+					this->onModelPicker(x, y);
+				}
+			}
 		}
 	}
 
@@ -172,11 +185,50 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 			this->showMainMenu();
 			this->showStyleEditor();
 			this->showLightMass();
+
+			this->showMeshesLists();
+			this->showAssertLists();
 			this->showMaterialEditor();
+			this->showCameraWindow();
+
 			this->showAboutWindow();
 			this->showMessage();
 			this->showProcessMessage();
+
+			//ray::Gui::showTestWindow();
 		}
+		else
+		{
+			this->showSceneWindow();
+		}
+	}
+}
+
+void
+GuiViewComponent::onModelPicker(float x, float y) noexcept
+{
+	assert(_event.onMeshesSeleted);
+
+	auto cameraObject = _camera.lock();
+	if (!cameraObject)
+		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("first_person_camera");
+
+	if (!cameraObject)
+		return;
+
+	x -= _viewport.x;
+	y -= _viewport.y;
+	x = (x / _viewport.z) * ray::Gui::getDisplaySize().x;
+	y = (y / _viewport.w) * ray::Gui::getDisplaySize().y;
+
+	auto start = cameraObject->getTranslate();
+	auto end = cameraObject->getComponent<ray::CameraComponent>()->screenToWorld(ray::float3(x, y, 1));
+
+	ray::RaycastHit hit;
+	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit))
+	{
+		_selectedMesh = hit.mesh;
+		_event.onMeshesSeleted(hit.object, hit.mesh);
 	}
 }
 
@@ -186,55 +238,59 @@ GuiViewComponent::showMainMenu() noexcept
 	if (!_showMainMenu)
 		return;
 
-	if (!ray::Gui::beginMainMenuBar())
-		ray::Gui::endMainMenuBar();
-
-	ray::Gui::pushStyleColor(ray::GuiCol::GuiColBorder, ray::float4::Zero);
-
-	if (ray::Gui::beginMenu(_langs[UILang::File]))
+	if (ray::Gui::beginMainMenuBar())
 	{
-		if (ray::Gui::menuItem(_langs[UILang::Open], "CTRL+O")) { this->showProjectOpenBrowse(); }
-		if (ray::Gui::menuItem(_langs[UILang::Save], "CTRL+S")) { this->showProjectSaveBrowse(); }
-		if (ray::Gui::menuItem(_langs[UILang::SaveAs], "CTRL+SHIFT+S")) { this->showProjectSaveAsBrowse(); }
-		ray::Gui::separator();
-		ray::Gui::separator();
-		if (ray::Gui::menuItem(_langs[UILang::ImportModel])) { this->showModelImportBrowse(); }
-		if (ray::Gui::menuItem(_langs[UILang::ExportModel])) { this->showModelExportBrowse(); }
-		ray::Gui::separator();
-		ray::Gui::separator();
-		if (ray::Gui::menuItem(_langs[UILang::Exit])) { std::exit(0); }
-		ray::Gui::endMenu();
-	}
+		ray::float2 size = ray::Gui::getDisplaySize();
+		size.y -= ray::Gui::getWindowHeight();
+		ray::Gui::rootDock(ray::float2(0, ray::Gui::getWindowHeight()), size);
 
-	if (ray::Gui::beginMenu(_langs[UILang::Window]))
-	{
-		ray::Gui::menuItem(_langs[UILang::LightMass], 0, &_showLightMassWindow);
-		ray::Gui::menuItem(_langs[UILang::StyleEditor], 0, &_showStyleEditor);
-		ray::Gui::endMenu();
-	}
+		ray::Gui::pushStyleColor(ray::GuiCol::GuiColBorder, ray::float4::Zero);
 
-	if (ray::Gui::beginMenu(_langs[UILang::Setting]))
-	{
-		if (ray::Gui::beginMenu(_langs[UILang::Language]))
+		if (ray::Gui::beginMenu(_langs[UILang::File]))
 		{
-			if (ray::Gui::menuItem(_langs[UILang::English])) { switchLangPackage(UILang::Lang::English); }
-			if (ray::Gui::menuItem(_langs[UILang::Chinese])) { switchLangPackage(UILang::Lang::Chinese); }
+			if (ray::Gui::menuItem(_langs[UILang::Open], "CTRL+O")) { this->showProjectOpenBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::Save], "CTRL+S")) { this->showProjectSaveBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::SaveAs], "CTRL+SHIFT+S")) { this->showProjectSaveAsBrowse(); }
+			ray::Gui::separator();
+			ray::Gui::separator();
+			if (ray::Gui::menuItem(_langs[UILang::ImportModel])) { this->showModelImportBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::ExportModel])) { this->showModelExportBrowse(); }
+			ray::Gui::separator();
+			ray::Gui::separator();
+			if (ray::Gui::menuItem(_langs[UILang::Exit])) { std::exit(0); }
+			ray::Gui::endMenu();
+		}
+
+		if (ray::Gui::beginMenu(_langs[UILang::Window]))
+		{
+			ray::Gui::menuItem(_langs[UILang::LightMass], 0, &_showLightMassWindow);
+			ray::Gui::menuItem(_langs[UILang::StyleEditor], 0, &_showStyleEditor);
+			ray::Gui::endMenu();
+		}
+
+		if (ray::Gui::beginMenu(_langs[UILang::Setting]))
+		{
+			if (ray::Gui::beginMenu(_langs[UILang::Language]))
+			{
+				if (ray::Gui::menuItem(_langs[UILang::English])) { switchLangPackage(UILang::Lang::English); }
+				if (ray::Gui::menuItem(_langs[UILang::Chinese])) { switchLangPackage(UILang::Lang::Chinese); }
+
+				ray::Gui::endMenu();
+			}
 
 			ray::Gui::endMenu();
 		}
 
-		ray::Gui::endMenu();
+		if (ray::Gui::beginMenu(_langs[UILang::Help]))
+		{
+			ray::Gui::menuItem(_langs[UILang::About], 0, &_showAboutWindowFirst);
+			ray::Gui::endMenu();
+		}
+
+		ray::Gui::popStyleColor();
+
+		ray::Gui::endMainMenuBar();
 	}
-
-	if (ray::Gui::beginMenu(_langs[UILang::Help]))
-	{
-		ray::Gui::menuItem(_langs[UILang::About], 0, &_showAboutWindowFirst);
-		ray::Gui::endMenu();
-	}
-
-	ray::Gui::popStyleColor();
-
-	ray::Gui::endMainMenuBar();
 }
 
 bool
@@ -302,10 +358,10 @@ GuiViewComponent::showProjectOpenBrowse() noexcept
 	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
 		return;
 
-	if (_onProjectOpen)
+	if (_event.onProjectOpen)
 	{
 		ray::util::string::pointer error = nullptr;
-		if (!_onProjectOpen(filepath, error))
+		if (!_event.onProjectOpen(filepath, error))
 		{
 			if (error)
 				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -319,10 +375,10 @@ GuiViewComponent::showProjectSaveBrowse() noexcept
 	if (_pathProject.empty())
 		return;
 
-	if (_onProjectSave)
+	if (_event.onProjectSave)
 	{
 		ray::util::string::pointer error = nullptr;
-		if (!_onProjectSave(_pathProject.c_str(), error))
+		if (!_event.onProjectSave(_pathProject.c_str(), error))
 		{
 			if (error)
 				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -345,10 +401,10 @@ GuiViewComponent::showProjectSaveAsBrowse() noexcept
 			std::strcat(filepath, ".map");
 	}
 
-	if (_onProjectOpen)
+	if (_event.onProjectOpen)
 	{
 		ray::util::string::pointer error = nullptr;
-		if (_onProjectOpen(filepath, error))
+		if (_event.onProjectOpen(filepath, error))
 			_pathProject = filepath;
 		else
 		{
@@ -367,10 +423,10 @@ GuiViewComponent::showModelImportBrowse() noexcept
 	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
 		return;
 
-	if (_onModelImport)
+	if (_event.onModelImport)
 	{
 		ray::util::string::pointer error = nullptr;
-		if (!_onModelImport(filepath, error))
+		if (!_event.onModelImport(filepath, error))
 		{
 			if (error)
 				this->showPopupMessage(_langs[UILang::Error], _langs[UILang::NonReadableFile], std::hash<const char*>{}(error));
@@ -381,7 +437,7 @@ GuiViewComponent::showModelImportBrowse() noexcept
 void
 GuiViewComponent::showModelExportBrowse() noexcept
 {
-	if (!_onModelSaveAs)
+	if (!_event.onModelSaveAs)
 		return;
 
 	ray::util::string::value_type filepath[PATHLIMIT];
@@ -397,7 +453,7 @@ GuiViewComponent::showModelExportBrowse() noexcept
 	}
 
 	ray::util::string::pointer error = nullptr;
-	if (!_onModelSaveAs(filepath, error))
+	if (!_event.onModelSaveAs(filepath, error))
 	{
 		if (error)
 			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -484,7 +540,7 @@ GuiViewComponent::showProcessMessage() noexcept
 		if (_lightMassType == LightMassType::UVMapper)
 		{
 			ray::util::string::pointer error = nullptr;
-			if (!_onUVMapperProcess || !_onUVMapperProcess(_setting, _progress, error))
+			if (!_event.onUVMapperProcess || !_event.onUVMapperProcess(_setting, _progress, error))
 			{
 				ray::Gui::closeCurrentPopup();
 				if (error)
@@ -495,14 +551,14 @@ GuiViewComponent::showProcessMessage() noexcept
 			{
 				ray::Gui::closeCurrentPopup();
 
-				if (_onUVMapperCancel)
-					_onUVMapperCancel();
+				if (_event.onUVMapperCancel)
+					_event.onUVMapperCancel();
 			}
 		}
 		else if (_lightMassType == LightMassType::LightBaking)
 		{
 			ray::util::string::pointer error = nullptr;
-			if (!_onLightMassProcess || !_onLightMassProcess(_setting, _progress, error))
+			if (!_event.onLightMassProcess || !_event.onLightMassProcess(_setting, _progress, error))
 			{
 				ray::Gui::closeCurrentPopup();
 				if (error)
@@ -513,8 +569,8 @@ GuiViewComponent::showProcessMessage() noexcept
 			{
 				ray::Gui::closeCurrentPopup();
 
-				if (_onLightMassCancel)
-					_onLightMassCancel();
+				if (_event.onLightMassCancel)
+					_event.onLightMassCancel();
 			}
 		}
 		else
@@ -740,6 +796,64 @@ GuiViewComponent::showLightMass() noexcept
 }
 
 void
+GuiViewComponent::showMeshesLists() noexcept
+{
+	assert(_event.onMeshesFetch);
+	assert(_event.onMeshesSeleted);
+
+	if (!_showMeshesWindow)
+		return;
+
+	const ray::GameObjects* objects = nullptr;
+	_event.onMeshesFetch(objects);
+
+	if (ray::Gui::beginDock("Inspector", &_showMeshesWindow))
+	{
+		if (!objects)
+			ray::Gui::text("(No data)");
+		else
+		{
+			if (ray::Gui::treeNodeEx("meshes", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+			{
+				for (std::size_t i = 0; i < objects->size(); i++)
+				{
+					auto& name = (*objects)[i]->getName();
+					char buffer[MAX_PATH];
+					sprintf_s(buffer, MAX_PATH, "subset%zu (%s)", i, name.empty() ? "empty" : name.c_str());
+
+					if (ray::Gui::selectable(buffer, _selectedMesh == i))
+					{
+						_event.onMeshesSeleted((*objects)[i].get(), 0);
+						_selectedMesh = i;
+					}
+				}
+
+				ray::Gui::treePop();
+			}
+		}
+
+		ray::Gui::endDock();
+	}
+}
+
+void
+GuiViewComponent::showAssertLists() noexcept
+{
+	if (!_showAssertWindow)
+		return;
+
+	static float image_size = 86;
+
+	if (ray::Gui::beginDock("Assert", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	{
+		if (ray::Gui::getContentRegionAvailWidth() < image_size)
+			ray::Gui::newLine();
+
+		ray::Gui::endDock();
+	}
+}
+
+void
 GuiViewComponent::showMaterialEditor() noexcept
 {
 	static auto albedoFrom = 0;
@@ -795,7 +909,7 @@ GuiViewComponent::showMaterialEditor() noexcept
 	if (!_showMaterialEditorWindow)
 		return;
 
-	if (ray::Gui::begin("Material Editor", &_showMaterialEditorWindow, ray::float2(320, 720), -1.0, ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	if (ray::Gui::beginDock("Material", &_showMaterialEditorWindow))
 	{
 		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
@@ -1035,8 +1149,36 @@ GuiViewComponent::showMaterialEditor() noexcept
 			ray::Gui::treePop();
 		}
 
+		ray::Gui::endDock();
+	}
+}
+
+void
+GuiViewComponent::showCameraWindow() noexcept
+{
+	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagNoScrollbarBit))
+	{
+		_viewport = ray::float4(ray::Gui::getWindowPos(), ray::Gui::getWindowSize());
+
+		ray::Gui::image(_renderTexture.get(), ray::Gui::getWindowSize(), ray::float2(0, 1), ray::float2(1, 0));
+		ray::Gui::endDock();
+	}
+}
+
+void
+GuiViewComponent::showSceneWindow() noexcept
+{
+	ray::Gui::setNextWindowPos(ray::float2(0, 0));
+
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
+
+	if (ray::Gui::begin("Scene", 0, ray::Gui::getDisplaySize(), -1.0, ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagNoScrollbarBit))
+	{
+		ray::Gui::image(_renderTexture.get(), ray::Gui::getDisplaySize(), ray::float2(0, 1), ray::float2(1, 0));
 		ray::Gui::end();
 	}
+
+	ray::Gui::popStyleVar();
 }
 
 void
@@ -1048,10 +1190,10 @@ GuiViewComponent::switchLangPackage(UILang::Lang type) noexcept
 void
 GuiViewComponent::startUVMapper() noexcept
 {
-	if (this->_onUVMapperWillStart)
+	if (this->_event.onUVMapperWillStart)
 	{
 		ray::util::string::pointer error = nullptr;
-		if (!this->_onUVMapperWillStart(_setting, error))
+		if (!this->_event.onUVMapperWillStart(_setting, error))
 		{
 			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("ChooseModel"));
 			return;
@@ -1065,10 +1207,10 @@ GuiViewComponent::startUVMapper() noexcept
 void
 GuiViewComponent::startLightMass() noexcept
 {
-	if (this->_onLightMassWillStart)
+	if (this->_event.onLightMassWillStart)
 	{
 		ray::util::string::pointer error = nullptr;
-		if (!this->_onLightMassWillStart(_setting, error))
+		if (!this->_event.onLightMassWillStart(_setting, error))
 		{
 			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("ChooseModel"));
 			return;
@@ -1082,7 +1224,7 @@ GuiViewComponent::startLightMass() noexcept
 void
 GuiViewComponent::saveLightMass() noexcept
 {
-	if (_onLightMassSave)
+	if (_event.onLightMassSave)
 	{
 		ray::util::string::value_type filepath[PATHLIMIT];
 		std::memset(filepath, 0, sizeof(filepath));
@@ -1097,7 +1239,7 @@ GuiViewComponent::saveLightMass() noexcept
 		}
 
 		ray::util::string::pointer error = nullptr;
-		if (!_onLightMassSave(filepath, error))
+		if (!_event.onLightMassSave(filepath, error))
 		{
 			if (error)
 				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}("saveLightMassFailed"));

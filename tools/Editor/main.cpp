@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2017.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,31 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATERIAL_PICKER_H_
-#define _H_MATERIAL_PICKER_H_
+#include <ray/ray.h>
+#include <ray/ray_main.h>
 
-#include <ray/game_component.h>
-
-_NAME_BEGIN
-
-class MaterialPicker : public GameComponent
+int main(int argc, const char* argv[])
 {
-public:
-	MaterialPicker() noexcept;
-	~MaterialPicker() noexcept;
+	rayInit(argv[0], "dlc:/LightMass/scenes/scene.json");
 
-	void onMessage(const MessagePtr& message) noexcept;
+	if (rayOpenWindow("Editor", 1376, 768))
+	{
+		while (!rayIsQuitRequest())
+			rayUpdate();
+	}
 
-private:
-	void onMaterialPicker(float x, float y) noexcept;
-
-private:
-	MaterialPicker(const MaterialPicker&) = delete;
-	MaterialPicker& operator=(const MaterialPicker&) = delete;
-
-private:
-};
-
-_NAME_END
-
-#endif
+	rayTerminate();
+	return 0;
+}

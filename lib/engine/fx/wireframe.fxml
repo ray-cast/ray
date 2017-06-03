@@ -26,7 +26,7 @@
 				<state name="fragment" value="WireframePS" />
 				<state name="primitive" value="line" />
 				<state name="polygonMode" value="line"/>
-				<state name="linewidth" value="1.5"/>
+				<state name="linewidth" value="2.0"/>
 				<state name="cullmode" value="none" />
 				<state name="blend" value="true"/>
 				<state name="blendsrc" value="srcalpha"/>

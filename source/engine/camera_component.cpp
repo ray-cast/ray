@@ -253,6 +253,18 @@ CameraComponent::getCameraRenderFlags() const noexcept
 }
 
 void
+CameraComponent::setFramebuffer(const GraphicsFramebufferPtr& texture) noexcept
+{
+	_camera->setFramebuffer(texture);
+}
+
+const GraphicsFramebufferPtr&
+CameraComponent::getFramebuffer() const noexcept
+{
+	return _camera->getFramebuffer();
+}
+
+void
 CameraComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);

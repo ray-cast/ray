@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/imgui.h>
 #include <imgui.h>
+#include <imgui_dock.h>
 #include <imgui_internal.h>
 
 _NAME_BEGIN
@@ -82,7 +83,7 @@ GuiStyle::GuiStyle() noexcept
 	Colors[ImGuiCol_Text] = float4(245, 245, 245, 255) / 255.0f;
 	Colors[ImGuiCol_TextDisabled] = float4(150, 150, 150, 255) / 255.0f;
 	Colors[ImGuiCol_WindowBg] = float4(0, 0, 0, 220) / 255.0f;
-	Colors[ImGuiCol_Header] = float4(0, 0, 0, 0) / 255.0f;
+	Colors[ImGuiCol_Header] = float4(34, 134, 230, 179) / 255.0f;
 	Colors[ImGuiCol_HeaderHovered] = float4(34, 134, 230, 179) / 255.0f;
 	Colors[ImGuiCol_HeaderActive] = float4(24, 96, 200, 179) / 255.0f;
 	Colors[ImGuiCol_TitleBg] = float4(0, 0, 0, 179) / 255.0f;
@@ -103,7 +104,7 @@ GuiStyle::GuiStyle() noexcept
 	Colors[ImGuiCol_SliderGrabActive] = float4(1.00f, 0.4, 0.0, 1.00f);
 	Colors[ImGuiCol_FrameBg] = float4(0.80f, 0.80f, 0.80f, 0.10f);
 	Colors[ImGuiCol_FrameBgHovered] = float4(0.90f, 0.80f, 0.80f, 0.20f);
-	Colors[ImGuiCol_FrameBgActive] = float4(0.90f, 0.65f, 0.65f, 0.25f);
+	Colors[ImGuiCol_FrameBgActive] = float4(0.9, 0.5f, 0.0f, 1.0f);
 
 	Colors[ImGuiCol_PopupBg] = float4(0.05f, 0.05f, 0.05f, 0.90f);
 	Colors[ImGuiCol_ModalWindowDarkening] = float4(0.10f, 0.10f, 0.10f, 0.5f);
@@ -1444,7 +1445,13 @@ IMGUI::endTooltip() noexcept
 bool
 IMGUI::beginMainMenuBar() noexcept
 {
-	return ImGui::BeginMainMenuBar();
+	if (!ImGui::BeginMainMenuBar())
+	{
+		ImGui::EndMainMenuBar();
+		return false;
+	}
+
+	return true;
 }
 
 void
@@ -2209,6 +2216,30 @@ const GuiStyle&
 IMGUI::getStyleDefault() noexcept
 {
 	return _defalutStyle;
+}
+
+void
+IMGUI::rootDock(const float2& pos, const float2& size)
+{
+	ImGui::RootDock((const ImVec2&)pos, (const ImVec2&)size);
+}
+
+bool
+IMGUI::beginDock(const char* label, bool* opened, GuiWindowFlags extra_flags, const float2& default_size)
+{
+	return ImGui::BeginDock(label, opened, extra_flags, (ImVec2&)default_size);
+}
+
+void
+IMGUI::endDock()
+{
+	ImGui::EndDock();
+}
+
+void
+IMGUI::setDockActive()
+{
+	ImGui::SetDockActive();
 }
 
 _NAME_END

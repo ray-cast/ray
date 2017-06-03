@@ -710,6 +710,7 @@ DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const Grap
 {
 	_texSource->uniformTexture(src);
 	pipeline.setFramebuffer(dst);
+	pipeline.clearFramebuffer(0, ray::GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
 	pipeline.setViewport(0, Viewport(viewport.x, viewport.y, viewport.z, viewport.w));
 	pipeline.setScissor(0, Scissor(viewport.x, viewport.y, viewport.z, viewport.w));
 	pipeline.drawScreenQuad(*_deferredCopyOnly);
@@ -1625,7 +1626,7 @@ DeferredLightingPipeline::onRenderPost() noexcept
 				this->copyRenderTexture(*_pipeline, _deferredGbuffer3Map, framebuffer, viewport);
 			else if (flags & CameraRenderFlagBits::CameraRenderLightingBit)
 				this->copyRenderTexture(*_pipeline, _deferredLightingMap, framebuffer, viewport);
-			else if (flags & CameraRenderFlagBits::CameraRenderShadingBit)
+			else
 				this->copyRenderTexture(*_pipeline, _deferredFinalShadingMap, framebuffer, viewport);
 		}
 	}

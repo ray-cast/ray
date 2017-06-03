@@ -1,4 +1,4 @@
-SET(LIB_NAME "LightMass")
+SET(LIB_NAME "Editor")
 
 SET(HEADER_PATH ${INCLUDE_PATH}/${LIB_NAME})
 

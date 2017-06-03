@@ -74,6 +74,8 @@ private:
 	IMGUISystem& operator=(const IMGUISystem&) noexcept = delete;
 
 private:
+	bool _initialize;
+
 	void* _window;
 
 	MaterialPtr _material;

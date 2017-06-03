@@ -1015,7 +1015,7 @@
                 FxaaTex decal;
                 decal.smpl = LinearClamp;
                 decal.tex = texelSource;
-                return FxaaPixelShader(coord.xy,
+                float4 result = FxaaPixelShader(coord.xy,
                             FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),     // FxaaFloat4 fxaaConsolePosPos,
                             decal,                                  // FxaaTex tex,
                             decal,                                  // FxaaTex fxaaConsole360TexExpBiasNegOne,
@@ -1032,6 +1032,7 @@
                             0.0f,                                   // FxaaFloat fxaaConsoleEdgeThresholdMin,
                             FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)      // FxaaFloat fxaaConsole360ConstDir,
                         );
+                return float4(result.rgb, 1.0);
             }
         ]]>
     </shader>

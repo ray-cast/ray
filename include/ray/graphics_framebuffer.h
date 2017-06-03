@@ -115,7 +115,7 @@ public:
 
 	void addColorAttachment(const GraphicsAttachmentBinding& texture) noexcept;
 	void setColorAttachments(const GraphicsAttachmentBindings& bindings) noexcept;
-	const GraphicsAttachmentBinding& getColorAttachment(std::uint32_t n) const noexcept;
+	const GraphicsAttachmentBinding& getColorAttachment(std::uint32_t n = 0) const noexcept;
 	const GraphicsAttachmentBindings& getColorAttachments() const noexcept;
 
 	void setDepthStencilAttachment(const GraphicsAttachmentBinding& target) noexcept;

@@ -50,7 +50,6 @@
 #include <ray/jsonreader.h>
 
 #include <ray/mesh_component.h>
-#include <ray/camera_component.h>
 #include <ray/mesh_render_component.h>
 
 #include <ray/input.h>
@@ -59,7 +58,6 @@
 
 #include <ray/res_manager.h>
 #include <ray/material.h>
-#include <ray/game_object_manager.h>
 
 #include <ray/image.h>
 #include <ray/imagutil.h>
@@ -308,7 +306,7 @@ GuiControllerComponent::makeCubeObject() noexcept
 	auto cubeMesh = std::make_shared<ray::MeshProperty>();
 	cubeMesh->makeCubeWireframe(1.0, 1.0, 1.0);
 
-	material->getParameter("diffuse")->uniform4f(0.3, 0.3, 0.3, 1.0);
+	material->getParameter("diffuse")->uniform4f(0.3, 1.0, 0.3, 1.0);
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setActive(true);
@@ -387,42 +385,42 @@ GuiControllerComponent::makeSphereObjects() noexcept
 }
 
 void
-GuiControllerComponent::onAttachComponent(ray::GameComponentPtr& component) except
+GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component) except
 {
 	if (component->isInstanceOf<GuiViewComponent>())
 	{
 		auto view = component->downcast<GuiViewComponent>();
-		view->setModelImportListener(std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2));
-		view->setModelSaveAsListener(std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2));
 
-		view->setUVMapperCancel(std::bind(&GuiControllerComponent::onUVMapperCancel, this));
-		view->setUVMapperWillStartListener(std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1, std::placeholders::_2));
-		view->setUVMapperProgressListener(std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		GuiViewDelegates delegate;
 
-		view->setLightMassCancel(std::bind(&GuiControllerComponent::onLightMassCancel, this));
-		view->setLightMassWillStartListener(std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1, std::placeholders::_2));
-		view->setLightMassProgressListener(std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		view->setLightMassSaveAsListener(std::bind(&GuiControllerComponent::onLightMassSave, this, std::placeholders::_1, std::placeholders::_2));
+		delegate.onModelImport = std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onModelSaveAs = std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2);
+
+		delegate.onUVMapperCancel = std::bind(&GuiControllerComponent::onUVMapperCancel, this);
+		delegate.onUVMapperWillStart = std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onUVMapperProcess = std::bind(&GuiControllerComponent::onUVMapperProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+
+		delegate.onLightMassCancel = std::bind(&GuiControllerComponent::onLightMassCancel, this);
+		delegate.onLightMassWillStart = std::bind(&GuiControllerComponent::onLightMassWillStart, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onLightMassProcess = std::bind(&GuiControllerComponent::onLightMassProcessing, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		delegate.onLightMassSave = std::bind(&GuiControllerComponent::onLightMassSave, this, std::placeholders::_1, std::placeholders::_2);
+
+		delegate.onMeshesFetch = std::bind(&GuiControllerComponent::onMeshesFetch, this, std::placeholders::_1);
+		delegate.onMeshesSeleted = std::bind(&GuiControllerComponent::onMeshesSeleted, this, std::placeholders::_1, std::placeholders::_2);
+
+		view->setGuiViewDelegates(delegate);
 	}
 }
 
 void
-GuiControllerComponent::onDetachComponent(ray::GameComponentPtr& component) noexcept
+GuiControllerComponent::onDetachComponent(const ray::GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<GuiViewComponent>())
 	{
 		auto view = component->downcast<GuiViewComponent>();
-		view->setModelImportListener(nullptr);
-		view->setModelSaveAsListener(nullptr);
 
-		view->setUVMapperCancel(nullptr);
-		view->setUVMapperProgressListener(nullptr);
-		view->setUVMapperWillStartListener(nullptr);
-
-		view->setLightMassCancel(nullptr);
-		view->setLightMassProgressListener(nullptr);
-		view->setLightMassWillStartListener(nullptr);
-		view->setLightMassSaveAsListener(nullptr);
+		GuiViewDelegates delegate;
+		view->setGuiViewDelegates(delegate);
 	}
 }
 
@@ -431,33 +429,6 @@ GuiControllerComponent::onActivate() except
 {
 	this->makeCubeObject();
 	this->makeSphereObjects();
-}
-
-void
-GuiControllerComponent::onMessage(const ray::MessagePtr& message) noexcept
-{
-	if (message->isInstanceOf<ray::InputMessage>())
-	{
-		auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
-		if (inputFeature)
-		{
-			auto input = inputFeature->getInput();
-			if (!input)
-				return;
-
-			if (input->getButtonDown(ray::InputButton::LEFT))
-			{
-				if (input->getKey(ray::InputKey::LeftControl) && !input->isLockedCursor())
-				{
-					float x;
-					float y;
-					input->getMousePos(x, y);
-
-					this->onModelPicker(x, y);
-				}
-			}
-		}
-	}
 }
 
 bool
@@ -614,31 +585,6 @@ GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray
 	else
 	{
 		return this->onOutputSphere(path, error);
-	}
-}
-
-void
-GuiControllerComponent::onModelPicker(float x, float y) noexcept
-{
-	auto cameraObject = _camera.lock();
-	if (!cameraObject)
-		cameraObject = ray::GameObjectManager::instance()->findObject("first_person_camera");
-
-	if (!cameraObject)
-		return;
-
-	auto start = cameraObject->getTranslate();
-	auto end = cameraObject->getComponent<ray::CameraComponent>()->screenToWorld(ray::float3(x, y, 1));
-
-	ray::RaycastHit hit;
-	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit))
-	{
-		auto meshComponent = hit.object->getComponent<ray::MeshComponent>();
-		auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[hit.mesh].boundingBox;
-		boundingBox.transform(hit.object->getTransform());
-
-		_cube->setTranslate(boundingBox.center());
-		_cube->setScale(boundingBox.size());
 	}
 }
 
@@ -894,6 +840,27 @@ GuiControllerComponent::onLightMassSave(ray::util::string::const_pointer path, r
 
 	image.save(path);
 
+	return true;
+}
+
+bool
+GuiControllerComponent::onMeshesFetch(const ray::GameObjects*& objects) noexcept
+{
+	objects = &_objects;
+	return true;
+}
+
+bool
+GuiControllerComponent::onMeshesSeleted(const ray::GameObject* object, std::size_t subset) noexcept
+{
+	assert(_cube);
+
+	auto meshComponent = object->getComponent<ray::MeshComponent>();
+	auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[subset].boundingBox;
+	boundingBox.transform(object->getTransform());
+
+	_cube->setTranslate(boundingBox.center());
+	_cube->setScale(boundingBox.size());
 	return true;
 }
 

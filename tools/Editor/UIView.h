@@ -39,9 +39,33 @@
 
 #include <ray/gui.h>
 #include <ray/game_component.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_framebuffer.h>
 
 #include "UIParams.h"
 #include "UITexts.h"
+
+struct GuiViewDelegates
+{
+	std::function<bool()> onUVMapperCancel;
+	std::function<bool(const GuiParams&, ray::util::string::pointer&)> onUVMapperWillStart;
+	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> onUVMapperProcess;
+
+	std::function<bool()> onLightMassCancel;
+	std::function<bool(const GuiParams&, ray::util::string::pointer&)> onLightMassWillStart;
+	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> onLightMassProcess;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onLightMassSave;
+
+	std::function<bool(const ray::GameObjects*&)> onMeshesFetch;
+	std::function<bool(const ray::GameObject*, std::size_t)> onMeshesSeleted;
+
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectOpen;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSave;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSaveAs;
+
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelImport;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelSaveAs;
+};
 
 class GuiViewComponent final : public ray::GameComponent
 {
@@ -50,26 +74,17 @@ public:
 	GuiViewComponent() noexcept;
 	~GuiViewComponent() noexcept;
 
+	void setGuiViewDelegates(const GuiViewDelegates& delegate) noexcept;
+	const GuiViewDelegates& getGuiViewDelegates() const noexcept;
+
 	ray::GameComponentPtr clone() const noexcept;
 
-	void setProjectImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
-	void setProjectSaveListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
-	void setProjectSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
-
-	void setModelImportListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
-	void setModelSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
-
-	void setUVMapperCancel(std::function<bool()> delegate) noexcept;
-	void setUVMapperWillStartListener(std::function<bool(const GuiParams&, ray::util::string::pointer&)> delegate) noexcept;
-	void setUVMapperProgressListener(std::function<bool(const GuiParams&, float& progressing, ray::util::string::pointer&)> delegate) noexcept;
-
-	void setLightMassCancel(std::function<bool()> delegate) noexcept;
-	void setLightMassWillStartListener(std::function<bool(const GuiParams&, ray::util::string::pointer&)> delegate) noexcept;
-	void setLightMassProgressListener(std::function<bool(const GuiParams&, float& progressing, ray::util::string::pointer&)> delegate) noexcept;
-	void setLightMassSaveAsListener(std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> delegate) noexcept;
-
 private:
+	void onActivate() except;
+	void onDeactivate() noexcept;
+
 	void onMessage(const ray::MessagePtr& message) noexcept;
+	void onModelPicker(float x, float y) noexcept;
 
 private:
 	void showMainMenu() noexcept;
@@ -91,7 +106,11 @@ private:
 	void showProjectSaveBrowse() noexcept;
 	void showProjectSaveAsBrowse() noexcept;
 
+	void showMeshesLists() noexcept;
+	void showAssertLists() noexcept;
 	void showMaterialEditor() noexcept;
+	void showCameraWindow() noexcept;
+	void showSceneWindow() noexcept;
 
 	void startUVMapper() noexcept;
 	void startLightMass() noexcept;
@@ -104,11 +123,21 @@ private:
 	GuiViewComponent& operator=(const GuiViewComponent&) = delete;
 
 private:
+	ray::GameObjectWeakPtr _camera;
+	ray::GraphicsFramebufferLayoutPtr _framebufferLayout;
+	ray::GraphicsFramebufferPtr _framebuffer;
+	ray::GraphicsTexturePtr _renderTexture;
+
+	ray::float4 _viewport;
+
 	float _progress;
 
 	bool _showWindowAll;
 	bool _showMainMenu;
 	bool _showLightMassWindow;
+	bool _showMeshesWindow;
+	bool _showAssertWindow;
+	bool _showCameraWindow;
 	bool _showMaterialEditorWindow;
 	bool _showStyleEditor;
 	bool _showAboutWindow;
@@ -123,6 +152,8 @@ private:
 	std::string _pathProject;
 	std::vector<const char*> _langs;
 
+	std::size_t _selectedMesh;
+
 	std::size_t _messageHash;
 	std::string _messageTitle;
 	std::string _messageText;
@@ -134,21 +165,7 @@ private:
 	GuiParams _default;
 	GuiParams _setting;
 
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onProjectOpen;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onProjectSave;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onProjectSaveAs;
-
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onModelImport;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onModelSaveAs;
-
-	std::function<bool()> _onUVMapperCancel;
-	std::function<bool(const GuiParams&, ray::util::string::pointer&)> _onUVMapperWillStart;
-	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> _onUVMapperProcess;
-
-	std::function<bool()> _onLightMassCancel;
-	std::function<bool(const GuiParams&, ray::util::string::pointer&)> _onLightMassWillStart;
-	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> _onLightMassProcess;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> _onLightMassSave;
+	GuiViewDelegates _event;
 };
 
 #endif

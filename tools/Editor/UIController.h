@@ -57,15 +57,13 @@ private:
 	bool makeSphereObjects() noexcept;
 
 private:
-	void onAttachComponent(ray::GameComponentPtr& component) except;
-	void onDetachComponent(ray::GameComponentPtr& component) noexcept;
+	void onAttachComponent(const ray::GameComponentPtr& component) except;
+	void onDetachComponent(const ray::GameComponentPtr& component) noexcept;
 
 	void onActivate() except;
-	void onMessage(const ray::MessagePtr& message) noexcept;
 
 	bool onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
-	void onModelPicker(float x, float y) noexcept;
 
 	bool onUVMapperCancel() noexcept;
 	bool onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;
@@ -75,6 +73,9 @@ private:
 	bool onLightMassWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;
 	bool onLightMassProcessing(const GuiParams& params, float& progressing, ray::util::string::pointer& error) noexcept;
 	bool onLightMassSave(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+
+	bool onMeshesFetch(const ray::GameObjects*& objects) noexcept;
+	bool onMeshesSeleted(const ray::GameObject* object, std::size_t subset) noexcept;
 
 	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
@@ -88,7 +89,6 @@ private:
 
 	ray::GameObjects _objects;
 	ray::GameObjectPtr _cube;
-	ray::GameObjectWeakPtr _camera;
 
 	std::unique_ptr<ray::PMX> _model;
 	std::unique_ptr<std::future<bool>> _future;

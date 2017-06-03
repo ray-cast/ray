@@ -47,7 +47,7 @@
 
 _NAME_BEGIN
 
-enum class GuiCol
+enum GuiCol
 {
 	GuiColText,
 	GuiColTextDisabled,
@@ -599,6 +599,11 @@ public:
 	static bool colorPicker3WithRevert(const char* label, const char* name, float col[3], const float default[3], const float2& size = float2(160.f, 150.f), float hueSize = 12.0f, float crossHairSize = 7.0f) noexcept;
 
 	static void helpMarker(const char* text, const char* desc) noexcept;
+
+	static void rootDock(const float2& pos, const float2& size);
+	static bool beginDock(const char* label, bool* opened = nullptr, GuiWindowFlags extra_flags = 0, const float2& default_size = float2(-1, -1));
+	static void endDock();
+	static void setDockActive();
 private:
 	IMGUI(const IMGUI&) = delete;
 	IMGUI& operator=(const IMGUI&) = delete;

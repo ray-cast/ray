@@ -940,12 +940,7 @@ GuiControllerComponent::onSeletedCamera(const ray::GameObject* cameras) noexcept
 {
 	assert(_cube);
 
-	/*auto cameraComponent = cameras->getComponent<ray::CameraComponent>();
-	auto boundingBox = cameraComponent->getMesh()->getMeshSubsets()[subset].boundingBox;
-	boundingBox.transform(object->getTransform());
-
-	_cube->setTranslate(boundingBox.center());
-	_cube->setScale(boundingBox.size());*/
+	_cube->setScaleAll(0.0);
 	return false;
 }
 
@@ -954,6 +949,7 @@ GuiControllerComponent::onSeletedLight(const ray::GameObject* object) noexcept
 {
 	assert(_cube);
 
+	_cube->setScaleAll(0.0);
 	return false;
 }
 
@@ -962,6 +958,7 @@ GuiControllerComponent::onSeletedLightProbe(const ray::GameObject* object) noexc
 {
 	assert(_cube);
 
+	_cube->setScaleAll(0.0);
 	return false;
 }
 

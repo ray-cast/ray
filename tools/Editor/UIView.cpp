@@ -713,7 +713,7 @@ GuiViewComponent::showMeshesLists() noexcept
 	{
 		ray::Gui::setWindowSize(ray::Gui::getWindowSize() + _style.WindowPadding, true);
 
-		if (ray::Gui::treeNodeEx("camera"))
+		if (ray::Gui::treeNodeEx("camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			const ray::GameObjects* objects = nullptr;
 			_event.onFetchCamera(objects);

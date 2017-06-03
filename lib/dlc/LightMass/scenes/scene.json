@@ -1,6 +1,6 @@
 {
 	"scene": {
-		"name": "LightMass",
+		"name": "Editor",
 		"objects": [
 			{
 				"name": "sky", "position": "0,50,0", "active": true,

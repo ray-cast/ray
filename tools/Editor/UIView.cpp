@@ -74,7 +74,8 @@ GuiViewComponent::GuiViewComponent() noexcept
 
 	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgActive] = ray::float4(0.3, 0.3, 0.3, 1.0);
 	_styleDefault.Colors[ray::GuiCol::GuiColWindowBg] = ray::float4(18, 18, 18, 255) / 255.0f;
-	_styleDefault.Colors[ray::GuiCol::GuiColChildWindowBg] = ray::float4(80, 80, 90, 60) / 255.0f;
+	_styleDefault.Colors[ray::GuiCol::GuiColChildWindowBg] = ray::float4(80, 80, 85, 60) / 255.0f;
+	_styleDefault.Colors[ray::GuiCol::GuiColScrollbarGrab] = ray::float4(80, 80, 85, 255) / 255.0f;
 	_style = _styleDefault;
 
 	ray::Gui::setStyle(_styleDefault);
@@ -194,8 +195,6 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 			this->showAboutWindow();
 			this->showMessage();
 			this->showProcessMessage();
-
-			//ray::Gui::showTestWindow();
 		}
 		else
 		{
@@ -227,7 +226,7 @@ GuiViewComponent::onModelPicker(float x, float y) noexcept
 	ray::RaycastHit hit;
 	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit))
 	{
-		_selectedMesh = hit.mesh;
+		_selectedMesh = std::numeric_limits<std::size_t>::max();
 		_event.onMeshesSeleted(hit.object, hit.mesh);
 	}
 }
@@ -1156,7 +1155,7 @@ GuiViewComponent::showMaterialEditor() noexcept
 void
 GuiViewComponent::showCameraWindow() noexcept
 {
-	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagNoScrollbarBit))
+	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagNoInputsBit | ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoScrollbarBit))
 	{
 		_viewport = ray::float4(ray::Gui::getWindowPos(), ray::Gui::getWindowSize());
 

@@ -89,11 +89,11 @@ FirstPersonCameraComponent::onFrame() noexcept
 		if (!input)
 			return;
 
-		if (!input->isLockedCursor())
-			return;
-
 		if (input->getKey(ray::InputKey::Code::LeftShift))
 			step *= 3;
+
+		if (!input->isLockedCursor())
+			return;
 
 		auto character = this->getGameObject()->getComponent<ray::PhysicsCharacterComponent>();
 		if (!character)

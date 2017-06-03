@@ -51,7 +51,7 @@ GraphicsTextureDesc::GraphicsTextureDesc() noexcept
 	, _dim(GraphicsTextureDim::GraphicsTextureDim2D)
 	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear)
 	, _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat)
-	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis1)
+	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis0)
 	, _textureUsage(GraphicsViewUsageFlagBits::GraphicsViewUsageFlagBitsSampledBit)
 	, _tiling(GraphicsImageTiling::GraphicsImageTilingOptimal)
 	, _data(nullptr)

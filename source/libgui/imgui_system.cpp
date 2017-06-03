@@ -106,7 +106,8 @@ IMGUISystem::open(void* _window) except
 	std::uint8_t* pixels;
 	int width, height;
 	io.Fonts->ClearFonts();
-	io.Fonts->AddFontFromFileTTF("../../engine/fonts/DroidSansFallback.ttf", 15.0f, 0, &ranges[0]);
+	io.Fonts->AddFontFromFileTTF("../../engine/fonts/DroidSansFallback.ttf", 15.0f, 0, 0);
+	//io.Fonts->AddFontFromFileTTF("../../engine/fonts/DroidSansFallback.ttf", 15.0f, 0, &ranges[0]);
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 	ray::GraphicsTextureDesc fontDesc;

@@ -336,12 +336,8 @@ OGLTexture::applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept
 			glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 32);
 		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis64)
 			glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 64);
-		else
-		{
-			GL_PLATFORM_LOG("Can't support anisotropy format");
-			return false;
-		}
 	}
+
 	return true;
 }
 

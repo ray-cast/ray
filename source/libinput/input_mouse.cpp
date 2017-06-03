@@ -257,21 +257,36 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 		_mouseY = event.motion.y;
 	}
 	break;
-	case InputEvent::MouseWheelDown:
 	case InputEvent::MouseButtonDown:
 	{
 		auto& key = this->_buttonState[event.button.button];
 		if (!key.pressed)
 		{
+			key.up = false;
 			key.down = true;
 			key.pressed = true;
 		}
 	}
 	break;
-	case InputEvent::MouseWheelUp:
 	case InputEvent::MouseButtonUp:
 	{
 		auto& key = this->_buttonState[event.button.button];
+		key.up = true;
+		key.pressed = false;
+		key.down = false;
+	}
+	break;
+	case InputEvent::MouseWheelDown:
+	{
+		auto& key = this->_buttonState[InputButton::MOUSEWHEEL];
+		key.up = false;
+		key.down = true;
+		key.pressed = false;
+	}
+	break;
+	case InputEvent::MouseWheelUp:
+	{
+		auto& key = this->_buttonState[InputButton::MOUSEWHEEL];
 		key.up = true;
 		key.pressed = false;
 		key.down = false;

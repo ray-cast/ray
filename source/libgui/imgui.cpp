@@ -89,7 +89,7 @@ GuiStyle::GuiStyle() noexcept
 	Colors[ImGuiCol_TitleBg] = float4(0.0f, 0.0, 0.0, 0.70196f);
 	Colors[ImGuiCol_TitleBgCollapsed] = float4(0.0f, 0.0, 0.0, 0.70196f);
 	Colors[ImGuiCol_TitleBgActive] = float4(0.0f, 0.0, 0.0, 0.70196f);
-	Colors[ImGuiCol_Button] = float4(0.0f, 0.372549f, 0.658823f, 1.0);
+	Colors[ImGuiCol_Button] = float4(0.0f, 0.4f, 0.66f, 1.0f);
 	Colors[ImGuiCol_ButtonHovered] = float4(0.0f, 0.5f, 1.0f, 1.0f);
 	Colors[ImGuiCol_ButtonActive] = float4(1.0, 0.6, 0.0, 1.0);
 	Colors[ImGuiCol_CloseButton] = float4(0.2f, 0.5f, 1.0f, 0.5f);

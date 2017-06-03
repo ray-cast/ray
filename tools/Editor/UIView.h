@@ -150,6 +150,7 @@ private:
 	bool _showMessageFirst;
 	bool _showProcessMessage;
 	bool _showProcessMessageFirst;
+	bool _mouseHoveringCamera;
 
 	LightMassType _lightMassType;
 

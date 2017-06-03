@@ -63,6 +63,8 @@ const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second U
 GuiViewComponent::GuiViewComponent() noexcept
 	: _selectedObject(nullptr)
 	, _lightMassType(LightMassType::UVMapper)
+	, _viewport(0, 0, 0, 0)
+	, _mouseHoveringCamera(false)
 {
 	_progress = 0.0f;
 	_showWindowAll = true;
@@ -157,6 +159,21 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 					this->onModelPicker(x, y);
 				}
 			}
+
+			if (!input->isLockedCursor() && _mouseHoveringCamera)
+			{
+				if (input->getButtonDown(ray::InputButton::Code::MOUSEWHEEL))
+				{
+					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward);
+				}
+
+				if (input->getButtonUp(ray::InputButton::Code::MOUSEWHEEL))
+				{
+					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward);
+				}
+			}
 		}
 	}
 	else if (message->isInstanceOf<ray::GuiMessage>())
@@ -217,6 +234,8 @@ GuiViewComponent::showMainMenu() noexcept
 	if (!_showMainMenu)
 		return;
 
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2(_style.WindowPadding.x * 2, _style.WindowPadding.y));
+
 	if (ray::Gui::beginMainMenuBar())
 	{
 		ray::float2 size = ray::Gui::getDisplaySize();
@@ -274,6 +293,8 @@ GuiViewComponent::showMainMenu() noexcept
 
 		ray::Gui::endMainMenuBar();
 	}
+
+	ray::Gui::popStyleVar();
 }
 
 bool
@@ -709,8 +730,6 @@ GuiViewComponent::showMeshesLists() noexcept
 
 	if (ray::Gui::beginDock("Inspector", &_showInspectorWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
-		ray::Gui::setWindowSize(ray::Gui::getWindowSize() + _style.WindowPadding, true);
-
 		if (ray::Gui::treeNodeEx("camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			const ray::GameObjects* objects = nullptr;
@@ -820,13 +839,20 @@ GuiViewComponent::showCameraWindow() noexcept
 	if (!cameraComponent)
 		_cameraComponent = cameraComponent = this->getGameObject()->getComponentInChildren<ray::CameraComponent>();
 
-	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagAlwaysUseWindowPaddingBit | ray::GuiWindowFlagNoScrollbarBit))
+	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagAlwaysUseWindowPaddingBit | ray::GuiWindowFlagNoScrollWithMouseBit))
 	{
 		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize());
+
+		ray::Gui::setScrollY(10.0);
 
 		auto texture = cameraComponent->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 		if (texture)
 			ray::Gui::image(texture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
+
+		if (ray::Gui::isMouseHoveringRect(_viewport.xy(), _viewport.xy() + _viewport.zw()))
+			_mouseHoveringCamera = true;
+		else
+			_mouseHoveringCamera = false;
 
 		ray::Gui::endDock();
 	}
@@ -901,6 +927,8 @@ GuiViewComponent::showMaterialEditor() noexcept
 
 	if (!_showMaterialEditorWindow)
 		return;
+
+	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(0.0, _style.FramePadding.y));
 
 	if (ray::Gui::beginDock("Material", &_showMaterialEditorWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
@@ -1144,6 +1172,8 @@ GuiViewComponent::showMaterialEditor() noexcept
 
 		ray::Gui::endDock();
 	}
+
+	ray::Gui::popStyleVar();
 }
 
 void

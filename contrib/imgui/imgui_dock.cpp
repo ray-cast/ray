@@ -952,9 +952,13 @@ namespace ImGui
 			strcat(tmp, "_docked"); // to avoid https://github.com/ocornut/imgui/issues/713
 
 			bool ret = BeginChild(tmp, size, false, flags);
-			if (!(extra_flags & ImGuiWindowFlags_AlwaysUseWindowPadding))
+			if (extra_flags & ImGuiWindowFlags_AlwaysUseWindowPadding)
+				BeginChild(tmp, size, false, flags);
+			else
+			{
 				ItemSize(ImVec2(0.0f, ImGui::GetStyle().WindowPadding.y - 3));
-			BeginChild(tmp);
+				BeginChild(tmp);
+			}
 
 			PopStyleColor();
 			PopStyleColor();

@@ -843,7 +843,7 @@ GuiViewComponent::showCameraWindow() noexcept
 	{
 		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize());
 
-		ray::Gui::setScrollY(10.0);
+		ray::Gui::setScrollY(_style.WindowPadding.y);
 
 		auto texture = cameraComponent->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 		if (texture)

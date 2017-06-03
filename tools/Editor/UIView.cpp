@@ -46,8 +46,6 @@
 
 #include <ray/res_manager.h>
 
-#include <ray/camera_component.h>
-
 __ImplementSubClass(GuiViewComponent, ray::GameComponent, "GuiView")
 
 const char* itemsUVSlot[] = { "0", "1", "2", "3", "4" };
@@ -190,11 +188,11 @@ GuiViewComponent::onModelPicker(float x, float y) noexcept
 {
 	assert(_event.onSeletedMesh);
 
-	auto cameraObject = _camera.lock();
-	if (!cameraObject)
-		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("MainCamera");
+	auto cameraComponent = _cameraComponent.lock();
+	if (!cameraComponent)
+		_cameraComponent = cameraComponent = this->getGameObject()->getComponentInChildren<ray::CameraComponent>();
 
-	if (!cameraObject)
+	if (!cameraComponent)
 		return;
 
 	x -= _viewport.x;
@@ -202,8 +200,8 @@ GuiViewComponent::onModelPicker(float x, float y) noexcept
 	x = (x / _viewport.z) * ray::Gui::getDisplaySize().x;
 	y = (y / _viewport.w) * ray::Gui::getDisplaySize().y;
 
-	auto start = cameraObject->getTranslate();
-	auto end = cameraObject->getComponent<ray::CameraComponent>()->screenToWorld(ray::float3(x, y, 1));
+	auto start = cameraComponent->getGameObject()->getTranslate();
+	auto end = cameraComponent->screenToWorld(ray::float3(x, y, 1));
 
 	ray::RaycastHit hit;
 	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit))
@@ -818,15 +816,15 @@ GuiViewComponent::showAssertLists() noexcept
 void
 GuiViewComponent::showCameraWindow() noexcept
 {
-	auto cameraObject = _camera.lock();
-	if (!cameraObject)
-		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("MainCamera");
+	auto cameraComponent = _cameraComponent.lock();
+	if (!cameraComponent)
+		_cameraComponent = cameraComponent = this->getGameObject()->getComponentInChildren<ray::CameraComponent>();
 
 	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagAlwaysUseWindowPaddingBit | ray::GuiWindowFlagNoScrollbarBit))
 	{
 		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize());
 
-		auto texture = cameraObject->getComponent<ray::CameraComponent>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
+		auto texture = cameraComponent->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 		if (texture)
 			ray::Gui::image(texture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
 
@@ -837,9 +835,9 @@ GuiViewComponent::showCameraWindow() noexcept
 void
 GuiViewComponent::showSceneWindow() noexcept
 {
-	auto cameraObject = _camera.lock();
-	if (!cameraObject)
-		_camera = cameraObject = ray::GameObjectManager::instance()->findObject("MainCamera");
+	auto cameraComponent = _cameraComponent.lock();
+	if (!cameraComponent)
+		_cameraComponent = cameraComponent = this->getGameObject()->getComponentInChildren<ray::CameraComponent>();
 
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
 
@@ -847,7 +845,7 @@ GuiViewComponent::showSceneWindow() noexcept
 	{
 		ray::Gui::setWindowPos(ray::float2::Zero);
 
-		auto texture = cameraObject->getComponent<ray::CameraComponent>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
+		auto texture = cameraComponent->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 		if (texture)
 			ray::Gui::image(texture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
 		ray::Gui::end();

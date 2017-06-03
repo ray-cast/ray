@@ -39,6 +39,7 @@
 
 #include <ray/gui.h>
 #include <ray/game_component.h>
+#include <ray/camera_component.h>
 
 #include "UIParams.h"
 #include "UITexts.h"
@@ -129,7 +130,7 @@ private:
 
 private:
 	ray::GameObject* _selectedObject;
-	ray::GameObjectWeakPtr _camera;
+	std::weak_ptr<ray::CameraComponent> _cameraComponent;
 
 	ray::float4 _viewport;
 

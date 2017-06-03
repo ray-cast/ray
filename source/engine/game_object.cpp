@@ -700,14 +700,14 @@ GameObject::getComponentInChildren(const rtti::Rtti* type) const noexcept
 {
 	assert(type);
 
-	for (auto& it : _components)
-	{
-		if (it->isA(type))
-			return it;
-	}
-
 	for (auto& it : _children)
 	{
+		for (auto& component : it->_components)
+		{
+			if (component->isA(type))
+				return component;
+		}
+
 		auto component = it->getComponentInChildren(type);
 		if (component)
 			return component;
@@ -725,17 +725,18 @@ GameObject::getComponentInChildren(const rtti::Rtti& type) const noexcept
 void
 GameObject::getComponentsInChildren(const rtti::Rtti* type, GameComponents& components) const noexcept
 {
-	for (auto& it : _components)
-	{
-		if (it->isA(type))
-		{
-			components.push_back(it);
-			break;
-		}
-	}
+	assert(type);
 
 	for (auto& it : _children)
-		it->getComponentsInChildren(type, components);
+	{
+		for (auto& component : it->_components)
+		{
+			if (component->isA(type))
+				components.push_back(component);
+		}
+
+		it->getComponentInChildren(type);
+	}
 }
 
 void

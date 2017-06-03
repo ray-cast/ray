@@ -56,6 +56,7 @@ public:
 	static const Vector4t<T> UnitX;
 	static const Vector4t<T> UnitY;
 	static const Vector4t<T> UnitZ;
+	static const Vector4t<T> UnitW;
 
 	union
 	{
@@ -546,6 +547,7 @@ template<typename T> const Vector4t<T> Vector4t<T>::One = Vector4t<T>((T)1.0, (T
 template<typename T> const Vector4t<T> Vector4t<T>::UnitX = Vector4t<T>((T)1.0, (T)0.0, (T)0.0, (T)1.0);
 template<typename T> const Vector4t<T> Vector4t<T>::UnitY = Vector4t<T>((T)0.0, (T)1.0, (T)0.0, (T)1.0);
 template<typename T> const Vector4t<T> Vector4t<T>::UnitZ = Vector4t<T>((T)0.0, (T)0.0, (T)1.0, (T)1.0);
+template<typename T> const Vector4t<T> Vector4t<T>::UnitW = Vector4t<T>((T)0.0, (T)0.0, (T)0.0, (T)1.0);
 
 template<typename T>
 inline bool operator==(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept

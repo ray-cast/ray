@@ -81,7 +81,9 @@ public:
 
 	GraphicsDataPtr createVertexBuffer(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
 	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
-	GraphicsTexturePtr getTexture(const util::string& name) noexcept;
+
+	GraphicsTexturePtr getTexture(const util::string& name) const noexcept;
+	const std::map<util::string, GraphicsTexturePtr>& getTextureAll() const noexcept;
 
 	void destroyTexture(GraphicsTexturePtr texture) noexcept;
 	void destroyTexture(const util::string& name) noexcept;

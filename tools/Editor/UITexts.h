@@ -89,7 +89,10 @@ public:
 		UnsupportModel,
 		Process,
 		Succeeded,
-		ChooseModel
+		ChooseModel,
+		Camera,
+		Assert,
+		Material,
 	};
 
 	enum class Lang

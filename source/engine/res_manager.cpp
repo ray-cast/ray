@@ -206,10 +206,16 @@ ResManager::destroyTexture(const util::string& name) noexcept
 }
 
 GraphicsTexturePtr
-ResManager::getTexture(const util::string& name) noexcept
+ResManager::getTexture(const util::string& name) const noexcept
 {
 	assert(!name.empty());
-	return _textures[name];
+	return _textures.at(name);
+}
+
+const std::map<util::string, GraphicsTexturePtr>&
+ResManager::getTextureAll() const noexcept
+{
+	return _textures;
 }
 
 bool

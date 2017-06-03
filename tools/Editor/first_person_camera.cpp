@@ -89,6 +89,9 @@ FirstPersonCameraComponent::onFrame() noexcept
 		if (!input)
 			return;
 
+		if (!input->isLockedCursor())
+			return;
+
 		if (input->getKey(ray::InputKey::Code::LeftShift))
 			step *= 3;
 
@@ -143,10 +146,7 @@ FirstPersonCameraComponent::onFrame() noexcept
 			}
 		}
 
-		if (input->isLockedCursor())
-		{
-			rotateCamera(input->getAxisX(), input->getAxisY());
-		}
+		rotateCamera(input->getAxisX(), input->getAxisY());
 	}
 }
 

@@ -72,6 +72,8 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showProcessMessage = false;
 	_showProcessMessageFirst = false;
 
+	_styleDefault.ItemSpacing.y = 3;
+	_styleDefault.WindowPadding.y = 10;
 	_styleDefault.Colors[ray::GuiCol::GuiColFrameBgActive] = ray::float4(0.3, 0.3, 0.3, 1.0);
 	_styleDefault.Colors[ray::GuiCol::GuiColWindowBg] = ray::float4(18, 18, 18, 255) / 255.0f;
 	_styleDefault.Colors[ray::GuiCol::GuiColChildWindowBg] = ray::float4(80, 80, 85, 60) / 255.0f;
@@ -841,15 +843,32 @@ GuiViewComponent::showAssertLists() noexcept
 	if (!_showAssertWindow)
 		return;
 
-	static float image_size = 86;
+	static ray::float2 imageSize = ray::float2(86, 86);
 
-	if (ray::Gui::beginDock("Assert", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColBorder]);
+
+	if (ray::Gui::beginDock(_langs[UILang::Assert], &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
-		if (ray::Gui::getContentRegionAvailWidth() < image_size)
-			ray::Gui::newLine();
+		std::size_t id = 0;
+
+		const auto& textures = ray::ResManager::instance()->getTextureAll();
+		for (auto& texture : textures)
+		{
+			if (ray::Gui::getContentRegionAvailWidth() < imageSize.x)
+				ray::Gui::newLine();
+
+			ray::Gui::pushID(id++);
+
+			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, 3, ray::float4::UnitW);
+
+			ray::Gui::popID();
+			ray::Gui::sameLine(0, _style.ItemSpacing.y);
+		}
 
 		ray::Gui::endDock();
 	}
+
+	ray::Gui::popStyleColor();
 }
 
 void
@@ -908,7 +927,7 @@ GuiViewComponent::showMaterialEditor() noexcept
 	if (!_showMaterialEditorWindow)
 		return;
 
-	if (ray::Gui::beginDock("Material", &_showMaterialEditorWindow))
+	if (ray::Gui::beginDock(_langs[UILang::Material], &_showMaterialEditorWindow))
 	{
 		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
@@ -1155,11 +1174,10 @@ GuiViewComponent::showMaterialEditor() noexcept
 void
 GuiViewComponent::showCameraWindow() noexcept
 {
-	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagNoInputsBit | ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoScrollbarBit))
+	if (ray::Gui::beginDock(_langs[UILang::Camera], &_showCameraWindow, ray::GuiWindowFlagNoInputsBit | ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoScrollbarBit))
 	{
-		_viewport = ray::float4(ray::Gui::getWindowPos(), ray::Gui::getWindowSize());
-
-		ray::Gui::image(_renderTexture.get(), ray::Gui::getWindowSize(), ray::float2(0, 1), ray::float2(1, 0));
+		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize());
+		ray::Gui::image(_renderTexture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
 		ray::Gui::endDock();
 	}
 }
@@ -1173,7 +1191,7 @@ GuiViewComponent::showSceneWindow() noexcept
 
 	if (ray::Gui::begin("Scene", 0, ray::Gui::getDisplaySize(), -1.0, ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagNoScrollbarBit))
 	{
-		ray::Gui::image(_renderTexture.get(), ray::Gui::getDisplaySize(), ray::float2(0, 1), ray::float2(1, 0));
+		ray::Gui::image(_renderTexture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
 		ray::Gui::end();
 	}
 

@@ -67,7 +67,8 @@ class EXPORT GraphicsAttachmentBinding final
 {
 public:
 	GraphicsAttachmentBinding() noexcept;
-	GraphicsAttachmentBinding(GraphicsTexturePtr texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept;
+	GraphicsAttachmentBinding(GraphicsTexturePtr&& texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept;
+	GraphicsAttachmentBinding(const GraphicsTexturePtr& texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept;
 	~GraphicsAttachmentBinding() noexcept;
 
 	void setBindingLevel(std::uint32_t mipLevel) noexcept;
@@ -121,7 +122,8 @@ public:
 	void setDepthStencilAttachment(const GraphicsAttachmentBinding& target) noexcept;
 	const GraphicsAttachmentBinding& getDepthStencilAttachment() const noexcept;
 
-	void setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr layout) noexcept;
+	void setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr&& layout) noexcept;
+	void setGraphicsFramebufferLayout(const GraphicsFramebufferLayoutPtr& layout) noexcept;
 	GraphicsFramebufferLayoutPtr getGraphicsFramebufferLayout() const noexcept;
 
 private:

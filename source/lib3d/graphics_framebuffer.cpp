@@ -101,7 +101,14 @@ GraphicsAttachmentBinding::GraphicsAttachmentBinding() noexcept
 {
 }
 
-GraphicsAttachmentBinding::GraphicsAttachmentBinding(GraphicsTexturePtr texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept
+GraphicsAttachmentBinding::GraphicsAttachmentBinding(GraphicsTexturePtr&& texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept
+	: _mipLevel(mipLevel)
+	, _layer(layer)
+	, _texture(std::move(texture))
+{
+}
+
+GraphicsAttachmentBinding::GraphicsAttachmentBinding(const GraphicsTexturePtr& texture, std::uint32_t mipLevel, std::uint32_t layer) noexcept
 	: _mipLevel(mipLevel)
 	, _layer(layer)
 	, _texture(texture)
@@ -118,7 +125,7 @@ GraphicsAttachmentBinding::setBindingLevel(std::uint32_t mipLevel) noexcept
 	_mipLevel = mipLevel;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsAttachmentBinding::getBindingLevel() const noexcept
 {
 	return _mipLevel;
@@ -130,7 +137,7 @@ GraphicsAttachmentBinding::setBindingLayer(std::uint32_t layer) noexcept
 	_layer = layer;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsAttachmentBinding::getBindingLayer() const noexcept
 {
 	return _layer;
@@ -142,7 +149,7 @@ GraphicsAttachmentBinding::setBindingTexture(GraphicsTexturePtr texture) noexcep
 	_texture = texture;
 }
 
-GraphicsTexturePtr 
+GraphicsTexturePtr
 GraphicsAttachmentBinding::getBindingTexture() const noexcept
 {
 	return _texture;
@@ -164,7 +171,7 @@ GraphicsFramebufferLayoutDesc::addComponent(const GraphicsAttachmentLayout& comp
 	_components.push_back(component);
 }
 
-void 
+void
 GraphicsFramebufferLayoutDesc::setComponents(const GraphicsAttachmentLayouts& components) noexcept
 {
 	_components = components;
@@ -199,7 +206,7 @@ GraphicsFramebufferDesc::setHeight(std::uint32_t h) noexcept
 	_height = h;
 }
 
-void 
+void
 GraphicsFramebufferDesc::setLayer(std::uint32_t layer) noexcept
 {
 	_layer = layer;
@@ -223,20 +230,20 @@ GraphicsFramebufferDesc::getLayer() const noexcept
 	return _layer;
 }
 
-void 
+void
 GraphicsFramebufferDesc::addColorAttachment(const GraphicsAttachmentBinding& texture) noexcept
 {
 	assert(texture.getBindingTexture());
 	_colorAttachments.push_back(texture);
 }
 
-void 
+void
 GraphicsFramebufferDesc::setColorAttachments(const GraphicsAttachmentBindings& bindings) noexcept
 {
 	_colorAttachments = bindings;
 }
 
-const GraphicsAttachmentBinding& 
+const GraphicsAttachmentBinding&
 GraphicsFramebufferDesc::getColorAttachment(std::uint32_t n) const noexcept
 {
 	assert(n < _colorAttachments.size());
@@ -262,7 +269,13 @@ GraphicsFramebufferDesc::getDepthStencilAttachment() const noexcept
 }
 
 void
-GraphicsFramebufferDesc::setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr layout) noexcept
+GraphicsFramebufferDesc::setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr&& layout) noexcept
+{
+	_framebufferLayout = std::move(layout);
+}
+
+void
+GraphicsFramebufferDesc::setGraphicsFramebufferLayout(const GraphicsFramebufferLayoutPtr& layout) noexcept
 {
 	_framebufferLayout = layout;
 }

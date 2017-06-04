@@ -349,8 +349,8 @@ GuiControllerComponent::makeMainCamera() noexcept
 	ray::GraphicsFramebufferDesc framebufferDesc;
 	framebufferDesc.setWidth(ray::Gui::getDisplaySize().x);
 	framebufferDesc.setHeight(ray::Gui::getDisplaySize().y);
-	framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(renderTexture, 0, 0));
-	framebufferDesc.setGraphicsFramebufferLayout(framebufferLayout);
+	framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(std::move(renderTexture), 0, 0));
+	framebufferDesc.setGraphicsFramebufferLayout(std::move(framebufferLayout));
 	auto framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
 	if (!framebuffer)
 		return false;

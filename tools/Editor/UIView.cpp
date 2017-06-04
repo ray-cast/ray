@@ -850,7 +850,7 @@ GuiViewComponent::showAssertLists() noexcept
 
 	static ray::float2 imageSize = ray::float2(64, 64);
 
-	if (ray::Gui::beginDock("Asset", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	if (ray::Gui::beginDock("Assets", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		int id = 0;
 
@@ -957,7 +957,7 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 	if (!_showMaterialWindow || !material)
 		return;
 
-	if (ray::Gui::treeNodeEx("Materials", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+	if (ray::Gui::treeNodeEx("Material", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 	{
 		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{

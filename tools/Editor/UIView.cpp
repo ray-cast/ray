@@ -179,6 +179,34 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
 					_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward);
 				}
+
+				if (input->getButton(ray::InputButton::Code::MIDDLE))
+				{
+					float axisX = input->getAxis(ray::InputAxis::MouseX);
+					float axisY = input->getAxis(ray::InputAxis::MouseY);
+
+					const ray::Vector3& up = _cameraComponent.lock()->getGameObject()->getUpVector();
+					const ray::Vector3& right = _cameraComponent.lock()->getGameObject()->getRight();
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(up * axisY);
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-right * axisX);
+				}
+
+				if (input->getButton(ray::InputButton::Code::RIGHT))
+				{
+					float axisX = input->getAxis(ray::InputAxis::MouseX);
+					float axisY = input->getAxis(ray::InputAxis::MouseY);
+
+					static ray::float3 rota = ray::math::eulerAngles(_cameraComponent.lock()->getGameObject()->getQuaternion());
+					rota.x += axisY;
+					rota.y += axisX;
+
+					ray::float3 center = ray::float3::Zero;
+					float distance = ray::math::distance(center, _cameraComponent.lock()->getGameObject()->getTranslate());
+
+					ray::Quaternion q(rota);
+					_cameraComponent.lock()->getGameObject()->setTranslate(center - ray::math::rotate(q, ray::float3::Forward) * distance);
+					_cameraComponent.lock()->getGameObject()->setQuaternion(q);
+				}
 			}
 		}
 	}

@@ -56,8 +56,7 @@ public:
 	void hideMouse() noexcept;
 	bool isShowMouse() noexcept;
 
-	float getAxisX() const noexcept;
-	float getAxisY() const noexcept;
+	float getAxis(InputAxis::Code axis) const noexcept;
 
 	void setPosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept;
 	void getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept;
@@ -94,6 +93,12 @@ protected:
 	bool _isMouseLock;
 	bool _isMouseLocked;
 	bool _isMouseHide;
+
+	float _mouseAxisX;
+	float _mouseAxisY;
+
+	InputButton::mouse_t _lastX;
+	InputButton::mouse_t _lastY;
 
 	InputButton::mouse_t _mouseX;
 	InputButton::mouse_t _mouseY;

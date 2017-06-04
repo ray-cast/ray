@@ -59,7 +59,7 @@ DefaultInput::~DefaultInput() noexcept
 	this->close();
 }
 
-bool 
+bool
 DefaultInput::open() noexcept
 {
 	_inputDevice = std::make_shared<DefaultInputDevice>();
@@ -140,19 +140,11 @@ DefaultInput::getCaptureObject() const noexcept
 	return nullptr;
 }
 
-float 
-DefaultInput::getAxisX() const noexcept
+float
+DefaultInput::getAxis(InputAxis::Code axis) const noexcept
 {
 	if (_mouseCaptureDevice)
-		return _mouseCaptureDevice->getAxisX();
-	return 0.0f;
-}
-
-float 
-DefaultInput::getAxisY() const noexcept
-{
-	if (_mouseCaptureDevice)
-		return _mouseCaptureDevice->getAxisY();
+		return _mouseCaptureDevice->getAxis(axis);
 	return 0.0f;
 }
 
@@ -299,7 +291,7 @@ DefaultInput::obtainMouseCapture(InputMousePtr& mouse) noexcept
 
 			if (_inputDevice)
 				_inputDevice->addInputListener(_mouseCaptureDevice);
-		}			
+		}
 	}
 }
 
@@ -349,7 +341,7 @@ DefaultInput::obtainKeyboardCapture(InputKeyboardPtr& keyboard) noexcept
 
 			if (_inputDevice)
 				_inputDevice->addInputListener(_keyboardCaptureDevice);
-		}			
+		}
 	}
 }
 

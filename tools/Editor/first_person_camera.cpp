@@ -146,7 +146,7 @@ FirstPersonCameraComponent::onFrame() noexcept
 			}
 		}
 
-		rotateCamera(input->getAxisX(), input->getAxisY());
+		rotateCamera(input->getAxis(ray::InputAxis::Horizontal), input->getAxis(ray::InputAxis::Vertical));
 	}
 }
 

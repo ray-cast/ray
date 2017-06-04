@@ -57,8 +57,7 @@ public:
 	virtual void hideMouse() noexcept = 0;
 	virtual bool isShowMouse() noexcept = 0;
 
-	virtual float getAxisX() const noexcept = 0;
-	virtual float getAxisY() const noexcept = 0;
+	virtual float getAxis(InputAxis::Code axis) const noexcept = 0;
 
 	virtual void setPosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept = 0;
 	virtual void getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept = 0;

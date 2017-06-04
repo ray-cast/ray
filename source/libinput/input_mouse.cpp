@@ -43,6 +43,10 @@ __ImplementSubInterface(DefaultInputMouse, InputMouse, "DefaultInputMouse")
 DefaultInputMouse::DefaultInputMouse() noexcept
 	: _mouseX(0)
 	, _mouseY(0)
+	, _mouseAxisX(0)
+	, _mouseAxisY(0)
+	, _lastX(0)
+	, _lastY(0)
 	, _centerX(0)
 	, _centerY(0)
 	, _isMouseLock(false)
@@ -111,21 +115,34 @@ DefaultInputMouse::isShowMouse() noexcept
 }
 
 float
-DefaultInputMouse::getAxisX() const noexcept
+DefaultInputMouse::getAxis(InputAxis::Code axis) const noexcept
 {
-	float mouseX = 0.0f, mouseY = 0.0f;
-	this->getPosition(mouseX, mouseY);
+	switch (axis)
+	{
+	case InputAxis::MouseX:
+		return _mouseAxisX;
+	case InputAxis::MouseY:
+		return _mouseAxisY;
+	case InputAxis::Horizontal:
+	{
+		float mouseX = 0.0f, mouseY = 0.0f;
+		this->getPosition(mouseX, mouseY);
 
-	return (float)(mouseX - _centerX) / _centerX;
-}
+		return (float)(mouseX - _centerX) / _centerX;
+	}
+	break;
+	case InputAxis::Vertical:
+	{
+		float mouseX = 0.0f, mouseY = 0.0f;
+		this->getPosition(mouseX, mouseY);
 
-float
-DefaultInputMouse::getAxisY() const noexcept
-{
-	float mouseX = 0.0f, mouseY = 0.0f;
-	this->getPosition(mouseX, mouseY);
-
-	return (float)(mouseY - _centerY) / _centerY;
+		return (float)(mouseY - _centerY) / _centerY;
+	}
+	break;
+	default:
+		assert(false);
+		return 0.0;
+	}
 }
 
 void
@@ -255,6 +272,10 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	{
 		_mouseX = event.motion.x;
 		_mouseY = event.motion.y;
+		_mouseAxisX = _mouseX - _lastX;
+		_mouseAxisY = _mouseY - _lastY;
+		_lastX = _mouseX;
+		_lastY = _mouseY;
 	}
 	break;
 	case InputEvent::MouseButtonDown:

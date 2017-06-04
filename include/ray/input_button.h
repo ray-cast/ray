@@ -71,6 +71,21 @@ public:
 	};
 };
 
+class InputAxis
+{
+public:
+	enum Code
+	{
+		MouseX,
+		MouseY,
+
+		Horizontal,
+		Vertical,
+
+		NumAxisCodes,
+	};
+};
+
 _NAME_END
 
 #endif

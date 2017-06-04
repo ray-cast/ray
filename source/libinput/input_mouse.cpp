@@ -280,6 +280,11 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	break;
 	case InputEvent::MouseButtonDown:
 	{
+		_mouseAxisX = 0;
+		_mouseAxisY = 0;
+		_lastX = _mouseX = event.button.x;
+		_lastY = _mouseY = event.button.y;
+
 		auto& key = this->_buttonState[event.button.button];
 		if (!key.pressed)
 		{
@@ -291,6 +296,11 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	break;
 	case InputEvent::MouseButtonUp:
 	{
+		_mouseAxisX = 0;
+		_mouseAxisY = 0;
+		_lastX = _mouseX = event.button.x;
+		_lastY = _mouseY = event.button.y;
+
 		auto& key = this->_buttonState[event.button.button];
 		key.up = true;
 		key.pressed = false;

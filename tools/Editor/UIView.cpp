@@ -160,18 +160,24 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 				}
 			}
 
-			if (!input->isLockedCursor() && _mouseHoveringCamera)
+			if (_showAboutWindow || _showStyleEditor || _showMessage || _showProcessMessage)
+				return;
+
+			if (!_mouseHoveringCamera)
+				return;
+
+			if (!input->isLockedCursor())
 			{
 				if (input->getButtonDown(ray::InputButton::Code::MOUSEWHEEL))
 				{
 					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward);
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward);
 				}
 
 				if (input->getButtonUp(ray::InputButton::Code::MOUSEWHEEL))
 				{
 					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward);
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward);
 				}
 			}
 		}
@@ -486,7 +492,7 @@ GuiViewComponent::showMessage() noexcept
 	if (!_showMessage)
 		return;
 
-	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
+	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), &_showMessage, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
 	{
 		ray::Gui::text(_messageText.c_str());
 		ray::Gui::separator();
@@ -495,13 +501,16 @@ GuiViewComponent::showMessage() noexcept
 		ray::Gui::checkbox(_langs[UILang::NoShowAgain], &_ignoreMessage[_messageHash]);
 		ray::Gui::popStyleVar();
 
-		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _showMessage = false; }
 		ray::Gui::sameLine();
 
-		if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+		if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _showMessage = false; }
 
 		if (ray::Gui::isKeyDown(ray::InputKey::Enter) || ray::Gui::isKeyDown(ray::InputKey::KP_Enter))
+		{
+			_showMessage = false;
 			ray::Gui::closeCurrentPopup();
+		}
 
 		ray::Gui::endPopup();
 	}
@@ -535,7 +544,7 @@ GuiViewComponent::showProcessMessage() noexcept
 	if (!_showProcessMessage)
 		return;
 
-	if (ray::Gui::beginPopupModal(_langs[UILang::Process], 0, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	if (ray::Gui::beginPopupModal(_langs[UILang::Process], &_showProcessMessage, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
 	{
 		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
 		ray::Gui::progressBar(_progress);
@@ -551,6 +560,8 @@ GuiViewComponent::showProcessMessage() noexcept
 				ray::Gui::closeCurrentPopup();
 				if (error)
 					this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+
+				_showProcessMessage = false;
 			}
 
 			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
@@ -559,6 +570,8 @@ GuiViewComponent::showProcessMessage() noexcept
 
 				if (_event.onUVMapperCancel)
 					_event.onUVMapperCancel();
+
+				_showProcessMessage = false;
 			}
 		}
 		else if (_lightMassType == LightMassType::LightBaking)
@@ -569,6 +582,8 @@ GuiViewComponent::showProcessMessage() noexcept
 				ray::Gui::closeCurrentPopup();
 				if (error)
 					this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+
+				_showProcessMessage = false;
 			}
 
 			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
@@ -577,6 +592,8 @@ GuiViewComponent::showProcessMessage() noexcept
 
 				if (_event.onLightMassCancel)
 					_event.onLightMassCancel();
+
+				_showProcessMessage = false;
 			}
 		}
 
@@ -598,7 +615,7 @@ GuiViewComponent::showAboutWindow() noexcept
 	if (!_showAboutWindow)
 		return;
 
-	if (ray::Gui::beginPopupModal("About", 0, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
+	if (ray::Gui::beginPopupModal("About", &_showAboutWindow, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
 	{
 		ray::Gui::text("Editor Ver.0.1");
 		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
@@ -610,7 +627,7 @@ GuiViewComponent::showAboutWindow() noexcept
 		ray::Gui::popStyleColor();
 
 		ray::Gui::sameLine(ray::Gui::getWindowWidth() - 130);
-		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); }
+		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _showAboutWindow = false; }
 
 		ray::Gui::endPopup();
 	}
@@ -819,10 +836,9 @@ GuiViewComponent::showAssertLists() noexcept
 			}
 
 			ray::Gui::pushID(id++);
-
 			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, ray::float4::UnitW);
-
 			ray::Gui::popID();
+
 			ray::Gui::sameLine(0, _style.ItemSpacing.y);
 		}
 

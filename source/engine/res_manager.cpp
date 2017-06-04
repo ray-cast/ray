@@ -170,10 +170,10 @@ ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture
 	textureDesc.setStream(image.data());
 	textureDesc.setStreamSize(image.size());
 	textureDesc.setMipBase(image.mipBase());
-	textureDesc.setMipLevel(image.mipLevel());
+	textureDesc.setMipNums(image.mipLevel());
 	textureDesc.setLayerBase(image.layerBase());
 	textureDesc.setLayerNums(image.layerLevel());
-	textureDesc.setSamplerFilter(filter);
+	textureDesc.setSamplerFilter(filter, filter);
 	textureDesc.setSamplerWrap(warp);
 
 	texture = RenderSystem::instance()->createTexture(textureDesc);

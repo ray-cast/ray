@@ -81,7 +81,7 @@ Atmospheric::computeRaySphereIntersection(const float3& position, const float3& 
 	float B = math::dot(origin, dir);
 	float C = math::dot(origin, origin) - radius * radius;
 	float D = B * B - C;
-	
+
 	if (D < 0)
 	{
 		intersections = float2(-1, -1);
@@ -155,7 +155,7 @@ Atmospheric::computeViewProjectInverse(const Camera& camera, float4x4& viewProje
 	viewProjectInverse = math::inverse(project * camera.getView());
 }
 
-void 
+void
 Atmospheric::setScatteringCoefficients(const Setting& setting) noexcept
 {
 	if (_sat)
@@ -218,7 +218,7 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 	netDensityDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	netDensityDesc.setTexFormat(GraphicsFormat::GraphicsFormatR32G32SFloat);
 	netDensityDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	netDensityDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	netDensityDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_occludedNetDensityMap = pipeline.createTexture(netDensityDesc);
 
 	GraphicsFramebufferLayoutDesc netDensityToAtmTopLayoutDesc;
@@ -246,7 +246,7 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFrame
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;
 
-	float4x4 viewProjectInverse; 
+	float4x4 viewProjectInverse;
 	computeViewProjectInverse(*pipeline.getCamera(), viewProjectInverse);
 
 	_matViewProjectInverse->uniform4fmat(viewProjectInverse);

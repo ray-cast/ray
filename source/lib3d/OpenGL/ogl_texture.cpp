@@ -82,12 +82,12 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
 	GLsizei mipBase = textureDesc.getMipBase();
-	GLsizei mipLevel = textureDesc.getMipLevel();
+	GLsizei mipLevel = textureDesc.getMipNums();
 
 	if (!applySamplerWrap(target, textureDesc.getSamplerWrap()))
 		return false;
 
-	if (!applySamplerFilter(target, textureDesc.getSamplerFilter()))
+	if (!applySamplerFilter(target, textureDesc.getSamplerMinFilter(), textureDesc.getSamplerMagFilter()))
 		return false;
 
 	if (!applySamplerAnis(target, textureDesc.getSamplerAnis()))
@@ -303,10 +303,10 @@ OGLTexture::applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept
 }
 
 bool
-OGLTexture::applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noexcept
+OGLTexture::applySamplerFilter(GLenum target, GraphicsSamplerFilter minFilter, GraphicsSamplerFilter magFilter) noexcept
 {
-	GLenum min = OGLTypes::asSamplerMinFilter(filter);
-	GLenum mag = OGLTypes::asSamplerMagFilter(filter);
+	GLenum min = OGLTypes::asSamplerMinFilter(minFilter);
+	GLenum mag = OGLTypes::asSamplerMagFilter(magFilter);
 	if (min != GL_INVALID_ENUM && mag != GL_INVALID_ENUM)
 	{
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);

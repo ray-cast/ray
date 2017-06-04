@@ -51,42 +51,51 @@ public:
 	void setHeight(std::uint32_t h) noexcept;
 	void setDepth(std::uint32_t d) noexcept;
 	void setSize(std::uint32_t w, std::uint32_t h, std::uint32_t depth = 0) noexcept;
-	std::uint32_t getWidth() const noexcept;
-	std::uint32_t getHeight() const noexcept;
-	std::uint32_t getDepth()  const noexcept;
-	const uint3& getSize() const noexcept;
+
+	void setMipNums(std::uint32_t nums) noexcept;
+	void setMipBase(std::uint32_t minLevel) noexcept;
+
+	void setLayerNums(std::uint32_t layer) noexcept;
+	void setLayerBase(std::uint32_t minLayer) noexcept;
+
+	void setStream(const void* data) noexcept;
+	void setStreamSize(std::size_t size) noexcept;
 
 	void setTexFormat(GraphicsFormat format) noexcept;
 	void setTexDim(GraphicsTextureDim mapping) noexcept;
 	void setTexTiling(GraphicsImageTiling tiling) noexcept;
-	void setTexUsage(std::uint32_t flags) noexcept;
+	void setTexUsage(GraphicsViewUsageFlags flags) noexcept;
+
+	void setSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
+	void setSamplerMinFilter(GraphicsSamplerFilter filter) noexcept;
+	void setSamplerMagFilter(GraphicsSamplerFilter filter) noexcept;
+	void setSamplerFilter(GraphicsSamplerFilter minFilter, GraphicsSamplerFilter magFilter) noexcept;
+	void setSamplerAnis(GraphicsSamplerAnis anis) noexcept;
+
+	void setMultisample(bool enable) noexcept;
+
 	GraphicsFormat getTexFormat()  const noexcept;
 	GraphicsTextureDim getTexDim() const noexcept;
 	GraphicsImageTiling getTexTiling() const noexcept;
-	std::uint32_t getTexUsage() const noexcept;
+	GraphicsViewUsageFlags getTexUsage() const noexcept;
 
-	void setSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
-	void setSamplerFilter(GraphicsSamplerFilter filter) noexcept;
-	void setSamplerAnis(GraphicsSamplerAnis anis) noexcept;
 	GraphicsSamplerWrap getSamplerWrap() const noexcept;
-	GraphicsSamplerFilter getSamplerFilter() const noexcept;
+	GraphicsSamplerFilter getSamplerMinFilter() const noexcept;
+	GraphicsSamplerFilter getSamplerMagFilter() const noexcept;
 	GraphicsSamplerAnis getSamplerAnis() const noexcept;
 
-	void setMultisample(bool enable) noexcept;
-	bool isMultiSample() const noexcept;
+	std::uint32_t getWidth() const noexcept;
+	std::uint32_t getHeight() const noexcept;
+	std::uint32_t getDepth()  const noexcept;
 
-	void setLayerNums(std::uint32_t layer) noexcept;
-	void setLayerBase(std::uint32_t minLayer) noexcept;
+	std::uint32_t getMipBase() const noexcept;
+	std::uint32_t getMipNums() const noexcept;
+
 	std::uint32_t getLayerBase() const noexcept;
 	std::uint32_t getLayerNums() const noexcept;
 
-	void setMipLevel(std::uint32_t level) noexcept;
-	void setMipBase(std::uint32_t minLevel) noexcept;
-	std::uint32_t getMipLevel() const noexcept;
-	std::uint32_t getMipBase() const noexcept;
+	bool isMultiSample() const noexcept;
 
-	void setStream(const void* data) noexcept;
-	void setStreamSize(std::size_t size) noexcept;
 	const void* getStream() const noexcept;
 	std::size_t getStreamSize() const noexcept;
 
@@ -103,14 +112,14 @@ private:
 	std::uint32_t _mipLevel;
 	std::uint32_t _mipBase;
 
-	std::uint32_t _textureUsage;
-
 	GraphicsFormat _format;
 	GraphicsTextureDim _dim;
-	GraphicsSamplerFilter _filter;
+	GraphicsSamplerFilter _filterMin;
+	GraphicsSamplerFilter _filterMag;
 	GraphicsSamplerWrap _wrap;
 	GraphicsSamplerAnis _anis;
 	GraphicsImageTiling _tiling;
+	GraphicsViewUsageFlags _textureUsage;
 
 	const void* _data;
 	std::size_t _dataSize;

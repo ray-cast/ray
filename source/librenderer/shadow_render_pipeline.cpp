@@ -99,7 +99,7 @@ ShadowRenderPipeline::setShadowMode(ShadowMode mode) noexcept
 	_shadowMode = mode;
 }
 
-ShadowMode 
+ShadowMode
 ShadowRenderPipeline::getShadowMode() const noexcept
 {
 	return _shadowMode;
@@ -111,7 +111,7 @@ ShadowRenderPipeline::setShadowQuality(ShadowQuality quality) noexcept
 	_shadowQuality = quality;
 }
 
-ShadowQuality 
+ShadowQuality
 ShadowRenderPipeline::getShadowQuality() const noexcept
 {
 	return _shadowQuality;
@@ -264,7 +264,7 @@ ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 	shadowDepthMapDesc.setWidth(shadowMapSize[_shadowQuality]);
 	shadowDepthMapDesc.setHeight(shadowMapSize[_shadowQuality]);
 	shadowDepthMapDesc.setTexFormat(_shadowDepthFormat);
-	shadowDepthMapDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	shadowDepthMapDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_shadowShadowDepthMapTemp = pipeline.createTexture(shadowDepthMapDesc);
 	if (!_shadowShadowDepthMapTemp)
 		return false;
@@ -281,7 +281,7 @@ ShadowRenderPipeline::setupShadowMaps(RenderPipeline& pipeline) noexcept
 	return true;
 }
 
-bool 
+bool
 ShadowRenderPipeline::setupShadowSoftMaps(RenderPipeline& pipeline) noexcept
 {
 	if (!pipeline.isTextureSupport(_shadowDepthLinearFormat))
@@ -304,7 +304,7 @@ ShadowRenderPipeline::setupShadowSoftMaps(RenderPipeline& pipeline) noexcept
 	shadowDepthLinearMapDesc.setWidth(shadowMapSize[_shadowQuality]);
 	shadowDepthLinearMapDesc.setHeight(shadowMapSize[_shadowQuality]);
 	shadowDepthLinearMapDesc.setTexFormat(_shadowDepthLinearFormat);
-	shadowDepthLinearMapDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	shadowDepthLinearMapDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_shadowShadowDepthLinearMapTemp = pipeline.createTexture(shadowDepthLinearMapDesc);
 	if (!_shadowShadowDepthLinearMapTemp)
 		return false;

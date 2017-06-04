@@ -117,7 +117,7 @@ IMGUISystem::open(void* _window) except
 	fontDesc.setStream(pixels);
 	fontDesc.setStreamSize(width * height * sizeof(std::uint32_t));
 	fontDesc.setTexTiling(ray::GraphicsImageTiling::GraphicsImageTilingLinear);
-	fontDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	fontDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	fontDesc.setSamplerWrap(ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_texture = RenderSystem::instance()->createTexture(fontDesc);
 	if (!_texture)

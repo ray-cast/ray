@@ -84,7 +84,7 @@ const char* en_lang[] = {
 	"Saved successfully",
 	"Please load a model before start baking.",
 	"Camera",
-	"Assert",
+	"Asset",
 	"Material",
 	"Inspector"
 };

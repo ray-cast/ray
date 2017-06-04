@@ -62,7 +62,7 @@ public:
 private:
 	static bool applyMipmapLimit(GLenum target, std::uint32_t min, std::uint32_t count) noexcept;
 	static bool applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept;
-	static bool applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noexcept;
+	static bool applySamplerFilter(GLenum target, GraphicsSamplerFilter min, GraphicsSamplerFilter mag) noexcept;
 	static bool applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept;
 
 private:

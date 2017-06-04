@@ -182,13 +182,13 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 
 				if (input->getButton(ray::InputButton::Code::MIDDLE))
 				{
-					float axisX = input->getAxis(ray::InputAxis::MouseX);
-					float axisY = input->getAxis(ray::InputAxis::MouseY);
+					float speedX = input->getAxis(ray::InputAxis::MouseX) * 0.5f;
+					float speedY = input->getAxis(ray::InputAxis::MouseY) * 0.5f;
 
 					const ray::Vector3& up = _cameraComponent.lock()->getGameObject()->getUpVector();
 					const ray::Vector3& right = _cameraComponent.lock()->getGameObject()->getRight();
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(up * axisY);
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-right * axisX);
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(up * speedY);
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-right * speedX);
 				}
 
 				if (input->getButton(ray::InputButton::Code::RIGHT))
@@ -196,14 +196,14 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 					float axisX = input->getAxis(ray::InputAxis::MouseX);
 					float axisY = input->getAxis(ray::InputAxis::MouseY);
 
-					static ray::float3 rota = ray::math::eulerAngles(_cameraComponent.lock()->getGameObject()->getQuaternion());
-					rota.x += axisY;
-					rota.y += axisX;
+					static ray::float3 euler = ray::math::eulerAngles(_cameraComponent.lock()->getGameObject()->getQuaternion());
+					euler.x += axisY;
+					euler.y += axisX;
 
-					ray::float3 center = ray::float3::Zero;
+					ray::float3 center = _selectedObject ? _selectedObject->getTranslate() : ray::float3::Zero;
 					float distance = ray::math::distance(center, _cameraComponent.lock()->getGameObject()->getTranslate());
 
-					ray::Quaternion q(rota);
+					ray::Quaternion q(euler);
 					_cameraComponent.lock()->getGameObject()->setTranslate(center - ray::math::rotate(q, ray::float3::Forward) * distance);
 					_cameraComponent.lock()->getGameObject()->setQuaternion(q);
 				}
@@ -257,7 +257,7 @@ GuiViewComponent::onModelPicker(float x, float y) noexcept
 	ray::RaycastHit hit;
 	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit))
 	{
-		_selectedObject = nullptr;
+		_selectedObject = hit.object;
 		_event.onSeletedMesh(hit.object, hit.mesh);
 	}
 }
@@ -847,7 +847,7 @@ GuiViewComponent::showAssertLists() noexcept
 
 	static ray::float2 imageSize = ray::float2(64, 64);
 
-	if (ray::Gui::beginDock("Assert", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	if (ray::Gui::beginDock("Asset", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		int id = 0;
 

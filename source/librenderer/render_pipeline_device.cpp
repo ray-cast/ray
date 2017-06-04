@@ -133,7 +133,7 @@ RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTe
 	textureDesc.setHeight(h);
 	textureDesc.setTexDim(dim);
 	textureDesc.setTexFormat(format);
-	textureDesc.setSamplerFilter(filter);
+	textureDesc.setSamplerFilter(filter, filter);
 	textureDesc.setSamplerWrap(warp);
 	return _graphicsDevice->createTexture(textureDesc);
 }

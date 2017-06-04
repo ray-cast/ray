@@ -181,9 +181,9 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerBloomDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 	samplerBloomDesc.setMipBase(0);
-	samplerBloomDesc.setMipLevel(1);
+	samplerBloomDesc.setMipNums(1);
 	samplerBloomDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
+	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest, GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
 	_texBloom1Map = pipeline.createTexture(samplerBloomDesc);
 	_texBloom2Map = pipeline.createTexture(samplerBloomDesc);
 
@@ -193,9 +193,9 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerLogDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	samplerLogDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16SFloat);
 	samplerLogDesc.setMipBase(0);
-	samplerLogDesc.setMipLevel(9);
+	samplerLogDesc.setMipNums(9);
 	samplerLogDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	samplerLogDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
+	samplerLogDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 	_texSampleLogMap = pipeline.createTexture(samplerLogDesc);
 
 	GraphicsTextureDesc samplerLumDesc;
@@ -203,7 +203,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerLumDesc.setHeight(1);
 	samplerLumDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	samplerLumDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16SFloat);
-	samplerLumDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	samplerLumDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	samplerLumDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_texSampleLumMap = pipeline.createTexture(samplerLumDesc);
 

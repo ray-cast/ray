@@ -93,6 +93,8 @@ private:
 	void onModelPicker(float x, float y) noexcept;
 
 private:
+	bool makeCubeObject() noexcept;
+
 	void showMainMenu() noexcept;
 	void showStyleEditor() noexcept;
 	void showLightMass() noexcept;
@@ -130,6 +132,8 @@ private:
 
 private:
 	ray::GameObject* _selectedObject;
+	ray::GameObjectPtr _cube;
+
 	std::weak_ptr<ray::CameraComponent> _cameraComponent;
 
 	ray::float4 _viewport;

@@ -49,7 +49,8 @@ GraphicsTextureDesc::GraphicsTextureDesc() noexcept
 	, _mipLevel(1)
 	, _format(GraphicsFormat::GraphicsFormatUndefined)
 	, _dim(GraphicsTextureDim::GraphicsTextureDim2D)
-	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear)
+	, _filterMin(GraphicsSamplerFilter::GraphicsSamplerFilterLinear)
+	, _filterMag(GraphicsSamplerFilter::GraphicsSamplerFilterLinear)
 	, _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat)
 	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis0)
 	, _textureUsage(GraphicsViewUsageFlagBits::GraphicsViewUsageFlagBitsSampledBit)
@@ -107,12 +108,6 @@ GraphicsTextureDesc::getDepth() const noexcept
 	return _size.z;
 }
 
-const uint3&
-GraphicsTextureDesc::getSize() const noexcept
-{
-	return _size;
-}
-
 void
 GraphicsTextureDesc::setTexFormat(GraphicsFormat format) noexcept
 {
@@ -134,7 +129,7 @@ GraphicsTextureDesc::setTexTiling(GraphicsImageTiling tiling) noexcept
 }
 
 void
-GraphicsTextureDesc::setTexUsage(std::uint32_t flags) noexcept
+GraphicsTextureDesc::setTexUsage(GraphicsViewUsageFlags flags) noexcept
 {
 	_textureUsage = flags;
 }
@@ -151,7 +146,7 @@ GraphicsTextureDesc::getTexDim() const noexcept
 	return _dim;
 }
 
-std::uint32_t
+GraphicsViewUsageFlags
 GraphicsTextureDesc::getTexUsage() const noexcept
 {
 	return _textureUsage;
@@ -170,9 +165,22 @@ GraphicsTextureDesc::setSamplerWrap(GraphicsSamplerWrap wrap) noexcept
 }
 
 void
-GraphicsTextureDesc::setSamplerFilter(GraphicsSamplerFilter filter) noexcept
+GraphicsTextureDesc::setSamplerMinFilter(GraphicsSamplerFilter filter) noexcept
 {
-	_filter = filter;
+	_filterMin = filter;
+}
+
+void
+GraphicsTextureDesc::setSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
+{
+	_filterMag = filter;
+}
+
+void
+GraphicsTextureDesc::setSamplerFilter(GraphicsSamplerFilter minFilter, GraphicsSamplerFilter magFilter) noexcept
+{
+	_filterMin = minFilter;
+	_filterMag = magFilter;
 }
 
 void
@@ -188,9 +196,15 @@ GraphicsTextureDesc::getSamplerWrap() const noexcept
 }
 
 GraphicsSamplerFilter
-GraphicsTextureDesc::getSamplerFilter() const noexcept
+GraphicsTextureDesc::getSamplerMinFilter() const noexcept
 {
-	return _filter;
+	return _filterMin;
+}
+
+GraphicsSamplerFilter
+GraphicsTextureDesc::getSamplerMagFilter() const noexcept
+{
+	return _filterMag;
 }
 
 GraphicsSamplerAnis
@@ -236,9 +250,9 @@ GraphicsTextureDesc::getLayerBase() const noexcept
 }
 
 void
-GraphicsTextureDesc::setMipLevel(std::uint32_t level) noexcept
+GraphicsTextureDesc::setMipNums(std::uint32_t nums) noexcept
 {
-	_mipLevel = level;
+	_mipLevel = nums;
 }
 
 void
@@ -248,7 +262,7 @@ GraphicsTextureDesc::setMipBase(std::uint32_t level) noexcept
 }
 
 std::uint32_t
-GraphicsTextureDesc::getMipLevel() const noexcept
+GraphicsTextureDesc::getMipNums() const noexcept
 {
 	return _mipLevel;
 }

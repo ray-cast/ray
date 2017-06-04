@@ -335,7 +335,7 @@ GuiControllerComponent::makeMainCamera() noexcept
 	textureDesc.setWidth(ray::Gui::getDisplaySize().x);
 	textureDesc.setHeight(ray::Gui::getDisplaySize().y);
 	textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
-	textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
 	if (!renderTexture)
 		return false;

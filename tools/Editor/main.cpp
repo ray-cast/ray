@@ -39,9 +39,9 @@
 
 int main(int argc, const char* argv[])
 {
-	rayInit(argv[0], "dlc:/LightMass/scenes/scene.json");
+	rayInit(argv[0], "dlc:/Editor/scenes/scene.json");
 
-	if (rayOpenWindow("Editor", 1376, 768))
+	if (rayOpenWindow("Ray Labs", 1376, 768))
 	{
 		while (!rayIsQuitRequest())
 			rayUpdate();

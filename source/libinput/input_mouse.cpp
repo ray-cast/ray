@@ -309,6 +309,11 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	break;
 	case InputEvent::MouseWheelDown:
 	{
+		_mouseAxisX = 0;
+		_mouseAxisY = 0;
+		_lastX = _mouseX;
+		_lastY = _mouseY;
+
 		auto& key = this->_buttonState[InputButton::MOUSEWHEEL];
 		key.up = false;
 		key.down = true;
@@ -317,6 +322,11 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	break;
 	case InputEvent::MouseWheelUp:
 	{
+		_mouseAxisX = 0;
+		_mouseAxisY = 0;
+		_lastX = _mouseX;
+		_lastY = _mouseY;
+
 		auto& key = this->_buttonState[InputButton::MOUSEWHEEL];
 		key.up = true;
 		key.pressed = false;

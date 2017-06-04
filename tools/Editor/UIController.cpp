@@ -314,7 +314,7 @@ GuiControllerComponent::makeCubeObject() noexcept
 	auto cubeMesh = std::make_shared<ray::MeshProperty>();
 	cubeMesh->makeCubeWireframe(1.0, 1.0, 1.0);
 
-	material->getParameter("diffuse")->uniform4f(0.0, 1.0, 0.0, 0.9);
+	material->getParameter("diffuse")->uniform4f(0.0, 0.8, 0.0, 0.9);
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setActive(true);
@@ -363,7 +363,7 @@ GuiControllerComponent::makeMainCamera() noexcept
 	camera->setCameraRenderFlags(ray::CameraRenderFlagBits::CameraRenderTextureBit | ray::CameraRenderFlagBits::CameraRenderShadingBit);
 
 	auto object = std::make_shared<ray::GameObject>();
-	object->setName("MainCamera");
+	object->setName("main camera");
 	object->addComponent(camera);
 	object->addComponent(std::make_shared<FirstPersonCameraComponent>());
 	object->setActive(true);
@@ -372,7 +372,7 @@ GuiControllerComponent::makeMainCamera() noexcept
 
 	this->getGameObject()->addChild(object);
 
-	_cameras.push_back(object);
+	_cameras.push_back(std::move(object));
 
 	return true;
 }
@@ -401,8 +401,8 @@ GuiControllerComponent::makeSphereObjects() noexcept
 	gameObject->setActive(true);
 	gameObject->setScaleAll(2.5f);
 
-	gameObject->addComponent(std::make_shared<ray::MeshComponent>(sphereMesh));
-	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(material));
+	gameObject->addComponent(std::make_shared<ray::MeshComponent>(std::move(sphereMesh)));
+	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(std::move(material)));
 
 	for (std::uint8_t i = 0; i < 10; i++)
 	{
@@ -434,7 +434,7 @@ GuiControllerComponent::makeSphereObjects() noexcept
 			material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
 			material->getParameter("texNormal")->uniformTexture(normalMap);
 
-			_objects.push_back(newGameObject);
+			_objects.push_back(std::move(newGameObject));
 		}
 	}
 

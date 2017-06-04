@@ -417,7 +417,7 @@ MaterialVariant::uniform4f(const float4& value) noexcept
 void
 MaterialVariant::uniform4f(float f1, float f2, float f3, float f4) noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat4);
 	_value.f[0] = f1;
 	_value.f[1] = f2;
 	_value.f[2] = f3;

@@ -317,6 +317,7 @@ GuiControllerComponent::makeCubeObject() noexcept
 	material->getParameter("diffuse")->uniform4f(0.0, 0.8, 0.0, 0.9);
 
 	auto gameObject = std::make_shared<ray::GameObject>();
+	gameObject->setName("wireframe");
 	gameObject->setActive(true);
 	gameObject->setScaleAll(0.0f);
 

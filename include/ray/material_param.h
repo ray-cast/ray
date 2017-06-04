@@ -192,6 +192,8 @@ public:
 	void uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 	void uniformBuffer(GraphicsDataPtr ubo) noexcept;
 
+	const MaterialVariant& value() const noexcept;
+
 	void addParamListener(MaterialParamListener* listener) noexcept;
 	void removeParamListener(MaterialParamListener* listener) noexcept;
 
@@ -204,7 +206,8 @@ private:
 private:
 	std::string _name;
 	GlobalSemanticType _semanticType;
-	GraphicsUniformType _uniformType;
+
+	MaterialVariant _variant;
 	std::vector<MaterialParamListener*> _listeners;
 };
 

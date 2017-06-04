@@ -70,6 +70,18 @@ Material::close() noexcept
 }
 
 void
+Material::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+Material::getName() const noexcept
+{
+	return _name;
+}
+
+void
 Material::addTech(const MaterialTechPtr& technique) noexcept
 {
 	assert(technique);

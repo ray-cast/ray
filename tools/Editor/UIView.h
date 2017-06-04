@@ -114,11 +114,14 @@ private:
 	void showProjectSaveBrowse() noexcept;
 	void showProjectSaveAsBrowse() noexcept;
 
-	void showMeshesLists() noexcept;
+	void showHierarchyWindow() noexcept;
 	void showAssertLists() noexcept;
-	void showMaterialEditor() noexcept;
+	void showInspectorWindow() noexcept;
 	void showCameraWindow() noexcept;
 	void showSceneWindow() noexcept;
+
+	void showTransformWindow() noexcept;
+	void showMaterialWindow(const ray::MaterialPtr& material) noexcept;
 
 	void startUVMapper() noexcept;
 	void startLightMass() noexcept;
@@ -143,10 +146,11 @@ private:
 	bool _showWindowAll;
 	bool _showMainMenu;
 	bool _showLightMassWindow;
+	bool _showHierarchyWindow;
 	bool _showInspectorWindow;
 	bool _showAssertWindow;
 	bool _showCameraWindow;
-	bool _showMaterialEditorWindow;
+	bool _showMaterialWindow;
 	bool _showStyleEditor;
 	bool _showAboutWindow;
 	bool _showAboutWindowFirst;

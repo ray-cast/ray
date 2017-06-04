@@ -55,6 +55,9 @@ public:
 	bool setup() noexcept;
 	void close() noexcept;
 
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
 	void addTech(const MaterialTechPtr& technique) noexcept;
 	void removeTech(const MaterialTechPtr& technique) noexcept;
 	MaterialTechPtr getTech(const std::string& name) noexcept;
@@ -79,6 +82,7 @@ private:
 	Material& operator=(const Material&) noexcept = delete;
 
 private:
+	std::string _name;
 	MaterialMacros _macros;
 	MaterialParams _parameters;
 	MaterialTechniques _techniques;

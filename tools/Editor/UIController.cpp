@@ -419,21 +419,38 @@ GuiControllerComponent::makeSphereObjects() noexcept
 
 			auto material = newGameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 
-			material->getParameter("quality")->uniform4f(ray::float4(1.0, 1.0, 0.0, 0.0));
-			material->getParameter("diffuse")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
+			material->getParameter("albedo")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
+			material->getParameter("albedoMap")->uniformTexture(diffuseMap);
+			material->getParameter("albedoMapFrom")->uniform1i(1);
+			material->getParameter("albedoMapLoopNum")->uniform2f(1.0f, 1.0f);
+
+			material->getParameter("normalMap")->uniformTexture(normalMap);
+			material->getParameter("normalMapFrom")->uniform1i(1);
+			material->getParameter("normalMapLoopNum")->uniform2f(1.0f, 1.0f);
+
+			material->getParameter("smoothness")->uniform1f(shininessParams[i * 10 + j]);
+			material->getParameter("smoothnessMapFrom")->uniform1i(0);
+			material->getParameter("smoothnessMapLoopNum")->uniform2f(1.0f, 1.0f);
+
 			material->getParameter("metalness")->uniform1f(0);
+			material->getParameter("metalnessMapFrom")->uniform1i(0);
+			material->getParameter("metalnessMapLoopNum")->uniform2f(1.0f, 1.0f);
+
 			material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
+			material->getParameter("specularMapFrom")->uniform1i(0);
+			material->getParameter("specularMapLoopNum")->uniform2f(1.0f, 1.0f);
+
+			material->getParameter("occlusion")->uniform1f(1.0);
+			material->getParameter("occlusionMapFrom")->uniform1i(0);
+			material->getParameter("occlusionMapLoopNum")->uniform2f(1.0f, 1.0f);
 
 			if (shininessParams[i * 10 + j] > 0.45 &&
 				shininessParams[i * 10 + j] < 0.8 ||
 				shininessParams[i * 10 + j] > 0.95)
 			{
-				material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
+				material->getParameter("albedoMapFrom")->uniform1i(0);
+				material->getParameter("normalMapFrom")->uniform1i(0);
 			}
-
-			material->getParameter("smoothness")->uniform1f(shininessParams[i * 10 + j]);
-			material->getParameter("texDiffuse")->uniformTexture(diffuseMap);
-			material->getParameter("texNormal")->uniformTexture(normalMap);
 
 			_objects.push_back(std::move(newGameObject));
 		}
@@ -585,11 +602,10 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 			{
 				auto material = materialTemp->clone();
 
-				material->getParameter("quality")->uniform4f(ray::float4(0.0, 0.0, 0.0, 0.0));
-				material->getParameter("diffuse")->uniform3f(ray::math::srgb2linear(_model->materials[i].Diffuse));
+				material->getParameter("albedo")->uniform3f(ray::math::srgb2linear(_model->materials[i].Diffuse));
+				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(_model->materials[i].Shininess));
 				material->getParameter("metalness")->uniform1f(0.0);
 				material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
-				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(_model->materials[i].Shininess));
 
 				std::int16_t textureID = 0;
 				if (_model->header.sizeOfTexture == 1)
@@ -605,8 +621,8 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 					ray::GraphicsTexturePtr texture;
 					if (ray::ResManager::instance()->createTexture(ray::util::directory(path) + name, texture))
 					{
-						material->getParameter("quality")->uniform4f(ray::float4(1.0, 0.0, 0.0, 0.0));
-						material->getParameter("texDiffuse")->uniformTexture(texture);
+						material->getParameter("albedoMap")->uniformTexture(texture);
+						material->getParameter("albedoMapFrom")->uniform1i(1);
 					}
 				}
 

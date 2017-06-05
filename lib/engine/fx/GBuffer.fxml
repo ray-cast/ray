@@ -16,7 +16,7 @@
                 float3 normal;
                 float3 albedo;
                 float3 specular;
-                float3 transmittance;
+                float3 customB;
                 float smoothness;
                 float metalness;
                 float occlusion;
@@ -116,9 +116,9 @@
 
                 if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
                 {
-                    material.transmittance = EncodeYcbcr(material.transmittance);
-                    gbuffer.buffer3.yz = material.transmittance.gb;
-                    gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
+                    material.customB = EncodeYcbcr(material.customB);
+                    gbuffer.buffer3.yz = material.customB.gb;
+                    gbuffer.buffer3.w = material.customB.r * MAX_FRACTIONAL_8_BIT;
                 }
 
                 gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
@@ -149,12 +149,12 @@
                 if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
                 {
                     material.specular = buffer3.xxx;
-                    material.transmittance = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+                    material.customB = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
                 }
                 else
                 {
                     material.specular = DecodeYcbcr(buffer3.xyz);
-                    material.transmittance = 0;
+                    material.customB = 0;
                 }
             }
 

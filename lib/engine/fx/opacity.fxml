@@ -1,199 +1,225 @@
 <?xml version='1.0'?>
 <effect language="hlsl">
-    <include name="sys:fx/Gbuffer.fxml"/>
-    <include name="sys:fx/inputlayout.fxml"/>
-    <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
-    <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
-    <parameter name="quality" type="float4"/>
-    <parameter name="diffuse" type="float3"/>
-    <parameter name="specular" type="float3"/>
-    <parameter name="transmittance" type="float3"/>
-    <parameter name="metalness" type="float"/>
-    <parameter name="smoothness" type="float"/>
-    <parameter name="texDiffuse" type="texture2D"/>
-    <parameter name="texNormal" type="texture2D" />
-    <parameter name="texSpecular" type="texture2D" />
-    <shader>
-        <![CDATA[
-            float3 DecodeNormalMap(Texture2D normal, float2 coord)
-            {
-                float3 bump;
-                bump.xy = normal.Sample(PointClamp, coord).gr * 2.0 - 1.0;
-                bump.z = sqrt(1.0 - bump.x * bump.x - bump.y * bump.y);
-                return bump;
-            }
+	<include name="sys:fx/Gbuffer.fxml"/>
+	<include name="sys:fx/inputlayout.fxml"/>
+	<parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
+	<parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse"/>
+	<parameter name="albedo" type="float3"/>
+	<parameter name="albedoMap" type="texture2D"/>
+	<parameter name="albedoMapFrom" type="int"/>
+	<parameter name="albedoMapFilp" type="float"/>
+	<parameter name="albedoMapLoopNum" type="float2"/>
+	<parameter name="albedoSub" type="float3"/>
+	<parameter name="albedoSubMap" type="texture2D"/>
+	<parameter name="albedoSubMapFrom" type="int"/>
+	<parameter name="albedoSubMapFilp" type="float"/>
+	<parameter name="albedoSubMapLoopNum" type="float2"/>
+	<parameter name="normalMap" type="texture2D"/>
+	<parameter name="normalMapFrom" type="int"/>
+	<parameter name="normalMapFilp" type="float"/>
+	<parameter name="normalMapScale" type="float"/>
+	<parameter name="normalMapLoopNum" type="float2"/>
+	<parameter name="normalSubMap" type="texture2D"/>
+	<parameter name="normalSubMapFrom" type="int"/>
+	<parameter name="normalSubMapFilp" type="float"/>
+	<parameter name="normalSubMapScale" type="float"/>
+	<parameter name="normalSubMapLoopNum" type="float2"/>
+	<parameter name="smoothness" type="float"/>
+	<parameter name="smoothnessMap" type="texture2D"/>
+	<parameter name="smoothnessMapFrom" type="int"/>
+	<parameter name="smoothnessMapFilp" type="float"/>
+	<parameter name="smoothnessMapSiwzzle" type="float4"/>
+	<parameter name="smoothnessMapLoopNum" type="float2"/>
+	<parameter name="metalness" type="float"/>
+	<parameter name="metalnessMap" type="texture2D"/>
+	<parameter name="metalnessMapFrom" type="int"/>
+	<parameter name="metalnessMapFilp" type="float"/>
+	<parameter name="metalnessMapSiwzzle" type="float4"/>
+	<parameter name="metalnessMapLoopNum" type="float2"/>
+	<parameter name="specular" type="float3"/>
+	<parameter name="specularMap" type="texture2D"/>
+	<parameter name="specularMapFrom" type="int"/>
+	<parameter name="specularMapFilp" type="float"/>
+	<parameter name="specularMapLoopNum" type="float2"/>
+	<parameter name="occlusion" type="float"/>
+	<parameter name="occlusionMap" type="texture2D"/>
+	<parameter name="occlusionMapFrom" type="int"/>
+	<parameter name="occlusionMapFilp" type="float"/>
+	<parameter name="occlusionMapSiwzzle" type="float4"/>
+	<parameter name="occlusionMapLoopNum" type="float2"/>
+	<parameter name="emissive" type="float3"/>
+	<parameter name="emissiveMap" type="texture2D"/>
+	<parameter name="emissiveMapFrom" type="int"/>
+	<parameter name="emissiveMapFilp" type="float"/>
+	<parameter name="emissiveMapLoopNum" type="float2"/>
+	<parameter name="customA" type="float"/>
+	<parameter name="customAMap" type="texture2D"/>
+	<parameter name="customAMapFrom" type="int"/>
+	<parameter name="customAMapFilp" type="float"/>
+	<parameter name="customASwizzle" type="float4"/>
+	<parameter name="customALoopNum" type="float2"/>
+	<parameter name="customB" type="float3"/>
+	<parameter name="customBMap" type="texture2D"/>
+	<parameter name="customBMapFrom" type="int"/>
+	<parameter name="customBMapFilp" type="float"/>
+	<parameter name="customBLoopNum" type="float2"/>
+	<shader>
+		<![CDATA[
+			float3 DecodeNormalMap(Texture2D normal, float2 coord)
+			{
+				float3 bump;
+				bump.xy = normal.Sample(PointClamp, coord).gr * 2.0 - 1.0;
+				bump.z = sqrt(1.0 - bump.x * bump.x - bump.y * bump.y);
+				return bump;
+			}
 
-            float3 GetAlbedo(Texture2D albedoMap, float3 albedo, float2 coord)
-            {
-                return srgb2linear(albedoMap.Sample(PointClamp, coord).rgb) * albedo;
-            }
+			float3 GetAlbedo(float2 coord)
+			{
+				if (albedoMapFrom > 0)
+				{
+					return srgb2linear(albedoMap.Sample(PointClamp, coord).rgb) * albedo;
+				}
+				else
+				{
+					return albedo;
+				}
+			}
 
-            float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
-            {
-                float3 tangentNormal;
-                if (quality > 0.55)
-                    tangentNormal = normalMap.Sample(PointClamp, coord).rgb * 2 - 1;
-                else
-                    tangentNormal = DecodeNormalMap(normalMap, coord);
+			float3 GetNormal(float3 normal, float3 tangent, float2 coord)
+			{
+				if (normalMapFrom > 0)
+				{
+					float3 tangentNormal = normalMap.Sample(PointClamp, coord).rgb * 2 - 1;
 
-                float3 N = normalize(normal);
-                float3 T = normalize(tangent);
-                float3 B = cross(N, T);
+					float3 N = normalize(normal);
+					float3 T = normalize(tangent);
+					float3 B = cross(N, T);
 
-                float3x3 tbn = float3x3(T, B, N);
-                float3 highNormal = mul(normalize(tangentNormal), tbn);
-                return normalize(highNormal);
-            }
+					float3x3 tbn = float3x3(T, B, N);
+					float3 highNormal = mul(normalize(tangentNormal), tbn);
+					return normalize(highNormal);
+				}
+				else
+				{
+					return normalize(normal);	
+				}
+			}
 
-            float2 GetSpecular(Texture2D specularMap, float2 coord)
-            {
-                return specularMap.Sample(PointClamp, coord).rg;
-            }
+			float2 GetSpecular(Texture2D specularMap, float2 coord)
+			{
+				return specularMap.Sample(PointClamp, coord).rg;
+			}
 
-            void DepthVS(
-                in float4 Position : POSITION,
-                out float4 oPosition : SV_Position)
-            {
-                oPosition = mul(matModelViewProject, Position);
-            }
+			void DepthVS(
+				in float4 Position : POSITION,
+				out float4 oPosition : SV_Position)
+			{
+				oPosition = mul(matModelViewProject, Position);
+			}
 
-            void DepthPS()
-            {
-            }
+			void DepthPS()
+			{
+			}
 
-            void ReflectiveShadowVS(
-                in float4 Position : POSITION,
-                in float4 TangentQuat : TANGENT,
-                in float2 Texcoord : TEXCOORD,
-                out float3 oNormal : TEXCOORD0,
-                out float2 oTexcoord : TEXCOORD1,
-                out float4 oPosition : SV_Position)
-            {
-                float3 Normal = QuaternionToNormal(TangentQuat * 2 - 1);
+			void ReflectiveShadowVS(
+				in float4 Position : POSITION,
+				in float4 TangentQuat : TANGENT,
+				in float2 Texcoord : TEXCOORD,
+				out float3 oNormal : TEXCOORD0,
+				out float2 oTexcoord : TEXCOORD1,
+				out float4 oPosition : SV_Position)
+			{
+				float3 Normal = QuaternionToNormal(TangentQuat * 2 - 1);
 
-                oTexcoord = Texcoord;
-                oNormal = mul(Normal, (float3x3)matModelViewInverse);
-                oPosition = mul(matModelViewProject, Position);
-            }
+				oTexcoord = Texcoord;
+				oNormal = mul(Normal, (float3x3)matModelViewInverse);
+				oPosition = mul(matModelViewProject, Position);
+			}
 
-            GbufferParam ReflectiveShadowPS(
-                in float3 normal : TEXCOORD0,
-                in float2 coord : TEXCOORD1)
-            {
-                MaterialParam material;
-                material.albedo = quality.r > 0.0 ? GetAlbedo(texDiffuse, diffuse, coord) : diffuse.rgb;
-                material.normal = normalize(normal);
+			GbufferParam ReflectiveShadowPS(
+				in float3 normal : TEXCOORD0,
+				in float2 coord : TEXCOORD1)
+			{
+				MaterialParam material;
+				material.albedo = GetAlbedo(coord);
+				material.normal = normalize(normal);
+				material.specular = specular;
+				material.smoothness = smoothness;
 
-                if (quality.b > 0.0)
-                {
-                    float4 specularTex = texSpecular.Sample(PointClamp, coord);
-                    material.specular = specularTex.r;
-                    material.smoothness = specularTex.g;
-                }
-                else
-                {
-                    material.specular = metalness;
-                    material.smoothness = smoothness;
-                }
+				material.metalness = metalness;
+				material.customB = customB;
+				material.occlusion = occlusion;
+				material.lightModel = LIGHTINGMODEL_NORMAL;
 
-                float3 dielectricColor = float3(0.04, 0.04, 0.04);
-                float3 diffColor = material.albedo * (1.0 - material.specular);
-                float3 specColor = lerp(dielectricColor.rgb, material.albedo, material.specular);
+				return EncodeGbuffer(material);
+			}
 
-                material.albedo = diffColor;
-                material.specular = specColor;
-                material.transmittance = transmittance;
-                material.metalness = metalness;
-                material.occlusion = 1;
-                material.lightModel = 1;
+			void OpaqueVS(
+				in float4 Position : POSITION,
+				in float4 TangentQuat : TANGENT,
+				in float2 Texcoord : TEXCOORD,
+				out float3 oNormal : TEXCOORD0,
+				out float3 oTangent : TEXCOORD1,
+				out float2 oTexcoord : TEXCOORD2,
+				out float4 oPosition : SV_Position)
+			{
+				TangentQuat = TangentQuat * 2 - 1;
 
-                return EncodeGbuffer(material);
-            }
+				float3 Normal = QuaternionToNormal(TangentQuat);
+				float3 Tangent = QuaternionToTangent(TangentQuat);
 
-            void OpaqueVS(
-                in float4 Position : POSITION,
-                in float4 TangentQuat : TANGENT,
-                in float2 Texcoord : TEXCOORD,
-                out float3 oNormal : TEXCOORD0,
-                out float3 oTangent : TEXCOORD1,
-                out float2 oTexcoord : TEXCOORD2,
-                out float4 oPosition : SV_Position)
-            {
-                TangentQuat = TangentQuat * 2 - 1;
+				oNormal = mul(Normal, (float3x3)matModelViewInverse);
+				oTangent = mul(Tangent, (float3x3)matModelViewInverse);
+				oTexcoord = Texcoord;
+				oPosition = mul(matModelViewProject, Position);
+			}
 
-                float3 Normal = QuaternionToNormal(TangentQuat);
-                float3 Tangent = QuaternionToTangent(TangentQuat);
+			GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 coord : TEXCOORD2)
+			{
+				MaterialParam material;
+				material.albedo = GetAlbedo(coord);
+				material.normal = GetNormal(iNormal, iTangent, coord);
+				material.specular = specular;
+				material.smoothness = smoothness;
 
-                oNormal = mul(Normal, (float3x3)matModelViewInverse);
-                oTangent = mul(Tangent, (float3x3)matModelViewInverse);
-                oTexcoord = Texcoord;
-                oPosition = mul(matModelViewProject, Position);
-            }
+				material.metalness = metalness;
+				material.customB = customB;
+				material.occlusion = occlusion;
+				material.lightModel = LIGHTINGMODEL_NORMAL;
 
-            GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 coord : TEXCOORD2)
-            {
-                MaterialParam material;
-                material.albedo = quality.r > 0.0 ? GetAlbedo(texDiffuse, diffuse, coord) : diffuse.rgb;
-                material.normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, coord, quality.g) : normalize(iNormal);
-
-                if (quality.b > 0.0)
-                {
-                    float4 specularTex = texSpecular.Sample(PointClamp, coord);
-                    material.specular = specularTex.r;
-                    material.smoothness = specularTex.g;
-                }
-                else
-                {
-                    material.specular = specular;
-                    material.smoothness = smoothness;
-                }
-
-                material.metalness = metalness;
-                material.transmittance = transmittance;
-                material.occlusion = 1;
-
-                if (quality.w > 0.0)
-                {
-                    material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-                }
-                else
-                {
-                    material.lightModel = LIGHTINGMODEL_NORMAL;
-                }
-
-                return EncodeGbuffer(material);
-            }
-        ]]>
-    </shader>
-    <technique name="Shadow">
-        <pass name="p0">
-            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
-            <state name="vertex" value="DepthVS"/>
-            <state name="fragment" value="DepthPS"/>
-            <state name="primitive" value="triangle" />
-        </pass>
-    </technique>
-    <technique name="ReflectiveShadow">
-        <pass name="p0">
-            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
-            <state name="vertex" value="ReflectiveShadowVS"/>
-            <state name="fragment" value="ReflectiveShadowPS"/>
-            <state name="primitive" value="triangle" />
-            <state name="colormask0" value="rgba" />
-            <state name="colormask1" value="rgba" />
-        </pass>
-    </technique>
-    <technique name="Opaque">
-        <pass name="p0">
-            <state name="inputlayout" value="POS3F_T4F_UV2F"/>
-            <state name="vertex" value="OpaqueVS"/>
-            <state name="fragment" value="OpaquePS"/>
-            <state name="primitive" value="triangle" />
-            <state name="colormask0" value="rgba" />
-            <state name="colormask1" value="rgba" />
-            <state name="stencilTest" value="true"/>
-            <state name="stencilPass" value="replace"/>
-            <state name="stencilTwoPass" value="replace"/>
-        </pass>
-    </technique>
+				return EncodeGbuffer(material);
+			}
+		]]>
+	</shader>
+	<technique name="Shadow">
+		<pass name="p0">
+			<state name="inputlayout" value="POS3F_T4F_UV2F"/>
+			<state name="vertex" value="DepthVS"/>
+			<state name="fragment" value="DepthPS"/>
+			<state name="primitive" value="triangle"/>
+		</pass>
+	</technique>
+	<technique name="ReflectiveShadow">
+		<pass name="p0">
+			<state name="inputlayout" value="POS3F_T4F_UV2F"/>
+			<state name="vertex" value="ReflectiveShadowVS"/>
+			<state name="fragment" value="ReflectiveShadowPS"/>
+			<state name="primitive" value="triangle"/>
+			<state name="colormask0" value="rgba"/>
+			<state name="colormask1" value="rgba"/>
+		</pass>
+	</technique>
+	<technique name="Opaque">
+		<pass name="p0">
+			<state name="inputlayout" value="POS3F_T4F_UV2F"/>
+			<state name="vertex" value="OpaqueVS"/>
+			<state name="fragment" value="OpaquePS"/>
+			<state name="primitive" value="triangle"/>
+			<state name="colormask0" value="rgba"/>
+			<state name="colormask1" value="rgba"/>
+			<state name="stencilTest" value="true"/>
+			<state name="stencilPass" value="replace"/>
+			<state name="stencilTwoPass" value="replace"/>
+		</pass>
+	</technique>
 </effect>

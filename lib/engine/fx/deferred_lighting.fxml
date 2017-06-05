@@ -124,7 +124,7 @@
 				float3 L = -lightEyeDirection;
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
-				float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
 				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
@@ -147,7 +147,7 @@
 				float3 L = -lightEyeDirection;
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
-				float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
 				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
@@ -171,7 +171,7 @@
 				float3 L = -lightEyeDirection;
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
-				float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
 				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
@@ -194,7 +194,7 @@
 				float3 L = -lightEyeDirection;
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
-				float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
 				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
@@ -220,7 +220,7 @@
 				float3 L = normalize(lightEyePosition - P);
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
-				float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
 				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
@@ -247,7 +247,7 @@
 				float3 L = normalize(lightEyePosition - P);
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
-				float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
 				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
@@ -274,7 +274,7 @@
 				float3 L = normalize(lightEyePosition - P);
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
-				float3 transmittance = TranslucencyBRDF(material.normal, L, material.transmittance);
+				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
 				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
@@ -311,7 +311,7 @@
 
 				float3 shading = 0.0;
 				shading += prefilteredDiffuse * material.albedo * envFactor.g * material.occlusion;
-				shading += prefilteredTransmittance * material.transmittance * envFactor.g;
+				shading += prefilteredTransmittance * material.customB * envFactor.g;
 				shading += prefilteredSpeculr * fresnel * envFactor.b;
 
 				return float4(shading, 0.0);

@@ -103,7 +103,7 @@
 		// http://www.crytek.com/download/izfrey_siggraph2011.pdf
 		float3 QuaternionTransform(float3 v, float4 quat)
 		{
-			return v + cross(quat.xyz, cross(quat.xyz, v) + quat.w * v) * 2;
+			return normalize(v + cross(quat.xyz, cross(quat.xyz, v) + quat.w * v) * 2);
 		}
 
 		float3 QuaternionToTangent(float4 quat)

@@ -546,6 +546,25 @@ MaterialMaker::instanceParameter(MaterialManager& manager, Material& material, i
 		param->setSemanticType(materialType);
 	}
 
+	if (!value.empty())
+	{
+		switch (uniformType)
+		{
+		case GraphicsUniformType::GraphicsUniformTypeFloat:
+			param->uniform1f(parseFloat<float>(value));
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat2:
+			param->uniform2f(parseFloat2<float>(value));
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat3:
+			param->uniform3f(parseFloat3<float>(value));
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat4:
+			param->uniform4f(parseFloat4<float>(value));
+			break;
+		}
+	}
+
 	material.addParameter(std::move(param));
 }
 
@@ -754,6 +773,7 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, ixml
 
 			if (parmName.empty())
 				continue;
+
 			if (parmType.empty())
 				continue;
 

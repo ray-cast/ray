@@ -823,7 +823,7 @@ GuiViewComponent::showHierarchyWindow() noexcept
 				{
 					auto& name = (*objects)[i]->getName();
 					char buffer[MAX_PATH];
-					sprintf_s(buffer, MAX_PATH, "|-subset%zu (%s)", i, name.empty() ? "empty" : name.c_str());
+					std::sprintf(buffer, "|-subset%zu (%s)", i, name.empty() ? "empty" : name.c_str());
 
 					if (ray::Gui::selectable(buffer, _selectedObject == (*objects)[i].get() ? true : false))
 					{
@@ -961,104 +961,179 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 	{
 		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
-			auto albedoFrom = 0;
-			auto albedoFilp = 0;
-			auto albedoApplyColor = 0;
-			auto albedoApplyDiffuse = false;
-			auto albedoApplyScale = false;
-			auto albedoColor = material->getParameter("diffuse")->value().getFloat3();
-			auto albedoLoopNum = ray::float2::One;
+			auto albedoColor = material->getParameter("albedo")->value().getFloat3();
+			auto albedoMapFrom = material->getParameter("albedoMapFrom")->value().getInt();
+			auto albedoMapFilp = (int)material->getParameter("albedoMapFilp")->value().getFloat();
+			auto albedoMapApplyDiffuse = false;
+			auto albedoMapLoopNum = material->getParameter("albedoMapLoopNum")->value().getFloat2();
 
 			ray::Gui::text("Texture :");
-			ray::Gui::combo("##albedo texture", &albedoFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+			if (ray::Gui::combo("##albedoMapFrom", &albedoMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
+				material->getParameter("albedoMapFrom")->uniform1i(albedoMapFrom);
 
-			if (albedoFrom >= 1 && albedoFrom <= 6)
+			if (albedoMapFrom >= 1 && albedoMapFrom <= 6)
 			{
 				ray::Gui::text("Texture filp :");
-				ray::Gui::combo("##albedo filp", &albedoFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				if (ray::Gui::combo("##albedoMapFilp", &albedoMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("albedoMapFilp")->uniform1f(albedoMapFilp);
 
 				ray::Gui::text("Texture loop x :");
-				ray::Gui::sliderFloat("##Texture loop x", &albedoLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##albedoMapLoopNumX", &albedoMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("albedoMapLoopNum")->uniform2f(albedoMapLoopNum);
 
 				ray::Gui::text("Texture loop y :");
-				ray::Gui::sliderFloat("##Texture loop y", &albedoLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##albedoMapLoopNumY", &albedoMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("albedoMapLoopNum")->uniform2f(albedoMapLoopNum);
 			}
 
-			ray::Gui::checkbox("Apply diffuse color", &albedoApplyDiffuse);
+			ray::Gui::checkbox("Apply diffuse color", &albedoMapApplyDiffuse);
 
 			ray::Gui::text("Color :");
 			if (ray::Gui::colorPicker3("##Albedo Color", albedoColor.ptr()))
-				material->getParameter("diffuse")->uniform3f(albedoColor);
+				material->getParameter("albedo")->uniform3f(albedoColor);
 
 			ray::Gui::treePop();
 		}
 
 		if (ray::Gui::treeNodeEx("AlbedoSub", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
-			auto albedoSubFrom = 0;
-			auto albedoSubFilp = 0;
-			auto albedoSubColor = ray::float3::One;
-			auto albedoSubLoopNum = ray::float2::One;
+			auto albedoSubType = 0;
+			auto albedoSubColor = material->getParameter("albedoSub")->value().getFloat3();
+			auto albedoSubMapFrom = material->getParameter("albedoSubMapFrom")->value().getInt();
+			auto albedoSubMapFilp = (int)material->getParameter("albedoSubMapFilp")->value().getFloat();
+			auto albedoSubMapLoopNum = material->getParameter("albedoSubMapLoopNum")->value().getFloat2();
 
 			ray::Gui::text("Texture:");
-			ray::Gui::combo("##albedo texture", &albedoSubFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+			if (ray::Gui::combo("##albedoSubMapFrom", &albedoSubMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
+				material->getParameter("albedoSubMapFrom")->uniform1i(albedoSubMapFrom);
 
-			if (albedoSubFrom >= 1 && albedoSubFrom <= 6)
+			if (albedoSubMapFrom >= 1 && albedoSubMapFrom <= 6)
 			{
 				ray::Gui::text("Texture type:");
-				ray::Gui::combo("##albedo type", &albedoSubFilp, TEXTURE_ALBEDO_MAP_TYPE, sizeof(TEXTURE_ALBEDO_MAP_TYPE) / sizeof(TEXTURE_ALBEDO_MAP_TYPE[0]));
+				ray::Gui::combo("##albedo type", &albedoSubType, TEXTURE_ALBEDO_MAP_TYPE, sizeof(TEXTURE_ALBEDO_MAP_TYPE) / sizeof(TEXTURE_ALBEDO_MAP_TYPE[0]));
 
 				ray::Gui::text("Texture filp:");
-				ray::Gui::combo("##albedo filp", &albedoSubFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				if (ray::Gui::combo("##albedoSubMapFilp", &albedoSubMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("albedoSubMapFilp")->uniform1f(albedoSubMapFilp);
 
 				ray::Gui::text("Texture loop x :");
-				ray::Gui::sliderFloat("##Texture loop x", &albedoSubLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##albedoSubMapLoopNumX", &albedoSubMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("albedoSubMapLoopNum")->uniform2f(albedoSubMapLoopNum);
 
 				ray::Gui::text("Texture loop y :");
-				ray::Gui::sliderFloat("##Texture loop y", &albedoSubLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##albedoSubMapLoopNumY", &albedoSubMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("albedoSubMapLoopNum")->uniform2f(albedoSubMapLoopNum);
 			}
 
 			ray::Gui::text("Color :");
-			ray::Gui::colorPicker3("##Albedo Color", albedoSubColor.ptr());
+			if (ray::Gui::colorPicker3("##albedoSubColor", albedoSubColor.ptr()))
+				material->getParameter("albedoSub")->uniform3f(albedoSubColor);
 
 			ray::Gui::treePop();
 		}
 
 		if (ray::Gui::treeNodeEx("Normals", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
+			auto normalMapType = 0;
+			auto normalMapFrom = material->getParameter("normalMapFrom")->value().getInt();
+			auto normalMapFilp = (int)material->getParameter("normalMapFilp")->value().getFloat();
+			auto normalMapScale = material->getParameter("normalMapScale")->value().getFloat();
+			auto normalMapLoopNum = material->getParameter("normalMapLoopNum")->value().getFloat2();
+
+			ray::Gui::text("Texture:");
+			if (ray::Gui::combo("##normalMapFrom", &normalMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
+				material->getParameter("normalMapFrom")->uniform1i(normalMapFrom);
+
+			if (normalMapFrom >= 1 && normalMapFrom <= 6)
+			{
+				ray::Gui::text("Texture type:");
+				ray::Gui::combo("##normalMapType", &normalMapType, TEXTURE_NORMAL_TYPE, sizeof(TEXTURE_NORMAL_TYPE) / sizeof(TEXTURE_NORMAL_TYPE[0]));
+
+				ray::Gui::text("Texture filp:");
+				if (ray::Gui::combo("##normalMapFilp", &normalMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("normalMapFilp")->uniform1f(normalMapFilp);
+
+				ray::Gui::text("Texture loop x :");
+				if (ray::Gui::sliderFloat("##normalMapLoopNumX", &normalMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("normalMapLoopNum")->uniform2f(normalMapLoopNum);
+
+				ray::Gui::text("Texture loop y :");
+				if (ray::Gui::sliderFloat("##normalMapLoopNumY", &normalMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("normalMapLoopNum")->uniform2f(normalMapLoopNum);
+			}
+
+			ray::Gui::text("Scale :");
+			if (ray::Gui::sliderFloat("##normalMapScale", &normalMapScale, 0.0f, 100.0f, "%.03f"))
+				material->getParameter("normalMapScale")->uniform1f(normalMapScale);
+
 			ray::Gui::treePop();
 		}
 
 		if (ray::Gui::treeNodeEx("NormalsSub", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
+			auto normalSubMapType = 0;
+			auto normalSubMapFrom = material->getParameter("normalSubMapFrom")->value().getInt();
+			auto normalSubMapFilp = (int)material->getParameter("normalSubMapFilp")->value().getFloat();
+			auto normalSubMapScale = material->getParameter("normalSubMapScale")->value().getFloat();
+			auto normalSubMapLoopNum = material->getParameter("normalSubMapLoopNum")->value().getFloat2();
+
+			ray::Gui::text("Texture:");
+			if (ray::Gui::combo("##normalSubMapFrom", &normalSubMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
+				material->getParameter("normalSubMapFrom")->uniform1i(normalSubMapFrom);
+
+			if (normalSubMapFrom >= 1 && normalSubMapFrom <= 6)
+			{
+				ray::Gui::text("Texture type:");
+				ray::Gui::combo("##normalSubMapType", &normalSubMapType, TEXTURE_NORMAL_TYPE, sizeof(TEXTURE_NORMAL_TYPE) / sizeof(TEXTURE_NORMAL_TYPE[0]));
+
+				ray::Gui::text("Texture filp:");
+				if (ray::Gui::combo("##normalSubMapFilp", &normalSubMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("normalSubMapFilp")->uniform1f(normalSubMapFilp);
+
+				ray::Gui::text("Texture loop x :");
+				if (ray::Gui::sliderFloat("##normalSubMapLoopNumX", &normalSubMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("normalSubMapLoopNum")->uniform2f(normalSubMapLoopNum);
+
+				ray::Gui::text("Texture loop y :");
+				if (ray::Gui::sliderFloat("##normalSubMapLoopNumY", &normalSubMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("normalSubMapLoopNum")->uniform2f(normalSubMapLoopNum);
+			}
+
+			ray::Gui::text("Scale :");
+			if (ray::Gui::sliderFloat("##normalSubMapScale", &normalSubMapScale, 0.0f, 100.0f, "%.03f"))
+				material->getParameter("normalSubMapScale")->uniform1f(normalSubMapScale);
+
 			ray::Gui::treePop();
 		}
 
 		if (ray::Gui::treeNodeEx("Smoothness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
-			auto smoothnessFrom = 0;
-			auto smoothnessType = 0;
-			auto smoothnessFilp = 0;
-			auto smoothnessApplyScale = 0;
 			auto smoothness = material->getParameter("smoothness")->value().getFloat();
-			auto smoothnessLoopNum = ray::float2::One;
+			auto smoothnessMapType = 0;
+			auto smoothnessMapFrom = material->getParameter("smoothnessMapFrom")->value().getInt();
+			auto smoothnessMapFilp = (int)material->getParameter("smoothnessMapFilp")->value().getFloat();
+			auto smoothnessMapLoopNum = material->getParameter("smoothnessMapLoopNum")->value().getFloat2();
 
 			ray::Gui::text("Texture :");
-			ray::Gui::combo("##smoothness texture", &smoothnessFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+			if (ray::Gui::combo("##smoothnessMapFrom", &smoothnessMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
+				material->getParameter("smoothnessMapFrom")->uniform1i(smoothnessMapFrom);
 
-			if (smoothnessFrom >= 1 && smoothnessFrom <= 6)
+			if (smoothnessMapFrom >= 1 && smoothnessMapFrom <= 6)
 			{
 				ray::Gui::text("Texture type :");
-				ray::Gui::combo("##smoothness type", &smoothnessFrom, TEXTURE_SMOOTHNESS_TYPE, sizeof(TEXTURE_SMOOTHNESS_TYPE) / sizeof(TEXTURE_SMOOTHNESS_TYPE[0]));
+				ray::Gui::combo("##smoothness type", &smoothnessMapFrom, TEXTURE_SMOOTHNESS_TYPE, sizeof(TEXTURE_SMOOTHNESS_TYPE) / sizeof(TEXTURE_SMOOTHNESS_TYPE[0]));
 
 				ray::Gui::text("Texture filp :");
-				ray::Gui::combo("##smoothness filp", &smoothnessFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				if (ray::Gui::combo("##smoothness filp", &smoothnessMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("smoothnessMapFilp")->uniform1f(smoothnessMapFilp);
 
 				ray::Gui::text("Texture loop x :");
-				ray::Gui::sliderFloat("##Texture loop x", &smoothnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##smoothnessMapLoopNumX", &smoothnessMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("smoothnessMapLoopNum")->uniform2f(smoothnessMapLoopNum);
 
 				ray::Gui::text("Texture loop y :");
-				ray::Gui::sliderFloat("##Texture loop y", &smoothnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##smoothnessMapLoopNumY", &smoothnessMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("smoothnessMapLoopNum")->uniform2f(smoothnessMapLoopNum);
 
 				ray::Gui::text("Texture swizzle :");
 				ray::Gui::button("R", ray::float2(40, 20));
@@ -1089,23 +1164,27 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 		if (ray::Gui::treeNodeEx("Metalness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			auto metalness = material->getParameter("metalness")->value().getFloat();
-			auto metalnessFrom = 0;
-			auto metalnessFilp = 0;
-			auto metalnessLoopNum = ray::float2::One;
+			auto metalnessFrom = material->getParameter("metalnessMapFrom")->value().getInt();
+			auto metalnessMapFilp = (int)material->getParameter("metalnessMapFilp")->value().getFloat();
+			auto metalnessMapLoopNum = material->getParameter("metalnessMapLoopNum")->value().getFloat2();
 
 			ray::Gui::text("Texture :");
-			ray::Gui::combo("##metalness texture", &metalnessFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+			if (ray::Gui::combo("##metalnessFrom", &metalnessFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
+				material->getParameter("metalnessMapFrom")->uniform1i(metalnessFrom);
 
 			if (metalnessFrom >= 1 && metalnessFrom <= 6)
 			{
 				ray::Gui::text("Texture filp :");
-				ray::Gui::combo("##metalness filp", &metalnessFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				if (ray::Gui::combo("##metalness filp", &metalnessMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("metalnessMapFilp")->uniform1f(metalnessMapFilp);
 
 				ray::Gui::text("Texture loop x :");
-				ray::Gui::sliderFloat("##Texture loop x", &metalnessLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##Texture loop x", &metalnessMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("metalnessMapLoopNum")->uniform2f(metalnessMapLoopNum);
 
 				ray::Gui::text("Texture loop y :");
-				ray::Gui::sliderFloat("##Texture loop y", &metalnessLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##Texture loop y", &metalnessMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("metalnessMapLoopNum")->uniform2f(metalnessMapLoopNum);
 
 				ray::Gui::text("Texture swizzle :");
 				ray::Gui::button("R", ray::float2(40, 20));
@@ -1135,54 +1214,60 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 
 		if (ray::Gui::treeNodeEx("Specular", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
-			auto specularFrom = 0;
-			auto specularFilp = 0;
-			auto specularApplyColor = 0;
-			auto specularColor = material->getParameter("specular")->value().getFloat3();
-			auto specularLoopNum = ray::float2::One;
+			auto specularFrom = material->getParameter("albedoMapFrom")->value().getInt();
+			auto specular = material->getParameter("specular")->value().getFloat3();
+			auto specularMapFilp = (int)material->getParameter("specularMapFilp")->value().getFloat();
+			auto specularMapLoopNum = material->getParameter("specularMapLoopNum")->value().getFloat2();
 
 			ray::Gui::text("Texture :");
-			ray::Gui::combo("##specular texture", &specularFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+			ray::Gui::combo("##specularFrom", &specularFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
 
 			if (specularFrom >= 1 && specularFrom <= 6)
 			{
 				ray::Gui::text("Texture filp :");
-				ray::Gui::combo("##specular filp", &specularFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				if (ray::Gui::combo("##specularMapFilp", &specularMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("specularMapFilp")->uniform1f(specularMapFilp);
 
 				ray::Gui::text("Texture loop x :");
-				ray::Gui::sliderFloat("##Texture loop x", &specularLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##specularMapLoopNumX", &specularMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("specularMapLoopNum")->uniform2f(specularMapLoopNum);
 
 				ray::Gui::text("Texture loop y :");
-				ray::Gui::sliderFloat("##Texture loop y", &specularLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##specularMapLoopNumY", &specularMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("specularMapLoopNum")->uniform2f(specularMapLoopNum);
 			}
 
 			ray::Gui::text("Color :");
-			if (ray::Gui::colorPicker3("##Specular Color", specularColor.ptr()))
-				material->getParameter("specular")->uniform3f(specularColor);
+			if (ray::Gui::colorPicker3("##specular", specular.ptr()))
+				material->getParameter("specular")->uniform3f(specular);
 
 			ray::Gui::treePop();
 		}
 
 		if (ray::Gui::treeNodeEx("Occlusion", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
-			auto occlusion = 1.0f;
-			auto occlusionFrom = 0;
-			auto occlusionFilp = 0;
-			auto occlusionLoopNum = ray::float2::One;
+			auto occlusion = material->getParameter("occlusion")->value().getFloat();
+			auto occlusionMapFrom = material->getParameter("occlusionMapFrom")->value().getInt();
+			auto occlusionMapFilp = (int)material->getParameter("occlusionMapFilp")->value().getFloat();
+			auto occlusionMapLoopNum = material->getParameter("occlusionMapLoopNum")->value().getFloat2();
 
 			ray::Gui::text("Texture :");
-			ray::Gui::combo("##occlusion texture", &occlusionFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+			if (ray::Gui::combo("##occlusionMapFrom ", &occlusionMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
+				material->getParameter("occlusionMapFrom")->uniform1i(occlusionMapFrom);
 
-			if (occlusionFrom >= 1 && occlusionFrom <= 6)
+			if (occlusionMapFrom >= 1 && occlusionMapFrom <= 6)
 			{
 				ray::Gui::text("Texture filp :");
-				ray::Gui::combo("##occlusion filp", &occlusionFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				if (ray::Gui::combo("##occlusion filp", &occlusionMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("occlusionMapFilp")->uniform1f(occlusionMapFilp);
 
 				ray::Gui::text("Texture loop x :");
-				ray::Gui::sliderFloat("##Texture loop x", &occlusionLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##occlusionMapLoopNumX", &occlusionMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("occlusionMapLoopNum")->uniform2f(occlusionMapLoopNum);
 
 				ray::Gui::text("Texture loop y :");
-				ray::Gui::sliderFloat("##Texture loop y", &occlusionLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##occlusionMapLoopNumY", &occlusionMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("occlusionMapLoopNum")->uniform2f(occlusionMapLoopNum);
 
 				ray::Gui::text("Texture swizzle :");
 				ray::Gui::button("R", ray::float2(40, 20));
@@ -1204,32 +1289,36 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 			}
 
 			ray::Gui::text("Occlusion :");
-			ray::Gui::sliderFloat("##occlusion", &occlusion, 0.0f, 1.0f, "%.03f");
+			if (ray::Gui::sliderFloat("##occlusion", &occlusion, 0.0f, 1.0f, "%.03f"))
+				material->getParameter("occlusion")->uniform1f(occlusion);
 
 			ray::Gui::treePop();
 		}
 
 		if (ray::Gui::treeNodeEx("Emissive", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
-			auto emissiveFrom = 0;
-			auto emissiveFilp = 0;
-			auto emissiveApplyColor = 0;
-			auto emissiveColor = ray::float3::One;
-			auto emissiveLoopNum = ray::float2::One;
+			auto emissiveColor = material->getParameter("emissive")->value().getFloat3();
+			auto emissiveMapFrom = material->getParameter("emissiveMapFrom")->value().getInt();
+			auto emissiveMapFilp = (int)material->getParameter("emissiveMapFilp")->value().getFloat();
+			auto emissiveMapLoopNum = material->getParameter("emissiveMapLoopNum")->value().getFloat2();
 
 			ray::Gui::text("Texture :");
-			ray::Gui::combo("##emissive texture", &emissiveFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0]));
+			if (ray::Gui::combo("##emissiveMapFrom", &emissiveMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
+				material->getParameter("emissiveMapFrom")->uniform1i(emissiveMapFrom);
 
-			if (emissiveFrom >= 1 && emissiveFrom <= 6)
+			if (emissiveMapFrom >= 1 && emissiveMapFrom <= 6)
 			{
 				ray::Gui::text("Texture filp :");
-				ray::Gui::combo("##emissive filp", &emissiveFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0]));
+				if (ray::Gui::combo("##emissive filp", &emissiveMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material->getParameter("emissiveMapFilp")->uniform1f(emissiveMapFilp);
 
 				ray::Gui::text("Texture loop x :");
-				ray::Gui::sliderFloat("##Texture loop x", &emissiveLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##emissiveMapLoopNumX", &emissiveMapLoopNum.x, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("emissiveMapLoopNum")->uniform2f(emissiveMapLoopNum);
 
 				ray::Gui::text("Texture loop y :");
-				ray::Gui::sliderFloat("##Texture loop y", &emissiveLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f);
+				if (ray::Gui::sliderFloat("##emissiveMapLoopNumY", &emissiveMapLoopNum.y, 0.0f, 100.0f, "%.03f", 2.0f))
+					material->getParameter("emissiveMapLoopNum")->uniform2f(emissiveMapLoopNum);
 			}
 
 			ray::Gui::text("Color :");

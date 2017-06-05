@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2017-2018.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,49 +34,3 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_UI_PARAMS_H_
-#define _H_UI_PARAMS_H_
-
-#include <ray/game_component.h>
-
-struct GUIUvmapper
-{
-	GUIUvmapper() noexcept;
-
-	int chart;
-	int slot;
-	float margin;
-	float stretch;
-};
-
-struct GUILightMass
-{
-	GUILightMass() noexcept;
-
-	ray::float4 environmentColor;
-
-	int imageSize;
-	int sampleCount;
-	int interpolationPasses;
-
-	bool enableGI;
-	bool enableSkyLighting;
-
-	float hemisphereNear;
-	float hemisphereFar;
-	float interpolationThreshold;
-};
-
-struct GuiParams
-{
-	GUIUvmapper uvmapper;
-	GUILightMass lightmass;
-};
-
-enum class LightMassType
-{
-	UVMapper,
-	LightBaking,
-};
-
-#endif

@@ -973,10 +973,10 @@ GuiViewComponent::showTransformWindow(ray::GameObject* object) noexcept
 		auto rotation = ray::math::eulerAngles(object->getQuaternion());
 		auto scaling = object->getScale();
 
-		ray::Gui::text("Postion");
+		ray::Gui::text("Position");
 		ray::Gui::sameLine(80.0f);
 		ray::Gui::pushItemWidth(-1);
-		if (ray::Gui::dragFloat3("##translate", translate.ptr(), 0.1, -FLT_MAX, FLT_MAX))
+		if (ray::Gui::dragFloat3("##Position", translate.ptr(), 0.1f, -FLT_MAX, FLT_MAX))
 			object->setTranslate(translate);
 
 		ray::Gui::popItemWidth();
@@ -984,7 +984,7 @@ GuiViewComponent::showTransformWindow(ray::GameObject* object) noexcept
 		ray::Gui::text("Scale");
 		ray::Gui::sameLine(80.0f);
 		ray::Gui::pushItemWidth(-1);
-		if (ray::Gui::dragFloat3("##scale", scaling.ptr(), 0.1, 0.0, FLT_MAX))
+		if (ray::Gui::dragFloat3("##Scale", scaling.ptr(), 0.1f, 0.0f, FLT_MAX))
 			object->setScale(scaling);
 
 		ray::Gui::popItemWidth();
@@ -992,7 +992,7 @@ GuiViewComponent::showTransformWindow(ray::GameObject* object) noexcept
 		ray::Gui::text("Rotation");
 		ray::Gui::sameLine(80.0f);
 		ray::Gui::pushItemWidth(-1);
-		if (ray::Gui::dragFloat3("##rotation", rotation.ptr(), 0.1, -FLT_MAX, FLT_MAX))
+		if (ray::Gui::dragFloat3("##Rotation", rotation.ptr(), 0.1f, -FLT_MAX, FLT_MAX))
 		{
 			if (rotation.x < -180.0f) rotation.x = rotation.x + 360;
 			if (rotation.y < -180.0f) rotation.y = rotation.y + 360;
@@ -1020,11 +1020,11 @@ GuiViewComponent::showCameraEditorWindow(ray::CameraComponent* component) noexce
 		float fov = component->getAperture();
 
 		ray::Gui::text("Field of view :");
-		if (ray::Gui::dragFloat("##fov", &fov, 0.1, 1, 125))
+		if (ray::Gui::dragFloat("##fov", &fov, 0.1f, 1, 125))
 			component->setAperture(fov);
 
 		ray::Gui::text("Near :");
-		if (ray::Gui::dragFloat("##znear", &znear, 0.1f, 1e-3, 1.0f, "%.03f"))
+		if (ray::Gui::dragFloat("##znear", &znear, 1e-3f, 1e-3, 1.0f, "%.03f"))
 			component->setNear(znear);
 
 		ray::Gui::text("Far :");

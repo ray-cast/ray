@@ -357,7 +357,7 @@ GuiControllerComponent::makeMainCamera() noexcept
 		return false;
 
 	auto camera = std::make_shared<ray::CameraComponent>();
-	camera->setAperture(65.0f);
+	camera->setAperture(60.0f);
 	camera->setNear(0.1f);
 	camera->setFar(20000.0f);
 	camera->setFramebuffer(framebuffer);

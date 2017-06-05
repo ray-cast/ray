@@ -75,7 +75,6 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showCameraWindow = true;
 	_showHierarchyWindow = true;
 	_showInspectorWindow = true;
-	_showMaterialWindow = true;
 	_showStyleEditor = false;
 	_showAboutWindow = false;
 	_showAboutWindowFirst = false;
@@ -302,7 +301,6 @@ GuiViewComponent::showMainMenu() noexcept
 			ray::Gui::menuItem(_langs[UILang::Camera], 0, &_showCameraWindow);
 			ray::Gui::menuItem(_langs[UILang::Inspector], 0, &_showInspectorWindow);
 			ray::Gui::menuItem(_langs[UILang::LightMass], 0, &_showLightMassWindow);
-			ray::Gui::menuItem(_langs[UILang::Material], 0, &_showMaterialWindow);
 			ray::Gui::menuItem(_langs[UILang::StyleEditor], 0, &_showStyleEditor);
 			ray::Gui::endMenu();
 		}
@@ -940,6 +938,15 @@ GuiViewComponent::showInspectorWindow() noexcept
 	{
 		if (_selectedObject)
 		{
+			if (_selectedObject->getName() != "wireframe")
+				this->showTransformWindow(_selectedObject);
+
+			auto cameraComponent = _selectedObject->getComponent<ray::CameraComponent>();
+			if (cameraComponent)
+			{
+				this->showCameraEditorWindow(cameraComponent.get());
+			}
+
 			auto meshRenderer = _selectedObject->getComponent<ray::MeshRenderComponent>();
 			if (meshRenderer)
 			{
@@ -955,9 +962,83 @@ GuiViewComponent::showInspectorWindow() noexcept
 }
 
 void
+GuiViewComponent::showTransformWindow(ray::GameObject* object) noexcept
+{
+	if (!object)
+		return;
+
+	if (ray::Gui::treeNodeEx("Transform", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+	{
+		auto translate = object->getTranslate();
+		auto rotation = ray::math::eulerAngles(object->getQuaternion());
+		auto scaling = object->getScale();
+
+		ray::Gui::text("Postion");
+		ray::Gui::sameLine(80.0f);
+		ray::Gui::pushItemWidth(-1);
+		if (ray::Gui::dragFloat3("##translate", translate.ptr(), 0.1, -FLT_MAX, FLT_MAX))
+			object->setTranslate(translate);
+
+		ray::Gui::popItemWidth();
+
+		ray::Gui::text("Scale");
+		ray::Gui::sameLine(80.0f);
+		ray::Gui::pushItemWidth(-1);
+		if (ray::Gui::dragFloat3("##scale", scaling.ptr(), 0.1, 0.0, FLT_MAX))
+			object->setScale(scaling);
+
+		ray::Gui::popItemWidth();
+
+		ray::Gui::text("Rotation");
+		ray::Gui::sameLine(80.0f);
+		ray::Gui::pushItemWidth(-1);
+		if (ray::Gui::dragFloat3("##rotation", rotation.ptr(), 0.1, -FLT_MAX, FLT_MAX))
+		{
+			if (rotation.x < -180.0f) rotation.x = rotation.x + 360;
+			if (rotation.y < -180.0f) rotation.y = rotation.y + 360;
+			if (rotation.z < -180.0f) rotation.z = rotation.z + 360;
+			if (rotation.x > 180.0f) rotation.x = rotation.x - 360;
+			if (rotation.y > 180.0f) rotation.y = rotation.y - 360;
+			if (rotation.z > 180.0f) rotation.z = rotation.z - 360;
+
+			object->setQuaternion(ray::Quaternion(rotation));
+		}
+
+		ray::Gui::popItemWidth();
+
+		ray::Gui::treePop();
+	}
+}
+
+void
+GuiViewComponent::showCameraEditorWindow(ray::CameraComponent* component) noexcept
+{
+	if (ray::Gui::treeNodeEx("Camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+	{
+		float znear = component->getNear();
+		float zfar = component->getFar();
+		float fov = component->getAperture();
+
+		ray::Gui::text("Field of view :");
+		if (ray::Gui::dragFloat("##fov", &fov, 0.1, 1, 125))
+			component->setAperture(fov);
+
+		ray::Gui::text("Near :");
+		if (ray::Gui::dragFloat("##znear", &znear, 0.1f, 1e-3, 1.0f, "%.03f"))
+			component->setNear(znear);
+
+		ray::Gui::text("Far :");
+		if (ray::Gui::dragFloat("##zfar", &zfar, 0.1f, 0, 99999))
+			component->setFar(zfar);
+
+		ray::Gui::treePop();
+	}
+}
+
+void
 GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 {
-	if (!_showMaterialWindow || !material)
+	if (!material)
 		return;
 
 	if (ray::Gui::treeNodeEx("Material", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))

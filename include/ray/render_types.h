@@ -97,17 +97,18 @@ typedef std::vector<GeometryPtr> Geometryes;
 typedef std::vector<RenderObjectPtr> RenderObjects;
 typedef std::vector<RenderScene*> RenderScenes;
 typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
+typedef std::vector<CameraPtr> Cameras;
+typedef std::vector<LightPtr> Lights;
+typedef std::vector<LightProbePtr> LightProbes;
+
 typedef std::vector<MaterialPtr> Materials;
 typedef std::vector<MaterialPassPtr> MaterialPassList;
 typedef std::vector<MaterialTechPtr> MaterialTechniques;
-typedef std::map<std::string, MaterialParamPtr> MaterialParams;
 typedef std::vector<MaterialMacroPtr> MaterialMacros;
 typedef std::vector<MaterialPassDescPtr> MaterialPassDescList;
 typedef std::vector<MaterialTechDescPtr> MaterialTechniqueDescList;
 typedef std::vector<MaterialVariantPtr> MaterialVariants;
-typedef std::vector<CameraPtr> Cameras;
-typedef std::vector<LightPtr> Lights;
-typedef std::vector<LightProbePtr> LightProbes;
+typedef std::map<std::string, MaterialParamPtr> MaterialParams;
 
 typedef std::vector<RenderObject*> RenderObjectRaws;
 

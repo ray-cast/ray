@@ -123,7 +123,7 @@ GuiStyle::GuiStyle() noexcept
 	Colors[ImGuiCol_PlotLinesHovered] = float4(0.90f, 0.70f, 0.00f, 1.00f);
 	Colors[ImGuiCol_PlotHistogram] = float4(0.90f, 0.70f, 0.00f, 1.00f);
 	Colors[ImGuiCol_PlotHistogramHovered] = float4(1.00f, 0.60f, 0.00f, 1.00f);
-	Colors[ImGuiCol_TextSelectedBg] = float4(0.00f, 0.00f, 1.00f, 0.35f);
+	Colors[ImGuiCol_TextSelectedBg] = float4(0.7f, 0.7f, 0.7f, 0.35f);
 }
 
 IMGUI::IMGUI() noexcept
@@ -2000,7 +2000,7 @@ IMGUI::sliderFloatWithRevert(const char* label, const char* name, float* v, floa
 	{
 		sameLine();
 		pushID(std::hash<const char*>{}(label));
-		if (button(name)) { *v = _default; change = false; };
+		if (button(name)) { *v = _default; change = true; };
 		popID();
 	}
 
@@ -2078,7 +2078,7 @@ IMGUI::sliderIntWithRevert(const char* label, const char* name, int* v, int _def
 	{
 		sameLine();
 		pushID(std::hash<const char*>{}(label));
-		if (button(name)) { *v = _default; change = false; };
+		if (button(name)) { *v = _default; change = true; };
 		popID();
 	}
 
@@ -2097,7 +2097,7 @@ IMGUI::sliderInt2WithRevert(const char* label, const char* name, int* v, const i
 		{
 			v[0] = _default[0];
 			v[1] = _default[1];
-			change = false;
+			change = true;
 		};
 		popID();
 	}
@@ -2118,7 +2118,7 @@ IMGUI::sliderInt3WithRevert(const char* label, const char* name, int* v, const i
 			v[0] = _default[0];
 			v[1] = _default[1];
 			v[2] = _default[2];
-			change = false;
+			change = true;
 		};
 		popID();
 	}
@@ -2140,7 +2140,7 @@ IMGUI::sliderInt4WithRevert(const char* label, const char* name, int* v, const i
 			v[1] = _default[1];
 			v[2] = _default[2];
 			v[3] = _default[3];
-			change = false;
+			change = true;
 		};
 		popID();
 	}

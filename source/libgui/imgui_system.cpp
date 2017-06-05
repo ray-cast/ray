@@ -87,7 +87,7 @@ IMGUISystem::open(void* _window) except
 	io.KeyMap[ImGuiKey_End] = InputKey::End;
 	io.KeyMap[ImGuiKey_Delete] = InputKey::Delete;
 	io.KeyMap[ImGuiKey_Backspace] = InputKey::Backspace;
-	io.KeyMap[ImGuiKey_Enter] = InputKey::Enter;
+	io.KeyMap[ImGuiKey_Enter] = InputKey::KP_Enter;
 	io.KeyMap[ImGuiKey_Escape] = InputKey::Escape;
 	io.KeyMap[ImGuiKey_A] = InputKey::A;
 	io.KeyMap[ImGuiKey_C] = InputKey::C;

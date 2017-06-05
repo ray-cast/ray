@@ -120,7 +120,8 @@ private:
 	void showCameraWindow() noexcept;
 	void showSceneWindow() noexcept;
 
-	void showTransformWindow() noexcept;
+	void showTransformWindow(ray::GameObject* object) noexcept;
+	void showCameraEditorWindow(ray::CameraComponent* component) noexcept;
 	void showMaterialWindow(const ray::MaterialPtr& material) noexcept;
 
 	void startUVMapper() noexcept;
@@ -150,7 +151,6 @@ private:
 	bool _showInspectorWindow;
 	bool _showAssertWindow;
 	bool _showCameraWindow;
-	bool _showMaterialWindow;
 	bool _showStyleEditor;
 	bool _showAboutWindow;
 	bool _showAboutWindowFirst;
@@ -158,6 +158,7 @@ private:
 	bool _showMessageFirst;
 	bool _showProcessMessage;
 	bool _showProcessMessageFirst;
+
 	bool _mouseHoveringCamera;
 
 	LightMassType _lightMassType;

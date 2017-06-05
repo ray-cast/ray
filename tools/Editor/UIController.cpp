@@ -958,28 +958,25 @@ GuiControllerComponent::onFetchMeshes(const ray::GameObjects*& meshes) noexcept
 bool
 GuiControllerComponent::onSeletedCamera(const ray::GameObject* cameras) noexcept
 {
-	assert(_cube);
-
-	_cube->setScaleAll(0.0);
-	return false;
+	if (_cube)
+		_cube->setScaleAll(0.0f);
+	return true;
 }
 
 bool
 GuiControllerComponent::onSeletedLight(const ray::GameObject* object) noexcept
 {
-	assert(_cube);
-
-	_cube->setScaleAll(0.0);
-	return false;
+	if (_cube)
+		_cube->setScaleAll(0.0f);
+	return true;
 }
 
 bool
 GuiControllerComponent::onSeletedLightProbe(const ray::GameObject* object) noexcept
 {
-	assert(_cube);
-
-	_cube->setScaleAll(0.0);
-	return false;
+	if (_cube)
+		_cube->setScaleAll(0.0f);
+	return true;
 }
 
 bool
@@ -994,11 +991,14 @@ GuiControllerComponent::onTransformObject(const ray::GameObject* object, std::si
 	if (_cube)
 	{
 		auto meshComponent = object->getComponent<ray::MeshComponent>();
-		auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[subset].boundingBox;
-		boundingBox.transform(object->getTransform());
+		if (meshComponent)
+		{
+			auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[subset].boundingBox;
+			boundingBox.transform(object->getTransform());
 
-		_cube->setTranslate(boundingBox.center());
-		_cube->setScale(boundingBox.size());
+			_cube->setTranslate(boundingBox.center());
+			_cube->setScale(boundingBox.size());
+		}
 	}
 
 	return true;

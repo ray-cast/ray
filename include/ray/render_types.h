@@ -100,7 +100,7 @@ typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
 typedef std::vector<MaterialPtr> Materials;
 typedef std::vector<MaterialPassPtr> MaterialPassList;
 typedef std::vector<MaterialTechPtr> MaterialTechniques;
-typedef std::vector<MaterialParamPtr> MaterialParams;
+typedef std::map<std::string, MaterialParamPtr> MaterialParams;
 typedef std::vector<MaterialMacroPtr> MaterialMacros;
 typedef std::vector<MaterialPassDescPtr> MaterialPassDescList;
 typedef std::vector<MaterialTechDescPtr> MaterialTechniqueDescList;

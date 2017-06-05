@@ -419,37 +419,37 @@ GuiControllerComponent::makeSphereObjects() noexcept
 
 			auto material = newGameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 
-			material->getParameter("albedo")->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
-			material->getParameter("albedoMap")->uniformTexture(diffuseMap);
-			material->getParameter("albedoMapFrom")->uniform1i(1);
-			material->getParameter("albedoMapLoopNum")->uniform2f(1.0f, 1.0f);
+			(*material)["albedo"]->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
+			(*material)["albedoMap"]->uniformTexture(diffuseMap);
+			(*material)["albedoMapFrom"]->uniform1i(1);
+			(*material)["albedoMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
-			material->getParameter("normalMap")->uniformTexture(normalMap);
-			material->getParameter("normalMapFrom")->uniform1i(1);
-			material->getParameter("normalMapLoopNum")->uniform2f(1.0f, 1.0f);
+			(*material)["normalMap"]->uniformTexture(normalMap);
+			(*material)["normalMapFrom"]->uniform1i(1);
+			(*material)["normalMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
-			material->getParameter("smoothness")->uniform1f(shininessParams[i * 10 + j]);
-			material->getParameter("smoothnessMapFrom")->uniform1i(0);
-			material->getParameter("smoothnessMapLoopNum")->uniform2f(1.0f, 1.0f);
+			(*material)["smoothness"]->uniform1f(shininessParams[i * 10 + j]);
+			(*material)["smoothnessMapFrom"]->uniform1i(0);
+			(*material)["smoothnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
-			material->getParameter("metalness")->uniform1f(0);
-			material->getParameter("metalnessMapFrom")->uniform1i(0);
-			material->getParameter("metalnessMapLoopNum")->uniform2f(1.0f, 1.0f);
+			(*material)["metalness"]->uniform1f(0);
+			(*material)["metalnessMapFrom"]->uniform1i(0);
+			(*material)["metalnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
-			material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
-			material->getParameter("specularMapFrom")->uniform1i(0);
-			material->getParameter("specularMapLoopNum")->uniform2f(1.0f, 1.0f);
+			(*material)["specular"]->uniform3f(0.5, 0.5, 0.5);
+			(*material)["specularMapFrom"]->uniform1i(0);
+			(*material)["specularMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
-			material->getParameter("occlusion")->uniform1f(1.0);
-			material->getParameter("occlusionMapFrom")->uniform1i(0);
-			material->getParameter("occlusionMapLoopNum")->uniform2f(1.0f, 1.0f);
+			(*material)["occlusion"]->uniform1f(1.0);
+			(*material)["occlusionMapFrom"]->uniform1i(0);
+			(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
 			if (shininessParams[i * 10 + j] > 0.45 &&
 				shininessParams[i * 10 + j] < 0.8 ||
 				shininessParams[i * 10 + j] > 0.95)
 			{
-				material->getParameter("albedoMapFrom")->uniform1i(0);
-				material->getParameter("normalMapFrom")->uniform1i(0);
+				(*material)["albedoMapFrom"]->uniform1i(0);
+				(*material)["normalMapFrom"]->uniform1i(0);
 			}
 
 			_objects.push_back(std::move(newGameObject));

@@ -198,7 +198,6 @@ SSDO::onActivate(RenderPipeline& pipeline) noexcept
 	_occlusionRadius = _ambientOcclusion->getParameter("radius");
 	_occlusionBias = _ambientOcclusion->getParameter("bias");
 	_occlusionIntensity = _ambientOcclusion->getParameter("intensity");
-	_occlusionAmbient = _ambientOcclusion->getParameter("texOcclusion");
 	_occlusionSphere = _ambientOcclusion->getParameter("sphere");
 	_occlusionSourceInv = _ambientOcclusion->getParameter("texSourceInv");
 	_occlusionSampleNumber = _ambientOcclusion->getMacro("NUM_SAMPLES");
@@ -207,7 +206,6 @@ SSDO::onActivate(RenderPipeline& pipeline) noexcept
 	_blurFactor = _ambientOcclusion->getParameter("blurFactor");
 	_blurSharpness = _ambientOcclusion->getParameter("blurSharpness");
 	_blurDirection = _ambientOcclusion->getParameter("blurDirection");
-	_blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
 	_blurRadius = _ambientOcclusion->getMacro("BLUR_RADIUS");
 
 	_setting.blurRadius = static_cast<float>(_blurRadius->getInt());
@@ -231,7 +229,6 @@ SSDO::onDeactivate(RenderPipeline& pipeline) noexcept
 	_occlusionRadius.reset();
 	_occlusionBias.reset();
 	_occlusionIntensity.reset();
-	_occlusionAmbient.reset();
 	_occlusionSphere.reset();
 	_occlusionSampleNumber.reset();
 	_occlusionSourceInv.reset();
@@ -240,7 +237,6 @@ SSDO::onDeactivate(RenderPipeline& pipeline) noexcept
 	_blurFactor.reset();
 	_blurSharpness.reset();
 	_blurDirection.reset();
-	_blurGaussian.reset();
 	_blurRadius.reset();
 
 	_texBlurMap.reset();

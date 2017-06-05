@@ -122,32 +122,30 @@ void
 Material::addParameter(const MaterialParamPtr& parameter) noexcept
 {
 	assert(parameter);
-	assert(std::find(_parameters.begin(), _parameters.end(), parameter) == _parameters.end());
-	_parameters.push_back(parameter);
+	assert(!parameter->getName().empty());
+	_parameters[parameter->getName()] = parameter;
 }
 
 void
 Material::removeParameter(const MaterialParamPtr& parameter) noexcept
 {
 	assert(parameter);
-	auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
-	if (it != _parameters.end())
-	{
-		_parameters.erase(it);
-	}
+	assert(!parameter->getName().empty());
+	_parameters.erase(parameter->getName());
 }
 
 MaterialParamPtr
 Material::getParameter(const std::string& name) const noexcept
 {
 	assert(!name.empty());
-	for (auto& it : _parameters)
-	{
-		if (it->getName() == name)
-			return it;
-	}
+	return _parameters.at(name);
+}
 
-	return nullptr;
+MaterialParamPtr
+Material::getParameter(std::string::const_pointer name) const noexcept
+{
+	assert(name);
+	return _parameters.at(name);
 }
 
 MaterialParams&
@@ -206,12 +204,24 @@ Material::getMacros() const noexcept
 	return _macros;
 }
 
+MaterialParamPtr
+Material::operator[](const std::string& name) const noexcept
+{
+	return this->getParameter(name);
+}
+
+MaterialParamPtr
+Material::operator[](std::string::const_pointer name) const noexcept
+{
+	return this->getParameter(name);
+}
+
 MaterialPtr
 Material::clone() const noexcept
 {
 	auto material = std::make_shared<Material>();
 	for (auto& it : _parameters)
-		material->addParameter(it->clone());
+		material->addParameter(it.second->clone());
 
 	for (auto& it : _macros)
 		material->addMacro(it->clone());

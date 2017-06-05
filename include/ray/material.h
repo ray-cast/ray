@@ -66,6 +66,7 @@ public:
 	void addParameter(const MaterialParamPtr& parameter) noexcept;
 	void removeParameter(const MaterialParamPtr& parameter) noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
+	MaterialParamPtr getParameter(std::string::const_pointer name) const noexcept;
 	MaterialParams& getParameters() noexcept;
 	const MaterialParams& getParameters() const noexcept;
 
@@ -74,6 +75,9 @@ public:
 	MaterialMacroPtr getMacro(const std::string& name) const noexcept;
 	MaterialMacros& getMacros() noexcept;
 	const MaterialMacros& getMacros() const noexcept;
+
+	MaterialParamPtr operator[](const std::string& name) const noexcept;
+	MaterialParamPtr operator[](std::string::const_pointer name) const noexcept;
 
 	MaterialPtr clone() const noexcept;
 

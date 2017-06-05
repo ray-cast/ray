@@ -95,7 +95,6 @@ private:
 	MaterialParamPtr _occlusionRadius;
 	MaterialParamPtr _occlusionBias;
 	MaterialParamPtr _occlusionIntensity;
-	MaterialParamPtr _occlusionAmbient;
 	MaterialParamPtr _occlusionSphere;
 	MaterialMacroPtr _occlusionSampleNumber;
 	MaterialParamPtr _occlusionSourceInv;
@@ -104,7 +103,6 @@ private:
 	MaterialParamPtr _blurFactor;
 	MaterialParamPtr _blurSharpness;
 	MaterialParamPtr _blurDirection;
-	MaterialParamPtr _blurGaussian;
 	MaterialMacroPtr _blurRadius;
 
 	GraphicsTexturePtr _texBlurMap;

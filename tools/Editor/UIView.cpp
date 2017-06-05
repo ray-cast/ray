@@ -776,9 +776,9 @@ GuiViewComponent::showHierarchyWindow() noexcept
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(_style.FramePadding.x * 2.0f, _style.FramePadding.y));
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 1.5f);
 
-	if (ray::Gui::beginDock("Hierarchy", &_showHierarchyWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	if (ray::Gui::beginDock("Hierarchy", &_showHierarchyWindow))
 	{
-		if (ray::Gui::treeNodeEx("camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			const ray::GameObjects* objects = nullptr;
 			_event.onFetchCamera(objects);
@@ -850,7 +850,7 @@ GuiViewComponent::showAssertLists() noexcept
 
 	static ray::float2 imageSize = ray::float2(64, 64);
 
-	if (ray::Gui::beginDock("Assets", &_showAssertWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	if (ray::Gui::beginDock("Assets", &_showAssertWindow))
 	{
 		int id = 0;
 
@@ -867,7 +867,7 @@ GuiViewComponent::showAssertLists() noexcept
 			}
 
 			ray::Gui::pushID(id++);
-			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, ray::float4::UnitW);
+			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
 			ray::Gui::popID();
 
 			ray::Gui::sameLine(0, _style.ItemSpacing.y);
@@ -936,7 +936,7 @@ GuiViewComponent::showInspectorWindow() noexcept
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(0.0, _style.FramePadding.y));
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 0.7f);
 
-	if (ray::Gui::beginDock("Inspector", &_showInspectorWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	if (ray::Gui::beginDock("Inspector", &_showInspectorWindow))
 	{
 		if (_selectedObject)
 		{
@@ -959,7 +959,7 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 
 	if (ray::Gui::treeNodeEx("Material", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 	{
-		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto albedoFrom = 0;
 			auto albedoFilp = 0;
@@ -993,7 +993,7 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("AlbedoSub"))
+		if (ray::Gui::treeNodeEx("AlbedoSub", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto albedoSubFrom = 0;
 			auto albedoSubFilp = 0;
@@ -1024,17 +1024,17 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("Normals"))
+		if (ray::Gui::treeNodeEx("Normals", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("NormalsSub"))
+		if (ray::Gui::treeNodeEx("NormalsSub", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("Smoothness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("Smoothness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			auto smoothnessFrom = 0;
 			auto smoothnessType = 0;
@@ -1086,7 +1086,7 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("Metalness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("Metalness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			auto metalness = material->getParameter("metalness")->value().getFloat();
 			auto metalnessFrom = 0;
@@ -1133,7 +1133,7 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("Specular"))
+		if (ray::Gui::treeNodeEx("Specular", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto specularFrom = 0;
 			auto specularFilp = 0;
@@ -1163,7 +1163,7 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("Occlusion"))
+		if (ray::Gui::treeNodeEx("Occlusion", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto occlusion = 1.0f;
 			auto occlusionFrom = 0;
@@ -1209,7 +1209,7 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("Emissive"))
+		if (ray::Gui::treeNodeEx("Emissive", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto emissiveFrom = 0;
 			auto emissiveFilp = 0;
@@ -1238,7 +1238,7 @@ GuiViewComponent::showMaterialWindow(const ray::MaterialPtr& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("Shading Model"))
+		if (ray::Gui::treeNodeEx("Shading Model", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			ray::Gui::treePop();
 		}

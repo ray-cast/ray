@@ -522,13 +522,10 @@ Light::_updateBoundingBox() noexcept
 
 	for (auto& camera : _shadowCameras)
 	{
-		if (_lightType == LightType::LightTypeAmbient)
+		if (_lightType == LightType::LightTypeAmbient || _lightType == LightType::LightTypeEnvironment)
 		{
 			Vector3 min(-_lightRange, -_lightRange, -_lightRange);
 			Vector3 max(_lightRange, _lightRange, _lightRange);
-
-			min *= 0.5f;
-			max *= 0.5f;
 
 			BoundingBox bound;
 			bound.encapsulate(min);

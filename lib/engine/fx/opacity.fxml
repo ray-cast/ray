@@ -23,9 +23,9 @@
                 return bump;
             }
 
-            float3 GetDiffuse(Texture2D diffuseMap, float3 diffuse, float2 coord)
+            float3 GetAlbedo(Texture2D albedoMap, float3 albedo, float2 coord)
             {
-                return srgb2linear(diffuseMap.Sample(PointClamp, coord).rgb) * diffuse;
+                return srgb2linear(albedoMap.Sample(PointClamp, coord).rgb) * albedo;
             }
 
             float3 GetNormal(Texture2D normalMap, float3 normal, float3 tangent, float2 coord, float quality)
@@ -81,7 +81,7 @@
                 in float2 coord : TEXCOORD1)
             {
                 MaterialParam material;
-                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : diffuse.rgb;
+                material.albedo = quality.r > 0.0 ? GetAlbedo(texDiffuse, diffuse, coord) : diffuse.rgb;
                 material.normal = normalize(normal);
 
                 if (quality.b > 0.0)
@@ -133,7 +133,7 @@
             GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 coord : TEXCOORD2)
             {
                 MaterialParam material;
-                material.albedo = quality.r > 0.0 ? GetDiffuse(texDiffuse, diffuse, coord) : diffuse.rgb;
+                material.albedo = quality.r > 0.0 ? GetAlbedo(texDiffuse, diffuse, coord) : diffuse.rgb;
                 material.normal = quality.g > 0.0 ? GetNormal(texNormal, iNormal, iTangent, coord, quality.g) : normalize(iNormal);
 
                 if (quality.b > 0.0)

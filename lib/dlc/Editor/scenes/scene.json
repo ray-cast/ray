@@ -9,7 +9,7 @@
 						"class": "Light",
 						"type": "environment",
 						"color": [1.0,1.0,1.0],
-						"range": 60,
+						"range": 20000,
 						"intensity": 1,
 						"shadow": "none"
 					},

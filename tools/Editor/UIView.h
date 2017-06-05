@@ -65,6 +65,8 @@ struct GuiViewDelegates
 	std::function<bool(const ray::GameObject*)> onSeletedLightProbe;
 	std::function<bool(const ray::GameObject*, std::size_t)> onSeletedMesh;
 
+	std::function<bool(const ray::GameObject*, std::size_t subset)> onTransformObject;
+
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectOpen;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSave;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSaveAs;

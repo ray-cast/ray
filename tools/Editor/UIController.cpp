@@ -490,6 +490,8 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		delegate.onSeletedLight = std::bind(&GuiControllerComponent::onSeletedLight, this, std::placeholders::_1);
 		delegate.onSeletedLightProbe = std::bind(&GuiControllerComponent::onSeletedLightProbe, this, std::placeholders::_1);
 
+		delegate.onTransformObject = std::bind(&GuiControllerComponent::onTransformObject, this, std::placeholders::_1, std::placeholders::_2);
+
 		view->setGuiViewDelegates(delegate);
 	}
 }
@@ -983,14 +985,22 @@ GuiControllerComponent::onSeletedLightProbe(const ray::GameObject* object) noexc
 bool
 GuiControllerComponent::onSeletedMesh(const ray::GameObject* object, std::size_t subset) noexcept
 {
-	assert(_cube);
+	return this->onTransformObject(object, subset);
+}
 
-	auto meshComponent = object->getComponent<ray::MeshComponent>();
-	auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[subset].boundingBox;
-	boundingBox.transform(object->getTransform());
+bool
+GuiControllerComponent::onTransformObject(const ray::GameObject* object, std::size_t subset) noexcept
+{
+	if (_cube)
+	{
+		auto meshComponent = object->getComponent<ray::MeshComponent>();
+		auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[subset].boundingBox;
+		boundingBox.transform(object->getTransform());
 
-	_cube->setTranslate(boundingBox.center());
-	_cube->setScale(boundingBox.size());
+		_cube->setTranslate(boundingBox.center());
+		_cube->setScale(boundingBox.size());
+	}
+
 	return true;
 }
 

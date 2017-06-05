@@ -821,7 +821,10 @@ GuiViewComponent::showHierarchyWindow() noexcept
 				{
 					auto& name = (*objects)[i]->getName();
 					char buffer[MAX_PATH];
-					std::sprintf(buffer, "|-subset%zu (%s)", i, name.empty() ? "empty" : name.c_str());
+					if (name.empty())
+						std::sprintf(buffer, "|-subset%zu", i);
+					else
+						std::sprintf(buffer, "|-%s", name.c_str());
 
 					if (ray::Gui::selectable(buffer, _selectedObject == (*objects)[i].get() ? true : false))
 					{
@@ -977,15 +980,21 @@ GuiViewComponent::showTransformWindow(ray::GameObject* object) noexcept
 		ray::Gui::sameLine(80.0f);
 		ray::Gui::pushItemWidth(-1);
 		if (ray::Gui::dragFloat3("##Position", translate.ptr(), 0.1f, -FLT_MAX, FLT_MAX))
+		{
 			object->setTranslate(translate);
+			_event.onTransformObject(object, 0);
+		}
 
 		ray::Gui::popItemWidth();
 
 		ray::Gui::text("Scale");
 		ray::Gui::sameLine(80.0f);
 		ray::Gui::pushItemWidth(-1);
-		if (ray::Gui::dragFloat3("##Scale", scaling.ptr(), 0.1f, 0.0f, FLT_MAX))
+		if (ray::Gui::dragFloat3("##Scale", scaling.ptr(), 0.1f, 1e-3f, FLT_MAX))
+		{
 			object->setScale(scaling);
+			_event.onTransformObject(object, 0);
+		}
 
 		ray::Gui::popItemWidth();
 
@@ -1002,6 +1011,7 @@ GuiViewComponent::showTransformWindow(ray::GameObject* object) noexcept
 			if (rotation.z > 180.0f) rotation.z = rotation.z - 360;
 
 			object->setQuaternion(ray::Quaternion(rotation));
+			_event.onTransformObject(object, 0);
 		}
 
 		ray::Gui::popItemWidth();

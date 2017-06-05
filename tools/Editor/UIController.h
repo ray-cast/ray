@@ -85,6 +85,8 @@ private:
 	bool onSeletedLightProbe(const ray::GameObject* object) noexcept;
 	bool onSeletedMesh(const ray::GameObject* object, std::size_t subset) noexcept;
 
+	bool onTransformObject(const ray::GameObject* object, std::size_t subset) noexcept;
+
 	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
 private:

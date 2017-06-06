@@ -496,9 +496,9 @@ namespace math
 	inline Vector3t<T> eulerAngles(const Quaterniont<T>& q) noexcept
 	{
 		return Vector3t<T>(
-			RAD_TO_DEG(math::asin(2.0f * (q.w * q.x - q.y * q.z))),
-			RAD_TO_DEG(math::atan2(q.w * q.y + q.x * q.z, 1.0f - 2.0f * (q.x * q.x + q.y * q.y))),
-			RAD_TO_DEG(math::atan2(q.w * q.z + q.x * q.y, 1.0f - 2.0f * (q.x * q.x + q.z * q.z)))
+			RAD_TO_DEG(ray::math::asin<T>(ray::math::clamp<T>(2.0f * (q.w * q.x - q.y * q.z), -1.0f, 1.0f))),
+			RAD_TO_DEG(ray::math::atan2<T>(2.0f * (q.w * q.y + q.x * q.z), 1.0f - 2.0f * (q.x * q.x + q.y * q.y))),
+			RAD_TO_DEG(ray::math::atan2<T>(2.0f * (q.w * q.z + q.x * q.y), 1.0f - 2.0f * (q.x * q.x + q.z * q.z)))
 			);
 	}
 }

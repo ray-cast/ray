@@ -449,7 +449,10 @@ GuiControllerComponent::makeSphereObjects() noexcept
 				shininessParams[i * 10 + j] < 0.8 ||
 				shininessParams[i * 10 + j] > 0.95)
 			{
+				(*material)["albedoMap"]->uniformTexture(nullptr);
 				(*material)["albedoMapFrom"]->uniform1i(0);
+
+				(*material)["normalMap"]->uniformTexture(nullptr);
 				(*material)["normalMapFrom"]->uniform1i(0);
 			}
 

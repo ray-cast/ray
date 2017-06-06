@@ -2297,6 +2297,18 @@ IMGUI::imageButtonEx(GuiTextureID texture, const float2& size, const char* toolt
 	return ImGui::ImageButtonEx(texture, (ImVec2&)size, tooltip, selected, enabled);
 }
 
+bool
+IMGUI::imageButtonEx(GuiTextureID texture, const float2& size, bool enabled, const float2& uv0, const float2& uv1, int frame_padding, const float4& bg_col, const float4& tint_col)
+{
+	if (enabled)
+		return imageButton(texture, size, uv0, uv1, frame_padding, bg_col, tint_col);
+	else
+	{
+		image(texture, size + ray::float2(frame_padding * 2.0f, frame_padding * 2.0f), uv0, uv1, tint_col, bg_col);
+		return false;
+	}
+}
+
 int
 IMGUI::imageButtonWithAspectAndLabel(GuiTextureID texture, const float2& texture_size, const float2& size, const float2& uv0, const float2& uv1, bool selected, bool* edit_label, const char* label, char* buf, size_t buf_size, GuiInputTextFlags flags)
 {

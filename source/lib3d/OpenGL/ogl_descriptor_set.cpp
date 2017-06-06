@@ -613,7 +613,7 @@ OGLGraphicsUniformSet::getTextureSampler() const noexcept
 	return _variant.getTextureSampler();
 }
 
-const GraphicsDataPtr& 
+const GraphicsDataPtr&
 OGLGraphicsUniformSet::getBuffer() const noexcept
 {
 	return _variant.getBuffer();
@@ -866,27 +866,7 @@ OGLDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 			glBindSampler(location, it->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
-		{
-			auto& texture = it->getTexture();
-			if (texture)
-			{
-				auto gltexture = texture->downcast<OGLTexture>();
-				glActiveTexture(GL_TEXTURE0 + location);
-				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
-			}
-		}
-		break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
-		{
-			auto& texture = it->getTexture();
-			if (texture)
-			{
-				auto gltexture = texture->downcast<OGLTexture>();
-				glActiveTexture(GL_TEXTURE0 + location);
-				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
-			}
-		}
-		break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
 		{
 			auto& texture = it->getTexture();
@@ -895,6 +875,11 @@ OGLDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 				auto gltexture = texture->downcast<OGLTexture>();
 				glActiveTexture(GL_TEXTURE0 + location);
 				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
+			}
+			else
+			{
+				glActiveTexture(GL_TEXTURE0 + location);
+				glBindTexture(GL_TEXTURE_2D, 0);
 			}
 		}
 		break;
@@ -915,7 +900,7 @@ OGLDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 				glBindBufferBase(GL_UNIFORM_BUFFER, location, ubo->getInstanceID());
 			}
 		}
-			break;
+		break;
 		case GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic:
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeInputAttachment:

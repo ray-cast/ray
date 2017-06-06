@@ -35,7 +35,12 @@
 			return saturate(dot(f0, 0.33333h) * 50);
 		}
 
-        float3 fresnelSchlick(float3 f0, float f9, float LdotH)
+        float fresnelSchlick(float f0, float f9, float LdotH)
+        {
+            return lerp(f0, f9, pow5(1 - LdotH));
+        }
+
+        float3 fresnelSchlick(float3 f0, float3 f9, float LdotH)
         {
             return lerp(f0, f9, pow5(1 - LdotH));
         }
@@ -76,8 +81,8 @@
 
             float fd90 = energyBias + 2.0 * vh * vh * roughness;
 
-            float FL = fresnelSchlick(1, fd90, nl);
-            float FV = fresnelSchlick(1, fd90, nv);
+            float FL = fresnelSchlick(1.0, fd90, nl);
+            float FV = fresnelSchlick(1.0, fd90, nv);
 
             return FL * FV * energyFactor * nl;
         }

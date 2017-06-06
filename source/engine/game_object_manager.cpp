@@ -64,24 +64,30 @@ GameObjectManager::~GameObjectManager() noexcept
 void
 GameObjectManager::_instanceObject(GameObject* entity, std::size_t& instanceID) noexcept
 {
+	assert(entity);
+
 	if (_emptyLists.empty())
+	{
 		_instanceLists.push_back(entity);
+		instanceID = _instanceLists.size();
+	}
 	else
 	{
-		std::size_t _instanceID = _emptyLists.back();
-		_emptyLists.pop_back();
+		std::size_t _instanceID = _emptyLists.top();
+		_emptyLists.pop();
 		_instanceLists[_instanceID - 1] = entity;
+		instanceID = _instanceID;
 	}
-
-	instanceID = _instanceLists.size();
 }
 
 void
 GameObjectManager::_unsetObject(GameObject* entity) noexcept
 {
+	assert(entity);
+
 	auto instanceID = entity->getInstanceID();
 	_instanceLists[instanceID - 1] = nullptr;
-	_emptyLists.push_back(instanceID);
+	_emptyLists.push(instanceID);
 	this->_activeObject(entity, false);
 }
 

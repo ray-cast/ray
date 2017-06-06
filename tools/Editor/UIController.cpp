@@ -607,6 +607,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 				material->getParameter("albedo")->uniform3f(ray::math::srgb2linear(_model->materials[i].Diffuse));
 				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(_model->materials[i].Shininess));
 				material->getParameter("metalness")->uniform1f(0.0);
+				material->getParameter("occlusion")->uniform1f(1.0);
 				material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
 
 				std::int16_t textureID = 0;
@@ -625,6 +626,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 					{
 						material->getParameter("albedoMap")->uniformTexture(texture);
 						material->getParameter("albedoMapFrom")->uniform1i(1);
+						material->getParameter("albedoMapLoopNum")->uniform2f(1.0f, 1.0f);
 					}
 				}
 

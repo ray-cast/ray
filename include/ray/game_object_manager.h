@@ -37,6 +37,7 @@
 #ifndef _H_GAME_OBJECT_MANAGER_H_
 #define _H_GAME_OBJECT_MANAGER_H_
 
+#include <stack>
 #include <ray/game_features.h>
 
 _NAME_BEGIN
@@ -81,7 +82,7 @@ private:
 private:
 	bool _hasEmptyActors;
 
-	std::vector<std::size_t> _emptyLists;
+	std::stack<std::size_t> _emptyLists;
 	std::vector<GameObject*> _instanceLists;
 	std::vector<GameObject*> _activeActors;
 };

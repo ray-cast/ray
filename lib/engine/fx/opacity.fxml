@@ -7,61 +7,61 @@
 	<parameter name="albedo" type="float3"/>
 	<parameter name="albedoMap" type="texture2D"/>
 	<parameter name="albedoMapFrom" type="int"/>
-	<parameter name="albedoMapFilp" type="float"/>
+	<parameter name="albedoMapFilp" type="int"/>
 	<parameter name="albedoMapLoopNum" type="float2"/>
 	<parameter name="albedoSub" type="float3"/>
 	<parameter name="albedoSubMap" type="texture2D"/>
 	<parameter name="albedoSubMapFrom" type="int"/>
-	<parameter name="albedoSubMapFilp" type="float"/>
+	<parameter name="albedoSubMapFilp" type="int"/>
 	<parameter name="albedoSubMapLoopNum" type="float2"/>
 	<parameter name="normalMap" type="texture2D"/>
 	<parameter name="normalMapFrom" type="int"/>
-	<parameter name="normalMapFilp" type="float"/>
+	<parameter name="normalMapFilp" type="int"/>
 	<parameter name="normalMapScale" type="float"/>
 	<parameter name="normalMapLoopNum" type="float2"/>
 	<parameter name="normalSubMap" type="texture2D"/>
 	<parameter name="normalSubMapFrom" type="int"/>
-	<parameter name="normalSubMapFilp" type="float"/>
+	<parameter name="normalSubMapFilp" type="int"/>
 	<parameter name="normalSubMapScale" type="float"/>
 	<parameter name="normalSubMapLoopNum" type="float2"/>
 	<parameter name="smoothness" type="float"/>
 	<parameter name="smoothnessMap" type="texture2D"/>
 	<parameter name="smoothnessMapFrom" type="int"/>
-	<parameter name="smoothnessMapFilp" type="float"/>
+	<parameter name="smoothnessMapFilp" type="int"/>
 	<parameter name="smoothnessMapSiwzzle" type="float4"/>
 	<parameter name="smoothnessMapLoopNum" type="float2"/>
 	<parameter name="metalness" type="float"/>
 	<parameter name="metalnessMap" type="texture2D"/>
 	<parameter name="metalnessMapFrom" type="int"/>
-	<parameter name="metalnessMapFilp" type="float"/>
+	<parameter name="metalnessMapFilp" type="int"/>
 	<parameter name="metalnessMapSiwzzle" type="float4"/>
 	<parameter name="metalnessMapLoopNum" type="float2"/>
 	<parameter name="specular" type="float3"/>
 	<parameter name="specularMap" type="texture2D"/>
 	<parameter name="specularMapFrom" type="int"/>
-	<parameter name="specularMapFilp" type="float"/>
+	<parameter name="specularMapFilp" type="int"/>
 	<parameter name="specularMapLoopNum" type="float2"/>
 	<parameter name="occlusion" type="float"/>
 	<parameter name="occlusionMap" type="texture2D"/>
 	<parameter name="occlusionMapFrom" type="int"/>
-	<parameter name="occlusionMapFilp" type="float"/>
+	<parameter name="occlusionMapFilp" type="int"/>
 	<parameter name="occlusionMapSiwzzle" type="float4"/>
 	<parameter name="occlusionMapLoopNum" type="float2"/>
 	<parameter name="emissive" type="float3"/>
 	<parameter name="emissiveMap" type="texture2D"/>
 	<parameter name="emissiveMapFrom" type="int"/>
-	<parameter name="emissiveMapFilp" type="float"/>
+	<parameter name="emissiveMapFilp" type="int"/>
 	<parameter name="emissiveMapLoopNum" type="float2"/>
 	<parameter name="customA" type="float"/>
 	<parameter name="customAMap" type="texture2D"/>
 	<parameter name="customAMapFrom" type="int"/>
-	<parameter name="customAMapFilp" type="float"/>
+	<parameter name="customAMapFilp" type="int"/>
 	<parameter name="customASwizzle" type="float4"/>
 	<parameter name="customALoopNum" type="float2"/>
 	<parameter name="customB" type="float3"/>
 	<parameter name="customBMap" type="texture2D"/>
 	<parameter name="customBMapFrom" type="int"/>
-	<parameter name="customBMapFilp" type="float"/>
+	<parameter name="customBMapFilp" type="int"/>
 	<parameter name="customBLoopNum" type="float2"/>
 	<shader>
 		<![CDATA[
@@ -75,9 +75,16 @@
 
 			float3 GetAlbedo(float2 coord)
 			{
-				if (albedoMapFrom > 0)
+				if (albedoMapFrom > 0 && albedoMapFrom < 6)
 				{
-					return srgb2linear(albedoMap.Sample(PointClamp, coord).rgb) * albedo;
+					if (albedoMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (albedoMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (albedoMapFilp == 3)
+						coord = 1 - coord;
+					
+					return srgb2linear(albedoMap.Sample(PointClamp, coord * albedoMapLoopNum).rgb) * albedo;
 				}
 				else
 				{
@@ -87,9 +94,16 @@
 
 			float3 GetNormal(float3 normal, float3 tangent, float2 coord)
 			{
-				if (normalMapFrom > 0)
+				if (normalMapFrom > 0 && normalMapFrom < 6)
 				{
-					float3 tangentNormal = normalMap.Sample(PointClamp, coord).rgb * 2 - 1;
+					if (normalMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (normalMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (normalMapFilp == 3)
+						coord = 1 - coord;
+					
+					float3 tangentNormal = normalMap.Sample(PointClamp, coord * normalMapLoopNum).rgb * 2 - 1;
 
 					float3 N = normalize(normal);
 					float3 T = normalize(tangent);
@@ -104,10 +118,81 @@
 					return normalize(normal);	
 				}
 			}
-
-			float2 GetSpecular(Texture2D specularMap, float2 coord)
+			
+			float3 GetSpecular(float2 coord)
 			{
-				return specularMap.Sample(PointClamp, coord).rg;
+				if (specularMapFrom > 0 && specularMapFrom < 6)
+				{
+					if (specularMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (specularMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (specularMapFilp == 3)
+						coord = 1 - coord;
+					
+					return specularMap.Sample(PointClamp, coord * specularMapLoopNum).rgb * specular;
+				}
+				else
+				{
+					return specular;
+				}
+			}
+			
+			float GetSmoothness(float2 coord)
+			{
+				if (smoothnessMapFrom > 0 && smoothnessMapFrom < 6)
+				{
+					if (smoothnessMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (smoothnessMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (smoothnessMapFilp == 3)
+						coord = 1 - coord;
+					
+					return dot(smoothnessMap.Sample(PointClamp, coord * smoothnessMapLoopNum), smoothnessMapSiwzzle) * smoothness;
+				}
+				else
+				{
+					return smoothness;
+				}
+			}
+
+			float GetMetalness(float2 coord)
+			{
+				if (metalnessMapFrom > 0 && metalnessMapFrom < 6)
+				{
+					if (metalnessMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (metalnessMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (metalnessMapFilp == 3)
+						coord = 1 - coord;
+					
+					return dot(metalnessMap.Sample(PointClamp, coord * metalnessMapLoopNum).r, metalnessMapSiwzzle) * metalness;
+				}
+				else
+				{
+					return metalness;
+				}
+			}
+			
+			float GetOcclusion(float2 coord)
+			{
+				if (occlusionMapFrom > 0 && occlusionMapFrom < 6)
+				{
+					if (occlusionMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (occlusionMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (occlusionMapFilp == 3)
+						coord = 1 - coord;
+					
+					return dot(occlusionMap.Sample(PointClamp, coord * occlusionMapLoopNum).r, occlusionMapSiwzzle) * occlusion;
+				}
+				else
+				{
+					return occlusion;
+				}
 			}
 
 			void DepthVS(
@@ -143,12 +228,11 @@
 				MaterialParam material;
 				material.albedo = GetAlbedo(coord);
 				material.normal = normalize(normal);
-				material.specular = specular;
-				material.smoothness = smoothness;
-
-				material.metalness = metalness;
+				material.specular = GetSpecular(coord);
+				material.smoothness = GetSmoothness(coord);
+				material.metalness = GetMetalness(coord);
+				material.occlusion = GetOcclusion(coord);
 				material.customB = customB;
-				material.occlusion = occlusion;
 				material.lightModel = LIGHTINGMODEL_NORMAL;
 
 				return EncodeGbuffer(material);
@@ -179,12 +263,12 @@
 				MaterialParam material;
 				material.albedo = GetAlbedo(coord);
 				material.normal = GetNormal(iNormal, iTangent, coord);
-				material.specular = specular;
-				material.smoothness = smoothness;
+				material.specular = GetSpecular(coord);
+				material.smoothness = GetSmoothness(coord);
+				material.metalness = GetMetalness(coord);
+				material.occlusion = GetOcclusion(coord);
 
-				material.metalness = metalness;
 				material.customB = customB;
-				material.occlusion = occlusion;
 				material.lightModel = LIGHTINGMODEL_NORMAL;
 
 				return EncodeGbuffer(material);

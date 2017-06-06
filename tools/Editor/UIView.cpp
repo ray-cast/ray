@@ -470,7 +470,7 @@ GuiViewComponent::showModelImportBrowse() noexcept
 		if (!_event.onModelImport(filepath, error))
 		{
 			if (error)
-				this->showPopupMessage(_langs[UILang::Error], _langs[UILang::NonReadableFile], std::hash<const char*>{}(error));
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 		}
 
 		_selectedObject = nullptr;

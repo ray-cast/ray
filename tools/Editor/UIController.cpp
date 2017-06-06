@@ -530,17 +530,23 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 		ray::StreamReaderPtr stream;
 		if (!ray::IoServer::instance()->openFile(stream, path))
 		{
-			error = "Failed to open file.";
+			error = "Cannot open file, check the spelling of the file path.";
 			return false;
 		}
 
 		ray::PMXHandler header;
 		if (!header.doCanRead(*stream))
+		{
+			error = "Non readable PMX file.";
 			return false;
+		}
 
 		_model = std::make_unique<ray::PMX>();
 		if (!header.doLoad(*stream, *_model))
+		{
+			error = "Non readable PMX file.";
 			return false;
+		}
 
 		auto gameObject = std::make_shared<ray::GameObject>();
 

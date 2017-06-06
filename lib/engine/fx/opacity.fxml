@@ -11,6 +11,7 @@
 	<parameter name="albedoMapLoopNum" type="float2"/>
 	<parameter name="albedoSub" type="float3"/>
 	<parameter name="albedoSubMap" type="texture2D"/>
+	<parameter name="albedoSubMapType" type="int"/>
 	<parameter name="albedoSubMapFrom" type="int"/>
 	<parameter name="albedoSubMapFilp" type="int"/>
 	<parameter name="albedoSubMapLoopNum" type="float2"/>
@@ -26,6 +27,7 @@
 	<parameter name="normalSubMapLoopNum" type="float2"/>
 	<parameter name="smoothness" type="float"/>
 	<parameter name="smoothnessMap" type="texture2D"/>
+	<parameter name="smoothnessMapType" type="int"/>
 	<parameter name="smoothnessMapFrom" type="int"/>
 	<parameter name="smoothnessMapFilp" type="int"/>
 	<parameter name="smoothnessMapSiwzzle" type="float4"/>
@@ -38,11 +40,13 @@
 	<parameter name="metalnessMapLoopNum" type="float2"/>
 	<parameter name="specular" type="float3"/>
 	<parameter name="specularMap" type="texture2D"/>
+	<parameter name="specularMapType" type="int"/>
 	<parameter name="specularMapFrom" type="int"/>
 	<parameter name="specularMapFilp" type="int"/>
 	<parameter name="specularMapLoopNum" type="float2"/>
 	<parameter name="occlusion" type="float"/>
 	<parameter name="occlusionMap" type="texture2D"/>
+	<parameter name="occlusionMapType" type="int"/>
 	<parameter name="occlusionMapFrom" type="int"/>
 	<parameter name="occlusionMapFilp" type="int"/>
 	<parameter name="occlusionMapSiwzzle" type="float4"/>
@@ -52,17 +56,18 @@
 	<parameter name="emissiveMapFrom" type="int"/>
 	<parameter name="emissiveMapFilp" type="int"/>
 	<parameter name="emissiveMapLoopNum" type="float2"/>
+	<parameter name="customType" type="int"/>
 	<parameter name="customA" type="float"/>
 	<parameter name="customAMap" type="texture2D"/>
 	<parameter name="customAMapFrom" type="int"/>
 	<parameter name="customAMapFilp" type="int"/>
-	<parameter name="customASwizzle" type="float4"/>
-	<parameter name="customALoopNum" type="float2"/>
+	<parameter name="customAMapSwizzle" type="float4"/>
+	<parameter name="customAMapLoopNum" type="float2"/>
 	<parameter name="customB" type="float3"/>
 	<parameter name="customBMap" type="texture2D"/>
 	<parameter name="customBMapFrom" type="int"/>
 	<parameter name="customBMapFilp" type="int"/>
-	<parameter name="customBLoopNum" type="float2"/>
+	<parameter name="customBMapLoopNum" type="float2"/>
 	<shader>
 		<![CDATA[
 			float3 DecodeNormalMap(Texture2D normal, float2 coord)
@@ -89,6 +94,25 @@
 				else
 				{
 					return albedo;
+				}
+			}
+			
+			float3 GetSubAlbedo(float2 coord)
+			{
+				if (albedoSubMapFrom > 0 && albedoSubMapFrom < 6)
+				{
+					if (albedoSubMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (albedoSubMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (albedoSubMapFilp == 3)
+						coord = 1 - coord;
+					
+					return srgb2linear(albedoSubMap.Sample(PointClamp, coord * albedoSubMapLoopNum).rgb) * albedoSub;
+				}
+				else
+				{
+					return albedoSub;
 				}
 			}
 
@@ -197,6 +221,44 @@
 				}
 			}
 
+			float GetCustomA(float2 coord)
+			{
+				if (customAMapFrom > 0 && customAMapFrom < 6)
+				{
+					if (customAMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (customAMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (customAMapFilp == 3)
+						coord = 1 - coord;
+					
+					return dot(customAMap.Sample(PointClamp, coord * customAMapLoopNum), customAMapSwizzle) * customA;
+				}
+				else
+				{
+					return customA;
+				}
+			}
+
+			float3 GetCustomB(float2 coord)
+			{
+				if (customBMapFrom > 0 && customBMapFrom < 6)
+				{
+					if (customBMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (customBMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (customBMapFilp == 3)
+						coord = 1 - coord;
+					
+					return customBMap.Sample(PointClamp, coord * customBMapLoopNum).rgb * customB;
+				}
+				else
+				{
+					return customB;
+				}
+			}
+
 			void DepthVS(
 				in float4 Position : POSITION,
 				out float4 oPosition : SV_Position)
@@ -270,7 +332,7 @@
 				material.metalness = GetMetalness(coord);
 				material.occlusion = GetOcclusion(coord);
 
-				material.customB = customB;
+				material.customB = GetCustomB(coord);
 				material.lightModel = LIGHTINGMODEL_NORMAL;
 
 				return EncodeGbuffer(material);

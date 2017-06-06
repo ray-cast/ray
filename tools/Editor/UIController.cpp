@@ -432,10 +432,12 @@ GuiControllerComponent::makeSphereObjects() noexcept
 			(*material)["smoothness"]->uniform1f(shininessParams[i * 10 + j]);
 			(*material)["smoothnessMapFrom"]->uniform1i(0);
 			(*material)["smoothnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
+			(*material)["smoothnessMapSiwzzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
 
 			(*material)["metalness"]->uniform1f(0);
 			(*material)["metalnessMapFrom"]->uniform1i(0);
 			(*material)["metalnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
+			(*material)["metalnessMapSiwzzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
 
 			(*material)["specular"]->uniform3f(0.5, 0.5, 0.5);
 			(*material)["specularMapFrom"]->uniform1i(0);

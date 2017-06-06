@@ -104,6 +104,8 @@
 						coord = 1 - coord;
 					
 					float3 tangentNormal = normalMap.Sample(PointClamp, coord * normalMapLoopNum).rgb * 2 - 1;
+					tangentNormal.xy *= normalMapScale;
+					tangentNormal = normalize(tangentNormal);
 
 					float3 N = normalize(normal);
 					float3 T = normalize(tangent);

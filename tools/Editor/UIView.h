@@ -124,7 +124,7 @@ private:
 
 	void showTransformWindow(ray::GameObject* object) noexcept;
 	void showCameraEditorWindow(ray::CameraComponent* component) noexcept;
-	void showMaterialWindow(const ray::MaterialPtr& material) noexcept;
+	void showMaterialWindow(ray::Material& material) noexcept;
 
 	void startUVMapper() noexcept;
 	void startLightMass() noexcept;

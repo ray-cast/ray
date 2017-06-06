@@ -117,7 +117,7 @@ private:
 	void showProjectSaveAsBrowse() noexcept;
 
 	void showHierarchyWindow() noexcept;
-	void showAssertLists() noexcept;
+	void showAssetLists() noexcept;
 	void showInspectorWindow() noexcept;
 	void showCameraWindow() noexcept;
 	void showSceneWindow() noexcept;
@@ -139,8 +139,11 @@ private:
 private:
 	ray::GameObject* _selectedObject;
 	ray::GameObjectPtr _cube;
+	ray::GraphicsTexturePtr _selectedTexture;
 
 	std::weak_ptr<ray::CameraComponent> _cameraComponent;
+
+	ray::float2 _assetImageSize;
 
 	ray::float4 _viewport;
 

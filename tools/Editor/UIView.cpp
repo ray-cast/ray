@@ -44,6 +44,7 @@
 #include <ray/game_object_manager.h>
 #include <ray/mesh_render_component.h>
 #include <ray/graphics_framebuffer.h>
+#include <ray/graphics_texture.h>
 #include <ray/material.h>
 #include <ray/res_manager.h>
 
@@ -66,6 +67,7 @@ GuiViewComponent::GuiViewComponent() noexcept
 	, _lightMassType(LightMassType::UVMapper)
 	, _viewport(0, 0, 0, 0)
 	, _mouseHoveringCamera(false)
+	, _assetImageSize(ray::float2(64, 64))
 {
 	_progress = 0.0f;
 	_showWindowAll = true;
@@ -221,7 +223,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 			this->showLightMass();
 
 			this->showHierarchyWindow();
-			this->showAssertLists();
+			this->showAssetLists();
 			this->showCameraWindow();
 			this->showInspectorWindow();
 
@@ -846,12 +848,10 @@ GuiViewComponent::showHierarchyWindow() noexcept
 }
 
 void
-GuiViewComponent::showAssertLists() noexcept
+GuiViewComponent::showAssetLists() noexcept
 {
 	if (!_showAssertWindow)
 		return;
-
-	static ray::float2 imageSize = ray::float2(64, 64);
 
 	if (ray::Gui::beginDock("Assets", &_showAssertWindow))
 	{
@@ -863,14 +863,19 @@ GuiViewComponent::showAssertLists() noexcept
 		const auto& textures = ray::ResManager::instance()->getTextureAll();
 		for (auto& texture : textures)
 		{
-			if (ray::Gui::getContentRegionAvailWidth() < imageSize.x)
+			if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
 			{
 				ray::Gui::newLine();
 				ray::Gui::sameLine(_style.ItemInnerSpacing.x);
 			}
 
+			std::uint32_t width = texture.second->getGraphicsTextureDesc().getWidth();
+			std::uint32_t height = texture.second->getGraphicsTextureDesc().getHeight();
+
 			ray::Gui::pushID(id++);
-			ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
+			if (ray::Gui::imageButton(texture.second.get(), _assetImageSize * ray::float2((float)width / height, 1.0), ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
+				_selectedTexture = texture.second;
+
 			ray::Gui::popID();
 
 			ray::Gui::sameLine(0, _style.ItemSpacing.y);
@@ -879,6 +884,31 @@ GuiViewComponent::showAssertLists() noexcept
 		ray::Gui::popStyleColor();
 
 		ray::Gui::endDock();
+	}
+
+	if (_selectedTexture)
+	{
+		std::uint32_t width = _selectedTexture->getGraphicsTextureDesc().getWidth();
+		std::uint32_t height = _selectedTexture->getGraphicsTextureDesc().getHeight();
+		ray::float2 aspert = ray::float2((float)width / height, 1.0);
+
+		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
+		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0.0f);
+		ray::Gui::pushStyleColor(ray::GuiCol::GuiColWindowBg, ray::float4::Zero);
+
+		ray::Gui::begin("##floating", 0, _assetImageSize * aspert, -1.0f, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoScrollbarBit);
+		ray::Gui::setWindowPos(ray::Gui::getMousePos() - _assetImageSize * aspert * 0.5f);
+		ray::Gui::image(_selectedTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One);
+		ray::Gui::end();
+		ray::Gui::popStyleVar(2);
+		ray::Gui::popStyleColor();
+
+		if (ray::Gui::isMouseDown(ray::InputButton::LEFT) ||
+			ray::Gui::isMouseDown(ray::InputButton::RIGHT) ||
+			ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
+		{
+			_selectedTexture = nullptr;
+		}
 	}
 }
 

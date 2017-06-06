@@ -604,6 +604,19 @@ public:
 	static bool beginDock(const char* label, bool* opened = nullptr, GuiWindowFlags extra_flags = 0, const float2& default_size = float2(-1, -1));
 	static void endDock();
 	static void setDockActive();
+
+	static bool dragFloatNEx(const char* labels[], float* v, int components, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* display_format = "%.3f", float power = 1.0f);
+	static bool dragIntNEx(const char* labels[], int* v, int components, float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* display_format = "%.0f");
+	static bool dragUIntNEx(const char* labels[], unsigned int* v, int components, float v_speed = 1.0f, unsigned int v_min = 0, unsigned int v_max = 0, const char* display_format = "%.0f");
+	static void renderFrameEx(const float2& p_min, const float2& p_max, bool border, float rounding, float thickness = 1.0f);
+	static bool beginToolbar(const char* str_id, const float2& screen_pos, const float2& size);
+	static void endToolbar();
+	static bool toolbarButton(GuiTextureID texture, const char* tooltip, bool selected = false, bool enabled = true);
+	static bool imageButtonEx(GuiTextureID texture, const float2& size = float2(24, 24), const char* tooltip = nullptr, bool selected = false, bool enabled = true);
+	static int imageButtonWithAspectAndLabel(GuiTextureID texture, const float2& texture_size, const float2& size, const float2& uv0, const float2& uv1, bool selected, bool* edit_label, const char* label, char* buf, size_t buf_size, GuiInputTextFlags flags = 0);
+	static void imageWithAspect(GuiTextureID texture, const float2& texture_size, const float2& size, const float2& uv0 = float2(0, 0), const float2& uv1 = float2(1, 1), const float4& tint_col = float4::One, const float4& border_col = float4::Zero);
+	static void labelTextEx(const char* label, const char* fmt, ...);
+	static void labelTextExV(const char* label, const char* fmt, va_list args);
 private:
 	IMGUI(const IMGUI&) = delete;
 	IMGUI& operator=(const IMGUI&) = delete;

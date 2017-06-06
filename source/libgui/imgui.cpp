@@ -38,6 +38,7 @@
 #include <imgui.h>
 #include <imgui_dock.h>
 #include <imgui_internal.h>
+#include <imgui_user.h>
 
 _NAME_BEGIN
 
@@ -2246,6 +2247,78 @@ void
 IMGUI::setDockActive()
 {
 	ImGui::SetDockActive();
+}
+
+bool
+IMGUI::dragFloatNEx(const char* labels[], float* v, int components, float v_speed, float v_min, float v_max, const char* display_format, float power)
+{
+	return ImGui::DragFloatNEx(labels, v, components, v_speed, v_min, v_max, display_format, power);
+}
+
+bool
+IMGUI::dragIntNEx(const char* labels[], int* v, int components, float v_speed, int v_min, int v_max, const char* display_format)
+{
+	return ImGui::DragIntNEx(labels, v, components, v_speed, v_min, v_max, display_format);
+}
+
+bool
+IMGUI::dragUIntNEx(const char* labels[], unsigned int* v, int components, float v_speed, unsigned int v_min, unsigned int v_max, const char* display_format)
+{
+	return ImGui::DragUIntNEx(labels, v, components, v_speed, v_min, v_max, display_format);
+}
+
+void
+IMGUI::renderFrameEx(const float2& p_min, const float2& p_max, bool border, float rounding, float thickness)
+{
+	ImGui::RenderFrameEx((ImVec2&)p_min, (ImVec2&)p_max, border, rounding, thickness);
+}
+
+bool
+IMGUI::beginToolbar(const char* str_id, const float2& screen_pos, const float2& size)
+{
+	return ImGui::BeginToolbar(str_id, (ImVec2&)screen_pos, (ImVec2&)size);
+}
+
+void
+IMGUI::endToolbar()
+{
+	ImGui::EndToolbar();
+}
+
+bool
+IMGUI::toolbarButton(GuiTextureID texture, const char* tooltip, bool selected, bool enabled)
+{
+	return ImGui::ToolbarButton(texture, tooltip, selected, enabled);
+}
+
+bool
+IMGUI::imageButtonEx(GuiTextureID texture, const float2& size, const char* tooltip, bool selected, bool enabled)
+{
+	return ImGui::ImageButtonEx(texture, (ImVec2&)size, tooltip, selected, enabled);
+}
+
+int
+IMGUI::imageButtonWithAspectAndLabel(GuiTextureID texture, const float2& texture_size, const float2& size, const float2& uv0, const float2& uv1, bool selected, bool* edit_label, const char* label, char* buf, size_t buf_size, GuiInputTextFlags flags)
+{
+	return ImGui::ImageButtonWithAspectAndLabel(texture, (ImVec2&)texture_size, (ImVec2&)size, (ImVec2&)uv0, (ImVec2&)uv1, selected, edit_label, label, buf, buf_size, flags);
+}
+
+void
+IMGUI::imageWithAspect(GuiTextureID texture, const float2& texture_size, const float2& size, const float2& uv0, const float2& uv1, const float4& tint_col, const float4& border_col)
+{
+	ImGui::ImageWithAspect(texture, (ImVec2&)texture_size, (ImVec2&)size, (ImVec2&)size, (ImVec2&)uv0, (ImVec4&)tint_col, (ImVec4&)border_col);
+}
+
+void
+IMGUI::labelTextEx(const char* label, const char* fmt, ...)
+{
+	//ImGui::LabelTextEx(label, fmt, ...);
+}
+
+void
+IMGUI::labelTextExV(const char* label, const char* fmt, va_list args)
+{
+	ImGui::LabelTextExV(label, fmt, args);
 }
 
 _NAME_END

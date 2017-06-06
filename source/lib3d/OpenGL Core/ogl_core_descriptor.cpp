@@ -180,30 +180,14 @@ OGLCoreDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 			glBindSampler(location, it->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
+		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
+		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
 		{
 			auto texture = it->getTexture();
 			if (texture)
-			{
 				glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
-			}
-		}
-		break;
-		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
-		{
-			auto& texture = it->getTexture();
-			if (texture)
-			{
-				glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
-			}
-		}
-		break;
-		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
-		{
-			auto& texture = it->getTexture();
-			if (texture)
-			{
-				glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
-			}
+			else
+				glBindTextureUnit(location, GL_NONE);
 		}
 		break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageTexelBuffer:

@@ -879,7 +879,7 @@ OGLDescriptorSet::apply(const OGLProgram& shaderObject) noexcept
 			else
 			{
 				glActiveTexture(GL_TEXTURE0 + location);
-				glBindTexture(GL_TEXTURE_2D, 0);
+				glBindTexture(GL_TEXTURE_2D, GL_NONE);
 			}
 		}
 		break;

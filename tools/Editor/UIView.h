@@ -137,6 +137,7 @@ private:
 	GuiViewComponent& operator=(const GuiViewComponent&) = delete;
 
 private:
+	std::size_t _selectedSubset;
 	ray::GameObject* _selectedObject;
 	ray::GameObjectPtr _cube;
 	ray::GraphicsTexturePtr _selectedTexture;

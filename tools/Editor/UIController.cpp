@@ -620,6 +620,10 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 			{
 				auto material = materialTemp->clone();
 
+				char name[MAX_PATH];
+				::wcstombs(name, _model->materials[i].name.name, _model->materials[i].name.length);
+
+				material->setName(name);
 				material->getParameter("albedo")->uniform3f(ray::math::srgb2linear(_model->materials[i].Diffuse));
 				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(_model->materials[i].Shininess));
 				material->getParameter("metalness")->uniform1f(0.0);

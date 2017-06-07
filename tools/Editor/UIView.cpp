@@ -63,7 +63,8 @@ const char* TEXTURE_SPECULAR_TYPE[] = { "Specular color", "Specular color", "Spe
 const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second UV", "sRGB with second UV" };
 
 GuiViewComponent::GuiViewComponent() noexcept
-	: _selectedObject(nullptr)
+	: _selectedSubset(std::numeric_limits<std::size_t>::max())
+	, _selectedObject(nullptr)
 	, _lightMassType(LightMassType::UVMapper)
 	, _viewport(0, 0, 0, 0)
 	, _mouseHoveringCamera(false)
@@ -262,6 +263,7 @@ GuiViewComponent::onModelPicker(float x, float y) noexcept
 	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit, [](ray::GameObject* object) { return object->getName() != "wireframe"; }))
 	{
 		_selectedObject = hit.object;
+		_selectedSubset = hit.mesh;
 		_event.onSeletedMesh(hit.object, hit.mesh);
 	}
 }
@@ -804,12 +806,12 @@ GuiViewComponent::showHierarchyWindow() noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("lights"))
+		if (ray::Gui::treeNode("lights"))
 		{
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("light probes"))
+		if (ray::Gui::treeNode("light probes"))
 		{
 			ray::Gui::treePop();
 		}
@@ -823,17 +825,56 @@ GuiViewComponent::showHierarchyWindow() noexcept
 			{
 				for (std::size_t i = 0; i < objects->size(); i++)
 				{
-					auto& name = (*objects)[i]->getName();
-					char buffer[MAX_PATH];
-					if (name.empty())
-						std::sprintf(buffer, "|-subset%zu", i);
-					else
-						std::sprintf(buffer, "|-%s", name.c_str());
+					auto object = (*objects)[i].get();
 
-					if (ray::Gui::selectable(buffer, _selectedObject == (*objects)[i].get() ? true : false))
+					auto meshRender = object->getComponent<ray::MeshRenderComponent>();
+					if (!meshRender)
+						continue;
+
+					auto& name = object->getName();
+					char objectName[MAX_PATH];
+					if (name.empty())
+						std::sprintf(objectName, "|-mesh%zu", i);
+					else
+						std::sprintf(objectName, "|-%s", name.c_str());
+
+					const auto& materials = meshRender->getMaterials();
+					if (materials.size() == 1)
 					{
-						_event.onSeletedMesh((*objects)[i].get(), 0);
-						_selectedObject = (*objects)[i].get();
+						if (ray::Gui::selectable(objectName, _selectedObject == object ? true : false))
+						{
+							_selectedSubset = 0;
+							_selectedObject = object;
+							_event.onSeletedMesh(_selectedObject, _selectedSubset);
+						}
+					}
+					else
+					{
+						ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2::Zero);
+						ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 0.6);
+
+						if (ray::Gui::treeNode(objectName))
+						{
+							for (std::size_t j = 0; j < materials.size(); j++)
+							{
+								char buffer[MAX_PATH];
+								if (materials[j]->getName().empty())
+									std::sprintf(buffer, "|-subset%zu", j);
+								else
+									std::sprintf(buffer, "|-%s", materials[j]->getName().c_str());
+
+								if (ray::Gui::selectable(buffer, (_selectedObject == object && _selectedSubset == j) ? true : false))
+								{
+									_selectedSubset = j;
+									_selectedObject = object;
+									_event.onSeletedMesh(_selectedObject, _selectedSubset);
+								}
+							}
+
+							ray::Gui::treePop();
+						}
+
+						ray::Gui::popStyleVar(2);
 					}
 				}
 			}
@@ -1003,9 +1044,14 @@ GuiViewComponent::showInspectorWindow() noexcept
 			auto meshRenderer = _selectedObject->getComponent<ray::MeshRenderComponent>();
 			if (meshRenderer)
 			{
-				auto material = meshRenderer->getMaterial();
-				if (material)
-					this->showMaterialWindow(*material);
+				auto materials = meshRenderer->getMaterials();
+				if (!materials.empty())
+				{
+					if (materials.size() > _selectedSubset)
+						this->showMaterialWindow(*materials[_selectedSubset]);
+					else
+						this->showMaterialWindow(*materials.front());
+				}
 			}
 		}
 

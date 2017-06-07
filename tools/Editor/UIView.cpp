@@ -175,14 +175,16 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
 			{
 				if (input->getButtonDown(ray::InputButton::Code::MOUSEWHEEL))
 				{
+					float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
 					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward);
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward * speed);
 				}
 
 				if (input->getButtonUp(ray::InputButton::Code::MOUSEWHEEL))
 				{
+					float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
 					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward);
+					_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward * speed);
 				}
 
 				if (input->getButton(ray::InputButton::Code::MIDDLE))

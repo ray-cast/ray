@@ -44,6 +44,9 @@ _NAME_BEGIN
 EXPORT std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::size_t size);
 EXPORT std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data, std::size_t size);
 
+EXPORT bool mbs2wCs(const char* pszSrc, std::size_t max_length, wchar_t* dest, std::size_t multiByteStr);
+EXPORT bool wcs2mbs(const wchar_t * wcharStr, std::size_t multiByteStr, char* dest, std::size_t max_length);
+
 _NAME_END
 
 #endif

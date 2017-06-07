@@ -51,6 +51,7 @@
 
 #include "first_person_camera.h"
 
+#include <ray/utf8.h>
 #include <ray/camera_component.h>
 #include <ray/light_component.h>
 #include <ray/mesh_component.h>
@@ -554,6 +555,19 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 
 		auto gameObject = std::make_shared<ray::GameObject>();
 
+		if (_model->description.japanModelLength)
+		{
+			char name[MAX_PATH];
+			if (ray::wcs2mbs(_model->description.japanModelName.data(), _model->description.japanModelLength, name, MAX_PATH))
+				gameObject->setName(name);
+		}
+		else if (_model->description.englishModelLength)
+		{
+			char name[MAX_PATH];
+			if (ray::wcs2mbs(_model->description.englishModelName.data(), _model->description.englishModelLength, name, MAX_PATH))
+				gameObject->setName(name);
+		}
+
 		if (_model->numVertices > 0 && _model->numIndices > 0)
 		{
 			ray::PMX_Index* indicesData = _model->indices.data();
@@ -621,9 +635,9 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 				auto material = materialTemp->clone();
 
 				char name[MAX_PATH];
-				::wcstombs(name, _model->materials[i].name.name, _model->materials[i].name.length);
+				if (ray::wcs2mbs(_model->materials[i].name.name, _model->materials[i].name.length, name, MAX_PATH))
+					material->setName(name);
 
-				material->setName(name);
 				material->getParameter("albedo")->uniform3f(ray::math::srgb2linear(_model->materials[i].Diffuse));
 				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(_model->materials[i].Shininess));
 				material->getParameter("metalness")->uniform1f(0.0);

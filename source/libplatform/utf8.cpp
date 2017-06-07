@@ -87,7 +87,7 @@ std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data
 	return out_size;
 }
 
-bool mbs2wCs(const char* pszSrc, wchar_t* dest, std::size_t max_length)
+bool mbs2wCs(const char* pszSrc, std::size_t multiByteStr, wchar_t* dest, std::size_t max_length)
 {
 #if defined(_linux_)
 	::setlocale(LC_ALL, "zh_CN.GB2312");
@@ -112,7 +112,7 @@ bool mbs2wCs(const char* pszSrc, wchar_t* dest, std::size_t max_length)
 #endif
 }
 
-bool wcs2mbs(const wchar_t * wcharStr, char* dest, std::size_t max_length)
+bool wcs2mbs(const wchar_t * wcharStr, std::size_t multiByteStr, char* dest, std::size_t max_length)
 {
 #if defined(_linux_)
 	setlocale(LC_ALL, "zh_CN.UTF8");
@@ -122,7 +122,7 @@ bool wcs2mbs(const wchar_t * wcharStr, char* dest, std::size_t max_length)
 	str[size] = '\0';
 	return str;
 #else
-	int size = WideCharToMultiByte(CP_UTF8, 0, wcharStr, -1, NULL, NULL, NULL, NULL);
+	int size = WideCharToMultiByte(CP_UTF8, 0, wcharStr, multiByteStr, NULL, NULL, NULL, NULL);
 	if (size >= max_length)
 		return false;
 

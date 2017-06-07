@@ -541,12 +541,16 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 			return false;
 		}
 
-		_model = std::make_unique<ray::PMX>();
-		if (!header.doLoad(*stream, *_model))
+		auto model = std::make_unique<ray::PMX>();
+		if (!header.doLoad(*stream, *model))
 		{
 			error = "Non readable PMX file.";
 			return false;
 		}
+
+		_objects.clear();
+		_model = std::move(model);
+		_cube->setScaleAll(0.0f);
 
 		auto gameObject = std::make_shared<ray::GameObject>();
 
@@ -650,10 +654,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 
 		gameObject->setActive(true);
 
-		_objects.clear();
 		_objects.push_back(gameObject);
-
-		_cube->setScaleAll(0.0f);
 
 		return true;
 	}

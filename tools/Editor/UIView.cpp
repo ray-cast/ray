@@ -858,7 +858,8 @@ GuiViewComponent::showAssetLists() noexcept
 		int id = 0;
 
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
-		ray::Gui::sameLine(_style.ItemInnerSpacing.x);
+		ray::Gui::text("");
+		ray::Gui::sameLine();
 
 		const auto& textures = ray::ResManager::instance()->getTextureAll();
 		for (auto& texture : textures)
@@ -866,7 +867,8 @@ GuiViewComponent::showAssetLists() noexcept
 			if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
 			{
 				ray::Gui::newLine();
-				ray::Gui::sameLine(_style.ItemInnerSpacing.x);
+				ray::Gui::text("");
+				ray::Gui::sameLine();
 			}
 
 			std::uint32_t width = texture.second->getGraphicsTextureDesc().getWidth();

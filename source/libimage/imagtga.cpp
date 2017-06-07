@@ -39,9 +39,21 @@
 
 _NAME_BEGIN
 
-namespace image
-{
+using namespace image;
 
+#define TGA_TYPE_PALETTE 1
+#define TGA_TYPE_RGB 2
+#define TGA_TYPE_GRAY 3
+#define TGA_TYPE_PALETTE_RLE  9
+#define TGA_TYPE_RGB_RLE 10
+#define TGA_TYPE_GRAY_RLE 11
+
+#define TGA_BPP_8 8
+#define TGA_BPP_16 16
+#define TGA_BPP_24 24
+#define TGA_BPP_32 32
+
+#define TGA_ATTRIB_ALPHA 8
 #pragma pack(push)
 #pragma pack(1)
 
@@ -62,16 +74,6 @@ struct TGAHeader
 };
 
 #pragma pack(pop)
-
-#define TGA_TYPE_RGB 2
-#define TGA_TYPE_GRAY 3
-
-#define TGA_BPP_8 8
-#define TGA_BPP_16 16
-#define TGA_BPP_24 24
-#define TGA_BPP_32 32
-
-#define TGA_ATTRIB_ALPHA 8
 
 TGAHandler::TGAHandler() noexcept
 {
@@ -135,15 +137,19 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 
 	switch (hdr.image_type)
 	{
-	case 2:
+	case TGA_TYPE_PALETTE:
+		return false;
+	case TGA_TYPE_RGB:
 	{
 		image::format_t format = image::format_t::Undefined;
-		if (hdr.pixel_size == 8)
+		if (hdr.pixel_size == TGA_BPP_8)
 			format = image::format_t::R8SRGB;
-		else if (hdr.pixel_size == 24)
-			format = image::format_t::R8G8B8SRGB;
-		else if (hdr.pixel_size == 32)
-			format = image::format_t::R8G8B8A8SRGB;
+		else if (hdr.pixel_size == TGA_BPP_16)
+			format = image::format_t::R8G8SRGB;
+		else if (hdr.pixel_size == TGA_BPP_24)
+			format = image::format_t::B8G8R8SRGB;
+		else if (hdr.pixel_size == TGA_BPP_32)
+			format = image::format_t::B8G8R8A8SRGB;
 		else
 			return false;
 
@@ -154,7 +160,16 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 			return false;
 	}
 	break;
-	case 10:
+	case TGA_TYPE_GRAY:
+	{
+		if (!image.create(columns, rows, image::format_t::R8SRGB))
+			return false;
+
+		if (!stream.read((char*)image.data(), length))
+			return false;
+	}
+	break;
+	case TGA_TYPE_RGB_RLE:
 	{
 		std::vector<std::uint8_t> buffers(stream.size() - sizeof(TGAHeader));
 		std::uint8_t* buf = (std::uint8_t*)buffers.data();
@@ -164,63 +179,90 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 
 		switch (hdr.pixel_size)
 		{
-		case 16:
+		case TGA_BPP_16:
 		{
-		}
-		break;
-
-		case 24:
-		{
-			if (!image.create(columns, rows, image::format_t::R8G8B8SRGB))
+			if (!image.create(columns, rows, image::format_t::R8G8SRGB))
 				return false;
 
-			RGB* rgb = (RGB*)image.data();
-			RGB* end = (RGB*)(image.data() + image.size());
+			std::uint8_t* data = (std::uint8_t*)image.data();
+			std::uint8_t* end = (std::uint8_t*)(image.data() + image.size());
 
-			while (rgb < end)
+			while (data < end)
 			{
 				std::uint8_t packe = *buf++;
 				if (packe & 0x80)
 				{
 					std::uint8_t length = (std::uint8_t)(1 + (packe & 0x7f));
 
-					BGR bgr;
-					bgr.b = *buf++;
-					bgr.g = *buf++;
-					bgr.r = *buf++;
-
-					for (std::uint8_t i = 0; i < length; i++)
+					for (std::uint8_t i = 0; i < length; i++, data += 2)
 					{
-						rgb->r = bgr.r;
-						rgb->g = bgr.g;
-						rgb->b = bgr.b;
-						rgb++;
+						data[0] = buf[0];
+						data[1] = buf[1];
 					}
+
+					buf += 2;
 				}
 				else
 				{
 					std::uint8_t length = ++packe;
 
-					for (std::uint8_t i = 0; i < length; i++)
+					for (std::uint8_t i = 0; i < length; i++, data += 2, buf += 2)
 					{
-						rgb->b = *buf++;
-						rgb->g = *buf++;
-						rgb->r = *buf++;
-						rgb++;
+						data[0] = buf[0];
+						data[1] = buf[1];
+						data[2] = buf[2];
 					}
 				}
 			}
 		}
 		break;
-		case 32:
+		case TGA_BPP_24:
 		{
-			if (!image.create(columns, rows, image::format_t::R8G8B8A8SRGB))
+			if (!image.create(columns, rows, image::format_t::B8G8R8SRGB))
 				return false;
 
-			std::uint32_t* rgba = (std::uint32_t*)image.data();
+			std::uint8_t* data = (std::uint8_t*)image.data();
+			std::uint8_t* end = (std::uint8_t*)(image.data() + image.size());
+
+			while (data < end)
+			{
+				std::uint8_t packe = *buf++;
+				if (packe & 0x80)
+				{
+					std::uint8_t length = (std::uint8_t)(1 + (packe & 0x7f));
+
+					for (std::uint8_t i = 0; i < length; i++, data += 3)
+					{
+						data[0] = buf[0];
+						data[1] = buf[1];
+						data[2] = buf[2];
+					}
+
+					buf += 3;
+				}
+				else
+				{
+					std::uint8_t length = ++packe;
+
+					for (std::uint8_t i = 0; i < length; i++, data += 3, buf += 3)
+					{
+						data[0] = buf[0];
+						data[1] = buf[1];
+						data[2] = buf[2];
+					}
+				}
+			}
+		}
+		break;
+		case TGA_BPP_32:
+		{
+			if (!image.create(columns, rows, image::format_t::B8G8R8A8SRGB))
+				return false;
+
+			std::uint32_t* data = (std::uint32_t*)image.data();
 			std::uint32_t* end = (std::uint32_t*)(image.data() + image.size());
 
-			while (rgba < end)
+			while (data < end)
 			{
 				std::uint8_t packe = *buf++;
 				if (packe & 0x80)
@@ -228,24 +270,61 @@ TGAHandler::doLoad(StreamReader& stream, Image& image) noexcept
 					std::uint8_t length = (std::uint8_t)(1 + (packe & 0x7f));
 
 					for (std::uint8_t i = 0; i < length; i++)
-						*rgba++ = *(std::uint32_t*)buf;
+						*data++ = *(std::uint32_t*)buf;
 
-					buf += 4;						
+					buf += 4;
 				}
 				else
 				{
 					std::uint8_t length = ++packe;
 					for (std::uint8_t i = 0; i < length; i++)
-						*rgba++ = *((std::uint32_t*&)buf)++;
+						*data++ = *((std::uint32_t*&)buf)++;
 				}
 			}
 		}
 		break;
+		default:
+			return false;
+		}
+	}
+	break;
+	case TGA_TYPE_GRAY_RLE:
+	{
+		std::vector<std::uint8_t> buffers(stream.size() - sizeof(TGAHeader));
+		std::uint8_t* buf = (std::uint8_t*)buffers.data();
+
+		if (!stream.read((char*)buf, buffers.size()))
+			return false;
+
+		if (!image.create(columns, rows, image::format_t::R8SRGB))
+			return false;
+
+		std::uint8_t* data = (std::uint8_t*)image.data();
+		std::uint8_t* end = (std::uint8_t*)(image.data() + image.size());
+
+		while (data < end)
+		{
+			std::uint8_t packe = *buf++;
+			if (packe & 0x80)
+			{
+				std::uint8_t length = (std::uint8_t)(1 + (packe & 0x7f));
+
+				for (std::uint8_t i = 0; i < length; i++)
+					*data++ = *(std::uint32_t*)buf;
+
+				buf++;
+			}
+			else
+			{
+				std::uint8_t length = ++packe;
+				for (std::uint8_t i = 0; i < length; i++)
+					*data++ = *buf++;
+			}
 		}
 	}
 	break;
 	default:
-		assert(false);
+		return false;
 	}
 
 	if (hdr.y_origin == 0)
@@ -318,8 +397,6 @@ TGAHandler::doSave(StreamWrite& stream, const Image& image) noexcept
 	stream.write((char*)image.data(), image.size());
 
 	return true;
-}
-
 }
 
 _NAME_END

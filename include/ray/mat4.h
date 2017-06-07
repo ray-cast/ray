@@ -465,30 +465,30 @@ public:
 
 	Matrix4x4t<T>& makeRotate(const Quaterniont<T>& q, const Vector3t<T>& translate = Vector3t<T>::Zero) noexcept
 	{
-		T xs = q.x * T(2.0), ys = q.y * T(2.0), zs = q.z * T(2.0);
-		T wx = q.w * xs, wy = q.w * ys, wz = q.w * zs;
+		T xs = q.x * T(2.0f), ys = q.y * T(2.0f), zs = q.z * T(2.0f);
+		T xw = q.w * xs, yw = q.w * ys, zw = q.w * zs;
 		T xx = q.x * xs, xy = q.x * ys, xz = q.x * zs;
 		T yy = q.y * ys, yz = q.y * zs, zz = q.z * zs;
 
-		a1 = T(1.0) - (yy + zz);
-		b1 = xy - wz;
-		c1 = xz + wy;
+		a1 = T(1.0f) - (yy + zz);
+		a2 = xy + zw;
+		a3 = xz - yw;
+		a4 = T(0.0f);
+
+		b1 = xy - zw;
+		b2 = T(1.0f) - (xx + zz);
+		b3 = yz + xw;
+		b4 = T(0.0f);
+
+		c1 = xz + yw;
+		c2 = yz - xw;
+		c3 = T(1.0f) - (xx + yy);
+		c4 = T(0.0f);
+
 		d1 = translate.x;
-
-		a2 = xy + wz;
-		b2 = T(1.0) - (xx + zz);
-		c2 = yz - wx;
 		d2 = translate.y;
-
-		a3 = xz - wy;
-		b3 = yz + wx;
-		c3 = T(1.0) - (xx + yy);
 		d3 = translate.z;
-
-		a4 = T(0.0);
-		b4 = T(0.0);
-		c4 = T(0.0);
-		d4 = T(1.0);
+		d4 = T(1.0f);
 
 		return *this;
 	}
@@ -528,10 +528,7 @@ public:
 		scaling.y = math::length(up);
 		scaling.z = math::length(forward);
 
-		T det = (this->a1 * this->b2 - this->a2 * this->b1) * (this->c3) -
-			(this->a1 * this->b3 - this->a3 * this->b1) * (this->c2) +
-			(this->a2 * this->b3 - this->a3 * this->b2) * (this->c1);
-
+		T det = (a1 * b2 - a2 * b1) * (c3)-(a1 * b3 - a3 * b1) * (c2)+(a2 * b3 - a3 * b2) * (c1);
 		if (det < 0)
 		{
 			scaling.x = -scaling.x;

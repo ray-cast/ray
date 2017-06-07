@@ -525,12 +525,12 @@ GuiViewComponent::showMessage() noexcept
 	if (!_showMessage)
 		return;
 
-	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), &_showMessage, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
+	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), &_showMessage, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
 		ray::Gui::text(_messageText.c_str());
 		ray::Gui::separator();
 
-		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(0, 0));
+		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2::Zero);
 		ray::Gui::checkbox(_langs[UILang::NoShowAgain], &_ignoreMessage[_messageHash]);
 		ray::Gui::popStyleVar();
 
@@ -577,7 +577,7 @@ GuiViewComponent::showProcessMessage() noexcept
 	if (!_showProcessMessage)
 		return;
 
-	if (ray::Gui::beginPopupModal(_langs[UILang::Process], &_showProcessMessage, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit))
+	if (ray::Gui::beginPopupModal(_langs[UILang::Process], &_showProcessMessage, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
 		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
 		ray::Gui::progressBar(_progress);
@@ -648,7 +648,7 @@ GuiViewComponent::showAboutWindow() noexcept
 	if (!_showAboutWindow)
 		return;
 
-	if (ray::Gui::beginPopupModal("About", &_showAboutWindow, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit))
+	if (ray::Gui::beginPopupModal("About", &_showAboutWindow, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
 		ray::Gui::text("Ray Labs Ver.0.1");
 		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
@@ -672,7 +672,7 @@ GuiViewComponent::showStyleEditor() noexcept
 	if (!_showStyleEditor)
 		return;
 
-	if (ray::Gui::begin(_langs[UILang::StyleEditor], &_showStyleEditor, ray::float2(550, 500)))
+	if (ray::Gui::begin(_langs[UILang::StyleEditor], &_showStyleEditor, ray::float2(550, 500), -1.0f, ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
 		if (ray::Gui::button("Revert Style"))
 			_style = _styleDefault;
@@ -960,7 +960,15 @@ GuiViewComponent::showSceneWindow() noexcept
 
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
 
-	if (ray::Gui::begin("Scene", 0, ray::Gui::getDisplaySize(), -1.0, ray::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagNoScrollbarBit))
+	ray::GuiWindowFlags flags =
+		ray::GuiWindowFlagBits::GuiWindowFlagNoInputsBit |
+		ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit |
+		ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit |
+		ray::GuiWindowFlagBits::GuiWindowFlagNoScrollbarBit |
+		ray::GuiWindowFlagBits::GuiWindowFlagNoScrollWithMouseBit |
+		ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit;
+
+	if (ray::Gui::begin("Scene", 0, ray::Gui::getDisplaySize(), -1.0, flags))
 	{
 		ray::Gui::setWindowPos(ray::float2::Zero);
 

@@ -63,8 +63,8 @@ public:
 
 	GameObjectPtr instantiate(const util::string& name) noexcept;
 
-	std::size_t raycastHit(const Raycast3& ray, RaycastHit& hit) noexcept;
-	std::size_t raycastHit(const Vector3& orgin, const Vector3& end, RaycastHit& hit) noexcept;
+	std::size_t raycastHit(const Raycast3& ray, RaycastHit& hit, std::function<bool(GameObject*)> comp = nullptr) noexcept;
+	std::size_t raycastHit(const Vector3& orgin, const Vector3& end, RaycastHit& hit, std::function<bool(GameObject*)> comp = nullptr) noexcept;
 
 	bool activeObject(const util::string& name) noexcept;
 

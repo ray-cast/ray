@@ -259,7 +259,7 @@ GuiViewComponent::onModelPicker(float x, float y) noexcept
 	auto end = cameraComponent->screenToWorld(ray::float3(x, y, 1));
 
 	ray::RaycastHit hit;
-	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit))
+	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit, [](ray::GameObject* object) { return object->getName() != "wireframe"; }))
 	{
 		_selectedObject = hit.object;
 		_event.onSeletedMesh(hit.object, hit.mesh);
@@ -994,21 +994,18 @@ GuiViewComponent::showInspectorWindow() noexcept
 	{
 		if (_selectedObject)
 		{
-			if (_selectedObject->getName() != "wireframe")
+			this->showTransformWindow(_selectedObject);
+
+			auto cameraComponent = _selectedObject->getComponent<ray::CameraComponent>();
+			if (cameraComponent)
+				this->showCameraEditorWindow(cameraComponent.get());
+
+			auto meshRenderer = _selectedObject->getComponent<ray::MeshRenderComponent>();
+			if (meshRenderer)
 			{
-				this->showTransformWindow(_selectedObject);
-
-				auto cameraComponent = _selectedObject->getComponent<ray::CameraComponent>();
-				if (cameraComponent)
-					this->showCameraEditorWindow(cameraComponent.get());
-
-				auto meshRenderer = _selectedObject->getComponent<ray::MeshRenderComponent>();
-				if (meshRenderer)
-				{
-					auto material = meshRenderer->getMaterial();
-					if (material)
-						this->showMaterialWindow(*material);
-				}
+				auto material = meshRenderer->getMaterial();
+				if (material)
+					this->showMaterialWindow(*material);
 			}
 		}
 

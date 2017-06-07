@@ -170,7 +170,7 @@ GameObjectManager::activeObject(const util::string& name) noexcept
 }
 
 std::size_t
-GameObjectManager::raycastHit(const Raycast3& ray, RaycastHit& hit) noexcept
+GameObjectManager::raycastHit(const Raycast3& ray, RaycastHit& hit, std::function<bool(GameObject*)> comp) noexcept
 {
 	std::size_t result = 0;
 
@@ -189,6 +189,12 @@ GameObjectManager::raycastHit(const Raycast3& ray, RaycastHit& hit) noexcept
 		auto mesh = component->getMesh();
 		if (!mesh)
 			continue;
+
+		if (comp)
+		{
+			if (!comp(object))
+				continue;
+		}
 
 		auto boundingBox = mesh->getBoundingBox();
 		boundingBox.transform(object->getTransform());
@@ -221,9 +227,9 @@ GameObjectManager::raycastHit(const Raycast3& ray, RaycastHit& hit) noexcept
 }
 
 std::size_t
-GameObjectManager::raycastHit(const Vector3& orgin, const Vector3& end, RaycastHit& hit) noexcept
+GameObjectManager::raycastHit(const Vector3& orgin, const Vector3& end, RaycastHit& hit, std::function<bool(GameObject*)> comp) noexcept
 {
-	return this->raycastHit(Raycast3(orgin, end), hit);
+	return this->raycastHit(Raycast3(orgin, end), hit, comp);
 }
 
 void

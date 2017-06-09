@@ -38,6 +38,7 @@
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/geometry.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
@@ -65,13 +66,13 @@ DefaultRenderDataManager::getRenderData(RenderQueue queue) const noexcept
 	return _renderQueue[queue];
 }
 
-void 
+void
 DefaultRenderDataManager::needUpdateVisiable(bool update) noexcept
 {
 	_needUpdateVisiable = update;
 }
 
-bool 
+bool
 DefaultRenderDataManager::needUpdateVisiable() const noexcept
 {
 	return _needUpdateVisiable;
@@ -96,7 +97,9 @@ DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 	{
 		auto scene = camera.getRenderScene();
 		assert(scene);
-		scene->computVisiable(camera.getViewProject(), _visiable);
+		scene->computVisiable(camera.getTranslate(), camera.getViewProject(), _visiable);
+
+		this->sortDistance(_visiable);
 
 		for (auto& it : _visiable.iter())
 		{
@@ -126,42 +129,48 @@ DefaultRenderDataManager::sortMaterial(RenderObjectRaws& list) noexcept
 }
 
 void
-DefaultRenderDataManager::sortDistance(OcclusionCullList& list) noexcept
+DefaultRenderDataManager::sortMaterialDistance(RenderObjectRaws& objects) noexcept
 {
-	auto& iter = list.iter();
-	if (iter.empty())
-		return;
+	auto it1 = objects.begin();
+	auto it2 = ++objects.begin();
 
-	auto it1 = iter.begin();
-	auto it2 = ++iter.begin();
-
-	auto end = iter.end();
+	auto end = objects.end();
 
 	while (it2 != end)
 	{
 		MaterialPtr m1, m2;
 
-		if (it1->getOcclusionCullNode()->isInstanceOf<Geometry>())
-			m1 = it1->getOcclusionCullNode()->downcast<Geometry>()->getMaterial();
+		if ((*it1)->isInstanceOf<Geometry>())
+			m1 = (*it1)->downcast<Geometry>()->getMaterial();
 
-		if (it2->getOcclusionCullNode()->isInstanceOf<Geometry>())
-			m1 = it2->getOcclusionCullNode()->downcast<Geometry>()->getMaterial();
+		if ((*it2)->isInstanceOf<Geometry>())
+			m2 = (*it2)->downcast<Geometry>()->getMaterial();
 
 		while (m1 == m2)
 		{
 			if ((++it2) == end)
 				break;
 
-			m2 = it2->getOcclusionCullNode()->downcast<Geometry>()->getMaterial();
+			m2 = (*it2)->downcast<Geometry>()->getMaterial();
 		};
 
 		std::size_t count = it2 - it1;
 		if (count > 1)
-			list.sort(it1, it2);
+			std::sort(it1, it2);
 
 		if (it2 != end)
 			it1 = it2++;
 	}
+}
+
+void
+DefaultRenderDataManager::sortDistance(OcclusionCullList& objects) noexcept
+{
+	std::sort(objects.iter().begin(), objects.iter().end(),
+		[](const OcclusionCullNode& lh, const OcclusionCullNode& rh)
+	{
+		return lh.getDistanceSqrt() < rh.getDistanceSqrt();
+	});
 }
 
 _NAME_END

@@ -205,17 +205,15 @@ RenderScene::removeRenderObject(RenderObject* object) noexcept
 }
 
 void
-RenderScene::computVisiable(const float4x4& viewProject, OcclusionCullList& list) noexcept
+RenderScene::computVisiable(const float3& eye, const float4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
 	fru.extract(viewProject);
 
-	const auto& eyePosition = viewProject.getTranslate();
-
 	for (auto& it : _renderObjectList)
 	{
 		if (it->onVisiableTest(fru))
-			list.insert(it, math::sqrDistance(eyePosition, it->getBoundingBoxInWorld().center()));
+			list.insert(it, math::sqrDistance(eye, it->getBoundingBoxInWorld().center()));
 	}
 }
 

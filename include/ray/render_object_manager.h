@@ -58,6 +58,7 @@ public:
 
 private:
 	void sortMaterial(RenderObjectRaws& list) noexcept;
+	void sortMaterialDistance(RenderObjectRaws& list) noexcept;
 	void sortDistance(OcclusionCullList& list) noexcept;
 
 private:

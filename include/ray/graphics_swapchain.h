@@ -91,6 +91,9 @@ public:
 	virtual void setSwapInterval(GraphicsSwapInterval interval) noexcept = 0;
 	virtual GraphicsSwapInterval getSwapInterval() const noexcept = 0;
 
+	virtual void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept = 0;
+	virtual void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept = 0;
+
 	virtual const GraphicsSwapchainDesc& getGraphicsSwapchainDesc() const noexcept = 0;
 
 private:

@@ -168,6 +168,8 @@ RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) n
 		_width = width;
 		_height = height;
 
+		_graphicsSwapchain->setWindowResolution(width, height);
+
 		for (auto& it : _postprocessors)
 		{
 			if (it->getActive())

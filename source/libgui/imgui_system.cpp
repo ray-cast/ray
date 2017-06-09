@@ -393,9 +393,6 @@ IMGUISystem::render(float delta) except
 
 			ImVec4 scissor((int)pcmd->ClipRect.x, (int)pcmd->ClipRect.y, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
-			if (RenderSystem::instance()->getRenderSetting().deviceType != GraphicsDeviceType::GraphicsDeviceTypeVulkan)
-				scissor.y = io.DisplaySize.y - scissor.w - scissor.y;
-
 			renderer->setScissor(0, ray::Scissor(scissor.x, scissor.y, scissor.z, scissor.w));
 			renderer->setMaterialPass(_materialTech->getPass(0));
 

@@ -702,6 +702,7 @@ DeferredLightingPipeline::copyRenderTexture(RenderPipeline& pipeline, const Grap
 {
 	_texSource->uniformTexture(src);
 	pipeline.setFramebuffer(dst);
+	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_deferredCopyOnly);
 }
 
@@ -1619,15 +1620,15 @@ DeferredLightingPipeline::onRenderPost() noexcept
 			float4 viewport = camera->getPixelViewport();
 
 			if (flags & CameraRenderFlagBits::CameraRenderGbuffer1Bit)
-				this->copyRenderTexture(*_pipeline, _deferredGbuffer1Map, framebuffer, viewport);
+				this->copyRenderTexture(*_pipeline, _deferredGbuffer1Map, framebuffer);
 			else if (flags & CameraRenderFlagBits::CameraRenderGbuffer2Bit)
-				this->copyRenderTexture(*_pipeline, _deferredGbuffer2Map, framebuffer, viewport);
+				this->copyRenderTexture(*_pipeline, _deferredGbuffer2Map, framebuffer);
 			else if (flags & CameraRenderFlagBits::CameraRenderGbuffer3Bit)
-				this->copyRenderTexture(*_pipeline, _deferredGbuffer3Map, framebuffer, viewport);
+				this->copyRenderTexture(*_pipeline, _deferredGbuffer3Map, framebuffer);
 			else if (flags & CameraRenderFlagBits::CameraRenderLightingBit)
-				this->copyRenderTexture(*_pipeline, _deferredLightingMap, framebuffer, viewport);
+				this->copyRenderTexture(*_pipeline, _deferredLightingMap, framebuffer);
 			else
-				this->copyRenderTexture(*_pipeline, _deferredFinalShadingMap, framebuffer, viewport);
+				this->copyRenderTexture(*_pipeline, _deferredFinalShadingMap, framebuffer);
 		}
 	}
 

@@ -151,6 +151,20 @@ WGLSwapchain::getActive() const noexcept
 }
 
 void
+WGLSwapchain::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
+{
+	_swapchainDesc.setWidth(w);
+	_swapchainDesc.setHeight(h);
+}
+
+void
+WGLSwapchain::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	w = _swapchainDesc.getWidth();
+	h = _swapchainDesc.getHeight();
+}
+
+void
 WGLSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
 	switch (interval)

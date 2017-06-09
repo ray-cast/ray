@@ -62,7 +62,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	assert(swapchainDesc.getWidth() > 0);
 	assert(swapchainDesc.getHeight() > 0);
-	
+
 	if (swapchainDesc.getImageNums() != 2)
 	{
 		GL_PLATFORM_LOG("Invalid image number");
@@ -88,9 +88,9 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	{
 		att[index++] = GLX_RENDER_TYPE;
 		att[index++] = GLX_RGBA_BIT,
-		att[index++] = GLX_X_VISUAL_TYPE;
+			att[index++] = GLX_X_VISUAL_TYPE;
 		att[index++] = GLX_TRUE_COLOR,
-		att[index++] = GLX_RED_SIZE;
+			att[index++] = GLX_RED_SIZE;
 		att[index++] = 8;
 		att[index++] = GLX_GREEN_SIZE;
 		att[index++] = 8;
@@ -318,6 +318,20 @@ XGLSwapchain::getActive() noexcept
 }
 
 void
+XGLSwapchain::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
+{
+	_swapchainDesc.setWidth(w);
+	_swapchainDesc.setHeight(h);
+}
+
+void
+XGLSwapchain::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	w = _swapchainDesc.getWidth();
+	h = _swapchainDesc.getHeight();
+}
+
+void
 XGLSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
 	glXSwapIntervalEXT(_display, _window, (int)interval);
@@ -334,7 +348,6 @@ void
 XGLSwapchain::present() noexcept
 {
 	glXSwapBuffers(_display, _window);
-
 }
 
 const GraphicsSwapchainDesc&

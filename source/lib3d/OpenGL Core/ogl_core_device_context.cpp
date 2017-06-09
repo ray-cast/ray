@@ -161,7 +161,6 @@ OGLCoreDeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexce
 
 	if (_scissors[i] != scissor)
 	{
-#if _BUILD_VULKAN
 		std::uint32_t height;
 		if (_framebuffer)
 			height = _framebuffer->getGraphicsFramebufferDesc().getHeight();
@@ -169,9 +168,6 @@ OGLCoreDeviceContext::setScissor(std::uint32_t i, const Scissor& scissor) noexce
 			height = _glcontext->getGraphicsSwapchainDesc().getHeight();
 
 		glScissorIndexed(i, scissor.left, height - scissor.height - scissor.top, scissor.width, scissor.height);
-#else
-		glScissorIndexed(i, scissor.left, scissor.top, scissor.width, scissor.height);
-#endif
 		_scissors[i] = scissor;
 	}
 }

@@ -140,6 +140,20 @@ NSGLSwapchain::getActive() const noexcept
 }
 
 void
+NSGLSwapchain::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
+{
+	_swapchainDesc.setWidth(w);
+	_swapchainDesc.setHeight(h);
+}
+
+void
+NSGLSwapchain::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	w = _swapchainDesc.getWidth();
+	h = _swapchainDesc.getHeight();
+}
+
+void
 NSGLSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
 	assert(interval >= GraphicsSwapInterval::GraphicsSwapIntervalBeginRange && interval <= GraphicsSwapIntervalEndRange);

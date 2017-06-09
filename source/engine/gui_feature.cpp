@@ -104,17 +104,19 @@ GuiFeature::GuiFeature() noexcept
 	: _window(0)
 	, _width(0)
 	, _height(0)
-	, _dpi_w(0)
-	, _dpi_h(0)
+	, _framebuffer_w(0)
+	, _framebuffer_h(0)
+	, _dpi(1.0)
 {
 }
 
-GuiFeature::GuiFeature(WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h) noexcept
+GuiFeature::GuiFeature(WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t framebuffer_w, std::uint32_t framebuffer_h, float dpi) noexcept
 	: _window(window)
 	, _width(w)
 	, _height(h)
-	, _dpi_w(dpi_w)
-	, _dpi_h(dpi_h)
+	, _framebuffer_w(framebuffer_w)
+	, _framebuffer_h(framebuffer_h)
+	, _dpi(dpi)
 {
 }
 
@@ -143,10 +145,10 @@ GuiFeature::getViewport(std::uint32_t& w, std::uint32_t& h) noexcept
 void
 GuiFeature::setWindowFramebufferScale(std::uint32_t w, std::uint32_t h) noexcept
 {
-	if (_dpi_w != w || _dpi_h != h)
+	if (_framebuffer_w != w || _framebuffer_h != h)
 	{
-		_dpi_w = w;
-		_dpi_h = h;
+		_framebuffer_w = w;
+		_framebuffer_h = h;
 
 		IMGUISystem::instance()->setFramebufferScale(w, h);
 	}
@@ -161,7 +163,7 @@ GuiFeature::getWindowFramebufferScale(std::uint32_t& w, std::uint32_t& h) noexce
 void
 GuiFeature::onActivate() except
 {
-	if (!IMGUISystem::instance()->open(_window))
+	if (!IMGUISystem::instance()->open(_window, _dpi))
 		throw failure("GuiSystem::instance() fail");
 
 	IMGUISystem::instance()->setImageLoader(std::make_shared<ImageLoader>());
@@ -169,7 +171,7 @@ GuiFeature::onActivate() except
 	IMGUISystem::instance()->setCoreProfile("sys:media/UI/MyGUI_Core.xml");
 #endif
 	IMGUISystem::instance()->setViewport(_width, _height);
-	IMGUISystem::instance()->setFramebufferScale(_dpi_w, _dpi_h);
+	IMGUISystem::instance()->setFramebufferScale(_framebuffer_w, _framebuffer_h);
 }
 
 void

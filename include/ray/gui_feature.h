@@ -46,7 +46,7 @@ class GuiFeature final : public GameFeature
 	__DeclareSubClass(GuiFeature, GameFeature)
 public:
 	GuiFeature() noexcept;
-	GuiFeature(WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t dpi_w, std::uint32_t dpi_h) noexcept;
+	GuiFeature(WindHandle window, std::uint32_t w, std::uint32_t h, std::uint32_t framebuffer_w, std::uint32_t framebuffer_h, float dpi) noexcept;
 	~GuiFeature() noexcept;
 
 private:
@@ -64,10 +64,11 @@ protected:
 
 private:
 	WindHandle _window;
+	float _dpi;
 	std::uint32_t _width;
 	std::uint32_t _height;
-	std::uint32_t _dpi_w;
-	std::uint32_t _dpi_h;
+	std::uint32_t _framebuffer_w;
+	std::uint32_t _framebuffer_h;
 };
 
 _NAME_END

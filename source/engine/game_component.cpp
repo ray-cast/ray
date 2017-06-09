@@ -77,14 +77,14 @@ GameComponent::getComponents() const noexcept
 }
 
 void
-GameComponent::addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
+GameComponent::addComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept
 {
 	assert(_gameObject && component);
 	_gameObject->addComponentDispatch(type, component);
 }
 
 void
-GameComponent::removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
+GameComponent::removeComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept
 {
 	assert(_gameObject && component);
 	_gameObject->removeComponentDispatch(type, component);

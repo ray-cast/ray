@@ -91,7 +91,7 @@ private:
 	void onActivate() except;
 	void onDeactivate() noexcept;
 
-	void onMessage(const ray::MessagePtr& message) noexcept;
+	void onMessage(const ray::MessagePtr& message) except;
 	void onModelPicker(float x, float y) noexcept;
 
 private:

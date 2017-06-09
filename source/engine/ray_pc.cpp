@@ -447,8 +447,11 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 			auto screen = ::glfwGetVideoMode(::glfwGetPrimaryMonitor());
 			::glfwSetWindowPos(_window, (screen->width - w) >> 1, (screen->height - h) >> 1);
 
-			int dpi_w, dpi_h;
-			::glfwGetFramebufferSize(_window, &dpi_w, &dpi_h);
+			int widthMM, heightMM;
+			::glfwGetMonitorPhysicalSize(::glfwGetPrimaryMonitor(), &widthMM, &heightMM);
+
+			int framebuffer_w, framebuffer_h;
+			::glfwGetFramebufferSize(_window, &framebuffer_w, &framebuffer_h);
 
 			ray::WindHandle hwnd = (ray::WindHandle)::glfwGetWinHandle(_window);
 
@@ -457,7 +460,7 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 			_gameApp->setFileServiceListener(true);
 			_gameApp->setFileServicePath(_gameRootPath);
 
-			if (!_gameApp->open(hwnd, w, h, dpi_w, dpi_h))
+			if (!_gameApp->open(hwnd, w, h, framebuffer_w, framebuffer_h, screen->width / (widthMM / 25.4f) / 100.0f))
 			{
 				rayCloseWindow();
 				return false;
@@ -465,7 +468,7 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 
 			onWindowFocus(_window, true);
 			onWindowResize(_window, w, h);
-			onWindowFramebufferResize(_window, dpi_w, dpi_h);
+			onWindowFramebufferResize(_window, framebuffer_w, framebuffer_h);
 
 			if (!_gameScenePath.empty())
 			{

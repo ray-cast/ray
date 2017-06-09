@@ -644,12 +644,6 @@ GameObject::removeComponent(const GameComponentPtr& gameComponent) noexcept
 }
 
 void
-GameObject::removeComponent(GameComponentPtr&& component) noexcept
-{
-	this->removeComponent(component);
-}
-
-void
 GameObject::cleanupComponents() noexcept
 {
 	for (auto it = _components.begin(); it != _components.end();)
@@ -752,7 +746,7 @@ GameObject::getComponents() const noexcept
 }
 
 void
-GameObject::addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
+GameObject::addComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept
 {
 	assert(component);
 
@@ -781,7 +775,7 @@ GameObject::addComponentDispatch(GameDispatchType type, GameComponentPtr compone
 }
 
 void
-GameObject::removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept
+GameObject::removeComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept
 {
 	assert(component);
 
@@ -811,7 +805,7 @@ GameObject::removeComponentDispatch(GameDispatchType type, GameComponentPtr comp
 }
 
 void
-GameObject::removeComponentDispatchs(GameComponentPtr component) noexcept
+GameObject::removeComponentDispatchs(const GameComponentPtr& component) noexcept
 {
 	assert(component);
 

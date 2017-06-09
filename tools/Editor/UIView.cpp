@@ -139,7 +139,7 @@ GuiViewComponent::onDeactivate() noexcept
 }
 
 void
-GuiViewComponent::onMessage(const ray::MessagePtr& message) noexcept
+GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 {
 	if (message->isInstanceOf<ray::InputMessage>())
 	{

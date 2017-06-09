@@ -523,6 +523,55 @@ GuiControllerComponent::onActivate() except
 	this->makeSphereObjects();
 }
 
+void
+GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
+{
+	if (!message->isInstanceOf<ray::InputMessage>())
+		return;
+
+	auto& event = message->downcast<ray::InputMessage>()->getEvent();
+	if (event.event != ray::InputEvent::SizeChange)
+		return;
+
+	if (_cameras.empty())
+		return;
+
+	auto cameraComponent = _cameras.front()->getComponent<ray::CameraComponent>();
+	if (!cameraComponent)
+		return;
+
+	auto fb = cameraComponent->getFramebuffer();
+	if (fb->getGraphicsFramebufferDesc().getWidth() != event.change.w ||
+		fb->getGraphicsFramebufferDesc().getHeight() != event.change.h)
+	{
+		ray::GraphicsTextureDesc textureDesc;
+		textureDesc.setWidth(event.change.w);
+		textureDesc.setHeight(event.change.h);
+		textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+		textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+		auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+		if (!renderTexture)
+			return;
+
+		ray::GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+		framebufferLayoutDesc.addComponent(ray::GraphicsAttachmentLayout(0, ray::GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm));
+		auto framebufferLayout = ray::RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
+		if (!framebufferLayout)
+			return;
+
+		ray::GraphicsFramebufferDesc framebufferDesc;
+		framebufferDesc.setWidth(event.change.w);
+		framebufferDesc.setHeight(event.change.h);
+		framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(std::move(renderTexture), 0, 0));
+		framebufferDesc.setGraphicsFramebufferLayout(std::move(framebufferLayout));
+		auto framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
+		if (!framebuffer)
+			return;
+
+		cameraComponent->setFramebuffer(framebuffer);
+	}
+}
+
 bool
 GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {

@@ -78,8 +78,8 @@ protected:
 	void sendMessageUpwards(const MessagePtr& message) except;
 	void sendMessageDownwards(const MessagePtr& message) except;
 
-	void addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept;
-	void removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept;
+	void addComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept;
+	void removeComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept;
 
 	void addComponentDispatch(GameDispatchType type, GameComponent* component) noexcept;
 	void removeComponentDispatch(GameDispatchType type, GameComponent* component) noexcept;

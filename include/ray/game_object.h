@@ -120,7 +120,6 @@ public:
 	void addComponent(const GameComponentPtr& component) except;
 	void addComponent(GameComponentPtr&& component) except;
 	void removeComponent(const GameComponentPtr& component) noexcept;
-	void removeComponent(GameComponentPtr&& component) noexcept;
 	void cleanupComponents() noexcept;
 
 	template<typename T>
@@ -140,9 +139,9 @@ public:
 
 	const GameComponents& getComponents() const noexcept;
 
-	void addComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept;
-	void removeComponentDispatch(GameDispatchType type, GameComponentPtr component) noexcept;
-	void removeComponentDispatchs(GameComponentPtr component) noexcept;
+	void addComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept;
+	void removeComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept;
+	void removeComponentDispatchs(const GameComponentPtr& component) noexcept;
 
 	void sendMessage(const MessagePtr& message) noexcept;
 	void sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept;

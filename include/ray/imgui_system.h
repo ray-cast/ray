@@ -50,7 +50,7 @@ public:
 	IMGUISystem() noexcept;
 	~IMGUISystem() noexcept;
 
-	bool open(void* _window) except;
+	bool open(void* _window, float dpi) except;
 	void close() noexcept;
 
 	bool injectMouseMove(float _absx, float _absy) noexcept;

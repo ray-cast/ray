@@ -57,7 +57,7 @@ IMGUISystem::~IMGUISystem() noexcept
 }
 
 bool
-IMGUISystem::open(void* _window) except
+IMGUISystem::open(void* _window, float dpi) except
 {
 	assert(_window);
 	assert(!_initialize);
@@ -106,8 +106,8 @@ IMGUISystem::open(void* _window) except
 	std::uint8_t* pixels;
 	int width, height;
 	io.Fonts->ClearFonts();
-	//io.Fonts->AddFontFromFileTTF("../../engine/fonts/DroidSansFallback.ttf", 15.0f, 0, 0);
-	io.Fonts->AddFontFromFileTTF("../../engine/fonts/DroidSansFallback.ttf", 15.0f, 0, &ranges[0]);
+	//io.Fonts->AddFontFromFileTTF("../../engine/fonts/DroidSansFallback.ttf", 15.0f * dpi, 0, 0);
+	io.Fonts->AddFontFromFileTTF("../../engine/fonts/DroidSansFallback.ttf", 15.0f * dpi, 0, &ranges[0]);
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
 	ray::GraphicsTextureDesc fontDesc;

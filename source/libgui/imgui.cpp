@@ -80,9 +80,9 @@ GuiStyle::GuiStyle() noexcept
 	AntiAliasedShapes = true;
 	CurveTessellationTol = 1.25f;
 
-	Colors[ImGuiCol_MenuBarBg] = float4(0.3f, 0.3f, 0.31f, 1.0);
-	Colors[ImGuiCol_Text] = float4(1.0f, 1.0f, 1.0f, 1.0);
-	Colors[ImGuiCol_TextDisabled] = float4(0.58823f, 0.58823f, 0.58823f, 1.0);
+	Colors[ImGuiCol_MenuBarBg] = float4(0.3f, 0.3f, 0.31f, 1.0f);
+	Colors[ImGuiCol_Text] = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	Colors[ImGuiCol_TextDisabled] = float4(0.58823f, 0.58823f, 0.58823f, 0.58823f);
 	Colors[ImGuiCol_WindowBg] = float4(0.0f, 0.0, 0.0, 0.8627f);
 	Colors[ImGuiCol_Header] = float4(0.13333f, 0.52549f, 0.9019f, 0.70196f);
 	Colors[ImGuiCol_HeaderHovered] = float4(0.13333f, 0.52549f, 0.9019f, 0.70196f);
@@ -98,11 +98,11 @@ GuiStyle::GuiStyle() noexcept
 	Colors[ImGuiCol_CloseButtonActive] = float4(0.2f, 0.5f, 1.0f, 1.0f);
 	Colors[ImGuiCol_CheckMark] = float4(0.0, 0.6, 1.0, 0.75f);
 	Colors[ImGuiCol_ScrollbarBg] = float4(0.20f, 0.20, 0.20f, 0.60f);
-	Colors[ImGuiCol_ScrollbarGrab] = float4(0.0f, 0.0, 0.0, 1.0);
+	Colors[ImGuiCol_ScrollbarGrab] = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	Colors[ImGuiCol_ScrollbarGrabHovered] = float4(0.4901f, 0.4901f, 0.4901f, 0.3922f);
 	Colors[ImGuiCol_ScrollbarGrabActive] = float4(0.29411f, 0.29411f, 0.29411f, 0.3922f);
-	Colors[ImGuiCol_SliderGrab] = float4(1.00f, 0.7, 0.0, 1.00f);
-	Colors[ImGuiCol_SliderGrabActive] = float4(1.00f, 0.4, 0.0, 1.00f);
+	Colors[ImGuiCol_SliderGrab] = float4(1.00f, 0.7f, 0.0f, 1.00f);
+	Colors[ImGuiCol_SliderGrabActive] = float4(1.00f, 0.4f, 0.0f, 1.00f);
 	Colors[ImGuiCol_FrameBg] = float4(0.80f, 0.80f, 0.80f, 0.10f);
 	Colors[ImGuiCol_FrameBgHovered] = float4(0.90f, 0.80f, 0.80f, 0.20f);
 	Colors[ImGuiCol_FrameBgActive] = float4(0.9, 0.5f, 0.0f, 1.0f);

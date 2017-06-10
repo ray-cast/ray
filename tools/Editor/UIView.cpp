@@ -56,7 +56,7 @@ const char* itemsSampleSize[] = { "32", "64", "128", "256", "512" };
 
 const char* TEXTURE_MAP_FROM[] = { "Constant value", "Static Image", "Animation Image", "Diffuse map from model", "Sphere map from model", "Toon map from model", "Screen map (cannot preview)", "Ambient color from model", "Specular color from model" };
 const char* TEXTURE_MAP_UV_FLIP[] = { "None", "axis X", "axis Y", "axis X & Y" };
-const char* TEXTURE_ALBEDO_MAP_TYPE[] = { "None", "Mulplay", "Exponent", "Add", "Melain", "Alpha Blend" };
+const char* TEXTURE_SUBALBEDO_TYPE[] = { "None", "Mulplay", "Exponent", "Add", "Melain", "Alpha Blend" };
 const char* TEXTURE_SMOOTHNESS_TYPE[] = { "Smoothness", "Roughness", "Roughness" };
 const char* TEXTURE_NORMAL_TYPE[] = { "RGB tangent space", "RG tangent space", "PerturbNormalLQ", "PerturbNormalHQ" };
 const char* TEXTURE_SPECULAR_TYPE[] = { "Specular color", "Specular color", "Specular gray", "Specular gray" };
@@ -1210,12 +1210,16 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 
 		if (ray::Gui::treeNodeEx("AlbedoSub", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
-			auto albedoSubType = 0;
+			auto albedoSubType = material["albedoSubType"]->value().getInt();
 			auto albedoSubColor = ray::math::pow(material["albedoSub"]->value().getFloat3(), 1.0f / 2.2f);
 			auto albedoSubMap = material["albedoSubMap"]->value().getTexture();
 			auto albedoSubMapFrom = material["albedoSubMapFrom"]->value().getInt();
 			auto albedoSubMapFilp = material["albedoSubMapFilp"]->value().getInt();
 			auto albedoSubMapLoopNum = material["albedoSubMapLoopNum"]->value().getFloat2();
+
+			ray::Gui::text("Texture type:");
+			if (ray::Gui::combo("##albedoSubType", &albedoSubType, TEXTURE_SUBALBEDO_TYPE, sizeof(TEXTURE_SUBALBEDO_TYPE) / sizeof(TEXTURE_SUBALBEDO_TYPE[0])))
+				material["albedoSubType"]->uniform1i(albedoSubType);
 
 			ray::Gui::text("Texture from:");
 			if (ray::Gui::combo("##albedoSubMapFrom", &albedoSubMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
@@ -1223,10 +1227,6 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 
 			if (albedoSubMapFrom >= 1 && albedoSubMapFrom <= 6)
 			{
-				ray::Gui::text("Texture type:");
-				if (ray::Gui::combo("##albedoSubType", &albedoSubType, TEXTURE_ALBEDO_MAP_TYPE, sizeof(TEXTURE_ALBEDO_MAP_TYPE) / sizeof(TEXTURE_ALBEDO_MAP_TYPE[0])))
-					material["albedoSubType"]->uniform1i(albedoSubType);
-
 				ray::Gui::text("Texture filp:");
 				if (ray::Gui::combo("##albedoSubMapFilp", &albedoSubMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["albedoSubMapFilp"]->uniform1i(albedoSubMapFilp);
@@ -1299,7 +1299,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				{
 					std::uint32_t width = normalMap->getGraphicsTextureDesc().getWidth();
 					std::uint32_t height = normalMap->getGraphicsTextureDesc().getHeight();
-					ray::float2 aspert = ray::float2((float)width / height, 1.0);
+					ray::float2 aspert = ray::float2((float)width / height, 1.0f);
 				}
 
 				if (ray::Gui::imageButtonEx(normalMap ? normalMap.get() : 0, imageSize * aspert, _selectedTexture ? true : false, ray::float2::Zero, ray::float2::One, 3))
@@ -1352,7 +1352,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				{
 					std::uint32_t width = normalSubMap->getGraphicsTextureDesc().getWidth();
 					std::uint32_t height = normalSubMap->getGraphicsTextureDesc().getHeight();
-					aspert = ray::float2((float)width / height, 1.0);
+					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
 				if (ray::Gui::imageButtonEx(normalSubMap ? normalSubMap.get() : 0, imageSize * aspert, _selectedTexture ? true : false, ray::float2::Zero, ray::float2::One, 3))
@@ -1395,21 +1395,21 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				if (ray::Gui::dragFloat2("##smoothnessMapLoopNum", smoothnessMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["smoothnessMapLoopNum"]->uniform2f(smoothnessMapLoopNum);
 
-				ray::Gui::text("Texture swizzle :");
+				ray::Gui::text("Texture swizzle:");
 				ray::Gui::button("R", ray::float2(40, 20));
 
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::sameLine();
 				ray::Gui::button("G", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::sameLine();
 				ray::Gui::button("B", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
 				ray::Gui::sameLine();
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
@@ -1420,7 +1420,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				{
 					std::uint32_t width = smoothnessMap->getGraphicsTextureDesc().getWidth();
 					std::uint32_t height = smoothnessMap->getGraphicsTextureDesc().getHeight();
-					aspert = ray::float2((float)width / height, 1.0);
+					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
 				if (ray::Gui::imageButtonEx(smoothnessMap ? smoothnessMap.get() : 0, imageSize * aspert, _selectedTexture ? true : false, ray::float2::Zero, ray::float2::One, 3))
@@ -1465,18 +1465,18 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				ray::Gui::text("Texture swizzle:");
 				ray::Gui::button("R", ray::float2(40, 20));
 
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::sameLine();
 				ray::Gui::button("G", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::sameLine();
 				ray::Gui::button("B", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
 				ray::Gui::sameLine();
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
@@ -1487,7 +1487,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				{
 					std::uint32_t width = metalnessMap->getGraphicsTextureDesc().getWidth();
 					std::uint32_t height = metalnessMap->getGraphicsTextureDesc().getHeight();
-					aspert = ray::float2((float)width / height, 1.0);
+					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
 				if (ray::Gui::imageButtonEx(metalnessMap ? metalnessMap.get() : 0, imageSize * aspert, _selectedTexture ? true : false, ray::float2::Zero, ray::float2::One, 3))
@@ -1536,7 +1536,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				{
 					std::uint32_t width = specularMap->getGraphicsTextureDesc().getWidth();
 					std::uint32_t height = specularMap->getGraphicsTextureDesc().getHeight();
-					aspert = ray::float2((float)width / height, 1.0);
+					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
 				if (ray::Gui::imageButtonEx(specularMap ? specularMap.get() : 0, imageSize * aspert, _selectedTexture ? true : false, ray::float2::Zero, ray::float2::One, 3))
@@ -1581,18 +1581,18 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				ray::Gui::text("Texture swizzle:");
 				ray::Gui::button("R", ray::float2(40, 20));
 
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::sameLine();
 				ray::Gui::button("G", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::sameLine();
 				ray::Gui::button("B", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
 				ray::Gui::sameLine();
-				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4(0.2, 0.2, 0.2, 1.0));
+				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
@@ -1603,7 +1603,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				{
 					std::uint32_t width = occlusionMap->getGraphicsTextureDesc().getWidth();
 					std::uint32_t height = occlusionMap->getGraphicsTextureDesc().getHeight();
-					aspert = ray::float2((float)width / height, 1.0);
+					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
 				if (ray::Gui::imageButtonEx(occlusionMap ? occlusionMap.get() : 0, imageSize * aspert, _selectedTexture ? true : false, ray::float2::Zero, ray::float2::One, 3))
@@ -1652,7 +1652,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				{
 					std::uint32_t width = emissiveMap->getGraphicsTextureDesc().getWidth();
 					std::uint32_t height = emissiveMap->getGraphicsTextureDesc().getHeight();
-					aspert = ray::float2((float)width / height, 1.0);
+					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
 				if (ray::Gui::imageButtonEx(emissiveMap ? emissiveMap.get() : 0, imageSize * aspert, _selectedTexture ? true : false, ray::float2::Zero, ray::float2::One, 3))

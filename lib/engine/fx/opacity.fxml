@@ -10,8 +10,8 @@
 	<parameter name="albedoMapFilp" type="int"/>
 	<parameter name="albedoMapLoopNum" type="float2"/>
 	<parameter name="albedoSub" type="float3"/>
+	<parameter name="albedoSubType" type="int"/>
 	<parameter name="albedoSubMap" type="texture2D"/>
-	<parameter name="albedoSubMapType" type="int"/>
 	<parameter name="albedoSubMapFrom" type="int"/>
 	<parameter name="albedoSubMapFilp" type="int"/>
 	<parameter name="albedoSubMapLoopNum" type="float2"/>
@@ -78,6 +78,12 @@
 				return bump;
 			}
 
+			float3 ColorSynthesis(float3 diffuse, float3 m)
+			{
+				float3 melanin = diffuse * luminance(diffuse);
+				return diffuse * lerp(1.0, melanin, m);
+			}
+
 			float3 GetAlbedo(float2 coord)
 			{
 				if (albedoMapFrom > 0 && albedoMapFrom < 6)
@@ -97,22 +103,43 @@
 				}
 			}
 			
-			float3 GetSubAlbedo(float2 coord)
+			float3 GetSubAlbedo(float3 albedo, float2 coord)
 			{
-				if (albedoSubMapFrom > 0 && albedoSubMapFrom < 6)
+				if (albedoSubType > 0)
 				{
-					if (albedoSubMapFilp == 1)
-						coord.x = 1 - coord.x;
-					else if (albedoSubMapFilp == 2)
-						coord.y = 1 - coord.y;
-					else if (albedoSubMapFilp == 3)
-						coord = 1 - coord;
-					
-					return srgb2linear(albedoSubMap.Sample(PointClamp, coord * albedoSubMapLoopNum).rgb) * albedoSub;
+					float4 albedoSubColor = 1;
+					if (albedoSubMapFrom > 0 && albedoSubMapFrom < 6)
+					{
+						if (albedoSubMapFilp == 1)
+							coord.x = 1 - coord.x;
+						else if (albedoSubMapFilp == 2)
+							coord.y = 1 - coord.y;
+						else if (albedoSubMapFilp == 3)
+							coord = 1 - coord;
+						
+						albedoSubColor = srgb2linear(albedoSubMap.Sample(PointClamp, coord * albedoSubMapLoopNum));
+					}
+					else
+					{
+						albedoSubColor.rgb = albedoSub;
+					}
+
+					if (albedoSubType == 1)
+						albedo *= albedoSubColor.rgb;
+					else if (albedoSubType == 2)
+						albedo = pow(albedo, albedoSubColor.rgb);
+					else if (albedoSubType == 3)
+						albedo += albedoSubColor.rgb;
+					else if (albedoSubType == 4)
+						albedo = ColorSynthesis(albedo, albedoSubColor.rgb);
+					else if (albedoSubType == 5)
+						albedo = lerp(albedo, albedoSubColor.rgb, albedoSubColor.a);
+
+					return albedo;
 				}
 				else
 				{
-					return albedoSub;
+					return albedo;
 				}
 			}
 
@@ -325,7 +352,7 @@
 			GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 coord : TEXCOORD2)
 			{
 				MaterialParam material;
-				material.albedo = GetAlbedo(coord);
+				material.albedo = GetSubAlbedo(GetAlbedo(coord), coord);
 				material.normal = GetNormal(iNormal, iTangent, coord);
 				material.specular = GetSpecular(coord);
 				material.smoothness = GetSmoothness(coord);

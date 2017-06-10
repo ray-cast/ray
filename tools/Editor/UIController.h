@@ -90,6 +90,8 @@ private:
 
 	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
+	void onMouseHoveringCamera(const ray::float4& viewport, bool isHovering) noexcept;
+
 private:
 	GuiControllerComponent(const GuiControllerComponent&) = delete;
 	GuiControllerComponent& operator=(const GuiControllerComponent&) = delete;

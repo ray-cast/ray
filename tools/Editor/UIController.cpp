@@ -499,6 +499,8 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 
 		delegate.onTransformObject = std::bind(&GuiControllerComponent::onTransformObject, this, std::placeholders::_1, std::placeholders::_2);
 
+		delegate.onMouseHoveringCamera = std::bind(&GuiControllerComponent::onMouseHoveringCamera, this, std::placeholders::_1, std::placeholders::_2);
+
 		view->setGuiViewDelegates(delegate);
 	}
 }
@@ -1084,6 +1086,20 @@ GuiControllerComponent::onTransformObject(const ray::GameObject* object, std::si
 	}
 
 	return true;
+}
+
+void
+GuiControllerComponent::onMouseHoveringCamera(const ray::float4& viewport, bool isHovering) noexcept
+{
+	if (!_cameras.empty())
+	{
+		auto cameraComponent = _cameras.front()->getComponent<FirstPersonCameraComponent>();
+
+		if (isHovering)
+			cameraComponent->setEditMode(FirstPersonCameraComponent::EditMode::ThirdEdit);
+		else
+			cameraComponent->setEditMode(FirstPersonCameraComponent::EditMode::FirstPerson);
+	}
 }
 
 bool

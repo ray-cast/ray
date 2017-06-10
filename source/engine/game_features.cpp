@@ -53,7 +53,7 @@ GameFeature::~GameFeature() noexcept
 }
 
 void
-GameFeature::setActive(bool active)  except
+GameFeature::setActive(bool active) except
 {
 	if (_isActive != active)
 	{
@@ -72,7 +72,7 @@ GameFeature::getActive() noexcept
 }
 
 void
-GameFeature::setGameListener(GameListenerPtr listener) noexcept
+GameFeature::setGameListener(const GameListenerPtr& listener) noexcept
 {
 	if (_gameListener != listener)
 	{
@@ -84,7 +84,7 @@ GameFeature::setGameListener(GameListenerPtr listener) noexcept
 	}
 }
 
-GameListenerPtr
+const GameListenerPtr&
 GameFeature::getGameListener() const noexcept
 {
 	return _gameListener;

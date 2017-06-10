@@ -43,8 +43,17 @@ class FirstPersonCameraComponent : public ray::GameComponent
 {
 	__DeclareSubClass(FirstPersonCameraComponent, ray::GameComponent)
 public:
+	enum class EditMode
+	{
+		FirstPerson,
+		ThirdEdit,
+	};
+
+public:
 	FirstPersonCameraComponent() noexcept;
 	~FirstPersonCameraComponent() noexcept;
+
+	void setEditMode(EditMode mode) noexcept;
 
 private:
 	virtual void onActivate() noexcept;
@@ -62,6 +71,7 @@ private:
 	ray::GameComponentPtr clone() const noexcept;
 
 private:
+	EditMode _mode;
 
 	float _speed;
 	float _gravity;

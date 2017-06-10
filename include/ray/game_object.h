@@ -143,14 +143,14 @@ public:
 	void removeComponentDispatch(GameDispatchType type, const GameComponentPtr& component) noexcept;
 	void removeComponentDispatchs(const GameComponentPtr& component) noexcept;
 
-	void sendMessage(const MessagePtr& message) noexcept;
-	void sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept;
+	void sendMessage(const MessagePtr& message) except;
+	void sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) except;
 
-	void sendMessageUpwards(const MessagePtr& message) noexcept;
-	void sendMessageUpwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept;
+	void sendMessageUpwards(const MessagePtr& message) except;
+	void sendMessageUpwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) except;
 
-	void sendMessageDownwards(const MessagePtr& message) noexcept;
-	void sendMessageDownwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept;
+	void sendMessageDownwards(const MessagePtr& message) except;
+	void sendMessageDownwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) except;
 
 	void destroy() noexcept;
 

@@ -153,18 +153,6 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 			if (input->getKeyDown(ray::InputKey::Code::Escape))
 				_showWindowAll = !_showWindowAll;
 
-			if (input->getButtonDown(ray::InputButton::LEFT))
-			{
-				if (input->getKey(ray::InputKey::LeftControl) && !input->isLockedCursor())
-				{
-					float x;
-					float y;
-					input->getMousePos(x, y);
-
-					this->onModelPicker(x, y);
-				}
-			}
-
 			if (_showAboutWindow || _showStyleEditor || _showMessage || _showProcessMessage)
 				return;
 
@@ -173,6 +161,15 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 
 			if (!input->isLockedCursor())
 			{
+				if (input->getKey(ray::InputKey::LeftControl) && input->getButtonDown(ray::InputButton::LEFT))
+				{
+					float x;
+					float y;
+					input->getMousePos(x, y);
+
+					this->onModelPicker(x, y);
+				}
+
 				if (input->getButtonDown(ray::InputButton::Code::MOUSEWHEEL))
 				{
 					float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
@@ -985,10 +982,12 @@ GuiViewComponent::showCameraWindow() noexcept
 		if (texture)
 			ray::Gui::image(texture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
 
-		if (ray::Gui::isMouseHoveringRect(_viewport.xy(), _viewport.xy() + _viewport.zw()))
-			_mouseHoveringCamera = true;
-		else
-			_mouseHoveringCamera = false;
+		bool mouseHoveringCamera = ray::Gui::isMouseHoveringRect(_viewport.xy(), _viewport.xy() + _viewport.zw());
+		if (_mouseHoveringCamera != mouseHoveringCamera)
+		{
+			_event.onMouseHoveringCamera(_viewport, mouseHoveringCamera);
+			_mouseHoveringCamera = mouseHoveringCamera;
+		}
 
 		ray::Gui::endDock();
 	}
@@ -1184,7 +1183,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 				{
 					std::uint32_t width = albedoMap->getGraphicsTextureDesc().getWidth();
 					std::uint32_t height = albedoMap->getGraphicsTextureDesc().getHeight();
-					aspert.set((float)width / height, 1.0);
+					aspert.set((float)width / height, 1.0f);
 				}
 
 				if (ray::Gui::imageButtonEx(albedoMap ? albedoMap.get() : 0, imageSize * aspert, _selectedTexture ? true : false, ray::float2::Zero, ray::float2::One, 3))
@@ -1233,7 +1232,7 @@ GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
 					material["albedoSubMapFilp"]->uniform1i(albedoSubMapFilp);
 
 				ray::Gui::text("Texture loop:");
-				if (ray::Gui::dragFloat2("##albedoSubMapLoopNum", albedoSubMapLoopNum.ptr(), 0.05, 0.0, FLT_MAX, "%.3f", 2.2))
+				if (ray::Gui::dragFloat2("##albedoSubMapLoopNum", albedoSubMapLoopNum.ptr(), 0.05, 0.0, FLT_MAX, "%.3f", 2.2f))
 					material["albedoSubMapLoopNum"]->uniform2f(albedoSubMapLoopNum);
 
 				ray::Gui::text("Texture:");

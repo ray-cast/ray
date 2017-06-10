@@ -51,8 +51,8 @@ public:
 	void setActive(bool active)  except;
 	bool getActive() noexcept;
 
-	void setGameListener(GameListenerPtr listener) noexcept;
-	GameListenerPtr getGameListener() const noexcept;
+	void setGameListener(const GameListenerPtr& listener) noexcept;
+	const GameListenerPtr& getGameListener() const noexcept;
 
 	GameServer* getGameServer() noexcept;
 

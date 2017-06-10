@@ -826,7 +826,7 @@ GameObject::destroy() noexcept
 }
 
 void
-GameObject::sendMessage(const MessagePtr& message) noexcept
+GameObject::sendMessage(const MessagePtr& message) except
 {
 	assert(message);
 
@@ -854,7 +854,7 @@ GameObject::sendMessage(const MessagePtr& message) noexcept
 }
 
 void
-GameObject::sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
+GameObject::sendMessage(const MessagePtr& message, GameComponent* ignores[], std::size_t n) except
 {
 	assert(message);
 
@@ -898,7 +898,7 @@ GameObject::sendMessage(const MessagePtr& message, GameComponent* ignores[], std
 }
 
 void
-GameObject::sendMessageUpwards(const MessagePtr& message) noexcept
+GameObject::sendMessageUpwards(const MessagePtr& message) except
 {
 	assert(message);
 
@@ -917,7 +917,7 @@ GameObject::sendMessageUpwards(const MessagePtr& message) noexcept
 }
 
 void
-GameObject::sendMessageUpwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
+GameObject::sendMessageUpwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) except
 {
 	assert(message);
 
@@ -949,7 +949,7 @@ GameObject::sendMessageUpwards(const MessagePtr& message, GameComponent* ignores
 }
 
 void
-GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
+GameObject::sendMessageDownwards(const MessagePtr& message) except
 {
 	assert(message);
 
@@ -967,7 +967,7 @@ GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 }
 
 void
-GameObject::sendMessageDownwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) noexcept
+GameObject::sendMessageDownwards(const MessagePtr& message, GameComponent* ignores[], std::size_t n) except
 {
 	assert(message);
 

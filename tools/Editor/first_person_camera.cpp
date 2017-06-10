@@ -49,6 +49,7 @@ FirstPersonCameraComponent::FirstPersonCameraComponent() noexcept
 	, _jumpHeight(10)
 	, _sensitivityX(150)
 	, _sensitivityY(150)
+	, _mode(EditMode::ThirdEdit)
 {
 }
 
@@ -202,6 +203,12 @@ FirstPersonCameraComponent::rotateCamera(float axisX, float axisY) noexcept
 		rotateCamera(angleX, this->getGameObject()->getRight());
 
 	rotateCamera(angleY, ray::float3::UnitY);
+}
+
+void
+FirstPersonCameraComponent::setEditMode(EditMode mode) noexcept
+{
+	_mode = mode;
 }
 
 ray::GameComponentPtr

@@ -67,6 +67,8 @@ struct GuiViewDelegates
 
 	std::function<bool(const ray::GameObject*, std::size_t subset)> onTransformObject;
 
+	std::function<void(const ray::float4&, bool)> onMouseHoveringCamera;
+
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectOpen;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSave;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSaveAs;

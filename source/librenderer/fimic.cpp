@@ -249,7 +249,8 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 		_texBloom2View[i] = pipeline.createFramebuffer(bloom2ViewDesc);
 	}
 
-	_fimic = pipeline.createMaterial("sys:fx/fimic.fxml");
+	_fimic = pipeline.createMaterial("sys:fx/PostProcessBloom.fxml");
+	assert(_fimic);
 
 	_sunLum = _fimic->getTech("SumLum");
 	_sunLumLog = _fimic->getTech("SumLumLog");

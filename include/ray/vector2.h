@@ -100,6 +100,35 @@ public:
 	void set(T xx, T yy) noexcept { x = xx; y = yy; }
 	void set(const Vector2t<T>& v) noexcept { x = v.x; y = v.y; }
 
+	Vector2t<T> xx() const noexcept { return Vector2t<T>(x, x); }
+	Vector2t<T> xy() const noexcept { return Vector2t<T>(x, y); }
+	Vector2t<T> yx() const noexcept { return Vector2t<T>(y, x); }
+	Vector2t<T> yy() const noexcept { return Vector2t<T>(y, y); }
+	Vector3t<T> xxx() const noexcept { return Vector3t<T>(x, x, x); }
+	Vector3t<T> xxy() const noexcept { return Vector3t<T>(x, x, y); }
+	Vector3t<T> xyx() const noexcept { return Vector3t<T>(x, y, x); }
+	Vector3t<T> xyy() const noexcept { return Vector3t<T>(x, y, y); }
+	Vector3t<T> yxx() const noexcept { return Vector3t<T>(y, x, x); }
+	Vector3t<T> yxy() const noexcept { return Vector3t<T>(y, x, y); }
+	Vector3t<T> yyx() const noexcept { return Vector3t<T>(y, y, x); }
+	Vector3t<T> yyy() const noexcept { return Vector3t<T>(y, y, y); }
+	Vector4t<T> xxxx() const noexcept { return Vector4t<T>(x, x, x, x); }
+	Vector4t<T> xxyx() const noexcept { return Vector4t<T>(x, x, y, x); }
+	Vector4t<T> xyxx() const noexcept { return Vector4t<T>(x, y, x, x); }
+	Vector4t<T> xyyx() const noexcept { return Vector4t<T>(x, y, y, x); }
+	Vector4t<T> xxxy() const noexcept { return Vector4t<T>(x, x, x, y); }
+	Vector4t<T> xxyy() const noexcept { return Vector4t<T>(x, x, y, y); }
+	Vector4t<T> xyxy() const noexcept { return Vector4t<T>(x, y, x, y); }
+	Vector4t<T> xyyy() const noexcept { return Vector4t<T>(x, y, y, y); }
+	Vector4t<T> yxxx() const noexcept { return Vector4t<T>(y, x, x, x); }
+	Vector4t<T> yxyx() const noexcept { return Vector4t<T>(y, x, y, x); }
+	Vector4t<T> yyxx() const noexcept { return Vector4t<T>(y, y, x, x); }
+	Vector4t<T> yyyx() const noexcept { return Vector4t<T>(y, y, y, x); }
+	Vector4t<T> yxxy() const noexcept { return Vector4t<T>(y, x, x, y); }
+	Vector4t<T> yxyy() const noexcept { return Vector4t<T>(y, x, y, y); }
+	Vector4t<T> yyxy() const noexcept { return Vector4t<T>(y, y, x, y); }
+	Vector4t<T> yyyy() const noexcept { return Vector4t<T>(y, y, y, y); }
+
 	reference getComponent(std::uint8_t index) noexcept
 	{
 		switch (index)

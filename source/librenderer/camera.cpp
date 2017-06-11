@@ -198,6 +198,25 @@ Camera::getClipConstant() const noexcept
 	return clipConstant;
 }
 
+float4
+Camera::getProjConstant() const noexcept
+{
+	auto deviceType = RenderSystem::instance()->getRenderSetting().deviceType;
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES32)
+	{
+		return float4(2, 2, -1, -1) * float4(float2(_projectInverse.a1, _projectInverse.b2).xyxy());
+	}
+	else
+	{
+		return float4(2, -2, -1, 1) * float4(float2(_projectInverse.a1, _projectInverse.b2).xyxy());
+	}
+}
+
 float3
 Camera::worldToScreen(const float3& pos) const noexcept
 {

@@ -3,14 +3,8 @@
 	<include name="sys:fx/sampler.fxml"/>
 	<include name="sys:fx/gbuffer.fxml"/>
 	<include name="sys:fx/inputlayout.fxml"/>
-	<macro name="NUM_SAMPLES" type="int" value="12"/>
-	<macro name="NUM_SAMPLES_INV" type="float" value="0.1"/>
-	<macro name="BLUR_RADIUS" type="int" value="8"/>
-	<parameter name="projScale" type="float"/>
-	<parameter name="radius" type="float"/>
-	<parameter name="sphere[NUM_SAMPLES]" type="float2[]"/>
-	<parameter name="bias" type="float"/>
-	<parameter name="intensity" type="float"/>
+	<macro name="SSDO_SAMPLER_COUNT" type="int" value="12"/>
+	<macro name="SSDO_BLUR_RADIUS" type="int" value="8"/>
 	<parameter name="blurFactor" type="float" />
 	<parameter name="blurSharpness" type="float" />
 	<parameter name="blurDirection" type="float2"/>
@@ -18,7 +12,9 @@
 	<parameter name="texNormal" type="texture2D" semantic="NormalMap" />
 	<parameter name="texSource" type="texture2D"/>
 	<parameter name="texSourceInv" type="float2"/>
-	<parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
+	<parameter name="SSDOParams1" type="float4"/>
+	<parameter name="SSDOParams2" type="float2"/>
+	<parameter name="SSDOProjConstant" type="float4"/>
 	<shader>
 		<![CDATA[
 			float linearizeDepth(float2 uv)
@@ -32,66 +28,88 @@
 				return DecodeGBufferNormal(MRT1);
 			}
 
-			float3 GetViewPosition(float2 uv, float3 viewdir)
-			{
-				return restorePosition(texDepth, uv, viewdir);
-			}
-
 			float3 GetViewPosition(float2 uv)
 			{
-				float3 viewdir = mul(matProjectInverse, float4(CoordToPos(uv), 0, 1)).xyz;
-				float depth = texDepth.Sample(PointClamp, uv).r;
-				return viewdir * depth / viewdir.z;
+				float depth = linearizeDepth(uv);
+				return float3(uv * SSDOProjConstant.xy + SSDOProjConstant.zw, 1) * depth;
 			}
 
-			float2 tapLocation(int sampleIndex, float2 sampleNoise, float radius)
-			{
-				float cosacosb = sphere[sampleIndex].x * sampleNoise.x;
-				float sinacosb = sphere[sampleIndex].y * sampleNoise.x;
-				float cosasinb = sphere[sampleIndex].x * sampleNoise.y;
-				float sinasinb = sphere[sampleIndex].y * sampleNoise.y;
-				return float2(cosacosb-sinasinb, sinacosb+cosasinb) * radius * (float(sampleIndex) * NUM_SAMPLES_INV);
-			}
-
-			void ScreenSpaceDirOccPassVS(
+			void PostProcessVS(
 				in float4 Position : POSITION0,
 				out float4 oTexcoord : TEXCOORD0,
-				out float3 oViewDir : TEXCOORD1,
 				out float4 oPosition : SV_Position)
 			{
 				oPosition = Position;
-				oViewDir  = mul(matProjectInverse, Position).xyz;
 				oTexcoord = PosToCoord(Position.xy).xyxy;
 			}
 
-			float ScreenSpaceDirOccPassPS(
-				in float4 coord : TEXCOORD0,
-				in float3 viewdir : TEXCOORD1,
-				in float4 screenSpace : SV_Position) : SV_Target
+			float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 screenSpace : SV_Position) : SV_Target
 			{
+				static const float2 SSDOKernel[16] = 
+				{
+					float2( -0.14, -0.02 ),
+					float2( -0.04, 0.24 ),
+					float2( 0.36, 0.08 ),
+					float2(-0.46, -0.08),
+					float2( 0.26, -0.4 ),
+					float2(-0.127, -0.347),
+					float2( -0.44, -0.34 ),
+					float2( -0.52, 0.4 ),
+					float2(-0.226, 0.589),
+					float2( 0.3, 0.68 ),
+					float2( 0.7, 0.356),
+					float2( 0.47, -0.287),
+					float2( 0.84, -0.32 ),
+					float2( 0.4, -0.74),
+					float2(-0.338, -0.684),
+					float2(-0.622, -0.415)
+				};
+
 				float3 viewNormal = GetViewNormal(coord.xy);
-				float3 viewPosition = GetViewPosition(coord.xy, normalize(viewdir));
+				float3 viewPosition = GetViewPosition(coord.xy);
 
 				float sampleJitter = GetJitterOffset(screenSpace.xy) * PI_2;
-				float sampleAmbient = 0.0f;
-				float sampleWeight = 0.0f;
 
-				float2 sampleNoise;
-				sincos(sampleJitter, sampleNoise.x, sampleNoise.y);
+				float maxRadius = 1.0;
+				if (uint(screenSpace.x) & 1) maxRadius *= 0.5;
+				if (uint(screenSpace.y) & 1) maxRadius *= 0.5;
 
-				for (int i = 0; i < NUM_SAMPLES; i += 4)
+				float2 sampleRotate[16];
+				float2 sampleRadius = clamp(SSDOParams1.xy / viewPosition.z, SSDOParams1.z, SSDOParams1.w * maxRadius);
+				float2 sampleSinCos = float2(sin(sampleJitter), cos(sampleJitter));
+				float4 sampleOcclustion = 0.0f;
+
+				float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
+
+				[unroll]
+				for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
+				{
+					sampleRotate[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * sampleRadius;
+					sampleRotate[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * sampleRadius;
+					sampleRotate[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * sampleRadius;
+					sampleRotate[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * sampleRadius;
+				}
+
+				[unroll]
+				for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
 				{
 					float2 sampleOffset[4];
-					sampleOffset[0] = coord.xy + tapLocation(i + 0, sampleNoise, radius) * texSourceInv;
-					sampleOffset[1] = coord.xy + tapLocation(i + 1, sampleNoise, radius) * texSourceInv;
-					sampleOffset[2] = coord.xy + tapLocation(i + 2, sampleNoise, radius) * texSourceInv;
-					sampleOffset[3] = coord.xy + tapLocation(i + 3, sampleNoise, radius) * texSourceInv;
+					sampleOffset[0] = coord.xy + sampleRotate[j + 0];
+					sampleOffset[1] = coord.xy + sampleRotate[j + 1];
+					sampleOffset[2] = coord.xy + sampleRotate[j + 2];
+					sampleOffset[3] = coord.xy + sampleRotate[j + 3];
+
+					float4 sampleDepths;
+					sampleDepths[0] = linearizeDepth(sampleOffset[0]);
+					sampleDepths[1] = linearizeDepth(sampleOffset[1]);
+					sampleDepths[2] = linearizeDepth(sampleOffset[2]);
+					sampleDepths[3] = linearizeDepth(sampleOffset[3]);
 
 					float3 samplePosition[4];
-					samplePosition[0] = GetViewPosition(sampleOffset[0]);
-					samplePosition[1] = GetViewPosition(sampleOffset[1]);
-					samplePosition[2] = GetViewPosition(sampleOffset[2]);
-					samplePosition[3] = GetViewPosition(sampleOffset[3]);
+					samplePosition[0] = float3(sampleOffset[0] * SSDOProjConstant.xy + SSDOProjConstant.zw, 1) * sampleDepths[0];
+					samplePosition[1] = float3(sampleOffset[1] * SSDOProjConstant.xy + SSDOProjConstant.zw, 1) * sampleDepths[1];
+					samplePosition[2] = float3(sampleOffset[2] * SSDOProjConstant.xy + SSDOProjConstant.zw, 1) * sampleDepths[2];
+					samplePosition[3] = float3(sampleOffset[3] * SSDOProjConstant.xy + SSDOProjConstant.zw, 1) * sampleDepths[3];
 
 					float3 sampleDirection[4];
 					sampleDirection[0] = samplePosition[0] - viewPosition;
@@ -113,22 +131,22 @@
 						dot(sampleDirection[2], viewNormal),
 						dot(sampleDirection[3], viewNormal));
 
-					sampleWeight += 4.0f;
-					sampleAmbient += sum(max(0.0f, (sampleAngle - viewPosition.z * bias)) * sampleLengthInv);
+					float emitterScale = 2.5;
+					float emitterRadius = (sampleRadius.x * viewPosition.z) * SSDOProjConstant.x;
+					float emitterArea = (emitterScale * emitterRadius * emitterRadius) * PI * 0.25;
+
+					float4 sh = emitterArea * saturate(sampleAngle - SSDOParams2.x) / (sampleLength2 + emitterArea);
+
+					sampleOcclustion.w += sum(sh);
+					sampleOcclustion.xyz += sh.x * sampleDirection[0];
+					sampleOcclustion.xyz += sh.y * sampleDirection[1];
+					sampleOcclustion.xyz += sh.z * sampleDirection[2];
+					sampleOcclustion.xyz += sh.w * sampleDirection[3];
 				}
 
-				return max(0.0f, 1 - sampleAmbient / sampleWeight * intensity);
-			}
+				sampleOcclustion /= SSDO_SAMPLER_COUNT;
 
-			void PostProcessVS(
-				in float4 Position : POSITION0,
-				out float4 oTexcoord : TEXCOORD0,
-				out float3 oViewDir : TEXCOORD1,
-				out float4 oPosition : SV_Position)
-			{
-				oPosition = Position;
-				oViewDir  = mul(matProjectInverse, Position).xyz;
-				oTexcoord = PosToCoord(Position.xy).xyxy;
+				return float4(sampleOcclustion.xyz * 0.5 + 0.5, pow(1 - sampleOcclustion.w, SSDOParams2.y));
 			}
 
 			float4 BilateralFilterPS(in float2 coord : TEXCOORD0) : SV_Target
@@ -141,7 +159,8 @@
 				float2 offset1 = coord + blurDirection;
 				float2 offset2 = coord - blurDirection;
 
-				for (int r = 1; r < BLUR_RADIUS; r++)
+				[unroll]
+				for (int r = 1; r < SSDO_BLUR_RADIUS; r++)
 				{
 					float2 depth = float2(linearizeDepth(offset1), linearizeDepth(offset2));
 					float2 weight = exp2(-r * r * blurFactor - pow2((depth - center_d) * blurSharpness));
@@ -161,15 +180,15 @@
 
 			float4 ApplyPS(in float2 coord : TEXCOORD) : SV_Target
 			{
-				float ao = texSource.SampleLevel(PointClamp, coord, 0).r;
-				return ao * ao;
+				float4 ao = texSource.SampleLevel(PointClamp, coord, 0);
+				return ao.a;
 			}
 		]]>
 	</shader>
 	<technique name="ComputeAO">
 		<pass name="p0">
 			<state name="inputlayout" value="POS3F"/>
-			<state name="vertex" value="ScreenSpaceDirOccPassVS"/>
+			<state name="vertex" value="PostProcessVS"/>
 			<state name="fragment" value="ScreenSpaceDirOccPassPS"/>
 
 			<state name="cullmode" value="none"/>
@@ -178,19 +197,7 @@
 			<state name="depthwrite" value="false"/>
 		</pass>
 	</technique>
-	<technique name="BlurXAO">
-		<pass name="p0">
-			<state name="inputlayout" value="POS3F"/>
-			<state name="vertex" value="PostProcessVS"/>
-			<state name="fragment" value="BilateralFilterPS"/>
-
-			<state name="cullmode" value="none"/>
-
-			<state name="depthtest" value="false"/>
-			<state name="depthwrite" value="false"/>
-		</pass>
-	</technique>
-	<technique name="BlurYAO">
+	<technique name="BlurAO">
 		<pass name="p0">
 			<state name="inputlayout" value="POS3F"/>
 			<state name="vertex" value="PostProcessVS"/>

@@ -74,6 +74,7 @@ public:
 	const float4x4& getViewProjectInverse() const noexcept;
 
 	float4 getClipConstant() const noexcept;
+	float4 getProjConstant() const noexcept;
 
 	float3 worldToScreen(const float3& pos) const noexcept;
 	float3 worldToProject(const float3& pos) const noexcept;

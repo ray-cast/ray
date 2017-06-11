@@ -45,7 +45,7 @@ _NAME_BEGIN
 
 SSDO::Setting::Setting() noexcept
 	: radius(10.0f)
-	, bias(0.002f)
+	, bias(0.001f)
 	, intensity(1)
 	, blur(true)
 	, blurRadius(6)
@@ -71,9 +71,8 @@ SSDO::setSetting(const Setting& setting) noexcept
 	_blurFactor->uniform1f(blurFalloff);
 	_blurSharpness->uniform1f(_setting.blurSharpness);
 
-	_occlusionRadius->uniform1f(_setting.radius);
-	_occlusionBias->uniform1f(_setting.bias);
-	_occlusionIntensity->uniform1f(_setting.intensity);
+	_occlusionParams1->uniform4f(2.0, 2.0, 0.03, 0.15);
+	_occlusionParams2->uniform2f(_setting.bias, _setting.intensity);
 
 	_setting = setting;
 }
@@ -91,7 +90,7 @@ SSDO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	pipeline.getWindowResolution(width, height);
 
 	_occlusionSourceInv->uniform2f(1.0f / width, 1.0f / height);
-	_cameraProjScale->uniform1f(pipeline.getCamera()->getFar());
+	_occlusionProjectConstant->uniform4f(pipeline.getCamera()->getProjConstant());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -111,7 +110,7 @@ SSDO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
-	pipeline.drawScreenQuad(*_ambientOcclusionBlurXPass);
+	pipeline.drawScreenQuad(*_ambientOcclusionBlurPass);
 }
 
 void
@@ -127,7 +126,7 @@ SSDO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
-	pipeline.drawScreenQuad(*_ambientOcclusionBlurYPass);
+	pipeline.drawScreenQuad(*_ambientOcclusionBlurPass);
 }
 
 void
@@ -140,36 +139,16 @@ SSDO::applySSDO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFra
 }
 
 void
-SSDO::createSphereNoise() noexcept
-{
-	std::vector<float2> sphere;
-	std::size_t numSample = _occlusionSampleNumber->getInt();
-
-	for (std::size_t i = 0; i < numSample; i++)
-	{
-		float sampleAlpha = (i + 0.5f) * (1.0f / numSample);
-		float angle = sampleAlpha * M_TWO_PI * 7.0f;
-
-		float2 rotate;
-		math::sinCos(&rotate.y, &rotate.x, angle);
-
-		sphere.push_back(rotate);
-	}
-
-	_occlusionSphere->uniform2fv(sphere);
-}
-
-void
 SSDO::onActivate(RenderPipeline& pipeline) except
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_texAmbientTempMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_texAmbientTempMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8UNorm));
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm));
 	_framebufferLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
 
 	GraphicsFramebufferDesc ambientViewDesc;
@@ -189,28 +168,22 @@ SSDO::onActivate(RenderPipeline& pipeline) except
 	_ambientOcclusion = pipeline.createMaterial("sys:fx/SSDO.fxml");
 	assert(_ambientOcclusion);
 	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeAO");
-	_ambientOcclusionBlurXPass = _ambientOcclusion->getTech("BlurXAO");
-	_ambientOcclusionBlurYPass = _ambientOcclusion->getTech("BlurYAO");
+	_ambientOcclusionBlurPass = _ambientOcclusion->getTech("BlurAO");
 	_ambientOcclusionApply = _ambientOcclusion->getTech("Apply");
 
-	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
-
-	_occlusionRadius = _ambientOcclusion->getParameter("radius");
-	_occlusionBias = _ambientOcclusion->getParameter("bias");
-	_occlusionIntensity = _ambientOcclusion->getParameter("intensity");
-	_occlusionSphere = _ambientOcclusion->getParameter("sphere");
 	_occlusionSourceInv = _ambientOcclusion->getParameter("texSourceInv");
-	_occlusionSampleNumber = _ambientOcclusion->getMacro("NUM_SAMPLES");
+	_occlusionSampleNumber = _ambientOcclusion->getMacro("SSDO_SAMPLER_COUNT");
+	_occlusionParams1 = _ambientOcclusion->getParameter("SSDOParams1");
+	_occlusionParams2 = _ambientOcclusion->getParameter("SSDOParams2");
+	_occlusionProjectConstant = _ambientOcclusion->getParameter("SSDOProjConstant");
 
 	_blurSource = _ambientOcclusion->getParameter("texSource");
 	_blurFactor = _ambientOcclusion->getParameter("blurFactor");
 	_blurSharpness = _ambientOcclusion->getParameter("blurSharpness");
 	_blurDirection = _ambientOcclusion->getParameter("blurDirection");
-	_blurRadius = _ambientOcclusion->getMacro("BLUR_RADIUS");
+	_blurRadius = _ambientOcclusion->getMacro("SSDO_BLUR_RADIUS");
 
 	_setting.blurRadius = static_cast<float>(_blurRadius->getInt());
-
-	this->createSphereNoise();
 
 	this->setSetting(_setting);
 }
@@ -221,17 +194,13 @@ SSDO::onDeactivate(RenderPipeline& pipeline) noexcept
 	_ambientOcclusion.reset();
 
 	_ambientOcclusionPass.reset();
-	_ambientOcclusionBlurXPass.reset();
-	_ambientOcclusionBlurYPass.reset();
+	_ambientOcclusionBlurPass.reset();
 
-	_cameraProjScale.reset();
-
-	_occlusionRadius.reset();
-	_occlusionBias.reset();
-	_occlusionIntensity.reset();
-	_occlusionSphere.reset();
 	_occlusionSampleNumber.reset();
 	_occlusionSourceInv.reset();
+	_occlusionProjectConstant.reset();
+	_occlusionParams1.reset();
+	_occlusionParams2.reset();
 
 	_blurSource.reset();
 	_blurFactor.reset();

@@ -71,8 +71,6 @@ private:
 	void blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void applySSDO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
-	void createSphereNoise() noexcept;
-
 private:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
@@ -86,18 +84,14 @@ private:
 	MaterialPtr _ambientOcclusion;
 
 	MaterialTechPtr _ambientOcclusionPass;
-	MaterialTechPtr _ambientOcclusionBlurXPass;
-	MaterialTechPtr _ambientOcclusionBlurYPass;
+	MaterialTechPtr _ambientOcclusionBlurPass;
 	MaterialTechPtr _ambientOcclusionApply;
 
-	MaterialParamPtr _cameraProjScale;
-
-	MaterialParamPtr _occlusionRadius;
-	MaterialParamPtr _occlusionBias;
-	MaterialParamPtr _occlusionIntensity;
-	MaterialParamPtr _occlusionSphere;
-	MaterialMacroPtr _occlusionSampleNumber;
 	MaterialParamPtr _occlusionSourceInv;
+	MaterialParamPtr _occlusionProjectConstant;
+	MaterialMacroPtr _occlusionSampleNumber;
+	MaterialParamPtr _occlusionParams1;
+	MaterialParamPtr _occlusionParams2;
 
 	MaterialParamPtr _blurSource;
 	MaterialParamPtr _blurFactor;

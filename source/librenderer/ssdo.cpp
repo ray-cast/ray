@@ -160,13 +160,13 @@ SSDO::createSphereNoise() noexcept
 }
 
 void
-SSDO::onActivate(RenderPipeline& pipeline) noexcept
+SSDO::onActivate(RenderPipeline& pipeline) except
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
-	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
+	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_texAmbientTempMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
 	framebufferLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8UNorm));
@@ -182,9 +182,9 @@ SSDO::onActivate(RenderPipeline& pipeline) noexcept
 	GraphicsFramebufferDesc blurViewDesc;
 	blurViewDesc.setWidth(width);
 	blurViewDesc.setHeight(height);
-	blurViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texBlurMap, 0, 0));
+	blurViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texAmbientTempMap, 0, 0));
 	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
-	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
+	_texAmbientTempView = pipeline.createFramebuffer(blurViewDesc);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx/SSDO.fxml");
 	assert(_ambientOcclusion);
@@ -239,13 +239,13 @@ SSDO::onDeactivate(RenderPipeline& pipeline) noexcept
 	_blurDirection.reset();
 	_blurRadius.reset();
 
-	_texBlurMap.reset();
-	_texAmbientMap.reset();
-
 	_framebufferLayout.reset();
 
-	_texBlurView.reset();
+	_texAmbientMap.reset();
+	_texAmbientTempMap.reset();
+
 	_texAmbientView.reset();
+	_texAmbientTempView.reset();
 }
 
 bool
@@ -260,8 +260,8 @@ SSDO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferP
 
 	if (_setting.blur)
 	{
-		this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
-		this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
+		this->blurHorizontal(pipeline, _texAmbientMap, _texAmbientTempView);
+		this->blurVertical(pipeline, _texAmbientTempMap, _texAmbientView);
 	}
 
 	this->applySSDO(pipeline, _texAmbientMap, source);

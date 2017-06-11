@@ -74,7 +74,7 @@ private:
 	void createSphereNoise() noexcept;
 
 private:
-	void onActivate(RenderPipeline& pipeline) noexcept;
+	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
 	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
@@ -105,13 +105,13 @@ private:
 	MaterialParamPtr _blurDirection;
 	MaterialMacroPtr _blurRadius;
 
-	GraphicsTexturePtr _texBlurMap;
 	GraphicsTexturePtr _texAmbientMap;
+	GraphicsTexturePtr _texAmbientTempMap;
 
 	GraphicsFramebufferLayoutPtr _framebufferLayout;
 
-	GraphicsFramebufferPtr _texBlurView;
 	GraphicsFramebufferPtr _texAmbientView;
+	GraphicsFramebufferPtr _texAmbientTempView;
 };
 
 _NAME_END

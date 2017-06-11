@@ -81,20 +81,20 @@
 
 			float4 DeferredDepthLinearPS(in float2 coord : TEXCOORD0) : SV_Target
 			{
-				float d = texDepth.Sample(PointClamp, coord).r;
+				float d = texDepth.SampleLevel(PointClamp, coord, 0).r;
 				return linearDepthPerspectiveFovLH(clipInfo, d);
 			}
 
-			float4 DeferredCopyOnlyPS(in float4 coord : TEXCOORD0) : SV_Target
+			float4 DeferredCopyOnlyPS(in float2 coord : TEXCOORD0) : SV_Target
 			{
-				return texSource.Sample(PointClamp, coord);
+				return texSource.SampleLevel(PointClamp, coord, 0);
 			}
 
 			float4 DeferredAmbientLightPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -112,9 +112,9 @@
 
 			float4 DeferredSunLightPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -135,9 +135,9 @@
 
 			float4 DeferredSunLightShadowPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -159,9 +159,9 @@
 
 			float4 DeferredDirectionalLightPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -182,9 +182,9 @@
 
 			float4 DeferredDirectionalLightShadowPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -208,9 +208,9 @@
 			{
 				float2 texcoord = coord.xy / coord.z;
 
-				float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, texcoord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, texcoord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -235,9 +235,9 @@
 			{
 				float2 texcoord = coord.xy / coord.z;
 
-				float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, texcoord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, texcoord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -262,9 +262,9 @@
 			{
 				float2 texcoord = coord.xy / coord.z;
 
-				float4 MRT0 = texMRT0.Sample(PointClamp, texcoord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, texcoord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, texcoord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, texcoord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -286,9 +286,9 @@
 			
 			float4 DeferredEnvironmentLightingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
@@ -302,12 +302,12 @@
 
 				float3 R = EnvironmentReflect(worldNormal, worldView);
 
-				float3 prefilteredDiffuse = envDiffuse.Sample(PointClamp, worldNormal).rgb;
+				float3 prefilteredDiffuse = envDiffuse.SampleLevel(PointClamp, worldNormal, 0).rgb;
 				float3 prefilteredSpeculr = envSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
-				float3 prefilteredTransmittance = envDiffuse.Sample(PointClamp, -worldNormal).rgb;
+				float3 prefilteredTransmittance = envDiffuse.SampleLevel(PointClamp, -worldNormal, 0).rgb;
 
 				float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
-				float4 lighting = texLight.Sample(PointClamp, coord);
+				float4 lighting = texLight.SampleLevel(PointClamp, coord, 0);
 
 				float3 shading = 0.0;
 				shading += prefilteredDiffuse * material.albedo * envFactor.g * material.occlusion;
@@ -319,29 +319,29 @@
 
 			float4 DeferredShadingOpaquesPS(in float2 coord : TEXCOORD0) : SV_Target
 			{
-				float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-				float4 lighting = texLight.Sample(PointClamp, coord);
+				float4 lighting = texLight.SampleLevel(PointClamp, coord, 0);
 
 				return float4(lighting.rgb + lighting.a, 1.0);
 			}
 
 			float4 DeferredShadingTransparentsPS(in float2 coord : TEXCOORD0) : SV_Target
 			{
-				float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-				float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-				float4 MRT2 = texMRT2.Sample(PointClamp, coord);
+				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
+				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
+				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-				float4 source = texOpaque.Sample(PointClamp, coord);
-				float4 lighting = texLight.Sample(PointClamp, coord);
+				float4 source = texOpaque.SampleLevel(PointClamp, coord, 0);
+				float4 lighting = texLight.SampleLevel(PointClamp, coord, 0);
 
 				return float4(lerp(source.xyz, source.xyz + lighting.rgb + lighting.a, material.occlusion), source.w);
 			}

@@ -10,17 +10,18 @@
     <parameter name="texLumAve" type="texture2D" />
     <parameter name="bloomThreshold" type="float" />
     <parameter name="bloomIntensity" type="float" />
-    <parameter name="bloomWeight[9]" type="float[]" />
+    <parameter name="bloomWeights[9]" type="float[]" />
+    <parameter name="bloomFactors[5]" type="float[]" />
     <parameter name="texSourceLevel" type="int"/>
     <parameter name="exposure" type="float" />
     <parameter name="delta" type="float2" />
     <shader>
         <![CDATA[
     		#define TONEMAP_LINEAR 0
-    		#define TONEMAP_EXPONENTIAL 1
-    		#define TONEMAP_EXPONENTIAL_HSV 2
-    		#define TONEMAP_REINHARD 3
-    		#define TONEMAP_UNCHARTED2 4
+    		#define TONEMAP_REINHARD 1
+            #define TONEMAP_HABLE 2
+    		#define TONEMAP_UNCHARTED2 3
+            #define TONEMAP_HEJI2015 4
     		#define TONEMAP_ACES 5
     		#define TONEMAP_OPERATOR TONEMAP_UNCHARTED2
 
@@ -59,33 +60,42 @@
                 return (q -sqrt(q*q - 4.0*D*F*F*x*d)) / (2.0*d);
             }
 
-            float3 FilmicTonemap(float3 color, float exposure)
+            float3 TonemapReinhardLumaBased(float3 color, float whitePt)
+            {
+                float luma = luminance(color);
+                float toneMappedLuma = luma * (1 + luma / (whitePt * whitePt))/ (1 + luma);
+                color *= toneMappedLuma / luma;
+                return color;
+            }
+
+            float3 TonemapHejl2015(float3 hdr, float whitePt) 
+            {
+                float4 vh = float4(hdr, whitePt);
+                float4 va = 1.425 * vh + 0.05;
+                float4 vf = (vh * va + 0.004) / (vh * (va + 0.55) + 0.0491) - 0.0821;
+                return vf.rgb / vf.www;
+            }
+
+            float3 ColorToneMapping(float3 color)
             {
                 #if TONEMAP_OPERATOR == TONEMAP_LINEAR
-                    return exposure * color;
-                #elif TONEMAP_OPERATOR == TONEMAP_EXPONENTIAL
-                    color = 1.0 - exp2(-exposure * color);
-                    return color;
-                #elif TONEMAP_OPERATOR == TONEMAP_EXPONENTIAL_HSV
-                    color = rgb2hsv(color);
-                    color.b = 1.0 - exp2(-exposure * color.b);
-                    color = hsv2rgb(color);
                     return color;
                 #elif TONEMAP_OPERATOR == TONEMAP_REINHARD
-                    color = xyz2Yxy(rgb2xyz(color));
-                    float L = color.r;
-                    L *= exposure;
-                    float LL = 1 + L / (burnout * burnout);
-                    float L_d = L * LL / (1 + L);
-                    color.r = L_d;
-                    color = xyz2rgb(Yxy2xyz(color));
-                    return color;
-                #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
-                    float4 curr = TonemapHable(float4(color * exposure, 8.0));
+                    float3 curr = TonemapReinhardLumaBased(color, 4.0);
+                    return saturate(curr);
+                #elif TONEMAP_OPERATOR == TONEMAP_HABLE
+                    float4 curr = TonemapHable(float4(color, 4.0));
                     curr /= curr.w;
                     return saturate(curr.rgb);
+                #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
+                    float4 curr = TonemapHable(float4(color, 8.0));
+                    curr /= curr.w;
+                    return saturate(curr.rgb);
+                #elif TONEMAP_OPERATOR == TONEMAP_HEJI2015
+                    float3 curr = TonemapHejl2015(color, 4.0);
+                    return saturate(curr);
                 #elif TONEMAP_OPERATOR == TONEMAP_ACES
-                	return TonemapACES(color * exposure);
+                	return TonemapACES(color);
                 #else
                     return color;
                 #endif
@@ -124,22 +134,13 @@
                 return color;
             }
 
-            float3 ToneMapping(float3 color, float3 bloom, float avgLum, float exposure)
-            {
-                color += bloom;
-                color = FilmicTonemap(color, exposure * ComputeExposureISO(avgLum));
-                color = saturate(color);
-                color = linear2srgb(color);
-                return color;
-            }
-
             void PostProcessVS(
                 in float4 Position : POSITION0,
                 out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
                 oPosition = Position;
-                oTexcoord = PosToCoord(Position);
+                oTexcoord = PosToCoord(Position.xy).xyxy;
             }
 
             void SumLumVS(
@@ -155,45 +156,56 @@
                 oTexcoord1.zw = oTexcoord0.xy + float2(0, texSourceSizeInv.y);
             }
 
-            float4 SumLumPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
+            float4 SumLumPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target
             {
-                float4 color = texSource.Sample(PointClamp, coord0.xy);
-                color += texSource.Sample(PointClamp, coord0.zw);
-                color += texSource.Sample(PointClamp, coord1.xy);
-                color += texSource.Sample(PointClamp, coord1.zw);
+                float4 color = 0;
+                color += texSource.SampleLevel(PointClamp, coord0.xy, texSourceLevel);
+                color += texSource.SampleLevel(PointClamp, coord0.zw, texSourceLevel);
+                color += texSource.SampleLevel(PointClamp, coord1.xy, texSourceLevel);
+                color += texSource.SampleLevel(PointClamp, coord1.zw, texSourceLevel);
                 color *= 0.25;
 
                 return color;
             }
 
-            float SumLumLogPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
+            float SumLumLogPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target
             {
-                float4 color = texSource.Sample(PointClamp, coord0.xy);
-                color += texSource.Sample(PointClamp, coord0.zw);
-                color += texSource.Sample(PointClamp, coord1.xy);
-                color += texSource.Sample(PointClamp, coord1.zw);
+                float color = 0;
+                color += log(max(luminance(texSource.SampleLevel(PointClamp, coord0.xy, 0).rgb), 1e-6));
+                color += log(max(luminance(texSource.SampleLevel(PointClamp, coord0.zw, 0).rgb), 1e-6));
+                color += log(max(luminance(texSource.SampleLevel(PointClamp, coord1.xy, 0).rgb), 1e-6));
+                color += log(max(luminance(texSource.SampleLevel(PointClamp, coord1.zw, 0).rgb), 1e-6));
                 color *= 0.25;
 
-                const float epsilon = 0.01f;
-                return log(max(epsilon, luminance(color)));
+                return color;
             }
 
-            float AvgLuminancePS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target0
+            float AvgLuminancePS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target
             {
                 float color = texSource.SampleLevel(PointClamp, coord0.xy, 8).r;
-                float adaptedLum = texLumAve.Sample(PointClamp, float2(0.5,0.5)).r;
+                float adaptedLum = texLumAve.SampleLevel(PointClamp, float2(0.5,0.5), 0).r;
                 return CalcAdaptedLum(adaptedLum, exp(color), delta);
             }
 
-            float4 BloomPS(in float4 coord : TEXCOORD0) : SV_Target0
+            void GenerateBloomVS(
+                in float4 Position : POSITION0,
+                out float4 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position)
             {
-                float4 color = texSource.Sample(PointClamp, coord.xy);
-                float avgLum = texLumAve.Sample(PointClamp, float2(0, 0)).r;
-                color *= exposure * ComputeExposureISO(avgLum);
+                float avgLum = texLumAve.SampleLevel(PointClamp, float2(0, 0), 0).r;
+
+                oPosition = Position;
+                oTexcoord.xy = PosToCoord(Position.xy);
+                oTexcoord.zw = ComputeExposureISO(avgLum);
+            }
+
+            float4 GenerateBloomPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                float4 color = texSource.SampleLevel(PointClamp, coord.xy, 0) * exposure * coord.z;
                 return max(0, (color - bloomThreshold) * bloomIntensity);
             }
 
-            void BlurVS(
+            void BloomBlurVS(
                 in float4 Position : POSITION0,
                 out float2 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position)
@@ -202,32 +214,48 @@
                 oTexcoord = PosToCoord(Position.xy);
             }
 
-            float4 BlurPS(in float2 coord : TEXCOORD0) : SV_Target0
+            float4 BloomBlurPS(in float2 coord : TEXCOORD0) : SV_Target
             {
             	float2 coords = coord - texSourceSizeInv * 4.0;
 
                 float4 color = 0;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[0]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[1]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[2]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[3]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[4]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[5]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[6]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[7]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeight[8];
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[0]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[1]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[2]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[3]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[4]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[5]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[6]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[7]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[8];
 
                 return color;
             }
 
-            float4 FimicTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target0
+            float4 BloomCombinePS(in float2 coord : TEXCOORD0) : SV_Target
             {
-                float avgLum = texLumAve.Sample(PointClamp, float2(0, 0), 0).r;
-                float3 color = texSource.Sample(PointClamp, coord.xy, 0).rgb;
-                float3 bloom = texBloom.SampleLevel(LinearClamp, coord.xy, 0).rgb;
-                float3 LDR = ToneMapping(color, bloom, avgLum, exposure);
-                LDR = ColorBanding(LDR, coord.xy);
-                return float4(LDR, luminance(LDR));
+                float3 bloom = 0;
+                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 0).rgb * bloomFactors[0];
+                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 1).rgb * bloomFactors[1];
+                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 2).rgb * bloomFactors[2];
+                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 3).rgb * bloomFactors[3];
+                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 4).rgb * bloomFactors[4];
+
+                return float4(bloom, 0);
+            }
+
+            float4 HDRTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                float3 bloom = texBloom.SampleLevel(PointClamp, coord.xy, 0).rgb;
+                float3 color = texSource.SampleLevel(PointClamp, coord.xy, 0).rgb;
+
+                color += bloom;
+                color *= exposure * coord.z;
+                color = ColorToneMapping(color);
+                color = linear2srgb(color);
+                color = ColorBanding(color, coord.xy);
+
+                return float4(color, luminance(color));
             }
         ]]>
     </shader>
@@ -270,8 +298,8 @@
     <technique name="GenerateBloom">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="PostProcessVS" />
-            <state name="fragment" value="BloomPS" />
+            <state name="vertex" value="GenerateBloomVS" />
+            <state name="fragment" value="GenerateBloomPS" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -282,8 +310,20 @@
     <technique name="BlurBloom">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="BlurVS" />
-            <state name="fragment" value="BlurPS" />
+            <state name="vertex" value="BloomBlurVS" />
+            <state name="fragment" value="BloomBlurPS" />
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+        </pass>
+    </technique>
+    <technique name="BloomCombine">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="BloomBlurVS" />
+            <state name="fragment" value="BloomCombinePS" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -294,8 +334,8 @@
     <technique name="FimicTongMapping">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="PostProcessVS" />
-            <state name="fragment" value="FimicTongMappingPS" />
+            <state name="vertex" value="GenerateBloomVS" />
+            <state name="fragment" value="HDRTongMappingPS" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>

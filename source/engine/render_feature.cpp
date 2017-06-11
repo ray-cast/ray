@@ -127,7 +127,7 @@ RenderFeature::onMessage(const MessagePtr& message) except
 		else if (InputEvent::SizeChangeDPI == inputEvent.event)
 		{
 			if (inputEvent.change.w > 0 && inputEvent.change.h > 0)
-				RenderSystem::instance()->setWindowResolutionDPI(inputEvent.change.w, inputEvent.change.h);
+				RenderSystem::instance()->setFramebufferSize(inputEvent.change.w, inputEvent.change.h);
 		}
 	}
 }

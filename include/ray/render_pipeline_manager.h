@@ -57,8 +57,8 @@ public:
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	void setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept;
-	void getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept;
+	void setFramebufferSize(std::uint32_t w, std::uint32_t h) noexcept;
+	void getFramebufferSize(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;

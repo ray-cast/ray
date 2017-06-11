@@ -63,8 +63,8 @@ public:
 	const Setting& getSetting() const noexcept;
 
 private:
-	void sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
-	void sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void sumLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint8_t level) noexcept;
+	void sumLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void avgLuminance(RenderPipeline& pipeline, GraphicsTexturePtr adaptedLum, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 	void generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
@@ -72,6 +72,7 @@ private:
 
 	void blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept;
 	void blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept;
+	void bloomCombine(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 private:
 
@@ -87,16 +88,18 @@ private:
 	Setting _setting;
 
 	MaterialPtr _fimic;
-	MaterialTechPtr _sunLum;
-	MaterialTechPtr _sunLumLog;
+	MaterialTechPtr _sumLum;
+	MaterialTechPtr _sumLumLog;
 	MaterialTechPtr _avgLuminance;
 	MaterialTechPtr _bloom;
+	MaterialTechPtr _bloomCombine;
 	MaterialTechPtr _blur;
 	MaterialTechPtr _tone;
 
 	MaterialParamPtr _bloomThreshold;
 	MaterialParamPtr _bloomIntensity;
-	MaterialParamPtr _bloomWeight;
+	MaterialParamPtr _bloomWeights;
+	MaterialParamPtr _bloomFactors;
 
 	MaterialParamPtr _toneBloom;
 	MaterialParamPtr _toneLumAve;
@@ -110,8 +113,8 @@ private:
 	MaterialParamPtr _texSourceLevel;
 	MaterialParamPtr _texSourceSizeInv;
 
-	GraphicsTexturePtr _texBloom1Map;
-	GraphicsTexturePtr _texBloom2Map;
+	GraphicsTexturePtr _texBloomMap;
+	GraphicsTexturePtr _texBloomTempMap;
 
 	GraphicsTexturePtr _texSampleLogMap;
 	GraphicsTexturePtr _texSampleLumMap;
@@ -119,8 +122,8 @@ private:
 	GraphicsFramebufferLayoutPtr _sampleBloomImageLayout;
 	GraphicsFramebufferLayoutPtr _sampleLogImageLayout;
 
-	GraphicsFramebuffers _texBloom1View;
-	GraphicsFramebuffers _texBloom2View;
+	GraphicsFramebuffers _texBloomView;
+	GraphicsFramebuffers _texBloomTempView;
 
 	GraphicsFramebufferPtr _texSampleLogView;
 	GraphicsFramebufferPtr _texSampleLumView;

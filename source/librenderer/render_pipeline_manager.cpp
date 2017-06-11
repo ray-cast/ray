@@ -344,11 +344,11 @@ RenderPipelineManager::getWindowResolution(std::uint32_t& w, std::uint32_t& h) c
 }
 
 void
-RenderPipelineManager::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept
+RenderPipelineManager::setFramebufferSize(std::uint32_t w, std::uint32_t h) noexcept
 {
 	if (_setting.dpi_w != w || _setting.dpi_h != h)
 	{
-		_pipeline->setWindowResolutionDPI(w, h);
+		_pipeline->setFramebufferSize(w, h);
 
 		_setting.dpi_w = w;
 		_setting.dpi_h = h;
@@ -364,7 +364,7 @@ RenderPipelineManager::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) 
 }
 
 void
-RenderPipelineManager::getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept
+RenderPipelineManager::getFramebufferSize(std::uint32_t& w, std::uint32_t& h) const noexcept
 {
 	w = _setting.dpi_w;
 	h = _setting.dpi_h;

@@ -102,18 +102,18 @@ RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noex
 }
 
 void
-RenderSystem::setWindowResolutionDPI(std::uint32_t w, std::uint32_t h) noexcept
+RenderSystem::setFramebufferSize(std::uint32_t w, std::uint32_t h) noexcept
 {
 	assert(w > 0 && h > 0);
 	assert(_pipelineManager);
-	_pipelineManager->setWindowResolutionDPI(w, h);
+	_pipelineManager->setFramebufferSize(w, h);
 }
 
 void
-RenderSystem::getWindowResolutionDPI(std::uint32_t& w, std::uint32_t& h) const noexcept
+RenderSystem::getFramebufferSize(std::uint32_t& w, std::uint32_t& h) const noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->getWindowResolutionDPI(w, h);
+	_pipelineManager->getFramebufferSize(w, h);
 }
 
 void

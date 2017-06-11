@@ -346,7 +346,7 @@ Camera::getPixelViewport() const noexcept
 	}
 	else
 	{
-		RenderSystem::instance()->getWindowResolution(width, height);
+		RenderSystem::instance()->getFramebufferSize(width, height);
 	}
 
 	float4 result;
@@ -361,7 +361,7 @@ float4
 Camera::getPixelViewportDPI() const noexcept
 {
 	std::uint32_t width, height;
-	RenderSystem::instance()->getWindowResolutionDPI(width, height);
+	RenderSystem::instance()->getFramebufferSize(width, height);
 
 	float4 result;
 	result.x = _viewport.x * width;
@@ -472,7 +472,7 @@ Camera::_updatePerspective() const noexcept
 	if (_cameraOrder != CameraOrder::CameraOrderShadow)
 	{
 		std::uint32_t width, height;
-		RenderSystem::instance()->getWindowResolution(width, height);
+		RenderSystem::instance()->getFramebufferSize(width, height);
 
 		ratio = (float)width / height;
 	}

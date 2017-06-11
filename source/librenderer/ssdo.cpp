@@ -84,10 +84,10 @@ SSDO::getSetting() const noexcept
 }
 
 void
-SSDO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSDO::computeRawAO(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	std::uint32_t width, height;
-	pipeline.getWindowResolution(width, height);
+	pipeline.getFramebufferSize(width, height);
 
 	_occlusionSourceInv->uniform2f(1.0f / width, 1.0f / height);
 	_occlusionProjectConstant->uniform4f(pipeline.getCamera()->getProjConstant());
@@ -98,7 +98,7 @@ SSDO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
-SSDO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSDO::blurHorizontal(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
@@ -114,7 +114,7 @@ SSDO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 }
 
 void
-SSDO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSDO::blurVertical(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
@@ -130,7 +130,7 @@ SSDO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
-SSDO::applySSDO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+SSDO::applySSDO(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	_blurSource->uniformTexture(source);
 
@@ -142,7 +142,7 @@ void
 SSDO::onActivate(RenderPipeline& pipeline) except
 {
 	std::uint32_t width, height;
-	pipeline.getWindowResolution(width, height);
+	pipeline.getFramebufferSize(width, height);
 
 	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_texAmbientTempMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
@@ -165,7 +165,7 @@ SSDO::onActivate(RenderPipeline& pipeline) except
 	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texAmbientTempView = pipeline.createFramebuffer(blurViewDesc);
 
-	_ambientOcclusion = pipeline.createMaterial("sys:fx/SSDO.fxml");
+	_ambientOcclusion = pipeline.createMaterial("sys:fx/PostProcessOcclusion.fxml");
 	assert(_ambientOcclusion);
 	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeAO");
 	_ambientOcclusionBlurPass = _ambientOcclusion->getTech("BlurAO");

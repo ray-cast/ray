@@ -184,17 +184,17 @@ void
 FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
-	pipeline.getWindowResolution(width, height);
+	pipeline.getFramebufferSize(width, height);
 
 	GraphicsTextureDesc samplerBloomDesc;
 	samplerBloomDesc.setWidth(width / 2);
 	samplerBloomDesc.setHeight(height / 2);
 	samplerBloomDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16G16B16SFloat);
 	samplerBloomDesc.setMipBase(0);
 	samplerBloomDesc.setMipNums(5);
 	samplerBloomDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest, GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
+	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 	_texBloomMap = pipeline.createTexture(samplerBloomDesc);
 	_texBloomTempMap = pipeline.createTexture(samplerBloomDesc);
 
@@ -206,20 +206,20 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	samplerLogDesc.setMipBase(0);
 	samplerLogDesc.setMipNums(9);
 	samplerLogDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	samplerLogDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
+	samplerLogDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_texSampleLogMap = pipeline.createTexture(samplerLogDesc);
 
 	GraphicsTextureDesc samplerLumDesc;
 	samplerLumDesc.setWidth(1);
 	samplerLumDesc.setHeight(1);
 	samplerLumDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	samplerLumDesc.setTexFormat(GraphicsFormat::GraphicsFormatR32SFloat);
+	samplerLumDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16SFloat);
 	samplerLumDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	samplerLumDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	_texSampleLumMap = pipeline.createTexture(samplerLumDesc);
 
 	GraphicsFramebufferLayoutDesc framebufferBloomLayoutDesc;
-	framebufferBloomLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat));
+	framebufferBloomLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16G16B16SFloat));
 	_sampleBloomImageLayout = pipeline.createFramebufferLayout(framebufferBloomLayoutDesc);
 
 	GraphicsFramebufferLayoutDesc framebufferLogLayoutDesc;

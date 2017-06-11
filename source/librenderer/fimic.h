@@ -63,16 +63,16 @@ public:
 	const Setting& getSetting() const noexcept;
 
 private:
-	void sumLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint8_t level) noexcept;
-	void sumLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
-	void avgLuminance(RenderPipeline& pipeline, GraphicsTexturePtr adaptedLum, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint8_t level) noexcept;
+	void sumLumLog(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
+	void avgLuminance(RenderPipeline& pipeline, const GraphicsTexturePtr& adaptedLum, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
 
-	void generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
-	void generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void generateBloom(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
+	void generateToneMapping(RenderPipeline& pipeline, const GraphicsTexturePtr& bloom, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
 
-	void blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept;
-	void blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept;
-	void bloomCombine(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void blurh(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept;
+	void blurv(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept;
+	void bloomCombine(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
 
 private:
 

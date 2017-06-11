@@ -76,7 +76,7 @@ FimicToneMapping::getSetting() const noexcept
 }
 
 void
-FimicToneMapping::sumLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint8_t level) noexcept
+FimicToneMapping::sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint8_t level) noexcept
 {
 	auto width = source->getGraphicsTextureDesc().getWidth();
 	auto height = source->getGraphicsTextureDesc().getHeight();
@@ -91,7 +91,7 @@ FimicToneMapping::sumLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 }
 
 void
-FimicToneMapping::sumLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+FimicToneMapping::sumLumLog(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	auto width = source->getGraphicsTextureDesc().getWidth();
 	auto height = source->getGraphicsTextureDesc().getHeight();
@@ -106,7 +106,7 @@ FimicToneMapping::sumLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 }
 
 void
-FimicToneMapping::avgLuminance(RenderPipeline& pipeline, GraphicsTexturePtr adaptedLum, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+FimicToneMapping::avgLuminance(RenderPipeline& pipeline, const GraphicsTexturePtr& adaptedLum, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	float width = source->getGraphicsTextureDesc().getWidth();
 	float height = source->getGraphicsTextureDesc().getHeight();
@@ -125,7 +125,7 @@ FimicToneMapping::avgLuminance(RenderPipeline& pipeline, GraphicsTexturePtr adap
 }
 
 void
-FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+FimicToneMapping::generateBloom(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	_texSource->uniformTexture(source);
 
@@ -136,7 +136,7 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr sou
 }
 
 void
-FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept
+FimicToneMapping::blurh(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
@@ -148,7 +148,7 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 }
 
 void
-FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, std::uint32_t level) noexcept
+FimicToneMapping::blurv(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
@@ -160,7 +160,7 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 }
 
 void
-FimicToneMapping::bloomCombine(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+FimicToneMapping::bloomCombine(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	_texSource->uniformTexture(source);
 
@@ -170,7 +170,7 @@ FimicToneMapping::bloomCombine(RenderPipeline& pipeline, GraphicsTexturePtr sour
 }
 
 void
-FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, const GraphicsTexturePtr& bloom, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	_texSource->uniformTexture(source);
 	_toneBloom->uniformTexture(bloom);

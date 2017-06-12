@@ -476,7 +476,7 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		GuiViewDelegates delegate;
 
 		delegate.onModelImport = std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2);
-		delegate.onModelSaveAs = std::bind(&GuiControllerComponent::onModelSaveAs, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onModelExport = std::bind(&GuiControllerComponent::onModelExport, this, std::placeholders::_1, std::placeholders::_2);
 
 		delegate.onUVMapperCancel = std::bind(&GuiControllerComponent::onUVMapperCancel, this);
 		delegate.onUVMapperWillStart = std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1, std::placeholders::_2);
@@ -593,6 +593,12 @@ GuiControllerComponent::onTextureImport(ray::util::string::const_pointer path, r
 		return false;
 	}
 
+	return true;
+}
+
+bool
+GuiControllerComponent::onMaterialImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+{
 	return true;
 }
 
@@ -758,7 +764,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 }
 
 bool
-GuiControllerComponent::onModelSaveAs(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onModelExport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	if (_model)
 	{

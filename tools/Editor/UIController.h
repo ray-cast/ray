@@ -65,8 +65,11 @@ private:
 	void onMessage(const ray::MessagePtr& message) except;
 
 	bool onTextureImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+
+	bool onMaterialImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+
 	bool onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
-	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onModelExport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
 	bool onUVMapperCancel() noexcept;
 	bool onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;

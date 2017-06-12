@@ -556,7 +556,7 @@ GuiViewComponent::showModelImportBrowse() noexcept
 void
 GuiViewComponent::showModelExportBrowse() noexcept
 {
-	if (!_event.onModelSaveAs)
+	if (!_event.onModelExport)
 		return;
 
 	ray::util::string::value_type filepath[PATHLIMIT];
@@ -572,7 +572,7 @@ GuiViewComponent::showModelExportBrowse() noexcept
 	}
 
 	ray::util::string::pointer error = nullptr;
-	if (!_event.onModelSaveAs(filepath, error))
+	if (!_event.onModelExport(filepath, error))
 	{
 		if (error)
 			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -979,18 +979,20 @@ GuiViewComponent::showAssetsWindow() noexcept
 		const auto& textures = ray::ResManager::instance()->getTextureAll();
 		for (auto& texture : textures)
 		{
-			if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
+			std::uint32_t width = texture.second->getGraphicsTextureDesc().getWidth();
+			std::uint32_t height = texture.second->getGraphicsTextureDesc().getHeight();
+
+			ray::float2 imageSize = _assetImageSize * ray::float2((float)width / height, 1.0);
+
+			if (ray::Gui::getContentRegionAvailWidth() < imageSize.x)
 			{
 				ray::Gui::newLine();
 				ray::Gui::text("");
 				ray::Gui::sameLine();
 			}
 
-			std::uint32_t width = texture.second->getGraphicsTextureDesc().getWidth();
-			std::uint32_t height = texture.second->getGraphicsTextureDesc().getHeight();
-
 			ray::Gui::pushID(id++);
-			if (ray::Gui::imageButton(texture.second.get(), _assetImageSize * ray::float2((float)width / height, 1.0), ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
+			if (ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
 				_selectedTexture = texture.second;
 
 			ray::Gui::popID();

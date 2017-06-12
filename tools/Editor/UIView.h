@@ -74,7 +74,7 @@ struct GuiViewDelegates
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSaveAs;
 
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelImport;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelSaveAs;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelExport;
 
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onTextureImport;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onMaterialImport;

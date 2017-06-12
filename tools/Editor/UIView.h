@@ -75,6 +75,9 @@ struct GuiViewDelegates
 
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelImport;
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelSaveAs;
+
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onTextureImport;
+	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onMaterialImport;
 };
 
 class GuiViewComponent final : public ray::GameComponent
@@ -119,14 +122,15 @@ private:
 	void showProjectSaveAsBrowse() noexcept;
 
 	void showHierarchyWindow() noexcept;
-	void showAssetLists() noexcept;
+	void showAssetsWindow() noexcept;
+	void showMaterialsWindow() noexcept;
 	void showInspectorWindow() noexcept;
 	void showCameraWindow() noexcept;
 	void showSceneWindow() noexcept;
 
-	void showTransformWindow(ray::GameObject* object) noexcept;
-	void showCameraEditorWindow(ray::CameraComponent* component) noexcept;
-	void showMaterialWindow(ray::Material& material) noexcept;
+	void showEditTransformWindow(ray::GameObject* object) noexcept;
+	void showEditCameraWindow(ray::CameraComponent* component) noexcept;
+	void showEditMaterialWindow(ray::Material& material) noexcept;
 
 	void startUVMapper() noexcept;
 	void startLightMass() noexcept;
@@ -158,6 +162,7 @@ private:
 	bool _showHierarchyWindow;
 	bool _showInspectorWindow;
 	bool _showAssertWindow;
+	bool _showMaterialWindow;
 	bool _showCameraWindow;
 	bool _showStyleEditor;
 	bool _showAboutWindow;

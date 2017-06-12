@@ -501,6 +501,8 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 
 		delegate.onMouseHoveringCamera = std::bind(&GuiControllerComponent::onMouseHoveringCamera, this, std::placeholders::_1, std::placeholders::_2);
 
+		delegate.onTextureImport = std::bind(&GuiControllerComponent::onTextureImport, this, std::placeholders::_1, std::placeholders::_2);
+
 		view->setGuiViewDelegates(delegate);
 	}
 }
@@ -532,46 +534,66 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 		return;
 
 	auto& event = message->downcast<ray::InputMessage>()->getEvent();
-	if (event.event != ray::InputEvent::SizeChange)
+	if (!message->isInstanceOf<ray::InputMessage>())
 		return;
 
-	if (_cameras.empty())
-		return;
-
-	auto cameraComponent = _cameras.front()->getComponent<ray::CameraComponent>();
-	if (!cameraComponent)
-		return;
-
-	auto fb = cameraComponent->getFramebuffer();
-	if (fb->getGraphicsFramebufferDesc().getWidth() != event.change.w ||
-		fb->getGraphicsFramebufferDesc().getHeight() != event.change.h)
+	switch (event.event)
 	{
-		ray::GraphicsTextureDesc textureDesc;
-		textureDesc.setWidth(event.change.w);
-		textureDesc.setHeight(event.change.h);
-		textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
-		textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-		auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
-		if (!renderTexture)
+	case ray::InputEvent::SizeChangeDPI:
+	{
+		if (_cameras.empty())
 			return;
 
-		ray::GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-		framebufferLayoutDesc.addComponent(ray::GraphicsAttachmentLayout(0, ray::GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm));
-		auto framebufferLayout = ray::RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
-		if (!framebufferLayout)
+		auto cameraComponent = _cameras.front()->getComponent<ray::CameraComponent>();
+		if (!cameraComponent)
 			return;
 
-		ray::GraphicsFramebufferDesc framebufferDesc;
-		framebufferDesc.setWidth(event.change.w);
-		framebufferDesc.setHeight(event.change.h);
-		framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(std::move(renderTexture), 0, 0));
-		framebufferDesc.setGraphicsFramebufferLayout(std::move(framebufferLayout));
-		auto framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
-		if (!framebuffer)
-			return;
+		auto fb = cameraComponent->getFramebuffer();
+		if (fb->getGraphicsFramebufferDesc().getWidth() != event.change.w ||
+			fb->getGraphicsFramebufferDesc().getHeight() != event.change.h)
+		{
+			ray::GraphicsTextureDesc textureDesc;
+			textureDesc.setWidth(event.change.w);
+			textureDesc.setHeight(event.change.h);
+			textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+			textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+			auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+			if (!renderTexture)
+				return;
 
-		cameraComponent->setFramebuffer(framebuffer);
+			ray::GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+			framebufferLayoutDesc.addComponent(ray::GraphicsAttachmentLayout(0, ray::GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm));
+			auto framebufferLayout = ray::RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
+			if (!framebufferLayout)
+				return;
+
+			ray::GraphicsFramebufferDesc framebufferDesc;
+			framebufferDesc.setWidth(event.change.w);
+			framebufferDesc.setHeight(event.change.h);
+			framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(std::move(renderTexture), 0, 0));
+			framebufferDesc.setGraphicsFramebufferLayout(std::move(framebufferLayout));
+			auto framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
+			if (!framebuffer)
+				return;
+
+			cameraComponent->setFramebuffer(framebuffer);
+		}
 	}
+	break;
+	}
+}
+
+bool
+GuiControllerComponent::onTextureImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+{
+	ray::GraphicsTexturePtr texture;
+	if (!ray::ResManager::instance()->createTexture(path, texture))
+	{
+		error = "Failed to load texture";
+		return false;
+	}
+
+	return true;
 }
 
 bool

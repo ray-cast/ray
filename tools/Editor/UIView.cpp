@@ -76,6 +76,8 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_showLightMassWindow = true;
 	_showInspectorWindow = true;
 	_showCameraWindow = true;
+	_showAssertWindow = true;
+	_showMaterialWindow = true;
 	_showHierarchyWindow = true;
 	_showInspectorWindow = true;
 	_showStyleEditor = false;
@@ -143,75 +145,147 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 {
 	if (message->isInstanceOf<ray::InputMessage>())
 	{
-		auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
-		if (inputFeature)
+		if (!message->isInstanceOf<ray::InputMessage>())
+			return;
+
+		auto& event = message->downcast<ray::InputMessage>()->getEvent();
+		if (!message->isInstanceOf<ray::InputMessage>())
+			return;
+
+		switch (event.event)
 		{
-			auto input = inputFeature->getInput();
-			if (!input)
-				return;
-
-			if (input->getKeyDown(ray::InputKey::Code::Escape))
-				_showWindowAll = !_showWindowAll;
-
-			if (_showAboutWindow || _showStyleEditor || _showMessage || _showProcessMessage)
-				return;
-
-			if (!_mouseHoveringCamera)
-				return;
-
-			if (!input->isLockedCursor())
+		case ray::InputEvent::Drop:
+		{
+			for (std::uint32_t i = 0; i < event.drop.count; i++)
 			{
-				if (input->getKey(ray::InputKey::LeftControl) && input->getButtonDown(ray::InputButton::LEFT))
+				char name[MAX_PATH];
+				if (ray::util::extname(event.drop.files[i], name, sizeof(name)) > 0)
 				{
-					float x;
-					float y;
-					input->getMousePos(x, y);
+					if (ray::util::strncmp(name, "bmp", 3) == 0 ||
+						ray::util::strncmp(name, "png", 3) == 0 ||
+						ray::util::strncmp(name, "jpg", 3) == 0 ||
+						ray::util::strncmp(name, "tga", 3) == 0 ||
+						ray::util::strncmp(name, "dds", 3) == 0 ||
+						ray::util::strncmp(name, "hdr", 3) == 0)
+					{
+						if (_event.onTextureImport)
+						{
+							ray::util::string::pointer error = nullptr;
+							if (!_event.onTextureImport(event.drop.files[i], error))
+							{
+								if (error)
+									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+								break;
+							}
+						}
+					}
+					else if (ray::util::stricmp(name, "fx") == 0)
+					{
+						if (_event.onMaterialImport)
+						{
+							ray::util::string::pointer error = nullptr;
+							if (!_event.onMaterialImport(event.drop.files[i], error))
+							{
+								if (error)
+									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+								break;
+							}
+						}
+					}
+					else if (ray::util::stricmp(name, "pmx") == 0)
+					{
+						if (_event.onModelImport)
+						{
+							ray::util::string::pointer error = nullptr;
+							if (!_event.onModelImport(event.drop.files[i], error))
+							{
+								if (error)
+									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+							}
 
-					this->onModelPicker(x, y);
-				}
+							_selectedObject = nullptr;
+						}
 
-				if (input->getButtonDown(ray::InputButton::Code::MOUSEWHEEL))
-				{
-					float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
-					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward * speed);
-				}
-
-				if (input->getButtonUp(ray::InputButton::Code::MOUSEWHEEL))
-				{
-					float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
-					const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward * speed);
-				}
-
-				if (input->getButton(ray::InputButton::Code::MIDDLE))
-				{
-					float speedX = input->getAxis(ray::InputAxis::MouseX) * 0.5f;
-					float speedY = input->getAxis(ray::InputAxis::MouseY) * 0.5f;
-
-					const ray::Vector3& up = _cameraComponent.lock()->getGameObject()->getUpVector();
-					const ray::Vector3& right = _cameraComponent.lock()->getGameObject()->getRight();
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(up * speedY);
-					_cameraComponent.lock()->getGameObject()->setTranslateAccum(-right * speedX);
-				}
-
-				if (input->getButton(ray::InputButton::Code::RIGHT))
-				{
-					float axisX = input->getAxis(ray::InputAxis::MouseX);
-					float axisY = input->getAxis(ray::InputAxis::MouseY);
-
-					static ray::float3 euler = ray::math::eulerAngles(_cameraComponent.lock()->getGameObject()->getQuaternion());
-					euler.x += axisY;
-					euler.y += axisX;
-
-					ray::float3 center = _selectedObject ? _selectedObject->getTranslate() : ray::float3::Zero;
-					float distance = ray::math::distance(center, _cameraComponent.lock()->getGameObject()->getTranslate());
-
-					ray::Quaternion q(euler);
-					_cameraComponent.lock()->getGameObject()->setTranslate(center - ray::math::rotate(q, ray::float3::Forward) * distance);
-					_cameraComponent.lock()->getGameObject()->setQuaternion(q);
+						break;
+					}
 				}
 			}
+		}
+		break;
+		default:
+		{
+			auto inputFeature = ray::GameServer::instance()->getFeature<ray::InputFeature>();
+			if (inputFeature)
+			{
+				auto input = inputFeature->getInput();
+				if (!input)
+					return;
+
+				if (input->getKeyDown(ray::InputKey::Code::Escape))
+					_showWindowAll = !_showWindowAll;
+
+				if (_showAboutWindow || _showStyleEditor || _showMessage || _showProcessMessage)
+					return;
+
+				if (!_mouseHoveringCamera)
+					return;
+
+				if (!input->isLockedCursor())
+				{
+					if (input->getKey(ray::InputKey::LeftControl) && input->getButtonDown(ray::InputButton::LEFT))
+					{
+						float x;
+						float y;
+						input->getMousePos(x, y);
+
+						this->onModelPicker(x, y);
+					}
+
+					if (input->getButtonDown(ray::InputButton::Code::MOUSEWHEEL))
+					{
+						float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
+						const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
+						_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward * speed);
+					}
+
+					if (input->getButtonUp(ray::InputButton::Code::MOUSEWHEEL))
+					{
+						float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
+						const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
+						_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward * speed);
+					}
+
+					if (input->getButton(ray::InputButton::Code::MIDDLE))
+					{
+						float speedX = input->getAxis(ray::InputAxis::MouseX) * 0.5f;
+						float speedY = input->getAxis(ray::InputAxis::MouseY) * 0.5f;
+
+						const ray::Vector3& up = _cameraComponent.lock()->getGameObject()->getUpVector();
+						const ray::Vector3& right = _cameraComponent.lock()->getGameObject()->getRight();
+						_cameraComponent.lock()->getGameObject()->setTranslateAccum(up * speedY);
+						_cameraComponent.lock()->getGameObject()->setTranslateAccum(-right * speedX);
+					}
+
+					if (input->getButton(ray::InputButton::Code::RIGHT))
+					{
+						float axisX = input->getAxis(ray::InputAxis::MouseX);
+						float axisY = input->getAxis(ray::InputAxis::MouseY);
+
+						static ray::float3 euler = ray::math::eulerAngles(_cameraComponent.lock()->getGameObject()->getQuaternion());
+						euler.x += axisY;
+						euler.y += axisX;
+
+						ray::float3 center = _selectedObject ? _selectedObject->getTranslate() : ray::float3::Zero;
+						float distance = ray::math::distance(center, _cameraComponent.lock()->getGameObject()->getTranslate());
+
+						ray::Quaternion q(euler);
+						_cameraComponent.lock()->getGameObject()->setTranslate(center - ray::math::rotate(q, ray::float3::Forward) * distance);
+						_cameraComponent.lock()->getGameObject()->setQuaternion(q);
+					}
+				}
+			}
+		}
+		break;
 		}
 	}
 	else if (message->isInstanceOf<ray::GuiMessage>())
@@ -225,7 +299,8 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 			this->showHierarchyWindow();
 			this->showCameraWindow();
 			this->showInspectorWindow();
-			this->showAssetLists();
+			this->showAssetsWindow();
+			this->showMaterialsWindow();
 
 			this->showAboutWindow();
 			this->showMessage();
@@ -888,7 +963,7 @@ GuiViewComponent::showHierarchyWindow() noexcept
 }
 
 void
-GuiViewComponent::showAssetLists() noexcept
+GuiViewComponent::showAssetsWindow() noexcept
 {
 	if (!_showAssertWindow)
 		return;
@@ -966,6 +1041,26 @@ GuiViewComponent::showAssetLists() noexcept
 }
 
 void
+GuiViewComponent::showMaterialsWindow() noexcept
+{
+	if (!_showMaterialWindow)
+		return;
+
+	if (ray::Gui::beginDock("Materials", &_showMaterialWindow))
+	{
+		int id = 0;
+
+		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
+		ray::Gui::text("");
+		ray::Gui::sameLine();
+
+		ray::Gui::popStyleColor();
+
+		ray::Gui::endDock();
+	}
+}
+
+void
 GuiViewComponent::showCameraWindow() noexcept
 {
 	auto cameraComponent = _cameraComponent.lock();
@@ -1036,11 +1131,11 @@ GuiViewComponent::showInspectorWindow() noexcept
 	{
 		if (_selectedObject)
 		{
-			this->showTransformWindow(_selectedObject);
+			this->showEditTransformWindow(_selectedObject);
 
 			auto cameraComponent = _selectedObject->getComponent<ray::CameraComponent>();
 			if (cameraComponent)
-				this->showCameraEditorWindow(cameraComponent.get());
+				this->showEditCameraWindow(cameraComponent.get());
 
 			auto meshRenderer = _selectedObject->getComponent<ray::MeshRenderComponent>();
 			if (meshRenderer)
@@ -1049,9 +1144,9 @@ GuiViewComponent::showInspectorWindow() noexcept
 				if (!materials.empty())
 				{
 					if (materials.size() > _selectedSubset)
-						this->showMaterialWindow(*materials[_selectedSubset]);
+						this->showEditMaterialWindow(*materials[_selectedSubset]);
 					else
-						this->showMaterialWindow(*materials.front());
+						this->showEditMaterialWindow(*materials.front());
 				}
 			}
 		}
@@ -1063,7 +1158,7 @@ GuiViewComponent::showInspectorWindow() noexcept
 }
 
 void
-GuiViewComponent::showTransformWindow(ray::GameObject* object) noexcept
+GuiViewComponent::showEditTransformWindow(ray::GameObject* object) noexcept
 {
 	if (!object)
 		return;
@@ -1122,7 +1217,7 @@ GuiViewComponent::showTransformWindow(ray::GameObject* object) noexcept
 }
 
 void
-GuiViewComponent::showCameraEditorWindow(ray::CameraComponent* component) noexcept
+GuiViewComponent::showEditCameraWindow(ray::CameraComponent* component) noexcept
 {
 	if (ray::Gui::treeNodeEx("Camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 	{
@@ -1147,7 +1242,7 @@ GuiViewComponent::showCameraEditorWindow(ray::CameraComponent* component) noexce
 }
 
 void
-GuiViewComponent::showMaterialWindow(ray::Material& material) noexcept
+GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 {
 	ray::float2 imageSize = ray::float2(64, 64);
 

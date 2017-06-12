@@ -105,7 +105,7 @@ namespace util
 	EXPORT int strnicmp(const char *s1, const char *s2, std::size_t n);
 	EXPORT int strnicmp(const wchar_t *s1, const wchar_t *s2, std::size_t n);
 
-	EXPORT char* strstr(char* dest, const char * source);
+	EXPORT char* strstr(char* dest, const char* source);
 	EXPORT char* strcpy(char* dest, const char* source);
 	EXPORT char* strncpy(char* s1, const char* s2, std::size_t cnt);
 	EXPORT wchar_t* strcpy(wchar_t* dest, const wchar_t* source);
@@ -197,6 +197,9 @@ namespace util
 
 	EXPORT std::string directory(const std::string& path);
 	EXPORT std::wstring directory(const std::wstring& path);
+
+	EXPORT std::size_t extname(const char*in, char* out, std::size_t maxLength);
+	EXPORT std::size_t extname(const wchar_t*in, wchar_t* out, std::size_t maxLength);
 
 	EXPORT std::string toLower(const std::string& _input);
 	EXPORT std::wstring toLower(const std::wstring& _input);

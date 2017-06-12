@@ -64,6 +64,7 @@ private:
 	void onActivate() except;
 	void onMessage(const ray::MessagePtr& message) except;
 
+	bool onTextureImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onModelSaveAs(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 

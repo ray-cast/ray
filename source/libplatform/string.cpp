@@ -1117,6 +1117,46 @@ namespace util
 		return std::wstring(path.c_str(), path.size() - length);
 	}
 
+	std::size_t extname(const char* in, char* out, std::size_t maxLength)
+	{
+		auto ext = std::strrchr(in, '.');
+		if (ext)
+		{
+			ext++;
+
+			std::size_t count = maxLength;
+			while (count > 1 && *ext != '\0')
+			{
+				*out++ = *ext++;
+				count--;
+			}
+
+			*out++ = '\0';
+			return maxLength - count;
+		}
+
+		return 0;
+	}
+
+	std::size_t extname(const wchar_t* in, wchar_t* out, std::size_t maxLength)
+	{
+		auto ext = std::wcschr(in, L'.');
+		if (ext)
+		{
+			std::size_t count = maxLength;
+			while (count > 1 && *ext != L'\0')
+			{
+				*out++ = *ext++;
+				count--;
+			}
+
+			*out++ = '\0';
+			return maxLength - count;
+		}
+
+		return 0;
+	}
+
 	void skipToken(const char*& in)
 	{
 		skipSpaces(&in);

@@ -76,7 +76,7 @@ protected:
 	void onActivate(RenderPipeline& pipeline) noexcept;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
+	bool onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept;
 
 private:
 	void computeRaySphereIntersection(const float3& rayOrigin, const float3& rayDirection, const float3& center, float radius, float2& intersections) noexcept;

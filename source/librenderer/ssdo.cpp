@@ -218,7 +218,7 @@ SSDO::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-SSDO::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
+SSDO::onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueueOpaqueLighting)
 		return false;

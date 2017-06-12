@@ -50,10 +50,10 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) noexcept;
 	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
+	bool onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept;
 
-	void blurh(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
-	void blurv(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
+	void blurh(RenderPipelineDevice& pipeline, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept;
+	void blurv(RenderPipelineDevice& pipeline, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept;
 
 	void computeNear(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr shrunk, GraphicsFramebufferPtr blured, GraphicsFramebufferPtr dest) noexcept;
 

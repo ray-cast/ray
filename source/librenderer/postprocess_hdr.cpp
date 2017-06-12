@@ -335,7 +335,7 @@ PostProcessHDR::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-PostProcessHDR::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
+PostProcessHDR::onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;

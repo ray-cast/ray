@@ -478,7 +478,7 @@ RenderPipeline::destroyPostProcess() noexcept
 }
 
 bool
-RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
+RenderPipeline::drawPostProcess(RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept
 {
 	GraphicsFramebufferPtr view = swap;
 	GraphicsFramebufferPtr cur = source;

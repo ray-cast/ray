@@ -80,7 +80,7 @@ SSSS::getCorrection() const noexcept
 }
 
 void
-SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap) noexcept
+SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, const GraphicsFramebufferPtr& swap) noexcept
 {
 	std::uint32_t widght = source->getGraphicsFramebufferDesc().getWidth();
 	std::uint32_t height = source->getGraphicsFramebufferDesc().getHeight();
@@ -102,7 +102,7 @@ SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 	pipeline.drawScreenQuad(*_sssGuassBlur);
 }
 
-void 
+void
 SSSS::onActivate(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
@@ -115,13 +115,13 @@ SSSS::onActivate(RenderPipeline& pipeline) noexcept
 	_sssSource = _ssss->getParameter("texSource");
 }
 
-void 
+void
 SSSS::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
-bool 
-SSSS::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
+bool
+SSSS::onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;

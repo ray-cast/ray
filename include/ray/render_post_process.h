@@ -55,10 +55,10 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	virtual void onResolutionChange(RenderPipeline& pipeline) noexcept;
-	virtual void onResolutionChangeDPI(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChange(RenderPipeline& pipeline) except;
+	virtual void onResolutionChangeDPI(RenderPipeline& pipeline) except;
 
-	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept = 0;
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept = 0;
 
 private:
 	friend class RenderPipelineManager;

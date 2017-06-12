@@ -51,7 +51,7 @@ SSR::~SSR() noexcept
 {
 }
 
-void 
+void
 SSR::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_ssr = pipeline.createMaterial("sys:fx/ssr.fxml");
@@ -60,7 +60,7 @@ SSR::onActivate(RenderPipeline& pipeline) noexcept
 	_texSource = _ssr->getParameter("texSource");
 }
 
-void 
+void
 SSR::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 	_texSource.reset();
@@ -69,7 +69,7 @@ SSR::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-SSR::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
+SSR::onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueueOpaqueSpecific)
 		return false;

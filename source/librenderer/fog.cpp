@@ -69,7 +69,7 @@ Fog::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-Fog::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
+Fog::onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept
 {
 	pipeline.setFramebuffer(source);
 	pipeline.discardFramebuffer(0);

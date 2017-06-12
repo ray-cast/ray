@@ -53,13 +53,13 @@ public:
 	float getStrength() const noexcept;
 	float getCorrection() const noexcept;
 
-	void applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap) noexcept;
+	void applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, const GraphicsFramebufferPtr& swap) noexcept;
 
 private:
 	virtual void onActivate(RenderPipeline& pipeline) noexcept;
 	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
+	virtual bool onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept;
 
 private:
 	float _sssStrength;

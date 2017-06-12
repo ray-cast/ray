@@ -100,7 +100,7 @@ public:
 
 	void addPostProcess(RenderPostProcessPtr& postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr& postprocess) noexcept;
-	bool drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept;
+	bool drawPostProcess(RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept;
 	void destroyPostProcess() noexcept;
 
 	void present() noexcept;

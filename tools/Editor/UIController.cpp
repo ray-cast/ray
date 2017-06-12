@@ -428,7 +428,7 @@ GuiControllerComponent::makeSphereObjects() noexcept
 			(*material)["normalMap"]->uniformTexture(normalMap);
 			(*material)["normalMapFrom"]->uniform1i(1);
 			(*material)["normalMapLoopNum"]->uniform2f(1.0f, 1.0f);
-			(*material)["normalMapScale"]->uniform1f(1.0f);
+			(*material)["normalMapScale"]->uniform1f(-1.0f);
 
 			(*material)["smoothness"]->uniform1f(shininessParams[i * 10 + j]);
 			(*material)["smoothnessMapFrom"]->uniform1i(0);

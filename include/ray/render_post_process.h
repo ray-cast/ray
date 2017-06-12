@@ -48,7 +48,7 @@ public:
 	RenderPostProcess() noexcept;
 	virtual ~RenderPostProcess() noexcept;
 
-	void setActive(bool active) noexcept;
+	void setActive(bool active) except;
 	bool getActive() const noexcept;
 
 public:

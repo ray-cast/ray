@@ -51,7 +51,7 @@ RenderPostProcess::~RenderPostProcess() noexcept
 }
 
 void
-RenderPostProcess::setActive(bool active) noexcept
+RenderPostProcess::setActive(bool active) except
 {
 	assert(_pipelineManager);
 	assert(_pipelineManager->getRenderPipeline());

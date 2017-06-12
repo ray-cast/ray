@@ -194,7 +194,12 @@
             {
                 float3 color = 0;
                 color = texSource.SampleLevel(PointClamp, coord.xy, 0).rgb;
+                color = min(color, texSource.SampleLevel(PointClamp, coord.xy + float2(texSourceSizeInv.x, 0), 0).rgb);
+                color = min(color, texSource.SampleLevel(PointClamp, coord.xy - float2(texSourceSizeInv.x, 0), 0).rgb);
+                color = min(color, texSource.SampleLevel(PointClamp, coord.xy + float2(0, texSourceSizeInv.y), 0).rgb);
+                color = min(color, texSource.SampleLevel(PointClamp, coord.xy - float2(0, texSourceSizeInv.y), 0).rgb);
                 color = clamp(color * coord.z, 0, 65535);
+
                 color *= saturate((luminance(color) - bloomThreshold) * 0.5);
 
                 return float4(color * bloomIntensity, 0);

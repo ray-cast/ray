@@ -78,6 +78,13 @@
 				return bump;
 			}
 
+			float3 RNMBlendUnpacked(float3 n1, float3 n2)
+			{
+				n1 += float3( 0,  0, 1);
+				n2 *= float3(-1, -1, 1);
+				return normalize(n1 * dot(n1, n2) / n1.z - n2);
+			}
+
 			float3 ColorSynthesis(float3 diffuse, float3 m)
 			{
 				float3 melanin = diffuse * luminance(diffuse);
@@ -95,11 +102,11 @@
 					else if (albedoMapFilp == 3)
 						coord = 1 - coord;
 					
-					return srgb2linear(albedoMap.Sample(PointClamp, coord * albedoMapLoopNum).rgb) * albedo;
+					return saturate(srgb2linear(albedoMap.Sample(PointClamp, coord * albedoMapLoopNum).rgb) * albedo);
 				}
 				else
 				{
-					return albedo;
+					return saturate(albedo);
 				}
 			}
 			
@@ -143,7 +150,7 @@
 				}
 			}
 
-			float3 GetNormal(float3 normal, float3 tangent, float2 coord)
+			float3 GetMainNormal(float3 normal, float3 tangent, float2 coord)
 			{
 				if (normalMapFrom > 0 && normalMapFrom < 6)
 				{
@@ -158,17 +165,63 @@
 					tangentNormal.xy *= normalMapScale;
 					tangentNormal = normalize(tangentNormal);
 
-					float3 N = normalize(normal);
-					float3 T = normalize(tangent);
-					float3 B = cross(N, T);
-
-					float3x3 tbn = float3x3(T, B, N);
-					float3 highNormal = mul(normalize(tangentNormal), tbn);
-					return normalize(highNormal);
+					return tangentNormal;
 				}
 				else
 				{
 					return normalize(normal);	
+				}
+			}
+
+			float3 GetSubNormal(float3 normal, float3 tangent, float2 coord)
+			{
+				if (normalSubMapFrom > 0 && normalSubMapFrom < 6)
+				{
+					if (normalSubMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (normalSubMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (normalSubMapFilp == 3)
+						coord = 1 - coord;
+					
+					float3 tangentNormal = normalSubMap.Sample(PointClamp, coord * normalSubMapLoopNum).rgb * 2 - 1;
+					tangentNormal.xy *= normalSubMapScale;
+					tangentNormal = normalize(tangentNormal);
+
+					return tangentNormal;
+				}
+				else
+				{
+					return float3(0, 0, 1);
+				}
+			}
+
+			float3 GetNormal(float3 normal, float3 tangent, float2 coord)
+			{
+				if (normalMapFrom > 0 || normalSubMapFrom > 0)
+				{
+					float3 tangentNormal1 = GetMainNormal(normal, tangent, coord);
+					float3 tangentNormal2 = GetSubNormal(normal, tangent, coord);
+					
+					float3 tangentNormal;
+					if (normalMapFrom > 0 && normalSubMapFrom > 0)
+						tangentNormal = RNMBlendUnpacked(tangentNormal1, tangentNormal2);
+					else if (normalMapFrom > 0)
+						tangentNormal = tangentNormal1;
+					else
+						tangentNormal = tangentNormal2;
+
+					float3 N = normalize(normal);
+					float3 T = normalize(tangent);
+					float3 B = cross(T, N);
+
+					float3x3 tbn = float3x3(T, B, N);
+					float3 highNormal = mul(tangentNormal, tbn);
+					return normalize(highNormal);
+				}
+				else
+				{
+					return normalize(normal);
 				}
 			}
 			
@@ -358,7 +411,6 @@
 				material.smoothness = GetSmoothness(coord);
 				material.metalness = GetMetalness(coord);
 				material.occlusion = GetOcclusion(coord);
-
 				material.customB = GetCustomB(coord);
 				material.lightModel = LIGHTINGMODEL_NORMAL;
 

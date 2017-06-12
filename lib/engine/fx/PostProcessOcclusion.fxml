@@ -125,6 +125,11 @@
 
 					float4 sampleLengthInv = rsqrt(sampleLength2 + 1e-5);
 
+					sampleDirection[0] *= sampleLengthInv;
+					sampleDirection[1] *= sampleLengthInv;
+					sampleDirection[2] *= sampleLengthInv;
+					sampleDirection[3] *= sampleLengthInv;
+
 					float4 sampleAngle = float4(
 						dot(sampleDirection[0], viewNormal),
 						dot(sampleDirection[1], viewNormal),

@@ -175,7 +175,7 @@ PostProcessHDR::doTonemapping(RenderPipeline& pipeline, const GraphicsTexturePtr
 }
 
 void
-PostProcessHDR::onActivate(RenderPipeline& pipeline) noexcept
+PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 {
 	std::uint32_t width, height;
 	pipeline.getFramebufferSize(width, height);

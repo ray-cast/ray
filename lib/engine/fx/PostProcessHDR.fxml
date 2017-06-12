@@ -3,18 +3,17 @@
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <macro name="LIGHT_UNIT_SCALE" value="10000.0f"/>
-    <parameter name="texSource" type="texture2D" />
-    <parameter name="texSourceSizeInv" type="float2" />
-    <parameter name="texBloom" type="texture2D" />
-    <parameter name="texLumAve" type="texture2D" />
-    <parameter name="bloomThreshold" type="float" />
-    <parameter name="bloomIntensity" type="float" />
-    <parameter name="bloomWeights[9]" type="float[]" />
-    <parameter name="bloomFactors[5]" type="float[]" />
+    <parameter name="texSource" type="texture2D"/>
+    <parameter name="texSourceSizeInv" type="float2"/>
+    <parameter name="texBloom" type="texture2D"/>
+    <parameter name="texLumAve" type="texture2D"/>
+    <parameter name="bloomThreshold" type="float"/>
+    <parameter name="bloomIntensity" type="float"/>
+    <parameter name="bloomWeights[9]" type="float[]"/>
+    <parameter name="bloomFactors[5]" type="float[]"/>
     <parameter name="texSourceLevel" type="int"/>
-    <parameter name="exposure" type="float" />
-    <parameter name="delta" type="float2" />
+    <parameter name="exposure" type="float"/>
+    <parameter name="delta" type="float"/>
     <shader>
         <![CDATA[
     		#define TONEMAP_LINEAR 0
@@ -100,14 +99,6 @@
                     return color;
                 #endif
             }
-
-            float3 ColorGrading(float3 color, float4 balance)
-            {
-                float3 lum = luminance(color);
-                color = lerp(lum, color, balance.a);
-                color *= balance.rgb;
-                return color;
-            }
             
 			float ComputeExposureISO(float avgLum, float middleGray = 12.5)
 			{
@@ -117,12 +108,12 @@
 				return exposure;
 			}
 
-            float CalcAdaptedLum(float adaptedLum, float lum, float2 step)
+            float CalcAdaptedLum(float adaptedLum, float lum, float delta)
             {
-                return max(0, adaptedLum + (lum - adaptedLum) * step.x);
+                return max(0, adaptedLum + (lum - adaptedLum) * delta);
             }
 
-            float3 noise3( float2 seed )
+            float3 noise3(float2 seed)
             {
                 return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
             }
@@ -183,7 +174,7 @@
             float AvgLuminancePS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target
             {
                 float color = texSource.SampleLevel(PointClamp, coord0.xy, 8).r;
-                float adaptedLum = texLumAve.SampleLevel(PointClamp, float2(0.5,0.5), 0).r;
+                float adaptedLum = texLumAve.SampleLevel(PointClamp, float2(0.5, 0.5), 0).r;
                 return CalcAdaptedLum(adaptedLum, exp(color), delta);
             }
 
@@ -192,17 +183,21 @@
                 out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
-                float avgLum = texLumAve.SampleLevel(PointClamp, float2(0, 0), 0).r;
+                float avgLum = texLumAve.SampleLevel(PointClamp, float2(0.5, 0.5), 0).r;
 
                 oPosition = Position;
                 oTexcoord.xy = PosToCoord(Position.xy);
-                oTexcoord.zw = ComputeExposureISO(avgLum);
+                oTexcoord.zw = exposure * ComputeExposureISO(avgLum);
             }
 
             float4 GenerateBloomPS(in float4 coord : TEXCOORD0) : SV_Target
             {
-                float4 color = texSource.SampleLevel(PointClamp, coord.xy, 0) * exposure * coord.z;
-                return max(0, (color - bloomThreshold) * bloomIntensity);
+                float3 color = 0;
+                color = texSource.SampleLevel(PointClamp, coord.xy, 0).rgb;
+                color = clamp(color * coord.z, 0, 65535);
+                color *= saturate((luminance(color) - bloomThreshold) * 0.5);
+
+                return float4(color * bloomIntensity, 0);
             }
 
             void BloomBlurVS(
@@ -250,7 +245,7 @@
                 float3 color = texSource.SampleLevel(PointClamp, coord.xy, 0).rgb;
 
                 color += bloom;
-                color *= exposure * coord.z;
+                color *= coord.z;
                 color = ColorToneMapping(color);
                 color = linear2srgb(color);
                 color = ColorBanding(color, coord.xy);
@@ -262,8 +257,8 @@
     <technique name="SumLum">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="SumLumVS" />
-            <state name="fragment" value="SumLumPS" />
+            <state name="vertex" value="SumLumVS"/>
+            <state name="fragment" value="SumLumPS"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -274,8 +269,8 @@
     <technique name="SumLumLog">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="SumLumVS" />
-            <state name="fragment" value="SumLumLogPS" />
+            <state name="vertex" value="SumLumVS"/>
+            <state name="fragment" value="SumLumLogPS"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -286,8 +281,8 @@
     <technique name="AvgLuminance">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="SumLumVS" />
-            <state name="fragment" value="AvgLuminancePS" />
+            <state name="vertex" value="SumLumVS"/>
+            <state name="fragment" value="AvgLuminancePS"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -298,8 +293,8 @@
     <technique name="GenerateBloom">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="GenerateBloomVS" />
-            <state name="fragment" value="GenerateBloomPS" />
+            <state name="vertex" value="GenerateBloomVS"/>
+            <state name="fragment" value="GenerateBloomPS"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -310,8 +305,8 @@
     <technique name="BlurBloom">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="BloomBlurVS" />
-            <state name="fragment" value="BloomBlurPS" />
+            <state name="vertex" value="BloomBlurVS"/>
+            <state name="fragment" value="BloomBlurPS"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -322,8 +317,8 @@
     <technique name="BloomCombine">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="BloomBlurVS" />
-            <state name="fragment" value="BloomCombinePS" />
+            <state name="vertex" value="BloomBlurVS"/>
+            <state name="fragment" value="BloomCombinePS"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -334,8 +329,8 @@
     <technique name="FimicTongMapping">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-            <state name="vertex" value="GenerateBloomVS" />
-            <state name="fragment" value="HDRTongMappingPS" />
+            <state name="vertex" value="GenerateBloomVS"/>
+            <state name="fragment" value="HDRTongMappingPS"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>

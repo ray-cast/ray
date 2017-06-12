@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +-----------------------------------------------------------------------
-#include "fimic.h"
+#include "postprocess_hdr.h"
 #include <ray/material.h>
 
 #include <ray/graphics_framebuffer.h>
@@ -43,23 +43,25 @@
 
 _NAME_BEGIN
 
-FimicToneMapping::Setting::Setting() noexcept
+PostProcessHDR::Setting::Setting() noexcept
 	: bloomThreshold(1.0f)
-	, bloomIntensity(0.5f)
+	, bloomIntensity(1.0f)
 	, exposure(2.0f)
+	, enableBloom(true)
+	, enableEyeAdaptation(true)
 {
 }
 
-FimicToneMapping::FimicToneMapping() noexcept
+PostProcessHDR::PostProcessHDR() noexcept
 {
 }
 
-FimicToneMapping::~FimicToneMapping() noexcept
+PostProcessHDR::~PostProcessHDR() noexcept
 {
 }
 
 void
-FimicToneMapping::setSetting(const Setting& setting) noexcept
+PostProcessHDR::setSetting(const Setting& setting) noexcept
 {
 	_bloomThreshold->uniform1f(_setting.bloomThreshold);
 	_bloomIntensity->uniform1f(_setting.bloomIntensity);
@@ -69,21 +71,18 @@ FimicToneMapping::setSetting(const Setting& setting) noexcept
 	_setting = setting;
 }
 
-const FimicToneMapping::Setting&
-FimicToneMapping::getSetting() const noexcept
+const PostProcessHDR::Setting&
+PostProcessHDR::getSetting() const noexcept
 {
 	return _setting;
 }
 
 void
-FimicToneMapping::sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint8_t level) noexcept
+PostProcessHDR::sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint8_t level) noexcept
 {
-	auto width = source->getGraphicsTextureDesc().getWidth();
-	auto height = source->getGraphicsTextureDesc().getHeight();
-
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
-	_texSourceSizeInv->uniform2f(float(1 << level) / width, float(1 << level) / height);
+	_texSourceSizeInv->uniform2f(float(1 << level) / source->getGraphicsTextureDesc().getWidth(), float(1 << level) / source->getGraphicsTextureDesc().getHeight());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -91,13 +90,10 @@ FimicToneMapping::sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& sou
 }
 
 void
-FimicToneMapping::sumLumLog(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
+PostProcessHDR::sumLumLog(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
-	auto width = source->getGraphicsTextureDesc().getWidth();
-	auto height = source->getGraphicsTextureDesc().getHeight();
-
 	_texSource->uniformTexture(source);
-	_texSourceSizeInv->uniform2f(1.0f / width, 1.0f / height);
+	_texSourceSizeInv->uniform2f(1.0f / source->getGraphicsTextureDesc().getWidth(), 1.0f / source->getGraphicsTextureDesc().getHeight());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -106,28 +102,26 @@ FimicToneMapping::sumLumLog(RenderPipeline& pipeline, const GraphicsTexturePtr& 
 }
 
 void
-FimicToneMapping::avgLuminance(RenderPipeline& pipeline, const GraphicsTexturePtr& adaptedLum, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
+PostProcessHDR::avgLuminance(RenderPipeline& pipeline, const GraphicsTexturePtr& adaptedLum, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
-	float width = source->getGraphicsTextureDesc().getWidth();
-	float height = source->getGraphicsTextureDesc().getHeight();
-
 	_timer->update();
 
 	_texSource->uniformTexture(source);
-	_texSourceSizeInv->uniform2f(1.0f / width, 1.0f / height);
+	_texSourceSizeInv->uniform2f(1.0f / source->getGraphicsTextureDesc().getWidth(), 1.0f / source->getGraphicsTextureDesc().getHeight());
 
 	_texLumAve->uniformTexture(adaptedLum);
 
-	_delta->uniform2f(1.0f - pow(0.98f, 50.0f * _timer->delta()), _timer->delta());
+	_delta->uniform1f(1.0f - std::pow(0.98f, 50.0f * _timer->delta()));
 
 	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(*_avgLuminance);
 }
 
 void
-FimicToneMapping::generateBloom(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
+PostProcessHDR::doBloom(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	_texSource->uniformTexture(source);
+	_texSourceSizeInv->uniform2f(1.0f / source->getGraphicsTextureDesc().getWidth(), 1.0f / source->getGraphicsTextureDesc().getHeight());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -136,7 +130,7 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, const GraphicsTextureP
 }
 
 void
-FimicToneMapping::blurh(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept
+PostProcessHDR::blurh(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
@@ -148,7 +142,7 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, const GraphicsTexturePtr& sour
 }
 
 void
-FimicToneMapping::blurv(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept
+PostProcessHDR::blurv(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
@@ -160,7 +154,7 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, const GraphicsTexturePtr& sour
 }
 
 void
-FimicToneMapping::bloomCombine(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
+PostProcessHDR::bloomCombine(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	_texSource->uniformTexture(source);
 
@@ -170,7 +164,7 @@ FimicToneMapping::bloomCombine(RenderPipeline& pipeline, const GraphicsTexturePt
 }
 
 void
-FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, const GraphicsTexturePtr& bloom, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
+PostProcessHDR::doTonemapping(RenderPipeline& pipeline, const GraphicsTexturePtr& bloom, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
 {
 	_texSource->uniformTexture(source);
 	_toneBloom->uniformTexture(bloom);
@@ -181,7 +175,7 @@ FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, const GraphicsTe
 }
 
 void
-FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
+PostProcessHDR::onActivate(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
 	pipeline.getFramebufferSize(width, height);
@@ -260,7 +254,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 		_texBloomTempView[i] = pipeline.createFramebuffer(bloomTempViewDesc);
 	}
 
-	_fimic = pipeline.createMaterial("sys:fx/PostProcessBloom.fxml");
+	_fimic = pipeline.createMaterial("sys:fx/PostProcessHDR.fxml");
 	assert(_fimic);
 
 	_sumLum = _fimic->getTech("SumLum");
@@ -302,7 +296,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 }
 
 void
-FimicToneMapping::onDeactivate(RenderPipeline& pipeline) noexcept
+PostProcessHDR::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 	_timer.reset();
 	_fimic.reset();
@@ -341,7 +335,7 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 bool
-FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
+PostProcessHDR::onRender(RenderPipeline& pipeline, RenderQueue queue, GraphicsFramebufferPtr& source, GraphicsFramebufferPtr swap) noexcept
 {
 	if (queue != RenderQueue::RenderQueuePostprocess)
 		return false;
@@ -349,22 +343,28 @@ FimicToneMapping::onRender(RenderPipeline& pipeline, RenderQueue queue, Graphics
 	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 
 	this->sumLum(pipeline, texture, _texBloomTempView[0], 0);
-	this->sumLumLog(pipeline, _texBloomTempMap, _texSampleLogView);
 
-	this->avgLuminance(pipeline, _texSampleLumMap, _texSampleLogMap, _texSampleLumView);
-
-	this->generateBloom(pipeline, _texBloomTempMap, _texBloomView[0]);
-
-	for (std::uint8_t i = 0; i < 5; i++)
+	if (_setting.enableEyeAdaptation)
 	{
-		this->blurh(pipeline, _texBloomMap, _texBloomTempView[i], i);
-		this->blurv(pipeline, _texBloomTempMap, _texBloomView[i], i);
-		if (i < 4) this->sumLum(pipeline, _texBloomMap, _texBloomView[i + 1], i);
+		this->sumLumLog(pipeline, _texBloomTempMap, _texSampleLogView);
+		this->avgLuminance(pipeline, _texSampleLumMap, _texSampleLogMap, _texSampleLumView);
 	}
 
-	this->bloomCombine(pipeline, _texBloomMap, _texBloomTempView[0]);
+	if (_setting.enableBloom)
+	{
+		this->doBloom(pipeline, _texBloomTempMap, _texBloomView[0]);
 
-	this->generateToneMapping(pipeline, _texBloomTempMap, texture, swap);
+		for (std::uint8_t i = 0; i < 5; i++)
+		{
+			this->blurh(pipeline, _texBloomMap, _texBloomTempView[i], i);
+			this->blurv(pipeline, _texBloomTempMap, _texBloomView[i], i);
+			if (i < 4) this->sumLum(pipeline, _texBloomMap, _texBloomView[i + 1], i);
+		}
+
+		this->bloomCombine(pipeline, _texBloomMap, _texBloomTempView[0]);
+	}
+
+	this->doTonemapping(pipeline, _texBloomTempMap, texture, swap);
 
 	return true;
 }

@@ -138,7 +138,7 @@ private:
 	RenderPostProcessPtr _DOF;
 	RenderPostProcessPtr _fog;
 	RenderPostProcessPtr _lightShaft;
-	RenderPostProcessPtr _fimicToneMapping;
+	RenderPostProcessPtr _PostProcessHDR;
 	RenderPostProcessPtr _FXAA;
 	RenderPostProcessPtr _colorGrading;
 

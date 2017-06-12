@@ -51,7 +51,7 @@
 #include "ssr.h"
 #include "dof.h"
 #include "fog.h"
-#include "fimic.h"
+#include "postprocess_hdr.h"
 #include "fxaa.h"
 #include "light_shaft.h"
 #include "color_grading.h"
@@ -113,7 +113,7 @@ RenderPipelineManager::close() noexcept
 	_SSSS.reset();
 	_fog.reset();
 	_DOF.reset();
-	_fimicToneMapping.reset();
+	_PostProcessHDR.reset();
 	_FXAA.reset();
 	_colorGrading.reset();
 	_deferredLighting.reset();
@@ -251,13 +251,13 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 	{
 		if (setting.enableHDR)
 		{
-			_fimicToneMapping = std::make_shared<FimicToneMapping>();
-			this->addPostProcess(_fimicToneMapping);
+			_PostProcessHDR = std::make_shared<PostProcessHDR>();
+			this->addPostProcess(_PostProcessHDR);
 		}
-		else if (_fimicToneMapping)
+		else if (_PostProcessHDR)
 		{
-			this->removePostProcess(_fimicToneMapping);
-			_fimicToneMapping.reset();
+			this->removePostProcess(_PostProcessHDR);
+			_PostProcessHDR.reset();
 		}
 	}
 

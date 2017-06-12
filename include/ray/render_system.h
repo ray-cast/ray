@@ -51,13 +51,13 @@ public:
 	bool setup(const RenderSetting& setting) noexcept;
 	void close() noexcept;
 
-	void setRenderSetting(const RenderSetting& setting) noexcept;
+	void setRenderSetting(const RenderSetting& setting) except;
 	const RenderSetting& getRenderSetting() const noexcept;
 
-	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
+	void setWindowResolution(std::uint32_t w, std::uint32_t h) except;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	void setFramebufferSize(std::uint32_t w, std::uint32_t h) noexcept;
+	void setFramebufferSize(std::uint32_t w, std::uint32_t h) except;
 	void getFramebufferSize(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
 	void setViewport(std::uint32_t i, const Viewport& view) noexcept;

@@ -34,19 +34,22 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FIMIC_H_
-#define _H_FIMIC_H_
+#ifndef _H_POSTPROCESS_HDR_H_
+#define _H_POSTPROCESS_HDR_H_
 
 #include <ray/render_post_process.h>
 #include <ray/timer.h>
 
 _NAME_BEGIN
 
-class EXPORT FimicToneMapping final : public RenderPostProcess
+class EXPORT PostProcessHDR final : public RenderPostProcess
 {
 public:
 	struct EXPORT Setting
 	{
+		bool enableBloom;
+		bool enableEyeAdaptation;
+
 		float bloomThreshold;
 		float bloomIntensity;
 
@@ -56,8 +59,8 @@ public:
 	};
 
 public:
-	FimicToneMapping() noexcept;
-	~FimicToneMapping() noexcept;
+	PostProcessHDR() noexcept;
+	~PostProcessHDR() noexcept;
 
 	void setSetting(const Setting& setting) noexcept;
 	const Setting& getSetting() const noexcept;
@@ -67,8 +70,8 @@ private:
 	void sumLumLog(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
 	void avgLuminance(RenderPipeline& pipeline, const GraphicsTexturePtr& adaptedLum, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
 
-	void generateBloom(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
-	void generateToneMapping(RenderPipeline& pipeline, const GraphicsTexturePtr& bloom, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
+	void doBloom(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
+	void doTonemapping(RenderPipeline& pipeline, const GraphicsTexturePtr& bloom, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
 
 	void blurh(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept;
 	void blurv(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint32_t level) noexcept;

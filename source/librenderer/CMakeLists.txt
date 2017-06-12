@@ -86,8 +86,8 @@ SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/fog.cpp
     ${SOURCE_PATH}/fxaa.h
     ${SOURCE_PATH}/fxaa.cpp
-    ${SOURCE_PATH}/fimic.h
-    ${SOURCE_PATH}/fimic.cpp
+    ${SOURCE_PATH}/postprocess_hdr.h
+    ${SOURCE_PATH}/postprocess_hdr.cpp
     ${SOURCE_PATH}/light_shaft.h
     ${SOURCE_PATH}/light_shaft.cpp
     ${SOURCE_PATH}/ssdo.h

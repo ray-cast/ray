@@ -73,7 +73,7 @@ RenderSystem::close() noexcept
 }
 
 void
-RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
+RenderSystem::setRenderSetting(const RenderSetting& setting) except
 {
 	assert(_pipelineManager);
 	_pipelineManager->setRenderSetting(setting);
@@ -87,7 +87,7 @@ RenderSystem::getRenderSetting() const noexcept
 }
 
 void
-RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
+RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) except
 {
 	assert(w > 0 && h > 0);
 	assert(_pipelineManager);
@@ -102,7 +102,7 @@ RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noex
 }
 
 void
-RenderSystem::setFramebufferSize(std::uint32_t w, std::uint32_t h) noexcept
+RenderSystem::setFramebufferSize(std::uint32_t w, std::uint32_t h) except
 {
 	assert(w > 0 && h > 0);
 	assert(_pipelineManager);

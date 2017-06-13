@@ -54,6 +54,7 @@
 #include <ray/utf8.h>
 #include <ray/camera_component.h>
 #include <ray/light_component.h>
+#include <ray/skybox_component.h>
 #include <ray/mesh_component.h>
 #include <ray/mesh_render_component.h>
 
@@ -469,6 +470,41 @@ GuiControllerComponent::makeSphereObjects() noexcept
 	return true;
 }
 
+bool
+GuiControllerComponent::makeSkyLighting() noexcept
+{
+	auto light = std::make_shared<ray::LightComponent>();
+	light->setLightType(ray::LightType::LightTypeEnvironment);
+	light->setLightRange(20000);
+	light->setShadowMode(ray::ShadowMode::ShadowModeNone);
+
+	auto sky = std::make_shared<ray::SkyboxComponent>();
+	sky->setSkyboxEnable(true);
+	sky->setSkyLightingEnable(true);
+
+	ray::GraphicsTexturePtr skybox;
+	if (ray::ResManager::instance()->createTexture("dlc:common/textures/uffizi_sky.hdr", skybox, ray::GraphicsTextureDim::GraphicsTextureDim2D, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge))
+		sky->setSkyBox(skybox);
+
+	ray::GraphicsTexturePtr skydiffuse;
+	if (ray::ResManager::instance()->createTexture("dlc:common/textures/uffizi_diff.dds", skydiffuse, ray::GraphicsTextureDim::GraphicsTextureDimCube, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, false))
+		sky->setSkyLightDiffuse(skydiffuse);
+
+	ray::GraphicsTexturePtr skyspecular;
+	if (ray::ResManager::instance()->createTexture("dlc:common/textures/uffizi_spec.dds", skyspecular, ray::GraphicsTextureDim::GraphicsTextureDimCube, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, false))
+		sky->setSkyLightSpecular(skyspecular);
+
+	auto gameObject = std::make_shared<ray::GameObject>();
+	gameObject->setName("sky");
+	gameObject->setActive(true);
+
+	gameObject->addComponent(std::move(light));
+	gameObject->addComponent(std::move(sky));
+
+	_cameras.push_back(gameObject);
+	return true;
+}
+
 void
 GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component) except
 {
@@ -529,6 +565,7 @@ GuiControllerComponent::onActivate() except
 	this->makeCubeObject();
 	this->makeMainCamera();
 	this->makeSphereObjects();
+	this->makeSkyLighting();
 }
 
 void

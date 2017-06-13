@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class LightComponent final : public RenderComponent
+class EXPORT LightComponent final : public RenderComponent
 {
 	__DeclareSubClass(LightComponent, RenderComponent)
 public:

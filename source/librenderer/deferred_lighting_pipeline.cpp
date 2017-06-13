@@ -544,7 +544,7 @@ DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, Graphic
 	for (std::uint32_t i = _mrsiiDerivMipBase; i < _mrsiiDerivMipBase + _mrsiiDerivMipCount; i++)
 	{
 		pipeline.setFramebuffer(_mrsiiGaterIndirectViews[i]);
-		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0f, 0.0f);
+		pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0f, 0);
 
 		for (auto& it : lights)
 		{

@@ -112,17 +112,16 @@ typedef std::map<std::string, MaterialParamPtr> MaterialParams;
 
 typedef std::vector<RenderObject*> RenderObjectRaws;
 
-enum CameraType
+enum class CameraType : std::uint8_t
 {
 	CameraTypeOrtho,
 	CameraTypePerspective,
 	CameraTypeBeginRange = CameraTypeOrtho,
 	CameraTypeEndRange = CameraTypePerspective,
 	CameraTypeRangeSize = (CameraTypeEndRange - CameraTypeBeginRange + 1),
-	CameraTypeMaxEnum = 0x7FFFFFFF
 };
 
-enum CameraOrder
+enum class CameraOrder : std::uint8_t
 {
 	CameraOrderCustom,
 	CameraOrderShadow,
@@ -131,7 +130,6 @@ enum CameraOrder
 	CameraOrderBeginRange = CameraOrderCustom,
 	CameraOrderEndRange = CameraOrder2D,
 	CameraOrderRangeSize = (CameraOrderEndRange - CameraOrderBeginRange + 1),
-	CameraOrderMaxEnum = 0x7FFFFFFF
 };
 
 enum CameraClearFlagBits
@@ -161,7 +159,7 @@ enum CameraRenderFlagBits
 
 typedef std::uint32_t CameraRenderFlags;
 
-enum LightType
+enum class LightType : std::uint8_t
 {
 	LightTypeSun,
 	LightTypeDirectional,
@@ -175,10 +173,9 @@ enum LightType
 	LightTypeBeginRange = LightTypeSun,
 	LightTypeEndRange = LightTypeEnvironment,
 	LightTypeRangeSize = (LightTypeEndRange - LightTypeBeginRange + 1),
-	LightTypeMaxEnum = 0x7FFFFFFF
 };
 
-enum ShadowMode
+enum class ShadowMode : std::uint8_t
 {
 	ShadowModeNone,
 	ShadowModeHard,
@@ -186,10 +183,9 @@ enum ShadowMode
 	ShadowModeBeginRange = ShadowModeNone,
 	ShadowModeEndRange = ShadowModeSoft,
 	ShadowModeRangeSize = (ShadowModeEndRange - ShadowModeBeginRange + 1),
-	ShadowModeMaxEnum = 0x7FFFFFFF
 };
 
-enum ShadowQuality
+enum class ShadowQuality : std::uint8_t
 {
 	ShadowQualityNone,
 	ShadowQualityLow,
@@ -199,7 +195,6 @@ enum ShadowQuality
 	ShadowQualityBeginRange = ShadowQualityNone,
 	ShadowQualityEndRange = ShadowQualityVeryHigh,
 	ShadowQualityRangeSize = (ShadowQualityEndRange - ShadowQualityBeginRange + 1),
-	ShadowQualityMaxEnum = 0x7FFFFFFF
 };
 
 enum LightShadowSize
@@ -211,15 +206,14 @@ enum LightShadowSize
 	LightShadowSizeEnumCount = 4
 };
 
-enum RenderPipelineType
+enum class RenderPipelineType : std::uint8_t
 {
 	RenderPipelineTypeForward,
 	RenderPipelineTypeForwardPlus,
 	RenderPipelineTypeDeferredLighting,
 	RenderPipelineTypeBeginRange = RenderPipelineTypeForward,
 	RenderPipelineTypeEndRange = RenderPipelineTypeDeferredLighting,
-	RenderPipelineTypeRangeSize = (RenderPipelineTypeEndRange - RenderPipelineTypeBeginRange + 1),
-	RenderPipelineTypeMaxEnum = 0x7FFFFFFF
+	RenderPipelineTypeRangeSize = (RenderPipelineTypeEndRange - RenderPipelineTypeBeginRange + 1)
 };
 
 enum RenderQueue

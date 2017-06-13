@@ -91,8 +91,8 @@ public:
 	RenderScene();
 	~RenderScene() noexcept;
 
-	void addCamera(CameraPtr camera) noexcept;
-	void removeCamera(CameraPtr camera) noexcept;
+	void addCamera(const CameraPtr& camera) noexcept;
+	void removeCamera(const CameraPtr& camera) noexcept;
 	Cameras& getCameraList() noexcept;
 	const Cameras& getCameraList() const noexcept;
 

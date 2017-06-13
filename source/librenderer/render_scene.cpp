@@ -145,7 +145,7 @@ RenderScene::~RenderScene() noexcept
 }
 
 void
-RenderScene::addCamera(CameraPtr camera) noexcept
+RenderScene::addCamera(const CameraPtr& camera) noexcept
 {
 	assert(!camera->getRenderScene());
 
@@ -164,7 +164,7 @@ RenderScene::addCamera(CameraPtr camera) noexcept
 }
 
 void
-RenderScene::removeCamera(CameraPtr camera) noexcept
+RenderScene::removeCamera(const CameraPtr& camera) noexcept
 {
 	assert(camera->getRenderScene() == this->cast_pointer<RenderScene>());
 
@@ -199,9 +199,18 @@ RenderScene::addRenderObject(RenderObject* object) noexcept
 void
 RenderScene::removeRenderObject(RenderObject* object) noexcept
 {
-	auto it = std::find(_renderObjectList.begin(), _renderObjectList.end(), object);
-	if (it != _renderObjectList.end())
-		_renderObjectList.erase(it);
+	if (object->isInstanceOf<Camera>())
+	{
+		auto it = std::find(_cameraList.begin(), _cameraList.end(), object->downcast_pointer<Camera>());
+		if (it != _cameraList.end())
+			_cameraList.erase(it);
+	}
+	else
+	{
+		auto it = std::find(_renderObjectList.begin(), _renderObjectList.end(), object);
+		if (it != _renderObjectList.end())
+			_renderObjectList.erase(it);
+	}
 }
 
 void

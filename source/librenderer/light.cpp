@@ -60,13 +60,6 @@ Light::Light() noexcept
 	, _shadowBias(0.1f)
 	, _shadowFactor(600.0f)
 {
-	_shadowCameras.push_back(std::make_shared<Camera>());
-	_shadowCameras[0]->setOwnerListener(this);
-	_shadowCameras[0]->setCameraOrder(CameraOrder::CameraOrderShadow);
-	_shadowCameras[0]->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
-	_shadowCameras[0]->setAperture(90.0f);
-	_shadowCameras[0]->setNear(0.1f);
-	_shadowCameras[0]->setRatio(1.0f);
 }
 
 Light::~Light() noexcept
@@ -384,6 +377,13 @@ Light::setupShadowMap() noexcept
 	if (!_shadowDepthLinearView)
 		return false;
 
+	_shadowCameras.push_back(std::make_shared<Camera>());
+	_shadowCameras[0]->setOwnerListener(this);
+	_shadowCameras[0]->setCameraOrder(CameraOrder::CameraOrderShadow);
+	_shadowCameras[0]->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
+	_shadowCameras[0]->setAperture(90.0f);
+	_shadowCameras[0]->setNear(0.1f);
+	_shadowCameras[0]->setRatio(1.0f);
 	_shadowCameras[0]->setDepthLinearFramebuffer(_shadowDepthLinearView);
 	return true;
 }
@@ -485,6 +485,7 @@ Light::destroyShadowMap() noexcept
 	for (auto& camera : _shadowCameras)
 		camera->setDepthLinearFramebuffer(nullptr);
 
+	_shadowCameras.clear();
 	_shadowDepthLinearMap.reset();
 
 	_shadowRSMView.reset();
@@ -520,59 +521,73 @@ Light::_updateBoundingBox() noexcept
 {
 	BoundingBox boundingBox;
 
-	for (auto& camera : _shadowCameras)
+	if (_shadowCameras.empty())
 	{
-		if (_lightType == LightType::LightTypeAmbient || _lightType == LightType::LightTypeEnvironment)
+		Vector3 min(-_lightRange, -_lightRange, -_lightRange);
+		Vector3 max(_lightRange, _lightRange, _lightRange);
+
+		BoundingBox bound;
+		bound.encapsulate(min);
+		bound.encapsulate(max);
+
+		boundingBox.encapsulate(bound);
+	}
+	else
+	{
+		for (auto& camera : _shadowCameras)
 		{
-			Vector3 min(-_lightRange, -_lightRange, -_lightRange);
-			Vector3 max(_lightRange, _lightRange, _lightRange);
-
-			BoundingBox bound;
-			bound.encapsulate(min);
-			bound.encapsulate(max);
-
-			boundingBox.encapsulate(bound);
-		}
-		else
-		{
-			float znear = camera->getNear();
-			float zfar = _lightRange;
-
-			float3 corners[8];
-			corners[0].set(-znear, +znear, znear);
-			corners[1].set(+znear, +znear, znear);
-			corners[2].set(-znear, -znear, znear);
-			corners[3].set(+znear, -znear, znear);
-			corners[4].set(-zfar, +zfar, zfar);
-			corners[5].set(+zfar, +zfar, zfar);
-			corners[6].set(-zfar, -zfar, zfar);
-			corners[7].set(+zfar, -zfar, zfar);
-
-			BoundingBox bound;
-			bound.encapsulate(corners, 8);
-			bound.transform((float3x3)camera->getTransform());
-
-			boundingBox.encapsulate(bound);
-
-			if (_lightType == LightType::LightTypeSun || _lightType == LightType::LightTypeDirectional)
+			if (_lightType == LightType::LightTypeAmbient || _lightType == LightType::LightTypeEnvironment)
 			{
-				float w = bound.size().x * 0.5f;
-				float h = bound.size().y * 0.5f;
+				Vector3 min(-_lightRange, -_lightRange, -_lightRange);
+				Vector3 max(_lightRange, _lightRange, _lightRange);
 
-				camera->setOrtho(float4(-w, w, -h, h));
-				camera->setFar(zfar);
-				camera->setCameraType(CameraType::CameraTypeOrtho);
+				BoundingBox bound;
+				bound.encapsulate(min);
+				bound.encapsulate(max);
+
+				boundingBox.encapsulate(bound);
 			}
-			else if (_lightType == LightType::LightTypeSpot)
+			else
 			{
-				camera->setAperture(this->getSpotOuterCone().x * 2);
-				camera->setFar(zfar);
-				camera->setCameraType(CameraType::CameraTypePerspective);
-			}
-			else if (_lightType == LightType::LightTypePoint)
-			{
-				camera->setAperture(90.0f);
-				camera->setCameraType(CameraType::CameraTypePerspective);
+				float znear = camera->getNear();
+				float zfar = _lightRange;
+
+				float3 corners[8];
+				corners[0].set(-znear, +znear, znear);
+				corners[1].set(+znear, +znear, znear);
+				corners[2].set(-znear, -znear, znear);
+				corners[3].set(+znear, -znear, znear);
+				corners[4].set(-zfar, +zfar, zfar);
+				corners[5].set(+zfar, +zfar, zfar);
+				corners[6].set(-zfar, -zfar, zfar);
+				corners[7].set(+zfar, -zfar, zfar);
+
+				BoundingBox bound;
+				bound.encapsulate(corners, 8);
+				bound.transform((float3x3)camera->getTransform());
+
+				boundingBox.encapsulate(bound);
+
+				if (_lightType == LightType::LightTypeSun || _lightType == LightType::LightTypeDirectional)
+				{
+					float w = bound.size().x * 0.5f;
+					float h = bound.size().y * 0.5f;
+
+					camera->setOrtho(float4(-w, w, -h, h));
+					camera->setFar(zfar);
+					camera->setCameraType(CameraType::CameraTypeOrtho);
+				}
+				else if (_lightType == LightType::LightTypeSpot)
+				{
+					camera->setAperture(this->getSpotOuterCone().x * 2);
+					camera->setFar(zfar);
+					camera->setCameraType(CameraType::CameraTypePerspective);
+				}
+				else if (_lightType == LightType::LightTypePoint)
+				{
+					camera->setAperture(90.0f);
+					camera->setCameraType(CameraType::CameraTypePerspective);
+				}
 			}
 		}
 	}

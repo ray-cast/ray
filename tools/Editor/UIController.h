@@ -57,6 +57,7 @@ private:
 	bool makeCubeObject() noexcept;
 	bool makeMainCamera() noexcept;
 	bool makeSphereObjects() noexcept;
+	bool makeSkyLighting() noexcept;
 
 private:
 	void onAttachComponent(const ray::GameComponentPtr& component) except;

@@ -61,7 +61,7 @@ public:
 	void setShadowFactor(float factor) noexcept;
 	void setShadowMode(ShadowMode shadowType) noexcept;
 
-	void setGlobalIllumination(bool enable) noexcept;	
+	void setGlobalIllumination(bool enable) noexcept;
 	bool getGlobalIllumination() const noexcept;
 
 	void setLightVisible(bool enable) noexcept;

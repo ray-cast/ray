@@ -84,6 +84,8 @@ SkyboxComponent::getSkyboxSize() const noexcept
 void
 SkyboxComponent::setSkyBox(GraphicsTexturePtr texture) noexcept
 {
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == ray::GraphicsTextureDim::GraphicsTextureDim2D);
+
 	if (_skyTexture != texture)
 	{
 		_skyTexture = texture;
@@ -98,11 +100,13 @@ SkyboxComponent::getSkyBox() const noexcept
 }
 
 void
-SkyboxComponent::setSkyLightDiffuse(GraphicsTexturePtr diffuse) noexcept
+SkyboxComponent::setSkyLightDiffuse(GraphicsTexturePtr texture) noexcept
 {
-	if (_skyDiffTexture != diffuse)
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == ray::GraphicsTextureDim::GraphicsTextureDimCube);
+
+	if (_skyDiffTexture != texture)
 	{
-		_skyDiffTexture = diffuse;
+		_skyDiffTexture = texture;
 		_onSkyLightingDiffuseChange.run();
 	}
 }
@@ -114,11 +118,13 @@ SkyboxComponent::getSkyLightDiffuse() const noexcept
 }
 
 void
-SkyboxComponent::setSkyLightSpecular(GraphicsTexturePtr specular) noexcept
+SkyboxComponent::setSkyLightSpecular(GraphicsTexturePtr texture) noexcept
 {
-	if (_skySpecTexture != specular)
+	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == ray::GraphicsTextureDim::GraphicsTextureDimCube);
+
+	if (_skySpecTexture != texture)
 	{
-		_skySpecTexture = specular;
+		_skySpecTexture = texture;
 		_onSkyLightingSpecularChange.run();
 	}
 }
@@ -132,14 +138,7 @@ SkyboxComponent::getSkyLightSpecular() const noexcept
 void
 SkyboxComponent::setSkyboxEnable(bool enable) noexcept
 {
-	if (_enableSkyBox != enable)
-	{
-		if (enable)
-			this->_reloadSkybox(_skyDiffuse);
-		else
-			this->_destroySkybox();
-		_enableSkyBox = enable;
-	}
+	_enableSkyBox = enable;
 }
 
 bool
@@ -151,20 +150,7 @@ SkyboxComponent::getSkyboxEnable() const noexcept
 void
 SkyboxComponent::setSkyLightingEnable(bool enable) noexcept
 {
-	if (_enableSkyLighting != enable)
-	{
-		if (enable)
-		{
-			this->_reloadSkyDiffuse(_skyDiffuse);
-			this->_reloadSkySpecular(_skySpecular);
-		}
-		else
-		{
-			this->_destroySkyLighting();
-		}
-
-		_enableSkyLighting = enable;
-	}
+	_enableSkyLighting = enable;
 }
 
 bool
@@ -322,6 +308,45 @@ SkyboxComponent::clone() const noexcept
 	return sky;
 }
 
+void
+SkyboxComponent::onActivate() noexcept
+{
+	if (_enableSkyBox || _enableSkyLighting)
+		this->_setupMaterial();
+
+	if (_enableSkyBox)
+		this->_setupSkybox();
+
+	if (_enableSkyLighting)
+		this->_setupSkyLighting();
+
+	if (_enableSkyBox || _enableSkyLighting)
+	{
+		_updateMaterial();
+		_updateTransform();
+
+		this->_attacRenderObjects();
+	}
+
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+}
+
+void
+SkyboxComponent::onDeactivate() noexcept
+{
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
+	this->_destroyMaterial();
+	this->_destroySkybox();
+	this->_destroySkyLighting();
+}
+
+void
+SkyboxComponent::onMoveAfter() noexcept
+{
+	_updateTransform();
+}
+
 bool
 SkyboxComponent::_loadSkybox(const util::string& texture) noexcept
 {
@@ -466,7 +491,10 @@ SkyboxComponent::_setupMaterial() noexcept
 bool
 SkyboxComponent::_setupSkybox() noexcept
 {
-	if (_loadSkybox(_skyMap) && _skyBoxMaterial)
+	if (!_skyTexture && !_skyMap.empty())
+		_loadSkybox(_skyMap);
+
+	if (_skyBoxMaterial)
 	{
 		MeshProperty sphereMesh;
 		_buildSphereMesh(sphereMesh);
@@ -574,51 +602,6 @@ SkyboxComponent::_updateMaterial() noexcept
 		if (texSkybox)
 			texSkybox->uniformTexture(_skyTexture);
 	}
-}
-
-void
-SkyboxComponent::onActivate() noexcept
-{
-	if (_enableSkyBox || _enableSkyLighting)
-	{
-		this->_setupMaterial();
-	}
-
-	if (_enableSkyBox)
-	{
-		this->_setupSkybox();
-	}
-
-	if (_enableSkyLighting)
-	{
-		this->_setupSkyLighting();
-	}
-
-	if (_enableSkyBox || _enableSkyLighting)
-	{
-		_updateMaterial();
-		_updateTransform();
-
-		this->_attacRenderObjects();
-	}
-
-	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
-}
-
-void
-SkyboxComponent::onDeactivate() noexcept
-{
-	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
-
-	this->_destroyMaterial();
-	this->_destroySkybox();
-	this->_destroySkyLighting();
-}
-
-void
-SkyboxComponent::onMoveAfter() noexcept
-{
-	_updateTransform();
 }
 
 _NAME_END

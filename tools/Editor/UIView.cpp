@@ -301,6 +301,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 			this->showInspectorWindow();
 			this->showAssetsWindow();
 			this->showMaterialsWindow();
+			this->showDragImageWindow();
 
 			this->showAboutWindow();
 			this->showMessage();
@@ -970,8 +971,6 @@ GuiViewComponent::showAssetsWindow() noexcept
 
 	if (ray::Gui::beginDock("Assets", &_showAssertWindow))
 	{
-		int id = 0;
-
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
 		ray::Gui::text("");
 		ray::Gui::sameLine();
@@ -991,11 +990,11 @@ GuiViewComponent::showAssetsWindow() noexcept
 				ray::Gui::sameLine();
 			}
 
-			ray::Gui::pushID(id++);
 			if (ray::Gui::imageButtonAndLabel(texture.first.c_str(), texture.second.get(), imageSize, true, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
+			{
 				_selectedTexture = texture.second;
-
-			ray::Gui::popID();
+				_selectedMaterial = nullptr;
+			}
 
 			ray::Gui::sameLine(0, _style.ItemSpacing.y);
 		}
@@ -1003,42 +1002,6 @@ GuiViewComponent::showAssetsWindow() noexcept
 		ray::Gui::popStyleColor();
 
 		ray::Gui::endDock();
-	}
-
-	if (_selectedTexture)
-	{
-		if (ray::Gui::isMouseDown(ray::InputButton::RIGHT))
-			_selectedTexture = nullptr;
-		else
-		{
-			std::uint32_t width = _selectedTexture->getGraphicsTextureDesc().getWidth();
-			std::uint32_t height = _selectedTexture->getGraphicsTextureDesc().getHeight();
-			ray::float2 aspert = ray::float2((float)width / height, 1.0);
-
-			ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
-			ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0.0f);
-			ray::Gui::pushStyleColor(ray::GuiCol::GuiColWindowBg, ray::float4::Zero);
-
-			ray::GuiWindowFlags flags =
-				ray::GuiWindowFlagBits::GuiWindowFlagNoInputsBit |
-				ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit |
-				ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit |
-				ray::GuiWindowFlagBits::GuiWindowFlagNoScrollbarBit |
-				ray::GuiWindowFlagBits::GuiWindowFlagNoScrollWithMouseBit |
-				ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit;
-
-			if (ray::Gui::begin("##floating", 0, ray::float2::Zero, -1.0f, flags))
-			{
-				ray::Gui::setWindowSize(_assetImageSize * aspert);
-				ray::Gui::setWindowPos(ray::Gui::getMousePos() - _assetImageSize * aspert * 0.5f);
-				ray::Gui::image(_selectedTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, ray::float4(0.7f));
-
-				ray::Gui::end();
-			}
-
-			ray::Gui::popStyleVar(2);
-			ray::Gui::popStyleColor();
-		}
 	}
 }
 
@@ -1050,8 +1013,6 @@ GuiViewComponent::showMaterialsWindow() noexcept
 
 	if (ray::Gui::beginDock("Materials", &_showMaterialWindow))
 	{
-		int id = 0;
-
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
 		ray::Gui::text("");
 		ray::Gui::sameLine();
@@ -1070,7 +1031,8 @@ GuiViewComponent::showMaterialsWindow() noexcept
 						ray::Gui::sameLine();
 					}
 
-					ray::Gui::imageButtonAndLabel(material->getName().c_str(), 0, _assetImageSize, true, ray::float2::Zero, ray::float2::One, 3);
+					if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), 0, _assetImageSize, true, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
+						_selectedMaterial = material;
 
 					ray::Gui::sameLine(0, _style.ItemSpacing.y);
 				}
@@ -1178,6 +1140,54 @@ GuiViewComponent::showInspectorWindow() noexcept
 	}
 
 	ray::Gui::popStyleVar(2);
+}
+
+void
+GuiViewComponent::showDragImageWindow() noexcept
+{
+	if (_selectedMaterial || _selectedTexture)
+	{
+		if (ray::Gui::isMouseDown(ray::InputButton::RIGHT))
+		{
+			_selectedTexture = nullptr;
+			_selectedMaterial = nullptr;
+		}
+		else
+		{
+			ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2::Zero);
+			ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowRounding, 0.0f);
+			ray::Gui::pushStyleColor(ray::GuiCol::GuiColWindowBg, ray::float4::Zero);
+
+			ray::GuiWindowFlags flags =
+				ray::GuiWindowFlagBits::GuiWindowFlagNoInputsBit |
+				ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit |
+				ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit |
+				ray::GuiWindowFlagBits::GuiWindowFlagNoScrollbarBit |
+				ray::GuiWindowFlagBits::GuiWindowFlagNoScrollWithMouseBit |
+				ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit;
+
+			if (ray::Gui::begin("##floating", 0, ray::float2::Zero, -1.0f, flags))
+			{
+				ray::float2 aspert = ray::float2::One;
+
+				if (_selectedTexture)
+				{
+					std::uint32_t width = _selectedTexture->getGraphicsTextureDesc().getWidth();
+					std::uint32_t height = _selectedTexture->getGraphicsTextureDesc().getHeight();
+					aspert.x = (float)width / height;
+				}
+
+				ray::Gui::setWindowSize(_assetImageSize * aspert);
+				ray::Gui::setWindowPos(ray::Gui::getMousePos() - _assetImageSize * aspert * 0.5f);
+				ray::Gui::image(_selectedTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, ray::float4(0.7f));
+
+				ray::Gui::end();
+			}
+
+			ray::Gui::popStyleVar(2);
+			ray::Gui::popStyleColor();
+		}
+	}
 }
 
 void

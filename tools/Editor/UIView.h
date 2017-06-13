@@ -128,6 +128,7 @@ private:
 	void showInspectorWindow() noexcept;
 	void showCameraWindow() noexcept;
 	void showSceneWindow() noexcept;
+	void showDragImageWindow() noexcept;
 
 	void showEditTransformWindow(ray::GameObject* object) noexcept;
 	void showEditCameraWindow(ray::CameraComponent* component) noexcept;
@@ -148,6 +149,7 @@ private:
 	ray::GameObject* _selectedObject;
 	ray::GameObjectPtr _cube;
 	ray::GraphicsTexturePtr _selectedTexture;
+	ray::MaterialPtr _selectedMaterial;
 
 	std::weak_ptr<ray::CameraComponent> _cameraComponent;
 

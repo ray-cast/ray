@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/imgui.h>
+#include <ray/input_button.h>
 #include <imgui.h>
 #include <imgui_dock.h>
 #include <imgui_internal.h>
@@ -2323,7 +2324,7 @@ IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2
 	ImGui::BeginGroup();
 
 	bool chlick = imageButtonEx(texture, size, true, uv0, uv1, frame_padding, bg_col, tint_col);
-	label_clicked |= ImGui::IsItemClicked(0);
+	label_clicked |= ImGui::IsItemClicked(InputButton::LEFT);
 
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip(label);

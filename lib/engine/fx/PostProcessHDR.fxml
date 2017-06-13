@@ -183,7 +183,7 @@
                 out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
-                float avgLum = texLumAve.SampleLevel(PointClamp, float2(0.5, 0.5), 0).r;
+                float avgLum = texLumAve.SampleLevel(PointClamp, float2(0.5f, 0.5f), 0).r;
 
                 oPosition = Position;
                 oTexcoord.xy = PosToCoord(Position.xy);
@@ -192,15 +192,15 @@
 
             float4 GenerateBloomPS(in float4 coord : TEXCOORD0) : SV_Target
             {
-                float3 color = 0;
+                float3 color = 0.0f;
                 color = texSource.SampleLevel(PointClamp, coord.xy, 0).rgb;
                 color = min(color, texSource.SampleLevel(PointClamp, coord.xy + float2(texSourceSizeInv.x, 0), 0).rgb);
                 color = min(color, texSource.SampleLevel(PointClamp, coord.xy - float2(texSourceSizeInv.x, 0), 0).rgb);
                 color = min(color, texSource.SampleLevel(PointClamp, coord.xy + float2(0, texSourceSizeInv.y), 0).rgb);
                 color = min(color, texSource.SampleLevel(PointClamp, coord.xy - float2(0, texSourceSizeInv.y), 0).rgb);
-                color = clamp(color * coord.z, 0, 65535);
+                color = clamp(color * coord.z, 0.0f, 65535.0f);
 
-                color *= saturate((luminance(color) - bloomThreshold) * 0.5);
+                color *= saturate((luminance(color) - bloomThreshold) * 0.5f);
 
                 return float4(color * bloomIntensity, 0);
             }

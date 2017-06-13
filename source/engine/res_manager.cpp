@@ -100,67 +100,46 @@ ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture
 	if (!image.load(*stream))
 		return false;
 
-	auto imageFormat = image.format();
 	GraphicsFormat format = GraphicsFormat::GraphicsFormatUndefined;
-	if (imageFormat == image::format_t::BC1RGBUNormBlock)
-		format = GraphicsFormat::GraphicsFormatBC1RGBUNormBlock;
-	else if (imageFormat == image::format_t::BC1RGBAUNormBlock)
-		format = GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock;
-	else if (imageFormat == image::format_t::BC1RGBSRGBBlock)
-		format = GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock;
-	else if (imageFormat == image::format_t::BC1RGBASRGBBlock)
-		format = GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock;
-	else if (imageFormat == image::format_t::BC3UNormBlock)
-		format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
-	else if (imageFormat == image::format_t::BC3SRGBBlock)
-		format = GraphicsFormat::GraphicsFormatBC3SRGBBlock;
-	else if (imageFormat == image::format_t::BC4UNormBlock)
-		format = GraphicsFormat::GraphicsFormatBC4UNormBlock;
-	else if (imageFormat == image::format_t::BC4SNormBlock)
-		format = GraphicsFormat::GraphicsFormatBC4SNormBlock;
-	else if (imageFormat == image::format_t::BC5UNormBlock)
-		format = GraphicsFormat::GraphicsFormatBC5UNormBlock;
-	else if (imageFormat == image::format_t::BC5SNormBlock)
-		format = GraphicsFormat::GraphicsFormatBC5SNormBlock;
-	else if (imageFormat == image::format_t::BC6HUFloatBlock)
-		format = GraphicsFormat::GraphicsFormatBC6HUFloatBlock;
-	else if (imageFormat == image::format_t::BC6HSFloatBlock)
-		format = GraphicsFormat::GraphicsFormatBC6HSFloatBlock;
-	else if (imageFormat == image::format_t::BC7UNormBlock)
-		format = GraphicsFormat::GraphicsFormatBC7UNormBlock;
-	else if (imageFormat == image::format_t::BC7SRGBBlock)
-		format = GraphicsFormat::GraphicsFormatBC7SRGBBlock;
-	else if (imageFormat == image::format_t::R8G8B8UNorm || imageFormat == image::format_t::R8G8B8SRGB)
-		format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
-	else if (imageFormat == image::format_t::R8G8B8A8UNorm || imageFormat == image::format_t::R8G8B8A8SRGB)
-		format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
-	else if (imageFormat == image::format_t::B8G8R8UNorm || imageFormat == image::format_t::B8G8R8SRGB)
-		format = GraphicsFormat::GraphicsFormatB8G8R8UNorm;
-	else if (imageFormat == image::format_t::B8G8R8A8UNorm || imageFormat == image::format_t::B8G8R8A8SRGB)
-		format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm;
-	else if (imageFormat == image::format_t::R8UNorm || imageFormat == image::format_t::R8SRGB)
-		format = GraphicsFormat::GraphicsFormatR8UNorm;
-	else if (imageFormat == image::format_t::R8G8UNorm || imageFormat == image::format_t::R8G8SRGB)
-		format = GraphicsFormat::GraphicsFormatR8G8UNorm;
-	else if (imageFormat == image::format_t::R16SFloat)
-		format = GraphicsFormat::GraphicsFormatR16SFloat;
-	else if (imageFormat == image::format_t::R16G16SFloat)
-		format = GraphicsFormat::GraphicsFormatR16G16SFloat;
-	else if (imageFormat == image::format_t::R16G16B16SFloat)
-		format = GraphicsFormat::GraphicsFormatR16G16B16SFloat;
-	else if (imageFormat == image::format_t::R16G16B16A16SFloat)
-		format = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
-	else if (imageFormat == image::format_t::R32SFloat)
-		format = GraphicsFormat::GraphicsFormatR32SFloat;
-	else if (imageFormat == image::format_t::R32G32SFloat)
-		format = GraphicsFormat::GraphicsFormatR32G32SFloat;
-	else if (imageFormat == image::format_t::R32G32B32SFloat)
-		format = GraphicsFormat::GraphicsFormatR32G32B32SFloat;
-	else if (imageFormat == image::format_t::R32G32B32A32SFloat)
-		format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
-
-	if (format == GraphicsFormat::GraphicsFormatUndefined)
+	switch (image.format())
+	{
+	case image::format_t::BC1RGBUNormBlock: format = GraphicsFormat::GraphicsFormatBC1RGBUNormBlock; break;
+	case image::format_t::BC1RGBAUNormBlock: format = GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock; break;
+	case image::format_t::BC1RGBSRGBBlock: format = GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock; break;
+	case image::format_t::BC1RGBASRGBBlock: format = GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock; break;
+	case image::format_t::BC3UNormBlock: format = GraphicsFormat::GraphicsFormatBC3UNormBlock; break;
+	case image::format_t::BC3SRGBBlock: format = GraphicsFormat::GraphicsFormatBC3SRGBBlock; break;
+	case image::format_t::BC4UNormBlock: format = GraphicsFormat::GraphicsFormatBC4UNormBlock; break;
+	case image::format_t::BC4SNormBlock: format = GraphicsFormat::GraphicsFormatBC4SNormBlock; break;
+	case image::format_t::BC5UNormBlock: format = GraphicsFormat::GraphicsFormatBC5UNormBlock; break;
+	case image::format_t::BC5SNormBlock: format = GraphicsFormat::GraphicsFormatBC5SNormBlock; break;
+	case image::format_t::BC6HUFloatBlock: format = GraphicsFormat::GraphicsFormatBC6HUFloatBlock; break;
+	case image::format_t::BC6HSFloatBlock: format = GraphicsFormat::GraphicsFormatBC6HSFloatBlock; break;
+	case image::format_t::BC7UNormBlock: format = GraphicsFormat::GraphicsFormatBC7UNormBlock; break;
+	case image::format_t::BC7SRGBBlock: format = GraphicsFormat::GraphicsFormatBC7SRGBBlock; break;
+	case image::format_t::R8G8B8UNorm: format = GraphicsFormat::GraphicsFormatR8G8B8UNorm; break;
+	case image::format_t::R8G8B8SRGB: format = GraphicsFormat::GraphicsFormatR8G8B8UNorm; break;
+	case image::format_t::R8G8B8A8UNorm: format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm; break;
+	case image::format_t::R8G8B8A8SRGB: format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm; break;
+	case image::format_t::B8G8R8UNorm: format = GraphicsFormat::GraphicsFormatB8G8R8UNorm; break;
+	case image::format_t::B8G8R8SRGB: format = GraphicsFormat::GraphicsFormatB8G8R8UNorm; break;
+	case image::format_t::B8G8R8A8UNorm: format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm; break;
+	case image::format_t::B8G8R8A8SRGB: format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm; break;
+	case image::format_t::R8UNorm: format = GraphicsFormat::GraphicsFormatR8UNorm; break;
+	case image::format_t::R8SRGB: format = GraphicsFormat::GraphicsFormatR8UNorm; break;
+	case image::format_t::R8G8UNorm: format = GraphicsFormat::GraphicsFormatR8G8UNorm; break;
+	case image::format_t::R8G8SRGB: format = GraphicsFormat::GraphicsFormatR8G8UNorm; break;
+	case image::format_t::R16SFloat: format = GraphicsFormat::GraphicsFormatR16SFloat; break;
+	case image::format_t::R16G16SFloat: format = GraphicsFormat::GraphicsFormatR16G16SFloat; break;
+	case image::format_t::R16G16B16SFloat: format = GraphicsFormat::GraphicsFormatR16G16B16SFloat; break;
+	case image::format_t::R16G16B16A16SFloat: format = GraphicsFormat::GraphicsFormatR16G16B16A16SFloat; break;
+	case image::format_t::R32SFloat: format = GraphicsFormat::GraphicsFormatR32SFloat; break;
+	case image::format_t::R32G32SFloat: format = GraphicsFormat::GraphicsFormatR32G32SFloat; break;
+	case image::format_t::R32G32B32SFloat: format = GraphicsFormat::GraphicsFormatR32G32B32SFloat; break;
+	case image::format_t::R32G32B32A32SFloat: format = GraphicsFormat::GraphicsFormatR32G32B32A32SFloat; break;
+	default:
 		return nullptr;
+	}
 
 	GraphicsTextureDesc textureDesc;
 	textureDesc.setSize(image.width(), image.height(), image.depth());
@@ -745,7 +724,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const util:
 	{
 		const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
 		return math::dot(rgb, lumfact);
-	};
+};
 
 	if (!diffuseTexture.empty())
 	{

@@ -1040,7 +1040,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 						ray::Gui::sameLine();
 					}
 
-					if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), _materialFx.get(), _assetImageSize, true, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+					if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), _materialFx.get(), _assetImageSize, false, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 					{
 						_selectedTexture = _materialFx;
 						_selectedMaterial = material;

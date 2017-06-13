@@ -2329,9 +2329,9 @@ IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2
 
 	if (!selected)
 	{
-		ImGui::PushTextWrapPos(pos.x + size.x * 0.9f);
+		//ImGui::PushTextWrapPos(pos.x + size.x);
 		ImGui::Text(label);
-		ImGui::PopTextWrapPos();
+		//ImGui::PopTextWrapPos();
 	}
 
 	ImGui::PopItemWidth();

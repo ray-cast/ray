@@ -2318,14 +2318,12 @@ IMGUI::imageButtonWithAspectAndLabel(GuiTextureID texture, const float2& texture
 bool
 IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2& size, bool selected, const float2& uv0, const float2& uv1, int frame_padding, const float4& bg_col, const float4& tint_col)
 {
-	int return_value = 0;
-
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	bool inputActive = false;
 	bool label_clicked = false;
 	ImGui::BeginGroup();
 
-	imageButtonEx(texture, size, selected, uv0, uv1, frame_padding, bg_col, tint_col);
+	bool chlick = imageButtonEx(texture, size, selected, uv0, uv1, frame_padding, bg_col, tint_col);
 
 	auto pos = ImGui::GetCursorScreenPos();
 	ImGui::PushItemWidth(size.x);
@@ -2345,7 +2343,7 @@ IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2
 
 	ImGui::EndGroup();
 
-	return return_value;
+	return chlick;
 }
 
 void

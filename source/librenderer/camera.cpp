@@ -201,6 +201,9 @@ Camera::getClipConstant() const noexcept
 float4
 Camera::getProjConstant() const noexcept
 {
+	this->_updateViewProject();
+	float2 constant(_projectInverse.a1 / _projectInverse.d3, _projectInverse.b2 / _projectInverse.d3);
+
 	auto deviceType = RenderSystem::instance()->getRenderSetting().deviceType;
 	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
 		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
@@ -209,11 +212,11 @@ Camera::getProjConstant() const noexcept
 		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31 ||
 		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES32)
 	{
-		return float4(2, 2, -1, -1) * float4(float2(_projectInverse.a1, _projectInverse.b2).xyxy());
+		return float4(2.0f, 2.0f, -1.0f, -1.0f) * constant.xyxy();
 	}
 	else
 	{
-		return float4(2, -2, -1, 1) * float4(float2(_projectInverse.a1, _projectInverse.b2).xyxy());
+		return float4(2.0f, -2.0f, -1.0f, 1.0f) * constant.xyxy();
 	}
 }
 

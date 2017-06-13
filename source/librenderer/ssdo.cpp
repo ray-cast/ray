@@ -89,7 +89,7 @@ SSDO::computeRawAO(RenderPipeline& pipeline, const GraphicsTexturePtr& source, c
 	std::uint32_t width, height;
 	pipeline.getFramebufferSize(width, height);
 
-	_occlusionSourceInv->uniform2f(1.0f / width, 1.0f / height);
+	_occlusionParams1->uniform4f(2.0, 2.0 * ((float)width / height), 0.03, 0.15);
 	_occlusionProjectConstant->uniform4f(pipeline.getCamera()->getProjConstant());
 
 	pipeline.setFramebuffer(dest);

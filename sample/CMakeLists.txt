@@ -4,7 +4,6 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 FOREACH(mySamples
     "01.HelloWorld"
-    "02.UI"
     "03.Sound"
     "04.EnvLighting"
     "07.Skinning"

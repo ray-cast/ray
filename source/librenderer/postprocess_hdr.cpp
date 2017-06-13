@@ -185,7 +185,6 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	samplerBloomDesc.setHeight(height / 2);
 	samplerBloomDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	samplerBloomDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16G16B16SFloat);
-	samplerBloomDesc.setMipBase(0);
 	samplerBloomDesc.setMipNums(5);
 	samplerBloomDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	samplerBloomDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
@@ -197,7 +196,6 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	samplerLogDesc.setHeight(256);
 	samplerLogDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	samplerLogDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16SFloat);
-	samplerLogDesc.setMipBase(0);
 	samplerLogDesc.setMipNums(9);
 	samplerLogDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 	samplerLogDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
@@ -263,11 +261,10 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	_bloom = _fimic->getTech("GenerateBloom");
 	_blur = _fimic->getTech("BlurBloom");
 	_bloomCombine = _fimic->getTech("BloomCombine");
-	_tone = _fimic->getTech("FimicTongMapping");
+	_tone = _fimic->getTech("Tonemapping");
 
 	_bloomThreshold = _fimic->getParameter("bloomThreshold");
 	_bloomIntensity = _fimic->getParameter("bloomIntensity");
-	_bloomWeights = _fimic->getParameter("bloomWeights");
 	_bloomFactors = _fimic->getParameter("bloomFactors");
 
 	_toneBloom = _fimic->getParameter("texBloom");
@@ -283,10 +280,7 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	_texLumAve->uniformTexture(_texSampleLumMap);
 	_toneLumExposure->uniform1f(_setting.exposure);
 
-	float weights[] = { 0.048297,0.08393,0.124548,0.157829,0.170793,0.157829,0.124548,0.08393,0.048297 };
 	float factors[] = { 0.341586,0.315658,0.249096,0.16786,0.096594 };
-
-	_bloomWeights->uniform1fv(sizeof(weights) / sizeof(weights[0]), weights);
 	_bloomFactors->uniform1fv(sizeof(factors) / sizeof(factors[0]), factors);
 
 	_timer = std::make_shared<Timer>();
@@ -308,7 +302,6 @@ PostProcessHDR::onDeactivate(RenderPipeline& pipeline) noexcept
 	_tone.reset();
 	_bloomThreshold.reset();
 	_bloomIntensity.reset();
-	_bloomWeights.reset();
 	_toneBloom.reset();
 	_toneLumAve.reset();
 	_toneLumKey.reset();

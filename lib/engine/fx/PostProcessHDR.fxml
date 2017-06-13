@@ -9,7 +9,6 @@
     <parameter name="texLumAve" type="texture2D"/>
     <parameter name="bloomThreshold" type="float"/>
     <parameter name="bloomIntensity" type="float"/>
-    <parameter name="bloomWeights[9]" type="float[]"/>
     <parameter name="bloomFactors[5]" type="float[]"/>
     <parameter name="texSourceLevel" type="int"/>
     <parameter name="exposure" type="float"/>
@@ -216,18 +215,20 @@
 
             float4 BloomBlurPS(in float2 coord : TEXCOORD0) : SV_Target
             {
+                float weights[] = { 0.048297,0.08393,0.124548,0.157829,0.170793,0.157829,0.124548,0.08393,0.048297 };
+
             	float2 coords = coord - texSourceSizeInv * 4.0;
 
                 float4 color = 0;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[0]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[1]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[2]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[3]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[4]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[5]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[6]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[7]; coords += texSourceSizeInv;
-                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * bloomWeights[8];
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[0]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[1]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[2]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[3]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[4]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[5]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[6]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[7]; coords += texSourceSizeInv;
+                color += texSource.SampleLevel(PointClamp, coords, texSourceLevel) * weights[8];
 
                 return color;
             }
@@ -331,7 +332,7 @@
             <state name="cullmode" value="none"/>
         </pass>
     </technique>
-    <technique name="FimicTongMapping">
+    <technique name="Tonemapping">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="GenerateBloomVS"/>

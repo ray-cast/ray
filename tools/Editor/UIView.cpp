@@ -133,6 +133,9 @@ GuiViewComponent::getGuiViewDelegates() const noexcept
 void
 GuiViewComponent::onActivate() except
 {
+	ray::ResManager::instance()->createTexture("dlc:Editor/UI/fx.png", _materialFx, ray::GraphicsTextureDim::GraphicsTextureDim2D, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, false);
+	if (!_materialFx)
+		return;
 }
 
 void
@@ -243,14 +246,14 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 
 					if (input->getButtonDown(ray::InputButton::Code::MOUSEWHEEL))
 					{
-						float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
+						float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0f : 1.0f;
 						const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
 						_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward * speed);
 					}
 
 					if (input->getButtonUp(ray::InputButton::Code::MOUSEWHEEL))
 					{
-						float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0 : 1.0;
+						float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0f : 1.0f;
 						const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
 						_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward * speed);
 					}
@@ -926,7 +929,7 @@ GuiViewComponent::showHierarchyWindow() noexcept
 					else
 					{
 						ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2::Zero);
-						ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 0.6);
+						ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 0.6f);
 
 						if (ray::Gui::treeNode(objectName))
 						{
@@ -978,6 +981,9 @@ GuiViewComponent::showAssetsWindow() noexcept
 		const auto& textures = ray::ResManager::instance()->getTextureAll();
 		for (auto& texture : textures)
 		{
+			if (!texture.second)
+				continue;
+
 			std::uint32_t width = texture.second->getGraphicsTextureDesc().getWidth();
 			std::uint32_t height = texture.second->getGraphicsTextureDesc().getHeight();
 
@@ -1024,6 +1030,9 @@ GuiViewComponent::showMaterialsWindow() noexcept
 			{
 				for (auto& material : *_materials)
 				{
+					if (!material)
+						continue;
+
 					if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
 					{
 						ray::Gui::newLine();
@@ -1031,8 +1040,11 @@ GuiViewComponent::showMaterialsWindow() noexcept
 						ray::Gui::sameLine();
 					}
 
-					if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), 0, _assetImageSize, true, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
+					if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), _materialFx.get(), _assetImageSize, true, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+					{
+						_selectedTexture = _materialFx;
 						_selectedMaterial = material;
+					}
 
 					ray::Gui::sameLine(0, _style.ItemSpacing.y);
 				}

@@ -50,6 +50,16 @@ Material::~Material() noexcept
 	this->close();
 }
 
+Material::Material(std::string&& name) noexcept
+	: _name(std::move(name))
+{
+}
+
+Material::Material(const std::string& name) noexcept
+	: _name(name)
+{
+}
+
 bool
 Material::setup() noexcept
 {

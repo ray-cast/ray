@@ -151,6 +151,8 @@ private:
 	ray::GraphicsTexturePtr _selectedTexture;
 	ray::MaterialPtr _selectedMaterial;
 
+	ray::GraphicsTexturePtr _materialFx;
+
 	std::weak_ptr<ray::CameraComponent> _cameraComponent;
 
 	ray::float2 _assetImageSize;

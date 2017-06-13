@@ -68,7 +68,7 @@ public:
 
 	bool createModel(const util::string& path, ModelPtr& model) noexcept;
 	bool createMaterial(const util::string& path, MaterialPtr& material) noexcept;
-	bool createTexture(const util::string& path, GraphicsTexturePtr& texture, GraphicsTextureDim dim = GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
+	bool createTexture(const util::string& path, GraphicsTexturePtr& texture, GraphicsTextureDim dim = GraphicsTextureDim::GraphicsTextureDim2D, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerWrap warp = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat, bool cache = true) noexcept;
 	bool createAnimation(const util::string& path, const GameObjects& bones, GameComponentPtr& animation) noexcept;
 
 	bool createGameObject(const Model& model, GameObjectPtr& gameObject) noexcept;

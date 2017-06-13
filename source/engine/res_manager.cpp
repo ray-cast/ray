@@ -81,15 +81,14 @@ ResManager::createMaterial(const util::string& name, MaterialPtr& material) noex
 }
 
 bool
-ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp) noexcept
+ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture, GraphicsTextureDim dim, GraphicsSamplerFilter filter, GraphicsSamplerWrap warp, bool cache) noexcept
 {
-	if (name.empty())
-		return false;
+	assert(!name.empty());
 
-	auto texture = _textures[name];
-	if (texture)
+	auto it = _textures.find(name);
+	if (it != _textures.end())
 	{
-		_texture = texture;
+		_texture = (*it).second;
 		return true;
 	}
 
@@ -176,11 +175,14 @@ ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture
 	textureDesc.setSamplerFilter(filter, filter);
 	textureDesc.setSamplerWrap(warp);
 
-	texture = RenderSystem::instance()->createTexture(textureDesc);
+	auto texture = RenderSystem::instance()->createTexture(textureDesc);
 	if (!texture)
 		return false;
 
-	_texture = _textures[name] = texture;
+	_texture = texture;
+	if (cache)
+		_textures[name] = texture;
+
 	return true;
 }
 

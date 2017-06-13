@@ -50,6 +50,8 @@ class EXPORT Material final : public rtti::Interface
 	__DeclareSubClass(Material, rtti::Interface)
 public:
 	Material() noexcept;
+	Material(std::string&& name) noexcept;
+	Material(const std::string& name) noexcept;
 	~Material() noexcept;
 
 	bool setup() noexcept;

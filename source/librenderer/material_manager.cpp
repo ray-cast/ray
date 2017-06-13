@@ -191,22 +191,18 @@ MaterialManager::getInputLayout(const std::string& name) noexcept
 MaterialPtr
 MaterialManager::createMaterial(const std::string& name) noexcept
 {
-	auto& material = _materials[name];
-	if (material)
-		return material->clone();
+	auto it = _materials.find(name);
+	if (it != _materials.end())
+		return (*it).second->clone();
 
-	if (!material)
-	{
-		MaterialMaker materialLoader;
-		auto newMaterial = std::make_shared<Material>();
-		if (!materialLoader.load(*this, *newMaterial, name))
-			return nullptr;
+	MaterialMaker materialLoader;
+	auto newMaterial = std::make_shared<Material>(name);
+	if (!materialLoader.load(*this, *newMaterial, name))
+		return nullptr;
 
-		newMaterial->setName(name);
-		_materials.at(name) = newMaterial;
-	}
+	_materials.insert(std::make_pair(name, newMaterial));
 
-	return material;
+	return newMaterial;
 }
 
 MaterialPtr

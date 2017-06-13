@@ -61,6 +61,10 @@ public:
 	void setSkyLightSpecular(GraphicsTexturePtr texture) noexcept;
 	GraphicsTexturePtr getSkyLightSpecular() const noexcept;
 
+	bool loadSkybox(const std::string& path, bool cache = false) noexcept;
+	bool loadSkyDiffuse(const std::string& path, bool cache = false) noexcept;
+	bool loadSkySpecular(const std::string& path, bool cache = false) noexcept;
+
 	void setSkyboxEnable(bool enable) noexcept;
 	bool getSkyboxEnable() const noexcept;
 

@@ -48,8 +48,8 @@ _NAME_BEGIN
 __ImplementSubClass(SkyboxComponent, MeshRenderComponent, "Skybox")
 
 SkyboxComponent::SkyboxComponent() noexcept
-	: _enableSkyBox(false)
-	, _enableSkyLighting(false)
+	: _enableSkyBox(true)
+	, _enableSkyLighting(true)
 	, _skyboxSize(10000.0f)
 	, _skyDiffuseIntensity(1.0f)
 	, _skySpecularIntensity(1.0f)
@@ -133,6 +133,45 @@ GraphicsTexturePtr
 SkyboxComponent::getSkyLightSpecular() const noexcept
 {
 	return _skySpecTexture;
+}
+
+bool
+SkyboxComponent::loadSkybox(const std::string& path, bool cache) noexcept
+{
+	ray::GraphicsTexturePtr skybox;
+	if (ray::ResManager::instance()->createTexture(path, skybox, ray::GraphicsTextureDim::GraphicsTextureDim2D, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, cache))
+	{
+		this->setSkyBox(skybox);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+SkyboxComponent::loadSkyDiffuse(const std::string& path, bool cache) noexcept
+{
+	ray::GraphicsTexturePtr skydiffuse;
+	if (ray::ResManager::instance()->createTexture(path, skydiffuse, ray::GraphicsTextureDim::GraphicsTextureDimCube, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, cache))
+	{
+		this->setSkyLightDiffuse(skydiffuse);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+SkyboxComponent::loadSkySpecular(const std::string& path, bool cache) noexcept
+{
+	ray::GraphicsTexturePtr skyspecular;
+	if (ray::ResManager::instance()->createTexture(path, skyspecular, ray::GraphicsTextureDim::GraphicsTextureDimCube, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, cache))
+	{
+		this->setSkyLightSpecular(skyspecular);
+		return true;
+	}
+
+	return false;
 }
 
 void

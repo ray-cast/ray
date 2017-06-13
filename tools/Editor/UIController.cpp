@@ -479,20 +479,9 @@ GuiControllerComponent::makeSkyLighting() noexcept
 	light->setShadowMode(ray::ShadowMode::ShadowModeNone);
 
 	auto sky = std::make_shared<ray::SkyboxComponent>();
-	sky->setSkyboxEnable(true);
-	sky->setSkyLightingEnable(true);
-
-	ray::GraphicsTexturePtr skybox;
-	if (ray::ResManager::instance()->createTexture("dlc:common/textures/uffizi_sky.hdr", skybox, ray::GraphicsTextureDim::GraphicsTextureDim2D, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge))
-		sky->setSkyBox(skybox);
-
-	ray::GraphicsTexturePtr skydiffuse;
-	if (ray::ResManager::instance()->createTexture("dlc:common/textures/uffizi_diff.dds", skydiffuse, ray::GraphicsTextureDim::GraphicsTextureDimCube, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, false))
-		sky->setSkyLightDiffuse(skydiffuse);
-
-	ray::GraphicsTexturePtr skyspecular;
-	if (ray::ResManager::instance()->createTexture("dlc:common/textures/uffizi_spec.dds", skyspecular, ray::GraphicsTextureDim::GraphicsTextureDimCube, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, false))
-		sky->setSkyLightSpecular(skyspecular);
+	sky->loadSkybox("dlc:common/textures/uffizi_sky.hdr", true);
+	sky->loadSkyDiffuse("dlc:common/textures/uffizi_diff.dds", false);
+	sky->loadSkySpecular("dlc:common/textures/uffizi_spec.dds", false);
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setName("sky");
@@ -501,7 +490,7 @@ GuiControllerComponent::makeSkyLighting() noexcept
 	gameObject->addComponent(std::move(light));
 	gameObject->addComponent(std::move(sky));
 
-	_cameras.push_back(gameObject);
+	_lights.push_back(gameObject);
 	return true;
 }
 

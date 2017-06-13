@@ -886,6 +886,25 @@ GuiViewComponent::showHierarchyWindow() noexcept
 
 		if (ray::Gui::treeNode("lights"))
 		{
+			const ray::GameObjects* objects = nullptr;
+			_event.onFetchLights(objects);
+
+			if (objects)
+			{
+				for (std::size_t i = 0; i < objects->size(); i++)
+				{
+					auto& name = (*objects)[i]->getName();
+					char buffer[MAX_PATH];
+					sprintf_s(buffer, MAX_PATH, "|-%s", name.empty() ? "empty" : name.c_str());
+
+					if (ray::Gui::selectable(buffer, _selectedObject == (*objects)[i].get() ? true : false))
+					{
+						_event.onSeletedCamera((*objects)[i].get());
+						_selectedObject = (*objects)[i].get();
+					}
+				}
+			}
+
 			ray::Gui::treePop();
 		}
 
@@ -1130,20 +1149,25 @@ GuiViewComponent::showInspectorWindow() noexcept
 		{
 			this->showEditTransformWindow(_selectedObject);
 
-			auto cameraComponent = _selectedObject->getComponent<ray::CameraComponent>();
-			if (cameraComponent)
-				this->showEditCameraWindow(cameraComponent.get());
-
-			auto meshRenderer = _selectedObject->getComponent<ray::MeshRenderComponent>();
-			if (meshRenderer)
+			auto& components = _selectedObject->getComponents();
+			for (auto& it : components)
 			{
-				auto materials = meshRenderer->getMaterials();
-				if (!materials.empty())
+				if (it->isInstanceOf<ray::CameraComponent>())
+					this->showEditCameraWindow(it->downcast<ray::CameraComponent>());
+				else if (it->isInstanceOf<ray::LightComponent>())
+					this->showEditLightWindow(it->downcast<ray::LightComponent>());
+				else if (it->isInstanceOf<ray::SkyboxComponent>())
+					this->showEditSkyboxWindow(it->downcast<ray::SkyboxComponent>());
+				else if (it->isInstanceOf<ray::MeshRenderComponent>())
 				{
-					if (materials.size() > _selectedSubset)
-						this->showEditMaterialWindow(*materials[_selectedSubset]);
-					else
-						this->showEditMaterialWindow(*materials.front());
+					auto materials = it->downcast<ray::MeshRenderComponent>()->getMaterials();
+					if (!materials.empty())
+					{
+						if (materials.size() > _selectedSubset)
+							this->showEditMaterialWindow(*materials[_selectedSubset]);
+						else
+							this->showEditMaterialWindow(*materials.front());
+					}
 				}
 			}
 		}
@@ -1262,28 +1286,77 @@ GuiViewComponent::showEditTransformWindow(ray::GameObject* object) noexcept
 }
 
 void
-GuiViewComponent::showEditCameraWindow(ray::CameraComponent* component) noexcept
+GuiViewComponent::showEditCameraWindow(ray::CameraComponent* camera) noexcept
 {
 	if (ray::Gui::treeNodeEx("Camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 	{
-		float znear = component->getNear();
-		float zfar = component->getFar();
-		float fov = component->getAperture();
+		float znear = camera->getNear();
+		float zfar = camera->getFar();
+		float fov = camera->getAperture();
 
 		ray::Gui::text("Field of view:");
 		if (ray::Gui::dragFloat("##fov", &fov, 0.1f, 1, 125))
-			component->setAperture(fov);
+			camera->setAperture(fov);
 
 		ray::Gui::text("Near:");
 		if (ray::Gui::dragFloat("##znear", &znear, 1e-3f, 1e-3, 1.0f, "%.03f"))
-			component->setNear(znear);
+			camera->setNear(znear);
 
 		ray::Gui::text("Far:");
 		if (ray::Gui::dragFloat("##zfar", &zfar, 0.1f, 0, 99999))
-			component->setFar(zfar);
+			camera->setFar(zfar);
 
 		ray::Gui::treePop();
 	}
+}
+
+void
+GuiViewComponent::showEditLightWindow(ray::LightComponent* light) noexcept
+{
+	if (ray::Gui::treeNodeEx("Light", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+	{
+		float range = light->getLightRange();
+
+		ray::Gui::text("Range:");
+		if (ray::Gui::dragFloat("##range", &range, 1e-3f, 1.0f, 1000.0f, "%.03f"))
+			light->setLightRange(range);
+
+		ray::Gui::treePop();
+	}
+}
+
+void
+GuiViewComponent::showEditSkyboxWindow(ray::SkyboxComponent* skybox) noexcept
+{
+	ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
+
+	if (ray::Gui::treeNodeEx("Skybox", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+	{
+		auto skyTexture = skybox->getSkyBox();
+		auto skyDiffTexture = skybox->getSkyLightDiffuse();
+		auto skySpecTexture = skybox->getSkyLightSpecular();
+
+		ray::float2 aspert = ray::float2::One;
+		if (skyTexture)
+		{
+			std::uint32_t width = skyTexture->getGraphicsTextureDesc().getWidth();
+			std::uint32_t height = skyTexture->getGraphicsTextureDesc().getHeight();
+			aspert.set((float)width / height, 1.0f);
+		}
+
+		ray::Gui::text("sky texture:");
+		ray::Gui::imageButton(skyTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
+
+		ray::Gui::text("sky irradiance:");
+		ray::Gui::imageButton(skyDiffTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
+
+		ray::Gui::text("sky radiance:");
+		ray::Gui::imageButton(skySpecTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
+
+		ray::Gui::treePop();
+	}
+
+	ray::Gui::popStyleColor();
 }
 
 void

@@ -40,6 +40,8 @@
 #include <ray/gui.h>
 #include <ray/game_component.h>
 #include <ray/camera_component.h>
+#include <ray/light_component.h>
+#include <ray/skybox_component.h>
 
 #include "UIParams.h"
 #include "UITexts.h"
@@ -132,6 +134,8 @@ private:
 
 	void showEditTransformWindow(ray::GameObject* object) noexcept;
 	void showEditCameraWindow(ray::CameraComponent* component) noexcept;
+	void showEditLightWindow(ray::LightComponent* light) noexcept;
+	void showEditSkyboxWindow(ray::SkyboxComponent* light) noexcept;
 	void showEditMaterialWindow(ray::Material& material) noexcept;
 
 	void startUVMapper() noexcept;

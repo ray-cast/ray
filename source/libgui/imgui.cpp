@@ -2309,10 +2309,43 @@ IMGUI::imageButtonEx(GuiTextureID texture, const float2& size, bool enabled, con
 	}
 }
 
-int
+bool
 IMGUI::imageButtonWithAspectAndLabel(GuiTextureID texture, const float2& texture_size, const float2& size, const float2& uv0, const float2& uv1, bool selected, bool* edit_label, const char* label, char* buf, size_t buf_size, GuiInputTextFlags flags)
 {
 	return ImGui::ImageButtonWithAspectAndLabel(texture, (ImVec2&)texture_size, (ImVec2&)size, (ImVec2&)uv0, (ImVec2&)uv1, selected, edit_label, label, buf, buf_size, flags);
+}
+
+bool
+IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2& size, bool selected, const float2& uv0, const float2& uv1, int frame_padding, const float4& bg_col, const float4& tint_col)
+{
+	int return_value = 0;
+
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	bool inputActive = false;
+	bool label_clicked = false;
+	ImGui::BeginGroup();
+
+	imageButtonEx(texture, size, selected, uv0, uv1, frame_padding, bg_col, tint_col);
+
+	auto pos = ImGui::GetCursorScreenPos();
+	ImGui::PushItemWidth(size.x);
+
+	if (!selected)
+	{
+		ImGui::PushTextWrapPos(pos.x + size.x * 0.9f);
+		ImGui::Text(label);
+		ImGui::PopTextWrapPos();
+	}
+
+	ImGui::PopItemWidth();
+	label_clicked = ImGui::IsItemClicked(0);
+
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip(label);
+
+	ImGui::EndGroup();
+
+	return return_value;
 }
 
 void

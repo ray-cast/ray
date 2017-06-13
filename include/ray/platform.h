@@ -247,7 +247,7 @@
 #endif
 
 #if defined(_UNICODE) || defined(UNICODE)
-#   ifndef _UNICODE_
+#   ifndef __UNICODE__
 #       define __UNICODE__ 1
 #   endif
 

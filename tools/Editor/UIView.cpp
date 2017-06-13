@@ -159,7 +159,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 			for (std::uint32_t i = 0; i < event.drop.count; i++)
 			{
 				char name[MAX_PATH];
-				if (ray::util::extname(event.drop.files[i], name, sizeof(name)) > 0)
+				if (ray::util::ext_name(event.drop.files[i], name, sizeof(name)) > 0)
 				{
 					if (ray::util::strncmp(name, "bmp", 3) == 0 ||
 						ray::util::strncmp(name, "png", 3) == 0 ||
@@ -992,7 +992,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 			}
 
 			ray::Gui::pushID(id++);
-			if (ray::Gui::imageButton(texture.second.get(), imageSize, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
+			if (ray::Gui::imageButtonAndLabel(texture.first.c_str(), texture.second.get(), imageSize, true, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
 				_selectedTexture = texture.second;
 
 			ray::Gui::popID();
@@ -1055,6 +1055,27 @@ GuiViewComponent::showMaterialsWindow() noexcept
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
 		ray::Gui::text("");
 		ray::Gui::sameLine();
+
+		if (_event.onFetchMaterials)
+		{
+			const ray::Materials* _materials;
+			if (_event.onFetchMaterials(_materials))
+			{
+				for (auto& material : *_materials)
+				{
+					if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
+					{
+						ray::Gui::newLine();
+						ray::Gui::text("");
+						ray::Gui::sameLine();
+					}
+
+					ray::Gui::imageButtonAndLabel(material->getName().c_str(), 0, _assetImageSize, true, ray::float2::Zero, ray::float2::One, 3);
+
+					ray::Gui::sameLine(0, _style.ItemSpacing.y);
+				}
+			}
+		}
 
 		ray::Gui::popStyleColor();
 

@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_component.h>
+#include <ray/material.h>
 
 #include "UIParams.h"
 #include "modpmx.h"
@@ -84,6 +85,7 @@ private:
 	bool onFetchMeshes(const ray::GameObjects*& objects) noexcept;
 	bool onFetchLights(const ray::GameObjects*& objects) noexcept;
 	bool onFetchLightProbes(const ray::GameObjects*& objects) noexcept;
+	bool onFetchMaterials(const ray::Materials*& material) noexcept;
 
 	bool onSeletedCamera(const ray::GameObject* object) noexcept;
 	bool onSeletedLight(const ray::GameObject* object) noexcept;
@@ -108,6 +110,7 @@ private:
 	ray::GameObjects _lights;
 	ray::GameObjects _lightProbes;
 	ray::GameObjects _objects;
+	ray::Materials _materials;
 
 	ray::GameObjectPtr _cube;
 

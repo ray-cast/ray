@@ -494,13 +494,13 @@ namespace util
 		return value;
 	}
 
-	int strtol10(const char* in, const char** out = 0)
+	std::size_t strtol10(const char* in, const char** out = 0)
 	{
 		bool inv = (*in == '-');
 		if (inv || *in == '+')
 			++in;
 
-		int value = (int)strtoul10(in, out);
+		std::size_t value = strtoul10(in, out);
 		if (inv) {
 			value = -value;
 		}
@@ -1117,7 +1117,7 @@ namespace util
 		return std::wstring(path.c_str(), path.size() - length);
 	}
 
-	std::size_t extname(const char* in, char* out, std::size_t maxLength)
+	std::size_t ext_name(const char* in, char* out, std::size_t maxLength)
 	{
 		auto ext = std::strrchr(in, '.');
 		if (ext)
@@ -1138,7 +1138,7 @@ namespace util
 		return 0;
 	}
 
-	std::size_t extname(const wchar_t* in, wchar_t* out, std::size_t maxLength)
+	std::size_t ext_name(const wchar_t* in, wchar_t* out, std::size_t maxLength)
 	{
 		auto ext = std::wcschr(in, L'.');
 		if (ext)
@@ -1155,6 +1155,40 @@ namespace util
 		}
 
 		return 0;
+	}
+
+	std::size_t toUnixPath(const char*in, char* out, std::size_t maxLength)
+	{
+		std::size_t count = 0;
+
+		while (in[count])
+		{
+			if (isSeparator(in[count]))
+				out[count++] = '/';
+			else
+				out[count++] = in[count];
+		}
+
+		out[count] = 0;
+
+		return count;
+	}
+
+	std::size_t toUnixPath(const wchar_t*in, wchar_t* out, std::size_t maxLength)
+	{
+		std::size_t count = 0;
+
+		while (in[count])
+		{
+			if (isSeparator(in[count]))
+				out[count++] = L'/';
+			else
+				out[count++] = in[count];
+		}
+
+		out[count] = 0;
+
+		return count;
 	}
 
 	void skipToken(const char*& in)

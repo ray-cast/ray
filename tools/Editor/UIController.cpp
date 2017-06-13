@@ -420,6 +420,7 @@ GuiControllerComponent::makeSphereObjects() noexcept
 
 			auto material = newGameObject->getComponent<ray::MeshRenderComponent>()->getMaterial();
 
+			(*material).setName(buf);
 			(*material)["albedo"]->uniform3f(diff_spec_parametes[i * 10 + j].xyz());
 			(*material)["albedoMap"]->uniformTexture(diffuseMap);
 			(*material)["albedoMapFrom"]->uniform1i(1);
@@ -459,6 +460,8 @@ GuiControllerComponent::makeSphereObjects() noexcept
 				(*material)["normalMapFrom"]->uniform1i(0);
 			}
 
+			_materials.push_back(material);
+
 			_objects.push_back(std::move(newGameObject));
 		}
 	}
@@ -491,6 +494,7 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		delegate.onFetchMeshes = std::bind(&GuiControllerComponent::onFetchMeshes, this, std::placeholders::_1);
 		delegate.onFetchLights = std::bind(&GuiControllerComponent::onFetchLights, this, std::placeholders::_1);
 		delegate.onFetchLightProbes = std::bind(&GuiControllerComponent::onFetchLightProbes, this, std::placeholders::_1);
+		delegate.onFetchMaterials = std::bind(&GuiControllerComponent::onFetchMaterials, this, std::placeholders::_1);
 
 		delegate.onSeletedCamera = std::bind(&GuiControllerComponent::onSeletedCamera, this, std::placeholders::_1);
 		delegate.onSeletedMesh = std::bind(&GuiControllerComponent::onSeletedMesh, this, std::placeholders::_1, std::placeholders::_2);
@@ -586,11 +590,15 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 bool
 GuiControllerComponent::onTextureImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
-	ray::GraphicsTexturePtr texture;
-	if (!ray::ResManager::instance()->createTexture(path, texture))
+	ray::util::string::value_type buffer[PATHLIMIT];
+	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) > 0)
 	{
-		error = "Failed to load texture";
-		return false;
+		ray::GraphicsTexturePtr texture;
+		if (!ray::ResManager::instance()->createTexture(buffer, texture))
+		{
+			error = "Failed to load texture";
+			return false;
+		}
 	}
 
 	return true;
@@ -1064,6 +1072,13 @@ bool
 GuiControllerComponent::onFetchMeshes(const ray::GameObjects*& meshes) noexcept
 {
 	meshes = &_objects;
+	return true;
+}
+
+bool
+GuiControllerComponent::onFetchMaterials(const ray::Materials*& material) noexcept
+{
+	material = &_materials;
 	return true;
 }
 

@@ -39,7 +39,7 @@
 
 #include <ray/platform.h>
 
-#ifdef _UNICODE
+#ifdef __UNICODE__
 #   include <wchar.h>
 #   include <wctype.h>
 #endif
@@ -53,13 +53,13 @@ _NAME_BEGIN
 
 namespace util
 {
-#ifdef _UNICODE
+#ifdef __UNICODE__
 	typedef wchar_t char_type;
 #else
 	typedef char char_type;
 #endif
 
-#if _UNICODE
+#if __UNICODE__
 	typedef std::wstring string;
 #else
 	typedef std::string string;
@@ -143,17 +143,24 @@ namespace util
 	EXPORT double fast_atod(const char* c, const char** cout);
 	EXPORT double fast_atod(const char** inout);
 
-	EXPORT std::size_t strtoul10(const char* in, const char** out);
 	EXPORT std::size_t strtoul8(const char* in, const char** out);
+	EXPORT std::size_t strtoul10(const char* in, const char** out);
 	EXPORT std::size_t strtoul16(const char* in, const char** out);
-	EXPORT std::size_t HexDigitToDecimal(char in);
-	EXPORT std::uint8_t HexOctetToDecimal(const char* in);
-	EXPORT int strtol10(const char* in, const char** out);
+	EXPORT std::size_t strtol10(const char* in, const char** out);
 	EXPORT std::size_t strtoul_cppstyle(const char* in, const char** out);
 	EXPORT std::uint64_t strtoul10_64(const char* in, const char** out, unsigned int* max_inout);
+	EXPORT std::size_t HexDigitToDecimal(char in);
+	EXPORT std::uint8_t HexOctetToDecimal(const char* in);
 
 	EXPORT char tolower(char in);
 	EXPORT char toUpper(char in);
+	EXPORT wchar_t tolower(wchar_t in);
+	EXPORT wchar_t toUpper(wchar_t in);
+	EXPORT std::string toLower(const std::string& _input);
+	EXPORT std::wstring toLower(const std::wstring& _input);
+	EXPORT std::size_t toUnixPath(const char*in, char* out, std::size_t maxLength);
+	EXPORT std::size_t toUnixPath(const wchar_t*in, wchar_t* out, std::size_t maxLength);
+
 	EXPORT bool isHex(char in);
 	EXPORT bool isUpper(char in);
 	EXPORT bool isLower(char in);
@@ -165,8 +172,6 @@ namespace util
 	EXPORT bool isSpaceOrNewLine(char in);
 	EXPORT bool isEndOfStream(char* it, char* end);
 
-	EXPORT wchar_t tolower(wchar_t in);
-	EXPORT wchar_t toUpper(wchar_t in);
 	EXPORT bool isHex(wchar_t in);
 	EXPORT bool isUpper(wchar_t in);
 	EXPORT bool isLower(wchar_t in);
@@ -198,11 +203,8 @@ namespace util
 	EXPORT std::string directory(const std::string& path);
 	EXPORT std::wstring directory(const std::wstring& path);
 
-	EXPORT std::size_t extname(const char*in, char* out, std::size_t maxLength);
-	EXPORT std::size_t extname(const wchar_t*in, wchar_t* out, std::size_t maxLength);
-
-	EXPORT std::string toLower(const std::string& _input);
-	EXPORT std::wstring toLower(const std::wstring& _input);
+	EXPORT std::size_t ext_name(const char*in, char* out, std::size_t maxLength);
+	EXPORT std::size_t ext_name(const wchar_t*in, wchar_t* out, std::size_t maxLength);
 
 	EXPORT void split(std::vector<std::string>& result, const std::string& _source, const std::string& _delims = "\t\n ");
 	EXPORT void split(std::vector<std::wstring>& result, const std::wstring& _source, const std::wstring& _delims = L"\t\n ");

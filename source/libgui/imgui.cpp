@@ -2316,29 +2316,24 @@ IMGUI::imageButtonWithAspectAndLabel(GuiTextureID texture, const float2& texture
 }
 
 bool
-IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2& size, bool selected, const float2& uv0, const float2& uv1, int frame_padding, const float4& bg_col, const float4& tint_col)
+IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2& size, bool showLabel, const float2& uv0, const float2& uv1, int frame_padding, const float4& bg_col, const float4& tint_col)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	bool label_clicked = false;
 	ImGui::BeginGroup();
 
-	bool chlick = imageButtonEx(texture, size, selected, uv0, uv1, frame_padding, bg_col, tint_col);
-
-	auto pos = ImGui::GetCursorScreenPos();
-	ImGui::PushItemWidth(size.x);
-
-	if (!selected)
-	{
-		//ImGui::PushTextWrapPos(pos.x + size.x);
-		ImGui::Text(label);
-		//ImGui::PopTextWrapPos();
-	}
-
-	ImGui::PopItemWidth();
-	label_clicked = ImGui::IsItemClicked(0);
+	bool chlick = imageButtonEx(texture, size, true, uv0, uv1, frame_padding, bg_col, tint_col);
+	label_clicked |= ImGui::IsItemClicked(0);
 
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip(label);
+
+	if (!showLabel)
+	{
+		ImGui::PushItemWidth(size.x);
+		ImGui::Text(label);
+		ImGui::PopItemWidth();
+	}
 
 	ImGui::EndGroup();
 

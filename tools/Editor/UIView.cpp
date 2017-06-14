@@ -1348,7 +1348,7 @@ GuiViewComponent::showEditLightWindow(ray::LightComponent* light) noexcept
 		float range = light->getLightRange();
 
 		ray::Gui::text("Range:");
-		if (ray::Gui::dragFloat("##range", &range, 1e-3f, 1.0f, 1000.0f, "%.03f"))
+		if (ray::Gui::dragFloat("##range", &range, 1.0f, 1.0f, 1000.0f, "%.03f"))
 			light->setLightRange(range);
 
 		ray::Gui::treePop();
@@ -1422,7 +1422,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 			_selectedMaterial = nullptr;
 		}
 
-		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
+		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto albedoColor = ray::math::pow(material["albedo"]->value().getFloat3(), 1.0f / 2.2f);
 			auto albedoMap = material["albedoMap"]->value().getTexture();
@@ -1455,7 +1455,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert.set((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(albedoMap ? albedoMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(albedoMap ? albedoMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{
@@ -1514,7 +1514,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					ray::float2 aspert = ray::float2((float)width / height, 1.0);
 				}
 
-				if (ray::Gui::imageButtonEx(albedoSubMap ? albedoSubMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(albedoSubMap ? albedoSubMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{
@@ -1531,7 +1531,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("Normal", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
+		if (ray::Gui::treeNodeEx("Normal", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto normalMapType = 0;
 			auto normalMap = material["normalMap"]->value().getTexture();
@@ -1571,7 +1571,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					ray::float2 aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(normalMap ? normalMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(normalMap ? normalMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{
@@ -1624,7 +1624,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(normalSubMap ? normalSubMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(normalSubMap ? normalSubMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{
@@ -1637,7 +1637,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("Smoothness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("Smoothness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			auto smoothness = material["smoothness"]->value().getFloat();
 			auto smoothnessMap = material["smoothnessMap"]->value().getTexture();
@@ -1692,7 +1692,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(smoothnessMap ? smoothnessMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(smoothnessMap ? smoothnessMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{
@@ -1709,7 +1709,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("Metalness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("Metalness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			auto metalness = material["metalness"]->value().getFloat();
 			auto metalnessMap = material["metalnessMap"]->value().getTexture();
@@ -1759,7 +1759,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(metalnessMap ? metalnessMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(metalnessMap ? metalnessMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{
@@ -1808,7 +1808,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(specularMap ? specularMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(specularMap ? specularMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{
@@ -1875,7 +1875,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(occlusionMap ? occlusionMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(occlusionMap ? occlusionMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{
@@ -1924,7 +1924,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(emissiveMap ? emissiveMap.get() : 0, imageSize * aspert, (!_selectedMaterial && _selectedTexture) ? true : false, ray::float2::Zero, ray::float2::One, 3))
+				if (ray::Gui::imageButtonEx(emissiveMap ? emissiveMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
 				{
 					if (_selectedTexture)
 					{

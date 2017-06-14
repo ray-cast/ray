@@ -40,7 +40,7 @@
 
 int main(int argc, char *argv[])
 {
-	ray::Image image;
+	ray::image::Image image;
 	image.load("C:\\Users\\ray\\Desktop\\skydome.dds");
 
 	ray::FontDistanceField font;

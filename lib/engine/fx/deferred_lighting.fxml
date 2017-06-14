@@ -53,26 +53,25 @@
 
 			void DeferredLightingVS(
 				in float4 Position : POSITION,
-				out float2 oTexcoord : TEXCOORD0,
-				out float3 oViewDir : TEXCOORD1,
+				out float2 oTexcoord0 : TEXCOORD0,
+				out float3 oTexcoord1 : TEXCOORD1,
 				out float4 oPosition : SV_Position)
 			{
 				oPosition = Position;
-				oViewDir  = -mul(matProjectInverse, Position).xyz;
-				oTexcoord = PosToCoord(Position.xy);
+				oTexcoord1  = -mul(matProjectInverse, Position).xyz;
+				oTexcoord0 = PosToCoord(Position.xy);
 			}
 
 			void DeferredLighting2VS(
 				in float4 Position : POSITION,
-				out float3 oTexcoord : TEXCOORD0,
-				out float3 oViewDir : TEXCOORD1,
+				out float4 oTexcoord0 : TEXCOORD0,
+				out float3 oTexcoord1 : TEXCOORD1,
 				out float4 oPosition : SV_Position)
 			{
-				oViewDir = -mul(matModelView, Position).xyz;
-				oPosition = mul(matModelViewProject, Position);
-				oTexcoord.xy = PosToCoord(oPosition.xy / oPosition.w);
-				oTexcoord.xy = oTexcoord.xy * oPosition.w;
-				oTexcoord.z = oPosition.w;
+				oTexcoord1 = -mul(matModelView, Position).xyz;
+				oTexcoord0 = oPosition = mul(matModelViewProject, Position);
+				oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w);
+				oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 			}
 
 			void DeferredDepthOnlyPS()
@@ -101,7 +100,7 @@
 
 				float3 V = normalize(viewdir);
 				float3 N = material.normal;
-				float3 P = restorePosition(texDepthLinear, coord, V);
+				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
 				float3 L = -lightEyeDirection;
 
 				float4 lighting = 0;
@@ -120,7 +119,7 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float3 V = normalize(viewdir);
-				float3 P = restorePosition(texDepthLinear, coord, V);
+				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
 				float3 L = -lightEyeDirection;
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
@@ -143,7 +142,7 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float3 V = normalize(viewdir);
-				float3 P = restorePosition(texDepthLinear, coord, V);
+				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
 				float3 L = -lightEyeDirection;
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
@@ -167,7 +166,7 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float3 V = normalize(viewdir);
-				float3 P = restorePosition(texDepthLinear, coord, V);
+				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
 				float3 L = -lightEyeDirection;
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
@@ -190,7 +189,7 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float3 V = normalize(viewdir);
-				float3 P = restorePosition(texDepthLinear, coord, V);
+				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
 				float3 L = -lightEyeDirection;
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
@@ -204,9 +203,9 @@
 				return lighting;
 			}
 
-			float4 DeferredSpotLightPS(in float3 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
+			float4 DeferredSpotLightPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float2 texcoord = coord.xy / coord.z;
+				float2 texcoord = coord.xy / coord.w;
 
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
@@ -216,7 +215,7 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float3 V = normalize(viewdir);
-				float3 P = restorePosition(texDepthLinear, texcoord, V);
+				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, texcoord, 0).r;
 				float3 L = normalize(lightEyePosition - P);
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
@@ -231,9 +230,9 @@
 				return lighting;
 			}
 
-			float4 DeferredSpotLightShadowPS(in float3 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
+			float4 DeferredSpotLightShadowPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float2 texcoord = coord.xy / coord.z;
+				float2 texcoord = coord.xy / coord.w;
 
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
@@ -243,7 +242,7 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float3 V = normalize(viewdir);
-				float3 P = restorePosition(texDepthLinear, texcoord, V);
+				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, texcoord, 0).r;
 				float3 L = normalize(lightEyePosition - P);
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);
@@ -258,9 +257,9 @@
 				return lighting;
 			}
 
-			float4 DeferredPointLightPS(in float3 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
+			float4 DeferredPointLightPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
 			{
-				float2 texcoord = coord.xy / coord.z;
+				float2 texcoord = coord.xy / coord.w;
 
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
@@ -270,7 +269,7 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float3 V = normalize(viewdir);
-				float3 P = restorePosition(texDepthLinear, texcoord, V);
+				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, texcoord, 0).r;
 				float3 L = normalize(lightEyePosition - P);
 
 				float3 diffuse = DiffuseBRDF(material.normal, L, V, material.smoothness);

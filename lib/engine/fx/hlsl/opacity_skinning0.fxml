@@ -1,4 +1,0 @@
-<?xml version='1.0'?>
-<effect language="hlsl">
-    <include name="sys:fx/opacity.fxml"/>
-</effect>

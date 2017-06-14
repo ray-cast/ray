@@ -183,26 +183,6 @@
                 return mrt1.w;
             }
 
-            float3 restorePosition(texture2D texDepth, float4x4 matInverse, float2 coord)
-            {
-                float depth = texDepth.Sample(PointClamp, coord.xy).r;
-                float4 result = mul(matInverse, float4(coord * 2.0 - 1.0, depth, 1.0));
-                result /= result.w;
-                return result.xyz;
-            }
-
-            float3 restorePosition(texture2D texDepthLinear, float4 projInfo, float2 coord)
-            {
-                float depth = texDepthLinear.Sample(PointClamp, coord).r;
-                return float3(projInfo.xy * coord + projInfo.zw, 1.0) * depth;
-            }
-
-            float3 restorePosition(texture2D texDepthLinear, float2 coord, float3 viewdir)
-            {
-                float depth = texDepthLinear.Sample(PointClamp, coord).r;
-                return viewdir * depth / viewdir.z;
-            }
-
             float WeightBlendOIT(float linearDepth)
             {
                 return clamp(0.03 / (1e-5 + pow(linearDepth, 4.0)), 1e-2, 3e3);

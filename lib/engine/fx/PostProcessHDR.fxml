@@ -200,7 +200,7 @@
 
                 oPosition = Position;
                 oTexcoord.xy = PosToCoord(Position.xy);
-                oTexcoord.zw = exposure * ComputeExposureISO(avgLum);
+                oTexcoord.zw = float2(exposure * ComputeExposureISO(avgLum), bloomThreshold);
             }
 
             float4 GenerateBloomPS(in float4 coord : TEXCOORD0) : SV_Target
@@ -213,7 +213,7 @@
                 color = min(color, texSource.SampleLevel(PointClamp, coord.xy - float2(0, texSourceSizeInv.y), 0).rgb);
                 color = clamp(color * coord.z, 0.0f, 65535.0f);
 
-                color *= saturate((luminance(color) - bloomThreshold) * 0.5f);
+                color *= saturate((luminance(color) - coord.w) * 0.5f); // Bug issue : don't change coord.w to bloomThreshold
 
                 return float4(color * bloomIntensity, 0);
             }

@@ -1072,7 +1072,7 @@ static void TranslateTextureSample(HLSLCrossCompilerContext* psContext, Instruct
 		if (ui32Flags & TEXSMP_FLAG_DEPTHCOMPARE)
 		{
 			SHADER_VARIABLE_TYPE dataType = SVT_FLOAT; // TODO!!
-			//Special. Reference is a separate argument.
+													   //Special. Reference is a separate argument.
 			AddIndentation(psContext);
 
 			AddAssignToDest(psContext, &psInst->asOperands[0], dataType, 1, &numParenthesis);
@@ -1543,8 +1543,13 @@ static void TranslateShaderStorageLoad(HLSLCrossCompilerContext* psContext, Inst
 			else
 			{
 				ConstantBuffer *psCBuf = NULL;
+				ResourceGroup eGroup = RGROUP_UAV;
+				if (OPERAND_TYPE_RESOURCE == psSrc->eType)
+				{
+					eGroup = RGROUP_TEXTURE;
+				}
 				psVar = LookupStructuredVar(psContext, psSrc, psSrcByteOff, psSrc->eSelMode == OPERAND_4_COMPONENT_SWIZZLE_MODE ? psSrc->aui32Swizzle[component] : component);
-				GetConstantBufferFromBindingPoint(RGROUP_UAV, psSrc->ui32RegisterNumber, &psContext->psShader->sInfo, &psCBuf);
+				GetConstantBufferFromBindingPoint(eGroup, psSrc->ui32RegisterNumber, &psContext->psShader->sInfo, &psCBuf);
 
 				if (psVar->Type == SVT_FLOAT)
 				{
@@ -1569,11 +1574,30 @@ static void TranslateShaderStorageLoad(HLSLCrossCompilerContext* psContext, Inst
 				}
 				else
 				{
+					int byteOffset = ((int*)psSrcByteOff->afImmediates)[0] + 4 * component;
+					int vec4Offset = byteOffset / 16;
+
 					bformata(glsl, "StructuredRes%d[", psSrc->ui32RegisterNumber);
 					TranslateOperand(psContext, psSrcAddr, TO_FLAG_INTEGER);
 					bcatcstr(glsl, "].");
 
-					bcatcstr(glsl, psVar->Name);
+					//StructuredBuffer<float4x4> WorldTransformData;
+					//Becomes cbuf = WorldTransformData and var = $Element.
+					if (strcmp(psVar->Name, "$Element") != 0)
+					{
+						bcatcstr(glsl, psVar->Name);
+					}
+					else
+					{
+						bcatcstr(glsl, psCBuf->Name);
+					}
+
+					//Select component of matrix.
+					if (psVar->Class == SVC_MATRIX_COLUMNS || psVar->Class == SVC_MATRIX_ROWS)
+					{
+						const char* swizzleString[] = { ".x", ".y", ".z", ".w" };
+						bformata(glsl, "[%d]%s", vec4Offset, swizzleString[component]);
+					}
 				}
 
 				if (addedBitcast)
@@ -1675,8 +1699,8 @@ static void TranslateShaderStorageLoad(HLSLCrossCompilerContext* psContext, Inst
 			}
 
 			bformata(glsl, ");\n");
-		}
 	}
+}
 #endif
 }
 
@@ -2465,101 +2489,101 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
 
 				// No-operands, should never get here anyway
 				/*				case OPCODE_BREAK:
-								case OPCODE_CALL:
-								case OPCODE_CASE:
-								case OPCODE_CONTINUE:
-								case OPCODE_CUT:
-								case OPCODE_DEFAULT:
-								case OPCODE_DISCARD:
-								case OPCODE_ELSE:
-								case OPCODE_EMIT:
-								case OPCODE_EMITTHENCUT:
-								case OPCODE_ENDIF:
-								case OPCODE_ENDLOOP:
-								case OPCODE_ENDSWITCH:
+				case OPCODE_CALL:
+				case OPCODE_CASE:
+				case OPCODE_CONTINUE:
+				case OPCODE_CUT:
+				case OPCODE_DEFAULT:
+				case OPCODE_DISCARD:
+				case OPCODE_ELSE:
+				case OPCODE_EMIT:
+				case OPCODE_EMITTHENCUT:
+				case OPCODE_ENDIF:
+				case OPCODE_ENDLOOP:
+				case OPCODE_ENDSWITCH:
 
-								case OPCODE_LABEL:
-								case OPCODE_LOOP:
-								case OPCODE_CUSTOMDATA:
-								case OPCODE_NOP:
-								case OPCODE_RET:
-								case OPCODE_SWITCH:
-								case OPCODE_DCL_RESOURCE: // DCL* opcodes have
-								case OPCODE_DCL_CONSTANT_BUFFER: // custom operand formats.
-								case OPCODE_DCL_SAMPLER:
-								case OPCODE_DCL_INDEX_RANGE:
-								case OPCODE_DCL_GS_OUTPUT_PRIMITIVE_TOPOLOGY:
-								case OPCODE_DCL_GS_INPUT_PRIMITIVE:
-								case OPCODE_DCL_MAX_OUTPUT_VERTEX_COUNT:
-								case OPCODE_DCL_INPUT:
-								case OPCODE_DCL_INPUT_SGV:
-								case OPCODE_DCL_INPUT_SIV:
-								case OPCODE_DCL_INPUT_PS:
-								case OPCODE_DCL_INPUT_PS_SGV:
-								case OPCODE_DCL_INPUT_PS_SIV:
-								case OPCODE_DCL_OUTPUT:
-								case OPCODE_DCL_OUTPUT_SGV:
-								case OPCODE_DCL_OUTPUT_SIV:
-								case OPCODE_DCL_TEMPS:
-								case OPCODE_DCL_INDEXABLE_TEMP:
-								case OPCODE_DCL_GLOBAL_FLAGS:
+				case OPCODE_LABEL:
+				case OPCODE_LOOP:
+				case OPCODE_CUSTOMDATA:
+				case OPCODE_NOP:
+				case OPCODE_RET:
+				case OPCODE_SWITCH:
+				case OPCODE_DCL_RESOURCE: // DCL* opcodes have
+				case OPCODE_DCL_CONSTANT_BUFFER: // custom operand formats.
+				case OPCODE_DCL_SAMPLER:
+				case OPCODE_DCL_INDEX_RANGE:
+				case OPCODE_DCL_GS_OUTPUT_PRIMITIVE_TOPOLOGY:
+				case OPCODE_DCL_GS_INPUT_PRIMITIVE:
+				case OPCODE_DCL_MAX_OUTPUT_VERTEX_COUNT:
+				case OPCODE_DCL_INPUT:
+				case OPCODE_DCL_INPUT_SGV:
+				case OPCODE_DCL_INPUT_SIV:
+				case OPCODE_DCL_INPUT_PS:
+				case OPCODE_DCL_INPUT_PS_SGV:
+				case OPCODE_DCL_INPUT_PS_SIV:
+				case OPCODE_DCL_OUTPUT:
+				case OPCODE_DCL_OUTPUT_SGV:
+				case OPCODE_DCL_OUTPUT_SIV:
+				case OPCODE_DCL_TEMPS:
+				case OPCODE_DCL_INDEXABLE_TEMP:
+				case OPCODE_DCL_GLOBAL_FLAGS:
 
-								case OPCODE_HS_DECLS: // token marks beginning of HS sub-shader
-								case OPCODE_HS_CONTROL_POINT_PHASE: // token marks beginning of HS sub-shader
-								case OPCODE_HS_FORK_PHASE: // token marks beginning of HS sub-shader
-								case OPCODE_HS_JOIN_PHASE: // token marks beginning of HS sub-shader
+				case OPCODE_HS_DECLS: // token marks beginning of HS sub-shader
+				case OPCODE_HS_CONTROL_POINT_PHASE: // token marks beginning of HS sub-shader
+				case OPCODE_HS_FORK_PHASE: // token marks beginning of HS sub-shader
+				case OPCODE_HS_JOIN_PHASE: // token marks beginning of HS sub-shader
 
-								case OPCODE_EMIT_STREAM:
-								case OPCODE_CUT_STREAM:
-								case OPCODE_EMITTHENCUT_STREAM:
-								case OPCODE_INTERFACE_CALL:
+				case OPCODE_EMIT_STREAM:
+				case OPCODE_CUT_STREAM:
+				case OPCODE_EMITTHENCUT_STREAM:
+				case OPCODE_INTERFACE_CALL:
 
-								case OPCODE_DCL_STREAM:
-								case OPCODE_DCL_FUNCTION_BODY:
-								case OPCODE_DCL_FUNCTION_TABLE:
-								case OPCODE_DCL_INTERFACE:
+				case OPCODE_DCL_STREAM:
+				case OPCODE_DCL_FUNCTION_BODY:
+				case OPCODE_DCL_FUNCTION_TABLE:
+				case OPCODE_DCL_INTERFACE:
 
-								case OPCODE_DCL_INPUT_CONTROL_POINT_COUNT:
-								case OPCODE_DCL_OUTPUT_CONTROL_POINT_COUNT:
-								case OPCODE_DCL_TESS_DOMAIN:
-								case OPCODE_DCL_TESS_PARTITIONING:
-								case OPCODE_DCL_TESS_OUTPUT_PRIMITIVE:
-								case OPCODE_DCL_HS_MAX_TESSFACTOR:
-								case OPCODE_DCL_HS_FORK_PHASE_INSTANCE_COUNT:
-								case OPCODE_DCL_HS_JOIN_PHASE_INSTANCE_COUNT:
+				case OPCODE_DCL_INPUT_CONTROL_POINT_COUNT:
+				case OPCODE_DCL_OUTPUT_CONTROL_POINT_COUNT:
+				case OPCODE_DCL_TESS_DOMAIN:
+				case OPCODE_DCL_TESS_PARTITIONING:
+				case OPCODE_DCL_TESS_OUTPUT_PRIMITIVE:
+				case OPCODE_DCL_HS_MAX_TESSFACTOR:
+				case OPCODE_DCL_HS_FORK_PHASE_INSTANCE_COUNT:
+				case OPCODE_DCL_HS_JOIN_PHASE_INSTANCE_COUNT:
 
-								case OPCODE_DCL_THREAD_GROUP:
-								case OPCODE_DCL_UNORDERED_ACCESS_VIEW_TYPED:
-								case OPCODE_DCL_UNORDERED_ACCESS_VIEW_RAW:
-								case OPCODE_DCL_UNORDERED_ACCESS_VIEW_STRUCTURED:
-								case OPCODE_DCL_THREAD_GROUP_SHARED_MEMORY_RAW:
-								case OPCODE_DCL_THREAD_GROUP_SHARED_MEMORY_STRUCTURED:
-								case OPCODE_DCL_RESOURCE_RAW:
-								case OPCODE_DCL_RESOURCE_STRUCTURED:
-								case OPCODE_SYNC:
+				case OPCODE_DCL_THREAD_GROUP:
+				case OPCODE_DCL_UNORDERED_ACCESS_VIEW_TYPED:
+				case OPCODE_DCL_UNORDERED_ACCESS_VIEW_RAW:
+				case OPCODE_DCL_UNORDERED_ACCESS_VIEW_STRUCTURED:
+				case OPCODE_DCL_THREAD_GROUP_SHARED_MEMORY_RAW:
+				case OPCODE_DCL_THREAD_GROUP_SHARED_MEMORY_STRUCTURED:
+				case OPCODE_DCL_RESOURCE_RAW:
+				case OPCODE_DCL_RESOURCE_STRUCTURED:
+				case OPCODE_SYNC:
 
-								// TODO
-								case OPCODE_DADD:
-								case OPCODE_DMAX:
-								case OPCODE_DMIN:
-								case OPCODE_DMUL:
-								case OPCODE_DEQ:
-								case OPCODE_DGE:
-								case OPCODE_DLT:
-								case OPCODE_DNE:
-								case OPCODE_DMOV:
-								case OPCODE_DMOVC:
-								case OPCODE_DTOF:
-								case OPCODE_FTOD:
+				// TODO
+				case OPCODE_DADD:
+				case OPCODE_DMAX:
+				case OPCODE_DMIN:
+				case OPCODE_DMUL:
+				case OPCODE_DEQ:
+				case OPCODE_DGE:
+				case OPCODE_DLT:
+				case OPCODE_DNE:
+				case OPCODE_DMOV:
+				case OPCODE_DMOVC:
+				case OPCODE_DTOF:
+				case OPCODE_FTOD:
 
-								case OPCODE_EVAL_SNAPPED:
-								case OPCODE_EVAL_SAMPLE_INDEX:
-								case OPCODE_EVAL_CENTROID:
+				case OPCODE_EVAL_SNAPPED:
+				case OPCODE_EVAL_SAMPLE_INDEX:
+				case OPCODE_EVAL_CENTROID:
 
-								case OPCODE_DCL_GS_INSTANCE_COUNT:
+				case OPCODE_DCL_GS_INSTANCE_COUNT:
 
-								case OPCODE_ABORT:
-								case OPCODE_DEBUG_BREAK:*/
+				case OPCODE_ABORT:
+				case OPCODE_DEBUG_BREAK:*/
 
 			default:
 				break;
@@ -2678,7 +2702,7 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 		bcatcstr(glsl, "("); // 1
 		TranslateOperand(psContext, &psInst->asOperands[1], TO_AUTO_BITCAST_TO_FLOAT);
 		bcatcstr(glsl, ")"); // 1
-		// Add destination writemask if the component counts do not match
+							 // Add destination writemask if the component counts do not match
 		if (srcCount != dstCount)
 			AddSwizzleUsingElementCount(psContext, dstCount);
 		AddAssignPrologue(psContext, numParenthesis);
@@ -2720,7 +2744,7 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 		bcatcstr(glsl, "("); // 1
 		TranslateOperand(psContext, &psInst->asOperands[1], psInst->eOpcode == OPCODE_UTOF ? TO_AUTO_BITCAST_TO_UINT : TO_AUTO_BITCAST_TO_INT);
 		bcatcstr(glsl, ")"); // 1
-		// Add destination writemask if the component counts do not match
+							 // Add destination writemask if the component counts do not match
 		if (srcCount != dstCount)
 			AddSwizzleUsingElementCount(psContext, dstCount);
 		AddAssignPrologue(psContext, numParenthesis);
@@ -2806,9 +2830,9 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 	case OPCODE_GE:
 	{
 		/*
-			dest = vec4(greaterThanEqual(vec4(srcA), vec4(srcB));
-			Caveat: The result is a boolean but HLSL asm returns 0xFFFFFFFF/0x0 instead.
-			*/
+		dest = vec4(greaterThanEqual(vec4(srcA), vec4(srcB));
+		Caveat: The result is a boolean but HLSL asm returns 0xFFFFFFFF/0x0 instead.
+		*/
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//GE\n");

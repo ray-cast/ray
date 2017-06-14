@@ -531,6 +531,7 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		delegate.onMouseHoveringCamera = std::bind(&GuiControllerComponent::onMouseHoveringCamera, this, std::placeholders::_1, std::placeholders::_2);
 
 		delegate.onTextureImport = std::bind(&GuiControllerComponent::onTextureImport, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onIESImport = std::bind(&GuiControllerComponent::onIESImport, this, std::placeholders::_1, std::placeholders::_2);
 
 		view->setGuiViewDelegates(delegate);
 	}
@@ -611,6 +612,12 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 	}
 	break;
 	}
+}
+
+bool
+GuiControllerComponent::onIESImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+{
+	return true;
 }
 
 bool

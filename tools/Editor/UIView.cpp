@@ -182,7 +182,20 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 							}
 						}
 					}
-					else if (ray::util::stricmp(name, "fx") == 0)
+					else if (ray::util::strnicmp(name, "ies", 3) == 0)
+					{
+						if (_event.onIESImport)
+						{
+							ray::util::string::pointer error = nullptr;
+							if (!_event.onIESImport(event.drop.files[i], error))
+							{
+								if (error)
+									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+								break;
+							}
+						}
+					}
+					else if (ray::util::strnicmp(name, "fx", 2) == 0)
 					{
 						if (_event.onMaterialImport)
 						{
@@ -195,7 +208,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 							}
 						}
 					}
-					else if (ray::util::stricmp(name, "pmx") == 0)
+					else if (ray::util::strnicmp(name, "pmx", 3) == 0)
 					{
 						if (_event.onModelImport)
 						{

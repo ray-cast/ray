@@ -282,8 +282,5 @@ ENDIF()
 # 添加项目
 ADD_SUBDIRECTORY(source)
 
-# 例子
-ADD_SUBDIRECTORY(sample)
-
 # 工具
 ADD_SUBDIRECTORY(tools)

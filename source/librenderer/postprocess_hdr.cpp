@@ -78,7 +78,18 @@ PostProcessHDR::getSetting() const noexcept
 }
 
 void
-PostProcessHDR::sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint8_t level) noexcept
+PostProcessHDR::sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept
+{
+	_texSource->uniformTexture(source);
+	_texSourceSizeInv->uniform2f(1.0f / source->getGraphicsTextureDesc().getWidth(), 1.0f / source->getGraphicsTextureDesc().getHeight());
+
+	pipeline.setFramebuffer(dest);
+	pipeline.discardFramebuffer(0);
+	pipeline.drawScreenQuad(*_sumLum);
+}
+
+void
+PostProcessHDR::sumLumLevel(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint8_t level) noexcept
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
@@ -86,7 +97,7 @@ PostProcessHDR::sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& sourc
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
-	pipeline.drawScreenQuad(*_sumLum);
+	pipeline.drawScreenQuad(*_sumLumLevel);
 }
 
 void
@@ -192,8 +203,8 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	_texBloomTempMap = pipeline.createTexture(samplerBloomDesc);
 
 	GraphicsTextureDesc samplerLogDesc;
-	samplerLogDesc.setWidth(256);
-	samplerLogDesc.setHeight(256);
+	samplerLogDesc.setWidth(width / 4);
+	samplerLogDesc.setHeight(height / 4);
 	samplerLogDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	samplerLogDesc.setTexFormat(GraphicsFormat::GraphicsFormatR16SFloat);
 	samplerLogDesc.setMipNums(9);
@@ -211,26 +222,26 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	_texSampleLumMap = pipeline.createTexture(samplerLumDesc);
 
 	GraphicsFramebufferLayoutDesc framebufferBloomLayoutDesc;
-	framebufferBloomLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16G16B16SFloat));
+	framebufferBloomLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, samplerBloomDesc.getTexFormat()));
 	_sampleBloomImageLayout = pipeline.createFramebufferLayout(framebufferBloomLayoutDesc);
 
 	GraphicsFramebufferLayoutDesc framebufferLogLayoutDesc;
-	framebufferLogLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat));
+	framebufferLogLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, samplerLogDesc.getTexFormat()));
 	_sampleLogImageLayout = pipeline.createFramebufferLayout(framebufferLogLayoutDesc);
 
 	GraphicsFramebufferDesc sampleLogViewDesc;
-	sampleLogViewDesc.setWidth(256);
-	sampleLogViewDesc.setHeight(256);
+	sampleLogViewDesc.setWidth(samplerLogDesc.getWidth());
+	sampleLogViewDesc.setHeight(samplerLogDesc.getHeight());
 	sampleLogViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texSampleLogMap, 0, 0));
 	sampleLogViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
 	_texSampleLogView = pipeline.createFramebuffer(sampleLogViewDesc);
 
-	GraphicsFramebufferDesc sampleLog1ViewDesc;
-	sampleLog1ViewDesc.setWidth(1);
-	sampleLog1ViewDesc.setHeight(1);
-	sampleLog1ViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texSampleLumMap, 0, 0));
-	sampleLog1ViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
-	_texSampleLumView = pipeline.createFramebuffer(sampleLog1ViewDesc);
+	GraphicsFramebufferDesc sampleLumViewDesc;
+	sampleLumViewDesc.setWidth(samplerLumDesc.getWidth());
+	sampleLumViewDesc.setHeight(samplerLumDesc.getHeight());
+	sampleLumViewDesc.addColorAttachment(GraphicsAttachmentBinding(_texSampleLumMap, 0, 0));
+	sampleLumViewDesc.setGraphicsFramebufferLayout(_sampleLogImageLayout);
+	_texSampleLumView = pipeline.createFramebuffer(sampleLumViewDesc);
 
 	_texBloomView.resize(5);
 	_texBloomTempView.resize(5);
@@ -256,6 +267,7 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	assert(_fimic);
 
 	_sumLum = _fimic->getTech("SumLum");
+	_sumLumLevel = _fimic->getTech("SumLumLevel");
 	_sumLumLog = _fimic->getTech("SumLumLog");
 	_avgLuminance = _fimic->getTech("AvgLuminance");
 	_bloom = _fimic->getTech("GenerateBloom");
@@ -280,7 +292,7 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	_texLumAve->uniformTexture(_texSampleLumMap);
 	_toneLumExposure->uniform1f(_setting.exposure);
 
-	float factors[] = { 0.40472,0.358088,0.248018,0.134468,0.057064 };
+	float factors[] = { 0.40472, 0.358088, 0.248018, 0.134468, 0.057064 };
 	_bloomFactors->uniform1fv(sizeof(factors) / sizeof(factors[0]), factors);
 
 	_timer = std::make_shared<Timer>();
@@ -335,7 +347,7 @@ PostProcessHDR::onRender(RenderPipeline& pipeline, RenderQueue queue, const Grap
 
 	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 
-	this->sumLum(pipeline, texture, _texBloomTempView[0], 0);
+	this->sumLum(pipeline, texture, _texBloomTempView[0]);
 
 	if (_setting.enableEyeAdaptation)
 	{
@@ -351,10 +363,15 @@ PostProcessHDR::onRender(RenderPipeline& pipeline, RenderQueue queue, const Grap
 		{
 			this->blurh(pipeline, _texBloomMap, _texBloomTempView[i], i);
 			this->blurv(pipeline, _texBloomTempMap, _texBloomView[i], i);
-			if (i < 4) this->sumLum(pipeline, _texBloomMap, _texBloomView[i + 1], i);
+			if (i < 4) this->sumLumLevel(pipeline, _texBloomMap, _texBloomView[i + 1], i);
 		}
 
 		this->bloomCombine(pipeline, _texBloomMap, _texBloomTempView[0]);
+	}
+	else
+	{
+		pipeline.setFramebuffer(_texBloomTempView[0]);
+		pipeline.clearFramebuffer(0, ray::GraphicsClearFlagBits::GraphicsClearFlagColorBit, ray::float4::Zero, 1.0, 0);
 	}
 
 	this->doTonemapping(pipeline, _texBloomTempMap, texture, swap);

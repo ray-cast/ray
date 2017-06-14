@@ -66,7 +66,8 @@ public:
 	const Setting& getSetting() const noexcept;
 
 private:
-	void sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint8_t level) noexcept;
+	void sumLum(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
+	void sumLumLevel(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest, std::uint8_t level) noexcept;
 	void sumLumLog(RenderPipeline& pipeline, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
 	void avgLuminance(RenderPipeline& pipeline, const GraphicsTexturePtr& adaptedLum, const GraphicsTexturePtr& source, const GraphicsFramebufferPtr& dest) noexcept;
 
@@ -84,13 +85,13 @@ private:
 	bool onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept;
 
 private:
-
 	TimerPtr _timer;
 
 	Setting _setting;
 
 	MaterialPtr _fimic;
 	MaterialTechPtr _sumLum;
+	MaterialTechPtr _sumLumLevel;
 	MaterialTechPtr _sumLumLog;
 	MaterialTechPtr _avgLuminance;
 	MaterialTechPtr _bloom;

@@ -149,13 +149,27 @@
             float4 SumLumPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target
             {
                 float4 color = 0;
-                color += texSource.SampleLevel(PointClamp, coord0.xy, texSourceLevel);
-                color += texSource.SampleLevel(PointClamp, coord0.zw, texSourceLevel);
-                color += texSource.SampleLevel(PointClamp, coord1.xy, texSourceLevel);
-                color += texSource.SampleLevel(PointClamp, coord1.zw, texSourceLevel);
+                color += texSource.SampleLevel(PointClamp, coord0.xy, 0);
+                color += texSource.SampleLevel(PointClamp, coord0.zw, 0);
+                color += texSource.SampleLevel(PointClamp, coord1.xy, 0);
+                color += texSource.SampleLevel(PointClamp, coord1.zw, 0);
                 color *= 0.25;
 
                 return color;
+            }
+
+            void SumLumLevelVS(
+                in float4 Position : POSITION0,
+                out float2 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position)
+            {
+                oPosition = Position;
+                oTexcoord = PosToCoord(Position.xy);
+            }
+
+            float4 SumLumLevelPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                return texSource.SampleLevel(PointClamp, coord.xy, texSourceLevel);
             }
 
             float SumLumLogPS(in float4 coord0 : TEXCOORD0, in float4 coord1 : TEXCOORD1) : SV_Target
@@ -265,6 +279,18 @@
             <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="SumLumVS"/>
             <state name="fragment" value="SumLumPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+        </pass>
+    </technique>
+    <technique name="SumLumLevel">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+            <state name="vertex" value="SumLumLevelVS"/>
+            <state name="fragment" value="SumLumLevelPS"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>

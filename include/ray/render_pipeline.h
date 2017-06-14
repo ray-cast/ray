@@ -75,7 +75,7 @@ public:
 	const Scissor& getScissor(std::uint32_t i) const noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
-	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
+	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth = 1.0f, std::int32_t stencil = 0) noexcept;
 	void discardFramebuffer(std::uint32_t i) noexcept;
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;

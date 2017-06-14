@@ -117,10 +117,15 @@
                 return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
             }
 
-            float3 ColorBanding(float3 color, float2 uv)
+            float3 ColorBanding(float2 uv)
             {
                 float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
-                color += noise / 255.0;
+                return noise / 255.0;
+            }
+
+            float3 ColorDithering(float3 color, float2 uv)
+            {
+                color += ColorBanding(uv);
                 return color;
             }
 
@@ -250,11 +255,12 @@
             float4 BloomCombinePS(in float2 coord : TEXCOORD0) : SV_Target
             {
                 float3 bloom = 0;
-                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 0).rgb * bloomFactors[0];
-                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 1).rgb * bloomFactors[1];
-                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 2).rgb * bloomFactors[2];
-                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 3).rgb * bloomFactors[3];
-                bloom += texSource.SampleLevel(LinearClamp, coord.xy, 4).rgb * bloomFactors[4];
+                bloom += texSource.SampleLevel(LinearClamp, coord, 0).rgb * bloomFactors[0];
+                bloom += texSource.SampleLevel(LinearClamp, coord, 1).rgb * bloomFactors[1];
+                bloom += texSource.SampleLevel(LinearClamp, coord, 2).rgb * bloomFactors[2];
+                bloom += texSource.SampleLevel(LinearClamp, coord, 3).rgb * bloomFactors[3];
+                bloom += texSource.SampleLevel(LinearClamp, coord, 4).rgb * bloomFactors[4];
+                bloom = ColorDithering(bloom, coord);
 
                 return float4(bloom, 0);
             }
@@ -268,7 +274,7 @@
                 color += bloom;
                 color = ColorToneMapping(color);
                 color = linear2srgb(color);
-                color = ColorBanding(color, coord.xy);
+                color = ColorDithering(color, coord.xy);
 
                 return float4(color, luminance(color));
             }

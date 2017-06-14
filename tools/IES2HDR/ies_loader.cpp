@@ -69,12 +69,7 @@ bool
 IESLoadHelper::load(const char* data, std::size_t dataLength, IESFileInfo& info)
 {
 	assert(!info.valid());
-
-	std::string ASCIIFile;
-	ASCIIFile.resize(dataLength + 1);
-	ASCIIFile.assign(data, dataLength);
-
-	return this->load(ASCIIFile, info);
+	return this->load(std::string(data, dataLength), info);
 }
 
 bool
@@ -114,45 +109,45 @@ IESLoadHelper::load(const std::string& data, IESFileInfo& info)
 			break;
 		}
 		else if (line.compare(0, 5, "TILT=", 5) == 0 ||
-				 line.compare(0, 5, "TILT =", 5) == 0)
+			line.compare(0, 5, "TILT =", 5) == 0)
 		{
 			info._error = "Not supported yet.";
 			return false;
- 		}
+		}
 	}
 
-	this->getFloat(dataPos, dataPos, info.totalLights); 
+	this->getFloat(dataPos, dataPos, info.totalLights);
 	if (info.totalLights < 0 || info.totalLights > std::numeric_limits<short>::max())
-	{ 
-		info._error = "Light Count is not valid";  
+	{
+		info._error = "Light Count is not valid";
 		return false;
 	}
 
-	this->getFloat(dataPos, dataPos, info.totalLumens); 
-	if (info.totalLumens < 0) 
-	{ 
-		info._error = "TotalLumens is not positive number";  
+	this->getFloat(dataPos, dataPos, info.totalLumens);
+	if (info.totalLumens < 0)
+	{
+		info._error = "TotalLumens is not positive number";
 		return false;
 	}
 
-	this->getFloat(dataPos, dataPos, info.candalaMult); 
-	if (info.candalaMult < 0) 
-	{ 
-		info._error = "CandalaMult is not positive number";  
+	this->getFloat(dataPos, dataPos, info.candalaMult);
+	if (info.candalaMult < 0)
+	{
+		info._error = "CandalaMult is not positive number";
 		return false;
 	}
 
-	this->getInt(dataPos, dataPos, info.anglesNumV); 
-	if (info.anglesNumV < 0 || info.anglesNumV > std::numeric_limits<short>::max()) 
-	{ 
-		info._error = "VAnglesNum is not valid";  
+	this->getInt(dataPos, dataPos, info.anglesNumV);
+	if (info.anglesNumV < 0 || info.anglesNumV > std::numeric_limits<short>::max())
+	{
+		info._error = "VAnglesNum is not valid";
 		return false;
 	}
 
-	this->getInt(dataPos, dataPos, info.anglesNumH); 
-	if (info.anglesNumH < 0 || info.anglesNumH > std::numeric_limits<short>::max()) 
-	{ 
-		info._error = "HAnglesNum is not valid";  
+	this->getInt(dataPos, dataPos, info.anglesNumH);
+	if (info.anglesNumH < 0 || info.anglesNumH > std::numeric_limits<short>::max())
+	{
+		info._error = "HAnglesNum is not valid";
 		return false;
 	}
 
@@ -237,7 +232,7 @@ IESLoadHelper::load(const std::string& data, IESFileInfo& info)
 	return true;
 }
 
-bool 
+bool
 IESLoadHelper::saveAs1D(const IESFileInfo& info, float* data, std::uint32_t width, std::uint8_t channel) noexcept
 {
 	assert(data);
@@ -320,7 +315,7 @@ IESLoadHelper::saveAs2D(const IESFileInfo& info, float* data, std::uint32_t widt
 	return true;
 }
 
-float 
+float
 IESLoadHelper::computeInvMax(const std::vector<float>& candalaValues) const
 {
 	assert(candalaValues.size());
@@ -329,7 +324,7 @@ IESLoadHelper::computeInvMax(const std::vector<float>& candalaValues) const
 	return 1.0f / candala;
 }
 
-float 
+float
 IESLoadHelper::computeFilterPos(float value, const std::vector<float>& angles) const
 {
 	assert(angles.size());
@@ -374,7 +369,7 @@ IESLoadHelper::computeFilterPos(float value, const std::vector<float>& angles) c
 	return start + fraction;
 }
 
-float 
+float
 IESLoadHelper::interpolate1D(const IESFileInfo& info, float angle) const
 {
 	float angleV = this->computeFilterPos(angle, info._anglesV);
@@ -486,7 +481,7 @@ IESLoadHelper::getLineContent(const std::string& data, std::string& next, std::s
 	skipSpaceAndLineEnd(next, next, stopOnComma);
 }
 
-void 
+void
 IESLoadHelper::getFloat(const std::string& data, std::string& next, float& ret, bool stopOnWhiteSpace, bool stopOnComma)
 {
 	std::string line;

@@ -39,7 +39,6 @@ static uint32_t BuildComponentMaskFromElementCount(int count)
 	return (1 << count) - 1;
 }
 
-
 // This function prints out the destination name, possible destination writemask, assignment operator
 // and any possible conversions needed based on the eSrcType+ui32SrcElementCount (type and size of data expected to be coming in)
 // As an output, pNeedsParenthesis will be filled with the amount of closing parenthesis needed
@@ -116,7 +115,6 @@ static void AddOpAssignToDestWithMask(HLSLCrossCompilerContext* psContext, const
 				bformata(glsl, "%s(", GetConstructorForType(eSrcType, ui32DestElementCount));
 				(*pNeedsParenthesis)++;
 			}
-
 		}
 		else
 			bformata(glsl, " %s %s(", szAssignmentOp, GetConstructorForType(eDestDataType, ui32DestElementCount));
@@ -144,7 +142,6 @@ static void AddAssignPrologue(HLSLCrossCompilerContext *psContext, int numParent
 		numParenthesis--;
 	}
 	bcatcstr(glsl, ";\n");
-
 }
 static uint32_t ResourceReturnTypeToFlag(const RESOURCE_RETURN_TYPE eType)
 {
@@ -161,7 +158,6 @@ static uint32_t ResourceReturnTypeToFlag(const RESOURCE_RETURN_TYPE eType)
 		return TO_FLAG_NONE;
 	}
 }
-
 
 typedef enum
 {
@@ -180,15 +176,14 @@ static void AddComparision(HLSLCrossCompilerContext* psContext, Instruction* psI
 	// OPCODE_LT, _GT, _NE etc: inputs are floats, outputs UINT 0xffffffff or 0. typeflag: TO_FLAG_NONE
 	// OPCODE_ILT, _IGT etc: comparisons are signed ints, outputs UINT 0xffffffff or 0 typeflag TO_FLAG_INTEGER
 	// _ULT, UGT etc: inputs unsigned ints, outputs UINTs typeflag TO_FLAG_UNSIGNED_INTEGER
-	// 
+	//
 	// Additional complexity: if dest swizzle element count is 1, we can use normal comparison operators, otherwise glsl intrinsics.
-
 
 	bstring glsl = *psContext->currentGLSLString;
 	const uint32_t destElemCount = GetNumSwizzleElements(&psInst->asOperands[0]);
 	const uint32_t s0ElemCount = GetNumSwizzleElements(&psInst->asOperands[1]);
 	const uint32_t s1ElemCount = GetNumSwizzleElements(&psInst->asOperands[2]);
-	
+
 	int floatResult = 0;
 	int needsParenthesis = 0;
 
@@ -196,7 +191,7 @@ static void AddComparision(HLSLCrossCompilerContext* psContext, Instruction* psI
 	if (s0ElemCount != s1ElemCount)
 	{
 		// Set the proper auto-expand flag is either argument is scalar
-		typeFlag |= (TO_AUTO_EXPAND_TO_VEC2 << (max(s0ElemCount, s1ElemCount)-2));
+		typeFlag |= (TO_AUTO_EXPAND_TO_VEC2 << (max(s0ElemCount, s1ElemCount) - 2));
 	}
 
 	if (psContext->psShader->ui32MajorVersion < 4)
@@ -252,7 +247,6 @@ static void AddComparision(HLSLCrossCompilerContext* psContext, Instruction* psI
 			psNextInst->eOpcode == OPCODE_BREAKC &&
 			(psInst->asOperands[0].ui32RegisterNumber == psNextInst->asOperands[0].ui32RegisterNumber))
 		{
-
 			AddIndentation(psContext);
 			bcatcstr(glsl, "// IGE+BREAKC opt\n");
 			AddIndentation(psContext);
@@ -290,7 +284,6 @@ static void AddComparision(HLSLCrossCompilerContext* psContext, Instruction* psI
 		AddAssignPrologue(psContext, needsParenthesis);
 	}
 }
-
 
 static void AddMOVBinaryOp(HLSLCrossCompilerContext* psContext, const Operand *pDest, Operand *pSrc)
 {
@@ -358,9 +351,9 @@ static void AddMOVCBinaryOp(HLSLCrossCompilerContext* psContext, const Operand *
 		{
 			bcatcstr(glsl, " != 0) ? ");
 		}
-	
+
 		if (s1ElemCount == 1 && destElemCount > 1)
-			TranslateOperand(psContext, src1, SVTTypeToFlag(eDestType) | ElemCountToAutoExpandFlag(destElemCount) );
+			TranslateOperand(psContext, src1, SVTTypeToFlag(eDestType) | ElemCountToAutoExpandFlag(destElemCount));
 		else
 			TranslateOperandWithMask(psContext, src1, SVTTypeToFlag(eDestType), destWriteMask);
 
@@ -531,9 +524,8 @@ static void CallHelper3(HLSLCrossCompilerContext* psContext, const char* name, I
 	uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[dest]);
 	int numParenthesis = 0;
 
-
 	AddIndentation(psContext);
-	
+
 	AddAssignToDest(psContext, &psInst->asOperands[dest], SVT_FLOAT, dstSwizCount, &numParenthesis);
 
 	bformata(glsl, "%s(", name);
@@ -816,7 +808,6 @@ static void TranslateTexelFetchOffset(HLSLCrossCompilerContext* psContext,
 	AddSwizzleUsingElementCount(psContext, destCount);
 	AddAssignPrologue(psContext, numParenthesis);
 }
-
 
 //Makes sure the texture coordinate swizzle is appropriate for the texture type.
 //i.e. vecX for X-dimension texture.
@@ -1171,7 +1162,7 @@ static void TranslateTextureSample(HLSLCrossCompilerContext* psContext, Instruct
 		else
 			if (ui32Flags & TEXSMP_FLAGS_GRAD)
 			{
-			bformata(glsl, "%sGrad%s(", funcName, offset);
+				bformata(glsl, "%sGrad%s(", funcName, offset);
 			}
 			else
 			{
@@ -1196,19 +1187,19 @@ static void TranslateTextureSample(HLSLCrossCompilerContext* psContext, Instruct
 		else
 			if (ui32Flags & TEXSMP_FLAG_FIRSTLOD)
 			{
-			bcatcstr(glsl, ", 0.0");
+				bcatcstr(glsl, ", 0.0");
 			}
 			else
 				if (ui32Flags & TEXSMP_FLAGS_GRAD)
 				{
-			bcatcstr(glsl, ", vec4(");
-			TranslateOperand(psContext, &psInst->asOperands[4], TO_AUTO_BITCAST_TO_FLOAT);//dx
-			bcatcstr(glsl, ")");
-			bcatcstr(glsl, gradSwizzle);
-			bcatcstr(glsl, ", vec4(");
-			TranslateOperand(psContext, &psInst->asOperands[5], TO_AUTO_BITCAST_TO_FLOAT);//dy
-			bcatcstr(glsl, ")");
-			bcatcstr(glsl, gradSwizzle);
+					bcatcstr(glsl, ", vec4(");
+					TranslateOperand(psContext, &psInst->asOperands[4], TO_AUTO_BITCAST_TO_FLOAT);//dx
+					bcatcstr(glsl, ")");
+					bcatcstr(glsl, gradSwizzle);
+					bcatcstr(glsl, ", vec4(");
+					TranslateOperand(psContext, &psInst->asOperands[5], TO_AUTO_BITCAST_TO_FLOAT);//dy
+					bcatcstr(glsl, ")");
+					bcatcstr(glsl, gradSwizzle);
 				}
 
 		if (psInst->bAddressOffset)
@@ -1221,17 +1212,17 @@ static void TranslateTextureSample(HLSLCrossCompilerContext* psContext, Instruct
 			else
 				if (ui32NumOffsets == 2)
 				{
-				bformata(glsl, ", ivec2(%d, %d)",
-					psInst->iUAddrOffset,
-					psInst->iVAddrOffset);
+					bformata(glsl, ", ivec2(%d, %d)",
+						psInst->iUAddrOffset,
+						psInst->iVAddrOffset);
 				}
 				else
 					if (ui32NumOffsets == 3)
 					{
-				bformata(glsl, ", ivec3(%d, %d, %d)",
-					psInst->iUAddrOffset,
-					psInst->iVAddrOffset,
-					psInst->iWAddrOffset);
+						bformata(glsl, ", ivec3(%d, %d, %d)",
+							psInst->iUAddrOffset,
+							psInst->iVAddrOffset,
+							psInst->iWAddrOffset);
 					}
 		}
 
@@ -1313,7 +1304,6 @@ static ShaderVarType* LookupStructuredVar(HLSLCrossCompilerContext* psContext,
 
 	return psVarType;
 }
-
 
 static void TranslateShaderStorageStore(HLSLCrossCompilerContext* psContext, Instruction* psInst)
 {
@@ -1426,7 +1416,6 @@ static void TranslateShaderStorageStore(HLSLCrossCompilerContext* psContext, Ins
 					TranslateOperandWithMask(psContext, psSrc, flags, 1 << (srcComponent++));
 				else
 					TranslateOperandWithMask(psContext, psSrc, flags, OPERAND_4_COMPONENT_MASK_X);
-
 			}
 			else
 			{
@@ -1592,12 +1581,10 @@ static void TranslateShaderStorageLoad(HLSLCrossCompilerContext* psContext, Inst
 				if (psVar->Type == SVT_DOUBLE)
 					component++; // doubles take up 2 slots
 			}
-
 		}
 		AddAssignPrologue(psContext, numParenthesis);
 
 		return;
-
 	}
 
 #if 0
@@ -1714,7 +1701,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_IADD\n");
-#endif     
+#endif
 		func = "atomicAdd";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1727,7 +1714,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_IADD\n");
-#endif  
+#endif
 		func = "atomicAdd";
 		dest = &psInst->asOperands[0];
 		destAddr = &psInst->asOperands[1];
@@ -1739,7 +1726,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_AND\n");
-#endif     
+#endif
 		func = "atomicAnd";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1752,7 +1739,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_AND\n");
-#endif  
+#endif
 		func = "atomicAnd";
 		dest = &psInst->asOperands[0];
 		destAddr = &psInst->asOperands[1];
@@ -1764,7 +1751,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_OR\n");
-#endif     
+#endif
 		func = "atomicOr";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1777,7 +1764,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_OR\n");
-#endif  
+#endif
 		func = "atomicOr";
 		dest = &psInst->asOperands[0];
 		destAddr = &psInst->asOperands[1];
@@ -1789,7 +1776,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_XOR\n");
-#endif     
+#endif
 		func = "atomicXor";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1802,7 +1789,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_XOR\n");
-#endif  
+#endif
 		func = "atomicXor";
 		dest = &psInst->asOperands[0];
 		destAddr = &psInst->asOperands[1];
@@ -1815,7 +1802,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_EXCH\n");
-#endif     
+#endif
 		func = "atomicExchange";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1828,7 +1815,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_CMP_EXC\n");
-#endif     
+#endif
 		func = "atomicCompSwap";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1842,7 +1829,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_CMP_STORE\n");
-#endif     
+#endif
 		func = "atomicCompSwap";
 		previousValue = 0;
 		dest = &psInst->asOperands[0];
@@ -1856,7 +1843,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_UMIN\n");
-#endif     
+#endif
 		func = "atomicMin";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1869,7 +1856,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_UMIN\n");
-#endif  
+#endif
 		func = "atomicMin";
 		dest = &psInst->asOperands[0];
 		destAddr = &psInst->asOperands[1];
@@ -1881,7 +1868,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_IMIN\n");
-#endif     
+#endif
 		func = "atomicMin";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1894,7 +1881,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_IMIN\n");
-#endif  
+#endif
 		func = "atomicMin";
 		dest = &psInst->asOperands[0];
 		destAddr = &psInst->asOperands[1];
@@ -1906,7 +1893,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_UMAX\n");
-#endif     
+#endif
 		func = "atomicMax";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1919,7 +1906,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_UMAX\n");
-#endif  
+#endif
 		func = "atomicMax";
 		dest = &psInst->asOperands[0];
 		destAddr = &psInst->asOperands[1];
@@ -1931,7 +1918,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//IMM_ATOMIC_IMAX\n");
-#endif     
+#endif
 		func = "atomicMax";
 		previousValue = &psInst->asOperands[0];
 		dest = &psInst->asOperands[1];
@@ -1944,7 +1931,7 @@ void TranslateAtomicMemOp(HLSLCrossCompilerContext* psContext, Instruction* psIn
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ATOMIC_IMAX\n");
-#endif  
+#endif
 		func = "atomicMax";
 		dest = &psInst->asOperands[0];
 		destAddr = &psInst->asOperands[1];
@@ -2165,7 +2152,6 @@ static void SetVectorType(SHADER_VARIABLE_TYPE *aeTempVecType, uint32_t regBaseI
 			aeTempVecType[regBaseIndex + i] = eType;
 		}
 	}
-
 }
 
 static void MarkOperandAs(Operand *psOperand, SHADER_VARIABLE_TYPE eType, SHADER_VARIABLE_TYPE *aeTempVecType)
@@ -2268,9 +2254,7 @@ static void SetCBOperandComponents(HLSLCrossCompilerContext *psContext, Operand 
 
 	if (psVarType->Class == SVC_SCALAR)
 		psOperand->iNumComponents = 1;
-
 }
-
 
 void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, const int32_t i32InstCount)
 {
@@ -2295,7 +2279,7 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
 		}
 	}
 
-//	if (psContext->psShader->ui32MajorVersion <= 3)
+	//	if (psContext->psShader->ui32MajorVersion <= 3)
 	{
 		// First pass, do analysis: deduce the data type based on opcodes, fill out aeTempVecType table
 		// Only ever to int->float promotion (or int->uint), never the other way around
@@ -2449,7 +2433,6 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
 				MarkOperandAs(&psInst->asOperands[0], SVT_FLOAT, aeTempVecType);
 				break;
 
-
 			case OPCODE_RESINFO:
 			{
 				if (psInst->eResInfoReturnType != RESINFO_INSTRUCTION_RETURN_UINT)
@@ -2466,7 +2449,6 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
 				MarkOperandAs(&psInst->asOperands[0], SVT_FLOAT, aeTempVecType);
 				break;
 
-
 			case OPCODE_LD_UAV_TYPED:
 			case OPCODE_STORE_UAV_TYPED:
 			case OPCODE_LD_RAW:
@@ -2480,8 +2462,6 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
 			case OPCODE_F16TOF32:
 				// TODO
 				break;
-
-
 
 				// No-operands, should never get here anyway
 				/*				case OPCODE_BREAK:
@@ -2524,7 +2504,6 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
 								case OPCODE_DCL_INDEXABLE_TEMP:
 								case OPCODE_DCL_GLOBAL_FLAGS:
 
-
 								case OPCODE_HS_DECLS: // token marks beginning of HS sub-shader
 								case OPCODE_HS_CONTROL_POINT_PHASE: // token marks beginning of HS sub-shader
 								case OPCODE_HS_FORK_PHASE: // token marks beginning of HS sub-shader
@@ -2534,7 +2513,6 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
 								case OPCODE_CUT_STREAM:
 								case OPCODE_EMITTHENCUT_STREAM:
 								case OPCODE_INTERFACE_CALL:
-
 
 								case OPCODE_DCL_STREAM:
 								case OPCODE_DCL_FUNCTION_BODY:
@@ -2667,7 +2645,7 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 	AddIndentation(psContext);
 	bformata(glsl, "//Instruction %d\n", psInst->id);
 #if 0
-	if(psInst->id == 73)
+	if (psInst->id == 73)
 	{
 		ASSERT(1); //Set breakpoint here to debug an instruction from its ID.
 	}
@@ -2799,7 +2777,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 	}
 	case OPCODE_ADD:
 	{
-
 #ifdef _DEBUG
 		AddIndentation(psContext);
 		bcatcstr(glsl, "//ADD\n");
@@ -4323,7 +4300,7 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 
 			AddIndentation(psContext);
 			TranslateOperand(psContext, &psInst->asOperands[0], TO_FLAG_DESTINATION);
-			if (destElemCount>1)
+			if (destElemCount > 1)
 				bcatcstr(glsl, swizzle[destElem]);
 
 			bcatcstr(glsl, " = unpackHalf2x16(");
@@ -4331,7 +4308,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 			if (s0ElemCount > 1)
 				bcatcstr(glsl, swizzle[destElem]);
 			bcatcstr(glsl, ").x;\n");
-
 		}
 		break;
 	}
@@ -4357,7 +4333,7 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 
 			AddIndentation(psContext);
 			TranslateOperand(psContext, &psInst->asOperands[0], TO_FLAG_DESTINATION | TO_FLAG_UNSIGNED_INTEGER);
-			if (destElemCount>1)
+			if (destElemCount > 1)
 				bcatcstr(glsl, swizzle[destElem]);
 
 			bcatcstr(glsl, " = packHalf2x16(vec2(");
@@ -4365,7 +4341,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 			if (s0ElemCount > 1)
 				bcatcstr(glsl, swizzle[destElem]);
 			bcatcstr(glsl, ")) & 0xFFFF;\n");
-
 		}
 		break;
 	}
@@ -4504,7 +4479,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 	}
 	case OPCODE_RESINFO:
 	{
-
 		const RESOURCE_DIMENSION eResDim = psContext->psShader->aeResourceDims[psInst->asOperands[2].ui32RegisterNumber];
 		const RESINFO_RETURN_TYPE eResInfoReturnType = psInst->eResInfoReturnType;
 		uint32_t destElemCount = GetNumSwizzleElements(&psInst->asOperands[0]);
@@ -4523,7 +4497,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 
 		break;
 	}
-
 
 	case OPCODE_DMAX:
 	case OPCODE_DMIN:

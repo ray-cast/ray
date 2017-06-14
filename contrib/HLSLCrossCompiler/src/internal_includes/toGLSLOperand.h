@@ -24,7 +24,6 @@
 #define TO_AUTO_EXPAND_TO_VEC3 0x400
 #define TO_AUTO_EXPAND_TO_VEC4 0x800
 
-
 void TranslateOperand(HLSLCrossCompilerContext* psContext, const Operand* psOperand, uint32_t ui32TOFlag);
 // Translate operand but add additional component mask
 void TranslateOperandWithMask(HLSLCrossCompilerContext* psContext, const Operand* psOperand, uint32_t ui32TOFlag, uint32_t ui32ComponentMask);

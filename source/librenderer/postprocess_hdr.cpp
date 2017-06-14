@@ -44,7 +44,7 @@
 _NAME_BEGIN
 
 PostProcessHDR::Setting::Setting() noexcept
-	: bloomThreshold(3.9f)
+	: bloomThreshold(1.0f)
 	, bloomIntensity(1.0f)
 	, exposure(2.0f)
 	, enableBloom(true)

@@ -135,13 +135,13 @@ OGLGraphicsUniform::getName() const noexcept
 	return _name;
 }
 
-void 
+void
 OGLGraphicsUniform::setSamplerName(const std::string& name) noexcept
 {
 	_samplerName = name;
 }
 
-const std::string& 
+const std::string&
 OGLGraphicsUniform::getSamplerName() const noexcept
 {
 	return _samplerName;
@@ -388,7 +388,7 @@ OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& cod
 
 	try
 	{
-		HRESULT hr = D3DCompile(codes.data(), codes.size(), 0, 0, 0, main.c_str(), profile, D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, &binary, &error);
+		HRESULT hr = D3DCompile(codes.data(), codes.size(), 0, 0, 0, main.c_str(), profile, D3DCOMPILE_SKIP_VALIDATION | D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, &binary, &error);
 		if (hr != S_OK)
 		{
 			std::string line;
@@ -607,7 +607,7 @@ OGLProgram::_initActiveAttribute() noexcept
 			auto it = std::find_if_not(name.rbegin(), name.rend(), [](char ch) { return ch >= '0' && ch <= '9'; });
 			if (it != name.rend())
 			{
-				semantic = name.substr(0, name.rend()- it);
+				semantic = name.substr(0, name.rend() - it);
 				semanticIndex = std::atoi(name.substr(name.rend() - it).c_str());
 			}
 
@@ -616,7 +616,7 @@ OGLProgram::_initActiveAttribute() noexcept
 				semantic = semantic.substr(off + 1);
 			else
 				semantic = semantic;
-			
+
 			auto attrib = std::make_shared<OGLGraphicsAttribute>();
 			attrib->setSemantic(semantic);
 			attrib->setSemanticIndex(semanticIndex);
@@ -755,7 +755,7 @@ OGLProgram::_initActiveUniformBlock() noexcept
 	}
 }
 
-GraphicsFormat 
+GraphicsFormat
 OGLProgram::toGraphicsFormat(GLenum type) noexcept
 {
 	if (type == GL_BOOL)
@@ -800,10 +800,10 @@ OGLProgram::toGraphicsFormat(GLenum type) noexcept
 GraphicsUniformType
 OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 {
-	if (type == GL_SAMPLER_2D || 
+	if (type == GL_SAMPLER_2D ||
 		type == GL_SAMPLER_3D ||
-		type == GL_SAMPLER_2D_ARRAY || 
-		type == GL_SAMPLER_CUBE || 
+		type == GL_SAMPLER_2D_ARRAY ||
+		type == GL_SAMPLER_CUBE ||
 		type == GL_SAMPLER_CUBE_MAP_ARRAY)
 	{
 		return GraphicsUniformType::GraphicsUniformTypeSamplerImage;

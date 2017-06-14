@@ -134,7 +134,7 @@ PostProcessHDR::blurh(RenderPipeline& pipeline, const GraphicsTexturePtr& source
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
-	_texSourceSizeInv->uniform2f(float(1 << level) / source->getGraphicsTextureDesc().getWidth(), 0.0);
+	_texSourceSizeInv->uniform2f(float(2 << level) / source->getGraphicsTextureDesc().getWidth(), 0.0);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
@@ -146,7 +146,7 @@ PostProcessHDR::blurv(RenderPipeline& pipeline, const GraphicsTexturePtr& source
 {
 	_texSource->uniformTexture(source);
 	_texSourceLevel->uniform1i(level);
-	_texSourceSizeInv->uniform2f(0.0, float(1 << level) / source->getGraphicsTextureDesc().getHeight());
+	_texSourceSizeInv->uniform2f(0.0, float(2 << level) / source->getGraphicsTextureDesc().getHeight());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);

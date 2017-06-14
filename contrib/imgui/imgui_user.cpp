@@ -146,7 +146,7 @@ namespace ImGui
 		bool ret = false;
 
 		if (!enabled)
-			Image(texture, size, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+			Image(texture, size, ImVec2(0, 0), ImVec2(1, 1));
 		else
 		{
 			if (ImageButton(texture, size, ImVec2(0, 0), ImVec2(1, 1), -1, bg_color))

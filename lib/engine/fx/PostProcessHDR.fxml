@@ -250,8 +250,8 @@
                 float3 bloom = texBloom.SampleLevel(PointClamp, coord.xy, 0).rgb;
                 float3 color = texSource.SampleLevel(PointClamp, coord.xy, 0).rgb;
 
-                color += bloom;
                 color *= coord.z;
+                color += bloom;
                 color = ColorToneMapping(color);
                 color = linear2srgb(color);
                 color = ColorBanding(color, coord.xy);

@@ -592,6 +592,118 @@ MaterialParam::uniformBuffer(GraphicsDataPtr value) noexcept
 	_variant.uniformBuffer(value);
 }
 
+void
+MaterialParam::uniformParam(const MaterialParam& params) noexcept
+{
+	assert(this->getType() == params.getType());
+
+	auto type = params.getType();
+	switch (type)
+	{
+	case ray::GraphicsUniformType::GraphicsUniformTypeBool:
+		this->uniform1b(params.value().getBool());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeInt:
+		this->uniform1i(params.value().getInt());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeInt2:
+		this->uniform2i(params.value().getInt2());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeInt3:
+		this->uniform3i(params.value().getInt3());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeInt4:
+		this->uniform4i(params.value().getInt4());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeUInt:
+		this->uniform1ui(params.value().getUInt());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeUInt2:
+		this->uniform2ui(params.value().getUInt2());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeUInt3:
+		this->uniform3ui(params.value().getUInt3());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeUInt4:
+		this->uniform4ui(params.value().getUInt4());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat:
+		this->uniform1f(params.value().getFloat());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat2:
+		this->uniform2f(params.value().getFloat2());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat3:
+		this->uniform3f(params.value().getFloat3());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat4:
+		this->uniform4f(params.value().getFloat4());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat2x2:
+		this->uniform2fmat(params.value().getFloat2x2());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat3x3:
+		this->uniform3fmat(params.value().getFloat3x3());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat4x4:
+		this->uniform4fmat(params.value().getFloat4x4());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeIntArray:
+		this->uniform1iv(params.value().getIntArray());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeInt2Array:
+		this->uniform2iv(params.value().getInt2Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeInt3Array:
+		this->uniform3iv(params.value().getInt3Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeInt4Array:
+		this->uniform4iv(params.value().getInt4Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeUIntArray:
+		this->uniform1uiv(params.value().getUIntArray());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeUInt2Array:
+		this->uniform2uiv(params.value().getUInt2Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeUInt3Array:
+		this->uniform3uiv(params.value().getUInt3Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeUInt4Array:
+		this->uniform4uiv(params.value().getUInt4Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloatArray:
+		this->uniform1fv(params.value().getFloatArray());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat2Array:
+		this->uniform2fv(params.value().getFloat2Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat3Array:
+		this->uniform3fv(params.value().getFloat3Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat4Array:
+		this->uniform4fv(params.value().getFloat4Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat2x2Array:
+		this->uniform2fmatv(params.value().getFloat2x2Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
+		this->uniform3fmatv(params.value().getFloat3x3Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
+		this->uniform4fmatv(params.value().getFloat4x4Array());
+		break;
+	case ray::GraphicsUniformType::GraphicsUniformTypeSampler:
+	case ray::GraphicsUniformType::GraphicsUniformTypeSamplerImage:
+	case ray::GraphicsUniformType::GraphicsUniformTypeStorageImage:
+		this->uniformTexture(params.value().getTexture(), params.value().getTextureSampler());
+		break;
+	default:
+		assert(false);
+		break;
+	}
+}
+
 const MaterialVariant&
 MaterialParam::value() const noexcept
 {

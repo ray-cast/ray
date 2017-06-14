@@ -45,44 +45,7 @@
 
 #include "UIParams.h"
 #include "UITexts.h"
-
-struct GuiViewDelegates
-{
-	std::function<bool()> onUVMapperCancel;
-	std::function<bool(const GuiParams&, ray::util::string::pointer&)> onUVMapperWillStart;
-	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> onUVMapperProcess;
-
-	std::function<bool()> onLightMassCancel;
-	std::function<bool(const GuiParams&, ray::util::string::pointer&)> onLightMassWillStart;
-	std::function<bool(const GuiParams&, float&, ray::util::string::pointer&)> onLightMassProcess;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onLightMassSave;
-
-	std::function<bool(const ray::GameObjects*&)> onFetchMeshes;
-	std::function<bool(const ray::GameObjects*&)> onFetchCamera;
-	std::function<bool(const ray::GameObjects*&)> onFetchLights;
-	std::function<bool(const ray::GameObjects*&)> onFetchLightProbes;
-	std::function<bool(const ray::Materials*&)>   onFetchMaterials;
-
-	std::function<bool(const ray::GameObject*)> onSeletedCamera;
-	std::function<bool(const ray::GameObject*)> onSeletedLight;
-	std::function<bool(const ray::GameObject*)> onSeletedLightProbe;
-	std::function<bool(const ray::GameObject*, std::size_t)> onSeletedMesh;
-
-	std::function<bool(const ray::GameObject*, std::size_t subset)> onTransformObject;
-
-	std::function<void(const ray::float4&, bool)> onMouseHoveringCamera;
-
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectOpen;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSave;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onProjectSaveAs;
-
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelImport;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onModelExport;
-
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onIESImport;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onTextureImport;
-	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onMaterialImport;
-};
+#include "EditorEvents.h"
 
 class GuiViewComponent final : public ray::GameComponent
 {
@@ -91,8 +54,8 @@ public:
 	GuiViewComponent() noexcept;
 	~GuiViewComponent() noexcept;
 
-	void setGuiViewDelegates(const GuiViewDelegates& delegate) noexcept;
-	const GuiViewDelegates& getGuiViewDelegates() const noexcept;
+	void setEditorEvents(const EditorEvents& delegate) noexcept;
+	const EditorEvents& getEditorEvents() const noexcept;
 
 	ray::GameComponentPtr clone() const noexcept;
 
@@ -118,8 +81,8 @@ private:
 	bool showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
 	bool showFileSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
 
-	void showModelImportBrowse() noexcept;
-	void showModelExportBrowse() noexcept;
+	void showImportModelBrowse() noexcept;
+	void showExportModelBrowse() noexcept;
 
 	void showProjectOpenBrowse() noexcept;
 	void showProjectSaveBrowse() noexcept;
@@ -161,6 +124,7 @@ private:
 	std::weak_ptr<ray::CameraComponent> _cameraComponent;
 
 	ray::float2 _assetImageSize;
+	ray::float2 _materialImageSize;
 
 	ray::float4 _viewport;
 
@@ -200,7 +164,7 @@ private:
 	GuiParams _default;
 	GuiParams _setting;
 
-	GuiViewDelegates _event;
+	EditorEvents _event;
 };
 
 #endif

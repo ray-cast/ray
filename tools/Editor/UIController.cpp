@@ -501,10 +501,7 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 	{
 		auto view = component->downcast<GuiViewComponent>();
 
-		GuiViewDelegates delegate;
-
-		delegate.onModelImport = std::bind(&GuiControllerComponent::onModelImport, this, std::placeholders::_1, std::placeholders::_2);
-		delegate.onModelExport = std::bind(&GuiControllerComponent::onModelExport, this, std::placeholders::_1, std::placeholders::_2);
+		EditorEvents delegate;
 
 		delegate.onUVMapperCancel = std::bind(&GuiControllerComponent::onUVMapperCancel, this);
 		delegate.onUVMapperWillStart = std::bind(&GuiControllerComponent::onUVMapperWillStart, this, std::placeholders::_1, std::placeholders::_2);
@@ -530,10 +527,13 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 
 		delegate.onMouseHoveringCamera = std::bind(&GuiControllerComponent::onMouseHoveringCamera, this, std::placeholders::_1, std::placeholders::_2);
 
-		delegate.onTextureImport = std::bind(&GuiControllerComponent::onTextureImport, this, std::placeholders::_1, std::placeholders::_2);
-		delegate.onIESImport = std::bind(&GuiControllerComponent::onIESImport, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onImportTexture = std::bind(&GuiControllerComponent::onImportTexture, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onImportIES = std::bind(&GuiControllerComponent::onImportIES, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onImportModel = std::bind(&GuiControllerComponent::onImportModel, this, std::placeholders::_1, std::placeholders::_2);
 
-		view->setGuiViewDelegates(delegate);
+		delegate.onExportModel = std::bind(&GuiControllerComponent::onExportModel, this, std::placeholders::_1, std::placeholders::_2);
+
+		view->setEditorEvents(delegate);
 	}
 }
 
@@ -544,8 +544,8 @@ GuiControllerComponent::onDetachComponent(const ray::GameComponentPtr& component
 	{
 		auto view = component->downcast<GuiViewComponent>();
 
-		GuiViewDelegates delegate;
-		view->setGuiViewDelegates(delegate);
+		EditorEvents delegate;
+		view->setEditorEvents(delegate);
 	}
 }
 
@@ -615,13 +615,13 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 }
 
 bool
-GuiControllerComponent::onIESImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	return true;
 }
 
 bool
-GuiControllerComponent::onTextureImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onImportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	ray::util::string::value_type buffer[PATHLIMIT];
 	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) > 0)
@@ -638,13 +638,13 @@ GuiControllerComponent::onTextureImport(ray::util::string::const_pointer path, r
 }
 
 bool
-GuiControllerComponent::onMaterialImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	return true;
 }
 
 bool
-GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	try
 	{
@@ -805,7 +805,7 @@ GuiControllerComponent::onModelImport(ray::util::string::const_pointer path, ray
 }
 
 bool
-GuiControllerComponent::onModelExport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onExportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	if (_model)
 	{

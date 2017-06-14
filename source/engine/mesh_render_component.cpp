@@ -140,6 +140,29 @@ MeshRenderComponent::setMaterial(const MaterialPtr& material) noexcept
 }
 
 void
+MeshRenderComponent::setMaterial(const MaterialPtr& material, std::size_t n) noexcept
+{
+	assert(_materials.size() > n || _sharedMaterials.size() > n);
+
+	if (_materials.empty())
+	{
+		if (_sharedMaterials[n] != material)
+		{
+			_sharedMaterials[n] = material;
+			this->_updateMaterial(n);
+		}
+	}
+	else
+	{
+		if (_materials[n] != material)
+		{
+			_materials[n] = material;
+			this->_updateMaterial(n);
+		}
+	}
+}
+
+void
 MeshRenderComponent::setSharedMaterial(const MaterialPtr& material) noexcept
 {
 	auto _this = _sharedMaterials.empty() ? nullptr : _sharedMaterials.front().get();
@@ -149,6 +172,17 @@ MeshRenderComponent::setSharedMaterial(const MaterialPtr& material) noexcept
 		_sharedMaterials.push_back(material);
 
 		this->_updateMaterials();
+	}
+}
+
+void
+MeshRenderComponent::setSharedMaterial(const MaterialPtr& material, std::size_t n) noexcept
+{
+	assert(_sharedMaterials.size() > n);
+	if (_sharedMaterials[n] != material)
+	{
+		_sharedMaterials[n] = material;
+		this->_updateMaterial(n);
 	}
 }
 

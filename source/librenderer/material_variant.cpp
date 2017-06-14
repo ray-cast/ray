@@ -922,21 +922,21 @@ MaterialVariant::getFloat4x4Array() const noexcept
 	return *_value.m4array;
 }
 
-GraphicsTexturePtr
+const GraphicsTexturePtr&
 MaterialVariant::getTexture() const noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeSamplerImage || _type == GraphicsUniformType::GraphicsUniformTypeStorageImage);
 	return _value.texture->image;
 }
 
-GraphicsSamplerPtr
+const GraphicsSamplerPtr&
 MaterialVariant::getTextureSampler() const noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeSamplerImage || _type == GraphicsUniformType::GraphicsUniformTypeStorageImage);
 	return _value.texture->sampler;
 }
 
-GraphicsDataPtr
+const GraphicsDataPtr&
 MaterialVariant::getBuffer() const noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer);

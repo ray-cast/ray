@@ -62,7 +62,9 @@ public:
 	bool getReceiveShadow() const noexcept;
 
 	void setMaterial(const MaterialPtr& material) noexcept;
+	void setMaterial(const MaterialPtr& material, std::size_t n) noexcept;
 	void setSharedMaterial(const MaterialPtr& material) noexcept;
+	void setSharedMaterial(const MaterialPtr& material, std::size_t n) noexcept;
 
 	void setMaterial(MaterialPtr&& material) noexcept;
 	void setSharedMaterial(MaterialPtr&& material) noexcept;

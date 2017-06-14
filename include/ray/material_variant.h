@@ -143,9 +143,9 @@ public:
 	const std::vector<float2x2>& getFloat2x2Array() const noexcept;
 	const std::vector<float3x3>& getFloat3x3Array() const noexcept;
 	const std::vector<float4x4>& getFloat4x4Array() const noexcept;
-	GraphicsTexturePtr getTexture() const noexcept;
-	GraphicsSamplerPtr getTextureSampler() const noexcept;
-	GraphicsDataPtr getBuffer() const noexcept;
+	const GraphicsTexturePtr& getTexture() const noexcept;
+	const GraphicsSamplerPtr& getTextureSampler() const noexcept;
+	const GraphicsDataPtr& getBuffer() const noexcept;
 
 	void copy(const MaterialVariant& other) noexcept;
 

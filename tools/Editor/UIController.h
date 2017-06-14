@@ -66,13 +66,12 @@ private:
 	void onActivate() except;
 	void onMessage(const ray::MessagePtr& message) except;
 
-	bool onIESImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
-	bool onTextureImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onImportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onImportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onImportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onImportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
-	bool onMaterialImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
-
-	bool onModelImport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
-	bool onModelExport(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onExportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
 	bool onUVMapperCancel() noexcept;
 	bool onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;

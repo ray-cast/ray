@@ -37,7 +37,7 @@
 #ifndef _H_UI_PARAMS_H_
 #define _H_UI_PARAMS_H_
 
-#include <ray/game_component.h>
+#include <ray/math.h>
 
 struct GUIUvmapper
 {

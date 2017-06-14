@@ -42,6 +42,11 @@
 			return rgb < 0.04045f ? rgb / 12.92f : pow((max(rgb,1e-5) + ALPHA) / (1 + ALPHA), 2.4f);
 		}
 
+		float3 srgb2linear_fast(float3 rgb)
+		{
+			return pow(max(rgb, 1e-6), 2.2);
+		}
+
 		float3 linear2srgb(float3 srgb)
 		{
 			// apply gamma correction using exact sRGB curve
@@ -52,6 +57,11 @@
 		float4 srgb2linear(float4 c)
 		{
 			return float4(srgb2linear(c.rgb), c.a);
+		}
+
+		float4 srgb2linear_fast(float4 c)
+		{
+			return float4(srgb2linear_fast(c.rgb), c.a);
 		}
 
 		float4 linear2srgb(float4 c)

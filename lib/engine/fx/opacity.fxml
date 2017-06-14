@@ -102,7 +102,7 @@
 					else if (albedoMapFilp == 3)
 						coord = 1 - coord;
 					
-					return saturate(srgb2linear(albedoMap.Sample(PointClamp, coord * albedoMapLoopNum).rgb) * albedo);
+					return saturate(srgb2linear_fast(albedoMap.Sample(PointClamp, coord * albedoMapLoopNum).rgb) * albedo);
 				}
 				else
 				{
@@ -124,7 +124,7 @@
 						else if (albedoSubMapFilp == 3)
 							coord = 1 - coord;
 						
-						albedoSubColor = srgb2linear(albedoSubMap.Sample(PointClamp, coord * albedoSubMapLoopNum));
+						albedoSubColor = srgb2linear_fast(albedoSubMap.Sample(PointClamp, coord * albedoSubMapLoopNum));
 					}
 					else
 					{

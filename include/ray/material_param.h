@@ -191,6 +191,7 @@ public:
 	void uniform4fmatv(const std::vector<float4x4>& value) noexcept;
 	void uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 	void uniformBuffer(GraphicsDataPtr ubo) noexcept;
+	void uniformParam(const MaterialParam& params) noexcept;
 
 	const MaterialVariant& value() const noexcept;
 

@@ -66,9 +66,10 @@ GuiViewComponent::GuiViewComponent() noexcept
 	: _selectedSubset(std::numeric_limits<std::size_t>::max())
 	, _selectedObject(nullptr)
 	, _lightMassType(LightMassType::UVMapper)
-	, _viewport(0, 0, 0, 0)
+	, _viewport(0.0f, 0.0f, 0.0f, 0.0f)
 	, _mouseHoveringCamera(false)
-	, _assetImageSize(ray::float2(64, 64))
+	, _assetImageSize(ray::float2(64.0f, 64.0f))
+	, _materialImageSize(ray::float2(128.0f, 128.0f))
 {
 	_progress = 0.0f;
 	_showWindowAll = true;
@@ -119,13 +120,13 @@ GuiViewComponent::clone() const noexcept
 }
 
 void
-GuiViewComponent::setGuiViewDelegates(const GuiViewDelegates& delegate) noexcept
+GuiViewComponent::setEditorEvents(const EditorEvents& delegate) noexcept
 {
 	_event = delegate;
 }
 
-const GuiViewDelegates&
-GuiViewComponent::getGuiViewDelegates() const noexcept
+const EditorEvents&
+GuiViewComponent::getEditorEvents() const noexcept
 {
 	return _event;
 }
@@ -171,10 +172,10 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 						ray::util::strncmp(name, "dds", 3) == 0 ||
 						ray::util::strncmp(name, "hdr", 3) == 0)
 					{
-						if (_event.onTextureImport)
+						if (_event.onImportTexture)
 						{
 							ray::util::string::pointer error = nullptr;
-							if (!_event.onTextureImport(event.drop.files[i], error))
+							if (!_event.onImportTexture(event.drop.files[i], error))
 							{
 								if (error)
 									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -184,10 +185,10 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 					}
 					else if (ray::util::strnicmp(name, "ies", 3) == 0)
 					{
-						if (_event.onIESImport)
+						if (_event.onImportIES)
 						{
 							ray::util::string::pointer error = nullptr;
-							if (!_event.onIESImport(event.drop.files[i], error))
+							if (!_event.onImportIES(event.drop.files[i], error))
 							{
 								if (error)
 									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -197,10 +198,10 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 					}
 					else if (ray::util::strnicmp(name, "fx", 2) == 0)
 					{
-						if (_event.onMaterialImport)
+						if (_event.onImportMaterial)
 						{
 							ray::util::string::pointer error = nullptr;
-							if (!_event.onMaterialImport(event.drop.files[i], error))
+							if (!_event.onImportMaterial(event.drop.files[i], error))
 							{
 								if (error)
 									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -210,10 +211,10 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 					}
 					else if (ray::util::strnicmp(name, "pmx", 3) == 0)
 					{
-						if (_event.onModelImport)
+						if (_event.onImportModel)
 						{
 							ray::util::string::pointer error = nullptr;
-							if (!_event.onModelImport(event.drop.files[i], error))
+							if (!_event.onImportModel(event.drop.files[i], error))
 							{
 								if (error)
 									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -291,7 +292,23 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 						euler.x += axisY;
 						euler.y += axisX;
 
-						ray::float3 center = _selectedObject ? _selectedObject->getTranslate() : ray::float3::Zero;
+						ray::float3 center = ray::float3::Zero;
+						if (_selectedObject)
+						{
+							auto meshComponent = _selectedObject->getComponent<ray::MeshComponent>();
+							if (meshComponent)
+							{
+								auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[_selectedSubset].boundingBox;
+								boundingBox.transform(_selectedObject->getTransform());
+
+								center = boundingBox.center();
+							}
+							else
+							{
+								center = _selectedObject->getTranslate();
+							}
+						}
+
 						float distance = ray::math::distance(center, _cameraComponent.lock()->getGameObject()->getTranslate());
 
 						ray::Quaternion q(euler);
@@ -382,8 +399,8 @@ GuiViewComponent::showMainMenu() noexcept
 			if (ray::Gui::menuItem(_langs[UILang::SaveAs], "CTRL+SHIFT+S")) { this->showProjectSaveAsBrowse(); }
 			ray::Gui::separator();
 			ray::Gui::separator();
-			if (ray::Gui::menuItem(_langs[UILang::ImportModel])) { this->showModelImportBrowse(); }
-			if (ray::Gui::menuItem(_langs[UILang::ExportModel])) { this->showModelExportBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::ImportModel])) { this->showImportModelBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::ExportModel])) { this->showExportModelBrowse(); }
 			ray::Gui::separator();
 			ray::Gui::separator();
 			if (ray::Gui::menuItem(_langs[UILang::Exit])) { std::exit(0); }
@@ -549,7 +566,7 @@ GuiViewComponent::showProjectSaveAsBrowse() noexcept
 }
 
 void
-GuiViewComponent::showModelImportBrowse() noexcept
+GuiViewComponent::showImportModelBrowse() noexcept
 {
 	ray::util::string::value_type filepath[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
@@ -557,10 +574,10 @@ GuiViewComponent::showModelImportBrowse() noexcept
 	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
 		return;
 
-	if (_event.onModelImport)
+	if (_event.onImportModel)
 	{
 		ray::util::string::pointer error = nullptr;
-		if (!_event.onModelImport(filepath, error))
+		if (!_event.onImportModel(filepath, error))
 		{
 			if (error)
 				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -571,9 +588,9 @@ GuiViewComponent::showModelImportBrowse() noexcept
 }
 
 void
-GuiViewComponent::showModelExportBrowse() noexcept
+GuiViewComponent::showExportModelBrowse() noexcept
 {
-	if (!_event.onModelExport)
+	if (!_event.onExportModel)
 		return;
 
 	ray::util::string::value_type filepath[PATHLIMIT];
@@ -589,7 +606,7 @@ GuiViewComponent::showModelExportBrowse() noexcept
 	}
 
 	ray::util::string::pointer error = nullptr;
-	if (!_event.onModelExport(filepath, error))
+	if (!_event.onExportModel(filepath, error))
 	{
 		if (error)
 			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -1379,8 +1396,30 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 
 	if (ray::Gui::treeNodeEx("Material", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 	{
-		if (ray::Gui::imageButtonEx(_materialFx.get(), _assetImageSize * 2.0f, material.getName().c_str(), _selectedMaterial ? true : false, _selectedMaterial ? true : false))
+		if (ray::Gui::imageButtonEx(_materialFx.get(), _materialImageSize, material.getName().c_str(), _selectedMaterial ? true : false, _selectedMaterial ? true : false))
 		{
+			if (ray::Gui::isKeyPressed(ray::InputKey::Code::LeftControl))
+			{
+				auto& params = _selectedMaterial->getParameters();
+				for (auto& it : params)
+					material[it.first]->uniformParam(*it.second);
+			}
+			else
+			{
+				auto& meshComponent = _selectedObject->getComponent<ray::MeshRenderComponent>();
+
+				auto materials = meshComponent->getMaterials();
+				if (!materials.empty())
+				{
+					if (materials.size() > _selectedSubset)
+						meshComponent->setMaterial(_selectedMaterial, _selectedSubset);
+					else
+						meshComponent->setMaterial(_selectedMaterial);
+				}
+			}
+
+			_selectedTexture = nullptr;
+			_selectedMaterial = nullptr;
 		}
 
 		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit | ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))

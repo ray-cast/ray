@@ -44,7 +44,7 @@
 _NAME_BEGIN
 
 PostProcessHDR::Setting::Setting() noexcept
-	: bloomThreshold(1.07f)
+	: bloomThreshold(3.9f)
 	, bloomIntensity(1.0f)
 	, exposure(2.0f)
 	, enableBloom(true)
@@ -280,7 +280,7 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	_texLumAve->uniformTexture(_texSampleLumMap);
 	_toneLumExposure->uniform1f(_setting.exposure);
 
-	float factors[] = { 0.341586,0.315658,0.249096,0.16786,0.096594 };
+	float factors[] = { 0.40472,0.358088,0.248018,0.134468,0.057064 };
 	_bloomFactors->uniform1fv(sizeof(factors) / sizeof(factors[0]), factors);
 
 	_timer = std::make_shared<Timer>();

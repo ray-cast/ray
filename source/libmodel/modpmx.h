@@ -179,7 +179,7 @@ struct PMX_Material
 	PMX_uint16_t SphereTextureIndex;
 	PMX_uint8_t  SphereMode;
 	PMX_uint8_t  ToonIndex;
-	PMX_uint16_t ToneTexture;
+	PMX_uint16_t ToonTexture;
 	PMX_uint32_t memLength;
 	PMX_char	 mem[MAX_PATH];
 	PMX_uint32_t FaceCount;

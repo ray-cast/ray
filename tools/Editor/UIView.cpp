@@ -55,7 +55,7 @@ const char* itemsImageSize[] = { "512", "1024", "2048", "4096", "8192" };
 const char* itemsSampleSize[] = { "32", "64", "128", "256", "512" };
 
 const char* TEXTURE_MAP_FROM[] = { "Constant value", "Static Image", "Animation Image", "Diffuse map from model", "Sphere map from model", "Toon map from model", "Screen map (cannot preview)", "Ambient color from model", "Specular color from model" };
-const char* TEXTURE_MAP_UV_FLIP[] = { "None", "axis X", "axis Y", "axis X & Y" };
+const char* TEXTURE_MAP_UV_FLIP[] = { "None", " Axis X", " Axis Y", " Axis X & Y" };
 const char* TEXTURE_SUBALBEDO_TYPE[] = { "None", "Mulplay", "Exponent", "Add", "Melain", "Alpha Blend" };
 const char* TEXTURE_SMOOTHNESS_TYPE[] = { "Smoothness", "Roughness", "Roughness" };
 const char* TEXTURE_NORMAL_TYPE[] = { "RGB tangent space", "RG tangent space", "PerturbNormalLQ", "PerturbNormalHQ" };
@@ -216,8 +216,6 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 
 							_selectedObject = nullptr;
 						}
-
-						break;
 					}
 				}
 			}
@@ -585,12 +583,14 @@ void
 GuiViewComponent::showImportAssetBrowse() noexcept
 {
 	static const char formats[] =
-		"Images (*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr)\0"\
+		"All Formats(*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr,*.fx,*.ies)\0"\
+		"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;*.fx;*.ies;\0"\
+		"All Images (*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr)\0"\
 		"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;\0"\
-		"Materials (*.fx)\0"\
+		"All Materials (*.fx)\0"\
 		"*.fx;\0"\
-		"All Files(*.*)\0"\
-		"*.*\0";
+		"All IES Profiles (*.ies)\0"\
+		"*.ies;\0";
 
 	if (!_event.onImportTexture)
 		return;
@@ -667,7 +667,7 @@ GuiViewComponent::showExportModelBrowse() noexcept
 	}
 
 	ray::util::string::pointer error = nullptr;
-	if (!_event.onExportModel(filepath, error))
+	if (!_event.onExportModel(filepath, 0, error))
 	{
 		if (error)
 			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -697,7 +697,37 @@ GuiViewComponent::showExportAssetBrowse() noexcept
 	}
 
 	ray::util::string::pointer error = nullptr;
-	if (!_event.onExportTexture(filepath, error))
+	if (!_event.onExportTexture(filepath, 0, error))
+	{
+		if (error)
+			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+	}
+	else
+	{
+		this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}(error));
+	}
+}
+
+void
+GuiViewComponent::showExportMaterialBrowse() noexcept
+{
+	if (!_event.onExportMaterial)
+		return;
+
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Material (*.fx)\0*.fx;\0All File(*.*)\0*.*;\0\0")))
+		return;
+
+	if (std::strlen(filepath) < (PATHLIMIT - 5))
+	{
+		if (std::strstr(filepath, ".fx") == 0)
+			std::strcat(filepath, ".fx");
+	}
+
+	ray::util::string::pointer error = nullptr;
+	if (!_event.onExportMaterial(filepath, 0, error))
 	{
 		if (error)
 			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -1169,7 +1199,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 		ray::Gui::sameLine();
 		if (ray::Gui::button("Import...")) { this->showImportAssetBrowse(); }
 		ray::Gui::sameLine();
-		if (ray::Gui::button("Export...")) { this->showExportAssetBrowse(); }
+		if (ray::Gui::button("Export...")) { this->showExportMaterialBrowse(); }
 
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
 		ray::Gui::text("");
@@ -1650,7 +1680,8 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 			if (normalMapFrom >= 1 && normalMapFrom <= 6)
 			{
 				ray::Gui::text("Texture type:");
-				ray::Gui::combo("##normalMapType", &normalMapType, TEXTURE_NORMAL_TYPE, sizeof(TEXTURE_NORMAL_TYPE) / sizeof(TEXTURE_NORMAL_TYPE[0]));
+				if (ray::Gui::combo("##normalMapType", &normalMapType, TEXTURE_NORMAL_TYPE, sizeof(TEXTURE_NORMAL_TYPE) / sizeof(TEXTURE_NORMAL_TYPE[0])))
+					material["normalMapType"]->uniform1i(normalMapType);
 
 				ray::Gui::text("Texture filp:");
 				if (ray::Gui::combo("##normalMapFilp", &normalMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))

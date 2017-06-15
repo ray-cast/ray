@@ -86,6 +86,7 @@ private:
 
 	void showExportModelBrowse() noexcept;
 	void showExportAssetBrowse() noexcept;
+	void showExportMaterialBrowse() noexcept;
 
 	void showProjectOpenBrowse() noexcept;
 	void showProjectSaveBrowse() noexcept;

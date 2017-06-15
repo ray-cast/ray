@@ -239,11 +239,11 @@ PMXHandler::doLoad(StreamReader& stream, PMX& pmx) noexcept
 
 			if (material.ToonIndex == 1)
 			{
-				if (!stream.read((char*)&material.ToneTexture, 1)) return false;
+				if (!stream.read((char*)&material.ToonTexture, 1)) return false;
 			}
 			else
 			{
-				if (!stream.read((char*)&material.ToneTexture, pmx.header.sizeOfTexture)) return false;
+				if (!stream.read((char*)&material.ToonTexture, pmx.header.sizeOfTexture)) return false;
 			}
 
 			if (!stream.read((char*)&material.memLength, sizeof(material.memLength))) return false;
@@ -874,11 +874,11 @@ PMXHandler::doSave(StreamWrite& stream, const PMX& pmx) noexcept
 
 			if (material.ToonIndex == 1)
 			{
-				if (!stream.write((char*)&material.ToneTexture, 1)) return false;
+				if (!stream.write((char*)&material.ToonTexture, 1)) return false;
 			}
 			else
 			{
-				if (!stream.write((char*)&material.ToneTexture, pmx.header.sizeOfTexture)) return false;
+				if (!stream.write((char*)&material.ToonTexture, pmx.header.sizeOfTexture)) return false;
 			}
 
 			if (!stream.write((char*)&material.memLength, sizeof(material.memLength))) return false;

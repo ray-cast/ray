@@ -71,10 +71,10 @@ private:
 	bool onImportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onImportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
-	bool onExportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
-	bool onExportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
-	bool onExportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
-	bool onExportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onExportIES(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept;
+	bool onExportTexture(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept;
+	bool onExportMaterial(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept;
+	bool onExportModel(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept;
 
 	bool onUVMapperCancel() noexcept;
 	bool onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;
@@ -118,7 +118,7 @@ private:
 
 	ray::GameObjectPtr _cube;
 
-	std::unique_ptr<ray::PMX> _model;
+	std::vector<std::unique_ptr<ray::PMX>> _models;
 	std::unique_ptr<std::future<bool>> _future;
 	std::shared_ptr<ray::LightMapData> _lightMapData;
 

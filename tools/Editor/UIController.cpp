@@ -433,6 +433,11 @@ GuiControllerComponent::makeSphereObjects() noexcept
 			(*material)["normalMapLoopNum"]->uniform2f(1.0f, 1.0f);
 			(*material)["normalMapScale"]->uniform1f(-1.0f);
 
+			(*material)["normalSubMap"]->uniformTexture(0);
+			(*material)["normalSubMapFrom"]->uniform1i(0);
+			(*material)["normalSubMapLoopNum"]->uniform2f(1.0f, 1.0f);
+			(*material)["normalSubMapScale"]->uniform1f(1.0f);
+
 			(*material)["smoothness"]->uniform1f(shininessParams[i * 10 + j]);
 			(*material)["smoothnessMapFrom"]->uniform1i(0);
 			(*material)["smoothnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
@@ -533,10 +538,10 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		delegate.onImportMaterial = std::bind(&GuiControllerComponent::onImportMaterial, this, std::placeholders::_1, std::placeholders::_2);
 		delegate.onImportModel = std::bind(&GuiControllerComponent::onImportModel, this, std::placeholders::_1, std::placeholders::_2);
 
-		delegate.onExportIES = std::bind(&GuiControllerComponent::onExportIES, this, std::placeholders::_1, std::placeholders::_2);
-		delegate.onExportTexture = std::bind(&GuiControllerComponent::onExportTexture, this, std::placeholders::_1, std::placeholders::_2);
-		delegate.onExportMaterial = std::bind(&GuiControllerComponent::onExportMaterial, this, std::placeholders::_1, std::placeholders::_2);
-		delegate.onExportModel = std::bind(&GuiControllerComponent::onExportModel, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onExportIES = std::bind(&GuiControllerComponent::onExportIES, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		delegate.onExportTexture = std::bind(&GuiControllerComponent::onExportTexture, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		delegate.onExportMaterial = std::bind(&GuiControllerComponent::onExportMaterial, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		delegate.onExportModel = std::bind(&GuiControllerComponent::onExportModel, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
 		view->setEditorEvents(delegate);
 	}
@@ -745,50 +750,48 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 			return false;
 		}
 
-		_objects.clear();
-		_model = std::move(model);
 		_cube->setScaleAll(0.0f);
 
 		auto gameObject = std::make_shared<ray::GameObject>();
 
-		if (_model->description.japanModelLength)
+		if (model->description.japanModelLength)
 		{
 			char name[MAX_PATH];
-			if (ray::wcs2mbs(_model->description.japanModelName.data(), _model->description.japanModelLength, name, MAX_PATH))
+			if (ray::wcs2mbs(model->description.japanModelName.data(), model->description.japanModelLength, name, MAX_PATH))
 				gameObject->setName(name);
 		}
-		else if (_model->description.englishModelLength)
+		else if (model->description.englishModelLength)
 		{
 			char name[MAX_PATH];
-			if (ray::wcs2mbs(_model->description.englishModelName.data(), _model->description.englishModelLength, name, MAX_PATH))
+			if (ray::wcs2mbs(model->description.englishModelName.data(), model->description.englishModelLength, name, MAX_PATH))
 				gameObject->setName(name);
 		}
 
-		if (_model->numVertices > 0 && _model->numIndices > 0)
+		if (model->numVertices > 0 && model->numIndices > 0)
 		{
-			ray::PMX_Index* indicesData = _model->indices.data();
+			ray::PMX_Index* indicesData = model->indices.data();
 
-			ray::Float3Array vertices(_model->numVertices);
-			ray::Float3Array normals(_model->numVertices);
-			ray::Float2Array texcoords(_model->numVertices);
-			ray::UintArray indices(_model->numIndices);
+			ray::Float3Array vertices(model->numVertices);
+			ray::Float3Array normals(model->numVertices);
+			ray::Float2Array texcoords(model->numVertices);
+			ray::UintArray indices(model->numIndices);
 
-			for (std::size_t i = 0; i < _model->numVertices; i++)
+			for (std::size_t i = 0; i < model->numVertices; i++)
 			{
-				const auto& v = _model->vertices[i];
+				const auto& v = model->vertices[i];
 
 				vertices[i] = v.position;
 				normals[i] = v.normal;
 				texcoords[i] = v.coord;
 			}
 
-			for (std::uint32_t i = 0; i < _model->numIndices; i++, indicesData += _model->header.sizeOfIndices)
+			for (std::uint32_t i = 0; i < model->numIndices; i++, indicesData += model->header.sizeOfIndices)
 			{
-				if (_model->header.sizeOfIndices == 1)
+				if (model->header.sizeOfIndices == 1)
 					indices[i] = *(std::uint8_t*)indicesData;
-				else if (_model->header.sizeOfIndices == 2)
+				else if (model->header.sizeOfIndices == 2)
 					indices[i] = *(std::uint16_t*)indicesData;
-				else if (_model->header.sizeOfIndices == 4)
+				else if (model->header.sizeOfIndices == 4)
 					indices[i] = *(std::uint32_t*)indicesData;
 				else
 					return false;
@@ -797,7 +800,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 			ray::MeshSubsets subsets;
 			std::uint32_t startIndices = 0;
 
-			for (auto& it : _model->materials)
+			for (auto& it : model->materials)
 			{
 				subsets.push_back(ray::MeshSubset(0, startIndices, it.IndicesCount, 0, 0));
 				startIndices += it.IndicesCount;
@@ -813,52 +816,108 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 			gameObject->addComponent(std::make_shared<ray::MeshComponent>(std::move(mesh)));
 		}
 
-		if (_model->numMaterials)
+		if (model->numMaterials)
 		{
 			ray::MaterialPtr materialTemp;
 			if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", materialTemp))
 				return false;
 
-			ray::Materials materials(_model->numMaterials);
+			ray::Materials materials(model->numMaterials);
 
 			auto ShininessToSmoothness = [](float spec)
 			{
 				return 1.0f - pow(std::max(0.0f, 2.0f / (spec + 2)), 0.25f);
 			};
 
-			for (std::size_t i = 0; i < _model->numMaterials; i++)
+			for (std::size_t i = 0; i < model->numMaterials; i++)
 			{
 				auto material = materialTemp->clone();
 
 				char name[MAX_PATH];
-				if (ray::wcs2mbs(_model->materials[i].name.name, _model->materials[i].name.length, name, MAX_PATH))
+				if (ray::wcs2mbs(model->materials[i].name.name, model->materials[i].name.length, name, MAX_PATH))
 					material->setName(name);
 
-				material->getParameter("albedo")->uniform3f(ray::math::srgb2linear(_model->materials[i].Diffuse));
-				material->getParameter("smoothness")->uniform1f(ShininessToSmoothness(_model->materials[i].Shininess));
-				material->getParameter("metalness")->uniform1f(0.0);
-				material->getParameter("occlusion")->uniform1f(1.0);
-				material->getParameter("specular")->uniform3f(0.5, 0.5, 0.5);
-
-				std::int16_t textureID = 0;
-				if (_model->header.sizeOfTexture == 1)
-					textureID = (_model->materials[i].TextureIndex == 255) ? -1 : _model->materials[i].TextureIndex;
+				std::int16_t diffuseIndex = 0;
+				if (model->header.sizeOfTexture == 1)
+					diffuseIndex = (model->materials[i].TextureIndex == 255) ? -1 : model->materials[i].TextureIndex;
 				else
-					textureID = (_model->materials[i].TextureIndex >= 65535) ? -1 : _model->materials[i].TextureIndex;
+					diffuseIndex = (model->materials[i].TextureIndex >= 65535) ? -1 : model->materials[i].TextureIndex;
 
-				if (textureID >= 0)
+				std::int16_t specularIndex = 0;
+				if (model->header.sizeOfTexture == 1)
+					specularIndex = (model->materials[i].SphereTextureIndex == 255) ? -1 : model->materials[i].SphereTextureIndex;
+				else
+					specularIndex = (model->materials[i].SphereTextureIndex >= 65535) ? -1 : model->materials[i].SphereTextureIndex;
+
+				std::int16_t toonIndex = 0;
+				if (model->header.sizeOfTexture == 1)
+					toonIndex = (model->materials[i].ToonTexture == 255) ? -1 : model->materials[i].ToonTexture;
+				else
+					toonIndex = (model->materials[i].ToonTexture >= 65535) ? -1 : model->materials[i].ToonTexture;
+
+				ray::GraphicsTexturePtr diffuseMap;
+				ray::GraphicsTexturePtr specularMap;
+				ray::GraphicsTexturePtr toonMap;
+
+				if (diffuseIndex >= 0)
 				{
 					char name[MAX_PATH];
-					::wcstombs(name, _model->textures[textureID].name, _model->textures[textureID].length);
+					::wcstombs(name, model->textures[diffuseIndex].name, model->textures[diffuseIndex].length);
 
-					ray::GraphicsTexturePtr texture;
-					if (ray::ResManager::instance()->createTexture(ray::util::directory(path) + name, texture))
-					{
-						material->getParameter("albedoMap")->uniformTexture(texture);
-						material->getParameter("albedoMapFrom")->uniform1i(1);
-						material->getParameter("albedoMapLoopNum")->uniform2f(1.0f, 1.0f);
-					}
+					if (ray::util::toUnixPath(name, name, PATHLIMIT) > 0)
+						ray::ResManager::instance()->createTexture(ray::util::directory(buffer) + name, diffuseMap);
 				}
+
+				if (specularIndex >= 0)
+				{
+					char name[MAX_PATH];
+					::wcstombs(name, model->textures[specularIndex].name, model->textures[specularIndex].length);
+
+					if (ray::util::toUnixPath(name, name, PATHLIMIT) > 0)
+						ray::ResManager::instance()->createTexture(ray::util::directory(buffer) + name, specularMap);
+				}
+
+				if (toonIndex >= 0)
+				{
+					char name[MAX_PATH];
+					::wcstombs(name, model->textures[toonIndex].name, model->textures[toonIndex].length);
+
+					if (ray::util::toUnixPath(name, name, PATHLIMIT) > 0)
+						ray::ResManager::instance()->createTexture(ray::util::directory(buffer) + name, toonMap);
+				}
+
+				(*material)["albedo"]->uniform3f(ray::math::srgb2linear(model->materials[i].Diffuse));
+				(*material)["albedoMap"]->uniformTexture(diffuseMap);
+				(*material)["albedoMapFrom"]->uniform1i(diffuseMap ? 1 : 0);
+				(*material)["albedoMapLoopNum"]->uniform2f(1.0f, 1.0f);
+
+				(*material)["normalMap"]->uniformTexture(0);
+				(*material)["normalMapFrom"]->uniform1i(0);
+				(*material)["normalMapLoopNum"]->uniform2f(1.0f, 1.0f);
+				(*material)["normalMapScale"]->uniform1f(1.0f);
+
+				(*material)["normalSubMap"]->uniformTexture(0);
+				(*material)["normalSubMapFrom"]->uniform1i(0);
+				(*material)["normalSubMapLoopNum"]->uniform2f(1.0f, 1.0f);
+				(*material)["normalSubMapScale"]->uniform1f(1.0f);
+
+				(*material)["smoothness"]->uniform1f(ShininessToSmoothness(model->materials[i].Shininess));
+				(*material)["smoothnessMapFrom"]->uniform1i(0);
+				(*material)["smoothnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
+				(*material)["smoothnessMapSiwzzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
+
+				(*material)["metalness"]->uniform1f(0);
+				(*material)["metalnessMapFrom"]->uniform1i(0);
+				(*material)["metalnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
+				(*material)["metalnessMapSiwzzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
+
+				(*material)["specular"]->uniform3f(0.5, 0.5, 0.5);
+				(*material)["specularMapFrom"]->uniform1i(0);
+				(*material)["specularMapLoopNum"]->uniform2f(1.0f, 1.0f);
+
+				(*material)["occlusion"]->uniform1f(1.0);
+				(*material)["occlusionMapFrom"]->uniform1i(0);
+				(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
 				materials[i] = material;
 			}
@@ -868,47 +927,51 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 
 		gameObject->setActive(true);
 
+		if (_models.empty())
+			_objects.clear();
+
+		_models.push_back(std::move(model));
+
 		_objects.push_back(gameObject);
 
 		return true;
 	}
 	catch (const std::exception&)
 	{
-		_model.reset();
 		error = "Unkonwn error.";
 		return false;
 	}
 }
 
 bool
-GuiControllerComponent::onExportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onExportIES(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept
 {
 	return false;
 }
 
 bool
-GuiControllerComponent::onExportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onExportTexture(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept
 {
 	return false;
 }
 
 bool
-GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept
 {
 	return false;
 }
 
 bool
-GuiControllerComponent::onExportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onExportModel(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept
 {
-	if (_model)
+	if (_models.size() > index)
 	{
 		ray::StreamWritePtr stream;
 		if (!ray::IoServer::instance()->openFile(stream, path))
 			return false;
 
 		ray::PMXHandler header;
-		if (!header.doSave(*stream, *_model))
+		if (!header.doSave(*stream, *_models[index]))
 			return false;
 
 		return true;
@@ -922,7 +985,7 @@ GuiControllerComponent::onExportModel(ray::util::string::const_pointer path, ray
 bool
 GuiControllerComponent::onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept
 {
-	if (!_model)
+	if (_models.empty())
 	{
 		error = "Please load model before start uv mapper";
 		return false;
@@ -948,7 +1011,7 @@ GuiControllerComponent::onUVMapperCancel() noexcept
 bool
 GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& progressing, ray::util::string::pointer& error) noexcept
 {
-	if (!_model)
+	if (_models.empty())
 	{
 		error = "Please load model before start uv mapper";
 		return false;
@@ -975,7 +1038,7 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 				size = 8192;
 
 			ray::LightMapPack lightPack(_lightMapListener);
-			if (!lightPack.atlasUV(*_model, size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin, progress))
+			if (!lightPack.atlasUV(*_models[0], size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin, progress))
 				return false;
 
 			return true;
@@ -998,7 +1061,7 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 bool
 GuiControllerComponent::onLightMassWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept
 {
-	if (!_model)
+	if (_models.empty())
 	{
 		error = "Please load model before start lightmass";
 		return false;
@@ -1024,7 +1087,7 @@ GuiControllerComponent::onLightMassCancel() noexcept
 bool
 GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& progressing, ray::util::string::pointer& error) noexcept
 {
-	if (!_model)
+	if (_models.empty())
 	{
 		error = "Please load model before start lightmass";
 		return false;
@@ -1032,7 +1095,7 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 
 	if (!_future)
 	{
-		if (options.uvmapper.slot > _model->header.addUVCount)
+		if (options.uvmapper.slot > _models[0]->header.addUVCount)
 			return false;
 
 		static auto progress = [&](float progress) -> bool
@@ -1062,26 +1125,26 @@ GuiControllerComponent::onLightMassProcessing(const GuiParams& options, float& p
 			params.baking.interpolationThreshold = options.lightmass.interpolationThreshold;
 			params.baking.listener = progress;
 
-			params.model.vertices = (std::uint8_t*)_model->vertices.data();
-			params.model.indices = _model->indices.data();
+			params.model.vertices = (std::uint8_t*)_models[0]->vertices.data();
+			params.model.indices = _models[0]->indices.data();
 			params.model.sizeofVertices = sizeof(ray::PMX_Vertex);
-			params.model.sizeofIndices = _model->header.sizeOfIndices;
+			params.model.sizeofIndices = _models[0]->header.sizeOfIndices;
 			params.model.strideVertices = offsetof(ray::PMX_Vertex, position);
 			params.model.strideTexcoord = options.uvmapper.slot ? offsetof(ray::PMX_Vertex, addCoord[options.uvmapper.slot - 1]) : offsetof(ray::PMX_Vertex, coord);
-			params.model.numVertices = _model->numVertices;
-			params.model.numIndices = _model->numIndices;
-			params.model.subsets.resize(_model->numMaterials);
+			params.model.numVertices = _models[0]->numVertices;
+			params.model.numIndices = _models[0]->numIndices;
+			params.model.subsets.resize(_models[0]->numMaterials);
 
-			for (std::uint32_t i = 0; i < _model->numMaterials; i++)
+			for (std::uint32_t i = 0; i < _models[0]->numMaterials; i++)
 			{
 				std::uint32_t offset = 0;
 
 				for (std::uint32_t j = 0; j < i; j++)
-					offset += _model->materials[j].IndicesCount;
+					offset += _models[0]->materials[j].IndicesCount;
 
-				params.model.subsets[i].emissive = ray::math::srgb2linear(_model->materials[i].Ambient) * _model->materials[i].Shininess;
+				params.model.subsets[i].emissive = ray::math::srgb2linear(_models[0]->materials[i].Ambient) * _models[0]->materials[i].Shininess;
 
-				params.model.subsets[i].drawcall.count = _model->materials[i].IndicesCount;
+				params.model.subsets[i].drawcall.count = _models[0]->materials[i].IndicesCount;
 				params.model.subsets[i].drawcall.instanceCount = 1;
 				params.model.subsets[i].drawcall.firstIndex = offset;
 				params.model.subsets[i].drawcall.baseInstance = 0;
@@ -1368,7 +1431,7 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 			material.Shininess = SmoothnessToShininess(shininessParams[i * 10 + j]);
 			material.IndicesCount = sphereMesh->getNumIndices();
 			material.TextureIndex = std::numeric_limits<std::uint8_t>::max();
-			material.ToneTexture = std::numeric_limits<std::uint8_t>::max();
+			material.ToonTexture = std::numeric_limits<std::uint8_t>::max();
 			material.SphereTextureIndex = std::numeric_limits<std::uint8_t>::max();
 			material.EdgeSize = 1;
 			material.Flag = PMX_MATERIAL_DEFAULT;

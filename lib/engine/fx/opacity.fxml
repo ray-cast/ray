@@ -16,6 +16,7 @@
 	<parameter name="albedoSubMapFilp" type="int"/>
 	<parameter name="albedoSubMapLoopNum" type="float2"/>
 	<parameter name="normalMap" type="texture2D"/>
+	<parameter name="normalMapType" type="int"/>
 	<parameter name="normalMapFrom" type="int"/>
 	<parameter name="normalMapFilp" type="int"/>
 	<parameter name="normalMapScale" type="float"/>
@@ -198,7 +199,7 @@
 
 			float3 GetNormal(float3 normal, float3 tangent, float2 coord)
 			{
-				if (normalMapFrom > 0 || normalSubMapFrom > 0)
+				if (normalMapFrom > 0 && normalMapFrom < 6 || normalSubMapFrom > 0 < normalSubMapFrom < 6)
 				{
 					float3 tangentNormal1 = GetMainNormal(normal, tangent, coord);
 					float3 tangentNormal2 = GetSubNormal(normal, tangent, coord);
@@ -213,7 +214,7 @@
 
 					float3 N = normalize(normal);
 					float3 T = normalize(tangent);
-					float3 B = cross(T, N);
+					float3 B = -cross(N, T);
 
 					float3x3 tbn = float3x3(T, B, N);
 					float3 highNormal = mul(tangentNormal, tbn);

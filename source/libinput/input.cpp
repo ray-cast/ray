@@ -163,55 +163,55 @@ DefaultInput::getMousePos(InputButton::mouse_t& x, InputButton::mouse_t& y) cons
 }
 
 bool
-DefaultInput::getKeyDown(InputKey::Code key) const noexcept
+DefaultInput::isKeyDown(InputKey::Code key) const noexcept
 {
 	if (_keyboardCaptureDevice)
-		return _keyboardCaptureDevice->getKeyDown(key);
+		return _keyboardCaptureDevice->isKeyDown(key);
 
 	return false;
 }
 
 bool
-DefaultInput::getKeyUp(InputKey::Code key) const noexcept
+DefaultInput::isKeyUp(InputKey::Code key) const noexcept
 {
 	if (_keyboardCaptureDevice)
-		return _keyboardCaptureDevice->getKeyUp(key);
+		return _keyboardCaptureDevice->isKeyUp(key);
 
 	return false;
 }
 
 bool
-DefaultInput::getKey(InputKey::Code key) const noexcept
+DefaultInput::isKeyPressed(InputKey::Code key) const noexcept
 {
 	if (_keyboardCaptureDevice)
-		return _keyboardCaptureDevice->getKey(key);
+		return _keyboardCaptureDevice->isKeyPressed(key);
 
 	return false;
 }
 
 bool
-DefaultInput::getButtonDown(InputButton::Code key) const noexcept
+DefaultInput::isButtonDown(InputButton::Code key) const noexcept
 {
 	if (_mouseCaptureDevice)
-		return _mouseCaptureDevice->getButtonDown(key);
+		return _mouseCaptureDevice->isButtonDown(key);
 
 	return false;
 }
 
 bool
-DefaultInput::getButtonUp(InputButton::Code key) const noexcept
+DefaultInput::isButtonUp(InputButton::Code key) const noexcept
 {
 	if (_mouseCaptureDevice)
-		return _mouseCaptureDevice->getButtonUp(key);
+		return _mouseCaptureDevice->isButtonUp(key);
 
 	return false;
 }
 
 bool
-DefaultInput::getButton(InputButton::Code key) const noexcept
+DefaultInput::isButtonPressed(InputButton::Code key) const noexcept
 {
 	if (_mouseCaptureDevice)
-		return _mouseCaptureDevice->getButton(key);
+		return _mouseCaptureDevice->isButtonPressed(key);
 
 	return false;
 }

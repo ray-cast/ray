@@ -49,21 +49,21 @@ MSWInputKeyboard::~MSWInputKeyboard() noexcept
 }
 
 bool
-MSWInputKeyboard::getKeyDown(InputKey::Code key) const noexcept
+MSWInputKeyboard::isKeyDown(InputKey::Code key) const noexcept
 {
-	return DefaultInputKeyboard::getKeyDown(key);
+	return DefaultInputKeyboard::isKeyDown(key);
 }
 
 bool
-MSWInputKeyboard::getKeyUp(InputKey::Code key) const noexcept
+MSWInputKeyboard::isKeyUp(InputKey::Code key) const noexcept
 {
-	return DefaultInputKeyboard::getKeyUp(key);
+	return DefaultInputKeyboard::isKeyUp(key);
 }
 
 bool
-MSWInputKeyboard::getKey(InputKey::Code key) const noexcept
+MSWInputKeyboard::isKeyPressed(InputKey::Code key) const noexcept
 {
-	return DefaultInputKeyboard::getKey(key);
+	return DefaultInputKeyboard::isKeyPressed(key);
 }
 
 InputKeyboardPtr

@@ -50,21 +50,21 @@ DefaultInputKeyboard::~DefaultInputKeyboard() noexcept
 }
 
 bool
-DefaultInputKeyboard::getKeyDown(InputKey::Code key) const noexcept
+DefaultInputKeyboard::isKeyDown(InputKey::Code key) const noexcept
 {
 	assert(key < InputKey::Code::NumKeyCodes);
 	return _keyState[key].down;
 }
 
 bool
-DefaultInputKeyboard::getKeyUp(InputKey::Code key) const noexcept
+DefaultInputKeyboard::isKeyUp(InputKey::Code key) const noexcept
 {
 	assert(key < InputKey::Code::NumKeyCodes);
 	return _keyState[key].up;
 }
 
 bool
-DefaultInputKeyboard::getKey(InputKey::Code key) const noexcept
+DefaultInputKeyboard::isKeyPressed(InputKey::Code key) const noexcept
 {
 	assert(key < InputKey::Code::NumKeyCodes);
 	return _keyState[key].pressed;

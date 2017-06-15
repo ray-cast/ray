@@ -40,6 +40,9 @@ _NAME_BEGIN
 
 __ImplementSubInterface(MSWInputMouse, DefaultInputMouse, "MSWInputMouse")
 
+#define KEYDOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
+#define KEYUP(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
+
 MSWInputMouse::MSWInputMouse() noexcept
 	: _focusWindow(false)
 	, _window(0)
@@ -65,6 +68,60 @@ MSWInputMouse::getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) con
 
 	x = pt.x;
 	y = pt.y;
+}
+
+bool
+MSWInputMouse::isButtonDown(InputButton::Code key) const noexcept
+{
+	bool down = DefaultInputMouse::isButtonDown(key);
+	if (down)
+	{
+		switch (key)
+		{
+		case ray::InputButton::LEFT:
+			return KEYUP(VK_LBUTTON) ? false : true;
+		case ray::InputButton::RIGHT:
+			return KEYUP(VK_RBUTTON) ? false : true;
+		case ray::InputButton::MIDDLE:
+			return KEYUP(VK_MBUTTON) ? false : true;
+		default:
+			return down;
+		}
+	}
+
+	return down;
+}
+
+bool
+MSWInputMouse::isButtonUp(InputButton::Code key) const noexcept
+{
+	switch (key)
+	{
+	case ray::InputButton::LEFT:
+		return KEYUP(VK_LBUTTON);
+	case ray::InputButton::RIGHT:
+		return KEYUP(VK_RBUTTON);
+	case ray::InputButton::MIDDLE:
+		return KEYUP(VK_MBUTTON);
+	default:
+		return DefaultInputMouse::isButtonUp(key);
+	}
+}
+
+bool
+MSWInputMouse::isButtonPressed(InputButton::Code key) const noexcept
+{
+	switch (key)
+	{
+	case ray::InputButton::LEFT:
+		return KEYDOWN(VK_LBUTTON);
+	case ray::InputButton::RIGHT:
+		return KEYDOWN(VK_RBUTTON);
+	case ray::InputButton::MIDDLE:
+		return KEYDOWN(VK_MBUTTON);
+	default:
+		return DefaultInputMouse::isButtonDown(key);
+	}
 }
 
 void

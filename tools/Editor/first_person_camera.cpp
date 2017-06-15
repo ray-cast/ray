@@ -90,7 +90,7 @@ FirstPersonCameraComponent::onFrame() noexcept
 		if (!input)
 			return;
 
-		if (input->getKey(ray::InputKey::Code::LeftShift))
+		if (input->isKeyPressed(ray::InputKey::Code::LeftShift))
 			step *= 3;
 
 		if (!input->isLockedCursor())
@@ -99,16 +99,16 @@ FirstPersonCameraComponent::onFrame() noexcept
 		auto character = this->getGameObject()->getComponent<ray::PhysicsCharacterComponent>();
 		if (!character)
 		{
-			if (input->getKey(ray::InputKey::Code::W))
+			if (input->isKeyPressed(ray::InputKey::Code::W))
 				moveCamera(step);
 
-			if (input->getKey(ray::InputKey::Code::A))
+			if (input->isKeyPressed(ray::InputKey::Code::A))
 				yawCamera(-step);
 
-			if (input->getKey(ray::InputKey::Code::S))
+			if (input->isKeyPressed(ray::InputKey::Code::S))
 				moveCamera(-step);
 
-			if (input->getKey(ray::InputKey::Code::D))
+			if (input->isKeyPressed(ray::InputKey::Code::D))
 				yawCamera(step);
 		}
 		else
@@ -117,22 +117,22 @@ FirstPersonCameraComponent::onFrame() noexcept
 			const ray::float3& right = this->getGameObject()->getRight();
 
 			ray::float3 walkDirection(0, 0, 0);
-			if (input->getKey(ray::InputKey::Code::W))
+			if (input->isKeyPressed(ray::InputKey::Code::W))
 			{
 				ray::float3 mov = forward;
 				walkDirection += mov;
 			}
-			if (input->getKey(ray::InputKey::Code::S))
+			if (input->isKeyPressed(ray::InputKey::Code::S))
 			{
 				ray::float3 mov = forward;
 				walkDirection -= mov;
 			}
-			if (input->getKey(ray::InputKey::Code::A))
+			if (input->isKeyPressed(ray::InputKey::Code::A))
 			{
 				ray::float3 mov = right;
 				walkDirection -= mov;
 			}
-			if (input->getKey(ray::InputKey::Code::D))
+			if (input->isKeyPressed(ray::InputKey::Code::D))
 			{
 				ray::float3 mov = right;
 				walkDirection += mov;
@@ -140,7 +140,7 @@ FirstPersonCameraComponent::onFrame() noexcept
 
 			character->setWalkDirection(walkDirection * step);
 
-			if (input->getKey(ray::InputKey::Space))
+			if (input->isKeyPressed(ray::InputKey::Space))
 			{
 				if (character->canJumping())
 					character->jump(_jumpHeight);
@@ -164,7 +164,7 @@ FirstPersonCameraComponent::onMessage(const ray::MessagePtr& message) noexcept
 		if (!input)
 			return;
 
-		if (input->getKeyDown(ray::InputKey::Code::Escape))
+		if (input->isKeyDown(ray::InputKey::Code::Escape))
 			input->lockCursor(input->isLockedCursor() ^ 1);
 	}
 }

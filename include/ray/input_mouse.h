@@ -61,10 +61,9 @@ public:
 	void setPosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept;
 	void getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept;
 
-	bool getButtonDown(InputButton::Code key) const noexcept;
-	bool getButtonUp(InputButton::Code key) const noexcept;
-
-	bool getButton(InputButton::Code key) const noexcept;
+	bool isButtonDown(InputButton::Code key) const noexcept;
+	bool isButtonUp(InputButton::Code key) const noexcept;
+	bool isButtonPressed(InputButton::Code key) const noexcept;
 
 	InputMousePtr clone() const noexcept;
 

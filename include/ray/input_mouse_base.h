@@ -62,10 +62,9 @@ public:
 	virtual void setPosition(InputButton::mouse_t x, InputButton::mouse_t y) noexcept = 0;
 	virtual void getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept = 0;
 
-	virtual bool getButtonDown(InputButton::Code key) const noexcept = 0;
-	virtual bool getButtonUp(InputButton::Code key) const noexcept = 0;
-
-	virtual bool getButton(InputButton::Code key) const noexcept = 0;
+	virtual bool isButtonDown(InputButton::Code key) const noexcept = 0;
+	virtual bool isButtonUp(InputButton::Code key) const noexcept = 0;
+	virtual bool isButtonPressed(InputButton::Code key) const noexcept = 0;
 
 	virtual InputMousePtr clone() const noexcept = 0;
 

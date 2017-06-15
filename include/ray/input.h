@@ -61,13 +61,13 @@ public:
 	virtual void setMousePos(InputButton::mouse_t x, InputButton::mouse_t y) noexcept;
 	virtual void getMousePos(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept;
 
-	virtual bool getKeyDown(InputKey::Code key) const noexcept;
-	virtual bool getKeyUp(InputKey::Code key) const noexcept;
-	virtual bool getKey(InputKey::Code key) const noexcept;
+	virtual bool isKeyDown(InputKey::Code key) const noexcept;
+	virtual bool isKeyUp(InputKey::Code key) const noexcept;
+	virtual bool isKeyPressed(InputKey::Code key) const noexcept;
 
-	virtual bool getButtonDown(InputButton::Code key) const noexcept;
-	virtual bool getButtonUp(InputButton::Code key) const noexcept;
-	virtual bool getButton(InputButton::Code key) const noexcept;
+	virtual bool isButtonDown(InputButton::Code key) const noexcept;
+	virtual bool isButtonUp(InputButton::Code key) const noexcept;
+	virtual bool isButtonPressed(InputButton::Code key) const noexcept;
 
 	virtual void showCursor(bool show) noexcept;
 	virtual bool isShowCursor() const noexcept;

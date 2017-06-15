@@ -48,9 +48,9 @@ public:
 	InputKeyboard() noexcept;
 	virtual ~InputKeyboard() noexcept;
 
-	virtual bool getKeyDown(InputKey::Code key) const noexcept = 0;
-	virtual bool getKeyUp(InputKey::Code key) const noexcept = 0;
-	virtual bool getKey(InputKey::Code key) const noexcept = 0;
+	virtual bool isKeyDown(InputKey::Code key) const noexcept = 0;
+	virtual bool isKeyUp(InputKey::Code key) const noexcept = 0;
+	virtual bool isKeyPressed(InputKey::Code key) const noexcept = 0;
 
 	virtual InputKeyboardPtr clone() const noexcept = 0;
 

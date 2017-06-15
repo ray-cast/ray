@@ -53,6 +53,10 @@ public:
 
 	void getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y) const noexcept;
 
+	bool isButtonDown(InputButton::Code key) const noexcept;
+	bool isButtonUp(InputButton::Code key) const noexcept;
+	bool isButtonPressed(InputButton::Code key) const noexcept;
+
 private:
 	void onShowMouse() noexcept;
 	void onHideMouse() noexcept;

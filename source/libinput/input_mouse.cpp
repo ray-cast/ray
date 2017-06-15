@@ -161,19 +161,19 @@ DefaultInputMouse::getPosition(InputButton::mouse_t& x, InputButton::mouse_t& y)
 }
 
 bool
-DefaultInputMouse::getButtonDown(InputButton::Code key) const noexcept
+DefaultInputMouse::isButtonDown(InputButton::Code key) const noexcept
 {
 	return _buttonState[key].down;
 }
 
 bool
-DefaultInputMouse::getButtonUp(InputButton::Code key) const noexcept
+DefaultInputMouse::isButtonUp(InputButton::Code key) const noexcept
 {
 	return _buttonState[key].up;
 }
 
 bool
-DefaultInputMouse::getButton(InputButton::Code key) const noexcept
+DefaultInputMouse::isButtonPressed(InputButton::Code key) const noexcept
 {
 	return _buttonState[key].pressed;
 }

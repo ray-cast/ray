@@ -149,13 +149,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 {
 	if (message->isInstanceOf<ray::InputMessage>())
 	{
-		if (!message->isInstanceOf<ray::InputMessage>())
-			return;
-
 		auto& event = message->downcast<ray::InputMessage>()->getEvent();
-		if (!message->isInstanceOf<ray::InputMessage>())
-			return;
-
 		switch (event.event)
 		{
 		case ray::InputEvent::Drop:
@@ -238,18 +232,18 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 				if (!input)
 					return;
 
-				if (input->getKeyDown(ray::InputKey::Code::Escape))
-					_showWindowAll = !_showWindowAll;
-
 				if (_showAboutWindow || _showStyleEditor || _showMessage || _showProcessMessage)
 					return;
+
+				if (input->isKeyDown(ray::InputKey::Code::Escape))
+					_showWindowAll = !_showWindowAll;
 
 				if (!_mouseHoveringCamera)
 					return;
 
 				if (!input->isLockedCursor())
 				{
-					if (input->getKey(ray::InputKey::LeftControl) && input->getButtonDown(ray::InputButton::LEFT))
+					if (input->isKeyPressed(ray::InputKey::LeftControl) && input->isButtonDown(ray::InputButton::LEFT))
 					{
 						float x;
 						float y;
@@ -258,21 +252,21 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 						this->onModelPicker(x, y);
 					}
 
-					if (input->getButtonDown(ray::InputButton::Code::MOUSEWHEEL))
+					if (input->isButtonDown(ray::InputButton::Code::MOUSEWHEEL))
 					{
 						float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0f : 1.0f;
 						const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
 						_cameraComponent.lock()->getGameObject()->setTranslateAccum(-forward * speed);
 					}
 
-					if (input->getButtonUp(ray::InputButton::Code::MOUSEWHEEL))
+					if (input->isButtonUp(ray::InputButton::Code::MOUSEWHEEL))
 					{
 						float speed = ray::Gui::isKeyDown(ray::InputKey::LeftShift) ? 5.0f : 1.0f;
 						const ray::Vector3& forward = _cameraComponent.lock()->getGameObject()->getForward();
 						_cameraComponent.lock()->getGameObject()->setTranslateAccum(forward * speed);
 					}
 
-					if (input->getButton(ray::InputButton::Code::MIDDLE))
+					if (input->isButtonPressed(ray::InputButton::Code::MIDDLE))
 					{
 						float speedX = input->getAxis(ray::InputAxis::MouseX) * 0.5f;
 						float speedY = input->getAxis(ray::InputAxis::MouseY) * 0.5f;
@@ -283,7 +277,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 						_cameraComponent.lock()->getGameObject()->setTranslateAccum(-right * speedX);
 					}
 
-					if (input->getButton(ray::InputButton::Code::RIGHT))
+					if (input->isButtonPressed(ray::InputButton::Code::RIGHT))
 					{
 						float axisX = input->getAxis(ray::InputAxis::MouseX);
 						float axisY = input->getAxis(ray::InputAxis::MouseY);
@@ -1392,7 +1386,7 @@ GuiViewComponent::showEditSkyboxWindow(ray::SkyboxComponent* skybox) noexcept
 void
 GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 {
-	ray::float2 imageSize = ray::float2(64, 64);
+	ray::float2 imageSize = _assetImageSize;
 
 	if (ray::Gui::treeNodeEx("Material", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 	{
@@ -1637,7 +1631,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("Smoothness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("Smoothness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto smoothness = material["smoothness"]->value().getFloat();
 			auto smoothnessMap = material["smoothnessMap"]->value().getTexture();
@@ -1709,7 +1703,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("Metalness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx("Metalness", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
 			auto metalness = material["metalness"]->value().getFloat();
 			auto metalnessMap = material["metalnessMap"]->value().getTexture();

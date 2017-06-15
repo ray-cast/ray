@@ -92,7 +92,7 @@ GuiViewComponent::GuiViewComponent() noexcept
 	_styleDefault.AntiAliasedLines = false;
 	_styleDefault.ItemSpacing.y = 3;
 	_styleDefault.WindowPadding.x = 5;
-	_styleDefault.WindowPadding.y = 9;
+	_styleDefault.WindowPadding.y = 10;
 	_styleDefault.FramePadding.x = 6;
 	_styleDefault.ScrollbarSize = 15;
 	_styleDefault.IndentSpacing = 25;
@@ -159,12 +159,12 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 				char name[MAX_PATH];
 				if (ray::util::ext_name(event.drop.files[i], name, sizeof(name)) > 0)
 				{
-					if (ray::util::strncmp(name, "bmp", 3) == 0 ||
-						ray::util::strncmp(name, "png", 3) == 0 ||
-						ray::util::strncmp(name, "jpg", 3) == 0 ||
-						ray::util::strncmp(name, "tga", 3) == 0 ||
-						ray::util::strncmp(name, "dds", 3) == 0 ||
-						ray::util::strncmp(name, "hdr", 3) == 0)
+					if (ray::util::strnicmp(name, "bmp", 3) == 0 ||
+						ray::util::strnicmp(name, "png", 3) == 0 ||
+						ray::util::strnicmp(name, "jpg", 3) == 0 ||
+						ray::util::strnicmp(name, "tga", 3) == 0 ||
+						ray::util::strnicmp(name, "dds", 3) == 0 ||
+						ray::util::strnicmp(name, "hdr", 3) == 0)
 					{
 						if (_event.onImportTexture)
 						{
@@ -455,7 +455,7 @@ GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, std::uint3
 	ofn.nMaxFile = max_length;
 	ofn.lpstrInitialDir = 0;
 	ofn.lpstrTitle = _langs[UILang::ChooseFile];
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	if (::GetOpenFileName(&ofn))
 		return true;
@@ -582,6 +582,73 @@ GuiViewComponent::showImportModelBrowse() noexcept
 }
 
 void
+GuiViewComponent::showImportAssetBrowse() noexcept
+{
+	static const char formats[] =
+		"Images (*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr)\0"\
+		"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;\0"\
+		"Materials (*.fx)\0"\
+		"*.fx;\0"\
+		"All Files(*.*)\0"\
+		"*.*\0";
+
+	if (!_event.onImportTexture)
+		return;
+
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileOpenBrowse(filepath, PATHLIMIT, formats))
+		return;
+
+	ray::util::string::value_type name[PATHLIMIT];
+	if (ray::util::ext_name(filepath, name, sizeof(name)) > 0)
+	{
+		if (ray::util::strnicmp(name, "bmp", 3) == 0 ||
+			ray::util::strnicmp(name, "png", 3) == 0 ||
+			ray::util::strnicmp(name, "jpg", 3) == 0 ||
+			ray::util::strnicmp(name, "tga", 3) == 0 ||
+			ray::util::strnicmp(name, "dds", 3) == 0 ||
+			ray::util::strnicmp(name, "hdr", 3) == 0)
+		{
+			if (_event.onImportTexture)
+			{
+				ray::util::string::pointer error = nullptr;
+				if (!_event.onImportTexture(filepath, error))
+				{
+					if (error)
+						this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+				}
+			}
+		}
+		else if (ray::util::strnicmp(name, "ies", 3) == 0)
+		{
+			if (_event.onImportIES)
+			{
+				ray::util::string::pointer error = nullptr;
+				if (!_event.onImportIES(filepath, error))
+				{
+					if (error)
+						this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+				}
+			}
+		}
+		else if (ray::util::strnicmp(name, "fx", 2) == 0)
+		{
+			if (_event.onImportMaterial)
+			{
+				ray::util::string::pointer error = nullptr;
+				if (!_event.onImportMaterial(filepath, error))
+				{
+					if (error)
+						this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+				}
+			}
+		}
+	}
+}
+
+void
 GuiViewComponent::showExportModelBrowse() noexcept
 {
 	if (!_event.onExportModel)
@@ -601,6 +668,36 @@ GuiViewComponent::showExportModelBrowse() noexcept
 
 	ray::util::string::pointer error = nullptr;
 	if (!_event.onExportModel(filepath, error))
+	{
+		if (error)
+			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+	}
+	else
+	{
+		this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}(error));
+	}
+}
+
+void
+GuiViewComponent::showExportAssetBrowse() noexcept
+{
+	if (!_event.onExportTexture)
+		return;
+
+	ray::util::string::value_type filepath[PATHLIMIT];
+	std::memset(filepath, 0, sizeof(filepath));
+
+	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("All Formats(*.bmp,*.png,*.jpg,*.tga)\0*.bmp;*.png;*.jpg;*.tga;\0All File(*.*)\0*.*;\0\0")))
+		return;
+
+	if (std::strlen(filepath) < (PATHLIMIT - 5))
+	{
+		if (std::strstr(filepath, ".tga") == 0)
+			std::strcat(filepath, ".tga");
+	}
+
+	ray::util::string::pointer error = nullptr;
+	if (!_event.onExportTexture(filepath, error))
 	{
 		if (error)
 			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
@@ -1017,6 +1114,12 @@ GuiViewComponent::showAssetsWindow() noexcept
 
 	if (ray::Gui::beginDock("Assets", &_showAssertWindow))
 	{
+		ray::Gui::text("");
+		ray::Gui::sameLine();
+		if (ray::Gui::button("Import...")) { this->showImportAssetBrowse(); }
+		ray::Gui::sameLine();
+		if (ray::Gui::button("Export...")) { this->showExportAssetBrowse(); }
+
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
 		ray::Gui::text("");
 		ray::Gui::sameLine();
@@ -1062,6 +1165,12 @@ GuiViewComponent::showMaterialsWindow() noexcept
 
 	if (ray::Gui::beginDock("Materials", &_showMaterialWindow))
 	{
+		ray::Gui::text("");
+		ray::Gui::sameLine();
+		if (ray::Gui::button("Import...")) { this->showImportAssetBrowse(); }
+		ray::Gui::sameLine();
+		if (ray::Gui::button("Export...")) { this->showExportAssetBrowse(); }
+
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
 		ray::Gui::text("");
 		ray::Gui::sameLine();
@@ -1368,7 +1477,7 @@ GuiViewComponent::showEditSkyboxWindow(ray::SkyboxComponent* skybox) noexcept
 			aspert.set((float)width / height, 1.0f);
 		}
 
-		ray::Gui::text("sky texture:");
+		ray::Gui::text("sky Texture (sRGB):");
 		ray::Gui::imageButton(skyTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
 
 		ray::Gui::text("sky irradiance:");
@@ -1439,7 +1548,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				if (ray::Gui::dragFloat2("##albedoMapLoopNum", albedoMapLoopNum.ptr(), 0.05, 0.0, FLT_MAX))
 					material["albedoMapLoopNum"]->uniform2f(albedoMapLoopNum);
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (albedoMap)
@@ -1498,7 +1607,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				if (ray::Gui::dragFloat2("##albedoSubMapLoopNum", albedoSubMapLoopNum.ptr(), 0.05, 0.0, FLT_MAX, "%.3f", 2.2f))
 					material["albedoSubMapLoopNum"]->uniform2f(albedoSubMapLoopNum);
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (albedoSubMap)
@@ -1555,7 +1664,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				if (ray::Gui::dragFloat("##normalMapScale", &normalMapScale, 0.05f, -FLT_MAX, FLT_MAX))
 					material["normalMapScale"]->uniform1f(normalMapScale);
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (normalMap)
@@ -1608,7 +1717,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				if (ray::Gui::dragFloat("##normalSubMapScale", &normalSubMapScale, 0.05f, -FLT_MAX, FLT_MAX))
 					material["normalSubMapScale"]->uniform1f(normalSubMapScale);
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (normalSubMap)
@@ -1676,7 +1785,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (smoothnessMap)
@@ -1743,7 +1852,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (metalnessMap)
@@ -1792,7 +1901,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				if (ray::Gui::dragFloat2("##specularMapLoopNum", specularMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["specularMapLoopNum"]->uniform2f(specularMapLoopNum);
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (specularMap)
@@ -1859,7 +1968,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (occlusionMap)
@@ -1908,7 +2017,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				if (ray::Gui::dragFloat2("##emissiveMapLoopNum", emissiveMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["emissiveMapLoopNum"]->uniform2f(emissiveMapLoopNum);
 
-				ray::Gui::text("Texture:");
+				ray::Gui::text("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (emissiveMap)

@@ -85,6 +85,8 @@ public:
 	GraphicsTexturePtr getTexture(const util::string& name) const noexcept;
 	const std::map<util::string, GraphicsTexturePtr>& getTextureAll() const noexcept;
 
+	bool addTextureCache(const char* name, const GraphicsTexturePtr& texture) noexcept;
+
 	void destroyTexture(GraphicsTexturePtr texture) noexcept;
 	void destroyTexture(const util::string& name) noexcept;
 

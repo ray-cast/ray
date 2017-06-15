@@ -190,13 +190,25 @@ GraphicsTexturePtr
 ResManager::getTexture(const util::string& name) const noexcept
 {
 	assert(!name.empty());
-	return _textures.at(name);
+
+	auto it = _textures.find(name);
+	if (it != _textures.end())
+		return (*it).second;
+
+	return nullptr;
 }
 
 const std::map<util::string, GraphicsTexturePtr>&
 ResManager::getTextureAll() const noexcept
 {
 	return _textures;
+}
+
+bool
+ResManager::addTextureCache(const char* name, const GraphicsTexturePtr& texture) noexcept
+{
+	_textures[name] = texture;
+	return true;
 }
 
 bool
@@ -724,7 +736,7 @@ ResManager::_buildDefaultMaterials(const MaterialProperty& material, const util:
 	{
 		const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
 		return math::dot(rgb, lumfact);
-};
+	};
 
 	if (!diffuseTexture.empty())
 	{

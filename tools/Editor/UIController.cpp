@@ -49,6 +49,7 @@
 #include <ray/mstream.h>
 #include <ray/jsonreader.h>
 
+#include "ies_loader.h"
 #include "first_person_camera.h"
 
 #include <ray/utf8.h>
@@ -527,10 +528,14 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 
 		delegate.onMouseHoveringCamera = std::bind(&GuiControllerComponent::onMouseHoveringCamera, this, std::placeholders::_1, std::placeholders::_2);
 
-		delegate.onImportTexture = std::bind(&GuiControllerComponent::onImportTexture, this, std::placeholders::_1, std::placeholders::_2);
 		delegate.onImportIES = std::bind(&GuiControllerComponent::onImportIES, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onImportTexture = std::bind(&GuiControllerComponent::onImportTexture, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onImportMaterial = std::bind(&GuiControllerComponent::onImportMaterial, this, std::placeholders::_1, std::placeholders::_2);
 		delegate.onImportModel = std::bind(&GuiControllerComponent::onImportModel, this, std::placeholders::_1, std::placeholders::_2);
 
+		delegate.onExportIES = std::bind(&GuiControllerComponent::onExportIES, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onExportTexture = std::bind(&GuiControllerComponent::onExportTexture, this, std::placeholders::_1, std::placeholders::_2);
+		delegate.onExportMaterial = std::bind(&GuiControllerComponent::onExportMaterial, this, std::placeholders::_1, std::placeholders::_2);
 		delegate.onExportModel = std::bind(&GuiControllerComponent::onExportModel, this, std::placeholders::_1, std::placeholders::_2);
 
 		view->setEditorEvents(delegate);
@@ -617,21 +622,74 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 bool
 GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
-	return true;
+	ray::util::string::value_type pathfile[PATHLIMIT];
+	if (ray::util::toUnixPath(path, pathfile, PATHLIMIT) == 0)
+	{
+		error = "Cannot open file, check the spelling of the file path.";
+		return false;
+	}
+
+	if (ray::ResManager::instance()->getTexture(pathfile))
+		return true;
+
+	ray::StreamReaderPtr stream;
+	if (!ray::IoServer::instance()->openFile(stream, pathfile))
+	{
+		error = "Cannot open file, check the spelling of the file path.";
+		return false;
+	}
+
+	std::vector<char> buffer(stream->size());
+	if (!stream->read(buffer.data(), buffer.size()))
+	{
+		error = "Failed to read file.";
+		return false;
+	}
+
+	IESFileInfo info;
+	IESLoadHelper helper;
+	if (!helper.load(buffer.data(), buffer.size(), info))
+	{
+		error = "Non readable IES file.";
+		return false;
+	}
+
+	std::vector<std::uint8_t> preview(64 * 64 * 3);
+	helper.saveAsPreview(info, preview.data(), 64, 64, 3);
+
+	ray::GraphicsTextureDesc textureDesc;
+	textureDesc.setWidth(64);
+	textureDesc.setHeight(64);
+	textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	textureDesc.setStream(preview.data());
+	textureDesc.setStreamSize(preview.size());
+
+	auto iesTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+	if (!iesTexture)
+	{
+		error = "Failed to create ies texture.";
+		return false;
+	}
+
+	return ray::ResManager::instance()->addTextureCache(pathfile, iesTexture);
 }
 
 bool
 GuiControllerComponent::onImportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
 	ray::util::string::value_type buffer[PATHLIMIT];
-	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) > 0)
+	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) == 0)
 	{
-		ray::GraphicsTexturePtr texture;
-		if (!ray::ResManager::instance()->createTexture(buffer, texture))
-		{
-			error = "Failed to load texture";
-			return false;
-		}
+		error = "Cannot open file, check the spelling of the file path.";
+		return false;
+	}
+
+	ray::GraphicsTexturePtr texture;
+	if (!ray::ResManager::instance()->createTexture(buffer, texture))
+	{
+		error = "Failed to load texture";
+		return false;
 	}
 
 	return true;
@@ -640,6 +698,20 @@ GuiControllerComponent::onImportTexture(ray::util::string::const_pointer path, r
 bool
 GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
+	ray::util::string::value_type buffer[PATHLIMIT];
+	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) == 0)
+	{
+		error = "Cannot open file, check the spelling of the file path.";
+		return false;
+	}
+
+	ray::StreamReaderPtr stream;
+	if (!ray::IoServer::instance()->openFile(stream, buffer))
+	{
+		error = "Cannot open file, check the spelling of the file path.";
+		return false;
+	}
+
 	return true;
 }
 
@@ -648,8 +720,12 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 {
 	try
 	{
+		ray::util::string::value_type buffer[PATHLIMIT];
+		if (ray::util::toUnixPath(path, buffer, PATHLIMIT) == 0)
+			return false;
+
 		ray::StreamReaderPtr stream;
-		if (!ray::IoServer::instance()->openFile(stream, path))
+		if (!ray::IoServer::instance()->openFile(stream, buffer))
 		{
 			error = "Cannot open file, check the spelling of the file path.";
 			return false;
@@ -802,6 +878,24 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 		error = "Unkonwn error.";
 		return false;
 	}
+}
+
+bool
+GuiControllerComponent::onExportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+{
+	return false;
+}
+
+bool
+GuiControllerComponent::onExportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+{
+	return false;
+}
+
+bool
+GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+{
+	return false;
 }
 
 bool

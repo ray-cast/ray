@@ -71,6 +71,9 @@ private:
 	bool onImportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onImportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
+	bool onExportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onExportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
+	bool onExportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onExportModel(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 
 	bool onUVMapperCancel() noexcept;

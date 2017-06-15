@@ -919,7 +919,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 				(*material)["occlusionMapFrom"]->uniform1i(0);
 				(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
-				materials[i] = material;
+				materials[i] = std::move(material);
 			}
 
 			gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(std::move(materials)));

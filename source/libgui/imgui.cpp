@@ -2317,7 +2317,7 @@ IMGUI::imageButtonWithAspectAndLabel(GuiTextureID texture, const float2& texture
 }
 
 bool
-IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2& size, bool showLabel, const float2& uv0, const float2& uv1, int frame_padding, const float4& bg_col, const float4& tint_col)
+IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2& size, bool showLabel, bool selected, const float2& uv0, const float2& uv1, int frame_padding, const float4& bg_col, const float4& tint_col)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	bool label_clicked = false;
@@ -2326,10 +2326,22 @@ IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2
 	bool chlick = imageButtonEx(texture, size, true, uv0, uv1, frame_padding, bg_col, tint_col);
 	label_clicked |= ImGui::IsItemClicked(InputButton::LEFT);
 
-	if (ImGui::IsItemHovered())
-		ImGui::SetTooltip(label);
+	if (selected)
+	{
+		ImVec2 rectMin = ImGui::GetItemRectMin();
+		ImVec2 rectMax = ImGui::GetItemRectMax();
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
+		ImGui::RenderFrameEx(rectMin, rectMax, true, 0.0f, 2.0f);
+		ImGui::PopStyleColor();
+	}
 
-	if (!showLabel)
+	if (label)
+	{
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip(label);
+	}
+
+	if (label && !showLabel)
 	{
 		ImGui::PushItemWidth(size.x);
 		ImGui::Text(label);

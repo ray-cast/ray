@@ -85,8 +85,8 @@ ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture
 {
 	assert(!name.empty());
 
-	auto it = _textures.find(name);
-	if (it != _textures.end())
+	auto it = _textureCaches.find(name);
+	if (it != _textureCaches.end())
 	{
 		_texture = (*it).second;
 		return true;
@@ -160,7 +160,10 @@ ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture
 
 	_texture = texture;
 	if (cache)
-		_textures[name] = texture;
+	{
+		_textureCaches[name] = texture;
+		_textures.push_back(texture);
+	}
 
 	return true;
 }
@@ -170,11 +173,12 @@ ResManager::destroyTexture(GraphicsTexturePtr texture) noexcept
 {
 	assert(texture);
 
-	for (auto& it : _textures)
+	for (auto& it : _textureCaches)
 	{
 		if (it.second == texture)
 		{
 			it.second = nullptr;
+			_textures.erase(std::remove(_textures.begin(), _textures.end(), it.second));
 		}
 	}
 }
@@ -183,7 +187,14 @@ void
 ResManager::destroyTexture(const util::string& name) noexcept
 {
 	assert(name.empty());
-	_textures[name] = nullptr;
+	for (auto& it : _textureCaches)
+	{
+		if (it.first == name)
+		{
+			it.second = nullptr;
+			_textures.erase(std::remove(_textures.begin(), _textures.end(), it.second));
+		}
+	}
 }
 
 GraphicsTexturePtr
@@ -191,14 +202,14 @@ ResManager::getTexture(const util::string& name) const noexcept
 {
 	assert(!name.empty());
 
-	auto it = _textures.find(name);
-	if (it != _textures.end())
+	auto it = _textureCaches.find(name);
+	if (it != _textureCaches.end())
 		return (*it).second;
 
 	return nullptr;
 }
 
-const std::map<util::string, GraphicsTexturePtr>&
+const GraphicsTextures&
 ResManager::getTextureAll() const noexcept
 {
 	return _textures;
@@ -207,7 +218,12 @@ ResManager::getTextureAll() const noexcept
 bool
 ResManager::addTextureCache(const char* name, const GraphicsTexturePtr& texture) noexcept
 {
-	_textures[name] = texture;
+	auto& it = _textureCaches.find(name);
+	if (it != _textureCaches.end())
+		return false;
+
+	_textureCaches[name] = texture;
+	_textures.push_back(texture);
 	return true;
 }
 
@@ -699,13 +715,13 @@ ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, Game
 
 			joints.push_back(joint->getGameObject());
 		}
-	}
+		}
 
 	return true;
 #else
 	return false;
 #endif
-}
+	}
 
 MaterialPtr
 ResManager::_buildDefaultMaterials(const MaterialProperty& material, const util::string& file, const util::string& directory) noexcept

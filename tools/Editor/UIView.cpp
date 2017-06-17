@@ -65,6 +65,7 @@ const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second U
 GuiViewComponent::GuiViewComponent() noexcept
 	: _selectedSubset(std::numeric_limits<std::size_t>::max())
 	, _selectedObject(nullptr)
+	, _selectedShift(std::numeric_limits<std::size_t>::max())
 	, _lightMassType(LightMassType::UVMapper)
 	, _viewport(0.0f, 0.0f, 0.0f, 0.0f)
 	, _mouseHoveringCamera(false)
@@ -386,9 +387,9 @@ GuiViewComponent::showMainMenu() noexcept
 
 		if (ray::Gui::beginMenu(_langs[UILang::File]))
 		{
-			if (ray::Gui::menuItem(_langs[UILang::Open], "CTRL+O")) { this->showProjectOpenBrowse(); }
-			if (ray::Gui::menuItem(_langs[UILang::Save], "CTRL+S")) { this->showProjectSaveBrowse(); }
-			if (ray::Gui::menuItem(_langs[UILang::SaveAs], "CTRL+SHIFT+S")) { this->showProjectSaveAsBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::Open], "CTRL+O", false, false)) { this->showProjectOpenBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::Save], "CTRL+S", false, false)) { this->showProjectSaveBrowse(); }
+			if (ray::Gui::menuItem(_langs[UILang::SaveAs], "CTRL+SHIFT+S", false, false)) { this->showProjectSaveAsBrowse(); }
 			ray::Gui::separator();
 			ray::Gui::separator();
 			if (ray::Gui::menuItem(_langs[UILang::ImportModel])) { this->showImportModelBrowse(); }
@@ -681,8 +682,13 @@ GuiViewComponent::showExportModelBrowse() noexcept
 void
 GuiViewComponent::showExportAssetBrowse() noexcept
 {
-	if (!_event.onExportTexture)
+	assert(_event.onExportTexture);
+
+	if (_selectedTextures.end() == std::find_if(_selectedTextures.begin(), _selectedTextures.end(), [](std::uint8_t i) { return i > 0; }))
+	{
+		this->showPopupMessage(_langs[UILang::Error], "No data was selected", std::hash<const char*>{}("No data was selected"));
 		return;
+	}
 
 	ray::util::string::value_type filepath[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
@@ -696,23 +702,35 @@ GuiViewComponent::showExportAssetBrowse() noexcept
 			std::strcat(filepath, ".tga");
 	}
 
-	ray::util::string::pointer error = nullptr;
-	if (!_event.onExportTexture(filepath, 0, error))
+	for (std::size_t i = 0; i < _selectedTextures.size(); i++)
 	{
-		if (error)
-			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-	}
-	else
-	{
-		this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}(error));
+		auto selected = _selectedTextures[i];
+		if (!selected)
+			continue;
+
+		ray::util::string::pointer error = nullptr;
+		if (!_event.onExportTexture(filepath, i, error))
+		{
+			if (error)
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+		}
+		else
+		{
+			this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}(error));
+		}
 	}
 }
 
 void
 GuiViewComponent::showExportMaterialBrowse() noexcept
 {
-	if (!_event.onExportMaterial)
+	assert(_event.onExportMaterial);
+
+	if (_selectedMaterials.end() == std::find_if(_selectedMaterials.begin(), _selectedMaterials.end(), [](std::uint8_t i) { return i > 0; }))
+	{
+		this->showPopupMessage(_langs[UILang::Error], "No data was selected", std::hash<const char*>{}("No data was selected"));
 		return;
+	}
 
 	ray::util::string::value_type filepath[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
@@ -726,15 +744,22 @@ GuiViewComponent::showExportMaterialBrowse() noexcept
 			std::strcat(filepath, ".fx");
 	}
 
-	ray::util::string::pointer error = nullptr;
-	if (!_event.onExportMaterial(filepath, 0, error))
+	for (std::size_t i = 0; i < _selectedMaterials.size(); i++)
 	{
-		if (error)
-			this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-	}
-	else
-	{
-		this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}(error));
+		auto selected = _selectedMaterials[i];
+		if (!selected)
+			continue;
+
+		ray::util::string::pointer error = nullptr;
+		if (!_event.onExportMaterial(filepath, i, error))
+		{
+			if (error)
+				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+		}
+		else
+		{
+			this->showPopupMessage(_langs[UILang::OK], _langs[UILang::Succeeded], std::hash<const char*>{}(error));
+		}
 	}
 }
 
@@ -1139,6 +1164,8 @@ GuiViewComponent::showHierarchyWindow() noexcept
 void
 GuiViewComponent::showAssetsWindow() noexcept
 {
+	assert(_event.onFetchTextures);
+
 	if (!_showAssertWindow)
 		return;
 
@@ -1154,31 +1181,75 @@ GuiViewComponent::showAssetsWindow() noexcept
 		ray::Gui::text("");
 		ray::Gui::sameLine();
 
-		const auto& textures = ray::ResManager::instance()->getTextureAll();
-		for (auto& texture : textures)
+		const ray::GraphicsTextures* textures;
+		if (_event.onFetchTextures(textures))
 		{
-			if (!texture.second)
-				continue;
+			if (textures->size() != _selectedTextures.size())
+				_selectedTextures.resize(textures->size());
 
-			std::uint32_t width = texture.second->getGraphicsTextureDesc().getWidth();
-			std::uint32_t height = texture.second->getGraphicsTextureDesc().getHeight();
-
-			ray::float2 imageSize = _assetImageSize * ray::float2((float)width / height, 1.0);
-
-			if (ray::Gui::getContentRegionAvailWidth() < imageSize.x)
+			for (std::size_t i = 0; i < textures->size(); i++)
 			{
-				ray::Gui::newLine();
-				ray::Gui::text("");
-				ray::Gui::sameLine();
-			}
+				auto texture = (*textures)[i];
+				if (!texture)
+					continue;
 
-			if (ray::Gui::imageButtonAndLabel(texture.first.c_str(), texture.second.get(), imageSize, true, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]))
-			{
-				_selectedTexture = texture.second;
-				_selectedMaterial = nullptr;
-			}
+				std::uint32_t width = texture->getGraphicsTextureDesc().getWidth();
+				std::uint32_t height = texture->getGraphicsTextureDesc().getHeight();
 
-			ray::Gui::sameLine(0, _style.ItemSpacing.y);
+				ray::float2 imageSize = _assetImageSize * ray::float2((float)width / height, 1.0);
+
+				if (ray::Gui::getContentRegionAvailWidth() < imageSize.x)
+				{
+					ray::Gui::newLine();
+					ray::Gui::text("");
+					ray::Gui::sameLine();
+				}
+
+				if (ray::Gui::imageButtonAndLabel(0, texture.get(), imageSize, false, _selectedTextures[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+				{
+					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
+					{
+						_selectedTextures[i] = true;
+					}
+					else if (ray::Gui::isKeyDown(ray::InputKey::LeftShift))
+					{
+						_selectedTextures[i] = true;
+
+						if (ray::Gui::isKeyDown(ray::InputKey::LeftShift))
+						{
+							if (_selectedShift > _selectedTextures.size())
+							{
+								std::memset(_selectedTextures.data(), 0, _selectedTextures.size());
+								_selectedShift = i;
+								_selectedTextures[i] = true;
+							}
+							else
+							{
+								auto min = std::min(_selectedShift, i);
+								auto max = std::max(_selectedShift, i);
+								std::memset(_selectedTextures.data() + min, true, max - min);
+							}
+						}
+					}
+					else
+					{
+						_selectedTexture = texture;
+						_selectedMaterial = nullptr;
+					}
+				}
+
+				if (!ray::Gui::isKeyDown(ray::InputKey::LeftControl) && !ray::Gui::isKeyDown(ray::InputKey::LeftShift))
+				{
+					if (ray::Gui::isMouseDown(ray::InputButton::RIGHT) ||
+						ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
+					{
+						_selectedShift = std::numeric_limits<std::size_t>::max();
+						std::memset(_selectedTextures.data(), false, _selectedTextures.size());
+					}
+				}
+
+				ray::Gui::sameLine(0, _style.ItemSpacing.y);
+			}
 		}
 
 		ray::Gui::popStyleColor();
@@ -1190,6 +1261,8 @@ GuiViewComponent::showAssetsWindow() noexcept
 void
 GuiViewComponent::showMaterialsWindow() noexcept
 {
+	assert(_event.onFetchMaterials);
+
 	if (!_showMaterialWindow)
 		return;
 
@@ -1205,30 +1278,68 @@ GuiViewComponent::showMaterialsWindow() noexcept
 		ray::Gui::text("");
 		ray::Gui::sameLine();
 
-		if (_event.onFetchMaterials)
+		const ray::Materials* _materials;
+		if (_event.onFetchMaterials(_materials))
 		{
-			const ray::Materials* _materials;
-			if (_event.onFetchMaterials(_materials))
+			if (_materials->size() != _selectedMaterials.size())
+				_selectedMaterials.resize(_materials->size());
+
+			for (std::size_t i = 0; i < _materials->size(); i++)
 			{
-				for (auto& material : *_materials)
+				auto material = (*_materials)[i];
+				if (!material)
+					continue;
+
+				if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
 				{
-					if (!material)
-						continue;
+					ray::Gui::newLine();
+					ray::Gui::text("");
+					ray::Gui::sameLine();
+				}
 
-					if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
+				if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), _materialFx.get(), _assetImageSize, false, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+				{
+					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
 					{
-						ray::Gui::newLine();
-						ray::Gui::text("");
-						ray::Gui::sameLine();
+						_selectedMaterials[i] = true;
 					}
+					else if (ray::Gui::isKeyDown(ray::InputKey::LeftShift))
+					{
+						_selectedMaterials[i] = true;
 
-					if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), _materialFx.get(), _assetImageSize, false, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+						if (ray::Gui::isKeyDown(ray::InputKey::LeftShift))
+						{
+							if (_selectedShift > _selectedMaterials.size())
+							{
+								std::memset(_selectedMaterials.data(), 0, _selectedMaterials.size());
+								_selectedShift = i;
+								_selectedMaterials[i] = true;
+							}
+							else
+							{
+								auto min = std::min(_selectedShift, i);
+								auto max = std::max(_selectedShift, i);
+								std::memset(_selectedMaterials.data() + min, true, max - min);
+							}
+						}
+					}
+					else
 					{
 						_selectedTexture = _materialFx;
 						_selectedMaterial = material;
 					}
+				}
 
-					ray::Gui::sameLine(0, _style.ItemSpacing.y);
+				ray::Gui::sameLine(0, _style.ItemSpacing.y);
+			}
+
+			if (!ray::Gui::isKeyDown(ray::InputKey::LeftControl) && !ray::Gui::isKeyDown(ray::InputKey::LeftShift))
+			{
+				if (ray::Gui::isMouseDown(ray::InputButton::RIGHT) ||
+					ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
+				{
+					_selectedShift = std::numeric_limits<std::size_t>::max();
+					std::memset(_selectedMaterials.data(), false, _selectedMaterials.size());
 				}
 			}
 		}
@@ -1346,7 +1457,7 @@ GuiViewComponent::showDragImageWindow() noexcept
 {
 	if (_selectedMaterial || _selectedTexture)
 	{
-		if (ray::Gui::isMouseDown(ray::InputButton::RIGHT))
+		if (ray::Gui::isMouseDown(ray::InputButton::RIGHT) || ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
 		{
 			_selectedTexture = nullptr;
 			_selectedMaterial = nullptr;

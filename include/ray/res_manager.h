@@ -83,7 +83,7 @@ public:
 	GraphicsDataPtr createIndexBuffer(const MeshProperty& mesh) noexcept;
 
 	GraphicsTexturePtr getTexture(const util::string& name) const noexcept;
-	const std::map<util::string, GraphicsTexturePtr>& getTextureAll() const noexcept;
+	const GraphicsTextures& getTextureAll() const noexcept;
 
 	bool addTextureCache(const char* name, const GraphicsTexturePtr& texture) noexcept;
 
@@ -98,7 +98,8 @@ private:
 	ResManager& operator=(const ResManager&) = delete;
 
 private:
-	std::map<util::string, GraphicsTexturePtr> _textures;
+	GraphicsTextures _textures;
+	std::map<util::string, GraphicsTexturePtr> _textureCaches;
 };
 
 _NAME_END

@@ -45,6 +45,7 @@
 
 #include "UIParams.h"
 #include "UITexts.h"
+
 #include "EditorEvents.h"
 
 class GuiViewComponent final : public ray::GameComponent
@@ -122,6 +123,10 @@ private:
 	ray::GameObjectPtr _cube;
 	ray::GraphicsTexturePtr _selectedTexture;
 	ray::MaterialPtr _selectedMaterial;
+
+	std::size_t _selectedShift;
+	std::vector<std::uint8_t> _selectedTextures;
+	std::vector<std::uint8_t> _selectedMaterials;
 
 	ray::GraphicsTexturePtr _materialFx;
 

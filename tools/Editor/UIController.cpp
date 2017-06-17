@@ -523,6 +523,7 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		delegate.onFetchLights = std::bind(&GuiControllerComponent::onFetchLights, this, std::placeholders::_1);
 		delegate.onFetchLightProbes = std::bind(&GuiControllerComponent::onFetchLightProbes, this, std::placeholders::_1);
 		delegate.onFetchMaterials = std::bind(&GuiControllerComponent::onFetchMaterials, this, std::placeholders::_1);
+		delegate.onFetchTextures = std::bind(&GuiControllerComponent::onFetchTextures, this, std::placeholders::_1);
 
 		delegate.onSeletedCamera = std::bind(&GuiControllerComponent::onSeletedCamera, this, std::placeholders::_1);
 		delegate.onSeletedMesh = std::bind(&GuiControllerComponent::onSeletedMesh, this, std::placeholders::_1, std::placeholders::_2);
@@ -630,7 +631,7 @@ GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::
 	ray::util::string::value_type pathfile[PATHLIMIT];
 	if (ray::util::toUnixPath(path, pathfile, PATHLIMIT) == 0)
 	{
-		error = "Cannot open file, check the spelling of the file path.";
+		error = "Cannot open the file, check the spelling of the file path.";
 		return false;
 	}
 
@@ -640,7 +641,7 @@ GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::
 	ray::StreamReaderPtr stream;
 	if (!ray::IoServer::instance()->openFile(stream, pathfile))
 	{
-		error = "Cannot open file, check the spelling of the file path.";
+		error = "Cannot open the file, check the spelling of the file path.";
 		return false;
 	}
 
@@ -1262,6 +1263,13 @@ bool
 GuiControllerComponent::onFetchMeshes(const ray::GameObjects*& meshes) noexcept
 {
 	meshes = &_objects;
+	return true;
+}
+
+bool
+GuiControllerComponent::onFetchTextures(const ray::GraphicsTextures*& textures) noexcept
+{
+	textures = &ray::ResManager::instance()->getTextureAll();
 	return true;
 }
 

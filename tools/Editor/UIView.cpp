@@ -509,7 +509,7 @@ GuiViewComponent::showFolderSaveBrowse(ray::util::string::pointer path, std::uin
 	bi.hwndOwner = NULL;
 	bi.pszDisplayName = path;
 	bi.lpszTitle = _langs[UILang::ChooseFile];
-	bi.ulFlags = BIF_BROWSEINCLUDEFILES | BIF_NEWDIALOGSTYLE | BIF_USENEWUI;
+	bi.ulFlags = BIF_NEWDIALOGSTYLE;
 	LPITEMIDLIST idl = SHBrowseForFolder(&bi);
 	if (NULL == idl)
 		return false;
@@ -1326,7 +1326,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 					ray::Gui::sameLine();
 				}
 
-				if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), _materialFx.get(), _assetImageSize, false, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+				if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), _materialFx.get(), _assetImageSize, true, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 				{
 					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
 					{

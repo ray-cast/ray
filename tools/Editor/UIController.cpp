@@ -335,12 +335,12 @@ GuiControllerComponent::loadTexture(ray::util::string::const_pointer path, ray::
 	char ext[MAX_PATH];
 	_splitpath(path, drive, dir, filename, ext);
 
-	EditorItemTexture item;
-	item.name = filename;
-	item.preview = texture;
-	item.value.emplace<EditorItemTexture::texture>(texture);
+	auto item = std::make_shared<EditorAssetItem>();
+	item->name = filename;
+	item->preview = texture;
+	item->value.emplace<EditorAssetItem::texture>(texture);
 
-	_itemTextures.push_back(item);
+	_itemTextures.push_back(std::move(item));
 
 	return true;
 }
@@ -525,12 +525,12 @@ GuiControllerComponent::makeSphereObjects() noexcept
 				(*material)["normalMapFrom"]->uniform1i(0);
 			}
 
-			EditorItemTexture item;
-			item.name = buf;
-			item.preview = 0;
-			item.value.emplace<EditorItemTexture::material>(material);
+			auto item = std::make_shared<EditorAssetItem>();
+			item->name = buf;
+			item->preview = 0;
+			item->value.emplace<EditorAssetItem::material>(material);
 
-			_itemMaterials.push_back(item);
+			_itemMaterials.push_back(std::move(item));
 
 			_objects.push_back(std::move(newGameObject));
 		}
@@ -770,12 +770,12 @@ GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::
 	char ext[MAX_PATH];
 	_splitpath(path, drive, dir, filename, ext);
 
-	EditorItemTexture item;
-	item.name = filename;
-	item.preview = iesPreview;
-	item.value.emplace<EditorItemTexture::texture>(iesTexture);
+	auto item = std::make_shared<EditorAssetItem>();
+	item->name = filename;
+	item->preview = iesPreview;
+	item->value.emplace<EditorAssetItem::texture>(iesTexture);
 
-	_itemTextures.push_back(item);
+	_itemTextures.push_back(std::move(item));
 
 	return true;
 }
@@ -1009,12 +1009,12 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 				(*material)["occlusionMapFrom"]->uniform1i(0);
 				(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
-				EditorItemTexture item;
-				item.name = material->getName();
-				item.preview = 0;
-				item.value.emplace<EditorItemTexture::material>(material);
+				auto item = std::make_shared<EditorAssetItem>();
+				item->name = material->getName();
+				item->preview = 0;
+				item->value.emplace<EditorAssetItem::material>(material);
 
-				_itemMaterials.push_back(item);
+				_itemMaterials.push_back(std::move(item));
 
 				materials[i] = std::move(material);
 			}
@@ -1046,7 +1046,7 @@ GuiControllerComponent::onExportIES(ray::util::string::const_pointer path, std::
 	if (_itemTextures.size() < index)
 		return false;
 
-	auto texture = std::get<EditorItemTexture::texture>(_itemTextures[index].value);
+	auto texture = std::get<EditorAssetItem::texture>(_itemTextures[index]->value);
 	if (!texture)
 		return false;
 
@@ -1072,13 +1072,13 @@ GuiControllerComponent::onExportTexture(ray::util::string::const_pointer path, s
 	if (_itemTextures.size() < index)
 		return false;
 
-	auto texture = std::get<EditorItemTexture::texture>(_itemTextures[index].value);
+	auto texture = std::get<EditorAssetItem::texture>(_itemTextures[index]->value);
 	if (!texture)
 		return false;
 
 	char fullpath[PATHLIMIT];
 	std::strcpy(fullpath, path);
-	std::strcat(fullpath, _itemTextures[index].name.c_str());
+	std::strcat(fullpath, _itemTextures[index]->name.c_str());
 
 	std::uint32_t w = texture->getGraphicsTextureDesc().getWidth();
 	std::uint32_t h = texture->getGraphicsTextureDesc().getHeight();
@@ -1484,14 +1484,14 @@ GuiControllerComponent::onFetchMeshes(const ray::GameObjects*& meshes) noexcept
 }
 
 bool
-GuiControllerComponent::onFetchTextures(const EditorItemTextures*& textures) noexcept
+GuiControllerComponent::onFetchTextures(const EditorAssetItems*& textures) noexcept
 {
 	textures = &_itemTextures;
 	return true;
 }
 
 bool
-GuiControllerComponent::onFetchMaterials(const EditorItemTextures*& material) noexcept
+GuiControllerComponent::onFetchMaterials(const EditorAssetItems*& material) noexcept
 {
 	material = &_itemMaterials;
 	return true;

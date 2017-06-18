@@ -41,7 +41,7 @@
 #include <ray/material.h>
 #include <ray/game_object.h>
 
-class EditorItemTexture
+class EditorAssetItem
 {
 public:
 	enum value_t
@@ -51,11 +51,11 @@ public:
 	};
 
 public:
-	EditorItemTexture() noexcept
+	EditorAssetItem() noexcept
 	{
 	}
 
-	~EditorItemTexture() noexcept
+	~EditorAssetItem() noexcept
 	{
 	}
 
@@ -64,6 +64,8 @@ public:
 	ray::GraphicsTexturePtr preview;
 };
 
-typedef std::vector<EditorItemTexture> EditorItemTextures;
+typedef std::shared_ptr<EditorAssetItem> EditorAssetItemPtr;
+
+typedef std::vector<EditorAssetItemPtr> EditorAssetItems;
 
 #endif

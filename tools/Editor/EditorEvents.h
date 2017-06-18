@@ -38,7 +38,7 @@
 #define _H_EDITOR_EVENTS_H_
 
 #include "UIParams.h"
-#include "EditorItemTexture.h"
+#include "EditorAssetItems.h"
 
 #include <ray/material.h>
 #include <ray/game_object.h>
@@ -58,8 +58,8 @@ struct EditorEvents
 	std::function<bool(const ray::GameObjects*&)> onFetchCamera;
 	std::function<bool(const ray::GameObjects*&)> onFetchLights;
 	std::function<bool(const ray::GameObjects*&)> onFetchLightProbes;
-	std::function<bool(const EditorItemTextures*&)> onFetchMaterials;
-	std::function<bool(const EditorItemTextures*&)> onFetchTextures;
+	std::function<bool(const EditorAssetItems*&)> onFetchMaterials;
+	std::function<bool(const EditorAssetItems*&)> onFetchTextures;
 
 	std::function<bool(const ray::GameObject*)> onSeletedCamera;
 	std::function<bool(const ray::GameObject*)> onSeletedLight;

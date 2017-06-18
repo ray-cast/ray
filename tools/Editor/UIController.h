@@ -41,7 +41,7 @@
 #include "modpmx.h"
 #include "LightMass.h"
 #include "LightMapPack.h"
-#include "EditorItemTexture.h"
+#include "EditorAssetItems.h"
 
 #include <future>
 
@@ -95,8 +95,8 @@ private:
 	bool onFetchMeshes(const ray::GameObjects*& objects) noexcept;
 	bool onFetchLights(const ray::GameObjects*& objects) noexcept;
 	bool onFetchLightProbes(const ray::GameObjects*& objects) noexcept;
-	bool onFetchTextures(const EditorItemTextures*& textures) noexcept;
-	bool onFetchMaterials(const EditorItemTextures*& material) noexcept;
+	bool onFetchTextures(const EditorAssetItems*& textures) noexcept;
+	bool onFetchMaterials(const EditorAssetItems*& material) noexcept;
 
 	bool onSeletedCamera(const ray::GameObject* object) noexcept;
 	bool onSeletedLight(const ray::GameObject* object) noexcept;
@@ -124,8 +124,8 @@ private:
 
 	ray::GameObjectPtr _cube;
 
-	EditorItemTextures _itemTextures;
-	EditorItemTextures _itemMaterials;
+	EditorAssetItems _itemTextures;
+	EditorAssetItems _itemMaterials;
 
 	std::vector<std::unique_ptr<ray::PMX>> _models;
 	std::unique_ptr<std::future<bool>> _future;

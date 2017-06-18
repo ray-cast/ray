@@ -124,8 +124,7 @@ private:
 
 	ray::GameObject* _selectedObject;
 	ray::GameObjectPtr _cube;
-	ray::GraphicsTexturePtr _selectedTexture;
-	ray::MaterialPtr _selectedMaterial;
+	EditorAssetItemPtr _selectedItem;
 
 	std::vector<std::uint8_t> _selectedTextures;
 	std::vector<std::uint8_t> _selectedMaterials;

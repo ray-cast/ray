@@ -69,6 +69,7 @@ const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second U
 GuiViewComponent::GuiViewComponent() noexcept
 	: _selectedSubset(std::numeric_limits<std::size_t>::max())
 	, _selectedObject(nullptr)
+	, _selectedItem(nullptr)
 	, _selectedShift(std::numeric_limits<std::size_t>::max())
 	, _lightMassType(LightMassType::UVMapper)
 	, _viewport(0.0f, 0.0f, 0.0f, 0.0f)
@@ -1210,7 +1211,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 		ray::Gui::text("");
 		ray::Gui::sameLine();
 
-		const EditorItemTextures* textures;
+		const EditorAssetItems* textures;
 		if (_event.onFetchTextures(textures))
 		{
 			if (textures->size() != _selectedTextures.size())
@@ -1218,12 +1219,12 @@ GuiViewComponent::showAssetsWindow() noexcept
 
 			for (std::size_t i = 0; i < textures->size(); i++)
 			{
-				auto texture = (*textures)[i];
-				if (!texture.preview)
+				auto& texture = (*textures)[i];
+				if (!texture->preview)
 					continue;
 
-				std::uint32_t width = texture.preview->getGraphicsTextureDesc().getWidth();
-				std::uint32_t height = texture.preview->getGraphicsTextureDesc().getHeight();
+				std::uint32_t width = texture->preview->getGraphicsTextureDesc().getWidth();
+				std::uint32_t height = texture->preview->getGraphicsTextureDesc().getHeight();
 
 				ray::float2 imageSize = _assetImageSize * ray::float2((float)width / height, 1.0);
 
@@ -1234,7 +1235,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 					ray::Gui::sameLine();
 				}
 
-				if (ray::Gui::imageButtonAndLabel(texture.name.c_str(), texture.preview.get(), imageSize, true, _selectedTextures[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+				if (ray::Gui::imageButtonAndLabel(texture->name.c_str(), texture->preview.get(), imageSize, true, _selectedTextures[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 				{
 					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
 					{
@@ -1262,8 +1263,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 					}
 					else
 					{
-						_selectedTexture = texture.preview;
-						_selectedMaterial = nullptr;
+						_selectedItem = texture;
 					}
 				}
 
@@ -1307,7 +1307,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 		ray::Gui::text("");
 		ray::Gui::sameLine();
 
-		const EditorItemTextures* _materials;
+		const EditorAssetItems* _materials;
 		if (_event.onFetchMaterials(_materials))
 		{
 			if (_materials->size() != _selectedMaterials.size())
@@ -1315,7 +1315,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 
 			for (std::size_t i = 0; i < _materials->size(); i++)
 			{
-				auto material = (*_materials)[i];
+				auto& material = (*_materials)[i];
 
 				if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
 				{
@@ -1324,7 +1324,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 					ray::Gui::sameLine();
 				}
 
-				if (ray::Gui::imageButtonAndLabel(material.name.c_str(), material.preview ? material.preview.get() : _materialFx.get(), _assetImageSize, true, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+				if (ray::Gui::imageButtonAndLabel(material->name.c_str(), material->preview ? material->preview.get() : _materialFx.get(), _assetImageSize, true, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 				{
 					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
 					{
@@ -1352,8 +1352,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 					}
 					else
 					{
-						_selectedTexture = material.preview ? material.preview : _materialFx;
-						_selectedMaterial = std::get<EditorItemTexture::material>(material.value);
+						_selectedItem = material;
 					}
 				}
 
@@ -1482,12 +1481,11 @@ GuiViewComponent::showInspectorWindow() noexcept
 void
 GuiViewComponent::showDragImageWindow() noexcept
 {
-	if (_selectedMaterial || _selectedTexture)
+	if (_selectedItem)
 	{
 		if (ray::Gui::isMouseDown(ray::InputButton::RIGHT) || ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
 		{
-			_selectedTexture = nullptr;
-			_selectedMaterial = nullptr;
+			_selectedItem = nullptr;
 		}
 		else
 		{
@@ -1507,16 +1505,16 @@ GuiViewComponent::showDragImageWindow() noexcept
 			{
 				ray::float2 aspert = ray::float2::One;
 
-				if (_selectedTexture)
+				if (_selectedItem->preview)
 				{
-					std::uint32_t width = _selectedTexture->getGraphicsTextureDesc().getWidth();
-					std::uint32_t height = _selectedTexture->getGraphicsTextureDesc().getHeight();
+					std::uint32_t width = _selectedItem->preview->getGraphicsTextureDesc().getWidth();
+					std::uint32_t height = _selectedItem->preview->getGraphicsTextureDesc().getHeight();
 					aspert.x = (float)width / height;
 				}
 
 				ray::Gui::setWindowSize(_assetImageSize * aspert);
 				ray::Gui::setWindowPos(ray::Gui::getMousePos() - _assetImageSize * aspert * 0.5f);
-				ray::Gui::image(_selectedTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, ray::float4(0.7f));
+				ray::Gui::image(_selectedItem->preview ? _selectedItem->preview.get() : _materialFx.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, ray::float4(0.7f));
 
 				ray::Gui::end();
 			}
@@ -1667,11 +1665,19 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 
 	if (ray::Gui::treeNodeEx("Material", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 	{
-		if (ray::Gui::imageButtonEx(_materialFx.get(), _materialImageSize, material.getName().c_str(), _selectedMaterial ? true : false, _selectedMaterial ? true : false))
+		bool isMaterialDraing = false;
+		if (_selectedItem)
+			isMaterialDraing = (_selectedItem->value.index() == EditorAssetItem::material);
+
+		bool isTextureDraging = false;
+		if (_selectedItem)
+			isTextureDraging = (_selectedItem->value.index() == EditorAssetItem::texture);
+
+		if (ray::Gui::imageButtonEx(_materialFx.get(), _materialImageSize, material.getName().c_str(), isMaterialDraing, isMaterialDraing))
 		{
 			if (ray::Gui::isKeyPressed(ray::InputKey::Code::LeftControl))
 			{
-				auto& params = _selectedMaterial->getParameters();
+				auto& params = std::get<EditorAssetItem::material>(_selectedItem->value)->getParameters();
 				for (auto& it : params)
 					material[it.first]->uniformParam(*it.second);
 			}
@@ -1683,14 +1689,13 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 				if (!materials.empty())
 				{
 					if (materials.size() > _selectedSubset)
-						meshComponent->setMaterial(_selectedMaterial, _selectedSubset);
+						meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value), _selectedSubset);
 					else
-						meshComponent->setMaterial(_selectedMaterial);
+						meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value));
 				}
 			}
 
-			_selectedTexture = nullptr;
-			_selectedMaterial = nullptr;
+			_selectedItem = nullptr;
 		}
 
 		if (ray::Gui::treeNodeEx("Albedo:", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
@@ -1726,12 +1731,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert.set((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(albedoMap ? albedoMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(albedoMap ? albedoMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["albedoMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["albedoMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}
@@ -1785,12 +1790,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					ray::float2 aspert = ray::float2((float)width / height, 1.0);
 				}
 
-				if (ray::Gui::imageButtonEx(albedoSubMap ? albedoSubMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(albedoSubMap ? albedoSubMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["albedoSubMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["albedoSubMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}
@@ -1843,12 +1848,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					ray::float2 aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(normalMap ? normalMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(normalMap ? normalMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["normalMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["normalMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}
@@ -1896,12 +1901,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(normalSubMap ? normalSubMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(normalSubMap ? normalSubMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["normalSubMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["normalSubMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}
@@ -1964,12 +1969,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(smoothnessMap ? smoothnessMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(smoothnessMap ? smoothnessMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["smoothnessMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["smoothnessMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}
@@ -2031,12 +2036,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(metalnessMap ? metalnessMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(metalnessMap ? metalnessMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["metalnessMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["metalnessMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}
@@ -2080,12 +2085,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(specularMap ? specularMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(specularMap ? specularMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["specularMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["specularMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}
@@ -2147,12 +2152,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(occlusionMap ? occlusionMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(occlusionMap ? occlusionMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["occlusionMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["occlusionMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}
@@ -2196,12 +2201,12 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 					aspert = ray::float2((float)width / height, 1.0f);
 				}
 
-				if (ray::Gui::imageButtonEx(emissiveMap ? emissiveMap.get() : 0, imageSize * aspert, nullptr, (!_selectedMaterial && _selectedTexture) ? true : false, (!_selectedMaterial && _selectedTexture) ? true : false))
+				if (ray::Gui::imageButtonEx(emissiveMap ? emissiveMap.get() : 0, imageSize * aspert, nullptr, isTextureDraging, isTextureDraging))
 				{
-					if (_selectedTexture)
+					if (_selectedItem)
 					{
-						material["emissiveMap"]->uniformTexture(_selectedTexture);
-						_selectedTexture = nullptr;
+						material["emissiveMap"]->uniformTexture(std::get<EditorAssetItem::texture>(_selectedItem->value));
+						_selectedItem = nullptr;
 					}
 				}
 			}

@@ -1102,7 +1102,7 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 
 			_vertices.push_back(vertex);
 			_normals.push_back(math::normalize(vertex));
-			_texcoords[0].emplace_back(u, 1 - v);
+			_texcoords[0].emplace_back(u, v);
 
 			vertices.push_back((std::uint32_t)_vertices.size() - 1);
 		}

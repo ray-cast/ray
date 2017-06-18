@@ -96,7 +96,7 @@ private:
 	bool onFetchLights(const ray::GameObjects*& objects) noexcept;
 	bool onFetchLightProbes(const ray::GameObjects*& objects) noexcept;
 	bool onFetchTextures(const EditorItemTextures*& textures) noexcept;
-	bool onFetchMaterials(const ray::Materials*& material) noexcept;
+	bool onFetchMaterials(const EditorItemTextures*& material) noexcept;
 
 	bool onSeletedCamera(const ray::GameObject* object) noexcept;
 	bool onSeletedLight(const ray::GameObject* object) noexcept;
@@ -121,11 +121,11 @@ private:
 	ray::GameObjects _lights;
 	ray::GameObjects _lightProbes;
 	ray::GameObjects _objects;
-	ray::Materials _materials;
 
 	ray::GameObjectPtr _cube;
 
 	EditorItemTextures _itemTextures;
+	EditorItemTextures _itemMaterials;
 
 	std::vector<std::unique_ptr<ray::PMX>> _models;
 	std::unique_ptr<std::future<bool>> _future;

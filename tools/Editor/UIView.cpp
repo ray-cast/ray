@@ -1307,7 +1307,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 		ray::Gui::text("");
 		ray::Gui::sameLine();
 
-		const ray::Materials* _materials;
+		const EditorItemTextures* _materials;
 		if (_event.onFetchMaterials(_materials))
 		{
 			if (_materials->size() != _selectedMaterials.size())
@@ -1316,8 +1316,6 @@ GuiViewComponent::showMaterialsWindow() noexcept
 			for (std::size_t i = 0; i < _materials->size(); i++)
 			{
 				auto material = (*_materials)[i];
-				if (!material)
-					continue;
 
 				if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
 				{
@@ -1326,7 +1324,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 					ray::Gui::sameLine();
 				}
 
-				if (ray::Gui::imageButtonAndLabel(material->getName().c_str(), _materialFx.get(), _assetImageSize, true, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+				if (ray::Gui::imageButtonAndLabel(material.name.c_str(), material.preview ? material.preview.get() : _materialFx.get(), _assetImageSize, true, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 				{
 					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
 					{
@@ -1354,8 +1352,8 @@ GuiViewComponent::showMaterialsWindow() noexcept
 					}
 					else
 					{
-						_selectedTexture = _materialFx;
-						_selectedMaterial = material;
+						_selectedTexture = material.preview ? material.preview : _materialFx;
+						_selectedMaterial = std::get<EditorItemTexture::material>(material.value);
 					}
 				}
 

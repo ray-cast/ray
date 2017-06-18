@@ -489,7 +489,7 @@ GuiControllerComponent::makeSphereObjects() noexcept
 			(*material)["normalMap"]->uniformTexture(normalMap);
 			(*material)["normalMapFrom"]->uniform1i(1);
 			(*material)["normalMapLoopNum"]->uniform2f(1.0f, 1.0f);
-			(*material)["normalMapScale"]->uniform1f(-1.0f);
+			(*material)["normalMapScale"]->uniform1f(1.0f);
 
 			(*material)["normalSubMap"]->uniformTexture(0);
 			(*material)["normalSubMapFrom"]->uniform1i(0);
@@ -525,7 +525,12 @@ GuiControllerComponent::makeSphereObjects() noexcept
 				(*material)["normalMapFrom"]->uniform1i(0);
 			}
 
-			_materials.push_back(material);
+			EditorItemTexture item;
+			item.name = buf;
+			item.preview = 0;
+			item.value.emplace<EditorItemTexture::material>(material);
+
+			_itemMaterials.push_back(item);
 
 			_objects.push_back(std::move(newGameObject));
 		}
@@ -1004,6 +1009,13 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 				(*material)["occlusionMapFrom"]->uniform1i(0);
 				(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
+				EditorItemTexture item;
+				item.name = material->getName();
+				item.preview = 0;
+				item.value.emplace<EditorItemTexture::material>(material);
+
+				_itemMaterials.push_back(item);
+
 				materials[i] = std::move(material);
 			}
 
@@ -1035,23 +1047,23 @@ GuiControllerComponent::onExportIES(ray::util::string::const_pointer path, std::
 		return false;
 
 	auto texture = std::get<EditorItemTexture::texture>(_itemTextures[index].value);
-	if (texture)
-	{
-		std::uint32_t w = texture->getGraphicsTextureDesc().getWidth();
-		std::uint32_t h = texture->getGraphicsTextureDesc().getHeight();
+	if (!texture)
+		return false;
 
-		void* data;
-		if (!texture->map(0, 0, w, h, 0, &data))
-			return false;
+	std::uint32_t w = texture->getGraphicsTextureDesc().getWidth();
+	std::uint32_t h = texture->getGraphicsTextureDesc().getHeight();
 
-		ray::image::Image image;
-		if (!image.create(w, h, 1, ray::image::format_t::R32G32B32SFloat))
-			return false;
+	void* data;
+	if (!texture->map(0, 0, w, h, 0, &data))
+		return false;
 
-		std::memcpy((void*)image.data(), data, image.size());
+	ray::image::Image image;
+	if (!image.create(w, h, 1, ray::image::format_t::R32G32B32SFloat))
+		return false;
 
-		return image.save(path);
-	}
+	std::memcpy((void*)image.data(), data, image.size());
+
+	return image.save(path);
 }
 
 bool
@@ -1479,9 +1491,9 @@ GuiControllerComponent::onFetchTextures(const EditorItemTextures*& textures) noe
 }
 
 bool
-GuiControllerComponent::onFetchMaterials(const ray::Materials*& material) noexcept
+GuiControllerComponent::onFetchMaterials(const EditorItemTextures*& material) noexcept
 {
-	material = &_materials;
+	material = &_itemMaterials;
 	return true;
 }
 

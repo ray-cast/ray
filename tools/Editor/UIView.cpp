@@ -514,7 +514,21 @@ GuiViewComponent::showFolderSaveBrowse(ray::util::string::pointer path, std::uin
 	if (NULL == idl)
 		return false;
 
-	return SHGetPathFromIDList(idl, path);
+	if (!SHGetPathFromIDList(idl, path))
+		return false;
+
+	auto length = std::strlen(path) - 1;
+	if (length > 0 && length < PATHLIMIT)
+	{
+		if (path[length] != '\\' &&
+			path[length] != '/')
+		{
+			path[length + 1] += SEPARATOR;
+		}
+	}
+
+	return true;
+
 #else
 	return false;
 #endif
@@ -723,16 +737,6 @@ GuiViewComponent::showExportAssetBrowse() noexcept
 	if (!showFolderSaveBrowse(filepath, PATHLIMIT))
 		return;
 
-	auto length = std::strlen(filepath) - 1;
-	if (length > 0 && length < PATHLIMIT)
-	{
-		if (filepath[length] != '\\' &&
-			filepath[length] != '/')
-		{
-			filepath[length + 1] += SEPARATOR;
-		}
-	}
-
 	for (std::size_t i = 0; i < _selectedTextures.size(); i++)
 	{
 		auto selected = _selectedTextures[i];
@@ -766,14 +770,8 @@ GuiViewComponent::showExportMaterialBrowse() noexcept
 	ray::util::string::value_type filepath[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
 
-	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Material (*.fx)\0*.fx;\0All File(*.*)\0*.*;\0\0")))
+	if (!showFolderSaveBrowse(filepath, PATHLIMIT))
 		return;
-
-	if (std::strlen(filepath) < (PATHLIMIT - 5))
-	{
-		if (std::strstr(filepath, ".fx") == 0)
-			std::strcat(filepath, ".fx");
-	}
 
 	for (std::size_t i = 0; i < _selectedMaterials.size(); i++)
 	{

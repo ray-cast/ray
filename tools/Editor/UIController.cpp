@@ -572,7 +572,7 @@ GuiControllerComponent::makeSkyLighting() noexcept
 bool
 GuiControllerComponent::makeMaterialPreview(const ray::Material& material, ray::GraphicsTexturePtr& outTexture) noexcept
 {
-	outTexture = nullptr;
+	outTexture = _materialFx;
 	return false;
 }
 
@@ -639,6 +639,10 @@ GuiControllerComponent::onDetachComponent(const ray::GameComponentPtr& component
 void
 GuiControllerComponent::onActivate() except
 {
+	ray::ResManager::instance()->createTexture("dlc:Editor/UI/fx.png", _materialFx, ray::GraphicsTextureDim::GraphicsTextureDim2D, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, false);
+	if (!_materialFx)
+		return;
+
 	this->makeCubeObject();
 	this->makeMainCamera();
 	this->makeSphereObjects();

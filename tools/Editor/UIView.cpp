@@ -68,32 +68,34 @@ const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second U
 
 GuiViewComponent::GuiViewComponent() noexcept
 	: _selectedSubset(std::numeric_limits<std::size_t>::max())
+	, _selectedSubsetLast(std::numeric_limits<std::size_t>::max())
 	, _selectedObject(nullptr)
+	, _selectedObjectLast(nullptr)
 	, _selectedItem(nullptr)
 	, _selectedShift(std::numeric_limits<std::size_t>::max())
 	, _lightMassType(LightMassType::UVMapper)
 	, _viewport(0.0f, 0.0f, 0.0f, 0.0f)
-	, _mouseHoveringCamera(false)
 	, _assetImageSize(ray::float2(64.0f, 64.0f))
 	, _materialImageSize(ray::float2(128.0f, 128.0f))
 {
 	_progress = 0.0f;
-	_showWindowAll = true;
-	_showMainMenu = true;
-	_showLightMassWindow = true;
-	_showInspectorWindow = true;
-	_showCameraWindow = true;
-	_showAssertWindow = true;
-	_showMaterialWindow = true;
-	_showHierarchyWindow = true;
-	_showInspectorWindow = true;
-	_showStyleEditor = false;
-	_showAboutWindow = false;
-	_showAboutWindowFirst = false;
-	_showMessage = false;
-	_showMessageFirst = false;
-	_showProcessMessage = false;
-	_showProcessMessageFirst = false;
+	_isShowWindowAll = true;
+	_isShowMainMenu = true;
+	_isShowLightMassWindow = true;
+	_isShowInspectorWindow = true;
+	_isShowCameraWindow = true;
+	_isShowAssertWindow = true;
+	_isShowMaterialWindow = true;
+	_isShowHierarchyWindow = true;
+	_isShowInspectorWindow = true;
+	_isShowStyleEditor = false;
+	_isShowAboutWindow = false;
+	_isShowAboutWindowFirst = false;
+	_isShowMessage = false;
+	_isShowMessageFirst = false;
+	_isShowProcessMessage = false;
+	_isShowProcessMessageFirst = false;
+	_isMouseHoveringCameraDock = false;
 
 	_styleDefault.AntiAliasedLines = false;
 	_styleDefault.ItemSpacing.y = 3;
@@ -140,9 +142,6 @@ GuiViewComponent::getEditorEvents() const noexcept
 void
 GuiViewComponent::onActivate() except
 {
-	ray::ResManager::instance()->createTexture("dlc:Editor/UI/fx.png", _materialFx, ray::GraphicsTextureDim::GraphicsTextureDim2D, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, false);
-	if (!_materialFx)
-		return;
 }
 
 void
@@ -236,13 +235,13 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 				if (!input)
 					return;
 
-				if (_showAboutWindow || _showStyleEditor || _showMessage || _showProcessMessage)
+				if (_isShowAboutWindow || _isShowStyleEditor || _isShowMessage || _isShowProcessMessage)
 					return;
 
 				if (input->isKeyDown(ray::InputKey::Code::Escape))
-					_showWindowAll = !_showWindowAll;
+					_isShowWindowAll = !_isShowWindowAll;
 
-				if (!_mouseHoveringCamera)
+				if (!_isMouseHoveringCameraDock)
 					return;
 
 				if (!input->isLockedCursor())
@@ -321,7 +320,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 	}
 	else if (message->isInstanceOf<ray::GuiMessage>())
 	{
-		if (_showWindowAll)
+		if (_isShowWindowAll)
 		{
 			this->showMainMenu();
 			this->showStyleEditor();
@@ -377,7 +376,7 @@ GuiViewComponent::onModelPicker(float x, float y) noexcept
 void
 GuiViewComponent::showMainMenu() noexcept
 {
-	if (!_showMainMenu)
+	if (!_isShowMainMenu)
 		return;
 
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarWindowPadding, ray::float2(_style.WindowPadding.x * 2, _style.WindowPadding.y));
@@ -407,11 +406,11 @@ GuiViewComponent::showMainMenu() noexcept
 
 		if (ray::Gui::beginMenu(_langs[UILang::Window]))
 		{
-			ray::Gui::menuItem(_langs[UILang::Assert], 0, &_showAssertWindow);
-			ray::Gui::menuItem(_langs[UILang::Camera], 0, &_showCameraWindow);
-			ray::Gui::menuItem(_langs[UILang::Inspector], 0, &_showInspectorWindow);
-			ray::Gui::menuItem(_langs[UILang::LightMass], 0, &_showLightMassWindow);
-			ray::Gui::menuItem(_langs[UILang::StyleEditor], 0, &_showStyleEditor);
+			ray::Gui::menuItem(_langs[UILang::Assert], 0, &_isShowAssertWindow);
+			ray::Gui::menuItem(_langs[UILang::Camera], 0, &_isShowCameraWindow);
+			ray::Gui::menuItem(_langs[UILang::Inspector], 0, &_isShowInspectorWindow);
+			ray::Gui::menuItem(_langs[UILang::LightMass], 0, &_isShowLightMassWindow);
+			ray::Gui::menuItem(_langs[UILang::StyleEditor], 0, &_isShowStyleEditor);
 			ray::Gui::endMenu();
 		}
 
@@ -430,7 +429,7 @@ GuiViewComponent::showMainMenu() noexcept
 
 		if (ray::Gui::beginMenu(_langs[UILang::Help]))
 		{
-			ray::Gui::menuItem(_langs[UILang::About], 0, &_showAboutWindowFirst);
+			ray::Gui::menuItem(_langs[UILang::About], 0, &_isShowAboutWindowFirst);
 			ray::Gui::endMenu();
 		}
 
@@ -796,22 +795,22 @@ GuiViewComponent::showExportMaterialBrowse() noexcept
 void
 GuiViewComponent::showMessage() noexcept
 {
-	if (_showMessageFirst)
+	if (_isShowMessageFirst)
 	{
-		_showMessageFirst = false;
+		_isShowMessageFirst = false;
 
 		if (_ignoreMessage[_messageHash])
 			return;
 
 		ray::Gui::openPopup(_messageTitle.c_str());
 
-		_showMessage = true;
+		_isShowMessage = true;
 	}
 
-	if (!_showMessage)
+	if (!_isShowMessage)
 		return;
 
-	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), &_showMessage, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
+	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), &_isShowMessage, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
 		ray::Gui::text(_messageText.c_str());
 		ray::Gui::separator();
@@ -820,14 +819,14 @@ GuiViewComponent::showMessage() noexcept
 		ray::Gui::checkbox(_langs[UILang::NoShowAgain], &_ignoreMessage[_messageHash]);
 		ray::Gui::popStyleVar();
 
-		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _showMessage = false; }
+		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _isShowMessage = false; }
 		ray::Gui::sameLine();
 
-		if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _showMessage = false; }
+		if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _isShowMessage = false; }
 
 		if (ray::Gui::isKeyDown(ray::InputKey::Enter) || ray::Gui::isKeyDown(ray::InputKey::KP_Enter))
 		{
-			_showMessage = false;
+			_isShowMessage = false;
 			ray::Gui::closeCurrentPopup();
 		}
 
@@ -838,13 +837,13 @@ GuiViewComponent::showMessage() noexcept
 void
 GuiViewComponent::showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept
 {
-	if (!_showMessageFirst)
+	if (!_isShowMessageFirst)
 	{
 		_messageHash = hash;
 		_messageText = message;
 		_messageTitle = title;
 
-		_showMessageFirst = true;
+		_isShowMessageFirst = true;
 	}
 }
 
@@ -853,17 +852,17 @@ GuiViewComponent::showProcessMessage() noexcept
 {
 	assert(_lightMassType == LightMassType::UVMapper || _lightMassType == LightMassType::LightBaking);
 
-	if (_showProcessMessageFirst)
+	if (_isShowProcessMessageFirst)
 	{
 		ray::Gui::openPopup(_langs[UILang::Process]);
-		_showProcessMessage = true;
-		_showProcessMessageFirst = false;
+		_isShowProcessMessage = true;
+		_isShowProcessMessageFirst = false;
 	}
 
-	if (!_showProcessMessage)
+	if (!_isShowProcessMessage)
 		return;
 
-	if (ray::Gui::beginPopupModal(_langs[UILang::Process], &_showProcessMessage, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
+	if (ray::Gui::beginPopupModal(_langs[UILang::Process], &_isShowProcessMessage, ray::GuiWindowFlagBits::GuiWindowFlagNoTitleBarBit | ray::GuiWindowFlagBits::GuiWindowFlagNoMoveBit | ray::GuiWindowFlagBits::GuiWindowFlagNoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
 		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
 		ray::Gui::progressBar(_progress);
@@ -880,7 +879,7 @@ GuiViewComponent::showProcessMessage() noexcept
 				if (error)
 					this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 
-				_showProcessMessage = false;
+				_isShowProcessMessage = false;
 			}
 
 			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
@@ -890,7 +889,7 @@ GuiViewComponent::showProcessMessage() noexcept
 				if (_event.onUVMapperCancel)
 					_event.onUVMapperCancel();
 
-				_showProcessMessage = false;
+				_isShowProcessMessage = false;
 			}
 		}
 		else if (_lightMassType == LightMassType::LightBaking)
@@ -902,7 +901,7 @@ GuiViewComponent::showProcessMessage() noexcept
 				if (error)
 					this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 
-				_showProcessMessage = false;
+				_isShowProcessMessage = false;
 			}
 
 			if (ray::Gui::button(_langs[UILang::Cancel], ray::float2(100, 25)))
@@ -912,7 +911,7 @@ GuiViewComponent::showProcessMessage() noexcept
 				if (_event.onLightMassCancel)
 					_event.onLightMassCancel();
 
-				_showProcessMessage = false;
+				_isShowProcessMessage = false;
 			}
 		}
 
@@ -923,18 +922,18 @@ GuiViewComponent::showProcessMessage() noexcept
 void
 GuiViewComponent::showAboutWindow() noexcept
 {
-	if (_showAboutWindowFirst)
+	if (_isShowAboutWindowFirst)
 	{
 		ray::Gui::openPopup("About");
 
-		_showAboutWindow = true;
-		_showAboutWindowFirst = false;
+		_isShowAboutWindow = true;
+		_isShowAboutWindowFirst = false;
 	}
 
-	if (!_showAboutWindow)
+	if (!_isShowAboutWindow)
 		return;
 
-	if (ray::Gui::beginPopupModal("About", &_showAboutWindow, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
+	if (ray::Gui::beginPopupModal("About", &_isShowAboutWindow, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
 		ray::Gui::text("Ray Labs Ver.0.1");
 		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
@@ -946,7 +945,7 @@ GuiViewComponent::showAboutWindow() noexcept
 		ray::Gui::popStyleColor();
 
 		ray::Gui::sameLine(ray::Gui::getWindowWidth() - 130);
-		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _showAboutWindow = false; }
+		if (ray::Gui::button(_langs[UILang::OK], ray::float2(120, 0))) { ray::Gui::closeCurrentPopup(); _isShowAboutWindow = false; }
 
 		ray::Gui::endPopup();
 	}
@@ -955,10 +954,10 @@ GuiViewComponent::showAboutWindow() noexcept
 void
 GuiViewComponent::showStyleEditor() noexcept
 {
-	if (!_showStyleEditor)
+	if (!_isShowStyleEditor)
 		return;
 
-	if (ray::Gui::begin(_langs[UILang::StyleEditor], &_showStyleEditor, ray::float2(550, 500), -1.0f, ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
+	if (ray::Gui::begin(_langs[UILang::StyleEditor], &_isShowStyleEditor, ray::float2(550, 500), -1.0f, ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
 		if (ray::Gui::button("Revert Style"))
 			_style = _styleDefault;
@@ -1058,13 +1057,13 @@ GuiViewComponent::showHierarchyWindow() noexcept
 	assert(_event.onFetchMeshes);
 	assert(_event.onSeletedMesh);
 
-	if (!_showHierarchyWindow)
+	if (!_isShowHierarchyWindow)
 		return;
 
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(_style.FramePadding.x * 2.0f, _style.FramePadding.y));
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 1.5f);
 
-	if (ray::Gui::beginDock("Hierarchy", &_showHierarchyWindow))
+	if (ray::Gui::beginDock("Hierarchy", &_isShowHierarchyWindow))
 	{
 		if (ray::Gui::treeNodeEx("camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
@@ -1196,10 +1195,10 @@ GuiViewComponent::showAssetsWindow() noexcept
 {
 	assert(_event.onFetchTextures);
 
-	if (!_showAssertWindow)
+	if (!_isShowAssertWindow)
 		return;
 
-	if (ray::Gui::beginDock("Assets", &_showAssertWindow))
+	if (ray::Gui::beginDock("Assets", &_isShowAssertWindow))
 	{
 		ray::Gui::text("");
 		ray::Gui::sameLine();
@@ -1292,10 +1291,10 @@ GuiViewComponent::showMaterialsWindow() noexcept
 {
 	assert(_event.onFetchMaterials);
 
-	if (!_showMaterialWindow)
+	if (!_isShowMaterialWindow)
 		return;
 
-	if (ray::Gui::beginDock("Materials", &_showMaterialWindow))
+	if (ray::Gui::beginDock("Materials", &_isShowMaterialWindow))
 	{
 		ray::Gui::text("");
 		ray::Gui::sameLine();
@@ -1324,7 +1323,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 					ray::Gui::sameLine();
 				}
 
-				if (ray::Gui::imageButtonAndLabel(material->name.c_str(), material->preview ? material->preview.get() : _materialFx.get(), _assetImageSize, true, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+				if (ray::Gui::imageButtonAndLabel(material->name.c_str(), material->preview.get(), _assetImageSize, true, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 				{
 					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
 					{
@@ -1383,7 +1382,7 @@ GuiViewComponent::showCameraWindow() noexcept
 	if (!cameraComponent)
 		_cameraComponent = cameraComponent = this->getGameObject()->getComponentInChildren<ray::CameraComponent>();
 
-	if (ray::Gui::beginDock("Camera", &_showCameraWindow, ray::GuiWindowFlagAlwaysUseWindowPaddingBit | ray::GuiWindowFlagNoScrollWithMouseBit))
+	if (ray::Gui::beginDock("Camera", &_isShowCameraWindow, ray::GuiWindowFlagAlwaysUseWindowPaddingBit | ray::GuiWindowFlagNoScrollWithMouseBit))
 	{
 		ray::Gui::setScrollY(_style.WindowPadding.y);
 
@@ -1394,10 +1393,10 @@ GuiViewComponent::showCameraWindow() noexcept
 			ray::Gui::image(texture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
 
 		bool mouseHoveringCamera = ray::Gui::isMouseHoveringRect(_viewport.xy(), _viewport.xy() + _viewport.zw());
-		if (_mouseHoveringCamera != mouseHoveringCamera)
+		if (_isMouseHoveringCameraDock != mouseHoveringCamera)
 		{
 			_event.onMouseHoveringCamera(_viewport, mouseHoveringCamera);
-			_mouseHoveringCamera = mouseHoveringCamera;
+			_isMouseHoveringCameraDock = mouseHoveringCamera;
 		}
 
 		ray::Gui::endDock();
@@ -1437,13 +1436,13 @@ GuiViewComponent::showSceneWindow() noexcept
 void
 GuiViewComponent::showInspectorWindow() noexcept
 {
-	if (!_showInspectorWindow)
+	if (!_isShowInspectorWindow)
 		return;
 
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2(0.0, _style.FramePadding.y));
 	ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarIndentSpacing, _style.IndentSpacing * 0.7f);
 
-	if (ray::Gui::beginDock("Inspector", &_showInspectorWindow))
+	if (ray::Gui::beginDock("Inspector", &_isShowInspectorWindow))
 	{
 		if (_selectedObject)
 		{
@@ -1460,13 +1459,37 @@ GuiViewComponent::showInspectorWindow() noexcept
 					this->showEditSkyboxWindow(it->downcast<ray::SkyboxComponent>());
 				else if (it->isInstanceOf<ray::MeshRenderComponent>())
 				{
-					auto materials = it->downcast<ray::MeshRenderComponent>()->getMaterials();
+					const auto& materials = it->downcast<ray::MeshRenderComponent>()->getMaterials();
 					if (!materials.empty())
 					{
-						if (materials.size() > _selectedSubset)
-							this->showEditMaterialWindow(*materials[_selectedSubset]);
+						if (_selectedObject != _selectedObjectLast || _selectedSubset != _selectedSubsetLast)
+						{
+							auto material = (materials.size() > _selectedSubset) ? materials[_selectedSubset] : materials.front();
+
+							const EditorAssetItems* _materials = nullptr;
+							if (_event.onFetchMaterials(_materials))
+							{
+								auto it = std::find_if(_materials->begin(), _materials->end(), [material](const EditorAssetItemPtr& item)
+								{
+									return std::get<EditorAssetItem::material>(item->value) == material;
+								});
+
+								if (it != _materials->end())
+								{
+									_selectedMaterial = *it;
+									if (_selectedMaterial)
+										this->showEditMaterialWindow(*_selectedMaterial);
+								}
+							}
+
+							_selectedObjectLast = _selectedObject;
+							_selectedSubsetLast = _selectedSubset;
+						}
 						else
-							this->showEditMaterialWindow(*materials.front());
+						{
+							if (_selectedMaterial)
+								this->showEditMaterialWindow(*_selectedMaterial);
+						}
 					}
 				}
 			}
@@ -1503,18 +1526,14 @@ GuiViewComponent::showDragImageWindow() noexcept
 
 			if (ray::Gui::begin("##floating", 0, ray::float2::Zero, -1.0f, flags))
 			{
-				ray::float2 aspert = ray::float2::One;
+				std::uint32_t width = _selectedItem->preview->getGraphicsTextureDesc().getWidth();
+				std::uint32_t height = _selectedItem->preview->getGraphicsTextureDesc().getHeight();
 
-				if (_selectedItem->preview)
-				{
-					std::uint32_t width = _selectedItem->preview->getGraphicsTextureDesc().getWidth();
-					std::uint32_t height = _selectedItem->preview->getGraphicsTextureDesc().getHeight();
-					aspert.x = (float)width / height;
-				}
+				ray::float2 aspert = ray::float2((float)width / height, 1.0f);
 
 				ray::Gui::setWindowSize(_assetImageSize * aspert);
 				ray::Gui::setWindowPos(ray::Gui::getMousePos() - _assetImageSize * aspert * 0.5f);
-				ray::Gui::image(_selectedItem->preview ? _selectedItem->preview.get() : _materialFx.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, ray::float4(0.7f));
+				ray::Gui::image(_selectedItem->preview.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, ray::float4(0.7f));
 
 				ray::Gui::end();
 			}
@@ -1659,8 +1678,10 @@ GuiViewComponent::showEditSkyboxWindow(ray::SkyboxComponent* skybox) noexcept
 }
 
 void
-GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
+GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 {
+	auto& material = *std::get<EditorAssetItem::material>(item.value);
+
 	ray::float2 imageSize = _assetImageSize;
 
 	if (ray::Gui::treeNodeEx("Material", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
@@ -1673,7 +1694,7 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 		if (_selectedItem)
 			isTextureDraging = (_selectedItem->value.index() == EditorAssetItem::texture);
 
-		if (ray::Gui::imageButtonEx(_materialFx.get(), _materialImageSize, material.getName().c_str(), isMaterialDraing, isMaterialDraing))
+		if (ray::Gui::imageButtonEx(item.preview.get(), _materialImageSize, material.getName().c_str(), isMaterialDraing, isMaterialDraing))
 		{
 			if (ray::Gui::isKeyPressed(ray::InputKey::Code::LeftControl))
 			{
@@ -2230,10 +2251,10 @@ GuiViewComponent::showEditMaterialWindow(ray::Material& material) noexcept
 void
 GuiViewComponent::showLightMass() noexcept
 {
-	if (!_showLightMassWindow)
+	if (!_isShowLightMassWindow)
 		return;
 
-	if (ray::Gui::beginDock("Lightmass", &_showLightMassWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
+	if (ray::Gui::beginDock("Lightmass", &_isShowLightMassWindow, ray::GuiWindowFlagBits::GuiWindowFlagNoCollapseBit))
 	{
 		if (ray::Gui::treeNodeEx(_langs[UILang::UvMapper], ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
@@ -2327,7 +2348,7 @@ GuiViewComponent::startUVMapper() noexcept
 	}
 
 	_lightMassType = LightMassType::UVMapper;
-	_showProcessMessageFirst = true;
+	_isShowProcessMessageFirst = true;
 }
 
 void
@@ -2344,7 +2365,7 @@ GuiViewComponent::startLightMass() noexcept
 	}
 
 	_lightMassType = LightMassType::LightBaking;
-	_showProcessMessageFirst = true;
+	_isShowProcessMessageFirst = true;
 }
 
 void

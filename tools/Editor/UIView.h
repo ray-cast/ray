@@ -68,8 +68,6 @@ private:
 	void onModelPicker(float x, float y) noexcept;
 
 private:
-	bool makeCubeObject() noexcept;
-
 	void showMainMenu() noexcept;
 	void showStyleEditor() noexcept;
 	void showLightMass() noexcept;
@@ -106,7 +104,7 @@ private:
 	void showEditCameraWindow(ray::CameraComponent* component) noexcept;
 	void showEditLightWindow(ray::LightComponent* light) noexcept;
 	void showEditSkyboxWindow(ray::SkyboxComponent* light) noexcept;
-	void showEditMaterialWindow(ray::Material& material) noexcept;
+	void showEditMaterialWindow(const EditorAssetItem& item) noexcept;
 
 	void startUVMapper() noexcept;
 	void startLightMass() noexcept;
@@ -121,15 +119,17 @@ private:
 private:
 	std::size_t _selectedShift;
 	std::size_t _selectedSubset;
+	std::size_t _selectedSubsetLast;
 
 	ray::GameObject* _selectedObject;
+	ray::GameObject* _selectedObjectLast;
+
 	ray::GameObjectPtr _cube;
 	EditorAssetItemPtr _selectedItem;
+	EditorAssetItemPtr _selectedMaterial;
 
 	std::vector<std::uint8_t> _selectedTextures;
 	std::vector<std::uint8_t> _selectedMaterials;
-
-	ray::GraphicsTexturePtr _materialFx;
 
 	std::weak_ptr<ray::CameraComponent> _cameraComponent;
 
@@ -140,23 +140,22 @@ private:
 
 	float _progress;
 
-	bool _showWindowAll;
-	bool _showMainMenu;
-	bool _showLightMassWindow;
-	bool _showHierarchyWindow;
-	bool _showInspectorWindow;
-	bool _showAssertWindow;
-	bool _showMaterialWindow;
-	bool _showCameraWindow;
-	bool _showStyleEditor;
-	bool _showAboutWindow;
-	bool _showAboutWindowFirst;
-	bool _showMessage;
-	bool _showMessageFirst;
-	bool _showProcessMessage;
-	bool _showProcessMessageFirst;
-
-	bool _mouseHoveringCamera;
+	bool _isShowWindowAll;
+	bool _isShowMainMenu;
+	bool _isShowLightMassWindow;
+	bool _isShowHierarchyWindow;
+	bool _isShowInspectorWindow;
+	bool _isShowAssertWindow;
+	bool _isShowMaterialWindow;
+	bool _isShowCameraWindow;
+	bool _isShowStyleEditor;
+	bool _isShowAboutWindow;
+	bool _isShowAboutWindowFirst;
+	bool _isShowMessage;
+	bool _isShowMessageFirst;
+	bool _isShowProcessMessage;
+	bool _isShowProcessMessageFirst;
+	bool _isMouseHoveringCameraDock;
 
 	LightMassType _lightMassType;
 

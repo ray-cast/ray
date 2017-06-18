@@ -124,6 +124,7 @@ private:
 	ray::GameObjects _objects;
 
 	ray::GameObjectPtr _cube;
+	ray::GraphicsTexturePtr _materialFx;
 
 	EditorAssetItems _itemTextures;
 	EditorAssetItems _itemMaterials;

@@ -78,10 +78,7 @@ IMGUISystem::open(void* _window, float dpi) except
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ImeWindowHandle = _window;
-
-#if __DEBUG__
 	io.IniFilename = _imguiPath.c_str();
-#endif
 
 	GuiStyle style;
 	IMGUI::setStyle(style);

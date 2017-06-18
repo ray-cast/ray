@@ -48,6 +48,10 @@
 #include <ray/material.h>
 #include <ray/res_manager.h>
 
+#if __WINDOWS__
+#include <ShlObj.h>
+#endif
+
 __ImplementSubClass(GuiViewComponent, ray::GameComponent, "GuiView")
 
 const char* itemsUVSlot[] = { "0", "1", "2", "3", "4" };
@@ -482,12 +486,35 @@ GuiViewComponent::showFileSaveBrowse(ray::util::string::pointer path, std::uint3
 	ofn.nMaxFile = max_length;
 	ofn.lpstrInitialDir = 0;
 	ofn.lpstrTitle = _langs[UILang::SaveAs];
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
 	if (::GetSaveFileName(&ofn))
 		return true;
 
 	return false;
+#else
+	return false;
+#endif
+}
+
+bool
+GuiViewComponent::showFolderSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length) noexcept
+{
+	assert(path && max_length > 0);
+
+#if __WINDOWS__
+	BROWSEINFO bi;
+	std::memset(&bi, 0, sizeof(BROWSEINFO));
+
+	bi.hwndOwner = NULL;
+	bi.pszDisplayName = path;
+	bi.lpszTitle = _langs[UILang::ChooseFile];
+	bi.ulFlags = BIF_BROWSEINCLUDEFILES | BIF_NEWDIALOGSTYLE | BIF_USENEWUI;
+	LPITEMIDLIST idl = SHBrowseForFolder(&bi);
+	if (NULL == idl)
+		return false;
+
+	return SHGetPathFromIDList(idl, path);
 #else
 	return false;
 #endif
@@ -693,13 +720,17 @@ GuiViewComponent::showExportAssetBrowse() noexcept
 	ray::util::string::value_type filepath[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
 
-	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("All Formats(*.bmp,*.png,*.jpg,*.tga)\0*.bmp;*.png;*.jpg;*.tga;\0All File(*.*)\0*.*;\0\0")))
+	if (!showFolderSaveBrowse(filepath, PATHLIMIT))
 		return;
 
-	if (std::strlen(filepath) < (PATHLIMIT - 5))
+	auto length = std::strlen(filepath) - 1;
+	if (length > 0 && length < PATHLIMIT)
 	{
-		if (std::strstr(filepath, ".tga") == 0)
-			std::strcat(filepath, ".tga");
+		if (filepath[length] != '\\' &&
+			filepath[length] != '/')
+		{
+			filepath[length + 1] += SEPARATOR;
+		}
 	}
 
 	for (std::size_t i = 0; i < _selectedTextures.size(); i++)
@@ -1181,7 +1212,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 		ray::Gui::text("");
 		ray::Gui::sameLine();
 
-		const ray::GraphicsTextures* textures;
+		const EditorItemTextures* textures;
 		if (_event.onFetchTextures(textures))
 		{
 			if (textures->size() != _selectedTextures.size())
@@ -1190,11 +1221,11 @@ GuiViewComponent::showAssetsWindow() noexcept
 			for (std::size_t i = 0; i < textures->size(); i++)
 			{
 				auto texture = (*textures)[i];
-				if (!texture)
+				if (!texture.preview)
 					continue;
 
-				std::uint32_t width = texture->getGraphicsTextureDesc().getWidth();
-				std::uint32_t height = texture->getGraphicsTextureDesc().getHeight();
+				std::uint32_t width = texture.preview->getGraphicsTextureDesc().getWidth();
+				std::uint32_t height = texture.preview->getGraphicsTextureDesc().getHeight();
 
 				ray::float2 imageSize = _assetImageSize * ray::float2((float)width / height, 1.0);
 
@@ -1205,7 +1236,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 					ray::Gui::sameLine();
 				}
 
-				if (ray::Gui::imageButtonAndLabel(0, texture.get(), imageSize, false, _selectedTextures[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
+				if (ray::Gui::imageButtonAndLabel(texture.name.c_str(), texture.preview.get(), imageSize, true, _selectedTextures[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 				{
 					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
 					{
@@ -1233,7 +1264,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 					}
 					else
 					{
-						_selectedTexture = texture;
+						_selectedTexture = texture.preview;
 						_selectedMaterial = nullptr;
 					}
 				}

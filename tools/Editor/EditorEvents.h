@@ -55,12 +55,11 @@ struct EditorEvents
 	std::function<bool(ray::util::string::const_pointer, ray::util::string::pointer&)> onLightMassSave;
 
 	std::function<bool(const ray::GameObjects*&)> onFetchMeshes;
-	std::function<bool(const EditorItemTextures*&)> onFetchIES;
 	std::function<bool(const ray::GameObjects*&)> onFetchCamera;
 	std::function<bool(const ray::GameObjects*&)> onFetchLights;
 	std::function<bool(const ray::GameObjects*&)> onFetchLightProbes;
 	std::function<bool(const ray::Materials*&)>   onFetchMaterials;
-	std::function<bool(const ray::GraphicsTextures*&)>  onFetchTextures;
+	std::function<bool(const EditorItemTextures*&)> onFetchTextures;
 
 	std::function<bool(const ray::GameObject*)> onSeletedCamera;
 	std::function<bool(const ray::GameObject*)> onSeletedLight;

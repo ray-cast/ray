@@ -54,6 +54,11 @@ public:
 
 	ray::GameComponentPtr clone() const noexcept;
 
+	bool loadTexture(const std::string& path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim = ray::GraphicsTextureDim::GraphicsTextureDim2D) noexcept;
+	bool loadTexture(std::string::const_pointer path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim = ray::GraphicsTextureDim::GraphicsTextureDim2D) noexcept;
+	bool loadTexture(const std::wstring& path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim = ray::GraphicsTextureDim::GraphicsTextureDim2D) noexcept;
+	bool loadTexture(std::wstring::const_pointer path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim = ray::GraphicsTextureDim::GraphicsTextureDim2D) noexcept;
+
 private:
 	bool makeCubeObject() noexcept;
 	bool makeMainCamera() noexcept;
@@ -90,7 +95,7 @@ private:
 	bool onFetchMeshes(const ray::GameObjects*& objects) noexcept;
 	bool onFetchLights(const ray::GameObjects*& objects) noexcept;
 	bool onFetchLightProbes(const ray::GameObjects*& objects) noexcept;
-	bool onFetchTextures(const ray::GraphicsTextures*& textures) noexcept;
+	bool onFetchTextures(const EditorItemTextures*& textures) noexcept;
 	bool onFetchMaterials(const ray::Materials*& material) noexcept;
 
 	bool onSeletedCamera(const ray::GameObject* object) noexcept;
@@ -120,7 +125,7 @@ private:
 
 	ray::GameObjectPtr _cube;
 
-	EditorItemTextures _itemIES;
+	EditorItemTextures _itemTextures;
 
 	std::vector<std::unique_ptr<ray::PMX>> _models;
 	std::unique_ptr<std::future<bool>> _future;

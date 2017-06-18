@@ -807,6 +807,7 @@ OGLDeviceContext::startDebugControl() noexcept
 	{
 		// 131184 memory info
 		// 131185 memory allocation info
+		// 131154 pixel transfer is synchronized with 3D rendering
 		GLuint ids[] =
 		{
 			131076,
@@ -814,7 +815,8 @@ OGLDeviceContext::startDebugControl() noexcept
 			131184,
 			131185,
 			131218,
-			131204
+			131204,
+			131154
 		};
 
 		glEnable(GL_DEBUG_OUTPUT);
@@ -825,7 +827,7 @@ OGLDeviceContext::startDebugControl() noexcept
 		// enable all
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 		// disable ids
-		glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
+		glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 7, ids, GL_FALSE);
 	}
 }
 

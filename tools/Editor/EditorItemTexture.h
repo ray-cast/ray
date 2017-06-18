@@ -44,11 +44,10 @@
 class EditorItemTexture
 {
 public:
-	enum class ItemType
+	enum value_t
 	{
-		Image,
-		Material,
-		IES
+		texture,
+		material,
 	};
 
 public:
@@ -60,6 +59,7 @@ public:
 	{
 	}
 
+	std::string name;
 	std::variant<ray::GraphicsTexturePtr, ray::MaterialPtr, ray::GraphicsTexturePtr> value;
 	ray::GraphicsTexturePtr preview;
 };

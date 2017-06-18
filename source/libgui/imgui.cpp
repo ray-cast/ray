@@ -2341,11 +2341,11 @@ IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2
 			ImGui::SetTooltip(label);
 	}
 
-	if (label && !showLabel)
+	if (label && showLabel)
 	{
-		ImGui::PushItemWidth(size.x);
-		ImGui::Text(label);
-		ImGui::PopItemWidth();
+		ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + size.x + frame_padding);
+		ImGui::TextWrapped(label);
+		ImGui::PopTextWrapPos();
 	}
 
 	ImGui::EndGroup();

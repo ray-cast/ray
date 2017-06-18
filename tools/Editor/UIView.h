@@ -81,6 +81,7 @@ private:
 
 	bool showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
 	bool showFileSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
+	bool showFolderSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length) noexcept;
 
 	void showImportModelBrowse() noexcept;
 	void showImportAssetBrowse() noexcept;

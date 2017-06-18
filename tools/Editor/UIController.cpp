@@ -308,6 +308,64 @@ GuiControllerComponent::clone() const noexcept
 }
 
 bool
+GuiControllerComponent::loadTexture(const ray::util::string& path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim) noexcept
+{
+	return this->loadTexture(path.c_str(), texture, error, dim);
+}
+
+bool
+GuiControllerComponent::loadTexture(ray::util::string::const_pointer path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim) noexcept
+{
+	ray::util::string::value_type buffer[PATHLIMIT];
+	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) == 0)
+	{
+		error = "Cannot open file, check the spelling of the file path.";
+		return false;
+	}
+
+	if (!ray::ResManager::instance()->createTexture(buffer, texture, dim))
+	{
+		error = "Failed to load texture";
+		return false;
+	}
+
+	char drive[MAX_PATH];
+	char dir[PATHLIMIT];
+	char filename[PATHLIMIT];
+	char ext[MAX_PATH];
+	_splitpath(path, drive, dir, filename, ext);
+
+	EditorItemTexture item;
+	item.name = filename;
+	item.preview = texture;
+	item.value.emplace<EditorItemTexture::texture>(texture);
+
+	_itemTextures.push_back(item);
+
+	return true;
+}
+
+bool
+GuiControllerComponent::loadTexture(const std::wstring& path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim) noexcept
+{
+	char mbs[PATHLIMIT];
+	if (::wcstombs(mbs, path.c_str(), path.size()) == 0)
+		return false;
+
+	return this->loadTexture(mbs, texture, error, dim);
+}
+
+bool
+GuiControllerComponent::loadTexture(std::wstring::const_pointer path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim) noexcept
+{
+	char mbs[PATHLIMIT];
+	if (::wcstombs(mbs, path, std::wcslen(path)) == 0)
+		return false;
+
+	return this->loadTexture(mbs, texture, error, dim);
+}
+
+bool
 GuiControllerComponent::makeCubeObject() noexcept
 {
 	ray::MaterialPtr material;
@@ -385,13 +443,13 @@ bool
 GuiControllerComponent::makeSphereObjects() noexcept
 {
 	ray::GraphicsTexturePtr diffuseMap;
-	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_ao.dds", diffuseMap);
-	if (!diffuseMap)
+	ray::GraphicsTexturePtr normalMap;
+
+	char* error = nullptr;
+	if (!this->loadTexture("dlc:common/textures/Bricks_ao.dds", diffuseMap, error))
 		return false;
 
-	ray::GraphicsTexturePtr normalMap;
-	ray::ResManager::instance()->createTexture("dlc:common/textures/Bricks_n.dds", normalMap);
-	if (!normalMap)
+	if (!this->loadTexture("dlc:common/textures/Bricks_n.dds", normalMap, error))
 		return false;
 
 	ray::MaterialPtr material;
@@ -479,15 +537,21 @@ GuiControllerComponent::makeSphereObjects() noexcept
 bool
 GuiControllerComponent::makeSkyLighting() noexcept
 {
+	ray::GraphicsTexturePtr skybox;
+
+	char* error = nullptr;
+	if (!this->loadTexture("dlc:common/textures/uffizi_sky.hdr", skybox, error))
+		return false;
+
 	auto light = std::make_shared<ray::LightComponent>();
 	light->setLightType(ray::LightType::LightTypeEnvironment);
 	light->setLightRange(20000);
 	light->setShadowMode(ray::ShadowMode::ShadowModeNone);
 
 	auto sky = std::make_shared<ray::SkyboxComponent>();
-	sky->loadSkybox("dlc:common/textures/uffizi_sky.hdr", true);
-	sky->loadSkyDiffuse("dlc:common/textures/uffizi_diff.dds", false);
-	sky->loadSkySpecular("dlc:common/textures/uffizi_spec.dds", false);
+	sky->setSkyBox(skybox);
+	sky->loadSkyDiffuse("dlc:common/textures/uffizi_diff.dds");
+	sky->loadSkySpecular("dlc:common/textures/uffizi_spec.dds");
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setName("sky");
@@ -660,16 +724,19 @@ GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::
 		return false;
 	}
 
+	std::vector<float> ies(256 * 3);
+	helper.saveAs1D(info, ies.data(), 256, 3);
+
 	std::vector<std::uint8_t> preview(64 * 64 * 3);
 	helper.saveAsPreview(info, preview.data(), 64, 64, 3);
 
 	ray::GraphicsTextureDesc textureDesc;
-	textureDesc.setWidth(64);
-	textureDesc.setHeight(64);
-	textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	textureDesc.setWidth(256);
+	textureDesc.setHeight(1);
+	textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR32G32B32SFloat);
 	textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	textureDesc.setStream(preview.data());
-	textureDesc.setStreamSize(preview.size());
+	textureDesc.setStream(ies.data());
+	textureDesc.setStreamSize(ies.size());
 
 	auto iesTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
 	if (!iesTexture)
@@ -678,27 +745,41 @@ GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::
 		return false;
 	}
 
-	return ray::ResManager::instance()->addTextureCache(pathfile, iesTexture);
+	textureDesc.setWidth(64);
+	textureDesc.setHeight(64);
+	textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	textureDesc.setStream(preview.data());
+	textureDesc.setStreamSize(preview.size());
+
+	auto iesPreview = ray::RenderSystem::instance()->createTexture(textureDesc);
+	if (!iesPreview)
+	{
+		error = "Failed to create ies texture.";
+		return false;
+	}
+
+	char drive[MAX_PATH];
+	char dir[PATHLIMIT];
+	char filename[PATHLIMIT];
+	char ext[MAX_PATH];
+	_splitpath(path, drive, dir, filename, ext);
+
+	EditorItemTexture item;
+	item.name = filename;
+	item.preview = iesPreview;
+	item.value.emplace<EditorItemTexture::texture>(iesTexture);
+
+	_itemTextures.push_back(item);
+
+	return true;
 }
 
 bool
 GuiControllerComponent::onImportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
-	ray::util::string::value_type buffer[PATHLIMIT];
-	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) == 0)
-	{
-		error = "Cannot open file, check the spelling of the file path.";
-		return false;
-	}
-
 	ray::GraphicsTexturePtr texture;
-	if (!ray::ResManager::instance()->createTexture(buffer, texture))
-	{
-		error = "Failed to load texture";
-		return false;
-	}
-
-	return true;
+	return this->loadTexture(path, texture, error);
 }
 
 bool
@@ -862,29 +943,32 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 
 				if (diffuseIndex >= 0)
 				{
-					char name[MAX_PATH];
-					::wcstombs(name, model->textures[diffuseIndex].name, model->textures[diffuseIndex].length);
-
-					if (ray::util::toUnixPath(name, name, PATHLIMIT) > 0)
-						ray::ResManager::instance()->createTexture(ray::util::directory(buffer) + name, diffuseMap);
+					char name[PATHLIMIT];
+					if (::wcstombs(name, model->textures[diffuseIndex].name, model->textures[diffuseIndex].length))
+					{
+						char* error = nullptr;
+						this->loadTexture(ray::util::directory(buffer) + name, diffuseMap, error);
+					}
 				}
 
 				if (specularIndex >= 0)
 				{
 					char name[MAX_PATH];
-					::wcstombs(name, model->textures[specularIndex].name, model->textures[specularIndex].length);
-
-					if (ray::util::toUnixPath(name, name, PATHLIMIT) > 0)
-						ray::ResManager::instance()->createTexture(ray::util::directory(buffer) + name, specularMap);
+					if (::wcstombs(name, model->textures[specularIndex].name, model->textures[specularIndex].length) > 0)
+					{
+						char* error = nullptr;
+						this->loadTexture(ray::util::directory(buffer) + name, specularMap, error);
+					}
 				}
 
 				if (toonIndex >= 0)
 				{
 					char name[MAX_PATH];
-					::wcstombs(name, model->textures[toonIndex].name, model->textures[toonIndex].length);
-
-					if (ray::util::toUnixPath(name, name, PATHLIMIT) > 0)
-						ray::ResManager::instance()->createTexture(ray::util::directory(buffer) + name, toonMap);
+					if (::wcstombs(name, model->textures[toonIndex].name, model->textures[toonIndex].length) > 0)
+					{
+						char* error = nullptr;
+						this->loadTexture(ray::util::directory(buffer) + name, toonMap, error);
+					}
 				}
 
 				(*material)["albedo"]->uniform3f(ray::math::srgb2linear(model->materials[i].Diffuse));
@@ -947,12 +1031,133 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 bool
 GuiControllerComponent::onExportIES(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept
 {
-	return false;
+	if (_itemTextures.size() < index)
+		return false;
+
+	auto texture = std::get<EditorItemTexture::texture>(_itemTextures[index].value);
+	if (texture)
+	{
+		std::uint32_t w = texture->getGraphicsTextureDesc().getWidth();
+		std::uint32_t h = texture->getGraphicsTextureDesc().getHeight();
+
+		void* data;
+		if (!texture->map(0, 0, w, h, 0, &data))
+			return false;
+
+		ray::image::Image image;
+		if (!image.create(w, h, 1, ray::image::format_t::R32G32B32SFloat))
+			return false;
+
+		std::memcpy((void*)image.data(), data, image.size());
+
+		return image.save(path);
+	}
 }
 
 bool
 GuiControllerComponent::onExportTexture(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept
 {
+	if (_itemTextures.size() < index)
+		return false;
+
+	auto texture = std::get<EditorItemTexture::texture>(_itemTextures[index].value);
+	if (!texture)
+		return false;
+
+	char fullpath[PATHLIMIT];
+	std::strcpy(fullpath, path);
+	std::strcat(fullpath, _itemTextures[index].name.c_str());
+
+	std::uint32_t w = texture->getGraphicsTextureDesc().getWidth();
+	std::uint32_t h = texture->getGraphicsTextureDesc().getHeight();
+
+	auto format = texture->getGraphicsTextureDesc().getTexFormat();
+	if (format == ray::GraphicsFormat::GraphicsFormatR32G32B32SFloat)
+	{
+		ray::image::Image image;
+		if (!image.create(w, h, 1, ray::image::format_t::R32G32B32SFloat))
+			return false;
+
+		void* data;
+		if (texture->map(0, 0, w, h, 0, &data))
+		{
+			std::memcpy((void*)image.data(), data, image.size());
+			texture->unmap();
+		}
+
+		std::strcat(fullpath, ".hdr");
+
+		return image.save(fullpath, "hdr");
+	}
+	else if (format == ray::GraphicsFormat::GraphicsFormatR8G8B8UNorm)
+	{
+		ray::image::Image image;
+		if (!image.create(w, h, 1, ray::image::format_t::R8G8B8UNorm))
+			return false;
+
+		void* data;
+		if (texture->map(0, 0, w, h, 0, &data))
+		{
+			std::memcpy((void*)image.data(), data, image.size());
+			texture->unmap();
+		}
+
+		std::strcat(fullpath, ".tga");
+
+		return image.save(fullpath, "tga");
+	}
+	else if (format == ray::GraphicsFormat::GraphicsFormatR8G8B8A8UNorm)
+	{
+		ray::image::Image image;
+		if (!image.create(w, h, 1, ray::image::format_t::R8G8B8A8UNorm))
+			return false;
+
+		void* data;
+		if (texture->map(0, 0, w, h, 0, &data))
+		{
+			std::memcpy((void*)image.data(), data, image.size());
+			texture->unmap();
+		}
+
+		std::strcat(fullpath, ".tga");
+
+		return image.save(path, "tga");
+	}
+	else if (format == ray::GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
+	{
+		ray::image::Image image;
+		if (!image.create(w, h, 1, ray::image::format_t::R8G8B8A8UNorm))
+			return false;
+
+		void* data;
+		if (texture->map(0, 0, w, h, 0, &data))
+		{
+			std::memcpy((void*)image.data(), data, image.size());
+			texture->unmap();
+		}
+
+		std::strcat(fullpath, ".tga");
+
+		return image.save(fullpath, "tga");
+	}
+	else if (format == ray::GraphicsFormat::GraphicsFormatB8G8R8UNorm)
+	{
+		ray::image::Image image;
+		if (!image.create(w, h, 1, ray::image::format_t::R8G8B8UNorm))
+			return false;
+
+		void* data;
+		if (texture->map(0, 0, w, h, 0, &data))
+		{
+			std::memcpy((void*)image.data(), data, image.size());
+			texture->unmap();
+		}
+
+		std::strcat(fullpath, ".tga");
+
+		return image.save(fullpath, "tga");
+	}
+
 	return false;
 }
 
@@ -1267,9 +1472,9 @@ GuiControllerComponent::onFetchMeshes(const ray::GameObjects*& meshes) noexcept
 }
 
 bool
-GuiControllerComponent::onFetchTextures(const ray::GraphicsTextures*& textures) noexcept
+GuiControllerComponent::onFetchTextures(const EditorItemTextures*& textures) noexcept
 {
-	textures = &ray::ResManager::instance()->getTextureAll();
+	textures = &_itemTextures;
 	return true;
 }
 

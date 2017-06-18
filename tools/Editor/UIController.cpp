@@ -527,8 +527,8 @@ GuiControllerComponent::makeSphereObjects() noexcept
 
 			auto item = std::make_shared<EditorAssetItem>();
 			item->name = buf;
-			item->preview = 0;
 			item->value.emplace<EditorAssetItem::material>(material);
+			this->makeMaterialPreview(*material, item->preview);
 
 			_itemMaterials.push_back(std::move(item));
 
@@ -567,6 +567,13 @@ GuiControllerComponent::makeSkyLighting() noexcept
 
 	_lights.push_back(gameObject);
 	return true;
+}
+
+bool
+GuiControllerComponent::makeMaterialPreview(const ray::Material& material, ray::GraphicsTexturePtr& outTexture) noexcept
+{
+	outTexture = nullptr;
+	return false;
 }
 
 void
@@ -1011,8 +1018,8 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 
 				auto item = std::make_shared<EditorAssetItem>();
 				item->name = material->getName();
-				item->preview = 0;
 				item->value.emplace<EditorAssetItem::material>(material);
+				this->makeMaterialPreview(*material, item->preview);
 
 				_itemMaterials.push_back(std::move(item));
 

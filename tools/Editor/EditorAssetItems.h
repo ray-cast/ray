@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_EDITOR_ITEM_TEXTURE_H_
-#define _H_EDITOR_ITEM_TEXTURE_H_
+#ifndef _H_EDITOR_ASSET_ITEM_H_
+#define _H_EDITOR_ASSET_ITEM_H_
 
 #include "UIParams.h"
 #include <ray/material.h>

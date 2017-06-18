@@ -64,6 +64,7 @@ private:
 	bool makeMainCamera() noexcept;
 	bool makeSphereObjects() noexcept;
 	bool makeSkyLighting() noexcept;
+	bool makeMaterialPreview(const ray::Material& material, ray::GraphicsTexturePtr& outTexture) noexcept;
 
 private:
 	void onAttachComponent(const ray::GameComponentPtr& component) except;

@@ -39,6 +39,7 @@
 #include <ray/graphics_data.h>
 #include <ray/graphics_texture.h>
 #include <ray/material.h>
+#include <ray/ioserver.h>
 #include <imgui.h>
 #include <imgui_dock.h>
 
@@ -66,11 +67,20 @@ IMGUISystem::open(void* _window, float dpi) except
 	assert(::IsWindow((HWND)_window));
 #endif
 
+	std::string path;
+	ray::IoServer::instance()->getAssign("sys", path);
+
+	_imguiPath = path;
+	_imguiPath += "ui/imgui.layout";
+
+	_imguiDockPath = path;
+	_imguiDockPath += "ui/imgui_dock.layout";
+
 	ImGuiIO& io = ImGui::GetIO();
 	io.ImeWindowHandle = _window;
 
 #if __DEBUG__
-	io.IniFilename = 0;
+	io.IniFilename = _imguiPath.c_str();
 #endif
 
 	GuiStyle style;
@@ -153,7 +163,7 @@ IMGUISystem::open(void* _window, float dpi) except
 
 	_materialProj = _material->getParameter("proj");
 
-	ImGui::LoadDock();
+	ImGui::LoadDock(_imguiDockPath.c_str());
 
 	_initialize = true;
 	return true;
@@ -169,7 +179,12 @@ IMGUISystem::close() noexcept
 
 	if (_initialize)
 	{
-		ImGui::SaveDock();
+		std::string path;
+		ray::IoServer::instance()->getAssign("sys", path);
+
+		path += "ui/imgui_dock.layout";
+
+		ImGui::SaveDock(path.c_str());
 		ImGui::ShutdownDock();
 		ImGui::Shutdown();
 

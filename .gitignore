@@ -7,5 +7,6 @@ CMakeSettings.json
 
 lib/_redist
 lib/binaries/
+lib/engine/ui
 
 .vs

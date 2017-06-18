@@ -78,6 +78,9 @@ private:
 
 	void* _window;
 
+	std::string _imguiPath;
+	std::string _imguiDockPath;
+
 	MaterialPtr _material;
 	MaterialTechPtr _materialTech;
 	MaterialParamPtr _materialDecal;

@@ -25,7 +25,7 @@
 //
 // For more information, please refer to <http://unlicense.org>
 #include <new>
-
+#include <stdlib.h>
 #include "imgui.h"
 #define IMGUI_DEFINE_PLACEMENT_NEW
 #include "imgui_internal.h"
@@ -997,9 +997,9 @@ namespace ImGui
 			return -1;
 		}
 
-		void save()
+		void save(const char* path)
 		{
-			FILE *fp = fopen("imgui_dock.layout", "w");
+			FILE *fp = fopen(path, "w");
 			fprintf(fp, "docks %d\n\n", m_docks.size());
 			for (int i = 0; i < m_docks.size(); ++i) {
 				Dock& dock = *m_docks[i];
@@ -1026,7 +1026,7 @@ namespace ImGui
 
 		Dock* getDockByIndex(int idx) { return idx < 0 ? nullptr : m_docks[(int)idx]; }
 
-		void load()
+		void load(const char* path)
 		{
 			for (int i = 0; i < m_docks.size(); ++i)
 			{
@@ -1035,7 +1035,7 @@ namespace ImGui
 			}
 			m_docks.clear();
 
-			FILE *fp = fopen("imgui_dock.layout", "r");
+			FILE *fp = fopen(path, "r");
 
 			if (fp) {
 				int ival;
@@ -1144,13 +1144,13 @@ namespace ImGui
 		g_dock.end();
 	}
 
-	void SaveDock()
+	void SaveDock(const char* path)
 	{
-		g_dock.save();
+		g_dock.save(path);
 	}
 
-	void LoadDock()
+	void LoadDock(const char* path)
 	{
-		g_dock.load();
+		g_dock.load(path);
 	}
 } // namespace ImGui

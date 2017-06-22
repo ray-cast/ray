@@ -596,15 +596,22 @@ namespace util
 		// write the unary minus to indicate we have a negative number
 		std::size_t written = 1u;
 
-		if (number < 0 && written < max)
+		if (number < 0.0f && written < max)
 		{
 			*out++ = '-';
 			++written;
 			number = -number;
 		}
 
+		if (number == 0.0f)
+		{
+			*out++ = '0';
+			*out++ = '\0';
+			return written;
+		}
+
 		// calculating decimal point position.
-		while (number >= 10.0)
+		while (number >= 10.0f)
 		{
 			decPoint++;
 			number /= 10;
@@ -614,7 +621,7 @@ namespace util
 
 		for (std::size_t loop = 0; loop < loopMax; loop++)
 		{
-			if (number == 0.0)
+			if (number == 0.0f)
 			{
 				if (loop == 1)
 				{
@@ -626,7 +633,7 @@ namespace util
 
 			char tmp = (char)number;
 			number -= tmp;
-			number *= 10.0;
+			number *= 10.0f;
 
 			*out++ = '0' + tmp;
 
@@ -671,6 +678,13 @@ namespace util
 			*out++ = '-';
 			++written;
 			number = -number;
+		}
+
+		if (number == 0.0)
+		{
+			*out++ = '0';
+			*out++ = '\0';
+			return written;
 		}
 
 		// calculating decimal point position.

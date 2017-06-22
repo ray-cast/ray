@@ -31,27 +31,34 @@
 	<parameter name="smoothnessMapType" type="int"/>
 	<parameter name="smoothnessMapFrom" type="int"/>
 	<parameter name="smoothnessMapFilp" type="int"/>
-	<parameter name="smoothnessMapSiwzzle" type="float4"/>
+	<parameter name="smoothnessMapSwizzle" type="float4"/>
 	<parameter name="smoothnessMapLoopNum" type="float2"/>
 	<parameter name="metalness" type="float"/>
 	<parameter name="metalnessMap" type="texture2D"/>
 	<parameter name="metalnessMapFrom" type="int"/>
 	<parameter name="metalnessMapFilp" type="int"/>
-	<parameter name="metalnessMapSiwzzle" type="float4"/>
+	<parameter name="metalnessMapSwizzle" type="float4"/>
 	<parameter name="metalnessMapLoopNum" type="float2"/>
 	<parameter name="specular" type="float3"/>
 	<parameter name="specularMap" type="texture2D"/>
 	<parameter name="specularMapType" type="int"/>
 	<parameter name="specularMapFrom" type="int"/>
 	<parameter name="specularMapFilp" type="int"/>
+	<parameter name="specularMapSwizzle" type="float4"/>
 	<parameter name="specularMapLoopNum" type="float2"/>
 	<parameter name="occlusion" type="float"/>
 	<parameter name="occlusionMap" type="texture2D"/>
 	<parameter name="occlusionMapType" type="int"/>
 	<parameter name="occlusionMapFrom" type="int"/>
 	<parameter name="occlusionMapFilp" type="int"/>
-	<parameter name="occlusionMapSiwzzle" type="float4"/>
+	<parameter name="occlusionMapSwizzle" type="float4"/>
 	<parameter name="occlusionMapLoopNum" type="float2"/>
+	<parameter name="parallaxMap" type="texture2D"/>
+	<parameter name="parallaxMapFrom" type="int"/>
+	<parameter name="parallaxMapFilp" type="int"/>
+	<parameter name="parallaxMapScale" type="float"/>
+	<parameter name="parallaxMapSwizzle" type="float4"/>
+	<parameter name="parallaxMapLoopNum" type="float2"/>
 	<parameter name="emissive" type="float3"/>
 	<parameter name="emissiveMap" type="texture2D"/>
 	<parameter name="emissiveMapFrom" type="int"/>
@@ -256,7 +263,7 @@
 					else if (smoothnessMapFilp == 3)
 						coord = 1 - coord;
 					
-					return dot(smoothnessMap.Sample(PointClamp, coord * smoothnessMapLoopNum), smoothnessMapSiwzzle) * smoothness;
+					return dot(smoothnessMap.Sample(PointClamp, coord * smoothnessMapLoopNum), smoothnessMapSwizzle) * smoothness;
 				}
 				else
 				{
@@ -275,7 +282,7 @@
 					else if (metalnessMapFilp == 3)
 						coord = 1 - coord;
 					
-					return dot(metalnessMap.Sample(PointClamp, coord * metalnessMapLoopNum).r, metalnessMapSiwzzle) * metalness;
+					return dot(metalnessMap.Sample(PointClamp, coord * metalnessMapLoopNum).r, metalnessMapSwizzle) * metalness;
 				}
 				else
 				{
@@ -294,7 +301,7 @@
 					else if (occlusionMapFilp == 3)
 						coord = 1 - coord;
 					
-					return dot(occlusionMap.Sample(PointClamp, coord * occlusionMapLoopNum).r, occlusionMapSiwzzle) * occlusion;
+					return dot(occlusionMap.Sample(PointClamp, coord * occlusionMapLoopNum).r, occlusionMapSwizzle) * occlusion;
 				}
 				else
 				{

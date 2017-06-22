@@ -499,12 +499,12 @@ GuiControllerComponent::makeSphereObjects() noexcept
 			(*material)["smoothness"]->uniform1f(shininessParams[i * 10 + j]);
 			(*material)["smoothnessMapFrom"]->uniform1i(0);
 			(*material)["smoothnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
-			(*material)["smoothnessMapSiwzzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
+			(*material)["smoothnessMapSwizzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
 
 			(*material)["metalness"]->uniform1f(0);
 			(*material)["metalnessMapFrom"]->uniform1i(0);
 			(*material)["metalnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
-			(*material)["metalnessMapSiwzzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
+			(*material)["metalnessMapSwizzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
 
 			(*material)["specular"]->uniform3f(0.5, 0.5, 0.5);
 			(*material)["specularMapFrom"]->uniform1i(0);
@@ -1005,12 +1005,12 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 				(*material)["smoothness"]->uniform1f(ShininessToSmoothness(model->materials[i].Shininess));
 				(*material)["smoothnessMapFrom"]->uniform1i(0);
 				(*material)["smoothnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
-				(*material)["smoothnessMapSiwzzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
+				(*material)["smoothnessMapSwizzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
 
 				(*material)["metalness"]->uniform1f(0);
 				(*material)["metalnessMapFrom"]->uniform1i(0);
 				(*material)["metalnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
-				(*material)["metalnessMapSiwzzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
+				(*material)["metalnessMapSwizzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
 
 				(*material)["specular"]->uniform3f(0.5, 0.5, 0.5);
 				(*material)["specularMapFrom"]->uniform1i(0);
@@ -1187,7 +1187,216 @@ GuiControllerComponent::onExportTexture(ray::util::string::const_pointer path, s
 bool
 GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept
 {
-	return false;
+	if (_itemMaterials.size() < index)
+	{
+		error = "Out of range";
+		return false;
+	}
+
+	char fullpath[PATHLIMIT];
+	std::strcpy(fullpath, path);
+	std::strcat(fullpath, _itemMaterials[index]->name.c_str());
+	std::strcat(fullpath, ".fx");
+
+	ray::StreamWritePtr stream;
+	if (!ray::IoServer::instance()->openFile(stream, fullpath))
+	{
+		error = "Failed to open file";
+		return false;
+	}
+
+	auto& material = *std::get<EditorAssetItem::material>(_itemMaterials[index]->value);
+
+	(*stream) << "#define ALBEDO_MAP_FROM " << material["albedoMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define ALBEDO_MAP_UV_FLIP " << material["albedoMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define ALBEDO_MAP_APPLY_SCALE " << "1\r\n";
+	(*stream) << "#define ALBEDO_MAP_APPLY_DIFFUSE " << "0\r\n";
+	(*stream) << "#define ALBEDO_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+
+	auto albedoMap = material["albedoMap"]->value().getTexture();
+	auto albedoMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == albedoMap; });
+	if (albedoMapIter != _itemTextures.end())
+		(*stream) << R"(#define ALBEDO_MAP_FILE ")" << (*albedoMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define ALBEDO_MAP_FILE "albedo.png")" << "\r\n\r\n";
+
+	(*stream) << "const float3 albedo = float3(" << material["albedo"]->value().getFloat3() << ");\r\n";
+	(*stream) << "const float2 albedoMapLoopNum = float2(" << material["albedoMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define ALBEDO_SUB_MAP_FROM " << material["albedoSubMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define ALBEDO_SUB_MAP_UV_FLIP " << material["albedoSubMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_SCALE " << "1\r\n";
+	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_DIFFUSE " << "0\r\n";
+	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+
+	auto albedoSubMap = material["albedoSubMap"]->value().getTexture();
+	auto albedoSubMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == albedoSubMap; });
+	if (albedoSubMapIter != _itemTextures.end())
+		(*stream) << R"(#define ALBEDO_SUB_MAP_FILE ")" << (*albedoSubMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define ALBEDO_SUB_MAP_FILE "albedoSub.png")" << "\r\n\r\n";
+
+	(*stream) << "const float3 albedoSub = float3(" << material["albedoSub"]->value().getFloat3() << ");\r\n";
+	(*stream) << "const float2 albedoSubMapLoopNum = float2(" << material["albedoSubMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define ALPHA_MAP_FROM 3\r\n";
+	(*stream) << "#define ALPHA_MAP_UV_FLIP 0\r\n";
+	(*stream) << "#define ALPHA_MAP_SWIZZLE 3\r\n";
+	(*stream) << R"(#define ALPHA_MAP_FILE "alpha.png")" << "\r\n\r\n";
+
+	(*stream) << "const float alpha = 1.0;\r\n";
+	(*stream) << "const float2 alphaMapLoopNum = 1.0;\r\n\r\n";
+
+	(*stream) << "#define NORMAL_MAP_FROM " << material["normalMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define NORMAL_MAP_UV_FLIP " << material["normalMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define NORMAL_MAP_APPLY_SCALE " << "1\r\n";
+	(*stream) << "#define NORMAL_MAP_APPLY_DIFFUSE " << "0\r\n";
+	(*stream) << "#define NORMAL_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+
+	auto normalMap = material["normalMap"]->value().getTexture();
+	auto normalMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == normalMap; });
+	if (normalMapIter != _itemTextures.end())
+		(*stream) << R"(#define NORMAL_MAP_FILE ")" << (*normalMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define NORMAL_MAP_FILE "normal.png")" << "\r\n\r\n";
+
+	(*stream) << "const float normalMapScale = " << material["normalMapScale"]->value().getFloat() << ";\r\n";
+	(*stream) << "const float2 normalMapLoopNum = float2(" << material["normalMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define NORMAL_SUB_MAP_FROM " << material["normalSubMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define NORMAL_SUB_MAP_UV_FLIP " << material["normalSubMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define NORMAL_SUB_MAP_APPLY_SCALE " << "1\r\n";
+	(*stream) << "#define NORMAL_SUB_MAP_APPLY_DIFFUSE " << "0\r\n";
+	(*stream) << "#define NORMAL_SUB_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+
+	auto normalSubMap = material["normalSubMap"]->value().getTexture();
+	auto normalSubMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == normalSubMap; });
+	if (normalSubMapIter != _itemTextures.end())
+		(*stream) << R"(#define NORMAL_SUB_MAP_FILE ")" << (*normalSubMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define NORMAL_SUB_MAP_FILE "normalSub.png")" << "\r\n\r\n";
+
+	(*stream) << "const float normalSubMapScale = " << material["normalSubMapScale"]->value().getFloat() << ";\r\n";
+	(*stream) << "const float2 normalSubMapLoopNum = float2(" << material["normalSubMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define SMOOTHNESS_MAP_FROM " << material["smoothnessMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define SMOOTHNESS_MAP_UV_FLIP " << material["smoothnessMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define SMOOTHNESS_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["smoothnessMapSwizzle"]->value().getFloat4()) << "\r\n";
+	(*stream) << "#define SMOOTHNESS_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+
+	auto smoothnessMap = material["smoothnessMap"]->value().getTexture();
+	auto smoothnessMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == smoothnessMap; });
+	if (smoothnessMapIter != _itemTextures.end())
+		(*stream) << R"(#define SMOOTHNESS_MAP_FILE ")" << (*smoothnessMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define SMOOTHNESS_MAP_FILE "smoothness.png")" << "\r\n\r\n";
+
+	(*stream) << "const float smoothness = " << material["smoothness"]->value().getFloat() << ";\r\n";
+	(*stream) << "const float2 smoothnessMapLoopNum = float2(" << material["smoothnessMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define METALNESS_MAP_FROM " << material["metalnessMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define METALNESS_MAP_UV_FLIP " << material["metalnessMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define METALNESS_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["metalnessMapSwizzle"]->value().getFloat4()) << "\r\n";
+
+	auto metalnessMap = material["metalnessMap"]->value().getTexture();
+	auto metalnessMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == metalnessMap; });
+	if (metalnessMapIter != _itemTextures.end())
+		(*stream) << R"(#define METALNESS_MAP_FILE ")" << (*metalnessMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define METALNESS_MAP_FILE "metalness.png")" << "\r\n\r\n";
+
+	(*stream) << "const float metalness = " << material["metalness"]->value().getFloat() << ";\r\n";
+	(*stream) << "const float2 metalnessMapLoopNum = float2(" << material["metalnessMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define SPECULAR_MAP_FROM " << material["specularMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define SPECULAR_MAP_UV_FLIP " << material["specularMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define SPECULAR_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["specularMapSwizzle"]->value().getFloat4()) << "\r\n";
+
+	auto specularMap = material["specularMap"]->value().getTexture();
+	auto specularMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == specularMap; });
+	if (specularMapIter != _itemTextures.end())
+		(*stream) << R"(#define SPECULAR_MAP_FILE ")" << (*specularMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define SPECULAR_MAP_FILE "specular.png")" << "\r\n\r\n";
+
+	(*stream) << "const float3 specular = float3(" << material["specular"]->value().getFloat3() << ");\r\n";
+	(*stream) << "const float2 specularMapLoopNum = float2(" << material["specularMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define OCCLUSION_MAP_FROM " << material["occlusionMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define OCCLUSION_MAP_UV_FLIP " << material["occlusionMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define OCCLUSION_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["occlusionMapSwizzle"]->value().getFloat4()) << "\r\n";
+
+	auto occlusionMap = material["occlusionMap"]->value().getTexture();
+	auto occlusionMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == occlusionMap; });
+	if (occlusionMapIter != _itemTextures.end())
+		(*stream) << R"(#define OCCLUSION_MAP_FILE ")" << (*occlusionMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define OCCLUSION_MAP_FILE "occlusion.png")" << "\r\n\r\n";
+
+	(*stream) << "const float occlusion = " << material["occlusion"]->value().getFloat() << ";\r\n";
+	(*stream) << "const float2 occlusionMapLoopNum = float2(" << material["occlusionMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define PARALLAX_MAP_FROM " << material["parallaxMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define PARALLAX_MAP_UV_FLIP " << material["parallaxMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define PARALLAX_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["parallaxMapSwizzle"]->value().getFloat4()) << "\r\n";
+
+	auto parallaxMap = material["parallaxMap"]->value().getTexture();
+	auto parallaxMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == parallaxMap; });
+	if (parallaxMapIter != _itemTextures.end())
+		(*stream) << R"(#define PARALLAX_MAP_FILE ")" << (*parallaxMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define PARALLAX_MAP_FILE "parallax.png")" << "\r\n\r\n";
+
+	(*stream) << "const float parallaxMapScale = " << material["parallaxMapScale"]->value().getFloat() << ";\r\n";
+	(*stream) << "const float2 parallaxMapLoopNum = float2(" << material["parallaxMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define EMISSIVE_MAP_FROM " << material["emissiveMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define EMISSIVE_MAP_UV_FLIP " << material["emissiveMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define EMISSIVE_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+
+	auto emissiveMap = material["emissiveMap"]->value().getTexture();
+	auto emissiveMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == emissiveMap; });
+	if (emissiveMapIter != _itemTextures.end())
+		(*stream) << R"(#define EMISSIVE_MAP_FILE ")" << (*emissiveMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define EMISSIVE_MAP_FILE "emissive.png")" << "\r\n\r\n";
+
+	(*stream) << "const float3 emissive = float3(" << material["emissive"]->value().getFloat3() << ");\r\n";
+	(*stream) << "const float2 emissiveMapLoopNum = float2(" << material["emissiveMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define CUSTOM_A_MAP_FROM " << material["customAMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define CUSTOM_A_MAP_UV_FLIP " << material["customAMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define CUSTOM_A_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["customAMapSwizzle"]->value().getFloat4()) << "\r\n";
+
+	auto customAMap = material["customAMap"]->value().getTexture();
+	auto customAMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == customAMap; });
+	if (customAMapIter != _itemTextures.end())
+		(*stream) << R"(#define CUSTOM_A_MAP_FILE ")" << (*customAMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define CUSTOM_A_MAP_FILE "customA.png")" << "\r\n\r\n";
+
+	(*stream) << "const float customA = " << material["customA"]->value().getFloat() << ";\r\n";
+	(*stream) << "const float2 customAMapLoopNum = float2(" << material["customAMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << "#define CUSTOM_B_MAP_FROM " << material["customBMapFrom"]->value().getInt() << "\r\n";
+	(*stream) << "#define CUSTOM_B_MAP_UV_FLIP " << material["customBMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define CUSTOM_B_MAP_APPLY_SCALE " << "1\r\n";
+	(*stream) << "#define CUSTOM_B_MAP_APPLY_DIFFUSE " << "0\r\n";
+	(*stream) << "#define CUSTOM_B_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+
+	auto customBMap = material["customBMap"]->value().getTexture();
+	auto customBMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == customBMap; });
+	if (customBMapIter != _itemTextures.end())
+		(*stream) << R"(#define CUSTOM_B_MAP_FILE ")" << (*customBMapIter)->name << R"(")" << "\r\n\r\n";
+	else
+		(*stream) << R"(#define CUSTOM_B_MAP_FILE "customB.png")" << "\r\n\r\n";
+
+	(*stream) << "const float3 customB = float3(" << material["customB"]->value().getFloat3() << ");\r\n";
+	(*stream) << "const float2 customBMapLoopNum = float2(" << material["customBMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
+
+	(*stream) << R"(#include "material_common_2.0.fxsub")";
+
+	return true;
 }
 
 bool

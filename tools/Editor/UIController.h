@@ -126,7 +126,6 @@ private:
 
 	ray::GraphicsFramebufferPtr _previewFramebuffer;
 	ray::GameObjectPtr _cube;
-	ray::GraphicsTexturePtr _materialFx;
 
 	ray::GraphicsDataPtr _vbo;
 	ray::GraphicsDataPtr _ibo;

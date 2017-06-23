@@ -323,6 +323,10 @@ GuiControllerComponent::loadTexture(ray::util::string::const_pointer path, ray::
 		return false;
 	}
 
+	texture = ray::ResManager::instance()->getTexture(buffer);
+	if (texture)
+		return true;
+
 	if (!ray::ResManager::instance()->createTexture(buffer, texture, dim))
 	{
 		error = "Failed to load texture";
@@ -333,7 +337,7 @@ GuiControllerComponent::loadTexture(ray::util::string::const_pointer path, ray::
 	char dir[PATHLIMIT];
 	char filename[PATHLIMIT];
 	char ext[MAX_PATH];
-	_splitpath(path, drive, dir, filename, ext);
+	::_splitpath(path, drive, dir, filename, ext);
 
 	auto item = std::make_shared<EditorAssetItem>();
 	item->name = filename;
@@ -682,10 +686,6 @@ GuiControllerComponent::onDetachComponent(const ray::GameComponentPtr& component
 void
 GuiControllerComponent::onActivate() except
 {
-	ray::ResManager::instance()->createTexture("dlc:Editor/UI/fx.png", _materialFx, ray::GraphicsTextureDim::GraphicsTextureDim2D, ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge, false);
-	if (!_materialFx)
-		return;
-
 	this->makeCubeObject();
 	this->makeMainCamera();
 	this->makeMaterialCamera();
@@ -892,6 +892,12 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 			return false;
 		}
 
+		if (_models.empty())
+		{
+			_objects.clear();
+			_itemMaterials.clear();
+		}
+
 		_cube->setScaleAll(0.0f);
 
 		auto gameObject = std::make_shared<ray::GameObject>();
@@ -1089,9 +1095,6 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 		}
 
 		gameObject->setActive(true);
-
-		if (_models.empty())
-			_objects.clear();
 
 		_models.push_back(std::move(model));
 

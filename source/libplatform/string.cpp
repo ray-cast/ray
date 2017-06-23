@@ -884,7 +884,7 @@ namespace util
 
 	bool isNewLine(char in)
 	{
-		return (in == '\n' || in == '\f' || in == '\r');
+		return (in == '\n' || in == '\r' || in == '\f' || in == '\v');
 	}
 
 	bool isLineEnd(char in)
@@ -899,7 +899,7 @@ namespace util
 
 	bool isSpaceOrNewLine(char in)
 	{
-		return isSpace(in) || isLineEnd(in);
+		return isSpace(in) || isNewLine(in);
 	}
 
 	bool isEndOfStream(char* it, char* end)

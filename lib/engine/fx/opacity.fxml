@@ -7,74 +7,74 @@
 	<parameter name="albedo" type="float3"/>
 	<parameter name="albedoMap" type="texture2D"/>
 	<parameter name="albedoMapFrom" type="int"/>
-	<parameter name="albedoMapFilp" type="int"/>
+	<parameter name="albedoMapFlip" type="int"/>
 	<parameter name="albedoMapLoopNum" type="float2"/>
 	<parameter name="albedoSub" type="float3"/>
 	<parameter name="albedoSubType" type="int"/>
 	<parameter name="albedoSubMap" type="texture2D"/>
 	<parameter name="albedoSubMapFrom" type="int"/>
-	<parameter name="albedoSubMapFilp" type="int"/>
+	<parameter name="albedoSubMapFlip" type="int"/>
 	<parameter name="albedoSubMapLoopNum" type="float2"/>
 	<parameter name="normalMap" type="texture2D"/>
 	<parameter name="normalMapType" type="int"/>
 	<parameter name="normalMapFrom" type="int"/>
-	<parameter name="normalMapFilp" type="int"/>
+	<parameter name="normalMapFlip" type="int"/>
 	<parameter name="normalMapScale" type="float"/>
 	<parameter name="normalMapLoopNum" type="float2"/>
 	<parameter name="normalSubMap" type="texture2D"/>
 	<parameter name="normalSubMapFrom" type="int"/>
-	<parameter name="normalSubMapFilp" type="int"/>
+	<parameter name="normalSubMapFlip" type="int"/>
 	<parameter name="normalSubMapScale" type="float"/>
 	<parameter name="normalSubMapLoopNum" type="float2"/>
 	<parameter name="smoothness" type="float"/>
 	<parameter name="smoothnessMap" type="texture2D"/>
 	<parameter name="smoothnessMapType" type="int"/>
 	<parameter name="smoothnessMapFrom" type="int"/>
-	<parameter name="smoothnessMapFilp" type="int"/>
+	<parameter name="smoothnessMapFlip" type="int"/>
 	<parameter name="smoothnessMapSwizzle" type="float4"/>
 	<parameter name="smoothnessMapLoopNum" type="float2"/>
 	<parameter name="metalness" type="float"/>
 	<parameter name="metalnessMap" type="texture2D"/>
 	<parameter name="metalnessMapFrom" type="int"/>
-	<parameter name="metalnessMapFilp" type="int"/>
+	<parameter name="metalnessMapFlip" type="int"/>
 	<parameter name="metalnessMapSwizzle" type="float4"/>
 	<parameter name="metalnessMapLoopNum" type="float2"/>
 	<parameter name="specular" type="float3"/>
 	<parameter name="specularMap" type="texture2D"/>
 	<parameter name="specularMapType" type="int"/>
 	<parameter name="specularMapFrom" type="int"/>
-	<parameter name="specularMapFilp" type="int"/>
+	<parameter name="specularMapFlip" type="int"/>
 	<parameter name="specularMapSwizzle" type="float4"/>
 	<parameter name="specularMapLoopNum" type="float2"/>
 	<parameter name="occlusion" type="float"/>
 	<parameter name="occlusionMap" type="texture2D"/>
 	<parameter name="occlusionMapType" type="int"/>
 	<parameter name="occlusionMapFrom" type="int"/>
-	<parameter name="occlusionMapFilp" type="int"/>
+	<parameter name="occlusionMapFlip" type="int"/>
 	<parameter name="occlusionMapSwizzle" type="float4"/>
 	<parameter name="occlusionMapLoopNum" type="float2"/>
 	<parameter name="parallaxMap" type="texture2D"/>
 	<parameter name="parallaxMapFrom" type="int"/>
-	<parameter name="parallaxMapFilp" type="int"/>
+	<parameter name="parallaxMapFlip" type="int"/>
 	<parameter name="parallaxMapScale" type="float"/>
 	<parameter name="parallaxMapSwizzle" type="float4"/>
 	<parameter name="parallaxMapLoopNum" type="float2"/>
 	<parameter name="emissive" type="float3"/>
 	<parameter name="emissiveMap" type="texture2D"/>
 	<parameter name="emissiveMapFrom" type="int"/>
-	<parameter name="emissiveMapFilp" type="int"/>
+	<parameter name="emissiveMapFlip" type="int"/>
 	<parameter name="emissiveMapLoopNum" type="float2"/>
 	<parameter name="customType" type="int"/>
 	<parameter name="customA" type="float"/>
 	<parameter name="customAMap" type="texture2D"/>
 	<parameter name="customAMapFrom" type="int"/>
-	<parameter name="customAMapFilp" type="int"/>
+	<parameter name="customAMapFlip" type="int"/>
 	<parameter name="customAMapSwizzle" type="float4"/>
 	<parameter name="customAMapLoopNum" type="float2"/>
 	<parameter name="customB" type="float3"/>
 	<parameter name="customBMap" type="texture2D"/>
 	<parameter name="customBMapFrom" type="int"/>
-	<parameter name="customBMapFilp" type="int"/>
+	<parameter name="customBMapFlip" type="int"/>
 	<parameter name="customBMapLoopNum" type="float2"/>
 	<shader>
 		<![CDATA[
@@ -103,11 +103,11 @@
 			{
 				if (albedoMapFrom > 0 && albedoMapFrom < 6)
 				{
-					if (albedoMapFilp == 1)
+					if (albedoMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (albedoMapFilp == 2)
+					else if (albedoMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (albedoMapFilp == 3)
+					else if (albedoMapFlip == 3)
 						coord = 1 - coord;
 					
 					return saturate(srgb2linear_fast(albedoMap.Sample(PointClamp, coord * albedoMapLoopNum).rgb) * albedo);
@@ -125,11 +125,11 @@
 					float4 albedoSubColor = 1;
 					if (albedoSubMapFrom > 0 && albedoSubMapFrom < 6)
 					{
-						if (albedoSubMapFilp == 1)
+						if (albedoSubMapFlip == 1)
 							coord.x = 1 - coord.x;
-						else if (albedoSubMapFilp == 2)
+						else if (albedoSubMapFlip == 2)
 							coord.y = 1 - coord.y;
-						else if (albedoSubMapFilp == 3)
+						else if (albedoSubMapFlip == 3)
 							coord = 1 - coord;
 						
 						albedoSubColor = srgb2linear_fast(albedoSubMap.Sample(PointClamp, coord * albedoSubMapLoopNum));
@@ -162,11 +162,11 @@
 			{
 				if (normalMapFrom > 0 && normalMapFrom < 6)
 				{
-					if (normalMapFilp == 1)
+					if (normalMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (normalMapFilp == 2)
+					else if (normalMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (normalMapFilp == 3)
+					else if (normalMapFlip == 3)
 						coord = 1 - coord;
 					
 					float3 tangentNormal = normalMap.Sample(PointClamp, coord * normalMapLoopNum).rgb * 2 - 1;
@@ -185,11 +185,11 @@
 			{
 				if (normalSubMapFrom > 0 && normalSubMapFrom < 6)
 				{
-					if (normalSubMapFilp == 1)
+					if (normalSubMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (normalSubMapFilp == 2)
+					else if (normalSubMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (normalSubMapFilp == 3)
+					else if (normalSubMapFlip == 3)
 						coord = 1 - coord;
 					
 					float3 tangentNormal = normalSubMap.Sample(PointClamp, coord * normalSubMapLoopNum).rgb * 2 - 1;
@@ -237,11 +237,11 @@
 			{
 				if (specularMapFrom > 0 && specularMapFrom < 6)
 				{
-					if (specularMapFilp == 1)
+					if (specularMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (specularMapFilp == 2)
+					else if (specularMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (specularMapFilp == 3)
+					else if (specularMapFlip == 3)
 						coord = 1 - coord;
 					
 					return specularMap.Sample(PointClamp, coord * specularMapLoopNum).rgb * specular;
@@ -256,11 +256,11 @@
 			{
 				if (smoothnessMapFrom > 0 && smoothnessMapFrom < 6)
 				{
-					if (smoothnessMapFilp == 1)
+					if (smoothnessMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (smoothnessMapFilp == 2)
+					else if (smoothnessMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (smoothnessMapFilp == 3)
+					else if (smoothnessMapFlip == 3)
 						coord = 1 - coord;
 					
 					return dot(smoothnessMap.Sample(PointClamp, coord * smoothnessMapLoopNum), smoothnessMapSwizzle) * smoothness;
@@ -275,11 +275,11 @@
 			{
 				if (metalnessMapFrom > 0 && metalnessMapFrom < 6)
 				{
-					if (metalnessMapFilp == 1)
+					if (metalnessMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (metalnessMapFilp == 2)
+					else if (metalnessMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (metalnessMapFilp == 3)
+					else if (metalnessMapFlip == 3)
 						coord = 1 - coord;
 					
 					return dot(metalnessMap.Sample(PointClamp, coord * metalnessMapLoopNum).r, metalnessMapSwizzle) * metalness;
@@ -294,11 +294,11 @@
 			{
 				if (occlusionMapFrom > 0 && occlusionMapFrom < 6)
 				{
-					if (occlusionMapFilp == 1)
+					if (occlusionMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (occlusionMapFilp == 2)
+					else if (occlusionMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (occlusionMapFilp == 3)
+					else if (occlusionMapFlip == 3)
 						coord = 1 - coord;
 					
 					return dot(occlusionMap.Sample(PointClamp, coord * occlusionMapLoopNum).r, occlusionMapSwizzle) * occlusion;
@@ -313,11 +313,11 @@
 			{
 				if (customAMapFrom > 0 && customAMapFrom < 6)
 				{
-					if (customAMapFilp == 1)
+					if (customAMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (customAMapFilp == 2)
+					else if (customAMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (customAMapFilp == 3)
+					else if (customAMapFlip == 3)
 						coord = 1 - coord;
 					
 					return dot(customAMap.Sample(PointClamp, coord * customAMapLoopNum), customAMapSwizzle) * customA;
@@ -332,11 +332,11 @@
 			{
 				if (customBMapFrom > 0 && customBMapFrom < 6)
 				{
-					if (customBMapFilp == 1)
+					if (customBMapFlip == 1)
 						coord.x = 1 - coord.x;
-					else if (customBMapFilp == 2)
+					else if (customBMapFlip == 2)
 						coord.y = 1 - coord.y;
-					else if (customBMapFilp == 3)
+					else if (customBMapFlip == 3)
 						coord = 1 - coord;
 					
 					return customBMap.Sample(PointClamp, coord * customBMapLoopNum).rgb * customB;

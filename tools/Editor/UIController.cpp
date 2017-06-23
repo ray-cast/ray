@@ -51,6 +51,8 @@
 
 #include "ies_loader.h"
 #include "first_person_camera.h"
+#include "hlslparser/Engine/Allocator.h"
+#include "hlslparser/HLSLParser.h"
 
 #include <ray/utf8.h>
 #include <ray/camera_component.h>
@@ -845,19 +847,327 @@ GuiControllerComponent::onImportTexture(ray::util::string::const_pointer path, r
 bool
 GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
-	ray::util::string::value_type buffer[PATHLIMIT];
-	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) == 0)
+	ray::util::string::value_type fullpath[PATHLIMIT];
+	if (ray::util::toUnixPath(path, fullpath, PATHLIMIT) == 0)
 	{
 		error = "Cannot open file, check the spelling of the file path.";
 		return false;
 	}
 
+	char drive[MAX_PATH];
+	char dir[PATHLIMIT];
+	char filename[PATHLIMIT];
+	char ext[MAX_PATH];
+	_splitpath(path, drive, dir, filename, ext);
+
+	for (auto& it : _itemMaterials)
+	{
+		if (it->name == filename)
+			return true;
+	}
+
 	ray::StreamReaderPtr stream;
-	if (!ray::IoServer::instance()->openFile(stream, buffer))
+	if (!ray::IoServer::instance()->openFile(stream, fullpath))
 	{
 		error = "Cannot open file, check the spelling of the file path.";
 		return false;
 	}
+
+	std::vector<char> buffer(stream->size());
+	if (!stream->read(buffer.data(), buffer.size()))
+	{
+		error = "Failed to read file.";
+		return false;
+	}
+
+	M4::Allocator allocator;
+	M4::HLSLParser parser(&allocator, fullpath, buffer.data(), buffer.size());
+	M4::HLSLTree tree(&allocator);
+
+	if (!parser.Parse(&tree))
+	{
+		error = "Non readable format.";
+		return false;
+	}
+
+	ray::MaterialPtr material;
+	if (!ray::ResManager::instance()->createMaterial("dlc:editor/fx/material.fxml", material))
+		return false;
+
+	material->setName(filename);
+
+	static const char* token_from[] = { "ALBEDO_MAP_FROM", "ALBEDO_SUB_MAP_FROM", "NORMAL_MAP_FROM", "NORMAL_SUB_MAP_FROM", "SMOOTHNESS_MAP_FROM", "METALNESS_MAP_FROM", "SPECULAR_MAP_FROM", "OCCLUSION_MAP_FROM", "PARALLAX_MAP_FROM", "EMISSIVE_MAP_FROM", "CUSTOM_A_MAP_FROM", "CUSTOM_B_MAP_FROM" };
+	static const char* token_from2[] = { "albedoMapFrom","albedoSubMapFrom","normalMapFrom","normalSubMapFrom","smoothnessMapFrom","metalnessMapFrom","specularMapFrom","occlusionMapFrom","parallaxMapFrom","emissiveMapFrom","customAMapFrom","customAMapFrom" };
+
+	static const char* token_file[] = { "ALBEDO_MAP_FILE", "ALPHA_MAP_FILE", "NORMAL_MAP_FILE", "SMOOTHNESS_MAP_FILE", "METALNESS_MAP_FILE", "MELANIN_MAP_FILE", "EMISSIVE_MAP_FILE", "PARALLAX_MAP_FILE", "CUSTOM_A_MAP_FILE", "CUSTOM_B_MAP_FILE" };
+	static const char* token_file2[] = { "albedoMap", "albedoSubMap", "normalMap", "normalSubMap", "smoothnessMap", "metalnessMap", "specularMap", "occlusionMap", "parallaxMap", "emissiveMap", "customAMap", "customBMap" };
+
+	static const char* token_flip[] = { "ALBEDO_MAP_UV_FLIP", "ALBEDO_SUB_MAP_UV_FLIP", "NORMAL_MAP_UV_FLIP", "NORMAL_SUB_MAP_UV_FLIP", "SMOOTHNESS_MAP_UV_FLIP", "METALNESS_MAP_UV_FLIP", "SPECULAR_MAP_UV_FLIP", "OCCLUSION_MAP_UV_FLIP", "PARALLAX_MAP_UV_FLIP", "EMISSIVE_MAP_UV_FLIP", "CUSTOM_A_MAP_UV_FLIP", "CUSTOM_B_MAP_UV_FLIP" };
+	static const char* token_flip2[] = { "albedoMapFlip", "albedoSubMapFlip", "normalMapFlip", "normalSubMapFlip", "smoothnessMapFlip", "metalnessMapFlip", "specularMapFlip", "occlusionMapFlip", "parallaxMapFlip", "emissiveMapFlip", "customAMapFlip", "customBMapFlip" };
+
+	static const char* token_swizzle[] = { "SMOOTHNESS_MAP_SWIZZLE", "METALNESS_MAP_SWIZZLE", "SPECULAR_MAP_SWIZZLE", "OCCLUSION_MAP_SWIZZLE", "PARALLAX_MAP_SWIZZLE", "CUSTOM_A_MAP_SWIZZ" };
+	static const char* token_swizzle2[] = { "smoothnessMapSwizzle", "metalnessMapSwizzle", "specularMapSwizzle", "occlusionMapSwizzle", "parallaxMapSwizzle", "customAMapSwizzle" };
+
+	static const char* token_float[] = { "normalMapScale", "smoothness", "metalness", "occlusion", "customA" };
+	static const char* token_float2[] = { "albedoMapLoopNum","albedoSubMapLoopNum", "normalMapLoopNum","normalSubMapLoopNum","smoothnessMapLoopNum","metalnessMapLoopNum","specularMapLoopNum","occlusionMapLoopNum","parallaxMapLoopNum","emissiveMapLoopNum","customAMapLoopNum","customBMapLoopNum" };
+	static const char* token_float3[] = { "albedo", "albedoSub", "specular", "emissive", "customB" };
+
+	for (std::size_t i = 0; i < sizeof(token_from) / sizeof(token_from[0]); i++)
+	{
+		auto statement = tree.GetRoot()->statement;
+		while (statement)
+		{
+			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+
+			if (!declaration->assignment)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (expression->type != M4::HLSLBaseType::HLSLBaseType_Int)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (std::strcmp(declaration->name, token_from[i]) == 0)
+			{
+				(*material)[token_from2[i]]->uniform1i(expression->iValue[0]);
+				break;
+			}
+
+			statement = statement->nextStatement;
+		}
+	}
+
+	for (std::size_t i = 0; i < sizeof(token_swizzle) / sizeof(token_swizzle[0]); i++)
+	{
+		auto statement = tree.GetRoot()->statement;
+		while (statement)
+		{
+			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+
+			if (!declaration->assignment)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (expression->type != M4::HLSLBaseType::HLSLBaseType_Int)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (std::strcmp(declaration->name, token_swizzle[i]) == 0)
+			{
+				if (expression->iValue[0] == 0)
+					(*material)[token_swizzle2[i]]->uniform4f(ray::float4::UnitX);
+				else if (expression->iValue[0] == 0)
+					(*material)[token_swizzle2[i]]->uniform4f(ray::float4::UnitY);
+				else if (expression->iValue[0] == 0)
+					(*material)[token_swizzle2[i]]->uniform4f(ray::float4::UnitZ);
+				else if (expression->iValue[0] == 0)
+					(*material)[token_swizzle2[i]]->uniform4f(ray::float4::UnitW);
+				break;
+			}
+
+			statement = statement->nextStatement;
+		}
+	}
+
+	for (std::size_t i = 0; i < sizeof(token_flip) / sizeof(token_flip[0]); i++)
+	{
+		auto statement = tree.GetRoot()->statement;
+		while (statement)
+		{
+			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+
+			if (!declaration->assignment)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (expression->type != M4::HLSLBaseType::HLSLBaseType_Int)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (std::strcmp(declaration->name, token_flip[i]) == 0)
+			{
+				(*material)[token_flip2[i]]->uniform1i(expression->iValue[0]);
+				break;
+			}
+
+			statement = statement->nextStatement;
+		}
+	}
+
+	for (std::size_t i = 0; i < sizeof(token_float) / sizeof(token_float[0]); i++)
+	{
+		auto statement = tree.GetRoot()->statement;
+		while (statement)
+		{
+			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+
+			if (!declaration->assignment)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (expression->type != M4::HLSLBaseType::HLSLBaseType_Float)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (std::strcmp(declaration->name, token_float[i]) == 0)
+			{
+				(*material)[token_float[i]]->uniform1f(expression->fValue[0]);
+				break;
+			}
+
+			statement = statement->nextStatement;
+		}
+	}
+
+	for (std::size_t i = 0; i < sizeof(token_float2) / sizeof(token_float2[0]); i++)
+	{
+		auto statement = tree.GetRoot()->statement;
+		while (statement)
+		{
+			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+
+			if (!declaration->assignment)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float &&
+				declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float2)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (std::strcmp(declaration->name, token_float2[i]) == 0)
+			{
+				if (expression->type == M4::HLSLBaseType::HLSLBaseType_Float)
+					(*material)[token_float2[i]]->uniform2f(expression->fValue[0], expression->fValue[0]);
+				else
+					(*material)[token_float2[i]]->uniform2f(expression->fValue[0], expression->fValue[1]);
+
+				break;
+			}
+
+			statement = statement->nextStatement;
+		}
+	}
+
+	for (std::size_t i = 0; i < sizeof(token_float3) / sizeof(token_float3[0]); i++)
+	{
+		auto statement = tree.GetRoot()->statement;
+		while (statement)
+		{
+			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+
+			if (!declaration->assignment)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float3 &&
+				declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float)
+			{
+				statement = statement->nextStatement;
+				continue;
+			}
+
+			if (std::strcmp(declaration->name, token_float3[i]) == 0)
+			{
+				if (declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float)
+					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[0], expression->fValue[0]);
+				else
+					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[1], expression->fValue[2]);
+				break;
+			}
+
+			statement = statement->nextStatement;
+		}
+	}
+
+	for (std::size_t i = 0; i < sizeof(token_file) / sizeof(token_file[0]); i++)
+	{
+		auto paramater = material->getParameter(token_from2[i]);
+		if (!paramater)
+			continue;
+
+		if (paramater->value().getInt() == 0 || paramater->value().getInt() > 6)
+			continue;
+
+		if (paramater->value().getInt() == 1)
+		{
+			auto statement = tree.GetRoot()->statement;
+			while (statement)
+			{
+				auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
+				auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+
+				if (!declaration->assignment)
+				{
+					statement = statement->nextStatement;
+					continue;
+				}
+
+				if (declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_UserDefined)
+				{
+					statement = statement->nextStatement;
+					continue;
+				}
+
+				if (std::strcmp(declaration->name, token_file[i]) == 0)
+				{
+					ray::GraphicsTexturePtr texture;
+					if (ray::ResManager::instance()->createTexture(ray::util::directory(path) + expression->string, texture))
+						material->getParameter(token_file2[i])->uniformTexture(texture);
+
+					break;
+				}
+
+				statement = statement->nextStatement;
+			}
+		}
+	}
+
+	ray::GraphicsTextureDesc textureDesc;
+	textureDesc.setWidth(128);
+	textureDesc.setHeight(128);
+	textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+	if (!renderTexture)
+		return false;
+
+	auto item = std::make_shared<EditorAssetItem>();
+	item->name = material->getName();
+	item->value.emplace<EditorAssetItem::material>(material);
+	item->preview = renderTexture;
+
+	this->onUpdateMaterial(*item);
+
+	_itemMaterials.push_back(std::move(item));
 
 	return true;
 }
@@ -1266,7 +1576,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	auto& material = *std::get<EditorAssetItem::material>(_itemMaterials[index]->value);
 
 	(*stream) << "#define ALBEDO_MAP_FROM " << material["albedoMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define ALBEDO_MAP_UV_FLIP " << material["albedoMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define ALBEDO_MAP_UV_FLIP " << material["albedoMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define ALBEDO_MAP_APPLY_SCALE " << "1\r\n";
 	(*stream) << "#define ALBEDO_MAP_APPLY_DIFFUSE " << "0\r\n";
 	(*stream) << "#define ALBEDO_MAP_APPLY_MORPH_COLOR " << "0\r\n";
@@ -1274,7 +1584,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	auto albedoMap = material["albedoMap"]->value().getTexture();
 	auto albedoMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == albedoMap; });
 	if (albedoMapIter != _itemTextures.end())
-		(*stream) << R"(#define ALBEDO_MAP_FILE ")" << (*albedoMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define ALBEDO_MAP_FILE ")" << (*albedoMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define ALBEDO_MAP_FILE "albedo.png")" << "\r\n\r\n";
 
@@ -1282,7 +1592,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 albedoMapLoopNum = float2(" << material["albedoMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define ALBEDO_SUB_MAP_FROM " << material["albedoSubMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define ALBEDO_SUB_MAP_UV_FLIP " << material["albedoSubMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define ALBEDO_SUB_MAP_UV_FLIP " << material["albedoSubMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_SCALE " << "1\r\n";
 	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_DIFFUSE " << "0\r\n";
 	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_MORPH_COLOR " << "0\r\n";
@@ -1290,7 +1600,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	auto albedoSubMap = material["albedoSubMap"]->value().getTexture();
 	auto albedoSubMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == albedoSubMap; });
 	if (albedoSubMapIter != _itemTextures.end())
-		(*stream) << R"(#define ALBEDO_SUB_MAP_FILE ")" << (*albedoSubMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define ALBEDO_SUB_MAP_FILE ")" << (*albedoSubMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define ALBEDO_SUB_MAP_FILE "albedoSub.png")" << "\r\n\r\n";
 
@@ -1306,15 +1616,14 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 alphaMapLoopNum = 1.0;\r\n\r\n";
 
 	(*stream) << "#define NORMAL_MAP_FROM " << material["normalMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define NORMAL_MAP_UV_FLIP " << material["normalMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define NORMAL_MAP_UV_FLIP " << material["normalMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define NORMAL_MAP_APPLY_SCALE " << "1\r\n";
-	(*stream) << "#define NORMAL_MAP_APPLY_DIFFUSE " << "0\r\n";
 	(*stream) << "#define NORMAL_MAP_APPLY_MORPH_COLOR " << "0\r\n";
 
 	auto normalMap = material["normalMap"]->value().getTexture();
 	auto normalMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == normalMap; });
 	if (normalMapIter != _itemTextures.end())
-		(*stream) << R"(#define NORMAL_MAP_FILE ")" << (*normalMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define NORMAL_MAP_FILE ")" << (*normalMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define NORMAL_MAP_FILE "normal.png")" << "\r\n\r\n";
 
@@ -1322,15 +1631,13 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 normalMapLoopNum = float2(" << material["normalMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define NORMAL_SUB_MAP_FROM " << material["normalSubMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define NORMAL_SUB_MAP_UV_FLIP " << material["normalSubMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define NORMAL_SUB_MAP_UV_FLIP " << material["normalSubMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define NORMAL_SUB_MAP_APPLY_SCALE " << "1\r\n";
-	(*stream) << "#define NORMAL_SUB_MAP_APPLY_DIFFUSE " << "0\r\n";
-	(*stream) << "#define NORMAL_SUB_MAP_APPLY_MORPH_COLOR " << "0\r\n";
 
 	auto normalSubMap = material["normalSubMap"]->value().getTexture();
 	auto normalSubMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == normalSubMap; });
 	if (normalSubMapIter != _itemTextures.end())
-		(*stream) << R"(#define NORMAL_SUB_MAP_FILE ")" << (*normalSubMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define NORMAL_SUB_MAP_FILE ")" << (*normalSubMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define NORMAL_SUB_MAP_FILE "normalSub.png")" << "\r\n\r\n";
 
@@ -1338,14 +1645,14 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 normalSubMapLoopNum = float2(" << material["normalSubMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define SMOOTHNESS_MAP_FROM " << material["smoothnessMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define SMOOTHNESS_MAP_UV_FLIP " << material["smoothnessMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define SMOOTHNESS_MAP_UV_FLIP " << material["smoothnessMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define SMOOTHNESS_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["smoothnessMapSwizzle"]->value().getFloat4()) << "\r\n";
 	(*stream) << "#define SMOOTHNESS_MAP_APPLY_MORPH_COLOR " << "0\r\n";
 
 	auto smoothnessMap = material["smoothnessMap"]->value().getTexture();
 	auto smoothnessMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == smoothnessMap; });
 	if (smoothnessMapIter != _itemTextures.end())
-		(*stream) << R"(#define SMOOTHNESS_MAP_FILE ")" << (*smoothnessMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define SMOOTHNESS_MAP_FILE ")" << (*smoothnessMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define SMOOTHNESS_MAP_FILE "smoothness.png")" << "\r\n\r\n";
 
@@ -1353,13 +1660,13 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 smoothnessMapLoopNum = float2(" << material["smoothnessMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define METALNESS_MAP_FROM " << material["metalnessMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define METALNESS_MAP_UV_FLIP " << material["metalnessMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define METALNESS_MAP_UV_FLIP " << material["metalnessMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define METALNESS_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["metalnessMapSwizzle"]->value().getFloat4()) << "\r\n";
 
 	auto metalnessMap = material["metalnessMap"]->value().getTexture();
 	auto metalnessMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == metalnessMap; });
 	if (metalnessMapIter != _itemTextures.end())
-		(*stream) << R"(#define METALNESS_MAP_FILE ")" << (*metalnessMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define METALNESS_MAP_FILE ")" << (*metalnessMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define METALNESS_MAP_FILE "metalness.png")" << "\r\n\r\n";
 
@@ -1367,13 +1674,13 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 metalnessMapLoopNum = float2(" << material["metalnessMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define SPECULAR_MAP_FROM " << material["specularMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define SPECULAR_MAP_UV_FLIP " << material["specularMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define SPECULAR_MAP_UV_FLIP " << material["specularMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define SPECULAR_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["specularMapSwizzle"]->value().getFloat4()) << "\r\n";
 
 	auto specularMap = material["specularMap"]->value().getTexture();
 	auto specularMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == specularMap; });
 	if (specularMapIter != _itemTextures.end())
-		(*stream) << R"(#define SPECULAR_MAP_FILE ")" << (*specularMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define SPECULAR_MAP_FILE ")" << (*specularMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define SPECULAR_MAP_FILE "specular.png")" << "\r\n\r\n";
 
@@ -1381,13 +1688,13 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 specularMapLoopNum = float2(" << material["specularMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define OCCLUSION_MAP_FROM " << material["occlusionMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define OCCLUSION_MAP_UV_FLIP " << material["occlusionMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define OCCLUSION_MAP_UV_FLIP " << material["occlusionMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define OCCLUSION_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["occlusionMapSwizzle"]->value().getFloat4()) << "\r\n";
 
 	auto occlusionMap = material["occlusionMap"]->value().getTexture();
 	auto occlusionMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == occlusionMap; });
 	if (occlusionMapIter != _itemTextures.end())
-		(*stream) << R"(#define OCCLUSION_MAP_FILE ")" << (*occlusionMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define OCCLUSION_MAP_FILE ")" << (*occlusionMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define OCCLUSION_MAP_FILE "occlusion.png")" << "\r\n\r\n";
 
@@ -1395,13 +1702,13 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 occlusionMapLoopNum = float2(" << material["occlusionMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define PARALLAX_MAP_FROM " << material["parallaxMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define PARALLAX_MAP_UV_FLIP " << material["parallaxMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define PARALLAX_MAP_UV_FLIP " << material["parallaxMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define PARALLAX_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["parallaxMapSwizzle"]->value().getFloat4()) << "\r\n";
 
 	auto parallaxMap = material["parallaxMap"]->value().getTexture();
 	auto parallaxMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == parallaxMap; });
 	if (parallaxMapIter != _itemTextures.end())
-		(*stream) << R"(#define PARALLAX_MAP_FILE ")" << (*parallaxMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define PARALLAX_MAP_FILE ")" << (*parallaxMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define PARALLAX_MAP_FILE "parallax.png")" << "\r\n\r\n";
 
@@ -1409,13 +1716,13 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 parallaxMapLoopNum = float2(" << material["parallaxMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define EMISSIVE_MAP_FROM " << material["emissiveMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define EMISSIVE_MAP_UV_FLIP " << material["emissiveMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define EMISSIVE_MAP_UV_FLIP " << material["emissiveMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define EMISSIVE_MAP_APPLY_MORPH_COLOR " << "0\r\n";
 
 	auto emissiveMap = material["emissiveMap"]->value().getTexture();
 	auto emissiveMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == emissiveMap; });
 	if (emissiveMapIter != _itemTextures.end())
-		(*stream) << R"(#define EMISSIVE_MAP_FILE ")" << (*emissiveMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define EMISSIVE_MAP_FILE ")" << (*emissiveMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define EMISSIVE_MAP_FILE "emissive.png")" << "\r\n\r\n";
 
@@ -1423,13 +1730,13 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 emissiveMapLoopNum = float2(" << material["emissiveMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define CUSTOM_A_MAP_FROM " << material["customAMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define CUSTOM_A_MAP_UV_FLIP " << material["customAMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define CUSTOM_A_MAP_UV_FLIP " << material["customAMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define CUSTOM_A_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["customAMapSwizzle"]->value().getFloat4()) << "\r\n";
 
 	auto customAMap = material["customAMap"]->value().getTexture();
 	auto customAMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == customAMap; });
 	if (customAMapIter != _itemTextures.end())
-		(*stream) << R"(#define CUSTOM_A_MAP_FILE ")" << (*customAMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define CUSTOM_A_MAP_FILE ")" << (*customAMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define CUSTOM_A_MAP_FILE "customA.png")" << "\r\n\r\n";
 
@@ -1437,7 +1744,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float2 customAMapLoopNum = float2(" << material["customAMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define CUSTOM_B_MAP_FROM " << material["customBMapFrom"]->value().getInt() << "\r\n";
-	(*stream) << "#define CUSTOM_B_MAP_UV_FLIP " << material["customBMapFilp"]->value().getInt() << "\r\n";
+	(*stream) << "#define CUSTOM_B_MAP_UV_FLIP " << material["customBMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define CUSTOM_B_MAP_APPLY_SCALE " << "1\r\n";
 	(*stream) << "#define CUSTOM_B_MAP_APPLY_DIFFUSE " << "0\r\n";
 	(*stream) << "#define CUSTOM_B_MAP_APPLY_MORPH_COLOR " << "0\r\n";
@@ -1445,7 +1752,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	auto customBMap = material["customBMap"]->value().getTexture();
 	auto customBMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == customBMap; });
 	if (customBMapIter != _itemTextures.end())
-		(*stream) << R"(#define CUSTOM_B_MAP_FILE ")" << (*customBMapIter)->name << R"(")" << "\r\n\r\n";
+		(*stream) << R"(#define CUSTOM_B_MAP_FILE ")" << (*customBMapIter)->name << R"(.tga")" << "\r\n\r\n";
 	else
 		(*stream) << R"(#define CUSTOM_B_MAP_FILE "customB.png")" << "\r\n\r\n";
 

@@ -1737,7 +1737,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto albedoColor = ray::math::pow(material["albedo"]->value().getFloat3(), 1.0f / 2.2f);
 			auto albedoMap = material["albedoMap"]->value().getTexture();
 			auto albedoMapFrom = material["albedoMapFrom"]->value().getInt();
-			auto albedoMapFilp = material["albedoMapFilp"]->value().getInt();
+			auto albedoMapFlip = material["albedoMapFlip"]->value().getInt();
 			auto albedoMapScaleDiffuse = false;
 			auto albedoMapLoopNum = material["albedoMapLoopNum"]->value().getFloat2();
 
@@ -1747,9 +1747,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 
 			if (albedoMapFrom >= 1 && albedoMapFrom <= 6)
 			{
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##albedoMapFilp", &albedoMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["albedoMapFilp"]->uniform1i(albedoMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##albedoMapFlip", &albedoMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["albedoMapFlip"]->uniform1i(albedoMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##albedoMapLoopNum", albedoMapLoopNum.ptr(), 0.05, 0.0, FLT_MAX))
@@ -1793,7 +1793,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto albedoSubColor = ray::math::pow(material["albedoSub"]->value().getFloat3(), 1.0f / 2.2f);
 			auto albedoSubMap = material["albedoSubMap"]->value().getTexture();
 			auto albedoSubMapFrom = material["albedoSubMapFrom"]->value().getInt();
-			auto albedoSubMapFilp = material["albedoSubMapFilp"]->value().getInt();
+			auto albedoSubMapFlip = material["albedoSubMapFlip"]->value().getInt();
 			auto albedoSubMapLoopNum = material["albedoSubMapLoopNum"]->value().getFloat2();
 
 			ray::Gui::text("Texture type:");
@@ -1806,9 +1806,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 
 			if (albedoSubMapFrom >= 1 && albedoSubMapFrom <= 6)
 			{
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##albedoSubMapFilp", &albedoSubMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["albedoSubMapFilp"]->uniform1i(albedoSubMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##albedoSubMapFlip", &albedoSubMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["albedoSubMapFlip"]->uniform1i(albedoSubMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##albedoSubMapLoopNum", albedoSubMapLoopNum.ptr(), 0.05, 0.0, FLT_MAX, "%.3f", 2.2f))
@@ -1846,7 +1846,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto normalMapType = 0;
 			auto normalMap = material["normalMap"]->value().getTexture();
 			auto normalMapFrom = material["normalMapFrom"]->value().getInt();
-			auto normalMapFilp = material["normalMapFilp"]->value().getInt();
+			auto normalMapFlip = material["normalMapFlip"]->value().getInt();
 			auto normalMapScale = material["normalMapScale"]->value().getFloat();
 			auto normalMapLoopNum = material["normalMapLoopNum"]->value().getFloat2();
 
@@ -1860,9 +1860,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				if (ray::Gui::combo("##normalMapType", &normalMapType, TEXTURE_NORMAL_TYPE, sizeof(TEXTURE_NORMAL_TYPE) / sizeof(TEXTURE_NORMAL_TYPE[0])))
 					material["normalMapType"]->uniform1i(normalMapType);
 
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##normalMapFilp", &normalMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["normalMapFilp"]->uniform1i(normalMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##normalMapFlip", &normalMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["normalMapFlip"]->uniform1i(normalMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##normalMapLoopNum", normalMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
@@ -1900,7 +1900,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto normalSubMapType = 0;
 			auto normalSubMap = material["normalSubMap"]->value().getTexture();
 			auto normalSubMapFrom = material["normalSubMapFrom"]->value().getInt();
-			auto normalSubMapFilp = material["normalSubMapFilp"]->value().getInt();
+			auto normalSubMapFlip = material["normalSubMapFlip"]->value().getInt();
 			auto normalSubMapScale = material["normalSubMapScale"]->value().getFloat();
 			auto normalSubMapLoopNum = material["normalSubMapLoopNum"]->value().getFloat2();
 
@@ -1913,9 +1913,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				ray::Gui::text("Texture type:");
 				ray::Gui::combo("##normalSubMapType", &normalSubMapType, TEXTURE_NORMAL_TYPE, sizeof(TEXTURE_NORMAL_TYPE) / sizeof(TEXTURE_NORMAL_TYPE[0]));
 
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##normalSubMapFilp", &normalSubMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["normalSubMapFilp"]->uniform1i(normalSubMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##normalSubMapFlip", &normalSubMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["normalSubMapFlip"]->uniform1i(normalSubMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##normalSubMapLoopNum", normalSubMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
@@ -1954,7 +1954,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto smoothnessMap = material["smoothnessMap"]->value().getTexture();
 			auto smoothnessMapType = 0;
 			auto smoothnessMapFrom = material["smoothnessMapFrom"]->value().getInt();
-			auto smoothnessMapFilp = material["smoothnessMapFilp"]->value().getInt();
+			auto smoothnessMapFlip = material["smoothnessMapFlip"]->value().getInt();
 			auto smoothnessMapLoopNum = material["smoothnessMapLoopNum"]->value().getFloat2();
 
 			ray::Gui::text("Texture from:");
@@ -1967,9 +1967,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				if (ray::Gui::combo("##smoothnessMapType", &smoothnessMapType, TEXTURE_SMOOTHNESS_TYPE, sizeof(TEXTURE_SMOOTHNESS_TYPE) / sizeof(TEXTURE_SMOOTHNESS_TYPE[0])))
 					material["smoothnessMapType"]->uniform1i(smoothnessMapType);
 
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##smoothness filp", &smoothnessMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["smoothnessMapFilp"]->uniform1i(smoothnessMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##smoothness Flip", &smoothnessMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["smoothnessMapFlip"]->uniform1i(smoothnessMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##smoothnessMapLoopNum", smoothnessMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
@@ -2025,7 +2025,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto metalness = material["metalness"]->value().getFloat();
 			auto metalnessMap = material["metalnessMap"]->value().getTexture();
 			auto metalnessMapFrom = material["metalnessMapFrom"]->value().getInt();
-			auto metalnessMapFilp = material["metalnessMapFilp"]->value().getInt();
+			auto metalnessMapFlip = material["metalnessMapFlip"]->value().getInt();
 			auto metalnessMapLoopNum = material["metalnessMapLoopNum"]->value().getFloat2();
 
 			ray::Gui::text("Texture from:");
@@ -2034,9 +2034,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 
 			if (metalnessMapFrom >= 1 && metalnessMapFrom <= 6)
 			{
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##metalness filp", &metalnessMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["metalnessMapFilp"]->uniform1i(metalnessMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##metalness Flip", &metalnessMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["metalnessMapFlip"]->uniform1i(metalnessMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##metalnessMapLoopNum", metalnessMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
@@ -2092,7 +2092,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto specular = ray::math::pow(material["specular"]->value().getFloat3(), 1.0f / 2.2f);
 			auto specularMap = material["specularMap"]->value().getTexture();
 			auto specularMapFrom = material["specularMapFrom"]->value().getInt();
-			auto specularMapFilp = material["specularMapFilp"]->value().getInt();
+			auto specularMapFlip = material["specularMapFlip"]->value().getInt();
 			auto specularMapLoopNum = material["specularMapLoopNum"]->value().getFloat2();
 
 			ray::Gui::text("Texture from:");
@@ -2101,9 +2101,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 
 			if (specularMapFrom >= 1 && specularMapFrom <= 6)
 			{
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##specularMapFilp", &specularMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["specularMapFilp"]->uniform1i(specularMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##specularMapFlip", &specularMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["specularMapFlip"]->uniform1i(specularMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##specularMapLoopNum", specularMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
@@ -2141,7 +2141,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto occlusion = material["occlusion"]->value().getFloat();
 			auto occlusionMap = material["specularMap"]->value().getTexture();
 			auto occlusionMapFrom = material["occlusionMapFrom"]->value().getInt();
-			auto occlusionMapFilp = material["occlusionMapFilp"]->value().getInt();
+			auto occlusionMapFlip = material["occlusionMapFlip"]->value().getInt();
 			auto occlusionMapLoopNum = material["occlusionMapLoopNum"]->value().getFloat2();
 
 			ray::Gui::text("Texture from:");
@@ -2150,9 +2150,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 
 			if (occlusionMapFrom >= 1 && occlusionMapFrom <= 6)
 			{
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##occlusion filp", &occlusionMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["occlusionMapFilp"]->uniform1i(occlusionMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##occlusion Flip", &occlusionMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["occlusionMapFlip"]->uniform1i(occlusionMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##occlusionMapLoopNum", occlusionMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
@@ -2208,7 +2208,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto emissiveColor = ray::math::pow(material["emissive"]->value().getFloat3(), 1.0f / 2.2f);
 			auto emissiveMap = material["emissiveMap"]->value().getTexture();
 			auto emissiveMapFrom = material["emissiveMapFrom"]->value().getInt();
-			auto emissiveMapFilp = material["emissiveMapFilp"]->value().getInt();
+			auto emissiveMapFlip = material["emissiveMapFlip"]->value().getInt();
 			auto emissiveMapLoopNum = material["emissiveMapLoopNum"]->value().getFloat2();
 
 			ray::Gui::text("Texture from:");
@@ -2217,9 +2217,9 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 
 			if (emissiveMapFrom >= 1 && emissiveMapFrom <= 6)
 			{
-				ray::Gui::text("Texture filp:");
-				if (ray::Gui::combo("##emissive filp", &emissiveMapFilp, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
-					material["emissiveMapFilp"]->uniform1i(emissiveMapFilp);
+				ray::Gui::text("Texture Flip:");
+				if (ray::Gui::combo("##emissive Flip", &emissiveMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
+					material["emissiveMapFlip"]->uniform1i(emissiveMapFlip);
 
 				ray::Gui::text("Texture loop:");
 				if (ray::Gui::dragFloat2("##emissiveMapLoopNum", emissiveMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))

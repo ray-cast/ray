@@ -178,7 +178,7 @@
 
         float EnvironmentMip(float smoothness, int miplevel)
         {
-            return lerp(miplevel, 0, smoothness * smoothness);
+            return lerp(miplevel - 1, 0, smoothness * smoothness);
         }
 
         float3 EnvironmentReflect(float3 normal, float3 view)

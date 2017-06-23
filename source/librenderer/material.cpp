@@ -122,6 +122,18 @@ Material::getTech(const std::string& name) noexcept
 	return nullptr;
 }
 
+MaterialTechPtr
+Material::getTech(const std::string& name) const noexcept
+{
+	for (auto& it : _techniques)
+	{
+		if (it->getName() == name)
+			return it;
+	}
+
+	return nullptr;
+}
+
 const MaterialTechniques&
 Material::getTechs() const noexcept
 {

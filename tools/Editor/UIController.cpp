@@ -409,8 +409,8 @@ GuiControllerComponent::makeMainCamera() noexcept
 		return false;
 
 	ray::GraphicsFramebufferDesc framebufferDesc;
-	framebufferDesc.setWidth(ray::Gui::getDisplaySize().x);
-	framebufferDesc.setHeight(ray::Gui::getDisplaySize().y);
+	framebufferDesc.setWidth(textureDesc.getWidth());
+	framebufferDesc.setHeight(textureDesc.getHeight());
 	framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(std::move(renderTexture), 0, 0));
 	framebufferDesc.setGraphicsFramebufferLayout(std::move(framebufferLayout));
 	auto framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
@@ -453,7 +453,7 @@ GuiControllerComponent::makeSphereObjects() noexcept
 		return false;
 
 	ray::MaterialPtr material;
-	if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", material))
+	if (!ray::ResManager::instance()->createMaterial("dlc:editor/fx/material.fxml", material))
 		return false;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
@@ -525,10 +525,20 @@ GuiControllerComponent::makeSphereObjects() noexcept
 				(*material)["normalMapFrom"]->uniform1i(0);
 			}
 
+			ray::GraphicsTextureDesc textureDesc;
+			textureDesc.setWidth(128);
+			textureDesc.setHeight(128);
+			textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+			textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+			auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+			if (!renderTexture)
+				continue;
+
 			auto item = std::make_shared<EditorAssetItem>();
 			item->name = buf;
 			item->value.emplace<EditorAssetItem::material>(material);
-			this->makeMaterialPreview(*material, item->preview);
+			item->preview = renderTexture;
+			this->onUpdateMaterial(*item);
 
 			_itemMaterials.push_back(std::move(item));
 
@@ -570,10 +580,41 @@ GuiControllerComponent::makeSkyLighting() noexcept
 }
 
 bool
-GuiControllerComponent::makeMaterialPreview(const ray::Material& material, ray::GraphicsTexturePtr& outTexture) noexcept
+GuiControllerComponent::makeMaterialCamera() noexcept
 {
-	outTexture = _materialFx;
-	return false;
+	ray::GraphicsTextureDesc textureDesc;
+	textureDesc.setWidth(128);
+	textureDesc.setHeight(128);
+	textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+	if (!renderTexture)
+		return false;
+
+	ray::GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+	framebufferLayoutDesc.addComponent(ray::GraphicsAttachmentLayout(0, ray::GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, ray::GraphicsFormat::GraphicsFormatR8G8B8A8UNorm));
+	auto framebufferLayout = ray::RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
+	if (!framebufferLayout)
+		return false;
+
+	ray::GraphicsFramebufferDesc framebufferDesc;
+	framebufferDesc.setWidth(textureDesc.getWidth());
+	framebufferDesc.setHeight(textureDesc.getHeight());
+	framebufferDesc.addColorAttachment(ray::GraphicsAttachmentBinding(std::move(renderTexture), 0, 0));
+	framebufferDesc.setGraphicsFramebufferLayout(std::move(framebufferLayout));
+	auto framebuffer = ray::RenderSystem::instance()->createFramebuffer(framebufferDesc);
+	if (!framebuffer)
+		return false;
+
+	_previewFramebuffer = std::move(framebuffer);
+
+	ray::MeshProperty sphereMesh;
+	sphereMesh.makeSphere(1.0, 32, 24);
+
+	_vbo = ray::ResManager::instance()->createVertexBuffer(sphereMesh, ray::ModelMakerFlagBits::ModelMakerFlagBitALL);
+	_ibo = ray::ResManager::instance()->createIndexBuffer(sphereMesh);
+
+	return true;
 }
 
 void
@@ -620,6 +661,8 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		delegate.onExportMaterial = std::bind(&GuiControllerComponent::onExportMaterial, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 		delegate.onExportModel = std::bind(&GuiControllerComponent::onExportModel, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
+		delegate.onUpdateMaterial = std::bind(&GuiControllerComponent::onUpdateMaterial, this, std::placeholders::_1);
+
 		view->setEditorEvents(delegate);
 	}
 }
@@ -645,8 +688,9 @@ GuiControllerComponent::onActivate() except
 
 	this->makeCubeObject();
 	this->makeMainCamera();
-	this->makeSphereObjects();
+	this->makeMaterialCamera();
 	this->makeSkyLighting();
+	this->makeSphereObjects();
 }
 
 void
@@ -917,7 +961,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 		if (model->numMaterials)
 		{
 			ray::MaterialPtr materialTemp;
-			if (!ray::ResManager::instance()->createMaterial("sys:fx/opacity.fxml", materialTemp))
+			if (!ray::ResManager::instance()->createMaterial("dlc:editor/fx/material.fxml", materialTemp))
 				return false;
 
 			ray::Materials materials(model->numMaterials);
@@ -1020,10 +1064,21 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 				(*material)["occlusionMapFrom"]->uniform1i(0);
 				(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
+				ray::GraphicsTextureDesc textureDesc;
+				textureDesc.setWidth(128);
+				textureDesc.setHeight(128);
+				textureDesc.setTexFormat(ray::GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+				textureDesc.setSamplerFilter(ray::GraphicsSamplerFilter::GraphicsSamplerFilterLinear, ray::GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+				auto renderTexture = ray::RenderSystem::instance()->createTexture(textureDesc);
+				if (!renderTexture)
+					continue;
+
 				auto item = std::make_shared<EditorAssetItem>();
 				item->name = material->getName();
 				item->value.emplace<EditorAssetItem::material>(material);
-				this->makeMaterialPreview(*material, item->preview);
+				item->preview = renderTexture;
+
+				this->onUpdateMaterial(*item);
 
 				_itemMaterials.push_back(std::move(item));
 
@@ -1745,6 +1800,32 @@ bool
 GuiControllerComponent::onSeletedMesh(const ray::GameObject* object, std::size_t subset) noexcept
 {
 	return this->onTransformObject(object, subset);
+}
+
+bool
+GuiControllerComponent::onUpdateMaterial(const EditorAssetItem& item) noexcept
+{
+	ray::float4x4 view;
+	view.makeLookAt_lh(ray::float3::UnitX * 2.1f, ray::float3::Zero, ray::float3::Up);
+	ray::float4x4 proj;
+	proj.makePerspective_fov_lh(60.0f, 1.0, 1.0f, 10.0f);
+
+	auto skyComponent = _lights.front()->getComponent<ray::SkyboxComponent>();
+
+	auto material = std::get<EditorAssetItem::material>(item.value);
+	material->getParameter("matTransform")->uniform4fmat(proj * view);
+	material->getParameter("envDiffuse")->uniformTexture(skyComponent->getSkyLightDiffuse());
+	material->getParameter("envSpecular")->uniformTexture(skyComponent->getSkyLightSpecular());
+
+	ray::RenderSystem::instance()->setFramebuffer(_previewFramebuffer);
+	ray::RenderSystem::instance()->clearFramebuffer(0, ray::GraphicsClearFlagBits::GraphicsClearFlagColorDepthBit, ray::float4::Zero, 1.0, 0);
+	ray::RenderSystem::instance()->setVertexBuffer(0, _vbo, 0);
+	ray::RenderSystem::instance()->setIndexBuffer(_ibo, 0, ray::GraphicsIndexType::GraphicsIndexTypeUInt32);
+	ray::RenderSystem::instance()->setMaterialPass(material->getTech("Preview")->getPass(0));
+	ray::RenderSystem::instance()->drawIndexed(4416, 1, 0, 0, 0);
+	ray::RenderSystem::instance()->readFramebuffer(item.preview, 0, 0, item.preview->getGraphicsTextureDesc().getWidth(), item.preview->getGraphicsTextureDesc().getHeight());
+
+	return true;
 }
 
 bool

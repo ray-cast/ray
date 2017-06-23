@@ -75,8 +75,9 @@ GuiViewComponent::GuiViewComponent() noexcept
 	, _selectedShift(std::numeric_limits<std::size_t>::max())
 	, _lightMassType(LightMassType::UVMapper)
 	, _viewport(0.0f, 0.0f, 0.0f, 0.0f)
-	, _assetImageSize(ray::float2(64.0f, 64.0f))
+	, _assetImageSize(ray::float2(76.0f, 76.0f))
 	, _materialImageSize(ray::float2(128.0f, 128.0f))
+	, _forceUpdateMaterial(false)
 {
 	_progress = 0.0f;
 	_isShowWindowAll = true;
@@ -1462,7 +1463,7 @@ GuiViewComponent::showInspectorWindow() noexcept
 					const auto& materials = it->downcast<ray::MeshRenderComponent>()->getMaterials();
 					if (!materials.empty())
 					{
-						if (_selectedObject != _selectedObjectLast || _selectedSubset != _selectedSubsetLast)
+						if (_selectedObject != _selectedObjectLast || _selectedSubset != _selectedSubsetLast || _forceUpdateMaterial)
 						{
 							auto material = (materials.size() > _selectedSubset) ? materials[_selectedSubset] : materials.front();
 
@@ -1484,6 +1485,7 @@ GuiViewComponent::showInspectorWindow() noexcept
 
 							_selectedObjectLast = _selectedObject;
 							_selectedSubsetLast = _selectedSubset;
+							_forceUpdateMaterial = false;
 						}
 						else
 						{
@@ -1694,26 +1696,37 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 		if (_selectedItem)
 			isTextureDraging = (_selectedItem->value.index() == EditorAssetItem::texture);
 
-		if (ray::Gui::imageButtonEx(item.preview.get(), _materialImageSize, material.getName().c_str(), isMaterialDraing, isMaterialDraing))
+		ray::Gui::bulletText("Summary: %s", material.getName().c_str());
+
+		if (ray::Gui::imageButtonEx(item.preview.get(), _materialImageSize, "Click here update material", isMaterialDraing, true))
 		{
-			if (ray::Gui::isKeyPressed(ray::InputKey::Code::LeftControl))
+			if (_selectedItem)
 			{
-				auto& params = std::get<EditorAssetItem::material>(_selectedItem->value)->getParameters();
-				for (auto& it : params)
-					material[it.first]->uniformParam(*it.second);
+				if (ray::Gui::isKeyPressed(ray::InputKey::Code::LeftControl))
+				{
+					auto& params = std::get<EditorAssetItem::material>(_selectedItem->value)->getParameters();
+					for (auto& it : params)
+						material[it.first]->uniformParam(*it.second);
+				}
+				else
+				{
+					auto& meshComponent = _selectedObject->getComponent<ray::MeshRenderComponent>();
+
+					auto materials = meshComponent->getMaterials();
+					if (!materials.empty())
+					{
+						_forceUpdateMaterial = true;
+
+						if (materials.size() > _selectedSubset)
+							meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value), _selectedSubset);
+						else
+							meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value));
+					}
+				}
 			}
 			else
 			{
-				auto& meshComponent = _selectedObject->getComponent<ray::MeshRenderComponent>();
-
-				auto materials = meshComponent->getMaterials();
-				if (!materials.empty())
-				{
-					if (materials.size() > _selectedSubset)
-						meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value), _selectedSubset);
-					else
-						meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value));
-				}
+				_event.onUpdateMaterial(item);
 			}
 
 			_selectedItem = nullptr;

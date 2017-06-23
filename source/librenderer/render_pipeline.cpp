@@ -302,6 +302,13 @@ RenderPipeline::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, cons
 }
 
 void
+RenderPipeline::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->readFramebuffer(texture, x, y, width, height);
+}
+
+void
 RenderPipeline::discardFramebuffer(std::uint32_t i) noexcept
 {
 	assert(_graphicsContext);

@@ -63,6 +63,7 @@ public:
 	void addTech(const MaterialTechPtr& technique) noexcept;
 	void removeTech(const MaterialTechPtr& technique) noexcept;
 	MaterialTechPtr getTech(const std::string& name) noexcept;
+	MaterialTechPtr getTech(const std::string& name) const noexcept;
 	const MaterialTechniques& getTechs() const noexcept;
 
 	void addParameter(const MaterialParamPtr& parameter) noexcept;

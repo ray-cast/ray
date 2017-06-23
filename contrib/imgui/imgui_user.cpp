@@ -138,7 +138,7 @@ namespace ImGui
 		auto frame_padding = GetStyle().FramePadding;
 		PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 0, 0, 0));
 		PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
+		PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0, 0.0, 0.0, 0.5));
 		PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
 		PushStyleVar(ImGuiStyleVar_WindowPadding, frame_padding);

@@ -64,7 +64,7 @@ private:
 	bool makeMainCamera() noexcept;
 	bool makeSphereObjects() noexcept;
 	bool makeSkyLighting() noexcept;
-	bool makeMaterialPreview(const ray::Material& material, ray::GraphicsTexturePtr& outTexture) noexcept;
+	bool makeMaterialCamera() noexcept;
 
 private:
 	void onAttachComponent(const ray::GameComponentPtr& component) except;
@@ -104,6 +104,7 @@ private:
 	bool onSeletedLightProbe(const ray::GameObject* object) noexcept;
 	bool onSeletedMesh(const ray::GameObject* object, std::size_t subset) noexcept;
 
+	bool onUpdateMaterial(const EditorAssetItem& item) noexcept;
 	bool onTransformObject(const ray::GameObject* object, std::size_t subset) noexcept;
 
 	bool onOutputSphere(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
@@ -123,8 +124,12 @@ private:
 	ray::GameObjects _lightProbes;
 	ray::GameObjects _objects;
 
+	ray::GraphicsFramebufferPtr _previewFramebuffer;
 	ray::GameObjectPtr _cube;
 	ray::GraphicsTexturePtr _materialFx;
+
+	ray::GraphicsDataPtr _vbo;
+	ray::GraphicsDataPtr _ibo;
 
 	EditorAssetItems _itemTextures;
 	EditorAssetItems _itemMaterials;

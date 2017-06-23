@@ -649,6 +649,18 @@ OGLDeviceContext::getFramebuffer() const noexcept
 }
 
 void
+OGLDeviceContext::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+{
+	GLenum internalFormat = OGLTypes::asTextureFormat(texture->getGraphicsTextureDesc().getTexFormat());
+	if (internalFormat == GL_INVALID_ENUM)
+		return;
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->downcast<OGLTexture>()->getTarget(), texture->downcast<OGLTexture>()->getInstanceID());
+	glCopyTexImage2D(texture->downcast<OGLTexture>()->getTarget(), 0, internalFormat, x, y, width, height, 0);
+}
+
+void
 OGLDeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipeline);

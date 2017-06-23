@@ -259,7 +259,6 @@ Geometry::stringToRenderQueue(const std::string& techName) noexcept
 	if (techName == "Lighting")					return RenderQueue::RenderQueueLighting;
 	if (techName == "Postprocess")				return RenderQueue::RenderQueuePostprocess;
 
-	assert(false);
 	return RenderQueue::RenderQueueMaxEnum;
 }
 

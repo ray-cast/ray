@@ -239,7 +239,7 @@
             return normalize(B);
         }
 
-        float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
+        float3x3 ComputeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
         {
             float3 dp1 = ddx(viewdir);
             float3 dp2 = ddy(viewdir);

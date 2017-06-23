@@ -439,6 +439,13 @@ RenderPipelineManager::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flag
 }
 
 void
+RenderPipelineManager::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+{
+	assert(_pipeline);
+	_pipeline->readFramebuffer(texture, x, y, width, height);
+}
+
+void
 RenderPipelineManager::setMaterialPass(const MaterialPassPtr& pass) noexcept
 {
 	assert(_pipeline);

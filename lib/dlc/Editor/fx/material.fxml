@@ -1,0 +1,499 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+  <include name="sys:fx/Gbuffer.fxml"/>
+  <include name="sys:fx/lighting.fxml"/>
+  <include name="sys:fx/inputlayout.fxml" />
+  <parameter name="matNormal" type="float4x4"/>
+  <parameter name="matTransform" type="float4x4"/>
+  <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
+  <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse" />
+  <parameter name="albedo" type="float3" />
+  <parameter name="albedoMap" type="texture2D" />
+  <parameter name="albedoMapFrom" type="int" />
+  <parameter name="albedoMapFilp" type="int" />
+  <parameter name="albedoMapLoopNum" type="float2" />
+  <parameter name="albedoSub" type="float3" />
+  <parameter name="albedoSubType" type="int" />
+  <parameter name="albedoSubMap" type="texture2D" />
+  <parameter name="albedoSubMapFrom" type="int" />
+  <parameter name="albedoSubMapFilp" type="int" />
+  <parameter name="albedoSubMapLoopNum" type="float2" />
+  <parameter name="normalMap" type="texture2D" />
+  <parameter name="normalMapType" type="int" />
+  <parameter name="normalMapFrom" type="int" />
+  <parameter name="normalMapFilp" type="int" />
+  <parameter name="normalMapScale" type="float" />
+  <parameter name="normalMapLoopNum" type="float2" />
+  <parameter name="normalSubMap" type="texture2D" />
+  <parameter name="normalSubMapFrom" type="int" />
+  <parameter name="normalSubMapFilp" type="int" />
+  <parameter name="normalSubMapScale" type="float" />
+  <parameter name="normalSubMapLoopNum" type="float2" />
+  <parameter name="smoothness" type="float" />
+  <parameter name="smoothnessMap" type="texture2D" />
+  <parameter name="smoothnessMapType" type="int" />
+  <parameter name="smoothnessMapFrom" type="int" />
+  <parameter name="smoothnessMapFilp" type="int" />
+  <parameter name="smoothnessMapSwizzle" type="float4" />
+  <parameter name="smoothnessMapLoopNum" type="float2" />
+  <parameter name="metalness" type="float" />
+  <parameter name="metalnessMap" type="texture2D" />
+  <parameter name="metalnessMapFrom" type="int" />
+  <parameter name="metalnessMapFilp" type="int" />
+  <parameter name="metalnessMapSwizzle" type="float4" />
+  <parameter name="metalnessMapLoopNum" type="float2" />
+  <parameter name="specular" type="float3" />
+  <parameter name="specularMap" type="texture2D" />
+  <parameter name="specularMapType" type="int" />
+  <parameter name="specularMapFrom" type="int" />
+  <parameter name="specularMapFilp" type="int" />
+  <parameter name="specularMapSwizzle" type="float4" />
+  <parameter name="specularMapLoopNum" type="float2" />
+  <parameter name="occlusion" type="float" />
+  <parameter name="occlusionMap" type="texture2D" />
+  <parameter name="occlusionMapType" type="int" />
+  <parameter name="occlusionMapFrom" type="int" />
+  <parameter name="occlusionMapFilp" type="int" />
+  <parameter name="occlusionMapSwizzle" type="float4" />
+  <parameter name="occlusionMapLoopNum" type="float2" />
+  <parameter name="parallaxMap" type="texture2D" />
+  <parameter name="parallaxMapFrom" type="int" />
+  <parameter name="parallaxMapFilp" type="int" />
+  <parameter name="parallaxMapScale" type="float" />
+  <parameter name="parallaxMapSwizzle" type="float4" />
+  <parameter name="parallaxMapLoopNum" type="float2" />
+  <parameter name="emissive" type="float3" />
+  <parameter name="emissiveMap" type="texture2D" />
+  <parameter name="emissiveMapFrom" type="int" />
+  <parameter name="emissiveMapFilp" type="int" />
+  <parameter name="emissiveMapLoopNum" type="float2" />
+  <parameter name="customType" type="int" />
+  <parameter name="customA" type="float" />
+  <parameter name="customAMap" type="texture2D" />
+  <parameter name="customAMapFrom" type="int" />
+  <parameter name="customAMapFilp" type="int" />
+  <parameter name="customAMapSwizzle" type="float4" />
+  <parameter name="customAMapLoopNum" type="float2" />
+  <parameter name="customB" type="float3" />
+  <parameter name="customBMap" type="texture2D" />
+  <parameter name="customBMapFrom" type="int" />
+  <parameter name="customBMapFilp" type="int" />
+  <parameter name="customBMapLoopNum" type="float2" />
+	<parameter name="envDiffuse" type="textureCUBE"/>
+	<parameter name="envSpecular" type="textureCUBE"/>
+  <shader>
+    <![CDATA[
+			float3 DecodeNormalMap(Texture2D normal, float2 coord)
+			{
+				float3 bump;
+				bump.xy = normal.Sample(PointClamp, coord).gr * 2.0 - 1.0;
+				bump.z = sqrt(1.0 - bump.x * bump.x - bump.y * bump.y);
+				return bump;
+			}
+
+			float3 RNMBlendUnpacked(float3 n1, float3 n2)
+			{
+				n1 += float3( 0,  0, 1);
+				n2 *= float3(-1, -1, 1);
+				return normalize(n1 * dot(n1, n2) / n1.z - n2);
+			}
+
+			float3 ColorSynthesis(float3 diffuse, float3 m)
+			{
+				float3 melanin = diffuse * luminance(diffuse);
+				return diffuse * lerp(1.0, melanin, m);
+			}
+
+			float3 GetAlbedo(float2 coord)
+			{
+				if (albedoMapFrom > 0 && albedoMapFrom < 6)
+				{
+					if (albedoMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (albedoMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (albedoMapFilp == 3)
+						coord = 1 - coord;
+
+					return saturate(srgb2linear_fast(albedoMap.Sample(PointClamp, coord * albedoMapLoopNum).rgb) * albedo);
+				}
+				else
+				{
+					return saturate(albedo);
+				}
+			}
+
+			float3 GetSubAlbedo(float3 albedo, float2 coord)
+			{
+				if (albedoSubType > 0)
+				{
+					float4 albedoSubColor = 1;
+					if (albedoSubMapFrom > 0 && albedoSubMapFrom < 6)
+					{
+						if (albedoSubMapFilp == 1)
+							coord.x = 1 - coord.x;
+						else if (albedoSubMapFilp == 2)
+							coord.y = 1 - coord.y;
+						else if (albedoSubMapFilp == 3)
+							coord = 1 - coord;
+
+						albedoSubColor = srgb2linear_fast(albedoSubMap.Sample(PointClamp, coord * albedoSubMapLoopNum));
+					}
+					else
+					{
+						albedoSubColor.rgb = albedoSub;
+					}
+
+					if (albedoSubType == 1)
+						albedo *= albedoSubColor.rgb;
+					else if (albedoSubType == 2)
+						albedo = pow(albedo, albedoSubColor.rgb);
+					else if (albedoSubType == 3)
+						albedo += albedoSubColor.rgb;
+					else if (albedoSubType == 4)
+						albedo = ColorSynthesis(albedo, albedoSubColor.rgb);
+					else if (albedoSubType == 5)
+						albedo = lerp(albedo, albedoSubColor.rgb, albedoSubColor.a);
+
+					return albedo;
+				}
+				else
+				{
+					return albedo;
+				}
+			}
+
+			float3 GetMainNormal(float3 normal, float3 tangent, float2 coord)
+			{
+				if (normalMapFrom > 0 && normalMapFrom < 6)
+				{
+					if (normalMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (normalMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (normalMapFilp == 3)
+						coord = 1 - coord;
+
+					float3 tangentNormal = normalMap.Sample(PointClamp, coord * normalMapLoopNum).rgb * 2 - 1;
+					tangentNormal.xy *= normalMapScale;
+					tangentNormal = normalize(tangentNormal);
+
+					return tangentNormal;
+				}
+				else
+				{
+					return normalize(normal);
+				}
+			}
+
+			float3 GetSubNormal(float3 normal, float3 tangent, float2 coord)
+			{
+				if (normalSubMapFrom > 0 && normalSubMapFrom < 6)
+				{
+					if (normalSubMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (normalSubMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (normalSubMapFilp == 3)
+						coord = 1 - coord;
+
+					float3 tangentNormal = normalSubMap.Sample(PointClamp, coord * normalSubMapLoopNum).rgb * 2 - 1;
+					tangentNormal.xy *= normalSubMapScale;
+					tangentNormal = normalize(tangentNormal);
+
+					return tangentNormal;
+				}
+				else
+				{
+					return float3(0, 0, 1);
+				}
+			}
+
+			float3 GetNormal(float3 normal, float3 tangent, float2 coord)
+			{
+				if (normalMapFrom > 0 && normalMapFrom < 6 || normalSubMapFrom > 0 < normalSubMapFrom < 6)
+				{
+					float3 tangentNormal1 = GetMainNormal(normal, tangent, coord);
+					float3 tangentNormal2 = GetSubNormal(normal, tangent, coord);
+
+					float3 tangentNormal;
+					if (normalMapFrom > 0 && normalSubMapFrom > 0)
+						tangentNormal = RNMBlendUnpacked(tangentNormal1, tangentNormal2);
+					else if (normalMapFrom > 0)
+						tangentNormal = tangentNormal1;
+					else
+						tangentNormal = tangentNormal2;
+
+					float3 N = normalize(normal);
+					float3 T = normalize(tangent);
+					float3 B = -cross(N, T);
+
+					float3x3 tbn = float3x3(T, B, N);
+					float3 highNormal = mul(tangentNormal, tbn);
+					return normalize(highNormal);
+				}
+				else
+				{
+					return normalize(normal);
+				}
+			}
+
+			float3 GetSpecular(float2 coord)
+			{
+				if (specularMapFrom > 0 && specularMapFrom < 6)
+				{
+					if (specularMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (specularMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (specularMapFilp == 3)
+						coord = 1 - coord;
+
+					return specularMap.Sample(PointClamp, coord * specularMapLoopNum).rgb * specular;
+				}
+				else
+				{
+					return specular;
+				}
+			}
+
+			float GetSmoothness(float2 coord)
+			{
+				if (smoothnessMapFrom > 0 && smoothnessMapFrom < 6)
+				{
+					if (smoothnessMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (smoothnessMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (smoothnessMapFilp == 3)
+						coord = 1 - coord;
+
+					return dot(smoothnessMap.Sample(PointClamp, coord * smoothnessMapLoopNum), smoothnessMapSwizzle) * smoothness;
+				}
+				else
+				{
+					return smoothness;
+				}
+			}
+
+			float GetMetalness(float2 coord)
+			{
+				if (metalnessMapFrom > 0 && metalnessMapFrom < 6)
+				{
+					if (metalnessMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (metalnessMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (metalnessMapFilp == 3)
+						coord = 1 - coord;
+
+					return dot(metalnessMap.Sample(PointClamp, coord * metalnessMapLoopNum).r, metalnessMapSwizzle) * metalness;
+				}
+				else
+				{
+					return metalness;
+				}
+			}
+
+			float GetOcclusion(float2 coord)
+			{
+				if (occlusionMapFrom > 0 && occlusionMapFrom < 6)
+				{
+					if (occlusionMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (occlusionMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (occlusionMapFilp == 3)
+						coord = 1 - coord;
+
+					return dot(occlusionMap.Sample(PointClamp, coord * occlusionMapLoopNum).r, occlusionMapSwizzle) * occlusion;
+				}
+				else
+				{
+					return occlusion;
+				}
+			}
+
+			float GetCustomA(float2 coord)
+			{
+				if (customAMapFrom > 0 && customAMapFrom < 6)
+				{
+					if (customAMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (customAMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (customAMapFilp == 3)
+						coord = 1 - coord;
+
+					return dot(customAMap.Sample(PointClamp, coord * customAMapLoopNum), customAMapSwizzle) * customA;
+				}
+				else
+				{
+					return customA;
+				}
+			}
+
+			float3 GetCustomB(float2 coord)
+			{
+				if (customBMapFrom > 0 && customBMapFrom < 6)
+				{
+					if (customBMapFilp == 1)
+						coord.x = 1 - coord.x;
+					else if (customBMapFilp == 2)
+						coord.y = 1 - coord.y;
+					else if (customBMapFilp == 3)
+						coord = 1 - coord;
+
+					return customBMap.Sample(PointClamp, coord * customBMapLoopNum).rgb * customB;
+				}
+				else
+				{
+					return customB;
+				}
+			}
+
+			void DepthVS(
+				in float4 Position : POSITION,
+				out float4 oPosition : SV_Position)
+			{
+				oPosition = mul(matModelViewProject, Position);
+			}
+
+			void DepthPS()
+			{
+			}
+
+			void OpaqueVS(
+				in float4 Position : POSITION,
+				in float4 TangentQuat : TANGENT,
+				in float2 Texcoord : TEXCOORD,
+				out float3 oNormal : TEXCOORD0,
+				out float3 oTangent : TEXCOORD1,
+				out float2 oTexcoord : TEXCOORD2,
+				out float4 oPosition : SV_Position)
+			{
+				TangentQuat = TangentQuat * 2 - 1;
+
+				float3 Normal = QuaternionToNormal(TangentQuat);
+				float3 Tangent = QuaternionToTangent(TangentQuat);
+
+				oNormal = mul(Normal, (float3x3)matModelViewInverse);
+				oTangent = mul(Tangent, (float3x3)matModelViewInverse);
+				oTexcoord = Texcoord;
+				oPosition = mul(matModelViewProject, Position);
+			}
+
+			GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 coord : TEXCOORD2)
+			{
+				MaterialParam material;
+				material.albedo = GetSubAlbedo(GetAlbedo(coord), coord);
+				material.normal = GetNormal(iNormal, iTangent, coord);
+				material.specular = GetSpecular(coord);
+				material.smoothness = GetSmoothness(coord);
+				material.metalness = GetMetalness(coord);
+				material.occlusion = GetOcclusion(coord);
+				material.customB = GetCustomB(coord);
+				material.lightModel = LIGHTINGMODEL_NORMAL;
+
+				return EncodeGbuffer(material);
+			}
+
+			float4 TonemapHable(float4 x) 
+			{
+				const float A = 0.22f;
+				const float B = 0.30f;
+				const float C = 0.10f;
+				const float D = 0.20f;
+				const float E = 0.01f;
+				const float F = 0.30f;
+				return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+			}
+
+			void PreviewVS(
+				in float4 Position : POSITION,
+				in float4 TangentQuat : TANGENT,
+				in float2 Texcoord : TEXCOORD,
+				out float3 oTexcoord0 : TEXCOORD0,
+				out float3 oTexcoord1 : TEXCOORD1,
+				out float3 oTexcoord2 : TEXCOORD2,
+				out float2 oTexcoord3 : TEXCOORD3,
+				out float4 oPosition : SV_Position)
+			{
+				TangentQuat = TangentQuat * 2 - 1;
+
+				float3 Normal = QuaternionToNormal(TangentQuat);
+				float3 Tangent = QuaternionToTangent(TangentQuat);
+
+				oTexcoord0 = -Normal;
+				oTexcoord1 = Tangent;
+				oTexcoord2 = normalize(float3(2.1f, 0, 0.0f) - Position.xyz);
+				oTexcoord3 = Texcoord;
+				oPosition = mul(matTransform, Position);
+			}
+
+			float4 PreviewPS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float3 viewdir : TEXCOORD2, in float2 coord : TEXCOORD3) : SV_Target
+			{
+				MaterialParam material;
+				material.albedo = GetSubAlbedo(GetAlbedo(coord), coord);
+				material.normal = GetNormal(iNormal, iTangent, coord);
+				material.specular = GetSpecular(coord);
+				material.smoothness = GetSmoothness(coord);
+				material.metalness = GetMetalness(coord);
+				material.occlusion = GetOcclusion(coord);
+				material.customB = GetCustomB(coord);
+				material.lightModel = LIGHTINGMODEL_NORMAL;
+
+				material.albedo *= (1 - material.metalness);
+				material.specular = lerp(material.specular * 0.08, max(0.02, material.albedo), material.metalness);
+
+				float3 N = normalize(material.normal);
+				float3 V = normalize(-viewdir);
+
+				float mipLayer = EnvironmentMip(material.smoothness, 7);
+
+				float3 R = EnvironmentReflect(N, V);
+				float3 fresnel = EnvironmentSpecularUnreal4(N, V, material.smoothness, material.specular);
+
+				float3 prefilteredDiffuse = material.albedo * envDiffuse.SampleLevel(PointClamp, N, 0).rgb * material.occlusion;
+				float3 prefilteredSpeculr = envSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
+				prefilteredSpeculr *= fresnel;
+				prefilteredSpeculr *= material.occlusion;
+
+				float3 hdr = prefilteredDiffuse + prefilteredSpeculr;
+				float4 curr = TonemapHable(float4(hdr * 2.0, 8.0f));
+				curr /= curr.w;
+
+				return linear2srgb(curr);
+			}
+		]]>
+  </shader>
+  <technique name="Shadow">
+    <pass name="p0">
+      <state name="inputlayout" value="POS3F_T4F_UV2F" />
+      <state name="vertex" value="DepthVS" />
+      <state name="fragment" value="DepthPS" />
+      <state name="primitive" value="triangle" />
+    </pass>
+  </technique>
+  <technique name="Opaque">
+    <pass name="p0">
+      <state name="inputlayout" value="POS3F_T4F_UV2F" />
+      <state name="vertex" value="OpaqueVS" />
+      <state name="fragment" value="OpaquePS" />
+      <state name="primitive" value="triangle" />
+      <state name="colormask0" value="rgba" />
+      <state name="colormask1" value="rgba" />
+      <state name="stencilTest" value="true" />
+      <state name="stencilPass" value="replace" />
+      <state name="stencilTwoPass" value="replace" />
+    </pass>
+  </technique>
+  <technique name="Preview">
+    <pass name="p0">
+      <state name="inputlayout" value="POS3F_T4F_UV2F" />
+      <state name="vertex" value="PreviewVS" />
+      <state name="fragment" value="PreviewPS" />
+      <state name="primitive" value="triangle" />
+    </pass>
+  </technique>
+</effect>

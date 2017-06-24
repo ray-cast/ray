@@ -75,6 +75,7 @@ const char g_SupportedFormats[] =
 "All IES Profiles (*.ies)\0"\
 "*.ies;\0";
 
+std::vector<const char*> g_SupportedProject = { "map" };
 std::vector<const char*> g_SupportedIES = { "ies" };
 std::vector<const char*> g_SupportedModel = { "pmx" };
 std::vector<const char*> g_SupportedImages = { "bmp", "png", "jpg", "tga", "dds", "hdr" };
@@ -513,11 +514,11 @@ GuiViewComponent::showProjectOpenBrowse() noexcept
 void
 GuiViewComponent::showProjectSaveBrowse() noexcept
 {
-	if (_pathProject.empty())
-		return;
-
 	if (_event.onProjectSave)
 	{
+		if (_pathProject.empty())
+			return;
+
 		ray::util::string::pointer error = nullptr;
 		if (!_event.onProjectSave(_pathProject.c_str(), error))
 		{
@@ -525,25 +526,30 @@ GuiViewComponent::showProjectSaveBrowse() noexcept
 				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 		}
 	}
+	else
+	{
+		static const char* errorTips = "There are not anything callback function that can be used to load project";
+		this->showPopupMessage(_langs[UILang::Error], errorTips, std::hash<const char*>{}(errorTips));
+	}
 }
 
 void
 GuiViewComponent::showProjectSaveAsBrowse() noexcept
 {
-	ray::util::string::value_type filepath[PATHLIMIT];
-	std::memset(filepath, 0, sizeof(filepath));
-
-	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
-		return;
-
-	if (std::strlen(filepath) < (PATHLIMIT - 5))
-	{
-		if (std::strstr(filepath, ".map") == 0)
-			std::strcat(filepath, ".map");
-	}
-
 	if (_event.onProjectOpen)
 	{
+		ray::util::string::value_type filepath[PATHLIMIT];
+		std::memset(filepath, 0, sizeof(filepath));
+
+		if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
+			return;
+
+		if (std::strlen(filepath) < (PATHLIMIT - 5))
+		{
+			if (std::strstr(filepath, ".map") == 0)
+				std::strcat(filepath, ".map");
+		}
+
 		ray::util::string::pointer error = nullptr;
 		if (_event.onProjectOpen(filepath, error))
 			_pathProject = filepath;
@@ -553,19 +559,24 @@ GuiViewComponent::showProjectSaveAsBrowse() noexcept
 				this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 		}
 	}
+	else
+	{
+		static const char* errorTips = "There are not anything callback function that can be used to save project";
+		this->showPopupMessage(_langs[UILang::Error], errorTips, std::hash<const char*>{}(errorTips));
+	}
 }
 
 void
 GuiViewComponent::showImportModelBrowse() noexcept
 {
-	ray::util::string::value_type filepath[PATHLIMIT];
-	std::memset(filepath, 0, sizeof(filepath));
-
-	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
-		return;
-
 	if (_event.onImportModel)
 	{
+		ray::util::string::value_type filepath[PATHLIMIT];
+		std::memset(filepath, 0, sizeof(filepath));
+
+		if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
+			return;
+
 		ray::util::string::pointer error = nullptr;
 		if (!_event.onImportModel(filepath, error))
 		{
@@ -575,68 +586,77 @@ GuiViewComponent::showImportModelBrowse() noexcept
 
 		_selectedObject = nullptr;
 	}
+	else
+	{
+		static const char* errorTips = "There are not anything callback function that can be used to import models";
+		this->showPopupMessage(_langs[UILang::Error], errorTips, std::hash<const char*>{}(errorTips));
+	}
 }
 
 void
 GuiViewComponent::showImportAssetBrowse() noexcept
 {
-	if (!_event.onImportIES && !_event.onImportTexture && !_event.onImportMaterial)
+	if (_event.onImportIES || _event.onImportTexture || _event.onImportMaterial)
 	{
-		static const char* errorTips = "There are no anything callback function that can be used to import assets";
-		this->showPopupMessage(_langs[UILang::Error], errorTips, std::hash<const char*>{}(errorTips));
-		return;
-	}
+		ray::util::string::value_type filepath[PATHLIMIT];
+		ray::util::string::value_type filepaths[PATHLIMIT];
+		std::memset(filepath, 0, sizeof(filepath));
+		std::memset(filepaths, 0, sizeof(filepaths));
 
-	ray::util::string::value_type filepath[PATHLIMIT];
-	ray::util::string::value_type filepaths[PATHLIMIT];
-	std::memset(filepath, 0, sizeof(filepath));
-	std::memset(filepaths, 0, sizeof(filepaths));
+		if (!showFileOpenBrowse(filepaths, PATHLIMIT, g_SupportedFormats, true))
+			return;
 
-	if (!showFileOpenBrowse(filepaths, PATHLIMIT, g_SupportedFormats, true))
-		return;
+		auto length = ray::util::strlen(filepaths) + 1;
+		auto lengthForStream = length;
 
-	auto length = ray::util::strlen(filepaths) + 1;
-	auto lengthForStream = length;
-
-	while (lengthForStream < PATHLIMIT && filepaths[lengthForStream])
-	{
-		ray::util::string::value_type name[PATHLIMIT];
-		if (ray::util::ext_name(filepaths + lengthForStream, name, sizeof(name)) == 0)
-			continue;
-
-		ray::util::strncpy(filepath, filepaths, length);
-		ray::util::strcat(filepath, "/");
-		ray::util::strcat(filepath, filepaths + lengthForStream);
-		ray::util::toUnixPath(filepath, filepath, PATHLIMIT);
-
-		lengthForStream += ray::util::strlen(filepaths + lengthForStream) + 1;
-
-		std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial };
-		std::function<bool(const char*, char*&)>* delegates[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial };
-
-		bool loaded = false;
-
-		for (std::size_t i = 0; i < sizeof(delegates) / sizeof(delegates[0]) && !loaded; i++)
+		while (lengthForStream < PATHLIMIT && filepaths[lengthForStream])
 		{
-			for (auto format : supportedImport[i])
+			ray::util::string::value_type name[PATHLIMIT];
+			if (ray::util::ext_name(filepaths + lengthForStream, name, sizeof(name)) == 0)
+				continue;
+
+			ray::util::strncpy(filepath, filepaths, length);
+			ray::util::strcat(filepath, "/");
+			ray::util::strcat(filepath, filepaths + lengthForStream);
+			ray::util::toUnixPath(filepath, filepath, PATHLIMIT);
+
+			lengthForStream += ray::util::strlen(filepaths + lengthForStream) + 1;
+
+			std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial };
+			std::function<bool(const char*, char*&)>* delegates[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial };
+
+			bool loaded = false;
+
+			for (std::size_t i = 0; i < sizeof(delegates) / sizeof(delegates[0]) && !loaded; i++)
 			{
-				if (ray::util::strcmp(name, format) != 0)
-					continue;
-
-				if (!*delegates[i])
-					continue;
-
-				ray::util::string::pointer error = nullptr;
-				if (!(*delegates[i])(filepath, error))
+				for (auto format : supportedImport[i])
 				{
-					if (error)
-						this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-				}
+					if (ray::util::strcmp(name, format) != 0)
+						continue;
 
-				loaded = true;
-				break;
+					if (!*delegates[i])
+						continue;
+
+					ray::util::string::pointer error = nullptr;
+					if (!(*delegates[i])(filepath, error))
+					{
+						if (error)
+							this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
+					}
+
+					loaded = true;
+					break;
+				}
 			}
 		}
+
+		static const char* succeededTips = "Resource loaded.";
+		this->showPopupMessage(_langs[UILang::Succeeded], succeededTips, std::hash<const char*>{}(succeededTips));
+	}
+	else
+	{
+		static const char* errorTips = "There are not anything callback function that can be used to import resources";
+		this->showPopupMessage(_langs[UILang::Error], errorTips, std::hash<const char*>{}(errorTips));
 	}
 }
 
@@ -883,9 +903,9 @@ GuiViewComponent::showAboutWindow() noexcept
 	if (!_isShowAboutWindow)
 		return;
 
-	if (ray::Gui::beginPopupModal("About", &_isShowAboutWindow, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
+	if (ray::Gui::beginPopupModal(_langs[UILang::About], &_isShowAboutWindow, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
-		ray::Gui::text("Ray Labs Ver.0.1");
+		ray::Gui::text("Ray Studio Ver.0.1 beta");
 		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
 		ray::Gui::text("Copyright (c) 2017-2018. All rights reserved.");
 
@@ -1015,7 +1035,7 @@ GuiViewComponent::showHierarchyWindow() noexcept
 
 	if (ray::Gui::beginDock("Hierarchy", &_isShowHierarchyWindow))
 	{
-		if (ray::Gui::treeNodeEx("camera", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx(_langs[UILang::Camera], ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			const ray::GameObjects* objects = nullptr;
 			_event.onFetchCamera(objects);
@@ -1039,7 +1059,7 @@ GuiViewComponent::showHierarchyWindow() noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("lights"))
+		if (ray::Gui::treeNode(_langs[UILang::Lights]))
 		{
 			const ray::GameObjects* objects = nullptr;
 			_event.onFetchLights(objects);
@@ -1063,12 +1083,12 @@ GuiViewComponent::showHierarchyWindow() noexcept
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNode("light probes"))
+		if (ray::Gui::treeNode(_langs[UILang::LightProbes]))
 		{
 			ray::Gui::treePop();
 		}
 
-		if (ray::Gui::treeNodeEx("meshes", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
+		if (ray::Gui::treeNodeEx(_langs[UILang::Meshes], ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
 			const ray::GameObjects* objects = nullptr;
 			_event.onFetchMeshes(objects);
@@ -1152,9 +1172,9 @@ GuiViewComponent::showAssetsWindow() noexcept
 	{
 		ray::Gui::text("");
 		ray::Gui::sameLine();
-		if (ray::Gui::button("Import...")) { this->showImportAssetBrowse(); }
+		if (ray::Gui::button(_langs[UILang::Import])) { this->showImportAssetBrowse(); }
 		ray::Gui::sameLine();
-		if (ray::Gui::button("Export...")) { this->showExportAssetBrowse(); }
+		if (ray::Gui::button(_langs[UILang::Export])) { this->showExportAssetBrowse(); }
 
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
 		ray::Gui::text("");

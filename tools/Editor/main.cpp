@@ -41,7 +41,7 @@ int main(int argc, const char* argv[])
 {
 	rayInit(argv[0], "dlc:/Editor/scenes/scene.json");
 
-	if (rayOpenWindow("Ray Labs", 1768, 992))
+	if (rayOpenWindow("Ray Studio", 1768, 992))
 	{
 		while (!rayIsQuitRequest())
 			rayUpdate();

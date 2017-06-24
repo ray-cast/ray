@@ -86,7 +86,12 @@ const char* en_lang[] = {
 	"Camera",
 	"Asset",
 	"Material",
-	"Inspector"
+	"Inspector",
+	"Lights",
+	"LightProbes",
+	"Meshes",
+	"Import...",
+	"Export..."
 };
 
 const char* cn_lang[] = {
@@ -139,7 +144,12 @@ const char* cn_lang[] = {
 	"相机",
 	"资源",
 	"材质",
-	"监视"
+	"监视",
+	"光源",
+	"光源探针",
+	"模型",
+	"导入...",
+	"导出..."
 };
 
 std::vector<std::string> cn_lang_utf8;

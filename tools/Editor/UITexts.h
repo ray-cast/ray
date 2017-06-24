@@ -94,6 +94,11 @@ public:
 		Assert,
 		Material,
 		Inspector,
+		Lights,
+		LightProbes,
+		Meshes,
+		Import,
+		Export
 	};
 
 	enum class Lang

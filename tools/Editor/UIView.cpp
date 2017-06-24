@@ -181,6 +181,14 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 				if (ray::util::ext_name(event.drop.files[i], name, sizeof(name)) == 0)
 					continue;
 
+				ray::util::string::value_type fullpath[PATHLIMIT];
+				if (ray::util::toUnixPath(event.drop.files[i], fullpath, PATHLIMIT) == 0)
+				{
+					static const char* errorTips = "Cannot open file, check the spelling of the file path.";
+					this->showPopupMessage(_langs[UILang::Error], errorTips, std::hash<const char*>{}(errorTips));
+					return;
+				}
+
 				std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial, g_SupportedModel };
 
 				std::function<bool(const char*, char*&)>* delegate[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial, &_event.onImportModel };
@@ -198,7 +206,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 							continue;
 
 						ray::util::string::pointer error = nullptr;
-						if (!(*delegate[j])(event.drop.files[i], error))
+						if (!(*delegate[j])(fullpath, error))
 						{
 							if (error)
 								this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));

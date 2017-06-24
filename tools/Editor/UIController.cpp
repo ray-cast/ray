@@ -868,20 +868,13 @@ GuiControllerComponent::onImportTexture(ray::util::string::const_pointer path, r
 }
 
 bool
-GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
+GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpath, ray::util::string::pointer& error) noexcept
 {
-	ray::util::string::value_type fullpath[PATHLIMIT];
-	if (ray::util::toUnixPath(path, fullpath, PATHLIMIT) == 0)
-	{
-		error = "Cannot open file, check the spelling of the file path.";
-		return false;
-	}
-
 	char drive[MAX_PATH];
 	char dir[PATHLIMIT];
 	char filename[PATHLIMIT];
 	char ext[MAX_PATH];
-	_splitpath(path, drive, dir, filename, ext);
+	_splitpath(fullpath, drive, dir, filename, ext);
 
 	for (auto& it : _itemMaterials)
 	{
@@ -1163,7 +1156,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer path, 
 				if (std::strcmp(declaration->name, token_file[i]) == 0)
 				{
 					ray::GraphicsTexturePtr texture;
-					if (ray::ResManager::instance()->createTexture(ray::util::directory(path) + expression->string, texture))
+					if (ray::ResManager::instance()->createTexture(ray::util::directory(fullpath) + expression->string, texture))
 						material->getParameter(token_file2[i])->uniformTexture(texture);
 
 					break;

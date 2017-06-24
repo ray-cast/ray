@@ -59,6 +59,7 @@ public:
 	{
 	}
 
+	std::string path;
 	std::string name;
 	std::variant<ray::GraphicsTexturePtr, ray::MaterialPtr, ray::GraphicsTexturePtr> value;
 	ray::GraphicsTexturePtr preview;

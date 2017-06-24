@@ -777,18 +777,11 @@ GuiControllerComponent::onModelPicker(float x, float y, ray::GameObject*& _selec
 bool
 GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept
 {
-	ray::util::string::value_type pathfile[PATHLIMIT];
-	if (ray::util::toUnixPath(path, pathfile, PATHLIMIT) == 0)
-	{
-		error = "Cannot open the file, check the spelling of the file path.";
-		return false;
-	}
-
-	if (ray::ResManager::instance()->getTexture(pathfile))
+	if (ray::ResManager::instance()->getTexture(path))
 		return true;
 
 	ray::StreamReaderPtr stream;
-	if (!ray::IoServer::instance()->openFile(stream, pathfile))
+	if (!ray::IoServer::instance()->openFile(stream, path))
 	{
 		error = "Cannot open the file, check the spelling of the file path.";
 		return false;
@@ -851,6 +844,7 @@ GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::
 	_splitpath(path, drive, dir, filename, ext);
 
 	auto item = std::make_shared<EditorAssetItem>();
+	item->path = path;
 	item->name = filename;
 	item->preview = iesPreview;
 	item->value.emplace<EditorAssetItem::texture>(iesTexture);
@@ -1177,6 +1171,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 		return false;
 
 	auto item = std::make_shared<EditorAssetItem>();
+	item->path = fullpath;
 	item->name = material->getName();
 	item->value.emplace<EditorAssetItem::material>(material);
 	item->preview = renderTexture;
@@ -1193,12 +1188,8 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 {
 	try
 	{
-		ray::util::string::value_type buffer[PATHLIMIT];
-		if (ray::util::toUnixPath(path, buffer, PATHLIMIT) == 0)
-			return false;
-
 		ray::StreamReaderPtr stream;
-		if (!ray::IoServer::instance()->openFile(stream, buffer))
+		if (!ray::IoServer::instance()->openFile(stream, path))
 		{
 			error = "Cannot open file, check the spelling of the file path.";
 			return false;
@@ -1339,7 +1330,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 					if (::wcstombs(name, model->textures[diffuseIndex].name, model->textures[diffuseIndex].length))
 					{
 						char* error = nullptr;
-						this->loadTexture(ray::util::directory(buffer) + name, diffuseMap, error);
+						this->loadTexture(ray::util::directory(path) + name, diffuseMap, error);
 					}
 				}
 
@@ -1349,7 +1340,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 					if (::wcstombs(name, model->textures[specularIndex].name, model->textures[specularIndex].length) > 0)
 					{
 						char* error = nullptr;
-						this->loadTexture(ray::util::directory(buffer) + name, specularMap, error);
+						this->loadTexture(ray::util::directory(path) + name, specularMap, error);
 					}
 				}
 
@@ -1359,7 +1350,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 					if (::wcstombs(name, model->textures[toonIndex].name, model->textures[toonIndex].length) > 0)
 					{
 						char* error = nullptr;
-						this->loadTexture(ray::util::directory(buffer) + name, toonMap, error);
+						this->loadTexture(ray::util::directory(path) + name, toonMap, error);
 					}
 				}
 

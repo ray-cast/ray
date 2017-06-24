@@ -522,6 +522,11 @@ GuiControllerComponent::makeSphereObjects() noexcept
 			(*material)["occlusionMapFrom"]->uniform1i(0);
 			(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
 
+			(*material)["emissive"]->uniform3f(0.0, 0.0, 0.0);
+			(*material)["emissiveMapFrom"]->uniform1i(0);
+			(*material)["emissiveMapLoopNum"]->uniform2f(1.0f, 1.0f);
+			(*material)["emissiveIntensity"]->uniform1f(1.0f);
+
 			if (shininessParams[i * 10 + j] > 0.45 &&
 				shininessParams[i * 10 + j] < 0.8 ||
 				shininessParams[i * 10 + j] > 0.95)
@@ -876,7 +881,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 	static const char* token_swizzle[] = { "SMOOTHNESS_MAP_SWIZZLE", "METALNESS_MAP_SWIZZLE", "SPECULAR_MAP_SWIZZLE", "OCCLUSION_MAP_SWIZZLE", "PARALLAX_MAP_SWIZZLE", "CUSTOM_A_MAP_SWIZZ" };
 	static const char* token_swizzle2[] = { "smoothnessMapSwizzle", "metalnessMapSwizzle", "specularMapSwizzle", "occlusionMapSwizzle", "parallaxMapSwizzle", "customAMapSwizzle" };
 
-	static const char* token_float[] = { "normalMapScale", "smoothness", "metalness", "occlusion", "customA" };
+	static const char* token_float[] = { "normalMapScale", "smoothness", "metalness", "occlusion", "emissiveIntensity" "customA" };
 	static const char* token_float2[] = { "albedoMapLoopNum","albedoSubMapLoopNum", "normalMapLoopNum","normalSubMapLoopNum","smoothnessMapLoopNum","metalnessMapLoopNum","specularMapLoopNum","occlusionMapLoopNum","parallaxMapLoopNum","emissiveMapLoopNum","customAMapLoopNum","customBMapLoopNum" };
 	static const char* token_float3[] = { "albedo", "albedoSub", "specular", "emissive", "customB" };
 
@@ -1396,6 +1401,11 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 				(*material)["occlusion"]->uniform1f(1.0);
 				(*material)["occlusionMapFrom"]->uniform1i(0);
 				(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
+
+				(*material)["emissive"]->uniform3f(0.0, 0.0, 0.0);
+				(*material)["emissiveMapFrom"]->uniform1i(0);
+				(*material)["emissiveMapLoopNum"]->uniform2f(1.0f, 1.0f);
+				(*material)["emissiveIntensity"]->uniform1f(1.0f);
 
 				ray::GraphicsTextureDesc textureDesc;
 				textureDesc.setWidth(128);

@@ -2194,6 +2194,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 
 		if (ray::Gui::treeNodeEx("Emissive", ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagBulletBit))
 		{
+			auto emissiveIntensity = material["emissiveIntensity"]->value().getFloat();
 			auto emissiveColor = ray::math::pow(material["emissive"]->value().getFloat3(), 1.0f / 2.2f);
 			auto emissiveMap = material["emissiveMap"]->value().getTexture();
 			auto emissiveMapFrom = material["emissiveMapFrom"]->value().getInt();
@@ -2233,6 +2234,10 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 					}
 				}
 			}
+
+			ray::Gui::text("Intensity:");
+			if (ray::Gui::sliderFloat("##emissiveIntensity", &emissiveIntensity, 0.0f, 4.0f))
+				material["emissiveIntensity"]->uniform1f(emissiveIntensity);
 
 			ray::Gui::text("Color:");
 			if (ray::Gui::colorPicker3("##emissiveColor", emissiveColor.ptr()))

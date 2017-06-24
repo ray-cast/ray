@@ -1,84 +1,85 @@
 <?xml version='1.0'?>
 <effect language="hlsl">
-  <include name="sys:fx/Gbuffer.fxml"/>
-  <include name="sys:fx/lighting.fxml"/>
-  <include name="sys:fx/inputlayout.fxml" />
-  <parameter name="matNormal" type="float4x4"/>
-  <parameter name="matTransform" type="float4x4"/>
-  <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
-  <parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse" />
-  <parameter name="albedo" type="float3" />
-  <parameter name="albedoMap" type="texture2D" />
-  <parameter name="albedoMapFrom" type="int" />
-  <parameter name="albedoMapFlip" type="int" />
-  <parameter name="albedoMapLoopNum" type="float2" />
-  <parameter name="albedoSub" type="float3" />
-  <parameter name="albedoSubType" type="int" />
-  <parameter name="albedoSubMap" type="texture2D" />
-  <parameter name="albedoSubMapFrom" type="int" />
-  <parameter name="albedoSubMapFlip" type="int" />
-  <parameter name="albedoSubMapLoopNum" type="float2" />
-  <parameter name="normalMap" type="texture2D" />
-  <parameter name="normalMapType" type="int" />
-  <parameter name="normalMapFrom" type="int" />
-  <parameter name="normalMapFlip" type="int" />
-  <parameter name="normalMapScale" type="float" />
-  <parameter name="normalMapLoopNum" type="float2" />
-  <parameter name="normalSubMap" type="texture2D" />
-  <parameter name="normalSubMapFrom" type="int" />
-  <parameter name="normalSubMapFlip" type="int" />
-  <parameter name="normalSubMapScale" type="float" />
-  <parameter name="normalSubMapLoopNum" type="float2" />
-  <parameter name="smoothness" type="float" />
-  <parameter name="smoothnessMap" type="texture2D" />
-  <parameter name="smoothnessMapType" type="int" />
-  <parameter name="smoothnessMapFrom" type="int" />
-  <parameter name="smoothnessMapFlip" type="int" />
-  <parameter name="smoothnessMapSwizzle" type="float4" />
-  <parameter name="smoothnessMapLoopNum" type="float2" />
-  <parameter name="metalness" type="float" />
-  <parameter name="metalnessMap" type="texture2D" />
-  <parameter name="metalnessMapFrom" type="int" />
-  <parameter name="metalnessMapFlip" type="int" />
-  <parameter name="metalnessMapSwizzle" type="float4" />
-  <parameter name="metalnessMapLoopNum" type="float2" />
-  <parameter name="specular" type="float3" />
-  <parameter name="specularMap" type="texture2D" />
-  <parameter name="specularMapType" type="int" />
-  <parameter name="specularMapFrom" type="int" />
-  <parameter name="specularMapFlip" type="int" />
-  <parameter name="specularMapSwizzle" type="float4" />
-  <parameter name="specularMapLoopNum" type="float2" />
-  <parameter name="occlusion" type="float" />
-  <parameter name="occlusionMap" type="texture2D" />
-  <parameter name="occlusionMapType" type="int" />
-  <parameter name="occlusionMapFrom" type="int" />
-  <parameter name="occlusionMapFlip" type="int" />
-  <parameter name="occlusionMapSwizzle" type="float4" />
-  <parameter name="occlusionMapLoopNum" type="float2" />
-  <parameter name="parallaxMap" type="texture2D" />
-  <parameter name="parallaxMapFrom" type="int" />
-  <parameter name="parallaxMapFlip" type="int" />
-  <parameter name="parallaxMapScale" type="float" />
-  <parameter name="parallaxMapSwizzle" type="float4" />
-  <parameter name="parallaxMapLoopNum" type="float2" />
-  <parameter name="emissive" type="float3" />
-  <parameter name="emissiveMap" type="texture2D" />
-  <parameter name="emissiveMapFrom" type="int" />
-  <parameter name="emissiveMapFlip" type="int" />
-  <parameter name="emissiveMapLoopNum" type="float2" />
-  <parameter name="customType" type="int" />
-  <parameter name="customA" type="float" />
-  <parameter name="customAMap" type="texture2D" />
-  <parameter name="customAMapFrom" type="int" />
-  <parameter name="customAMapFlip" type="int" />
-  <parameter name="customAMapSwizzle" type="float4" />
-  <parameter name="customAMapLoopNum" type="float2" />
-  <parameter name="customB" type="float3" />
-  <parameter name="customBMap" type="texture2D" />
-  <parameter name="customBMapFrom" type="int" />
-  <parameter name="customBMapFlip" type="int" />
-  <parameter name="customBMapLoopNum" type="float2" />
+	<include name="sys:fx/Gbuffer.fxml"/>
+	<include name="sys:fx/lighting.fxml"/>
+	<include name="sys:fx/inputlayout.fxml" />
+	<parameter name="matNormal" type="float4x4"/>
+	<parameter name="matTransform" type="float4x4"/>
+	<parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
+	<parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse" />
+	<parameter name="albedo" type="float3" />
+	<parameter name="albedoMap" type="texture2D" />
+	<parameter name="albedoMapFrom" type="int" />
+	<parameter name="albedoMapFlip" type="int" />
+	<parameter name="albedoMapLoopNum" type="float2" />
+	<parameter name="albedoSub" type="float3" />
+	<parameter name="albedoSubType" type="int" />
+	<parameter name="albedoSubMap" type="texture2D" />
+	<parameter name="albedoSubMapFrom" type="int" />
+	<parameter name="albedoSubMapFlip" type="int" />
+	<parameter name="albedoSubMapLoopNum" type="float2" />
+	<parameter name="normalMap" type="texture2D" />
+	<parameter name="normalMapType" type="int" />
+	<parameter name="normalMapFrom" type="int" />
+	<parameter name="normalMapFlip" type="int" />
+	<parameter name="normalMapScale" type="float" />
+	<parameter name="normalMapLoopNum" type="float2" />
+	<parameter name="normalSubMap" type="texture2D" />
+	<parameter name="normalSubMapFrom" type="int" />
+	<parameter name="normalSubMapFlip" type="int" />
+	<parameter name="normalSubMapScale" type="float" />
+	<parameter name="normalSubMapLoopNum" type="float2" />
+	<parameter name="smoothness" type="float" />
+	<parameter name="smoothnessMap" type="texture2D" />
+	<parameter name="smoothnessMapType" type="int" />
+	<parameter name="smoothnessMapFrom" type="int" />
+	<parameter name="smoothnessMapFlip" type="int" />
+	<parameter name="smoothnessMapSwizzle" type="float4" />
+	<parameter name="smoothnessMapLoopNum" type="float2" />
+	<parameter name="metalness" type="float" />
+	<parameter name="metalnessMap" type="texture2D" />
+	<parameter name="metalnessMapFrom" type="int" />
+	<parameter name="metalnessMapFlip" type="int" />
+	<parameter name="metalnessMapSwizzle" type="float4" />
+	<parameter name="metalnessMapLoopNum" type="float2" />
+	<parameter name="specular" type="float3" />
+	<parameter name="specularMap" type="texture2D" />
+	<parameter name="specularMapType" type="int" />
+	<parameter name="specularMapFrom" type="int" />
+	<parameter name="specularMapFlip" type="int" />
+	<parameter name="specularMapSwizzle" type="float4" />
+	<parameter name="specularMapLoopNum" type="float2" />
+	<parameter name="occlusion" type="float" />
+	<parameter name="occlusionMap" type="texture2D" />
+	<parameter name="occlusionMapType" type="int" />
+	<parameter name="occlusionMapFrom" type="int" />
+	<parameter name="occlusionMapFlip" type="int" />
+	<parameter name="occlusionMapSwizzle" type="float4" />
+	<parameter name="occlusionMapLoopNum" type="float2" />
+	<parameter name="parallaxMap" type="texture2D" />
+	<parameter name="parallaxMapFrom" type="int" />
+	<parameter name="parallaxMapFlip" type="int" />
+	<parameter name="parallaxMapScale" type="float" />
+	<parameter name="parallaxMapSwizzle" type="float4" />
+	<parameter name="parallaxMapLoopNum" type="float2" />
+	<parameter name="emissive" type="float3" />
+	<parameter name="emissiveIntensity" type="float" />
+	<parameter name="emissiveMap" type="texture2D" />
+	<parameter name="emissiveMapFrom" type="int" />
+	<parameter name="emissiveMapFlip" type="int" />
+	<parameter name="emissiveMapLoopNum" type="float2" />
+	<parameter name="customType" type="int" />
+	<parameter name="customA" type="float" />
+	<parameter name="customAMap" type="texture2D" />
+	<parameter name="customAMapFrom" type="int" />
+	<parameter name="customAMapFlip" type="int" />
+	<parameter name="customAMapSwizzle" type="float4" />
+	<parameter name="customAMapLoopNum" type="float2" />
+	<parameter name="customB" type="float3" />
+	<parameter name="customBMap" type="texture2D" />
+	<parameter name="customBMapFrom" type="int" />
+	<parameter name="customBMapFlip" type="int" />
+	<parameter name="customBMapLoopNum" type="float2" />
 	<parameter name="envDiffuse" type="textureCUBE"/>
 	<parameter name="envSpecular" type="textureCUBE"/>
   <shader>
@@ -249,11 +250,11 @@
 					else if (specularMapFlip == 3)
 						coord = 1 - coord;
 
-					return specularMap.Sample(PointClamp, coord * specularMapLoopNum).rgb * specular;
+					return specularMap.Sample(PointClamp, coord * specularMapLoopNum).rgb * specular * 0.08;
 				}
 				else
 				{
-					return specular;
+					return specular * 0.08;
 				}
 			}
 
@@ -311,6 +312,25 @@
 				else
 				{
 					return occlusion;
+				}
+			}
+
+			float3 GetEmissive(float2 coord)
+			{
+				if (emissiveMapFrom > 0 && emissiveMapFrom < 6)
+				{
+					if (emissiveMapFlip == 1)
+						coord.x = 1 - coord.x;
+					else if (emissiveMapFlip == 2)
+						coord.y = 1 - coord.y;
+					else if (emissiveMapFlip == 3)
+						coord = 1 - coord;
+
+					return emissiveMap.Sample(PointClamp, coord * emissiveMapLoopNum).rgb * emissive;
+				}
+				else
+				{
+					return emissive;
 				}
 			}
 
@@ -392,6 +412,7 @@
 				material.smoothness = GetSmoothness(coord);
 				material.metalness = GetMetalness(coord);
 				material.occlusion = GetOcclusion(coord);
+				material.customA = 0;
 				material.customB = GetCustomB(coord);
 				material.lightModel = LIGHTINGMODEL_NORMAL;
 
@@ -440,11 +461,12 @@
 				material.smoothness = GetSmoothness(coord);
 				material.metalness = GetMetalness(coord);
 				material.occlusion = GetOcclusion(coord);
+				material.customA = 0;
 				material.customB = GetCustomB(coord);
 				material.lightModel = LIGHTINGMODEL_NORMAL;
 
 				material.albedo *= (1 - material.metalness);
-				material.specular = lerp(material.specular * 0.08, max(0.02, material.albedo), material.metalness);
+				material.specular = lerp(material.specular, max(0.02, material.albedo), material.metalness);
 
 				float3 N = normalize(material.normal);
 				float3 V = normalize(-viewdir);
@@ -459,7 +481,7 @@
 				prefilteredSpeculr *= fresnel;
 				prefilteredSpeculr *= material.occlusion;
 
-				float3 hdr = prefilteredDiffuse + prefilteredSpeculr;
+				float3 hdr = prefilteredDiffuse + prefilteredSpeculr + GetEmissive(coord) * emissiveIntensity;
 				float4 curr = TonemapHable(float4(hdr * 2.0, 8.0f));
 				curr /= curr.w;
 

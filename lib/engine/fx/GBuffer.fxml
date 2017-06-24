@@ -17,6 +17,7 @@
                 float3 albedo;
                 float3 specular;
                 float3 customB;
+                float customA;
                 float smoothness;
                 float metalness;
                 float occlusion;
@@ -107,8 +108,7 @@
 
                 gbuffer.buffer2.xyz = EncodeNormal(material.normal);
                 gbuffer.buffer2.w = material.smoothness;
-                
-                material.specular *= 0.08;
+
                 material.specular = lerp(material.specular, max(0.02, material.albedo), material.metalness);
                 
                 gbuffer.buffer3.xyz = EncodeYcbcr(material.specular);
@@ -145,6 +145,7 @@
                 material.normal = DecodeNormal(buffer2.xyz);
                 material.smoothness = buffer2.w;
                 material.metalness = 0;
+                material.customA = 0;
 
                 if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
                 {

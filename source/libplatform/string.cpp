@@ -480,7 +480,7 @@ namespace util
 
 	std::size_t strtoul10(const char* in, const char** out)
 	{
-		unsigned int value = 0;
+		std::size_t value = 0;
 
 		bool running = true;
 		while (running)
@@ -491,7 +491,9 @@ namespace util
 			value = (value * 10) + (*in - '0');
 			++in;
 		}
-		if (out)*out = in;
+
+		if (out) *out = in;
+
 		return value;
 	}
 
@@ -538,16 +540,14 @@ namespace util
 		return value;
 	}
 
-	std::size_t strtol10(const char* in, const char** out = 0)
+	std::intptr_t strtol10(const char* in, const char** out = 0)
 	{
 		bool inv = (*in == '-');
 		if (inv || *in == '+')
 			++in;
 
-		std::size_t value = strtoul10(in, out);
-		if (inv) {
-			value = -value;
-		}
+		std::intptr_t value = strtoul10(in, out);
+		if (inv) value = -value;
 
 		return value;
 	}
@@ -946,6 +946,33 @@ namespace util
 		return isSpace(in) || isNewLine(in);
 	}
 
+	bool isOperatorSymbol(char c)
+	{
+		switch (c)
+		{
+		case ';':
+		case ':':
+		case '(':
+		case ')':
+		case '[':
+		case ']':
+		case '{':
+		case '}':
+		case '-':
+		case '+':
+		case '*':
+		case '/':
+		case '?':
+		case '!':
+		case ',':
+		case '=':
+		case '.':
+		case '<': case '>':
+			return true;
+		}
+		return false;
+	}
+
 	bool isEndOfStream(char* it, char* end)
 	{
 		if (it == end)
@@ -1003,6 +1030,28 @@ namespace util
 	bool isNumeric(wchar_t in)
 	{
 		return (in >= '0' && in <= '9') || '-' == in || '+' == in;
+	}
+
+	bool isOperatorSymbol(wchar_t c)
+	{
+		switch (c)
+		{
+		case ';':
+		case ':':
+		case '(': case ')':
+		case '[': case ']':
+		case '{': case '}':
+		case '-': case '+':
+		case '*': case '/':
+		case '?':
+		case '!':
+		case ',':
+		case '=':
+		case '.':
+		case '<': case '>':
+			return true;
+		}
+		return false;
 	}
 
 	bool isSpaceOrNewLine(wchar_t in)
@@ -1079,8 +1128,8 @@ namespace util
 
 	bool skipSpacesAndLineEnd(const char* in, const char** out)
 	{
-		while (*in == ' ' || *in == '\t' || *in == '\r' || *in == '\n')
-			in++;
+		while (isSpaceOrNewLine(*in))
+			++in;
 
 		*out = in;
 		return *in != '\0';
@@ -1088,8 +1137,34 @@ namespace util
 
 	bool skipSpacesAndLineEnd(const wchar_t* in, const wchar_t** out)
 	{
-		while (*in == ' ' || *in == '\t' || *in == '\r' || *in == '\n')
-			in++;
+		while (isSpaceOrNewLine(*in))
+			++in;
+
+		*out = in;
+		return *in != '\0';
+	}
+
+	bool skipSpacesAndLineEnd(const char* in, const char** out, std::size_t numLines)
+	{
+		while (isSpaceOrNewLine(*in))
+		{
+			if (*in == '\n' || *in == '\v' || *in == '\f')
+				++numLines;
+			++in;
+		}
+
+		*out = in;
+		return *in != '\0';
+	}
+
+	bool skipSpacesAndLineEnd(const wchar_t* in, const wchar_t** out, std::size_t numLines)
+	{
+		while (isSpaceOrNewLine(*in))
+		{
+			if (*in == '\n' || *in == '\v' || *in == '\f')
+				++numLines;
+			++in;
+		}
 
 		*out = in;
 		return *in != '\0';

@@ -156,7 +156,7 @@ namespace util
 	EXPORT std::size_t strtoul8(const char* in, const char** out);
 	EXPORT std::size_t strtoul10(const char* in, const char** out);
 	EXPORT std::size_t strtoul16(const char* in, const char** out);
-	EXPORT std::size_t strtol10(const char* in, const char** out);
+	EXPORT std::intptr_t strtol10(const char* in, const char** out);
 	EXPORT std::size_t strtoul_cppstyle(const char* in, const char** out);
 	EXPORT std::uint64_t strtoul10_64(const char* in, const char** out, unsigned int* max_inout);
 	EXPORT std::size_t HexDigitToDecimal(char in);
@@ -180,6 +180,7 @@ namespace util
 	EXPORT bool isLineEnd(char in);
 	EXPORT bool isNumeric(char in);
 	EXPORT bool isSpaceOrNewLine(char in);
+	EXPORT bool isOperatorSymbol(char c);
 	EXPORT bool isEndOfStream(char* it, char* end);
 
 	EXPORT bool isHex(wchar_t in);
@@ -191,6 +192,7 @@ namespace util
 	EXPORT bool isLineEnd(wchar_t in);
 	EXPORT bool isNumeric(wchar_t in);
 	EXPORT bool isSpaceOrNewLine(wchar_t in);
+	EXPORT bool isOperatorSymbol(wchar_t c);
 	EXPORT bool isEndOfStream(wchar_t* it, wchar_t* end);
 
 	EXPORT bool skipSpaces(const char* in, const char** out);
@@ -198,8 +200,11 @@ namespace util
 	EXPORT char* skipSpaces(char* it, char* end, std::size_t& num);
 	EXPORT char* skipLine(char* it, char* end, std::size_t& num);
 	EXPORT char* skipSeparator(char* in);
+
 	EXPORT bool skipSpacesAndLineEnd(const char* in, const char** out);
 	EXPORT bool skipSpacesAndLineEnd(const wchar_t* in, const wchar_t** out);
+	EXPORT bool skipSpacesAndLineEnd(const char* in, const char** out, std::size_t numLines);
+	EXPORT bool skipSpacesAndLineEnd(const wchar_t* in, const wchar_t** out, std::size_t numLines);
 	EXPORT bool skipSpacesAndLineEnd(const char** inout);
 	EXPORT bool skipSpacesAndLineEnd(const wchar_t** inout);
 

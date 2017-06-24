@@ -499,13 +499,13 @@ AnimationProperty::findMotionSegment(int frame, const std::vector<std::size_t>& 
 
 static float BezierEval(const std::uint8_t* ip, float t) noexcept
 {
-	float xa = ip[0] / 256.0;
-	float xb = ip[2] / 256.0;
-	float ya = ip[1] / 256.0;
-	float yb = ip[3] / 256.0;
+	float xa = ip[0] / 256.0f;
+	float xb = ip[2] / 256.0f;
+	float ya = ip[1] / 256.0f;
+	float yb = ip[3] / 256.0f;
 
-	float min = 0;
-	float max = 1;
+	float min = 0.0f;
+	float max = 1.0f;
 
 	float ct = t;
 	for (;;)
@@ -519,7 +519,7 @@ static float BezierEval(const std::uint8_t* ip, float t) noexcept
 
 		float x3 = x21 + (x22 - x21) * ct;
 
-		if (std::fabs(x3 - t) < 0.0001)
+		if (std::fabs(x3 - t) < 0.0001f)
 		{
 			float y11 = ya * ct;
 			float y12 = ya + (yb - ya) * ct;

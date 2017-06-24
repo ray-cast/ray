@@ -217,6 +217,9 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 					}
 				}
 			}
+
+			static const char* succeededTips = "Resource loaded.";
+			this->showPopupMessage(_langs[UILang::Succeeded], succeededTips, std::hash<const char*>{}(succeededTips));
 		}
 		break;
 		default:
@@ -607,31 +610,46 @@ GuiViewComponent::showImportAssetBrowse() noexcept
 	if (_event.onImportIES || _event.onImportTexture || _event.onImportMaterial)
 	{
 		ray::util::string::value_type filepath[PATHLIMIT];
-		ray::util::string::value_type filepaths[PATHLIMIT];
+		ray::util::string::value_type filebuffer[PATHLIMIT];
 		std::memset(filepath, 0, sizeof(filepath));
-		std::memset(filepaths, 0, sizeof(filepaths));
+		std::memset(filebuffer, 0, sizeof(filebuffer));
 
-		if (!showFileOpenBrowse(filepaths, PATHLIMIT, g_SupportedFormats, true))
+		if (!showFileOpenBrowse(filebuffer, PATHLIMIT, g_SupportedFormats, true))
 			return;
 
-		auto length = ray::util::strlen(filepaths) + 1;
+		auto length = ray::util::strlen(filebuffer) + 1;
 		auto lengthForStream = length;
 
-		while (lengthForStream < PATHLIMIT && filepaths[lengthForStream])
+		std::vector<std::string> filepaths;
+
+		if (!filebuffer[lengthForStream] && length > 0)
+		{
+			ray::util::strncpy(filepath, filebuffer, length);
+			ray::util::toUnixPath(filepath, filepath, PATHLIMIT);
+			filepaths.emplace_back(filepath, lengthForStream);
+		}
+		else
+		{
+			while (lengthForStream < PATHLIMIT && filebuffer[lengthForStream])
+			{
+				ray::util::strncpy(filepath, filebuffer, length);
+				ray::util::strcat(filepath, "/");
+				ray::util::strcat(filepath, filebuffer + lengthForStream);
+				ray::util::toUnixPath(filepath, filepath, PATHLIMIT);
+				filepaths.push_back(filepath);
+
+				lengthForStream += ray::util::strlen(filebuffer + lengthForStream) + 1;
+			}
+		}
+
+		std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial };
+		std::function<bool(const char*, char*&)>* delegates[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial };
+
+		for (auto& it : filepaths)
 		{
 			ray::util::string::value_type name[PATHLIMIT];
-			if (ray::util::ext_name(filepaths + lengthForStream, name, sizeof(name)) == 0)
+			if (ray::util::ext_name(it.c_str(), name, sizeof(name)) == 0)
 				continue;
-
-			ray::util::strncpy(filepath, filepaths, length);
-			ray::util::strcat(filepath, "/");
-			ray::util::strcat(filepath, filepaths + lengthForStream);
-			ray::util::toUnixPath(filepath, filepath, PATHLIMIT);
-
-			lengthForStream += ray::util::strlen(filepaths + lengthForStream) + 1;
-
-			std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial };
-			std::function<bool(const char*, char*&)>* delegates[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial };
 
 			bool loaded = false;
 
@@ -646,7 +664,7 @@ GuiViewComponent::showImportAssetBrowse() noexcept
 						continue;
 
 					ray::util::string::pointer error = nullptr;
-					if (!(*delegates[i])(filepath, error))
+					if (!(*delegates[i])(it.c_str(), error))
 					{
 						if (error)
 							this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));

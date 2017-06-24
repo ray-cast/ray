@@ -935,7 +935,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (expression->type != HLSLBaseType::HLSLBaseType_Int)
+			if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_Int)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -965,7 +965,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (expression->type != HLSLBaseType::HLSLBaseType_Int)
+			if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_Int)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -1002,7 +1002,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (expression->type != HLSLBaseType::HLSLBaseType_Int)
+			if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_Int)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -1032,7 +1032,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (expression->type != HLSLBaseType::HLSLBaseType_Float)
+			if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_Float)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -1040,7 +1040,10 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 
 			if (std::strcmp(declaration->name, token_float[i]) == 0)
 			{
-				(*material)[token_float[i]]->uniform1f(expression->fValue[0]);
+				if (expression->type == HLSLBaseType::HLSLBaseType_Float)
+					(*material)[token_float[i]]->uniform1f(expression->fValue[0]);
+				else
+					(*material)[token_float[i]]->uniform1f(expression->iValue[0]);
 				break;
 			}
 
@@ -1073,8 +1076,12 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 			{
 				if (expression->type == HLSLBaseType::HLSLBaseType_Float)
 					(*material)[token_float2[i]]->uniform2f(expression->fValue[0], expression->fValue[0]);
-				else
+				else if (expression->type == HLSLBaseType::HLSLBaseType_Float2)
 					(*material)[token_float2[i]]->uniform2f(expression->fValue[0], expression->fValue[1]);
+				else if (expression->type == HLSLBaseType::HLSLBaseType_Int)
+					(*material)[token_float2[i]]->uniform2f(expression->iValue[0], expression->iValue[0]);
+				else if (expression->type == HLSLBaseType::HLSLBaseType_Int2)
+					(*material)[token_float2[i]]->uniform2f(expression->iValue[0], expression->iValue[1]);
 
 				break;
 			}
@@ -1097,8 +1104,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_Float3 &&
-				declaration->type.baseType != HLSLBaseType::HLSLBaseType_Float)
+			if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_Float3)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -1108,8 +1114,13 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 			{
 				if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Float)
 					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[0], expression->fValue[0]);
-				else
+				else if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Float3)
 					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[1], expression->fValue[2]);
+				else if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Int)
+					(*material)[token_float3[i]]->uniform3f(expression->iValue[0], expression->iValue[0], expression->iValue[0]);
+				else if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Int3)
+					(*material)[token_float3[i]]->uniform3f(expression->iValue[0], expression->iValue[1], expression->iValue[2]);
+
 				break;
 			}
 
@@ -1132,7 +1143,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 			while (statement)
 			{
 				auto declaration = dynamic_cast<HLSLDeclaration*>(statement);
-				auto expression = dynamic_cast<HLSLLiteralExpression*>(declaration->assignment);
+				auto expression = dynamic_cast<HLSLIdentifierExpression*>(declaration->assignment);
 
 				if (!declaration->assignment)
 				{
@@ -1149,7 +1160,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				if (std::strcmp(declaration->name, token_file[i]) == 0)
 				{
 					ray::GraphicsTexturePtr texture;
-					if (ray::ResManager::instance()->createTexture(ray::util::directory(fullpath) + expression->string, texture))
+					if (ray::ResManager::instance()->createTexture(ray::util::directory(fullpath) + expression->name, texture))
 						material->getParameter(token_file2[i])->uniformTexture(texture);
 
 					break;

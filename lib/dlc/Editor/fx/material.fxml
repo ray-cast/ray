@@ -414,7 +414,7 @@
 				material.occlusion = GetOcclusion(coord);
 				material.customA = 0;
 				material.customB = GetCustomB(coord);
-				material.lightModel = LIGHTINGMODEL_NORMAL;
+				material.lightModel = SHADINGMODELID_DEFAULT;
 
 				return EncodeGbuffer(material);
 			}
@@ -463,7 +463,7 @@
 				material.occlusion = GetOcclusion(coord);
 				material.customA = 0;
 				material.customB = GetCustomB(coord);
-				material.lightModel = LIGHTINGMODEL_NORMAL;
+				material.lightModel = SHADINGMODELID_DEFAULT;
 
 				material.albedo *= (1 - material.metalness);
 				material.specular = lerp(material.specular, max(0.02, material.albedo), material.metalness);

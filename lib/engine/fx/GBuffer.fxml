@@ -5,8 +5,15 @@
     <include name="sys:fx/lighting.fxml"/>
     <shader>
         <![CDATA[
-            #define LIGHTINGMODEL_NORMAL         0
-            #define LIGHTINGMODEL_TRANSMITTANCE  1
+            #define SHADINGMODELID_DEFAULT    0
+            #define SHADINGMODELID_SKIN       1
+            #define SHADINGMODELID_EMISSIVE   2
+            #define SHADINGMODELID_TOON       3
+            #define SHADINGMODELID_GLASS      4
+            #define SHADINGMODELID_CLOTH      5
+            #define SHADINGMODELID_CLEAR_COAT 6
+            #define SHADINGMODELID_SUBSURFACE 7
+            #define SHADINGMODELID_MASK       0xF
 
             #define MAX_FRACTIONAL_8_BIT        (255.0f / 256.0f)
             #define TWO_BITS_EXTRACTION_FACTOR  (3.0f + MAX_FRACTIONAL_8_BIT)
@@ -21,7 +28,7 @@
                 float smoothness;
                 float metalness;
                 float occlusion;
-                int lightModel;
+                uint lightModel;
             };
 
             struct GbufferParam
@@ -114,9 +121,14 @@
                 gbuffer.buffer3.xyz = EncodeYcbcr(material.specular);
                 gbuffer.buffer3.w = 0;
 
-                if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+                if (material.lightModel > SHADINGMODELID_DEFAULT && material.lightModel < SHADINGMODELID_MASK)
                 {
-                    material.customB = EncodeYcbcr(material.customB);
+                    if (material.lightModel != SHADINGMODELID_GLASS)
+                    {
+                        material.customB *= (1 - material.metalness);
+                    }
+
+                    material.customB = EncodeYcbcr(min(0.998, material.customB));
                     gbuffer.buffer3.yz = material.customB.gb;
                     gbuffer.buffer3.w = material.customB.r * MAX_FRACTIONAL_8_BIT;
                 }
@@ -147,7 +159,7 @@
                 material.metalness = 0;
                 material.customA = 0;
 
-                if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+                if (material.lightModel > SHADINGMODELID_DEFAULT)
                 {
                     material.specular = buffer3.xxx;
                     material.customB = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));

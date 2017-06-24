@@ -2320,11 +2320,9 @@ bool
 IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2& size, bool showLabel, bool selected, const float2& uv0, const float2& uv1, int frame_padding, const float4& bg_col, const float4& tint_col)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
-	bool label_clicked = false;
 	ImGui::BeginGroup();
 
 	bool chlick = imageButtonEx(texture, size, true, uv0, uv1, frame_padding, bg_col, tint_col);
-	label_clicked |= ImGui::IsItemClicked(InputButton::LEFT);
 
 	if (selected)
 	{
@@ -2350,7 +2348,7 @@ IMGUI::imageButtonAndLabel(const char* label, GuiTextureID texture, const float2
 
 	ImGui::EndGroup();
 
-	return chlick | label_clicked;
+	return chlick;
 }
 
 void

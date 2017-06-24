@@ -1207,9 +1207,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 				if (ray::Gui::imageButtonAndLabel(texture->name.c_str(), texture->preview.get(), imageSize, true, _selectedTextures[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 				{
 					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
-					{
-						_selectedTextures[i] = true;
-					}
+						_selectedTextures[i] ^= true;
 					else if (ray::Gui::isKeyDown(ray::InputKey::LeftShift))
 					{
 						_selectedTextures[i] = true;
@@ -1238,12 +1236,11 @@ GuiViewComponent::showAssetsWindow() noexcept
 
 				if (!ray::Gui::isKeyDown(ray::InputKey::LeftControl) && !ray::Gui::isKeyDown(ray::InputKey::LeftShift))
 				{
-					if (ray::Gui::isMouseDown(ray::InputButton::RIGHT) ||
-						ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
-					{
+					if (!ray::Gui::isKeyDown(ray::InputKey::LeftShift))
 						_selectedShift = std::numeric_limits<std::size_t>::max();
+
+					if (ray::Gui::isMouseDown(ray::InputButton::RIGHT) || ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
 						std::memset(_selectedTextures.data(), false, _selectedTextures.size());
-					}
 				}
 
 				ray::Gui::sameLine(0, _style.ItemSpacing.y);
@@ -1296,9 +1293,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 				if (ray::Gui::imageButtonAndLabel(material->name.c_str(), material->preview.get(), _assetImageSize, true, _selectedMaterials[i], ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x))
 				{
 					if (ray::Gui::isKeyDown(ray::InputKey::LeftControl))
-					{
-						_selectedMaterials[i] = true;
-					}
+						_selectedMaterials[i] ^= true;
 					else if (ray::Gui::isKeyDown(ray::InputKey::LeftShift))
 					{
 						_selectedMaterials[i] = true;
@@ -1330,12 +1325,11 @@ GuiViewComponent::showMaterialsWindow() noexcept
 
 			if (!ray::Gui::isKeyDown(ray::InputKey::LeftControl) && !ray::Gui::isKeyDown(ray::InputKey::LeftShift))
 			{
-				if (ray::Gui::isMouseDown(ray::InputButton::RIGHT) ||
-					ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
-				{
+				if (!ray::Gui::isKeyDown(ray::InputKey::LeftShift))
 					_selectedShift = std::numeric_limits<std::size_t>::max();
+
+				if (ray::Gui::isMouseDown(ray::InputButton::RIGHT) || ray::Gui::isMouseDown(ray::InputButton::MIDDLE))
 					std::memset(_selectedMaterials.data(), false, _selectedMaterials.size());
-				}
 			}
 		}
 

@@ -51,7 +51,6 @@
 
 #include "ies_loader.h"
 #include "first_person_camera.h"
-#include "hlslparser/Engine/Allocator.h"
 #include "hlslparser/HLSLParser.h"
 
 #include <ray/utf8.h>
@@ -864,6 +863,22 @@ GuiControllerComponent::onImportTexture(ray::util::string::const_pointer path, r
 bool
 GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpath, ray::util::string::pointer& error) noexcept
 {
+	static const char* token_from[] = { "ALBEDO_MAP_FROM", "ALBEDO_SUB_MAP_FROM", "NORMAL_MAP_FROM", "NORMAL_SUB_MAP_FROM", "SMOOTHNESS_MAP_FROM", "METALNESS_MAP_FROM", "SPECULAR_MAP_FROM", "OCCLUSION_MAP_FROM", "PARALLAX_MAP_FROM", "EMISSIVE_MAP_FROM", "CUSTOM_A_MAP_FROM", "CUSTOM_B_MAP_FROM" };
+	static const char* token_from2[] = { "albedoMapFrom","albedoSubMapFrom","normalMapFrom","normalSubMapFrom","smoothnessMapFrom","metalnessMapFrom","specularMapFrom","occlusionMapFrom","parallaxMapFrom","emissiveMapFrom","customAMapFrom","customAMapFrom" };
+
+	static const char* token_file[] = { "ALBEDO_MAP_FILE", "ALPHA_MAP_FILE", "NORMAL_MAP_FILE", "SMOOTHNESS_MAP_FILE", "METALNESS_MAP_FILE", "MELANIN_MAP_FILE", "EMISSIVE_MAP_FILE", "PARALLAX_MAP_FILE", "CUSTOM_A_MAP_FILE", "CUSTOM_B_MAP_FILE" };
+	static const char* token_file2[] = { "albedoMap", "albedoSubMap", "normalMap", "normalSubMap", "smoothnessMap", "metalnessMap", "specularMap", "occlusionMap", "parallaxMap", "emissiveMap", "customAMap", "customBMap" };
+
+	static const char* token_flip[] = { "ALBEDO_MAP_UV_FLIP", "ALBEDO_SUB_MAP_UV_FLIP", "NORMAL_MAP_UV_FLIP", "NORMAL_SUB_MAP_UV_FLIP", "SMOOTHNESS_MAP_UV_FLIP", "METALNESS_MAP_UV_FLIP", "SPECULAR_MAP_UV_FLIP", "OCCLUSION_MAP_UV_FLIP", "PARALLAX_MAP_UV_FLIP", "EMISSIVE_MAP_UV_FLIP", "CUSTOM_A_MAP_UV_FLIP", "CUSTOM_B_MAP_UV_FLIP" };
+	static const char* token_flip2[] = { "albedoMapFlip", "albedoSubMapFlip", "normalMapFlip", "normalSubMapFlip", "smoothnessMapFlip", "metalnessMapFlip", "specularMapFlip", "occlusionMapFlip", "parallaxMapFlip", "emissiveMapFlip", "customAMapFlip", "customBMapFlip" };
+
+	static const char* token_swizzle[] = { "SMOOTHNESS_MAP_SWIZZLE", "METALNESS_MAP_SWIZZLE", "SPECULAR_MAP_SWIZZLE", "OCCLUSION_MAP_SWIZZLE", "PARALLAX_MAP_SWIZZLE", "CUSTOM_A_MAP_SWIZZ" };
+	static const char* token_swizzle2[] = { "smoothnessMapSwizzle", "metalnessMapSwizzle", "specularMapSwizzle", "occlusionMapSwizzle", "parallaxMapSwizzle", "customAMapSwizzle" };
+
+	static const char* token_float[] = { "normalMapScale", "smoothness", "metalness", "occlusion", "customA" };
+	static const char* token_float2[] = { "albedoMapLoopNum","albedoSubMapLoopNum", "normalMapLoopNum","normalSubMapLoopNum","smoothnessMapLoopNum","metalnessMapLoopNum","specularMapLoopNum","occlusionMapLoopNum","parallaxMapLoopNum","emissiveMapLoopNum","customAMapLoopNum","customBMapLoopNum" };
+	static const char* token_float3[] = { "albedo", "albedoSub", "specular", "emissive", "customB" };
+
 	char drive[MAX_PATH];
 	char dir[PATHLIMIT];
 	char filename[PATHLIMIT];
@@ -890,9 +905,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 		return false;
 	}
 
-	M4::Allocator allocator;
-	M4::HLSLParser parser(&allocator, fullpath, buffer.data(), buffer.size());
-	M4::HLSLTree tree(&allocator);
+	HLSLParser parser(fullpath, buffer.data(), buffer.size());
+	HLSLTree tree;
 
 	if (!parser.Parse(&tree))
 	{
@@ -906,29 +920,13 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 
 	material->setName(filename);
 
-	static const char* token_from[] = { "ALBEDO_MAP_FROM", "ALBEDO_SUB_MAP_FROM", "NORMAL_MAP_FROM", "NORMAL_SUB_MAP_FROM", "SMOOTHNESS_MAP_FROM", "METALNESS_MAP_FROM", "SPECULAR_MAP_FROM", "OCCLUSION_MAP_FROM", "PARALLAX_MAP_FROM", "EMISSIVE_MAP_FROM", "CUSTOM_A_MAP_FROM", "CUSTOM_B_MAP_FROM" };
-	static const char* token_from2[] = { "albedoMapFrom","albedoSubMapFrom","normalMapFrom","normalSubMapFrom","smoothnessMapFrom","metalnessMapFrom","specularMapFrom","occlusionMapFrom","parallaxMapFrom","emissiveMapFrom","customAMapFrom","customAMapFrom" };
-
-	static const char* token_file[] = { "ALBEDO_MAP_FILE", "ALPHA_MAP_FILE", "NORMAL_MAP_FILE", "SMOOTHNESS_MAP_FILE", "METALNESS_MAP_FILE", "MELANIN_MAP_FILE", "EMISSIVE_MAP_FILE", "PARALLAX_MAP_FILE", "CUSTOM_A_MAP_FILE", "CUSTOM_B_MAP_FILE" };
-	static const char* token_file2[] = { "albedoMap", "albedoSubMap", "normalMap", "normalSubMap", "smoothnessMap", "metalnessMap", "specularMap", "occlusionMap", "parallaxMap", "emissiveMap", "customAMap", "customBMap" };
-
-	static const char* token_flip[] = { "ALBEDO_MAP_UV_FLIP", "ALBEDO_SUB_MAP_UV_FLIP", "NORMAL_MAP_UV_FLIP", "NORMAL_SUB_MAP_UV_FLIP", "SMOOTHNESS_MAP_UV_FLIP", "METALNESS_MAP_UV_FLIP", "SPECULAR_MAP_UV_FLIP", "OCCLUSION_MAP_UV_FLIP", "PARALLAX_MAP_UV_FLIP", "EMISSIVE_MAP_UV_FLIP", "CUSTOM_A_MAP_UV_FLIP", "CUSTOM_B_MAP_UV_FLIP" };
-	static const char* token_flip2[] = { "albedoMapFlip", "albedoSubMapFlip", "normalMapFlip", "normalSubMapFlip", "smoothnessMapFlip", "metalnessMapFlip", "specularMapFlip", "occlusionMapFlip", "parallaxMapFlip", "emissiveMapFlip", "customAMapFlip", "customBMapFlip" };
-
-	static const char* token_swizzle[] = { "SMOOTHNESS_MAP_SWIZZLE", "METALNESS_MAP_SWIZZLE", "SPECULAR_MAP_SWIZZLE", "OCCLUSION_MAP_SWIZZLE", "PARALLAX_MAP_SWIZZLE", "CUSTOM_A_MAP_SWIZZ" };
-	static const char* token_swizzle2[] = { "smoothnessMapSwizzle", "metalnessMapSwizzle", "specularMapSwizzle", "occlusionMapSwizzle", "parallaxMapSwizzle", "customAMapSwizzle" };
-
-	static const char* token_float[] = { "normalMapScale", "smoothness", "metalness", "occlusion", "customA" };
-	static const char* token_float2[] = { "albedoMapLoopNum","albedoSubMapLoopNum", "normalMapLoopNum","normalSubMapLoopNum","smoothnessMapLoopNum","metalnessMapLoopNum","specularMapLoopNum","occlusionMapLoopNum","parallaxMapLoopNum","emissiveMapLoopNum","customAMapLoopNum","customBMapLoopNum" };
-	static const char* token_float3[] = { "albedo", "albedoSub", "specular", "emissive", "customB" };
-
 	for (std::size_t i = 0; i < sizeof(token_from) / sizeof(token_from[0]); i++)
 	{
 		auto statement = tree.GetRoot()->statement;
 		while (statement)
 		{
-			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
-			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+			auto declaration = dynamic_cast<HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<HLSLLiteralExpression*>(declaration->assignment);
 
 			if (!declaration->assignment)
 			{
@@ -936,7 +934,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (expression->type != M4::HLSLBaseType::HLSLBaseType_Int)
+			if (expression->type != HLSLBaseType::HLSLBaseType_Int)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -957,8 +955,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 		auto statement = tree.GetRoot()->statement;
 		while (statement)
 		{
-			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
-			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+			auto declaration = dynamic_cast<HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<HLSLLiteralExpression*>(declaration->assignment);
 
 			if (!declaration->assignment)
 			{
@@ -966,7 +964,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (expression->type != M4::HLSLBaseType::HLSLBaseType_Int)
+			if (expression->type != HLSLBaseType::HLSLBaseType_Int)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -994,8 +992,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 		auto statement = tree.GetRoot()->statement;
 		while (statement)
 		{
-			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
-			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+			auto declaration = dynamic_cast<HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<HLSLLiteralExpression*>(declaration->assignment);
 
 			if (!declaration->assignment)
 			{
@@ -1003,7 +1001,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (expression->type != M4::HLSLBaseType::HLSLBaseType_Int)
+			if (expression->type != HLSLBaseType::HLSLBaseType_Int)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -1024,8 +1022,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 		auto statement = tree.GetRoot()->statement;
 		while (statement)
 		{
-			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
-			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+			auto declaration = dynamic_cast<HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<HLSLLiteralExpression*>(declaration->assignment);
 
 			if (!declaration->assignment)
 			{
@@ -1033,7 +1031,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (expression->type != M4::HLSLBaseType::HLSLBaseType_Float)
+			if (expression->type != HLSLBaseType::HLSLBaseType_Float)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -1054,8 +1052,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 		auto statement = tree.GetRoot()->statement;
 		while (statement)
 		{
-			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
-			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+			auto declaration = dynamic_cast<HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<HLSLLiteralExpression*>(declaration->assignment);
 
 			if (!declaration->assignment)
 			{
@@ -1063,8 +1061,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float &&
-				declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float2)
+			if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_Float &&
+				declaration->type.baseType != HLSLBaseType::HLSLBaseType_Float2)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -1072,7 +1070,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 
 			if (std::strcmp(declaration->name, token_float2[i]) == 0)
 			{
-				if (expression->type == M4::HLSLBaseType::HLSLBaseType_Float)
+				if (expression->type == HLSLBaseType::HLSLBaseType_Float)
 					(*material)[token_float2[i]]->uniform2f(expression->fValue[0], expression->fValue[0]);
 				else
 					(*material)[token_float2[i]]->uniform2f(expression->fValue[0], expression->fValue[1]);
@@ -1089,8 +1087,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 		auto statement = tree.GetRoot()->statement;
 		while (statement)
 		{
-			auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
-			auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+			auto declaration = dynamic_cast<HLSLDeclaration*>(statement);
+			auto expression = dynamic_cast<HLSLLiteralExpression*>(declaration->assignment);
 
 			if (!declaration->assignment)
 			{
@@ -1098,8 +1096,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 				continue;
 			}
 
-			if (declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float3 &&
-				declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float)
+			if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_Float3 &&
+				declaration->type.baseType != HLSLBaseType::HLSLBaseType_Float)
 			{
 				statement = statement->nextStatement;
 				continue;
@@ -1107,7 +1105,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 
 			if (std::strcmp(declaration->name, token_float3[i]) == 0)
 			{
-				if (declaration->type.baseType == M4::HLSLBaseType::HLSLBaseType_Float)
+				if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Float)
 					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[0], expression->fValue[0]);
 				else
 					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[1], expression->fValue[2]);
@@ -1132,8 +1130,8 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 			auto statement = tree.GetRoot()->statement;
 			while (statement)
 			{
-				auto declaration = dynamic_cast<M4::HLSLDeclaration*>(statement);
-				auto expression = dynamic_cast<M4::HLSLLiteralExpression*>(declaration->assignment);
+				auto declaration = dynamic_cast<HLSLDeclaration*>(statement);
+				auto expression = dynamic_cast<HLSLLiteralExpression*>(declaration->assignment);
 
 				if (!declaration->assignment)
 				{
@@ -1141,7 +1139,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 					continue;
 				}
 
-				if (declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_UserDefined)
+				if (declaration->type.baseType != HLSLBaseType::HLSLBaseType_UserDefined)
 				{
 					statement = statement->nextStatement;
 					continue;

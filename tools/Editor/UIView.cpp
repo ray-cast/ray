@@ -41,7 +41,6 @@
 #include <ray/input.h>
 #include <ray/input_feature.h>
 #include <ray/game_server.h>
-#include <ray/game_object_manager.h>
 #include <ray/mesh_render_component.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
@@ -65,6 +64,21 @@ const char* TEXTURE_SMOOTHNESS_TYPE[] = { "Smoothness", "Roughness", "Roughness"
 const char* TEXTURE_NORMAL_TYPE[] = { "RGB tangent space", "RG tangent space", "PerturbNormalLQ", "PerturbNormalHQ" };
 const char* TEXTURE_SPECULAR_TYPE[] = { "Specular color", "Specular color", "Specular gray", "Specular gray" };
 const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second UV", "sRGB with second UV" };
+
+const char g_SupportedFormats[] =
+"All Formats(*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr,*.fx,*.ies)\0"\
+"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;*.fx;*.ies;\0"\
+"All Images (*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr)\0"\
+"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;\0"\
+"All Materials (*.fx)\0"\
+"*.fx;\0"\
+"All IES Profiles (*.ies)\0"\
+"*.ies;\0";
+
+std::vector<const char*> g_SupportedIES = { "ies" };
+std::vector<const char*> g_SupportedModel = { "pmx" };
+std::vector<const char*> g_SupportedImages = { "bmp", "png", "jpg", "tga", "dds", "hdr" };
+std::vector<const char*> g_SupportedMaterial = { "fx" };
 
 GuiViewComponent::GuiViewComponent() noexcept
 	: _selectedSubset(std::numeric_limits<std::size_t>::max())
@@ -163,65 +177,34 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 			for (std::uint32_t i = 0; i < event.drop.count; i++)
 			{
 				char name[MAX_PATH];
-				if (ray::util::ext_name(event.drop.files[i], name, sizeof(name)) > 0)
-				{
-					if (ray::util::strnicmp(name, "bmp", 3) == 0 ||
-						ray::util::strnicmp(name, "png", 3) == 0 ||
-						ray::util::strnicmp(name, "jpg", 3) == 0 ||
-						ray::util::strnicmp(name, "tga", 3) == 0 ||
-						ray::util::strnicmp(name, "dds", 3) == 0 ||
-						ray::util::strnicmp(name, "hdr", 3) == 0)
-					{
-						if (_event.onImportTexture)
-						{
-							ray::util::string::pointer error = nullptr;
-							if (!_event.onImportTexture(event.drop.files[i], error))
-							{
-								if (error)
-									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-								break;
-							}
-						}
-					}
-					else if (ray::util::strnicmp(name, "ies", 3) == 0)
-					{
-						if (_event.onImportIES)
-						{
-							ray::util::string::pointer error = nullptr;
-							if (!_event.onImportIES(event.drop.files[i], error))
-							{
-								if (error)
-									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-								break;
-							}
-						}
-					}
-					else if (ray::util::strnicmp(name, "fx", 2) == 0)
-					{
-						if (_event.onImportMaterial)
-						{
-							ray::util::string::pointer error = nullptr;
-							if (!_event.onImportMaterial(event.drop.files[i], error))
-							{
-								if (error)
-									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-								break;
-							}
-						}
-					}
-					else if (ray::util::strnicmp(name, "pmx", 3) == 0)
-					{
-						if (_event.onImportModel)
-						{
-							ray::util::string::pointer error = nullptr;
-							if (!_event.onImportModel(event.drop.files[i], error))
-							{
-								if (error)
-									this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-							}
+				if (ray::util::ext_name(event.drop.files[i], name, sizeof(name)) == 0)
+					continue;
 
-							_selectedObject = nullptr;
+				std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial, g_SupportedModel };
+
+				std::function<bool(const char*, char*&)>* delegate[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial, &_event.onImportModel };
+
+				bool _loaded = false;
+
+				for (std::size_t j = 0; j < sizeof(delegate) / sizeof(delegate[0]) && !_loaded; j++)
+				{
+					for (auto format : supportedImport[j])
+					{
+						if (ray::util::strcmp(name, format) != 0)
+							continue;
+
+						if (!*delegate[j])
+							continue;
+
+						ray::util::string::pointer error = nullptr;
+						if (!(*delegate[j])(event.drop.files[i], error))
+						{
+							if (error)
+								this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 						}
+
+						_loaded = true;
+						break;
 					}
 				}
 			}
@@ -253,7 +236,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 						float y;
 						input->getMousePos(x, y);
 
-						this->onModelPicker(x, y);
+						this->startModelPicker(x, y);
 					}
 
 					if (input->isButtonDown(ray::InputButton::Code::MOUSEWHEEL))
@@ -346,35 +329,6 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 }
 
 void
-GuiViewComponent::onModelPicker(float x, float y) noexcept
-{
-	assert(_event.onSeletedMesh);
-
-	auto cameraComponent = _cameraComponent.lock();
-	if (!cameraComponent)
-		_cameraComponent = cameraComponent = this->getGameObject()->getComponentInChildren<ray::CameraComponent>();
-
-	if (!cameraComponent)
-		return;
-
-	x -= _viewport.x;
-	y -= _viewport.y;
-	x = (x / _viewport.z) * ray::Gui::getDisplaySize().x;
-	y = (y / _viewport.w) * ray::Gui::getDisplaySize().y;
-
-	auto start = cameraComponent->getGameObject()->getTranslate();
-	auto end = cameraComponent->screenToWorld(ray::float3(x, y, 1));
-
-	ray::RaycastHit hit;
-	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit, [](ray::GameObject* object) { return object->getName() != "wireframe"; }))
-	{
-		_selectedObject = hit.object;
-		_selectedSubset = hit.mesh;
-		_event.onSeletedMesh(hit.object, hit.mesh);
-	}
-}
-
-void
 GuiViewComponent::showMainMenu() noexcept
 {
 	if (!_isShowMainMenu)
@@ -443,7 +397,7 @@ GuiViewComponent::showMainMenu() noexcept
 }
 
 bool
-GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept
+GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name, bool multiSelect) noexcept
 {
 	assert(path && max_length > 0 && ext_name);
 
@@ -460,6 +414,7 @@ GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, std::uint3
 	ofn.lpstrInitialDir = 0;
 	ofn.lpstrTitle = _langs[UILang::ChooseFile];
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.Flags |= multiSelect ? OFN_ALLOWMULTISELECT : 0;
 
 	if (::GetOpenFileName(&ofn))
 		return true;
@@ -625,67 +580,61 @@ GuiViewComponent::showImportModelBrowse() noexcept
 void
 GuiViewComponent::showImportAssetBrowse() noexcept
 {
-	static const char formats[] =
-		"All Formats(*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr,*.fx,*.ies)\0"\
-		"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;*.fx;*.ies;\0"\
-		"All Images (*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr)\0"\
-		"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;\0"\
-		"All Materials (*.fx)\0"\
-		"*.fx;\0"\
-		"All IES Profiles (*.ies)\0"\
-		"*.ies;\0";
-
-	if (!_event.onImportTexture)
+	if (!_event.onImportIES && !_event.onImportTexture && !_event.onImportMaterial)
+	{
+		static const char* errorTips = "There are no anything callback function that can be used to import assets";
+		this->showPopupMessage(_langs[UILang::Error], errorTips, std::hash<const char*>{}(errorTips));
 		return;
+	}
 
 	ray::util::string::value_type filepath[PATHLIMIT];
+	ray::util::string::value_type filepaths[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
+	std::memset(filepaths, 0, sizeof(filepaths));
 
-	if (!showFileOpenBrowse(filepath, PATHLIMIT, formats))
+	if (!showFileOpenBrowse(filepaths, PATHLIMIT, g_SupportedFormats, true))
 		return;
 
-	ray::util::string::value_type name[PATHLIMIT];
-	if (ray::util::ext_name(filepath, name, sizeof(name)) > 0)
+	auto length = ray::util::strlen(filepaths) + 1;
+	auto lengthForStream = length;
+
+	while (lengthForStream < PATHLIMIT && filepaths[lengthForStream])
 	{
-		if (ray::util::strnicmp(name, "bmp", 3) == 0 ||
-			ray::util::strnicmp(name, "png", 3) == 0 ||
-			ray::util::strnicmp(name, "jpg", 3) == 0 ||
-			ray::util::strnicmp(name, "tga", 3) == 0 ||
-			ray::util::strnicmp(name, "dds", 3) == 0 ||
-			ray::util::strnicmp(name, "hdr", 3) == 0)
+		ray::util::string::value_type name[PATHLIMIT];
+		if (ray::util::ext_name(filepaths + lengthForStream, name, sizeof(name)) == 0)
+			continue;
+
+		ray::util::strncpy(filepath, filepaths, length);
+		ray::util::strcat(filepath, "/");
+		ray::util::strcat(filepath, filepaths + lengthForStream);
+		ray::util::toUnixPath(filepath, filepath, PATHLIMIT);
+
+		lengthForStream += ray::util::strlen(filepaths + lengthForStream) + 1;
+
+		std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial };
+		std::function<bool(const char*, char*&)>* delegates[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial };
+
+		bool loaded = false;
+
+		for (std::size_t i = 0; i < sizeof(delegates) / sizeof(delegates[0]) && !loaded; i++)
 		{
-			if (_event.onImportTexture)
+			for (auto format : supportedImport[i])
 			{
+				if (ray::util::strcmp(name, format) != 0)
+					continue;
+
+				if (!*delegates[i])
+					continue;
+
 				ray::util::string::pointer error = nullptr;
-				if (!_event.onImportTexture(filepath, error))
+				if (!(*delegates[i])(filepath, error))
 				{
 					if (error)
 						this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
 				}
-			}
-		}
-		else if (ray::util::strnicmp(name, "ies", 3) == 0)
-		{
-			if (_event.onImportIES)
-			{
-				ray::util::string::pointer error = nullptr;
-				if (!_event.onImportIES(filepath, error))
-				{
-					if (error)
-						this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-				}
-			}
-		}
-		else if (ray::util::strnicmp(name, "fx", 2) == 0)
-		{
-			if (_event.onImportMaterial)
-			{
-				ray::util::string::pointer error = nullptr;
-				if (!_event.onImportMaterial(filepath, error))
-				{
-					if (error)
-						this->showPopupMessage(_langs[UILang::Error], error, std::hash<const char*>{}(error));
-				}
+
+				loaded = true;
+				break;
 			}
 		}
 	}
@@ -2379,6 +2328,24 @@ GuiViewComponent::startLightMass() noexcept
 
 	_lightMassType = LightMassType::LightBaking;
 	_isShowProcessMessageFirst = true;
+}
+
+void
+GuiViewComponent::startModelPicker(float x, float y) noexcept
+{
+	if (_event.onModelPicker)
+	{
+		x -= _viewport.x;
+		y -= _viewport.y;
+		x = (x / _viewport.z) * ray::Gui::getDisplaySize().x;
+		y = (y / _viewport.w) * ray::Gui::getDisplaySize().y;
+
+		if (!_event.onModelPicker(x, y, _selectedObject, _selectedSubset))
+		{
+			_selectedObject = nullptr;
+			_selectedSubset = std::numeric_limits<std::size_t>::max();
+		}
+	}
 }
 
 void

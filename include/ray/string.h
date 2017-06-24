@@ -98,12 +98,22 @@ namespace util
 	EXPORT wchar_t* fullpath(wchar_t * out, const wchar_t * in, std::size_t size);
 #endif
 
-	EXPORT int stricmp(const std::string& a, const std::string& b);
-	EXPORT int stricmp(const std::wstring& a, const std::wstring& b);
+	EXPORT int strcmp(const char *s1, const char *s2);
+	EXPORT int strcmp(const wchar_t *s1, const wchar_t *s2);
+	EXPORT int strcmp(const std::string& a, const std::string& b);
+	EXPORT int strcmp(const std::wstring& a, const std::wstring& b);
+
 	EXPORT int stricmp(const char *s1, const char *s2);
 	EXPORT int stricmp(const wchar_t *s1, const wchar_t *s2);
+	EXPORT int stricmp(const std::string& a, const std::string& b);
+	EXPORT int stricmp(const std::wstring& a, const std::wstring& b);
 	EXPORT int strnicmp(const char *s1, const char *s2, std::size_t n);
 	EXPORT int strnicmp(const wchar_t *s1, const wchar_t *s2, std::size_t n);
+
+	EXPORT char* strcat(char *s1, const char *s2);
+	EXPORT char* strcat(std::string& a, const std::string& b);
+	EXPORT wchar_t* strcat(wchar_t *s1, const wchar_t *s2);
+	EXPORT wchar_t* strcat(std::wstring& a, const std::wstring& b);
 
 	EXPORT char* strstr(char* dest, const char* source);
 	EXPORT char* strcpy(char* dest, const char* source);

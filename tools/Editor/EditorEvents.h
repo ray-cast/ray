@@ -66,6 +66,8 @@ struct EditorEvents
 	std::function<bool(const ray::GameObject*)> onSeletedLightProbe;
 	std::function<bool(const ray::GameObject*, std::size_t)> onSeletedMesh;
 
+	std::function<bool(float x, float y, ray::GameObject*&, std::size_t& subset)> onModelPicker;
+
 	std::function<bool(const ray::GameObject*, std::size_t subset)> onTransformObject;
 
 	std::function<void(const ray::float4&, bool)> onMouseHoveringCamera;
@@ -83,6 +85,8 @@ struct EditorEvents
 	std::function<bool(ray::util::string::const_pointer, std::size_t, ray::util::string::pointer&)> onExportIES;
 	std::function<bool(ray::util::string::const_pointer, std::size_t, ray::util::string::pointer&)> onExportTexture;
 	std::function<bool(ray::util::string::const_pointer, std::size_t, ray::util::string::pointer&)> onExportMaterial;
+
+	std::function<void(ray::util::string::pointer&, va_list)> onErrorMessage;
 
 	std::function<bool(const EditorAssetItem&)> onUpdateMaterial;
 };

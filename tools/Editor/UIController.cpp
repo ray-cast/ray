@@ -67,7 +67,9 @@
 
 #include <ray/input.h>
 #include <ray/input_feature.h>
+
 #include <ray/game_server.h>
+#include <ray/game_object_manager.h>
 
 #include <ray/res_manager.h>
 #include <ray/material.h>
@@ -669,6 +671,8 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 
 		delegate.onUpdateMaterial = std::bind(&GuiControllerComponent::onUpdateMaterial, this, std::placeholders::_1);
 
+		delegate.onModelPicker = std::bind(&GuiControllerComponent::onModelPicker, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+
 		view->setEditorEvents(delegate);
 	}
 }
@@ -749,6 +753,25 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 	}
 	break;
 	}
+}
+
+bool
+GuiControllerComponent::onModelPicker(float x, float y, ray::GameObject*& _selectedObject, std::size_t& _selectedSubset) noexcept
+{
+	auto cameraComponent = _cameras.front()->getComponent<ray::CameraComponent>();
+
+	const auto& start = cameraComponent->getGameObject()->getTranslate();
+	auto end = cameraComponent->screenToWorld(ray::float3(x, y, 1));
+
+	ray::RaycastHit hit;
+	if (ray::GameObjectManager::instance()->raycastHit(start, end, hit, [](ray::GameObject* object) { return object->getName() != "wireframe"; }))
+	{
+		_selectedObject = hit.object;
+		_selectedSubset = hit.mesh;
+		return this->onSeletedMesh(hit.object, hit.mesh);
+	}
+
+	return false;
 }
 
 bool

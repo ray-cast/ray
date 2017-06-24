@@ -73,6 +73,8 @@ private:
 	void onActivate() except;
 	void onMessage(const ray::MessagePtr& message) except;
 
+	bool onModelPicker(float x, float y, ray::GameObject*&, std::size_t& subset) noexcept;
+
 	bool onImportIES(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onImportTexture(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;
 	bool onImportMaterial(ray::util::string::const_pointer path, ray::util::string::pointer& error) noexcept;

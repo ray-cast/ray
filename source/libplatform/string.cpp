@@ -142,6 +142,28 @@ namespace util
 		return ::wcslen(str);
 	}
 
+	int strcmp(const char *s1, const char *s2)
+	{
+		return ::strcmp(s1, s2);
+	}
+
+	int strcmp(const wchar_t *s1, const wchar_t *s2)
+	{
+		return ::wcscmp(s1, s2);
+	}
+
+	int strcmp(const std::string& a, const std::string& b)
+	{
+		int i = (int)b.length() - (int)a.length();
+		return (i > 0 ? i : strcmp(a.c_str(), b.c_str()));
+	}
+
+	int strcmp(const std::wstring& a, const std::wstring& b)
+	{
+		int i = (int)b.length() - (int)a.length();
+		return (i > 0 ? i : strcmp(a.c_str(), b.c_str()));
+	}
+
 	int strncmp(const char* s1, const char* s2, std::size_t cnt)
 	{
 		return ::strncmp(s1, s2, cnt);
@@ -155,13 +177,13 @@ namespace util
 	int stricmp(const std::string& a, const std::string& b)
 	{
 		int i = (int)b.length() - (int)a.length();
-		return (i ? i : stricmp(a.c_str(), b.c_str()));
+		return (i > 0 ? i : stricmp(a.c_str(), b.c_str()));
 	}
 
 	int stricmp(const std::wstring& a, const std::wstring& b)
 	{
 		int i = (int)b.length() - (int)a.length();
-		return (i ? i : stricmp(a.c_str(), b.c_str()));
+		return (i > 0 ? i : stricmp(a.c_str(), b.c_str()));
 	}
 
 	int stricmp(const char *s1, const char *s2)
@@ -256,6 +278,28 @@ namespace util
 
 		return c1 - c2;
 #endif
+	}
+
+	char* strcat(char *s1, const char *s2)
+	{
+		return std::strcat(s1, s2);
+	}
+
+	wchar_t* strcat(wchar_t *s1, const wchar_t *s2)
+	{
+		return std::wcscat(s1, s2);
+	}
+
+	char* strcat(std::string& a, const std::string& b)
+	{
+		a += b;
+		return a.data();
+	}
+
+	wchar_t* strcat(std::wstring& a, const std::wstring& b)
+	{
+		a += b;
+		return a.data();
 	}
 
 	template <typename char_type, typename value_type>

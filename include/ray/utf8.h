@@ -37,15 +37,18 @@
 #ifndef _H_UTF8_H_
 #define _H_UTF8_H_
 
-#include <ray/platform.h>
+#include <ray/string.h>
 
 _NAME_BEGIN
 
-EXPORT std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::size_t size);
-EXPORT std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data, std::size_t size);
+EXPORT std::size_t utf8_to_gbk(char* dest, std::size_t maxLength, const char* data, std::size_t size);
 
-EXPORT bool mbs2wCs(const char* pszSrc, std::size_t max_length, wchar_t* dest, std::size_t multiByteStr);
-EXPORT bool wcs2mbs(const wchar_t * unicode, std::size_t multiByteStr, char* szUtf8, std::size_t max_length);
+EXPORT std::size_t utf8_to_utf16(const char* src, wchar_t* dest, std::size_t size = PATHLIMIT);
+EXPORT std::size_t utf8_to_utf16(const char* src, std::size_t size, wchar_t* dest, std::size_t maxLength);
+EXPORT std::size_t utf16_to_utf8(const wchar_t * unicode, std::size_t multiByteStr, char* szUtf8, std::size_t max_length);
+
+EXPORT std::size_t acp_to_utf16(const char* src, std::size_t multiByteStr, wchar_t* dest, std::size_t max_length);
+EXPORT std::size_t utf16_to_acp(const wchar_t* src, std::size_t max_length, char* dest, std::size_t multiByteStr);
 
 _NAME_END
 

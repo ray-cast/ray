@@ -1210,13 +1210,13 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 		if (model->description.japanModelLength)
 		{
 			char name[MAX_PATH];
-			if (ray::wcs2mbs(model->description.japanModelName.data(), model->description.japanModelLength, name, MAX_PATH))
+			if (ray::utf16_to_utf8(model->description.japanModelName.data(), model->description.japanModelLength, name, MAX_PATH))
 				gameObject->setName(name);
 		}
 		else if (model->description.englishModelLength)
 		{
 			char name[MAX_PATH];
-			if (ray::wcs2mbs(model->description.englishModelName.data(), model->description.englishModelLength, name, MAX_PATH))
+			if (ray::utf16_to_utf8(model->description.englishModelName.data(), model->description.englishModelLength, name, MAX_PATH))
 				gameObject->setName(name);
 		}
 
@@ -1287,7 +1287,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 				auto material = materialTemp->clone();
 
 				char name[MAX_PATH];
-				if (ray::wcs2mbs(model->materials[i].name.name, model->materials[i].name.length, name, MAX_PATH))
+				if (ray::utf16_to_utf8(model->materials[i].name.name, model->materials[i].name.length, name, MAX_PATH))
 					material->setName(name);
 
 				std::int16_t diffuseIndex = 0;

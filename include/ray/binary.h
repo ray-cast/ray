@@ -103,7 +103,6 @@ public:
 		return false;
 	}
 
-	// 标志清零
 	void reset()
 	{
 		assert(bits_);
@@ -116,7 +115,6 @@ public:
 		memset(bits_, 0, size * 4);
 	}
 
-	// 设置标志位
 	void set(std::uint32_t x, std::uint32_t y, bool bFlog = true)
 	{
 		assert(bits_);
@@ -132,7 +130,7 @@ public:
 		}
 	}
 
-	bool isTrue(std::uint32_t x, std::uint32_t y) const //查询该标志
+	bool isTrue(std::uint32_t x, std::uint32_t y) const
 	{
 		return  (bits_[(y*col_ + x) / bit_size] & (1 << (y*col_ + x) % bit_size)) != 0;
 	}

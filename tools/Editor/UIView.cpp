@@ -46,6 +46,7 @@
 #include <ray/graphics_texture.h>
 #include <ray/material.h>
 #include <ray/res_manager.h>
+#include <ray/utf8.h>
 
 #if __WINDOWS__
 #include <ShlObj.h>
@@ -188,6 +189,9 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 					this->showPopupMessage(_langs[UILang::Error], errorTips, std::hash<const char*>{}(errorTips));
 					return;
 				}
+
+				wchar_t buffer[PATHLIMIT];
+				ray::utf8_to_utf16(fullpath, buffer);
 
 				std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial, g_SupportedModel };
 

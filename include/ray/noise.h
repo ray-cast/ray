@@ -52,18 +52,15 @@ public:
 
 	PerlinNoise2() noexcept;
 
-	//求得柏林噪声
 	float noise(float x, float y, float scale);
 	float noise(const Vector2 pos, float scale);
 
 private:
-	//初始化伪随即表
 	void setup();
-	//获得梯度值
 	const Vector2& getVec(int x, int y) const;
 
-	Vector2 _table[size]; //梯度值表
-	std::uint8_t _lut[size]; //伪随机索引表
+	Vector2 _table[size];
+	std::uint8_t _lut[size];
 };
 
 void EXPORT simplex_seed(unsigned int x);

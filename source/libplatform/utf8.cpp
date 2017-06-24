@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::size_t size)
+std::size_t utf8_to_gbk(char* dest, std::size_t maxLength, const char* data, std::size_t size)
 {
 	char inbuf[PATHLIMIT + 1] = { 0 };
 	char outbuf[PATHLIMIT + 1] = { 0 };
@@ -61,8 +61,14 @@ std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::
 	return out_size;
 }
 
-std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data, std::size_t size)
+std::size_t utf8_to_utf16(const char* src, wchar_t* dest, std::size_t size)
 {
+	return utf8_to_utf16(src, size, dest, size);
+}
+
+std::size_t utf8_to_utf16(const char* data, std::size_t dataSize, wchar_t* dest, std::size_t maxLength)
+{
+#if defined(_linux_)
 	char inbuf[PATHLIMIT + 1] = { 0 };
 	char outbuf[PATHLIMIT + 1] = { 0 };
 	char *in = inbuf;
@@ -72,12 +78,12 @@ std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data
 
 	memcpy(in, data, size);
 
-	UTF8toGBK(outbuf, PATHLIMIT, inbuf, size);
+	utf8_to_gbk(outbuf, PATHLIMIT, inbuf, size);
 
 	in = outbuf;
 	out = inbuf;
 
-	iconv_t ic = iconv_open("WCHAR_T", "GBK");
+	iconv_t ic = iconv_open("WCHAR_T", "UTF-8");
 	iconv(ic, &in, &in_size, &out, &out_size);
 	iconv_close(ic);
 
@@ -85,12 +91,48 @@ std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data
 	memcpy(dest, inbuf, out_size);
 
 	return out_size;
+#else
+	int size = MultiByteToWideChar(CP_UTF8, 0, data, -1, 0, 0);
+	if (size <= 0)
+		return 0;
+
+	if (size >= maxLength)
+		return 0;
+
+	return MultiByteToWideChar(CP_UTF8, 0, data, dataSize, dest, size) > 0 ? size : 0;
+#endif
 }
 
-bool mbs2wCs(const char* pszSrc, std::size_t multiByteStr, wchar_t* dest, std::size_t max_length)
+std::size_t utf16_to_utf8(const wchar_t * src, std::size_t multiByteStr, char* dest, std::size_t max_length)
 {
 #if defined(_linux_)
-	::setlocale(LC_ALL, "zh_CN.GB2312");
+	::setlocale(LC_ALL, "zh_CN.UTF8");
+	int size = wcstombs(NULL, wcharStr, 0);
+	str = new char[size + 1];
+	wcstombs(str, wcharStr, size);
+	str[size] = '\0';
+	return str;
+#else
+	int len = WideCharToMultiByte(CP_UTF8, 0, src, -1, NULL, 0, NULL, NULL);
+	if (len <= 0)
+		return 0;
+
+	if (len >= max_length)
+		return 0;
+
+	len = WideCharToMultiByte(CP_UTF8, 0, src, multiByteStr, dest, len, NULL, NULL);
+	if (len <= 0)
+		return 0;
+
+	dest[len] = '\0';
+	return len;
+#endif
+}
+
+std::size_t acp_to_utf16(const char* pszSrc, std::size_t multiByteStr, wchar_t* dest, std::size_t max_length)
+{
+#if defined(_linux_)
+	::setlocale(LC_ALL, "");
 	int size = mbstowcs(NULL, pszSrc, 0);
 	if (size <= 0)
 		return false;
@@ -103,29 +145,42 @@ bool mbs2wCs(const char* pszSrc, std::size_t multiByteStr, wchar_t* dest, std::s
 #else
 	int size = MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, -1, 0, 0);
 	if (size <= 0)
+		return 0;
+
+	if (size >= max_length)
+		return 0;
+
+	return MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, multiByteStr, dest, size) > 0 ? size : false;
+#endif
+}
+
+std::size_t utf16_to_acp(const wchar_t* src, std::size_t max_length, char* dest, std::size_t multiByteStr)
+{
+#if defined(_linux_)
+	::setlocale(LC_ALL, "zh_CN.UTF8");
+	int size = wcstombs(NULL, pszSrc, 0);
+	if (size <= 0)
 		return false;
 	if (max_length < size)
 		return false;
 
-	return MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, -1, dest, size) > 0 ? true : false;
-#endif
-}
-
-bool wcs2mbs(const wchar_t * unicode, std::size_t multiByteStr, char* szUtf8, std::size_t max_length)
-{
-#if defined(_linux_)
-	setlocale(LC_ALL, "zh_CN.UTF8");
-	int size = wcstombs(NULL, wcharStr, 0);
-	str = new char[size + 1];
-	wcstombs(str, wcharStr, size);
-	str[size] = '\0';
-	return str;
+	size = wcstombs(dest, pszSrc, size + 1);
+	dest[size] = 0;
+	return true;
 #else
-	int len = WideCharToMultiByte(CP_UTF8, 0, unicode, -1, NULL, 0, NULL, NULL);
-	if (len > max_length)
-		return false;
+	int len = WideCharToMultiByte(CP_THREAD_ACP, 0, src, -1, NULL, 0, NULL, NULL);
+	if (len <= 0)
+		return 0;
 
-	return WideCharToMultiByte(CP_UTF8, 0, unicode, -1, szUtf8, len, NULL, NULL) > 0 ? true : false;
+	if (len >= max_length)
+		return 0;
+
+	len = WideCharToMultiByte(CP_THREAD_ACP, 0, src, multiByteStr, dest, len, NULL, NULL);
+	if (len <= 0)
+		return 0;
+
+	dest[len] = '\0';
+	return len;
 #endif
 }
 

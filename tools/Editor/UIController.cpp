@@ -1097,7 +1097,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer path, 
 
 			if (std::strcmp(declaration->name, token_float3[i]) == 0)
 			{
-				if (declaration->type.baseType != M4::HLSLBaseType::HLSLBaseType_Float)
+				if (declaration->type.baseType == M4::HLSLBaseType::HLSLBaseType_Float)
 					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[0], expression->fValue[0]);
 				else
 					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[1], expression->fValue[2]);
@@ -1591,11 +1591,10 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float3 albedo = float3(" << material["albedo"]->value().getFloat3() << ");\r\n";
 	(*stream) << "const float2 albedoMapLoopNum = float2(" << material["albedoMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
+	(*stream) << "#define ALBEDO_SUB_ENABLE " << material["albedoSubType"]->value().getInt() << "\r\n";
 	(*stream) << "#define ALBEDO_SUB_MAP_FROM " << material["albedoSubMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define ALBEDO_SUB_MAP_UV_FLIP " << material["albedoSubMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_SCALE " << "1\r\n";
-	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_DIFFUSE " << "0\r\n";
-	(*stream) << "#define ALBEDO_SUB_MAP_APPLY_MORPH_COLOR " << "0\r\n";
 
 	auto albedoSubMap = material["albedoSubMap"]->value().getTexture();
 	auto albedoSubMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == albedoSubMap; });
@@ -1617,8 +1616,6 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 
 	(*stream) << "#define NORMAL_MAP_FROM " << material["normalMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define NORMAL_MAP_UV_FLIP " << material["normalMapFlip"]->value().getInt() << "\r\n";
-	(*stream) << "#define NORMAL_MAP_APPLY_SCALE " << "1\r\n";
-	(*stream) << "#define NORMAL_MAP_APPLY_MORPH_COLOR " << "0\r\n";
 
 	auto normalMap = material["normalMap"]->value().getTexture();
 	auto normalMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == normalMap; });
@@ -1632,7 +1629,6 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 
 	(*stream) << "#define NORMAL_SUB_MAP_FROM " << material["normalSubMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define NORMAL_SUB_MAP_UV_FLIP " << material["normalSubMapFlip"]->value().getInt() << "\r\n";
-	(*stream) << "#define NORMAL_SUB_MAP_APPLY_SCALE " << "1\r\n";
 
 	auto normalSubMap = material["normalSubMap"]->value().getTexture();
 	auto normalSubMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == normalSubMap; });
@@ -1647,7 +1643,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "#define SMOOTHNESS_MAP_FROM " << material["smoothnessMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define SMOOTHNESS_MAP_UV_FLIP " << material["smoothnessMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define SMOOTHNESS_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["smoothnessMapSwizzle"]->value().getFloat4()) << "\r\n";
-	(*stream) << "#define SMOOTHNESS_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+	(*stream) << "#define SMOOTHNESS_MAP_APPLY_SCALE 1\r\n";
 
 	auto smoothnessMap = material["smoothnessMap"]->value().getTexture();
 	auto smoothnessMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == smoothnessMap; });
@@ -1662,6 +1658,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "#define METALNESS_MAP_FROM " << material["metalnessMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define METALNESS_MAP_UV_FLIP " << material["metalnessMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define METALNESS_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["metalnessMapSwizzle"]->value().getFloat4()) << "\r\n";
+	(*stream) << "#define METALNESS_MAP_APPLY_SCALE 1\r\n";
 
 	auto metalnessMap = material["metalnessMap"]->value().getTexture();
 	auto metalnessMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == metalnessMap; });
@@ -1676,6 +1673,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "#define SPECULAR_MAP_FROM " << material["specularMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define SPECULAR_MAP_UV_FLIP " << material["specularMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define SPECULAR_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["specularMapSwizzle"]->value().getFloat4()) << "\r\n";
+	(*stream) << "#define SPECULAR_MAP_APPLY_SCALE 1\r\n";
 
 	auto specularMap = material["specularMap"]->value().getTexture();
 	auto specularMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == specularMap; });
@@ -1690,6 +1688,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "#define OCCLUSION_MAP_FROM " << material["occlusionMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define OCCLUSION_MAP_UV_FLIP " << material["occlusionMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define OCCLUSION_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["occlusionMapSwizzle"]->value().getFloat4()) << "\r\n";
+	(*stream) << "#define OCCLUSION_MAP_APPLY_SCALE 1\r\n";
 
 	auto occlusionMap = material["occlusionMap"]->value().getTexture();
 	auto occlusionMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == occlusionMap; });
@@ -1717,7 +1716,10 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 
 	(*stream) << "#define EMISSIVE_MAP_FROM " << material["emissiveMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define EMISSIVE_MAP_UV_FLIP " << material["emissiveMapFlip"]->value().getInt() << "\r\n";
+	(*stream) << "#define EMISSIVE_MAP_APPLY_SCALE 1\r\n";
 	(*stream) << "#define EMISSIVE_MAP_APPLY_MORPH_COLOR " << "0\r\n";
+	(*stream) << "#define EMISSIVE_MAP_APPLY_MORPH_INTENSITY " << "0\r\n";
+	(*stream) << "#define EMISSIVE_MAP_APPLY_BLINK 1\r\n";
 
 	auto emissiveMap = material["emissiveMap"]->value().getTexture();
 	auto emissiveMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == emissiveMap; });
@@ -1731,7 +1733,9 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 
 	(*stream) << "#define CUSTOM_A_MAP_FROM " << material["customAMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define CUSTOM_A_MAP_UV_FLIP " << material["customAMapFlip"]->value().getInt() << "\r\n";
+	(*stream) << "#define CUSTOM_A_MAP_COLOR_FLIP 0\r\n";
 	(*stream) << "#define CUSTOM_A_MAP_SWIZZLE " << (int)ray::math::dot(ray::float4(0, 1, 2, 3), material["customAMapSwizzle"]->value().getFloat4()) << "\r\n";
+	(*stream) << "#define CUSTOM_A_MAP_APPLY_SCALE 1\r\n";
 
 	auto customAMap = material["customAMap"]->value().getTexture();
 	auto customAMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == customAMap; });

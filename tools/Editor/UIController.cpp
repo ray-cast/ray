@@ -49,10 +49,6 @@
 #include <ray/mstream.h>
 #include <ray/jsonreader.h>
 
-#include "ies_loader.h"
-#include "first_person_camera.h"
-#include "hlslparser/HLSLParser.h"
-
 #include <ray/utf8.h>
 #include <ray/camera_component.h>
 #include <ray/light_component.h>
@@ -78,6 +74,11 @@
 #include <ray/imagcubemap.h>
 
 #include <ray/SH.h>
+
+#include "first_person_camera.h"
+
+#include "IESloader/IESloader.h"
+#include "HLSLParser/HLSLParser.h"
 
 __ImplementSubClass(GuiControllerComponent, ray::GameComponent, "GuiController")
 

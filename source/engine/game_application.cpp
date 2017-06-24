@@ -98,6 +98,8 @@ GameApplication::GameApplication() noexcept
 	, _engineDir("../../engine/")
 	, _resourceBaseDir("../../dlc/")
 {
+	std::locale::global(std::locale(""));
+
 	_ioServer = IoServer::instance();
 	_ioInterface = IoInterface::instance();
 }
@@ -116,6 +118,13 @@ GameApplication::open(WindHandle hwnd, std::uint32_t w, std::uint32_t h, std::ui
 			_gameListener->onMessage("Game Application has already opened.");
 
 		return false;
+	}
+
+	auto local = setlocale(LC_ALL, "");
+	if (local)
+	{
+		if (_gameListener)
+			_gameListener->onMessage(std::string("Initializing : Local : ") + local);
 	}
 
 	if (_gameListener)

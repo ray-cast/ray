@@ -249,7 +249,7 @@ int VirtualKeyToText(WPARAM _virtualKey)
 		case 0x60: // Grave accent: ß—
 			deadKey = 0x300;
 			break;
-		case 0xA8: // Diaeresis: ßÓ
+		case 0xA8: // Diaeresis: ßÅE
 			deadKey = 0x308;
 			break;
 		case 0xB4: // Acute accent: ß€

@@ -56,8 +56,6 @@ public:
 
 	bool loadTexture(const std::string& path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim = ray::GraphicsTextureDim::GraphicsTextureDim2D) noexcept;
 	bool loadTexture(std::string::const_pointer path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim = ray::GraphicsTextureDim::GraphicsTextureDim2D) noexcept;
-	bool loadTexture(const std::wstring& path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim = ray::GraphicsTextureDim::GraphicsTextureDim2D) noexcept;
-	bool loadTexture(std::wstring::const_pointer path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim = ray::GraphicsTextureDim::GraphicsTextureDim2D) noexcept;
 
 private:
 	bool makeCubeObject() noexcept;

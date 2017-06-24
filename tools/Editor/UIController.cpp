@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+﻿// +----------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -320,18 +320,11 @@ GuiControllerComponent::loadTexture(const ray::util::string& path, ray::Graphics
 bool
 GuiControllerComponent::loadTexture(ray::util::string::const_pointer path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim) noexcept
 {
-	ray::util::string::value_type buffer[PATHLIMIT];
-	if (ray::util::toUnixPath(path, buffer, PATHLIMIT) == 0)
-	{
-		error = "Cannot open file, check the spelling of the file path.";
-		return false;
-	}
-
-	texture = ray::ResManager::instance()->getTexture(buffer);
+	texture = ray::ResManager::instance()->getTexture(path);
 	if (texture)
 		return true;
 
-	if (!ray::ResManager::instance()->createTexture(buffer, texture, dim))
+	if (!ray::ResManager::instance()->createTexture(path, texture, dim))
 	{
 		error = "Failed to load texture";
 		return false;
@@ -351,26 +344,6 @@ GuiControllerComponent::loadTexture(ray::util::string::const_pointer path, ray::
 	_itemTextures.push_back(std::move(item));
 
 	return true;
-}
-
-bool
-GuiControllerComponent::loadTexture(const std::wstring& path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim) noexcept
-{
-	char mbs[PATHLIMIT];
-	if (::wcstombs(mbs, path.c_str(), path.size()) == 0)
-		return false;
-
-	return this->loadTexture(mbs, texture, error, dim);
-}
-
-bool
-GuiControllerComponent::loadTexture(std::wstring::const_pointer path, ray::GraphicsTexturePtr& texture, ray::util::string::pointer& error, ray::GraphicsTextureDim dim) noexcept
-{
-	char mbs[PATHLIMIT];
-	if (::wcstombs(mbs, path, std::wcslen(path)) == 0)
-		return false;
-
-	return this->loadTexture(mbs, texture, error, dim);
 }
 
 bool

@@ -101,18 +101,17 @@ bool mbs2wCs(const char* pszSrc, std::size_t multiByteStr, wchar_t* dest, std::s
 	dest[size] = 0;
 	return true;
 #else
-	int size = ::MultiByteToWideChar(20936, 0, pszSrc, -1, 0, 0);
+	int size = MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, -1, 0, 0);
 	if (size <= 0)
 		return false;
 	if (max_length < size)
 		return false;
 
-	::MultiByteToWideChar(20936, 0, pszSrc, -1, dest, size);
-	return true;
+	return MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, -1, dest, size) > 0 ? true : false;
 #endif
 }
 
-bool wcs2mbs(const wchar_t * wcharStr, std::size_t multiByteStr, char* dest, std::size_t max_length)
+bool wcs2mbs(const wchar_t * unicode, std::size_t multiByteStr, char* szUtf8, std::size_t max_length)
 {
 #if defined(_linux_)
 	setlocale(LC_ALL, "zh_CN.UTF8");
@@ -122,12 +121,11 @@ bool wcs2mbs(const wchar_t * wcharStr, std::size_t multiByteStr, char* dest, std
 	str[size] = '\0';
 	return str;
 #else
-	int size = WideCharToMultiByte(CP_UTF8, 0, wcharStr, multiByteStr, NULL, NULL, NULL, NULL);
-	if (size >= max_length)
+	int len = WideCharToMultiByte(CP_UTF8, 0, unicode, -1, NULL, 0, NULL, NULL);
+	if (len > max_length)
 		return false;
 
-	WideCharToMultiByte(CP_UTF8, 0, wcharStr, -1, dest, size, 0, 0);
-	return true;
+	return WideCharToMultiByte(CP_UTF8, 0, unicode, -1, szUtf8, len, NULL, NULL) > 0 ? true : false;
 #endif
 }
 

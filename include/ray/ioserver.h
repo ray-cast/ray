@@ -55,6 +55,7 @@ public:
 	IoServer& mountArchives() noexcept;
 	IoServer& unmountArchives() noexcept;
 
+	IoServer& addAssign(IoAssign&& assign) noexcept;
 	IoServer& addAssign(const IoAssign& assign) noexcept;
 	IoServer& removeAssign(const util::string& name) noexcept;
 	IoServer& getAssign(const util::string& name, util::string& path) noexcept;

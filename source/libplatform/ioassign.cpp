@@ -42,58 +42,46 @@ IoAssign::IoAssign() noexcept
 {
 }
 
-IoAssign::IoAssign(util::string&& name, util::string&& path) noexcept
-	: _name(std::move(name))
-	, _path(std::move(path))
+IoAssign::IoAssign(util::string&& _name, util::string&& _path) noexcept
+	: name(std::move(_name))
+	, path(std::move(_path))
 {
 }
 
-IoAssign::IoAssign(const util::string& name, const util::string& path) noexcept
-	: _name(name)
-	, _path(path)
+IoAssign::IoAssign(const util::string& _name, const util::string& _path) noexcept
+	: name(_name)
+	, path(_path)
 {
 }
 
-IoAssign::IoAssign(const util::string::pointer name, const util::string::pointer path) noexcept
-	: _name(name)
-	, _path(path)
+IoAssign::IoAssign(const util::string::pointer _name, const util::string::pointer _path) noexcept
+	: name(_name)
+	, path(_path)
 {
 }
 
 IoAssign::IoAssign(std::pair<util::string, util::string>&& argv) noexcept
-	: _name(std::move(argv.first))
-	, _path(std::move(argv.second))
+	: name(std::move(argv.first))
+	, path(std::move(argv.second))
 {
 }
 
 IoAssign::IoAssign(std::initializer_list<util::string>& argv) noexcept
-	: _name(*argv.begin())
-	, _path(*(argv.begin() + 1))
+	: name(*argv.begin())
+	, path(*(argv.begin() + 1))
 {
 	assert(argv.size() == 2);
 }
 
 IoAssign::IoAssign(std::initializer_list<util::string>&& argv) noexcept
-	: _name(std::move(*argv.begin()))
-	, _path(std::move(*(argv.begin() + 1)))
+	: name(std::move(*argv.begin()))
+	, path(std::move(*(argv.begin() + 1)))
 {
 	assert(argv.size() == 2);
 }
 
 IoAssign::~IoAssign() noexcept
 {
-}
-
-const util::string&
-IoAssign::name() const noexcept
-{
-	return _name;
-}
-
-const util::string&
-IoAssign::path() const noexcept
-{
-	return _path;
 }
 
 _NAME_END

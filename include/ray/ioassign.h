@@ -53,12 +53,8 @@ public:
 	IoAssign(std::initializer_list<util::string>&& argv) noexcept;
 	~IoAssign() noexcept;
 
-	const util::string& name() const noexcept;
-	const util::string& path() const noexcept;
-
-private:
-	util::string _name;
-	util::string _path;
+	util::string name;
+	util::string path;
 };
 
 _NAME_END

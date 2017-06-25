@@ -90,17 +90,12 @@ IoServer::unmountArchives() noexcept
 }
 
 IoServer&
-IoServer::addAssign(const IoAssign& assign) noexcept
+IoServer::addAssign(IoAssign&& assign) noexcept
 {
-	auto path = assign.path();
-
-	if (!ray::util::isSeparator(*path.rbegin()))
-		path += SEPARATOR;
-
-	auto& entry = _assignTable[assign.name()];
-	if (!entry.empty())
+	auto entry = _assignTable.find(assign.name);
+	if (entry != _assignTable.end())
 	{
-		if (entry == assign.path())
+		if ((*entry).second == std::move(assign.path))
 			return *this;
 		else
 		{
@@ -109,7 +104,34 @@ IoServer::addAssign(const IoAssign& assign) noexcept
 		}
 	}
 
-	_assignTable[assign.name()] = path;
+	if (ray::util::isSeparator(*assign.path.rbegin()))
+		_assignTable[std::move(assign.name)] = std::move(assign.path);
+	else
+		_assignTable[std::move(assign.name)] = std::move(assign.path) + SEPARATOR;
+
+	this->setstate(ios_base::goodbit);
+	return *this;
+}
+
+IoServer&
+IoServer::addAssign(const IoAssign& assign) noexcept
+{
+	auto entry = _assignTable.find(assign.name);
+	if (!(*entry).second.empty())
+	{
+		if ((*entry).second == assign.path)
+			return *this;
+		else
+		{
+			this->setstate(ios_base::failbit);
+			return *this;
+		}
+	}
+
+	if (ray::util::isSeparator(*assign.path.rbegin()))
+		_assignTable[assign.name] = assign.path;
+	else
+		_assignTable[assign.name] = assign.path + SEPARATOR;
 
 	this->setstate(ios_base::goodbit);
 	return *this;

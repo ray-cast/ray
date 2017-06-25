@@ -80,6 +80,12 @@ Material::close() noexcept
 }
 
 void
+Material::setName(std::string&& name) noexcept
+{
+	_name = std::move(name);
+}
+
+void
 Material::setName(const std::string& name) noexcept
 {
 	_name = name;

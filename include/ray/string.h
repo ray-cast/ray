@@ -218,6 +218,9 @@ namespace util
 	EXPORT std::string directory(const std::string& path);
 	EXPORT std::wstring directory(const std::wstring& path);
 
+	EXPORT std::string filename(std::string::const_pointer path);
+	EXPORT std::wstring filename(std::wstring::const_pointer path);
+
 	EXPORT std::size_t ext_name(const char*in, char* out, std::size_t maxLength);
 	EXPORT std::size_t ext_name(const wchar_t*in, wchar_t* out, std::size_t maxLength);
 

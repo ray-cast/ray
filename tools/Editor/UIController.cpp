@@ -330,14 +330,8 @@ GuiControllerComponent::loadTexture(ray::util::string::const_pointer path, ray::
 		return false;
 	}
 
-	char drive[MAX_PATH];
-	char dir[PATHLIMIT];
-	char filename[PATHLIMIT];
-	char ext[MAX_PATH];
-	::_splitpath(path, drive, dir, filename, ext);
-
 	auto item = std::make_shared<EditorAssetItem>();
-	item->name = filename;
+	item->name = ray::util::filename(path);
 	item->preview = texture;
 	item->value.emplace<EditorAssetItem::texture>(texture);
 
@@ -815,15 +809,9 @@ GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::
 		return false;
 	}
 
-	char drive[MAX_PATH];
-	char dir[PATHLIMIT];
-	char filename[PATHLIMIT];
-	char ext[MAX_PATH];
-	_splitpath(path, drive, dir, filename, ext);
-
 	auto item = std::make_shared<EditorAssetItem>();
 	item->path = path;
-	item->name = filename;
+	item->name = ray::util::filename(path);
 	item->preview = iesPreview;
 	item->value.emplace<EditorAssetItem::texture>(iesTexture);
 
@@ -858,12 +846,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 	static const char* token_float2[] = { "albedoMapLoopNum","albedoSubMapLoopNum", "normalMapLoopNum","normalSubMapLoopNum","smoothnessMapLoopNum","metalnessMapLoopNum","specularMapLoopNum","occlusionMapLoopNum","parallaxMapLoopNum","emissiveMapLoopNum","customAMapLoopNum","customBMapLoopNum" };
 	static const char* token_float3[] = { "albedo", "albedoSub", "specular", "emissive", "customB" };
 
-	char drive[MAX_PATH];
-	char dir[PATHLIMIT];
-	char filename[PATHLIMIT];
-	char ext[MAX_PATH];
-	_splitpath(fullpath, drive, dir, filename, ext);
-
+	std::string filename = ray::util::filename(fullpath);
 	for (auto& it : _itemMaterials)
 	{
 		if (it->name == filename)
@@ -897,7 +880,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 	if (!ray::ResManager::instance()->createMaterial("dlc:editor/fx/material.fxml", material))
 		return false;
 
-	material->setName(filename);
+	material->setName(std::move(filename));
 
 	for (std::size_t i = 0; i < sizeof(token_from) / sizeof(token_from[0]); i++)
 	{
@@ -1221,12 +1204,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 		}
 		else
 		{
-			char drive[MAX_PATH];
-			char dir[PATHLIMIT];
-			char filename[PATHLIMIT];
-			char ext[MAX_PATH];
-			_splitpath(path, drive, dir, filename, ext);
-			gameObject->setName(filename);
+			gameObject->setName(std::move(ray::util::filename(path)));
 		}
 
 		if (model->numVertices > 0 && model->numIndices > 0)

@@ -1250,6 +1250,34 @@ namespace util
 		return std::wstring(path.c_str(), path.size() - length);
 	}
 
+	std::string filename(std::string::const_pointer path)
+	{
+		char drive[3];
+		char dir[MAX_PATH];
+		char filename[MAX_PATH];
+		char ext[MAX_PATH];
+#if __WINDOWS__
+		::_splitpath_s(path, drive, 3, dir, MAX_PATH, filename, MAX_PATH, ext, MAX_PATH);
+#else
+		::_splitpath(path, drive, dir, filename, ext);
+#endif
+		return filename;
+	}
+
+	std::wstring filename(std::wstring::const_pointer path)
+	{
+		wchar_t drive[3];
+		wchar_t dir[MAX_PATH];
+		wchar_t filename[MAX_PATH];
+		wchar_t ext[MAX_PATH];
+#if __WINDOWS__
+		::_wsplitpath_s(path, drive, 3, dir, MAX_PATH, filename, MAX_PATH, ext, MAX_PATH);
+#else
+		::_wsplitpath(path, drive, dir, filename, ext);
+#endif
+		return filename;
+	}
+
 	std::size_t ext_name(const char* in, char* out, std::size_t maxLength)
 	{
 		auto ext = std::strrchr(in, '.');

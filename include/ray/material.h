@@ -57,6 +57,7 @@ public:
 	bool setup() noexcept;
 	void close() noexcept;
 
+	void setName(std::string&& name) noexcept;
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 

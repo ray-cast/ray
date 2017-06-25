@@ -206,7 +206,7 @@ AnimationComponent::_playAnimation(const util::string& filename) noexcept
 		[&](ray::ModelPtr model, const util::string& name)
 	{
 		StreamReaderPtr stream;
-		if (IoServer::instance()->openFile(stream, name))
+		if (IoServer::instance()->openFileURL(stream, name))
 			return model->load(*stream);
 		return false;
 	}

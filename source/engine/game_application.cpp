@@ -38,7 +38,9 @@
 #include <ray/game_server.h>
 #include <ray/game_listener.h>
 
+#include <ray/utf8.h>
 #include <ray/iolistener.h>
+
 #include <ray/rtti_factory.h>
 
 #if defined(_BUILD_INPUT)
@@ -324,17 +326,22 @@ GameApplication::setFileService(bool enable) noexcept
 		_ioServer->unmountArchives();
 }
 
-void
-GameApplication::setFileServicePath(const util::string& path) noexcept
+bool
+GameApplication::setFileServicePath(const util::string& filepath) noexcept
 {
 	assert(_ioServer);
 
-	auto tmp = path;
-	if (*tmp.rbegin() != '\\' &&
-		*tmp.rbegin() != '/')
-	{
+	auto tmp = filepath;
+	if (!ray::util::isSeparator(*tmp.rbegin()))
 		tmp += SEPARATOR;
-	}
+
+	wchar_t wpath[PATHLIMIT];
+	if (!ray::acp_to_utf16(filepath.c_str(), wpath))
+		return false;
+
+	char path[PATHLIMIT];
+	if (!ray::utf16_to_utf8(wpath, path))
+		return false;
 
 	_workDir = path;
 
@@ -345,6 +352,8 @@ GameApplication::setFileServicePath(const util::string& path) noexcept
 	_ioServer->addAssign({ "sys", engineDir });
 	_ioServer->addAssign({ "sys:media/UI/", engineDir + "media/UI/" });
 	_ioServer->addAssign({ "dlc", resourceBaseDir });
+
+	return true;
 }
 
 void
@@ -356,15 +365,26 @@ GameApplication::setFileServiceListener(bool enable) noexcept
 		_ioServer->removeIoListener(_ioListener);
 }
 
-void
-GameApplication::setResDownloadURL(const util::string& path) noexcept
+bool
+GameApplication::setResDownloadURL(const util::string& filepath) noexcept
 {
 	assert(_ioServer);
+
+	wchar_t wpath[PATHLIMIT];
+	if (!ray::acp_to_utf16(filepath.c_str(), wpath))
+		return false;
+
+	char path[PATHLIMIT];
+	if (!ray::utf16_to_utf8(wpath, path))
+		return false;
+
 	if (_downloadURL != path)
 	{
 		_ioServer->addAssign({ "url", path });
 		_downloadURL = path;
 	}
+
+	return true;
 }
 
 bool

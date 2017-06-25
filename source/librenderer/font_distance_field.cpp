@@ -144,7 +144,7 @@ FontPointBitmap::createFontMapping(StreamReader& stream, const std::wstring& cha
 						internalSize,
 						startCode,
 						endCode
-						)));
+					)));
 
 				startCode = endCode;
 				endCode += num;
@@ -184,7 +184,7 @@ void
 FontPointBitmap::createFontMapping(const std::string& fontpath, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads)
 {
 	StreamReaderPtr stream;
-	if (IoServer::instance()->openFile(stream, fontpath, ios_base::in))
+	if (IoServer::instance()->openFileURL(stream, fontpath, ios_base::in))
 		this->createFontMapping(*stream, charsets, fontSize, distanceSize, numThreads);
 }
 
@@ -315,7 +315,7 @@ bool
 FontPointBitmap::load(const std::string& filepath)
 {
 	StreamReaderPtr stream;
-	if (IoServer::instance()->openFile(stream, filepath))
+	if (IoServer::instance()->openFileURL(stream, filepath))
 		return this->load(*stream);
 	return false;
 }
@@ -348,7 +348,7 @@ bool
 FontPointBitmap::save(const std::string& filepath)
 {
 	StreamWritePtr stream;
-	if (IoServer::instance()->openFile(stream, filepath))
+	if (IoServer::instance()->saveFileToDiskURL(stream, filepath))
 		return this->save(*stream);
 	return false;
 }
@@ -481,7 +481,7 @@ FontDistanceField::computeDistanceField(const std::vector<float>& distanceArray,
 			total += -distance;
 	}
 
-	float invSqr = 1.0 / sqrt(total);
+	float invSqr = 1.0f / sqrt(total);
 
 	for (std::size_t y = 0; y < distanceSize; y++)
 	{

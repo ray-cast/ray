@@ -354,14 +354,24 @@ streamoff fseek(FILE* stream, streamoff _off, ios_base::seekdir seek) noexcept
 	}
 }
 
-int faccess(const char* path, int mode) noexcept
+int faccess(const char* path, ios_base::open_mode mode) noexcept
 {
-	return fcntl::access(path, mode);
+	int flags = 0;
+	if (mode != ios_base::out)
+		flags |= 2;
+	if (mode != ios_base::in)
+		flags |= 4;
+	return fcntl::access(path, flags);
 }
 
-int faccess(const wchar_t* path, int mode) noexcept
+int faccess(const wchar_t* path, ios_base::open_mode mode) noexcept
 {
-	return fcntl::access(path, mode);
+	int flags = 0;
+	if (mode != ios_base::out)
+		flags |= 2;
+	if (mode != ios_base::in)
+		flags |= 4;
+	return fcntl::access(path, flags);
 }
 
 IOFILE::IOFILE() noexcept

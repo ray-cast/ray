@@ -68,8 +68,8 @@ extern streamoff fseek(FILE* stream, streamoff _off, ios_base::seekdir seek) noe
 extern streamoff fgetpos(FILE* stream);
 extern streamoff fsetpos(FILE* stream);
 
-extern int faccess(const char* path, int mode) noexcept;
-extern int faccess(const wchar_t* path, int mode) noexcept;
+extern int faccess(const char* path, ios_base::open_mode mode) noexcept;
+extern int faccess(const wchar_t* path, ios_base::open_mode mode) noexcept;
 
 //extern int feof(FILE* stream);
 //extern int ferror(FILE* stream);

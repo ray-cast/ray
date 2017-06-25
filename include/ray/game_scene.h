@@ -68,8 +68,8 @@ public:
 	bool load(const iarchive& reader) noexcept;
 	bool save(oarchive& reader) noexcept;
 
-	bool load(const util::string& sceneName) noexcept;
-	bool save(const util::string& sceneName) noexcept;
+	bool load(const util::string& sceneURL) noexcept;
+	bool save(const util::string& sceneURL) noexcept;
 
 	GameScenePtr clone() const noexcept;
 

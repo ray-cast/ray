@@ -153,7 +153,7 @@ SoundSystem::createSoundReader(const std::string& filename, SoundFile::Type type
 	if (!soundReader)
 	{
 		StreamReaderPtr stream;
-		if (IoServer::instance()->openFile(stream, filename))
+		if (IoServer::instance()->openFileURL(stream, filename))
 			soundReader = createSoundReader(stream, type);
 
 		if (soundReader)

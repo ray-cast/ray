@@ -759,7 +759,7 @@ GuiControllerComponent::onImportIES(ray::util::string::const_pointer path, ray::
 		return true;
 
 	ray::StreamReaderPtr stream;
-	if (!ray::IoServer::instance()->openFile(stream, path))
+	if (!ray::IoServer::instance()->openFileFromDiskUTF8(stream, path))
 	{
 		error = "Cannot open the file, check the spelling of the file path.";
 		return false;
@@ -871,7 +871,7 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 	}
 
 	ray::StreamReaderPtr stream;
-	if (!ray::IoServer::instance()->openFile(stream, fullpath))
+	if (!ray::IoServer::instance()->openFileFromDiskUTF8(stream, fullpath))
 	{
 		error = "Cannot open file, check the spelling of the file path.";
 		return false;
@@ -1090,13 +1090,13 @@ GuiControllerComponent::onImportMaterial(ray::util::string::const_pointer fullpa
 
 			if (std::strcmp(declaration->name, token_float3[i]) == 0)
 			{
-				if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Float)
+				if (expression->type == HLSLBaseType::HLSLBaseType_Float)
 					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[0], expression->fValue[0]);
-				else if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Float3)
+				else if (expression->type == HLSLBaseType::HLSLBaseType_Float3)
 					(*material)[token_float3[i]]->uniform3f(expression->fValue[0], expression->fValue[1], expression->fValue[2]);
-				else if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Int)
+				else if (expression->type == HLSLBaseType::HLSLBaseType_Int)
 					(*material)[token_float3[i]]->uniform3f(expression->iValue[0], expression->iValue[0], expression->iValue[0]);
-				else if (declaration->type.baseType == HLSLBaseType::HLSLBaseType_Int3)
+				else if (expression->type == HLSLBaseType::HLSLBaseType_Int3)
 					(*material)[token_float3[i]]->uniform3f(expression->iValue[0], expression->iValue[1], expression->iValue[2]);
 
 				break;
@@ -1177,7 +1177,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 	try
 	{
 		ray::StreamReaderPtr stream;
-		if (!ray::IoServer::instance()->openFile(stream, path))
+		if (!ray::IoServer::instance()->openFileFromDiskUTF8(stream, path))
 		{
 			error = "Cannot open file, check the spelling of the file path.";
 			return false;
@@ -1567,7 +1567,7 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	std::strcat(fullpath, ".fx");
 
 	ray::StreamWritePtr stream;
-	if (!ray::IoServer::instance()->openFile(stream, fullpath))
+	if (!ray::IoServer::instance()->saveFileToDiskUTF8(stream, fullpath))
 	{
 		error = "Failed to open file";
 		return false;
@@ -1774,7 +1774,7 @@ GuiControllerComponent::onExportModel(ray::util::string::const_pointer path, std
 	if (_models.size() > index)
 	{
 		ray::StreamWritePtr stream;
-		if (!ray::IoServer::instance()->openFile(stream, path))
+		if (!ray::IoServer::instance()->saveFileToDiskUTF8(stream, path))
 			return false;
 
 		ray::PMXHandler header;
@@ -2294,7 +2294,7 @@ GuiControllerComponent::onOutputSphere(ray::util::string::const_pointer path, ra
 	}
 
 	ray::StreamWritePtr stream;
-	if (!ray::IoServer::instance()->openFile(stream, path))
+	if (!ray::IoServer::instance()->saveFileToDiskUTF8(stream, path))
 		return false;
 
 	ray::PMXHandler header;

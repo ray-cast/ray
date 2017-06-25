@@ -99,8 +99,18 @@ std::size_t utf8_to_utf16(const char* data, std::size_t dataSize, wchar_t* dest,
 	if (size >= maxLength)
 		return 0;
 
-	return MultiByteToWideChar(CP_UTF8, 0, data, dataSize, dest, size) > 0 ? size : 0;
+	int len = MultiByteToWideChar(CP_UTF8, 0, data, dataSize, dest, size);
+	if (len <= 0)
+		return len;
+
+	dest[len] = L'\0';
+	return len;
 #endif
+}
+
+std::size_t utf16_to_utf8(const wchar_t * unicode, char* szUtf8, std::size_t max_length)
+{
+	return utf16_to_utf8(unicode, max_length, szUtf8, max_length);
 }
 
 std::size_t utf16_to_utf8(const wchar_t * src, std::size_t multiByteStr, char* dest, std::size_t max_length)
@@ -120,13 +130,18 @@ std::size_t utf16_to_utf8(const wchar_t * src, std::size_t multiByteStr, char* d
 	if (len >= max_length)
 		return 0;
 
-	len = WideCharToMultiByte(CP_UTF8, 0, src, multiByteStr, dest, len, NULL, NULL);
-	if (len <= 0)
-		return 0;
+	int size = WideCharToMultiByte(CP_UTF8, 0, src, multiByteStr, dest, len, NULL, NULL);
+	if (size <= 0)
+		return len;
 
-	dest[len] = '\0';
-	return len;
+	dest[size] = '\0';
+	return size;
 #endif
+}
+
+std::size_t acp_to_utf16(const char* src, wchar_t* dest, std::size_t max_length)
+{
+	return acp_to_utf16(src, max_length, dest, max_length);
 }
 
 std::size_t acp_to_utf16(const char* pszSrc, std::size_t multiByteStr, wchar_t* dest, std::size_t max_length)
@@ -150,7 +165,12 @@ std::size_t acp_to_utf16(const char* pszSrc, std::size_t multiByteStr, wchar_t* 
 	if (size >= max_length)
 		return 0;
 
-	return MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, multiByteStr, dest, size) > 0 ? size : false;
+	int len = MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, multiByteStr, dest, size);
+	if (len <= 0)
+		return size;
+
+	dest[len] = '\0';
+	return len;
 #endif
 }
 

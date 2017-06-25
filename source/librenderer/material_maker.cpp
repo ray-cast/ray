@@ -804,7 +804,7 @@ MaterialMaker::instanceInclude(MaterialManager& manager, Material& material, ixm
 		return true;
 
 	StreamReaderPtr stream;
-	if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
+	if (!IoServer::instance()->openFileURL(stream, filename, ios_base::in))
 		throw failure(__TEXT("Opening file fail:") + filename);
 
 	XMLReader xml;
@@ -825,7 +825,7 @@ MaterialMaker::load(MaterialManager& manager, Material& material, const std::str
 	try
 	{
 		StreamReaderPtr stream;
-		if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
+		if (!IoServer::instance()->openFileURL(stream, filename, ios_base::in))
 			throw failure(__TEXT("Opening file fail:") + filename);
 
 		XMLReader reader;

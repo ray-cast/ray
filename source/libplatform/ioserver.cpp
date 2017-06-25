@@ -37,6 +37,7 @@
 #include <ray/ioserver.h>
 #include <ray/iolistener.h>
 #include <ray/fstream.h>
+#include <ray/utf8.h>
 
 _NAME_BEGIN
 
@@ -92,11 +93,9 @@ IoServer&
 IoServer::addAssign(const IoAssign& assign) noexcept
 {
 	auto path = assign.path();
-	if (*path.rbegin() != '\\' &&
-		*path.rbegin() != '/')
-	{
+
+	if (!ray::util::isSeparator(*path.rbegin()))
 		path += SEPARATOR;
-	}
 
 	auto& entry = _assignTable[assign.name()];
 	if (!entry.empty())
@@ -146,9 +145,7 @@ IoServer::getAssign(const util::string& name, util::string& path) noexcept
 IoServer&
 IoServer::getResolveAssign(const util::string& url, util::string& resolvePath) noexcept
 {
-	util::string result = url;
-
-	std::size_t index = url.find_first_of(":", 0);
+	std::size_t index = url.find_first_of(':');
 	if (index > 1)
 	{
 		util::string path;
@@ -157,8 +154,8 @@ IoServer::getResolveAssign(const util::string& url, util::string& resolvePath) n
 		bool success = this->getAssign(assign, path);
 		if (success)
 		{
-			result.replace(result.begin(), result.begin() + index + 1, path);
-			resolvePath = result;
+			resolvePath = std::move(path);
+			resolvePath.append(url.begin() + index + 1, url.end());
 
 			this->setstate(ios_base::goodbit);
 			return *this;
@@ -170,21 +167,199 @@ IoServer::getResolveAssign(const util::string& url, util::string& resolvePath) n
 }
 
 IoServer&
-IoServer::openFile(StreamReaderPtr& stream, const util::string& path, open_mode mode) noexcept
+IoServer::getResolveAssign(util::string::const_pointer url, util::string& resolvePath) noexcept
 {
-	bool result = this->openFileFromFileSystem(stream, path, mode);
-	if (!result)
-		result = this->openFileFromDisk(stream, path, mode);
+	auto index = std::strchr(url, ':');
+	if (index > url)
+	{
+		util::string path;
+		util::string assign(url, index);
+
+		bool success = this->getAssign(assign, path);
+		if (success)
+		{
+			resolvePath = std::move(path);
+			resolvePath.append(index);
+
+			this->setstate(ios_base::goodbit);
+			return *this;
+		}
+	}
+
+	this->setstate(ios_base::failbit);
 	return *this;
 }
 
 IoServer&
-IoServer::openFile(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode) noexcept
+IoServer::openFileURL(StreamReaderPtr& stream, const util::string& path, open_mode mode) noexcept
 {
 	bool result = this->openFileFromFileSystem(stream, path, mode);
 	if (!result)
-		result = this->openFileFromDisk(stream, path, mode);
+		result = this->openFileFromDiskURL(stream, path, mode);
 	return *this;
+}
+
+IoServer&
+IoServer::openFileURL(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode) noexcept
+{
+	bool result = this->openFileFromFileSystem(stream, path, mode);
+	if (!result)
+		result = this->openFileFromDiskURL(stream, path, mode);
+	return *this;
+}
+
+IoServer&
+IoServer::openFileFromDisk(StreamReaderPtr& result, std::string::const_pointer resolvePath, open_mode mode) noexcept
+{
+	assert(resolvePath);
+
+	for (auto& listener : _ioListener)
+		listener->onMessage(std::string("loading resource : ") + resolvePath);
+
+	if (this->existsFileFromDisk(resolvePath, mode))
+	{
+		auto stream = std::make_shared<fstream>();
+		stream->setOpenMode(mode);
+		if (stream->open(resolvePath))
+		{
+			result = stream;
+			this->setstate(ios_base::goodbit);
+			return *this;
+		}
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::openFileFromDisk(StreamReaderPtr& result, const std::string& resolvePath, open_mode mode) noexcept
+{
+	assert(!resolvePath.empty());
+
+	for (auto& listener : _ioListener)
+		listener->onMessage("loading resource : " + resolvePath);
+
+	if (this->existsFileFromDisk(resolvePath, mode))
+	{
+		auto stream = std::make_shared<fstream>();
+		stream->setOpenMode(mode);
+		if (stream->open(resolvePath))
+		{
+			result = stream;
+			this->setstate(ios_base::goodbit);
+			return *this;
+		}
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::openFileFromDisk(StreamReaderPtr& result, std::wstring::const_pointer resolvePath, open_mode mode) noexcept
+{
+	assert(resolvePath);
+
+	if (this->existsFileFromDisk(resolvePath, mode))
+	{
+		auto stream = std::make_shared<fstream>();
+		stream->setOpenMode(mode);
+		if (stream->open(resolvePath))
+		{
+			result = stream;
+			this->setstate(ios_base::goodbit);
+			return *this;
+		}
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::openFileFromDisk(StreamReaderPtr& result, const std::wstring& resolvePath, open_mode mode) noexcept
+{
+	assert(!resolvePath.empty());
+
+	if (this->existsFileFromDisk(resolvePath, mode))
+	{
+		auto stream = std::make_shared<fstream>();
+		stream->setOpenMode(mode);
+		if (stream->open(resolvePath))
+		{
+			result = stream;
+			this->setstate(ios_base::goodbit);
+			return *this;
+		}
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::openFileFromDiskUTF8(StreamReaderPtr& result, util::string::const_pointer resolvePath, open_mode mode) noexcept
+{
+	assert(resolvePath);
+
+	for (auto& listener : _ioListener)
+		listener->onMessage(std::string("loading resource : ") + resolvePath);
+
+	wchar_t filepath[PATHLIMIT];
+	if (!utf8_to_utf16(resolvePath, util::strlen(resolvePath), filepath, PATHLIMIT))
+	{
+		this->setstate(ios_base::failbit);
+		return *this;
+	}
+
+	return this->openFileFromDisk(result, filepath, mode);
+}
+
+IoServer&
+IoServer::openFileFromDiskUTF8(StreamReaderPtr& result, const util::string& resolvePath, open_mode mode) noexcept
+{
+	assert(!resolvePath.empty());
+
+	for (auto& listener : _ioListener)
+		listener->onMessage("loading resource : " + resolvePath);
+
+	wchar_t filepath[PATHLIMIT];
+	if (!utf8_to_utf16(resolvePath.c_str(), resolvePath.size(), filepath, PATHLIMIT))
+	{
+		this->setstate(ios_base::failbit);
+		return *this;
+	}
+
+	return this->openFileFromDisk(result, filepath, mode);
+}
+
+IoServer&
+IoServer::openFileFromDiskURL(StreamReaderPtr& result, const util::string& path, open_mode mode) noexcept
+{
+	assert(!path.empty());
+
+	util::string resolvePath;
+	this->getResolveAssign(path, resolvePath);
+
+	if (!resolvePath.empty())
+		return this->openFileFromDiskUTF8(result, resolvePath, mode);
+	else
+		return this->openFileFromDiskUTF8(result, path, mode);
+}
+
+IoServer&
+IoServer::openFileFromDiskURL(StreamReaderPtr& result, util::string::const_pointer path, open_mode mode) noexcept
+{
+	assert(path);
+
+	util::string resolvePath;
+	this->getResolveAssign(path, resolvePath);
+
+	if (!resolvePath.empty())
+		return this->openFileFromDiskUTF8(result, resolvePath, mode);
+	else
+		return this->openFileFromDiskUTF8(result, path, mode);
 }
 
 IoServer&
@@ -202,85 +377,11 @@ IoServer::openFileFromFileSystem(StreamReaderPtr& stream, util::string::const_po
 }
 
 IoServer&
-IoServer::openFileFromDisk(StreamReaderPtr& result, util::string::const_pointer path, open_mode mode) noexcept
+IoServer::saveFileToDisk(StreamWritePtr& result, const util::string& resolvePath, open_mode mode) noexcept
 {
-	return this->openFileFromDisk(result, std::string(path), mode);
-}
+	assert(!resolvePath.empty());
 
-IoServer&
-IoServer::openFileFromDisk(StreamReaderPtr& result, const util::string& path, open_mode mode) noexcept
-{
-	for (auto& listener : _ioListener)
-		listener->onMessage("loading resource : " + path);
-
-	util::string resolvePath;
-	this->getResolveAssign(path, resolvePath);
-
-	if (resolvePath.empty())
-		resolvePath = path;
-
-	if (this->existsFileFromDisk(resolvePath))
-	{
-		auto stream = std::make_shared<fstream>();
-		stream->setOpenMode(mode);
-		if (stream->open(resolvePath))
-		{
-			result = stream;
-			this->setstate(ios_base::goodbit);
-			return *this;
-		}
-	}
-
-	for (auto& assign : _assignTable)
-	{
-		resolvePath = assign.second + path;
-
-		if (this->existsFileFromDisk(resolvePath))
-		{
-			auto stream = std::make_shared<fstream>();
-			stream->setOpenMode(mode);
-			if (stream->open(resolvePath))
-			{
-				result = stream;
-				this->setstate(ios_base::goodbit);
-				return *this;
-			}
-		}
-	}
-
-	this->setstate(ios_base::failbit);
-	return *this;
-}
-
-IoServer&
-IoServer::openFile(StreamWritePtr& stream, const util::string& path, open_mode mode) noexcept
-{
-	bool result = this->openFileFromFileSystem(stream, path, mode);
-	if (!result)
-		result = this->openFileFromDisk(stream, path, mode);
-	return *this;
-}
-
-IoServer&
-IoServer::openFileFromFileSystem(StreamWritePtr& stream, const util::string& path, open_mode mode) noexcept
-{
-	this->setstate(ios_base::failbit);
-	return *this;
-}
-
-IoServer&
-IoServer::openFileFromDisk(StreamWritePtr& result, const util::string& path, open_mode mode) noexcept
-{
-	for (auto& listener : _ioListener)
-		listener->onMessage("export resource : " + path);
-
-	util::string resolvePath;
-	this->getResolveAssign(path, resolvePath);
-
-	if (resolvePath.empty())
-		resolvePath = path;
-
-	auto stream = std::make_shared<fstream>();
+	auto stream = std::make_shared<ofstream>();
 	stream->setOpenMode(mode);
 	if (stream->open(resolvePath))
 	{
@@ -291,6 +392,127 @@ IoServer::openFileFromDisk(StreamWritePtr& result, const util::string& path, ope
 
 	this->setstate(ios_base::failbit);
 	return *this;
+}
+
+IoServer&
+IoServer::saveFileToDisk(StreamWritePtr& result, std::string::const_pointer resolvePath, open_mode mode) noexcept
+{
+	assert(resolvePath);
+
+	for (auto& listener : _ioListener)
+		listener->onMessage(std::string("loading resource : ") + resolvePath);
+
+	auto stream = std::make_shared<ofstream>();
+	stream->setOpenMode(mode);
+	if (stream->open(resolvePath))
+	{
+		result = stream;
+		this->setstate(ios_base::goodbit);
+		return *this;
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::saveFileToDisk(StreamWritePtr& result, const std::wstring& resolvePath, open_mode mode) noexcept
+{
+	assert(!resolvePath.empty());
+
+	auto stream = std::make_shared<ofstream>();
+	stream->setOpenMode(mode);
+	if (stream->open(resolvePath))
+	{
+		result = stream;
+		this->setstate(ios_base::goodbit);
+		return *this;
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::saveFileToDisk(StreamWritePtr& result, std::wstring::const_pointer resolvePath, open_mode mode) noexcept
+{
+	assert(resolvePath);
+
+	auto stream = std::make_shared<ofstream>();
+	stream->setOpenMode(mode);
+	if (stream->open(resolvePath))
+	{
+		result = stream;
+		this->setstate(ios_base::goodbit);
+		return *this;
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::saveFileToDiskUTF8(StreamWritePtr& result, const std::string& resolvePath, open_mode mode) noexcept
+{
+	assert(!resolvePath.empty());
+
+	for (auto& listener : _ioListener)
+		listener->onMessage("loading resource : " + resolvePath);
+
+	wchar_t filepath[PATHLIMIT];
+	if (!utf8_to_utf16(resolvePath.c_str(), resolvePath.size(), filepath, PATHLIMIT))
+	{
+		this->setstate(ios_base::failbit);
+		return *this;
+	}
+
+	return this->saveFileToDisk(result, filepath, mode);
+}
+
+IoServer&
+IoServer::saveFileToDiskUTF8(StreamWritePtr& result, std::string::const_pointer resolvePath, open_mode mode) noexcept
+{
+	assert(resolvePath);
+
+	for (auto& listener : _ioListener)
+		listener->onMessage(std::string("loading resource : ") + resolvePath);
+
+	wchar_t filepath[PATHLIMIT];
+	if (!utf8_to_utf16(resolvePath, util::strlen(resolvePath), filepath, PATHLIMIT))
+	{
+		this->setstate(ios_base::failbit);
+		return *this;
+	}
+
+	return this->saveFileToDisk(result, filepath, mode);
+}
+
+IoServer&
+IoServer::saveFileToDiskURL(StreamWritePtr& result, const util::string& path, open_mode mode) noexcept
+{
+	assert(path.c_str());
+
+	util::string resolvePath;
+	this->getResolveAssign(path, resolvePath);
+
+	if (!resolvePath.empty())
+		return this->saveFileToDiskUTF8(result, resolvePath, mode);
+	else
+		return this->saveFileToDiskUTF8(result, path, mode);
+}
+
+IoServer&
+IoServer::saveFileToDiskURL(StreamWritePtr& result, util::string::const_pointer path, open_mode mode) noexcept
+{
+	assert(path);
+
+	util::string resolvePath;
+	this->getResolveAssign(path, resolvePath);
+
+	if (!resolvePath.empty())
+		return this->saveFileToDiskUTF8(result, resolvePath, mode);
+	else
+		return this->saveFileToDiskUTF8(result, path, mode);
 }
 
 IoServer&
@@ -369,33 +591,79 @@ IoServer::existsFileFromFileSystem(const util::string& path) noexcept
 }
 
 IoServer&
-IoServer::existsFileFromDisk(const util::string& path) noexcept
+IoServer::existsFileFromDisk(std::string::const_pointer path, open_mode mode) noexcept
 {
-	util::string resolvePath;
-	this->getResolveAssign(path, resolvePath);
-
-	if (resolvePath.empty())
-		resolvePath = path;
-
-	if (faccess(resolvePath.c_str(), 0) == 0)
+	if (faccess(path, mode) == 0)
 	{
 		this->clear(ios_base::goodbit);
 		return *this;
 	}
 
-	for (auto& assign : _assignTable)
-	{
-		resolvePath = assign.second + path;
+	this->setstate(ios_base::failbit);
+	return *this;
+}
 
-		if (faccess(resolvePath.c_str(), 0) == 0)
-		{
-			this->clear(ios_base::goodbit);
-			return *this;
-		}
+IoServer&
+IoServer::existsFileFromDisk(std::wstring::const_pointer path, open_mode mode) noexcept
+{
+	if (faccess(path, mode) == 0)
+	{
+		this->clear(ios_base::goodbit);
+		return *this;
 	}
 
 	this->setstate(ios_base::failbit);
 	return *this;
+}
+
+IoServer&
+IoServer::existsFileFromDisk(const std::string& path, open_mode mode) noexcept
+{
+	if (faccess(path.c_str(), mode) == 0)
+	{
+		this->clear(ios_base::goodbit);
+		return *this;
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::existsFileFromDisk(const std::wstring& path, open_mode mode) noexcept
+{
+	if (faccess(path.c_str(), mode) == 0)
+	{
+		this->clear(ios_base::goodbit);
+		return *this;
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::existsFileFromDiskURL(const util::string& url, open_mode mode) noexcept
+{
+	util::string resolvePath;
+	this->getResolveAssign(url, resolvePath);
+
+	if (!resolvePath.empty())
+		return this->existsFileFromDisk(resolvePath, mode);
+	else
+		return this->existsFileFromDisk(url, mode);
+}
+
+IoServer&
+IoServer::existsFileFromDiskURL(util::string::const_pointer url, open_mode mode) noexcept
+{
+	util::string resolvePath;
+	this->getResolveAssign(url, resolvePath);
+
+	if (!resolvePath.empty())
+		return this->existsFileFromDisk(resolvePath, mode);
+	else
+		return this->existsFileFromDisk(url, mode);
 }
 
 IoServer&

@@ -540,6 +540,10 @@ int main(int argc, const char* argv[]) noexcept
 {
 	try
 	{
+#if GLFW_EXPOSE_NATIVE_WIN32
+		::SetConsoleOutputCP(CP_UTF8);
+#endif
+
 		if (argc != 0)
 		{
 			if (ray::fcntl::access(argv[0], 0) == 0)

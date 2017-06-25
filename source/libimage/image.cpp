@@ -42,8 +42,8 @@
 
 _NAME_BEGIN
 
-namespace image
-{
+using namespace image;
+
 Image::Image() noexcept
 {
 	this->_init();
@@ -80,7 +80,7 @@ Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, fo
 	return this->create(width, height, depth, format, 1, 1, 0, 0, clear);
 }
 
-bool 
+bool
 Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, format_t format, std::uint32_t mipLevel, std::uint32_t layerLevel, std::uint32_t mipBase, std::uint32_t layerBase, bool clear) noexcept
 {
 	assert(mipLevel >= 1);
@@ -245,34 +245,34 @@ Image::clear() noexcept
 	this->_init();
 }
 
-bool 
-Image::empty() const noexcept 
+bool
+Image::empty() const noexcept
 {
-	return _data == nullptr; 
+	return _data == nullptr;
 }
 
-std::uint32_t 
+std::uint32_t
 Image::width() const noexcept
 {
-	return _width; 
+	return _width;
 }
 
-std::uint32_t 
-Image::height() const noexcept 
+std::uint32_t
+Image::height() const noexcept
 {
-	return _height; 
+	return _height;
 }
 
-std::uint32_t 
-Image::depth() const noexcept 
+std::uint32_t
+Image::depth() const noexcept
 {
-	return _depth; 
+	return _depth;
 }
 
-std::size_t 
-Image::size() const noexcept 
+std::size_t
+Image::size() const noexcept
 {
-	return _size; 
+	return _size;
 }
 
 format_t
@@ -293,13 +293,13 @@ Image::mipLevel() const noexcept
 	return _mipLevel;
 }
 
-std::uint32_t 
+std::uint32_t
 Image::layerBase() const noexcept
 {
 	return _layerBase;
 }
 
-std::uint32_t 
+std::uint32_t
 Image::layerLevel() const noexcept
 {
 	return _layerLevel;
@@ -328,7 +328,16 @@ bool
 Image::load(const std::string& filename, const char* type) noexcept
 {
 	StreamReaderPtr stream;
-	if (IoServer::instance()->openFile(stream, filename))
+	if (IoServer::instance()->openFileURL(stream, filename))
+		return this->load(*stream, type);
+	return false;
+}
+
+bool
+Image::load(std::string::const_pointer filename, const char* type) noexcept
+{
+	StreamReaderPtr stream;
+	if (IoServer::instance()->openFileURL(stream, filename))
 		return this->load(*stream, type);
 	return false;
 }
@@ -337,7 +346,17 @@ bool
 Image::save(const std::string& filename, const char* type) noexcept
 {
 	StreamWritePtr stream;
-	if (IoServer::instance()->openFile(stream, filename))
+	if (IoServer::instance()->saveFileToDiskURL(stream, filename))
+		return this->save(*stream, type);
+
+	return false;
+}
+
+bool
+Image::save(std::string::const_pointer filename, const char* type) noexcept
+{
+	StreamWritePtr stream;
+	if (IoServer::instance()->saveFileToDiskURL(stream, filename))
 		return this->save(*stream, type);
 
 	return false;
@@ -361,7 +380,7 @@ Image::save(StreamWrite& stream, const char* type) noexcept
 	return false;
 }
 
-std::uint8_t 
+std::uint8_t
 Image::channel(format_t format) noexcept
 {
 	switch (format)
@@ -602,13 +621,13 @@ Image::channel(format_t format) noexcept
 	}
 }
 
-std::uint8_t 
+std::uint8_t
 Image::channel() const noexcept
 {
 	return channel(_format);
 }
 
-std::uint8_t 
+std::uint8_t
 Image::type_size(format_t format) noexcept
 {
 	switch (format)
@@ -849,7 +868,7 @@ Image::type_size(format_t format) noexcept
 	}
 }
 
-std::uint8_t 
+std::uint8_t
 Image::type_size() const noexcept
 {
 	return type_size(_format);
@@ -1110,7 +1129,7 @@ Image::value_type(format_t format) noexcept
 	}
 }
 
-value_t 
+value_t
 Image::value_type() const noexcept
 {
 	return value_type(_format);
@@ -1270,8 +1289,6 @@ Image::swizzle_t
 Image::swizzle_type() const noexcept
 {
 	return swizzle_type(_format);
-}
-
 }
 
 _NAME_END

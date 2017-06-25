@@ -167,17 +167,17 @@ GameScene::sendMessage(const MessagePtr& message) except
 }
 
 bool
-GameScene::load(const util::string& filename) noexcept
+GameScene::load(const util::string& sceneURL) noexcept
 {
-	assert(!filename.empty());
+	assert(!sceneURL.empty());
 
 	try
 	{
 		StreamReaderPtr stream;
-		if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
+		if (!IoServer::instance()->openFileURL(stream, sceneURL, ios_base::in))
 		{
 			if (_gameListener)
-				_gameListener->onMessage("Failed to open file : " + filename);
+				_gameListener->onMessage("Failed to open file : " + sceneURL);
 
 			return false;
 		}
@@ -186,7 +186,7 @@ GameScene::load(const util::string& filename) noexcept
 		if (!reader.is_object())
 		{
 			if (_gameListener)
-				_gameListener->onMessage("Non readable Scene file : " + filename);
+				_gameListener->onMessage("Non readable Scene file : " + sceneURL);
 
 			return false;
 		}
@@ -303,7 +303,7 @@ GameScene::save(oarchive& reader) noexcept
 }
 
 bool
-GameScene::save(const util::string& sceneName) noexcept
+GameScene::save(const util::string& sceneURL) noexcept
 {
 	return false;
 }

@@ -68,9 +68,9 @@ public:
 	void removeFeatures(GameFeaturePtr& feature) noexcept;
 
 	void setFileService(bool enable) noexcept;
-	void setFileServicePath(const util::string& path) noexcept;
 	void setFileServiceListener(bool enable) noexcept;
-	void setResDownloadURL(const util::string& path) noexcept;
+	bool setFileServicePath(const util::string& path) noexcept;
+	bool setResDownloadURL(const util::string& path) noexcept;
 
 	bool sendMessage(const MessagePtr& message) noexcept;
 	bool postMessage(const MessagePtr& message) noexcept;

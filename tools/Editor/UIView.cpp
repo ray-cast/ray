@@ -47,7 +47,6 @@
 #include <ray/graphics_texture.h>
 #include <ray/material.h>
 #include <ray/res_manager.h>
-#include <ray/utf8.h>
 
 __ImplementSubClass(GuiViewComponent, ray::GameComponent, "GuiView")
 
@@ -63,15 +62,7 @@ const char* TEXTURE_NORMAL_TYPE[] = { "RGB tangent space", "RG tangent space", "
 const char* TEXTURE_SPECULAR_TYPE[] = { "Specular color", "Specular color", "Specular gray", "Specular gray" };
 const char* TEXTURE_OCCLUSION_TYPE[] = { "linear", "sRGB", "linear with second UV", "sRGB with second UV" };
 
-const char g_SupportedFormats[] =
-"All Formats(*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr,*.fx,*.ies)\0"\
-"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;*.fx;*.ies;\0"\
-"All Images (*.bmp,*.png,*.jpg,*.tga,*.dds,*.hdr)\0"\
-"*.bmp;*.png;*.jpg;*.tga;*.dds;*.hdr;\0"\
-"All Materials (*.fx)\0"\
-"*.fx;\0"\
-"All IES Profiles (*.ies)\0"\
-"*.ies;\0";
+const char g_SupportedFormats[] = { "bmp,png,jpg,tga,dds,hdr;fx;ies" };
 
 std::vector<const char*> g_SupportedProject = { "map" };
 std::vector<const char*> g_SupportedIES = { "ies" };
@@ -187,10 +178,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 					return;
 				}
 
-				wchar_t buffer[PATHLIMIT];
-				ray::utf8_to_utf16(fullpath, buffer);
-
-				std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial, g_SupportedModel };
+				std::vector<const char*>* supportedImport[] = { &g_SupportedIES, &g_SupportedImages, &g_SupportedMaterial, &g_SupportedModel };
 
 				std::function<bool(const char*, char*&)>* delegate[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial, &_event.onImportModel };
 
@@ -198,7 +186,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 
 				for (std::size_t j = 0; j < sizeof(delegate) / sizeof(delegate[0]) && !_loaded; j++)
 				{
-					for (auto format : supportedImport[j])
+					for (const auto& format : *supportedImport[j])
 					{
 						if (ray::util::strcmp(name, format) != 0)
 							continue;
@@ -410,32 +398,68 @@ GuiViewComponent::showMainMenu() noexcept
 }
 
 bool
-GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name, bool multiSelect) noexcept
+GuiViewComponent::showFileOpenBrowse(ray::util::string::pointer filebuffer, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept
 {
-	assert(path && max_length > 0 && ext_name);
+	assert(filebuffer && max_length > 0 && ext_name);
 
-#if __WINDOWS__
-	OPENFILENAME ofn;
-	std::memset(&ofn, 0, sizeof(ofn));
+	nfdchar_t* outpath = nullptr;
 
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = 0;
-	ofn.lpstrFilter = ext_name;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFile = path;
-	ofn.nMaxFile = max_length;
-	ofn.lpstrInitialDir = 0;
-	ofn.lpstrTitle = _langs[UILang::ChooseFile];
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-	ofn.Flags |= multiSelect ? OFN_ALLOWMULTISELECT : 0;
+	try
+	{
+		nfdresult_t  result = NFD_OpenDialog(ext_name, nullptr, &outpath);
+		if (result != NFD_OKAY)
+			return false;
 
-	if (::GetOpenFileName(&ofn))
-		return true;
+		if (outpath)
+		{
+			ray::util::strncpy(filebuffer, outpath, max_length);
+			free(outpath);
 
-	return false;
-#else
-	return false;
-#endif
+			return true;
+		}
+
+		return false;
+	}
+	catch (...)
+	{
+		if (outpath) free(outpath);
+		return false;
+	}
+}
+
+bool
+GuiViewComponent::showFileOpenBrowse(std::vector<ray::util::string>& paths, ray::util::string::const_pointer ext_name) noexcept
+{
+	nfdpathset_t outpaths;
+	std::memset(&outpaths, 0, sizeof(outpaths));
+
+	try
+	{
+		nfdresult_t  result = NFD_OpenDialogMultiple(ext_name, nullptr, &outpaths);
+		if (result != NFD_OKAY)
+			return false;
+
+		if (outpaths.count)
+		{
+			paths.resize(outpaths.count);
+
+			for (std::size_t i = 0; i < outpaths.count; i++)
+				paths[i].assign(outpaths.buf + outpaths.indices[i]);
+
+			free(outpaths.buf);
+			free(outpaths.indices);
+			return true;
+		}
+
+		return false;
+	}
+	catch (...)
+	{
+		if (outpaths.buf) free(outpaths.buf);
+		if (outpaths.indices) free(outpaths.indices);
+
+		return false;
+	}
 }
 
 bool
@@ -443,27 +467,30 @@ GuiViewComponent::showFileSaveBrowse(ray::util::string::pointer path, std::uint3
 {
 	assert(path && max_length > 0 && ext_name);
 
-#if __WINDOWS__
-	OPENFILENAME ofn;
-	std::memset(&ofn, 0, sizeof(ofn));
+	nfdchar_t* outpath = nullptr;
 
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = 0;
-	ofn.lpstrFilter = ext_name;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFile = path;
-	ofn.nMaxFile = max_length;
-	ofn.lpstrInitialDir = 0;
-	ofn.lpstrTitle = _langs[UILang::SaveAs];
-	ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	try
+	{
+		nfdresult_t  result = NFD_SaveDialog(ext_name, nullptr, &outpath);
+		if (result != NFD_OKAY)
+			return false;
 
-	if (::GetSaveFileName(&ofn))
-		return true;
+		if (outpath)
+		{
+			ray::util::strncpy(path, outpath, max_length);
+			free(outpath);
 
-	return false;
-#else
-	return false;
-#endif
+			return true;
+		}
+
+		return false;
+	}
+	catch (...)
+	{
+		if (outpath) free(outpath);
+
+		return false;
+	}
 }
 
 bool
@@ -475,7 +502,7 @@ GuiViewComponent::showFolderSaveBrowse(ray::util::string::pointer path, std::uin
 
 	try
 	{
-		nfdresult_t  result = NFD_PickFolder(nullptr, &outpath);
+		nfdresult_t result = NFD_PickFolder(nullptr, &outpath);
 		if (result != NFD_OKAY)
 			return false;
 
@@ -487,8 +514,7 @@ GuiViewComponent::showFolderSaveBrowse(ray::util::string::pointer path, std::uin
 			auto length = std::strlen(path) - 1;
 			if (length > 0 && (length + 2) < PATHLIMIT)
 			{
-				if (path[length] != '\\' &&
-					path[length] != '/')
+				if (!ray::util::isSeparator(path[length]))
 				{
 					path[length + 1] = SEPARATOR;
 					path[length + 2] = '\0';
@@ -505,8 +531,6 @@ GuiViewComponent::showFolderSaveBrowse(ray::util::string::pointer path, std::uin
 		if (outpath) free(outpath);
 		return false;
 	}
-
-	return true;
 }
 
 void
@@ -515,7 +539,7 @@ GuiViewComponent::showProjectOpenBrowse() noexcept
 	ray::util::string::value_type filepath[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
 
-	if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
+	if (!showFileOpenBrowse(filepath, PATHLIMIT, g_SupportedProject[0]))
 		return;
 
 	if (_event.onProjectOpen)
@@ -559,7 +583,7 @@ GuiViewComponent::showProjectSaveAsBrowse() noexcept
 		ray::util::string::value_type filepath[PATHLIMIT];
 		std::memset(filepath, 0, sizeof(filepath));
 
-		if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("Scene Flie(*.map)\0*.map;\0All File(*.*)\0*.*;\0\0")))
+		if (!showFileSaveBrowse(filepath, PATHLIMIT, g_SupportedProject[0]))
 			return;
 
 		if (std::strlen(filepath) < (PATHLIMIT - 5))
@@ -592,7 +616,7 @@ GuiViewComponent::showImportModelBrowse() noexcept
 		ray::util::string::value_type filepath[PATHLIMIT];
 		std::memset(filepath, 0, sizeof(filepath));
 
-		if (!showFileOpenBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
+		if (!showFileOpenBrowse(filepath, PATHLIMIT, g_SupportedModel[0]))
 			return;
 
 		ray::util::string::pointer error = nullptr;
@@ -614,43 +638,14 @@ GuiViewComponent::showImportModelBrowse() noexcept
 void
 GuiViewComponent::showImportAssetBrowse() noexcept
 {
+	static std::vector<const char*>* supportedImport[] = { &g_SupportedIES, &g_SupportedImages, &g_SupportedMaterial };
+	static std::function<bool(const char*, char*&)>* delegates[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial };
+
 	if (_event.onImportIES || _event.onImportTexture || _event.onImportMaterial)
 	{
-		ray::util::string::value_type filepath[PATHLIMIT];
-		ray::util::string::value_type filebuffer[PATHLIMIT];
-		std::memset(filepath, 0, sizeof(filepath));
-		std::memset(filebuffer, 0, sizeof(filebuffer));
-
-		if (!showFileOpenBrowse(filebuffer, PATHLIMIT, g_SupportedFormats, true))
-			return;
-
-		auto length = ray::util::strlen(filebuffer) + 1;
-		auto lengthForStream = length;
-
 		std::vector<std::string> filepaths;
-
-		if (!filebuffer[lengthForStream] && length > 0)
-		{
-			ray::util::strncpy(filepath, filebuffer, length);
-			ray::util::toUnixPath(filepath, filepath, PATHLIMIT);
-			filepaths.emplace_back(filepath, lengthForStream);
-		}
-		else
-		{
-			while (lengthForStream < PATHLIMIT && filebuffer[lengthForStream])
-			{
-				ray::util::strncpy(filepath, filebuffer, length);
-				ray::util::strcat(filepath, "/");
-				ray::util::strcat(filepath, filebuffer + lengthForStream);
-				ray::util::toUnixPath(filepath, filepath, PATHLIMIT);
-				filepaths.push_back(filepath);
-
-				lengthForStream += ray::util::strlen(filebuffer + lengthForStream) + 1;
-			}
-		}
-
-		std::vector<const char*> supportedImport[] = { g_SupportedIES, g_SupportedImages, g_SupportedMaterial };
-		std::function<bool(const char*, char*&)>* delegates[] = { &_event.onImportIES, &_event.onImportTexture, &_event.onImportMaterial };
+		if (!showFileOpenBrowse(filepaths, g_SupportedFormats))
+			return;
 
 		for (auto& it : filepaths)
 		{
@@ -662,7 +657,7 @@ GuiViewComponent::showImportAssetBrowse() noexcept
 
 			for (std::size_t i = 0; i < sizeof(delegates) / sizeof(delegates[0]) && !loaded; i++)
 			{
-				for (auto format : supportedImport[i])
+				for (const auto& format : *supportedImport[i])
 				{
 					if (ray::util::strcmp(name, format) != 0)
 						continue;
@@ -702,7 +697,7 @@ GuiViewComponent::showExportModelBrowse() noexcept
 	ray::util::string::value_type filepath[PATHLIMIT];
 	std::memset(filepath, 0, sizeof(filepath));
 
-	if (!showFileSaveBrowse(filepath, PATHLIMIT, TEXT("PMX Flie(*.pmx)\0*.pmx;\0All File(*.*)\0*.*;\0\0")))
+	if (!showFileSaveBrowse(filepath, PATHLIMIT, g_SupportedModel[0]))
 		return;
 
 	if (std::strlen(filepath) < (PATHLIMIT - 5))

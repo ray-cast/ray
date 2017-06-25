@@ -58,20 +58,37 @@ public:
 	IoServer& addAssign(const IoAssign& assign) noexcept;
 	IoServer& removeAssign(const util::string& name) noexcept;
 	IoServer& getAssign(const util::string& name, util::string& path) noexcept;
-	IoServer& getResolveAssign(const util::string& url, util::string& resolvePath) noexcept;
 
-	IoServer& openFile(StreamReaderPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
-	IoServer& openFile(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode = ios_base::in) noexcept;
+	IoServer& getResolveAssign(const util::string& url, util::string& resolvePath) noexcept;
+	IoServer& getResolveAssign(util::string::const_pointer url, util::string& resolvePath) noexcept;
+
+	IoServer& openFileURL(StreamReaderPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileURL(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode = ios_base::in) noexcept;
+
+	IoServer& openFileFromDisk(StreamReaderPtr& stream, const std::string& resolvePath, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromDisk(StreamReaderPtr& stream, std::string::const_pointer resolvePath, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromDisk(StreamReaderPtr& stream, const std::wstring& resolvePath, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromDisk(StreamReaderPtr& stream, std::wstring::const_pointer resolvePath, open_mode mode = ios_base::in) noexcept;
+
+	IoServer& openFileFromDiskUTF8(StreamReaderPtr& stream, const std::string& resolvePath, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromDiskUTF8(StreamReaderPtr& stream, std::string::const_pointer resolvePath, open_mode mode = ios_base::in) noexcept;
+
+	IoServer& openFileFromDiskURL(StreamReaderPtr& stream, const util::string& url, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromDiskURL(StreamReaderPtr& stream, util::string::const_pointer url, open_mode mode = ios_base::in) noexcept;
 
 	IoServer& openFileFromFileSystem(StreamReaderPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
 	IoServer& openFileFromFileSystem(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode = ios_base::in) noexcept;
 
-	IoServer& openFileFromDisk(StreamReaderPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
-	IoServer& openFileFromDisk(StreamReaderPtr& stream, util::string::const_pointer path, open_mode mode = ios_base::in) noexcept;
+	IoServer& saveFileToDisk(StreamWritePtr& stream, const std::string& resolvePath, open_mode mode = ios_base::out) noexcept;
+	IoServer& saveFileToDisk(StreamWritePtr& stream, std::string::const_pointer resolvePath, open_mode mode = ios_base::out) noexcept;
+	IoServer& saveFileToDisk(StreamWritePtr& stream, const std::wstring& resolvePath, open_mode mode = ios_base::out) noexcept;
+	IoServer& saveFileToDisk(StreamWritePtr& stream, std::wstring::const_pointer resolvePath, open_mode mode = ios_base::out) noexcept;
 
-	IoServer& openFile(StreamWritePtr& stream, const util::string& path, open_mode mode = ios_base::out) noexcept;
-	IoServer& openFileFromFileSystem(StreamWritePtr& stream, const util::string& path, open_mode mode = ios_base::out) noexcept;
-	IoServer& openFileFromDisk(StreamWritePtr& stream, const util::string& path, open_mode mode = ios_base::out) noexcept;
+	IoServer& saveFileToDiskUTF8(StreamWritePtr& stream, const std::string& resolvePath, open_mode mode = ios_base::out) noexcept;
+	IoServer& saveFileToDiskUTF8(StreamWritePtr& stream, std::string::const_pointer resolvePath, open_mode mode = ios_base::out) noexcept;
+
+	IoServer& saveFileToDiskURL(StreamWritePtr& stream, const util::string& url, open_mode mode = ios_base::out) noexcept;
+	IoServer& saveFileToDiskURL(StreamWritePtr& stream, util::string::const_pointer url, open_mode mode = ios_base::out) noexcept;
 
 	IoServer& openFile(StreamPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
 	IoServer& openFileFromFileSystem(StreamPtr& stream, const util::string& path, open_mode mode = ios_base::in) noexcept;
@@ -79,9 +96,16 @@ public:
 
 	IoServer& deleteFile(const util::string& path) noexcept;
 
-	IoServer& existsFile(const util::string& path) noexcept;
-	IoServer& existsFileFromFileSystem(const util::string& path) noexcept;
-	IoServer& existsFileFromDisk(const util::string& path) noexcept;
+	IoServer& existsFile(const std::string& path) noexcept;
+	IoServer& existsFileFromFileSystem(const std::string& path) noexcept;
+
+	IoServer& existsFileFromDisk(const std::string& path, open_mode mode = 0) noexcept;
+	IoServer& existsFileFromDisk(const std::wstring& path, open_mode mode = 0) noexcept;
+	IoServer& existsFileFromDisk(std::string::const_pointer path, open_mode mode = 0) noexcept;
+	IoServer& existsFileFromDisk(std::wstring::const_pointer path, open_mode mode = 0) noexcept;
+
+	IoServer& existsFileFromDiskURL(const util::string& url, open_mode mode = 0) noexcept;
+	IoServer& existsFileFromDiskURL(util::string::const_pointer url, open_mode mode = 0) noexcept;
 
 	IoServer& copyFile(const util::string& path, const util::string& to) noexcept;
 

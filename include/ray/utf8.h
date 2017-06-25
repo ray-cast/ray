@@ -45,8 +45,11 @@ EXPORT std::size_t utf8_to_gbk(char* dest, std::size_t maxLength, const char* da
 
 EXPORT std::size_t utf8_to_utf16(const char* src, wchar_t* dest, std::size_t size = PATHLIMIT);
 EXPORT std::size_t utf8_to_utf16(const char* src, std::size_t size, wchar_t* dest, std::size_t maxLength);
+
+EXPORT std::size_t utf16_to_utf8(const wchar_t * unicode, char* szUtf8, std::size_t max_length = PATHLIMIT);
 EXPORT std::size_t utf16_to_utf8(const wchar_t * unicode, std::size_t multiByteStr, char* szUtf8, std::size_t max_length);
 
+EXPORT std::size_t acp_to_utf16(const char* src, wchar_t* dest, std::size_t max_length = PATHLIMIT);
 EXPORT std::size_t acp_to_utf16(const char* src, std::size_t multiByteStr, wchar_t* dest, std::size_t max_length);
 EXPORT std::size_t utf16_to_acp(const wchar_t* src, std::size_t max_length, char* dest, std::size_t multiByteStr);
 

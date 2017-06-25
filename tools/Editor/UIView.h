@@ -76,7 +76,8 @@ private:
 	void showPopupMessage(const ray::util::string& title, const ray::util::string& message, std::size_t hash) noexcept;
 	void showProcessMessage() noexcept;
 
-	bool showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name, bool multiSelect = false) noexcept;
+	bool showFileOpenBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
+	bool showFileOpenBrowse(std::vector<ray::util::string>& paths, ray::util::string::const_pointer ext_name) noexcept;
 	bool showFileSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length, ray::util::string::const_pointer ext_name) noexcept;
 	bool showFolderSaveBrowse(ray::util::string::pointer path, std::uint32_t max_length) noexcept;
 

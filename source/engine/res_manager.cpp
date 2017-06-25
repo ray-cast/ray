@@ -93,7 +93,7 @@ ResManager::createTexture(const util::string& name, GraphicsTexturePtr& _texture
 	}
 
 	StreamReaderPtr stream;
-	if (!IoServer::instance()->openFile(stream, name))
+	if (!IoServer::instance()->openFileURL(stream, name))
 		return false;
 
 	image::Image image;
@@ -231,7 +231,7 @@ bool
 ResManager::createModel(const util::string& filename, ModelPtr& model) noexcept
 {
 	StreamReaderPtr stream;
-	if (IoServer::instance()->openFile(stream, filename))
+	if (IoServer::instance()->openFileURL(stream, filename))
 	{
 		if (!model)
 			model = std::make_shared<Model>();
@@ -715,13 +715,13 @@ ResManager::createJoints(const Model& model, const GameObjects& rigidbodys, Game
 
 			joints.push_back(joint->getGameObject());
 		}
-		}
+	}
 
 	return true;
 #else
 	return false;
 #endif
-	}
+}
 
 MaterialPtr
 ResManager::_buildDefaultMaterials(const MaterialProperty& material, const util::string& file, const util::string& directory) noexcept

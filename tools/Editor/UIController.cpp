@@ -1219,6 +1219,15 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 			if (ray::utf16_to_utf8(model->description.englishModelName.data(), model->description.englishModelLength, name, MAX_PATH))
 				gameObject->setName(name);
 		}
+		else
+		{
+			char drive[MAX_PATH];
+			char dir[PATHLIMIT];
+			char filename[PATHLIMIT];
+			char ext[MAX_PATH];
+			_splitpath(path, drive, dir, filename, ext);
+			gameObject->setName(filename);
+		}
 
 		if (model->numVertices > 0 && model->numIndices > 0)
 		{
@@ -1314,8 +1323,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 
 				if (diffuseIndex >= 0)
 				{
-					char name[PATHLIMIT];
-					if (::wcstombs(name, model->textures[diffuseIndex].name, model->textures[diffuseIndex].length))
+					if (ray::utf16_to_utf8(model->textures[diffuseIndex].name, model->textures[diffuseIndex].length, name, MAX_PATH))
 					{
 						char* error = nullptr;
 						this->loadTexture(ray::util::directory(path) + name, diffuseMap, error);
@@ -1324,8 +1332,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 
 				if (specularIndex >= 0)
 				{
-					char name[MAX_PATH];
-					if (::wcstombs(name, model->textures[specularIndex].name, model->textures[specularIndex].length) > 0)
+					if (ray::utf16_to_utf8(model->textures[specularIndex].name, model->textures[specularIndex].length, name, MAX_PATH) > 0)
 					{
 						char* error = nullptr;
 						this->loadTexture(ray::util::directory(path) + name, specularMap, error);
@@ -1334,8 +1341,7 @@ GuiControllerComponent::onImportModel(ray::util::string::const_pointer path, ray
 
 				if (toonIndex >= 0)
 				{
-					char name[MAX_PATH];
-					if (::wcstombs(name, model->textures[toonIndex].name, model->textures[toonIndex].length) > 0)
+					if (ray::utf16_to_utf8(model->textures[toonIndex].name, model->textures[toonIndex].length, name, MAX_PATH) > 0)
 					{
 						char* error = nullptr;
 						this->loadTexture(ray::util::directory(path) + name, toonMap, error);

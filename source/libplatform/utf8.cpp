@@ -92,18 +92,18 @@ std::size_t utf8_to_utf16(const char* data, std::size_t dataSize, wchar_t* dest,
 
 	return out_size;
 #else
-	int size = MultiByteToWideChar(CP_UTF8, 0, data, -1, 0, 0);
-	if (size <= 0)
+	int size = MultiByteToWideChar(CP_UTF8, 0, data, -1, 0, 0) + 1;
+	assert(size > 1);
+
+	if (size <= 1)
 		return 0;
 
 	if (size >= maxLength)
 		return 0;
 
-	int len = MultiByteToWideChar(CP_UTF8, 0, data, dataSize, dest, size);
-	if (len <= 0)
-		return len;
+	int len = MultiByteToWideChar(CP_UTF8, 0, data, -1, dest, size);
+	assert(len);
 
-	dest[len] = L'\0';
 	return len;
 #endif
 }
@@ -123,18 +123,18 @@ std::size_t utf16_to_utf8(const wchar_t * src, std::size_t multiByteStr, char* d
 	str[size] = '\0';
 	return str;
 #else
-	int len = WideCharToMultiByte(CP_UTF8, 0, src, -1, NULL, 0, NULL, NULL);
-	if (len <= 0)
+	int len = WideCharToMultiByte(CP_UTF8, 0, src, -1, NULL, 0, NULL, NULL) + 1;
+	assert(len > 1);
+
+	if (len <= 1)
 		return 0;
 
 	if (len >= max_length)
 		return 0;
 
-	int size = WideCharToMultiByte(CP_UTF8, 0, src, multiByteStr, dest, len, NULL, NULL);
-	if (size <= 0)
-		return len;
+	int size = WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, len + 1, NULL, NULL);
+	assert(size);
 
-	dest[size] = '\0';
 	return size;
 #endif
 }
@@ -158,18 +158,18 @@ std::size_t acp_to_utf16(const char* pszSrc, std::size_t multiByteStr, wchar_t* 
 	dest[size] = 0;
 	return true;
 #else
-	int size = MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, -1, 0, 0);
-	if (size <= 0)
+	int size = MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, -1, 0, 0) + 1;
+	assert(size > 1);
+
+	if (size <= 1)
 		return 0;
 
 	if (size >= max_length)
 		return 0;
 
-	int len = MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, multiByteStr, dest, size);
-	if (len <= 0)
-		return size;
+	int len = MultiByteToWideChar(CP_THREAD_ACP, 0, pszSrc, -1, dest, size);
+	assert(len);
 
-	dest[len] = '\0';
 	return len;
 #endif
 }
@@ -188,18 +188,18 @@ std::size_t utf16_to_acp(const wchar_t* src, std::size_t max_length, char* dest,
 	dest[size] = 0;
 	return true;
 #else
-	int len = WideCharToMultiByte(CP_THREAD_ACP, 0, src, -1, NULL, 0, NULL, NULL);
-	if (len <= 0)
+	int len = WideCharToMultiByte(CP_THREAD_ACP, 0, src, -1, NULL, 0, NULL, NULL) + 1;
+	assert(len > 1);
+
+	if (len <= 1)
 		return 0;
 
 	if (len >= max_length)
 		return 0;
 
-	len = WideCharToMultiByte(CP_THREAD_ACP, 0, src, multiByteStr, dest, len, NULL, NULL);
-	if (len <= 0)
-		return 0;
+	len = WideCharToMultiByte(CP_THREAD_ACP, 0, src, -1, dest, len, NULL, NULL);
+	assert(len);
 
-	dest[len] = '\0';
 	return len;
 #endif
 }

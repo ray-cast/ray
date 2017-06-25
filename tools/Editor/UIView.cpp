@@ -810,7 +810,7 @@ GuiViewComponent::showMessage() noexcept
 
 	if (ray::Gui::beginPopupModal(_messageTitle.c_str(), &_isShowMessage, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
-		ray::Gui::text(_messageText.c_str());
+		ray::Gui::textUnformatted(_messageText.c_str());
 		ray::Gui::separator();
 
 		ray::Gui::pushStyleVar(ray::GuiStyleVar::GuiStyleVarFramePadding, ray::float2::Zero);
@@ -864,8 +864,8 @@ GuiViewComponent::showProcessMessage() noexcept
 	{
 		ray::Gui::setWindowSize(ray::float2(ray::Gui::getDisplaySize().x / 3, 90));
 		ray::Gui::progressBar(_progress);
-		ray::Gui::text("");
-		ray::Gui::text("");
+		ray::Gui::textUnformatted("");
+		ray::Gui::textUnformatted("");
 		ray::Gui::sameLine((ray::Gui::getWindowWidth() - 100) / 2, 0.0);
 
 		if (_lightMassType == LightMassType::UVMapper)
@@ -933,9 +933,9 @@ GuiViewComponent::showAboutWindow() noexcept
 
 	if (ray::Gui::beginPopupModal(_langs[UILang::About], &_isShowAboutWindow, ray::GuiWindowFlagBits::GuiWindowFlagAlwaysAutoResizeBit | ray::GuiWindowFlagBits::GuiWindowFlagNoSavedSettingsBit))
 	{
-		ray::Gui::text("Ray Studio Ver.0.1 beta");
-		ray::Gui::text("Developer by : Rui (https://twitter.com/Rui_cg)");
-		ray::Gui::text("Copyright (c) 2017-2018. All rights reserved.");
+		ray::Gui::textUnformatted("Ray Studio Ver.0.1 beta");
+		ray::Gui::textUnformatted("Developer by : Rui (https://twitter.com/Rui_cg)");
+		ray::Gui::textUnformatted("Copyright (c) 2017-2018. All rights reserved.");
 
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColBorder, ray::float4::Zero);
 		ray::Gui::separator();
@@ -994,7 +994,7 @@ GuiViewComponent::showStyleEditor() noexcept
 			ray::Gui::sliderFloat("ScrollbarRounding", &_style.ScrollbarRounding, 0.0f, 16.0f, "%.0f");
 			ray::Gui::sliderFloat("GrabMinSize", &_style.GrabMinSize, 1.0f, 20.0f, "%.0f");
 			ray::Gui::sliderFloat("GrabRounding", &_style.GrabRounding, 0.0f, 16.0f, "%.0f");
-			ray::Gui::text("Alignment");
+			ray::Gui::textUnformatted("Alignment");
 			ray::Gui::sliderFloat2("WindowTitleAlign", (float*)&_style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
 			ray::Gui::sliderFloat2("ButtonTextAlign", (float*)&_style.ButtonTextAlign, 0.0f, 1.0f, "%.2f");
 			ray::Gui::sameLine();
@@ -1198,14 +1198,14 @@ GuiViewComponent::showAssetsWindow() noexcept
 
 	if (ray::Gui::beginDock("Assets", &_isShowAssertWindow))
 	{
-		ray::Gui::text("");
+		ray::Gui::textUnformatted("");
 		ray::Gui::sameLine();
 		if (ray::Gui::button(_langs[UILang::Import])) { this->showImportAssetBrowse(); }
 		ray::Gui::sameLine();
 		if (ray::Gui::button(_langs[UILang::Export])) { this->showExportAssetBrowse(); }
 
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
-		ray::Gui::text("");
+		ray::Gui::textUnformatted("");
 		ray::Gui::sameLine();
 
 		const EditorAssetItems* textures;
@@ -1228,7 +1228,7 @@ GuiViewComponent::showAssetsWindow() noexcept
 				if (ray::Gui::getContentRegionAvailWidth() < imageSize.x)
 				{
 					ray::Gui::newLine();
-					ray::Gui::text("");
+					ray::Gui::textUnformatted("");
 					ray::Gui::sameLine();
 				}
 
@@ -1291,14 +1291,14 @@ GuiViewComponent::showMaterialsWindow() noexcept
 
 	if (ray::Gui::beginDock("Materials", &_isShowMaterialWindow))
 	{
-		ray::Gui::text("");
+		ray::Gui::textUnformatted("");
 		ray::Gui::sameLine();
 		if (ray::Gui::button("Import...")) { this->showImportAssetBrowse(); }
 		ray::Gui::sameLine();
 		if (ray::Gui::button("Export...")) { this->showExportMaterialBrowse(); }
 
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, ray::float4::Zero);
-		ray::Gui::text("");
+		ray::Gui::textUnformatted("");
 		ray::Gui::sameLine();
 
 		const EditorAssetItems* _materials;
@@ -1314,7 +1314,7 @@ GuiViewComponent::showMaterialsWindow() noexcept
 				if (ray::Gui::getContentRegionAvailWidth() < _assetImageSize.x)
 				{
 					ray::Gui::newLine();
-					ray::Gui::text("");
+					ray::Gui::textUnformatted("");
 					ray::Gui::sameLine();
 				}
 
@@ -1550,7 +1550,7 @@ GuiViewComponent::showEditTransformWindow(ray::GameObject* object) noexcept
 		auto rotationCache = rotation;
 		auto scaling = object->getScale();
 
-		ray::Gui::text("Position");
+		ray::Gui::textUnformatted("Position");
 		ray::Gui::sameLine(80.0f);
 		ray::Gui::pushItemWidth(-1);
 		if (ray::Gui::dragFloat3("##Position", translate.ptr(), 0.1f, -FLT_MAX, FLT_MAX))
@@ -1561,7 +1561,7 @@ GuiViewComponent::showEditTransformWindow(ray::GameObject* object) noexcept
 
 		ray::Gui::popItemWidth();
 
-		ray::Gui::text("Scale");
+		ray::Gui::textUnformatted("Scale");
 		ray::Gui::sameLine(80.0f);
 		ray::Gui::pushItemWidth(-1);
 		if (ray::Gui::dragFloat3("##Scale", scaling.ptr(), 0.1f, 1e-3f, FLT_MAX))
@@ -1572,7 +1572,7 @@ GuiViewComponent::showEditTransformWindow(ray::GameObject* object) noexcept
 
 		ray::Gui::popItemWidth();
 
-		ray::Gui::text("Rotation");
+		ray::Gui::textUnformatted("Rotation");
 		ray::Gui::sameLine(80.0f);
 		ray::Gui::pushItemWidth(-1);
 		if (ray::Gui::dragFloat3("##Rotation", rotation.ptr(), 0.1f, -360, 360))
@@ -1605,15 +1605,15 @@ GuiViewComponent::showEditCameraWindow(ray::CameraComponent* camera) noexcept
 		float zfar = camera->getFar();
 		float fov = camera->getAperture();
 
-		ray::Gui::text("Field of view:");
+		ray::Gui::textUnformatted("Field of view:");
 		if (ray::Gui::dragFloat("##fov", &fov, 0.1f, 1, 125))
 			camera->setAperture(fov);
 
-		ray::Gui::text("Near:");
+		ray::Gui::textUnformatted("Near:");
 		if (ray::Gui::dragFloat("##znear", &znear, 1e-3f, 1e-3, 1.0f, "%.03f"))
 			camera->setNear(znear);
 
-		ray::Gui::text("Far:");
+		ray::Gui::textUnformatted("Far:");
 		if (ray::Gui::dragFloat("##zfar", &zfar, 0.1f, 0, 99999))
 			camera->setFar(zfar);
 
@@ -1628,7 +1628,7 @@ GuiViewComponent::showEditLightWindow(ray::LightComponent* light) noexcept
 	{
 		float range = light->getLightRange();
 
-		ray::Gui::text("Range:");
+		ray::Gui::textUnformatted("Range:");
 		if (ray::Gui::dragFloat("##range", &range, 1.0f, 1.0f, 1000.0f, "%.03f"))
 			light->setLightRange(range);
 
@@ -1655,13 +1655,13 @@ GuiViewComponent::showEditSkyboxWindow(ray::SkyboxComponent* skybox) noexcept
 			aspert.set((float)width / height, 1.0f);
 		}
 
-		ray::Gui::text("sky Texture (sRGB):");
+		ray::Gui::textUnformatted("sky Texture (sRGB):");
 		ray::Gui::imageButton(skyTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
 
-		ray::Gui::text("sky irradiance:");
+		ray::Gui::textUnformatted("sky irradiance:");
 		ray::Gui::imageButton(skyDiffTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
 
-		ray::Gui::text("sky radiance:");
+		ray::Gui::textUnformatted("sky radiance:");
 		ray::Gui::imageButton(skySpecTexture.get(), _assetImageSize * aspert, ray::float2::Zero, ray::float2::One, (int)_style.ItemInnerSpacing.x, _style.Colors[ray::GuiCol::GuiColChildWindowBg]);
 
 		ray::Gui::treePop();
@@ -1732,21 +1732,21 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto albedoMapScaleDiffuse = false;
 			auto albedoMapLoopNum = material["albedoMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##albedoMapFrom", &albedoMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["albedoMapFrom"]->uniform1i(albedoMapFrom);
 
 			if (albedoMapFrom >= 1 && albedoMapFrom <= 6)
 			{
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##albedoMapFlip", &albedoMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["albedoMapFlip"]->uniform1i(albedoMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##albedoMapLoopNum", albedoMapLoopNum.ptr(), 0.05, 0.0, FLT_MAX))
 					material["albedoMapLoopNum"]->uniform2f(albedoMapLoopNum);
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (albedoMap)
@@ -1766,7 +1766,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				}
 			}
 
-			ray::Gui::text("Color (sRGB):");
+			ray::Gui::textUnformatted("Color (sRGB):");
 			if (ray::Gui::colorPicker3("##albedoColor", albedoColor.ptr()))
 				material["albedo"]->uniform3f(ray::math::pow(albedoColor, 2.2f));
 
@@ -1787,25 +1787,25 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto albedoSubMapFlip = material["albedoSubMapFlip"]->value().getInt();
 			auto albedoSubMapLoopNum = material["albedoSubMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture type:");
+			ray::Gui::textUnformatted("Texture type:");
 			if (ray::Gui::combo("##albedoSubType", &albedoSubType, TEXTURE_SUBALBEDO_TYPE, sizeof(TEXTURE_SUBALBEDO_TYPE) / sizeof(TEXTURE_SUBALBEDO_TYPE[0])))
 				material["albedoSubType"]->uniform1i(albedoSubType);
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##albedoSubMapFrom", &albedoSubMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["albedoSubMapFrom"]->uniform1i(albedoSubMapFrom);
 
 			if (albedoSubMapFrom >= 1 && albedoSubMapFrom <= 6)
 			{
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##albedoSubMapFlip", &albedoSubMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["albedoSubMapFlip"]->uniform1i(albedoSubMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##albedoSubMapLoopNum", albedoSubMapLoopNum.ptr(), 0.05, 0.0, FLT_MAX, "%.3f", 2.2f))
 					material["albedoSubMapLoopNum"]->uniform2f(albedoSubMapLoopNum);
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (albedoSubMap)
@@ -1825,7 +1825,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				}
 			}
 
-			ray::Gui::text("Color (sRGB):");
+			ray::Gui::textUnformatted("Color (sRGB):");
 			if (ray::Gui::colorPicker3("##albedoSubColor", albedoSubColor.ptr()))
 				material["albedoSub"]->uniform3f(ray::math::pow(albedoSubColor, 2.2f));
 
@@ -1841,29 +1841,29 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto normalMapScale = material["normalMapScale"]->value().getFloat();
 			auto normalMapLoopNum = material["normalMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##normalMapFrom", &normalMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["normalMapFrom"]->uniform1i(normalMapFrom);
 
 			if (normalMapFrom >= 1 && normalMapFrom <= 6)
 			{
-				ray::Gui::text("Texture type:");
+				ray::Gui::textUnformatted("Texture type:");
 				if (ray::Gui::combo("##normalMapType", &normalMapType, TEXTURE_NORMAL_TYPE, sizeof(TEXTURE_NORMAL_TYPE) / sizeof(TEXTURE_NORMAL_TYPE[0])))
 					material["normalMapType"]->uniform1i(normalMapType);
 
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##normalMapFlip", &normalMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["normalMapFlip"]->uniform1i(normalMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##normalMapLoopNum", normalMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["normalMapLoopNum"]->uniform2f(normalMapLoopNum);
 
-				ray::Gui::text("Strength:");
+				ray::Gui::textUnformatted("Strength:");
 				if (ray::Gui::dragFloat("##normalMapScale", &normalMapScale, 0.05f, -FLT_MAX, FLT_MAX))
 					material["normalMapScale"]->uniform1f(normalMapScale);
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (normalMap)
@@ -1895,28 +1895,28 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto normalSubMapScale = material["normalSubMapScale"]->value().getFloat();
 			auto normalSubMapLoopNum = material["normalSubMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##normalSubMapFrom", &normalSubMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["normalSubMapFrom"]->uniform1i(normalSubMapFrom);
 
 			if (normalSubMapFrom >= 1 && normalSubMapFrom <= 6)
 			{
-				ray::Gui::text("Texture type:");
+				ray::Gui::textUnformatted("Texture type:");
 				ray::Gui::combo("##normalSubMapType", &normalSubMapType, TEXTURE_NORMAL_TYPE, sizeof(TEXTURE_NORMAL_TYPE) / sizeof(TEXTURE_NORMAL_TYPE[0]));
 
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##normalSubMapFlip", &normalSubMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["normalSubMapFlip"]->uniform1i(normalSubMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##normalSubMapLoopNum", normalSubMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["normalSubMapLoopNum"]->uniform2f(normalSubMapLoopNum);
 
-				ray::Gui::text("Strength:");
+				ray::Gui::textUnformatted("Strength:");
 				if (ray::Gui::dragFloat("##normalSubMapScale", &normalSubMapScale, 0.05f, -FLT_MAX, FLT_MAX))
 					material["normalSubMapScale"]->uniform1f(normalSubMapScale);
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (normalSubMap)
@@ -1948,25 +1948,25 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto smoothnessMapFlip = material["smoothnessMapFlip"]->value().getInt();
 			auto smoothnessMapLoopNum = material["smoothnessMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##smoothnessMapFrom", &smoothnessMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["smoothnessMapFrom"]->uniform1i(smoothnessMapFrom);
 
 			if (smoothnessMapFrom >= 1 && smoothnessMapFrom <= 6)
 			{
-				ray::Gui::text("Texture type:");
+				ray::Gui::textUnformatted("Texture type:");
 				if (ray::Gui::combo("##smoothnessMapType", &smoothnessMapType, TEXTURE_SMOOTHNESS_TYPE, sizeof(TEXTURE_SMOOTHNESS_TYPE) / sizeof(TEXTURE_SMOOTHNESS_TYPE[0])))
 					material["smoothnessMapType"]->uniform1i(smoothnessMapType);
 
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##smoothness Flip", &smoothnessMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["smoothnessMapFlip"]->uniform1i(smoothnessMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##smoothnessMapLoopNum", smoothnessMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["smoothnessMapLoopNum"]->uniform2f(smoothnessMapLoopNum);
 
-				ray::Gui::text("Texture swizzle:");
+				ray::Gui::textUnformatted("Texture swizzle:");
 				ray::Gui::button("R", ray::float2(40, 20));
 
 				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
@@ -1984,7 +1984,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (smoothnessMap)
@@ -2004,7 +2004,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				}
 			}
 
-			ray::Gui::text("Smoothness:");
+			ray::Gui::textUnformatted("Smoothness:");
 			if (ray::Gui::sliderFloat("##Smoothness", &smoothness, 0.0f, 1.0f, "%.03f"))
 				material["smoothness"]->uniform1f(smoothness);
 
@@ -2019,21 +2019,21 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto metalnessMapFlip = material["metalnessMapFlip"]->value().getInt();
 			auto metalnessMapLoopNum = material["metalnessMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##metalnessMapFrom", &metalnessMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["metalnessMapFrom"]->uniform1i(metalnessMapFrom);
 
 			if (metalnessMapFrom >= 1 && metalnessMapFrom <= 6)
 			{
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##metalness Flip", &metalnessMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["metalnessMapFlip"]->uniform1i(metalnessMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##metalnessMapLoopNum", metalnessMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["metalnessMapLoopNum"]->uniform2f(metalnessMapLoopNum);
 
-				ray::Gui::text("Texture swizzle:");
+				ray::Gui::textUnformatted("Texture swizzle:");
 				ray::Gui::button("R", ray::float2(40, 20));
 
 				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
@@ -2051,7 +2051,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (metalnessMap)
@@ -2071,7 +2071,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				}
 			}
 
-			ray::Gui::text("Metalness:");
+			ray::Gui::textUnformatted("Metalness:");
 			if (ray::Gui::sliderFloat("##Metalness", &metalness, 0.0f, 1.0f))
 				material["metalness"]->uniform1f(metalness);
 
@@ -2086,21 +2086,21 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto specularMapFlip = material["specularMapFlip"]->value().getInt();
 			auto specularMapLoopNum = material["specularMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##specularMapFrom", &specularMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["specularMapFrom"]->uniform1i(specularMapFrom);
 
 			if (specularMapFrom >= 1 && specularMapFrom <= 6)
 			{
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##specularMapFlip", &specularMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["specularMapFlip"]->uniform1i(specularMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##specularMapLoopNum", specularMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["specularMapLoopNum"]->uniform2f(specularMapLoopNum);
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (specularMap)
@@ -2120,7 +2120,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				}
 			}
 
-			ray::Gui::text("Color (sRGB):");
+			ray::Gui::textUnformatted("Color (sRGB):");
 			if (ray::Gui::colorPicker3("##specular", specular.ptr()))
 				material["specular"]->uniform3f(ray::math::pow(specular, 2.2f));
 
@@ -2135,21 +2135,21 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto occlusionMapFlip = material["occlusionMapFlip"]->value().getInt();
 			auto occlusionMapLoopNum = material["occlusionMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##occlusionMapFrom ", &occlusionMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["occlusionMapFrom"]->uniform1i(occlusionMapFrom);
 
 			if (occlusionMapFrom >= 1 && occlusionMapFrom <= 6)
 			{
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##occlusion Flip", &occlusionMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["occlusionMapFlip"]->uniform1i(occlusionMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##occlusionMapLoopNum", occlusionMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["occlusionMapLoopNum"]->uniform2f(occlusionMapLoopNum);
 
-				ray::Gui::text("Texture swizzle:");
+				ray::Gui::textUnformatted("Texture swizzle:");
 				ray::Gui::button("R", ray::float2(40, 20));
 
 				ray::Gui::pushStyleColor(ray::GuiCol::GuiColButton, _style.Colors[ray::GuiCol::GuiColTextDisabled]);
@@ -2167,7 +2167,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				ray::Gui::button("A", ray::float2(40, 20));
 				ray::Gui::popStyleColor();
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (occlusionMap)
@@ -2187,7 +2187,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				}
 			}
 
-			ray::Gui::text("Occlusion:");
+			ray::Gui::textUnformatted("Occlusion:");
 			if (ray::Gui::sliderFloat("##occlusion", &occlusion, 0.0f, 1.0f))
 				material["occlusion"]->uniform1f(occlusion);
 
@@ -2203,21 +2203,21 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			auto emissiveMapFlip = material["emissiveMapFlip"]->value().getInt();
 			auto emissiveMapLoopNum = material["emissiveMapLoopNum"]->value().getFloat2();
 
-			ray::Gui::text("Texture from:");
+			ray::Gui::textUnformatted("Texture from:");
 			if (ray::Gui::combo("##emissiveMapFrom", &emissiveMapFrom, TEXTURE_MAP_FROM, sizeof(TEXTURE_MAP_FROM) / sizeof(TEXTURE_MAP_FROM[0])))
 				material["emissiveMapFrom"]->uniform1i(emissiveMapFrom);
 
 			if (emissiveMapFrom >= 1 && emissiveMapFrom <= 6)
 			{
-				ray::Gui::text("Texture Flip:");
+				ray::Gui::textUnformatted("Texture Flip:");
 				if (ray::Gui::combo("##emissive Flip", &emissiveMapFlip, TEXTURE_MAP_UV_FLIP, sizeof(TEXTURE_MAP_UV_FLIP) / sizeof(TEXTURE_MAP_UV_FLIP[0])))
 					material["emissiveMapFlip"]->uniform1i(emissiveMapFlip);
 
-				ray::Gui::text("Texture loop:");
+				ray::Gui::textUnformatted("Texture loop:");
 				if (ray::Gui::dragFloat2("##emissiveMapLoopNum", emissiveMapLoopNum.ptr(), 0.05f, 0.0, FLT_MAX))
 					material["emissiveMapLoopNum"]->uniform2f(emissiveMapLoopNum);
 
-				ray::Gui::text("Texture (sRGB):");
+				ray::Gui::textUnformatted("Texture (sRGB):");
 
 				ray::float2 aspert = ray::float2::One;
 				if (emissiveMap)
@@ -2237,11 +2237,11 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 				}
 			}
 
-			ray::Gui::text("Intensity:");
+			ray::Gui::textUnformatted("Intensity:");
 			if (ray::Gui::sliderFloat("##emissiveIntensity", &emissiveIntensity, 0.0f, 4.0f))
 				material["emissiveIntensity"]->uniform1f(emissiveIntensity);
 
-			ray::Gui::text("Color:");
+			ray::Gui::textUnformatted("Color:");
 			if (ray::Gui::colorPicker3("##emissiveColor", emissiveColor.ptr()))
 				material["emissive"]->uniform3f(ray::math::pow(emissiveColor, 2.2f));
 
@@ -2267,19 +2267,19 @@ GuiViewComponent::showLightMass() noexcept
 	{
 		if (ray::Gui::treeNodeEx(_langs[UILang::UvMapper], ray::GuiTreeNodeFlagBits::GuiTreeNodeFlagDefaultOpenBit))
 		{
-			ray::Gui::text(_langs[UILang::OutputUVSize]);
+			ray::Gui::textUnformatted(_langs[UILang::OutputUVSize]);
 			ray::Gui::comboWithRevert("##UV size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 
-			ray::Gui::text(_langs[UILang::OutputUVSlot]);
+			ray::Gui::textUnformatted(_langs[UILang::OutputUVSlot]);
 			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
-			ray::Gui::text(_langs[UILang::UVMargin]);
+			ray::Gui::textUnformatted(_langs[UILang::UVMargin]);
 			ray::Gui::sliderFloatWithRevert("##margin", _langs[UILang::Revert], &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
 
-			ray::Gui::text(_langs[UILang::UVStretch]);
+			ray::Gui::textUnformatted(_langs[UILang::UVStretch]);
 			ray::Gui::sliderFloatWithRevert("##stretch", _langs[UILang::Revert], &_setting.uvmapper.stretch, _default.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
 
-			ray::Gui::text(_langs[UILang::UVChart]);
+			ray::Gui::textUnformatted(_langs[UILang::UVChart]);
 			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert], &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
 
 			if (ray::Gui::button(_langs[UILang::StartUVMapper]))
@@ -2295,31 +2295,31 @@ GuiViewComponent::showLightMass() noexcept
 			if (_setting.lightmass.enableGI)
 				ray::Gui::checkbox(_langs[UILang::EnableIBL], &_setting.lightmass.enableSkyLighting);
 
-			ray::Gui::text(_langs[UILang::OutputImageSize]);
+			ray::Gui::textUnformatted(_langs[UILang::OutputImageSize]);
 			ray::Gui::comboWithRevert("##Output size", _langs[UILang::Revert], &_setting.lightmass.imageSize, _default.lightmass.imageSize, itemsImageSize, sizeof(itemsImageSize) / sizeof(itemsImageSize[0]));
 
-			ray::Gui::text(_langs[UILang::InputUVSlot]);
+			ray::Gui::textUnformatted(_langs[UILang::InputUVSlot]);
 			ray::Gui::comboWithRevert("##Output UV slot", _langs[UILang::Revert], &_setting.uvmapper.slot, _default.uvmapper.slot, itemsUVSlot, sizeof(itemsUVSlot) / sizeof(itemsUVSlot[0]));
 
-			ray::Gui::text(_langs[UILang::SampleCount]);
+			ray::Gui::textUnformatted(_langs[UILang::SampleCount]);
 			ray::Gui::comboWithRevert("##Sample Count", _langs[UILang::Revert], &_setting.lightmass.sampleCount, _default.lightmass.sampleCount, itemsSampleSize, sizeof(itemsSampleSize) / sizeof(itemsSampleSize[0]));
 
-			ray::Gui::text(_langs[UILang::EnvironmentColor]);
+			ray::Gui::textUnformatted(_langs[UILang::EnvironmentColor]);
 			ray::Gui::colorPicker3WithRevert("##Environment Color", _langs[UILang::Revert], _setting.lightmass.environmentColor.ptr(), _default.lightmass.environmentColor.ptr());
 
-			ray::Gui::text(_langs[UILang::EnvironmentIntensity]);
+			ray::Gui::textUnformatted(_langs[UILang::EnvironmentIntensity]);
 			ray::Gui::sliderFloatWithRevert("##Environment Intensity", _langs[UILang::Revert], &_setting.lightmass.environmentColor.w, _default.lightmass.environmentColor.w, 0.0f, 10.0f, "%.5f", 2.2);
 
-			ray::Gui::text(_langs[UILang::RayTracingZnear]);
+			ray::Gui::textUnformatted(_langs[UILang::RayTracingZnear]);
 			ray::Gui::sliderFloatWithRevert("##Ray tracing znear", _langs[UILang::Revert], &_setting.lightmass.hemisphereNear, _default.lightmass.hemisphereNear, 0.01f, 1.0, "%.5f", 2.2);
 
-			ray::Gui::text(_langs[UILang::RayTracingZfar]);
+			ray::Gui::textUnformatted(_langs[UILang::RayTracingZfar]);
 			ray::Gui::sliderFloatWithRevert("##Ray tracing zfar", _langs[UILang::Revert], &_setting.lightmass.hemisphereFar, _default.lightmass.hemisphereFar, 10.0f, 1000.0f, "%.5f", 2.2);
 
-			ray::Gui::text(_langs[UILang::InterpolationPasses]);
+			ray::Gui::textUnformatted(_langs[UILang::InterpolationPasses]);
 			ray::Gui::sliderIntWithRevert("##Interpolation Passes", _langs[UILang::Revert], &_setting.lightmass.interpolationPasses, _default.lightmass.interpolationPasses, 1, 5);
 
-			ray::Gui::text(_langs[UILang::InterpolationThreshold]);
+			ray::Gui::textUnformatted(_langs[UILang::InterpolationThreshold]);
 			ray::Gui::sliderFloatWithRevert("##Interpolation Threshold", _langs[UILang::Revert], &_setting.lightmass.interpolationThreshold, _default.lightmass.interpolationThreshold, 1e-6f, 1e-2f, "%.6f", 2.2);
 
 			if (ray::Gui::button(_langs[UILang::StartLightMass]))

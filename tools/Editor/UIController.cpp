@@ -421,10 +421,10 @@ GuiControllerComponent::makeSphereObjects() noexcept
 	ray::GraphicsTexturePtr normalMap;
 
 	char* error = nullptr;
-	if (!this->loadTexture("dlc:common/textures/Bricks_ao.dds", diffuseMap, error))
+	if (!this->loadTexture("dlc:Editor/textures/Bricks_ao.dds", diffuseMap, error))
 		return false;
 
-	if (!this->loadTexture("dlc:common/textures/Bricks_n.dds", normalMap, error))
+	if (!this->loadTexture("dlc:Editor/textures/Bricks_n.dds", normalMap, error))
 		return false;
 
 	ray::MaterialPtr material;
@@ -535,7 +535,7 @@ GuiControllerComponent::makeSkyLighting() noexcept
 	ray::GraphicsTexturePtr skybox;
 
 	char* error = nullptr;
-	if (!this->loadTexture("dlc:common/textures/uffizi_sky.hdr", skybox, error))
+	if (!this->loadTexture("dlc:Editor/textures/uffizi_sky.hdr", skybox, error))
 		return false;
 
 	auto light = std::make_shared<ray::LightComponent>();
@@ -545,8 +545,8 @@ GuiControllerComponent::makeSkyLighting() noexcept
 
 	auto sky = std::make_shared<ray::SkyboxComponent>();
 	sky->setSkyBox(skybox);
-	sky->loadSkyDiffuse("dlc:common/textures/uffizi_diff.dds");
-	sky->loadSkySpecular("dlc:common/textures/uffizi_spec.dds");
+	sky->loadSkyDiffuse("dlc:Editor/textures/uffizi_diff.dds");
+	sky->loadSkySpecular("dlc:Editor/textures/uffizi_spec.dds");
 
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setName("sky");

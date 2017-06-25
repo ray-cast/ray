@@ -331,13 +331,17 @@ GameApplication::setFileServicePath(const util::string& filepath) noexcept
 {
 	assert(_ioServer);
 
-	auto tmp = filepath;
-	if (!ray::util::isSeparator(*tmp.rbegin()))
-		tmp += SEPARATOR;
-
 	wchar_t wpath[PATHLIMIT];
-	if (!ray::acp_to_utf16(filepath.c_str(), wpath))
-		return false;
+	if (!ray::util::isSeparator(*filepath.rbegin()))
+	{
+		if (!ray::acp_to_utf16((filepath + SEPARATOR).c_str(), wpath))
+			return false;
+	}
+	else
+	{
+		if (!ray::acp_to_utf16(filepath.c_str(), wpath))
+			return false;
+	}
 
 	char path[PATHLIMIT];
 	if (!ray::utf16_to_utf8(wpath, path))
@@ -369,8 +373,16 @@ GameApplication::setResDownloadURL(const util::string& filepath) noexcept
 	assert(_ioServer);
 
 	wchar_t wpath[PATHLIMIT];
-	if (!ray::acp_to_utf16(filepath.c_str(), wpath))
-		return false;
+	if (!ray::util::isSeparator(*filepath.rbegin()))
+	{
+		if (!ray::acp_to_utf16((filepath + SEPARATOR).c_str(), wpath))
+			return false;
+	}
+	else
+	{
+		if (!ray::acp_to_utf16(filepath.c_str(), wpath))
+			return false;
+	}
 
 	char path[PATHLIMIT];
 	if (!ray::utf16_to_utf8(wpath, path))

@@ -98,7 +98,31 @@ public:
 		LightProbes,
 		Meshes,
 		Import,
-		Export
+		Export,
+		TextureFrom,
+		TextureFlip,
+		TextureLoop,
+		Texture_sRGB,
+		TextureType,
+		TextureSwizzle,
+		Color_sRGB,
+		Strength,
+		Albedo,
+		AlbedoSub,
+		Normal,
+		NormalSub,
+		Smoothness,
+		Metalness,
+		Specular,
+		Occlusion,
+		Emissive,
+		EmissiveIntensity,
+		ShadingModel,
+		Summary,
+		Transform,
+		Position,
+		Rotation,
+		Scaling
 	};
 
 	enum class Lang
@@ -108,6 +132,6 @@ public:
 	};
 };
 
-void GetLangPackage(UILang::Lang type, std::vector<const char*>& langs) noexcept;
+void GetLangPackage(UILang::Lang type, std::vector<std::string>& langs) noexcept;
 
 #endif

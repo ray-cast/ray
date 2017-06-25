@@ -163,7 +163,7 @@ private:
 	LightMassType _lightMassType;
 
 	std::string _pathProject;
-	std::vector<const char*> _langs;
+	std::vector<std::string> _langs;
 
 	std::size_t _messageHash;
 	std::string _messageTitle;

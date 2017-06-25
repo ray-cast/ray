@@ -343,15 +343,13 @@ GameApplication::setFileServicePath(const util::string& filepath) noexcept
 	if (!ray::utf16_to_utf8(wpath, path))
 		return false;
 
+	util::toUnixPath(path, path, PATHLIMIT);
+
 	_workDir = path;
 
-	auto engineDir = tmp + _engineDir;
-	auto resourceBaseDir = tmp + _resourceBaseDir;
-
 	_ioServer->addAssign({ "bin", _workDir });
-	_ioServer->addAssign({ "sys", engineDir });
-	_ioServer->addAssign({ "sys:media/UI/", engineDir + "media/UI/" });
-	_ioServer->addAssign({ "dlc", resourceBaseDir });
+	_ioServer->addAssign({ "sys", _workDir + _engineDir });
+	_ioServer->addAssign({ "dlc", _workDir + _resourceBaseDir });
 
 	return true;
 }
@@ -377,6 +375,8 @@ GameApplication::setResDownloadURL(const util::string& filepath) noexcept
 	char path[PATHLIMIT];
 	if (!ray::utf16_to_utf8(wpath, path))
 		return false;
+
+	util::toUnixPath(path, path, PATHLIMIT);
 
 	if (_downloadURL != path)
 	{

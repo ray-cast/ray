@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "UIView.h"
 #include "UITexts.h"
+#include "nativefiledialog/nfd.h"
 #include <ray/gui_message.h>
 #include <ray/ioserver.h>
 #include <ray/input.h>
@@ -47,10 +48,6 @@
 #include <ray/material.h>
 #include <ray/res_manager.h>
 #include <ray/utf8.h>
-
-#if __WINDOWS__
-#include <ShlObj.h>
-#endif
 
 __ImplementSubClass(GuiViewComponent, ray::GameComponent, "GuiView")
 
@@ -474,36 +471,42 @@ GuiViewComponent::showFolderSaveBrowse(ray::util::string::pointer path, std::uin
 {
 	assert(path && max_length > 0);
 
-#if __WINDOWS__
-	BROWSEINFO bi;
-	std::memset(&bi, 0, sizeof(BROWSEINFO));
+	nfdchar_t* outpath = nullptr;
 
-	bi.hwndOwner = NULL;
-	bi.pszDisplayName = path;
-	bi.lpszTitle = _langs[UILang::ChooseFile];
-	bi.ulFlags = BIF_NEWDIALOGSTYLE;
-	LPITEMIDLIST idl = SHBrowseForFolder(&bi);
-	if (NULL == idl)
-		return false;
-
-	if (!SHGetPathFromIDList(idl, path))
-		return false;
-
-	auto length = std::strlen(path) - 1;
-	if (length > 0 && length < PATHLIMIT)
+	try
 	{
-		if (path[length] != '\\' &&
-			path[length] != '/')
+		nfdresult_t  result = NFD_PickFolder(nullptr, &outpath);
+		if (result != NFD_OKAY)
+			return false;
+
+		if (outpath)
 		{
-			path[length + 1] += SEPARATOR;
+			ray::util::strncpy(path, outpath, max_length);
+			free(outpath);
+
+			auto length = std::strlen(path) - 1;
+			if (length > 0 && (length + 2) < PATHLIMIT)
+			{
+				if (path[length] != '\\' &&
+					path[length] != '/')
+				{
+					path[length + 1] = SEPARATOR;
+					path[length + 2] = '\0';
+				}
+			}
+
+			return true;
 		}
+
+		return false;
+	}
+	catch (...)
+	{
+		if (outpath) free(outpath);
+		return false;
 	}
 
 	return true;
-
-#else
-	return false;
-#endif
 }
 
 void

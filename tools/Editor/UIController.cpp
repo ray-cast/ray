@@ -48,7 +48,7 @@
 #include <ray/ioserver.h>
 #include <ray/mstream.h>
 #include <ray/jsonreader.h>
-
+#include <ray/deferred_lighting_framebuffers.h>
 #include <ray/utf8.h>
 #include <ray/camera_component.h>
 #include <ray/light_component.h>
@@ -392,12 +392,16 @@ GuiControllerComponent::makeMainCamera() noexcept
 	if (!framebuffer)
 		return false;
 
+	auto pipelineFramebuffer = std::make_shared<ray::DeferredLightingFramebuffers>();
+	pipelineFramebuffer->setup(*ray::RenderSystem::instance(), ray::Gui::getDisplaySize().x, ray::Gui::getDisplaySize().y);
+	pipelineFramebuffer->setFramebuffer(std::move(framebuffer));
+
 	auto camera = std::make_shared<ray::CameraComponent>();
 	camera->setAperture(60.0f);
 	camera->setNear(0.1f);
 	camera->setFar(20000.0f);
-	camera->setFramebuffer(framebuffer);
-	camera->setCameraRenderFlags(ray::CameraRenderFlagBits::CameraRenderTextureBit | ray::CameraRenderFlagBits::CameraRenderShadingBit);
+	camera->setRenderPipelineFramebuffer(std::move(pipelineFramebuffer));
+	camera->setCameraRenderFlags(ray::CameraRenderFlagBits::CameraRenderTextureBit);
 
 	auto object = std::make_shared<ray::GameObject>();
 	object->setName("main camera");
@@ -692,9 +696,9 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 		if (!cameraComponent)
 			return;
 
-		auto fb = cameraComponent->getFramebuffer();
-		if (fb->getGraphicsFramebufferDesc().getWidth() != event.change.w ||
-			fb->getGraphicsFramebufferDesc().getHeight() != event.change.h)
+		auto fb = cameraComponent->getRenderPipelineFramebuffer();
+		if (fb->getFramebuffer()->getGraphicsFramebufferDesc().getWidth() != event.change.w ||
+			fb->getFramebuffer()->getGraphicsFramebufferDesc().getHeight() != event.change.h)
 		{
 			ray::GraphicsTextureDesc textureDesc;
 			textureDesc.setWidth(event.change.w);
@@ -720,7 +724,11 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 			if (!framebuffer)
 				return;
 
-			cameraComponent->setFramebuffer(framebuffer);
+			auto pipelineFramebuffer = std::make_shared<ray::DeferredLightingFramebuffers>();
+			pipelineFramebuffer->setup(*ray::RenderSystem::instance(), ray::Gui::getDisplaySize().x, ray::Gui::getDisplaySize().y);
+			pipelineFramebuffer->setFramebuffer(std::move(framebuffer));
+
+			cameraComponent->setRenderPipelineFramebuffer(pipelineFramebuffer);
 		}
 	}
 	break;

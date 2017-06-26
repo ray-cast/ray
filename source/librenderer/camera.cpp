@@ -55,7 +55,7 @@ Camera::Camera() noexcept
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)
 	, _cameraClearType(CameraClearFlagBits::CameraClearColorBit)
-	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
+	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit)
 	, _needUpdateViewProject(true)
 	, _project(float4x4::One)
 	, _projectInverse(float4x4::One)

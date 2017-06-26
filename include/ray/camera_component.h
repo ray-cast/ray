@@ -97,8 +97,9 @@ public:
 	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
 
-	void setFramebuffer(const GraphicsFramebufferPtr& texture) noexcept;
-	const GraphicsFramebufferPtr& getFramebuffer() const noexcept;
+	void setRenderPipelineFramebuffer(RenderPipelineFramebufferPtr&& texture) noexcept;
+	void setRenderPipelineFramebuffer(const RenderPipelineFramebufferPtr& texture) noexcept;
+	const RenderPipelineFramebufferPtr& getRenderPipelineFramebuffer() const noexcept;
 
 	void load(const archivebuf& reader) noexcept;
 	void save(archivebuf& write) noexcept;

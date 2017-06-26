@@ -51,6 +51,31 @@ public:
 
 	bool setup(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height);
 
+	const GraphicsTexturePtr& getDeferredDepthMap() const noexcept { return _deferredDepthMap; }
+	const GraphicsTexturePtr& getDeferredDepthLinearMap() const noexcept { return _deferredDepthLinearMap; }
+	const GraphicsTexturePtr& getDeferredGbuffer1Map() const noexcept { return _deferredGbuffer1Map; }
+	const GraphicsTexturePtr& getDeferredGbuffer2Map() const noexcept { return _deferredGbuffer2Map; }
+	const GraphicsTexturePtr& getDeferredGbuffer3Map() const noexcept { return _deferredGbuffer3Map; }
+	const GraphicsTexturePtr& getDeferredGbuffer4Map() const noexcept { return _deferredGbuffer4Map; }
+	const GraphicsTexturePtr& getDeferredLightingMap() const noexcept { return _deferredLightingMap; }
+	const GraphicsTexturePtr& getDeferredOpaqueShadingMap() const noexcept { return _deferredOpaqueShadingMap; }
+	const GraphicsTexturePtr& getDeferredTransparentShadingMap() const noexcept { return _deferredTransparentShadingMap; }
+	const GraphicsTexturePtr& getDeferredFinalShadingMap() const noexcept { return _deferredFinalShadingMap; }
+	const GraphicsTexturePtr& getDeferredSwapMap() const noexcept { return _deferredSwapMap; }
+
+	const GraphicsFramebufferPtr& getDeferredDepthView() const noexcept { return _deferredDepthView; }
+	const GraphicsFramebufferPtr& getDeferredDepthLinearView() const noexcept { return _deferredDepthLinearView; }
+	const GraphicsFramebufferPtr& getDeferredGbuffer1View() const noexcept { return _deferredGbuffer1View; }
+	const GraphicsFramebufferPtr& getDeferredGbuffer2View() const noexcept { return _deferredGbuffer2View; }
+	const GraphicsFramebufferPtr& getDeferredGbuffer3View() const noexcept { return _deferredGbuffer3View; }
+	const GraphicsFramebufferPtr& getDeferredGbuffer4View() const noexcept { return _deferredGbuffer4View; }
+	const GraphicsFramebufferPtr& getDeferredGbuffersView() const noexcept { return _deferredGbuffersView; }
+	const GraphicsFramebufferPtr& getDeferredLightingView() const noexcept { return _deferredLightingView; }
+	const GraphicsFramebufferPtr& getDeferredOpaqueShadingView() const noexcept { return _deferredOpaqueShadingView; }
+	const GraphicsFramebufferPtr& getDeferredTransparentShadingViews() const noexcept { return _deferredTransparentShadingViews; }
+	const GraphicsFramebufferPtr& getDeferredFinalShadingView() const noexcept { return _deferredFinalShadingView; }
+	const GraphicsFramebufferPtr& getDeferredSwapView() const noexcept { return _deferredSwapView; }
+
 private:
 	DeferredLightingFramebuffers(const DeferredLightingFramebuffers&) noexcept = delete;
 	DeferredLightingFramebuffers& operator=(const DeferredLightingFramebuffers&) noexcept = delete;

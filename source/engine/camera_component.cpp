@@ -255,15 +255,21 @@ CameraComponent::getCameraRenderFlags() const noexcept
 }
 
 void
-CameraComponent::setFramebuffer(const GraphicsFramebufferPtr& texture) noexcept
+CameraComponent::setRenderPipelineFramebuffer(RenderPipelineFramebufferPtr&& framebuffer) noexcept
 {
-	_camera->getRenderPipelineFramebuffer()->setFramebuffer(texture);
+	_camera->setRenderPipelineFramebuffer(std::move(framebuffer));
 }
 
-const GraphicsFramebufferPtr&
-CameraComponent::getFramebuffer() const noexcept
+void
+CameraComponent::setRenderPipelineFramebuffer(const RenderPipelineFramebufferPtr& framebuffer) noexcept
 {
-	return _camera->getRenderPipelineFramebuffer()->getFramebuffer();
+	_camera->setRenderPipelineFramebuffer(framebuffer);
+}
+
+const RenderPipelineFramebufferPtr&
+CameraComponent::getRenderPipelineFramebuffer() const noexcept
+{
+	return _camera->getRenderPipelineFramebuffer();
 }
 
 void
@@ -381,16 +387,6 @@ CameraComponent::load(const archivebuf& reader) noexcept
 				flags |= CameraRenderFlagBits::CameraRenderScreenBit;
 			else if (flag == "render_to_texture")
 				flags |= CameraRenderFlagBits::CameraRenderTextureBit;
-			else if (flag == "gbuffer1")
-				flags |= CameraRenderFlagBits::CameraRenderGbuffer1Bit;
-			else if (flag == "gbuffer2")
-				flags |= CameraRenderFlagBits::CameraRenderGbuffer2Bit;
-			else if (flag == "gbuffer3")
-				flags |= CameraRenderFlagBits::CameraRenderGbuffer3Bit;
-			else if (flag == "lighting")
-				flags |= CameraRenderFlagBits::CameraRenderLightingBit;
-			else if (flag == "shading")
-				flags |= CameraRenderFlagBits::CameraRenderShadingBit;
 		}
 
 		this->setCameraRenderFlags(flags);

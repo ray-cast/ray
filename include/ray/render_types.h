@@ -149,13 +149,8 @@ enum CameraRenderFlagBits
 {
 	CameraRenderScreenBit = 0x00000001,
 	CameraRenderTextureBit = 0x00000002,
-	CameraRenderGbuffer1Bit = 0x00000004,
-	CameraRenderGbuffer2Bit = 0x0000008,
-	CameraRenderGbuffer3Bit = 0x00000010,
-	CameraRenderLightingBit = 0x00000020,
-	CameraRenderShadingBit = 0x00000040,
 	CameraRenderBeginBit = CameraRenderScreenBit,
-	CameraRenderEndBit = CameraRenderShadingBit,
+	CameraRenderEndBit = CameraRenderTextureBit,
 	CameraRenderMaxBit = 0x7FFFFFFF
 };
 

@@ -47,6 +47,7 @@
 #include <ray/graphics_texture.h>
 #include <ray/material.h>
 #include <ray/res_manager.h>
+#include <ray/render_pipeline_framebuffer.h>
 
 __ImplementSubClass(GuiViewComponent, ray::GameComponent, "GuiView")
 
@@ -1380,7 +1381,7 @@ GuiViewComponent::showCameraWindow() noexcept
 
 		_viewport = ray::float4(ray::Gui::getWindowPos() + _style.WindowPadding, ray::Gui::getWindowSize());
 
-		auto texture = cameraComponent->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
+		auto texture = cameraComponent->getRenderPipelineFramebuffer()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 		if (texture)
 			ray::Gui::image(texture.get(), _viewport.zw(), ray::float2::UnitY, ray::float2::UnitX);
 
@@ -1416,7 +1417,7 @@ GuiViewComponent::showSceneWindow() noexcept
 	{
 		ray::Gui::setWindowPos(ray::float2::Zero);
 
-		auto texture = cameraComponent->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
+		auto texture = cameraComponent->getRenderPipelineFramebuffer()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 		if (texture)
 			ray::Gui::image(texture.get(), ray::Gui::getWindowSize(), ray::float2::UnitY, ray::float2::UnitX);
 		ray::Gui::end();

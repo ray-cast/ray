@@ -677,6 +677,15 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 	auto& cameras = scene.getCameraList();
 	for (auto& camera : cameras)
 	{
+		if (!camera)
+			continue;
+
+		if (!camera->getRenderPipelineFramebuffer())
+			continue;
+
+		if (!camera->getRenderDataManager())
+			continue;
+
 		camera->onRenderPre(*camera);
 
 		if (camera->getCameraOrder() != CameraOrder::CameraOrder3D &&

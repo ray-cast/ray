@@ -49,6 +49,8 @@ DeferredLightingFramebuffers::DeferredLightingFramebuffers() noexcept
 
 DeferredLightingFramebuffers::~DeferredLightingFramebuffers() noexcept
 {
+	this->destroyDeferredTextures();
+	this->destroyDeferredRenderTextures();
 }
 
 bool

@@ -36,10 +36,11 @@
 // +-----------------------------------------------------------------------
 #include "postprocess_hdr.h"
 #include <ray/material.h>
-
+#include <ray/camera.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 #include <ray/render_pipeline.h>
+#include <ray/deferred_lighting_framebuffers.h>
 
 _NAME_BEGIN
 
@@ -288,6 +289,10 @@ PostProcessHDR::onActivate(RenderPipeline& pipeline) except
 	_texSource = _fimic->getParameter("texSource");
 	_texSourceSizeInv = _fimic->getParameter("texSourceSizeInv");
 	_texSourceLevel = _fimic->getParameter("texSourceLevel");
+	_texMRT0 = _fimic->getParameter("texMRT0"); if (!_texMRT0) return;
+	_texMRT1 = _fimic->getParameter("texMRT1"); if (!_texMRT1) return;
+	_texMRT2 = _fimic->getParameter("texMRT2"); if (!_texMRT2) return;
+	_texMRT3 = _fimic->getParameter("texMRT3"); if (!_texMRT3) return;
 
 	_texLumAve->uniformTexture(_texSampleLumMap);
 	_toneLumExposure->uniform1f(_setting.exposure);
@@ -357,6 +362,12 @@ PostProcessHDR::onRender(RenderPipeline& pipeline, RenderQueue queue, const Grap
 
 	if (_setting.enableBloom)
 	{
+		auto framebuffers = pipeline.getCamera()->getRenderPipelineFramebuffer()->downcast<DeferredLightingFramebuffers>();
+		_texMRT0->uniformTexture(framebuffers->getDeferredGbuffer1Map());
+		_texMRT1->uniformTexture(framebuffers->getDeferredGbuffer2Map());
+		_texMRT2->uniformTexture(framebuffers->getDeferredGbuffer3Map());
+		_texMRT3->uniformTexture(framebuffers->getDeferredGbuffer4Map());
+
 		this->doBloom(pipeline, _texBloomTempMap, _texBloomView[0]);
 
 		for (std::uint8_t i = 0; i < 5; i++)

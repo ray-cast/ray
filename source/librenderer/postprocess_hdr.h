@@ -114,6 +114,10 @@ private:
 	MaterialParamPtr _texSource;
 	MaterialParamPtr _texSourceLevel;
 	MaterialParamPtr _texSourceSizeInv;
+	MaterialParamPtr _texMRT0;
+	MaterialParamPtr _texMRT1;
+	MaterialParamPtr _texMRT2;
+	MaterialParamPtr _texMRT3;
 
 	GraphicsTexturePtr _texBloomMap;
 	GraphicsTexturePtr _texBloomTempMap;

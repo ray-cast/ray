@@ -744,7 +744,7 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 
 	_texMRT0 = _deferredLighting->getParameter("texMRT0"); if (!_texMRT0) return false;
 	_texMRT1 = _deferredLighting->getParameter("texMRT1"); if (!_texMRT1) return false;
-	_texMRT2 = _deferredLighting->getParameter("texMRT2"); if (!_texMRT1) return false;
+	_texMRT2 = _deferredLighting->getParameter("texMRT2"); if (!_texMRT2) return false;
 	_texDepth = _deferredLighting->getParameter("texDepth"); if (!_texDepth) return false;
 	_texLight = _deferredLighting->getParameter("texLight"); if (!_texLight) return false;
 	_texSource = _deferredLighting->getParameter("texSource"); if (!_texSource) return false;

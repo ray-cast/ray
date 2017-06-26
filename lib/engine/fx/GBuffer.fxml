@@ -157,7 +157,7 @@
                 material.normal = DecodeNormal(buffer2.xyz);
                 material.smoothness = buffer2.w;
                 material.metalness = 0;
-                material.customA = 0;
+                material.customA = 1;
 
                 if (material.lightModel > SHADINGMODELID_DEFAULT)
                 {

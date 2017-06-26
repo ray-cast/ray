@@ -2,6 +2,7 @@
 <effect version="1270" language="hlsl">
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="texSource" type="texture2D"/>
     <parameter name="texSourceSizeInv" type="float2"/>
@@ -13,6 +14,10 @@
     <parameter name="texSourceLevel" type="int"/>
     <parameter name="exposure" type="float"/>
     <parameter name="delta" type="float"/>
+    <parameter name="texMRT0" type="texture2D"/>
+    <parameter name="texMRT1" type="texture2D"/>
+    <parameter name="texMRT2" type="texture2D"/>
+    <parameter name="texMRT3" type="texture2D"/>
     <shader>
         <![CDATA[
     		#define TONEMAP_LINEAR 0
@@ -219,6 +224,16 @@
                 color = clamp(color * coord.z, 0.0f, 65535.0f);
 
                 color *= saturate((luminance(color) - coord.w) * 0.5f);
+
+                float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord.xy, 0);
+                float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord.xy, 0);
+                float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord.xy, 0);
+
+                MaterialParam material;
+                DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
+                if (material.lightModel == SHADINGMODELID_EMISSIVE)
+                    color += material.customB * material.customA * coord.z;
 
                 return float4(color * bloomIntensity, 0);
             }

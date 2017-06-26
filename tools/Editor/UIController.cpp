@@ -728,7 +728,7 @@ GuiControllerComponent::onMessage(const ray::MessagePtr& message) except
 			pipelineFramebuffer->setup(*ray::RenderSystem::instance(), ray::Gui::getDisplaySize().x, ray::Gui::getDisplaySize().y);
 			pipelineFramebuffer->setFramebuffer(std::move(framebuffer));
 
-			cameraComponent->setRenderPipelineFramebuffer(pipelineFramebuffer);
+			cameraComponent->setRenderPipelineFramebuffer(std::move(pipelineFramebuffer));
 		}
 	}
 	break;

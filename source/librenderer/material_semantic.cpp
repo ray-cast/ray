@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -661,7 +661,7 @@ MaterialSemanticManager::~MaterialSemanticManager() noexcept
 	this->close();
 }
 
-bool 
+bool
 MaterialSemanticManager::setup() noexcept
 {
 	_parametes[GlobalSemanticType::GlobalSemanticTypeModel] = std::make_shared<MaterialSemantic>("matModel", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
@@ -675,7 +675,7 @@ MaterialSemanticManager::setup() noexcept
 	_parametes[GlobalSemanticType::GlobalSemanticTypeModelView] = std::make_shared<MaterialSemantic>("matModelView", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeModelViewProject] = std::make_shared<MaterialSemantic>("matModelViewProject", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeModelViewInverse] = std::make_shared<MaterialSemantic>("matModelViewInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	
+
 	_parametes[GlobalSemanticType::GlobalSemanticTypeCameraAperture] = std::make_shared<MaterialSemantic>("CameraAperture", GraphicsUniformType::GraphicsUniformTypeFloat);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeCameraNear] = std::make_shared<MaterialSemantic>("CameraNear", GraphicsUniformType::GraphicsUniformTypeFloat);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeCameraFar] = std::make_shared<MaterialSemantic>("CameraFar", GraphicsUniformType::GraphicsUniformTypeFloat);
@@ -686,14 +686,14 @@ MaterialSemanticManager::setup() noexcept
 	_parametes[GlobalSemanticType::GlobalSemanticTypeDepthLinearMap] = std::make_shared<MaterialSemantic>("DepthLinearMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeDiffuseMap] = std::make_shared<MaterialSemantic>("DiffuseMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeNormalMap] = std::make_shared<MaterialSemantic>("NormalMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
-	_parametes[GlobalSemanticType::GlobalSemanticTypeGbuffer3Map] = std::make_shared<MaterialSemantic>("Gbuffer3Map", GraphicsUniformType::GraphicsUniformTypeSamplerImage);	
+	_parametes[GlobalSemanticType::GlobalSemanticTypeGbuffer3Map] = std::make_shared<MaterialSemantic>("Gbuffer3Map", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeLightingMap] = std::make_shared<MaterialSemantic>("LightingMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeOpaqueShadingMap] = std::make_shared<MaterialSemantic>("OpaqueShadingMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 
 	return true;
 }
 
-void 
+void
 MaterialSemanticManager::close() noexcept
 {
 	_parametes->reset();

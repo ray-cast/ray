@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,6 +37,7 @@
 #include "forward_render_pipeline.h"
 
 #include <ray/render_pipeline.h>
+#include <ray/render_pipeline_framebuffer.h>
 #include <ray/camera.h>
 
 _NAME_BEGIN
@@ -72,7 +73,7 @@ ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 
 	auto& v = pipeline.getCamera()->getPixelViewportDPI();
 
-	pipeline.setFramebuffer(pipeline.getCamera()->getFramebuffer());
+	pipeline.setFramebuffer(pipeline.getCamera()->getRenderPipelineFramebuffer()->getFramebuffer());
 	pipeline.setViewport(0, Viewport(v.x, v.y, v.z, v.w));
 
 	if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
@@ -88,7 +89,7 @@ ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 		else if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
 			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	}
-		
+
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 

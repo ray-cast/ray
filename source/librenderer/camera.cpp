@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -424,31 +424,19 @@ Camera::getSwapchain() const noexcept
 }
 
 void
-Camera::setFramebuffer(GraphicsFramebufferPtr texture) noexcept
+Camera::setRenderPipelineFramebuffer(const RenderPipelineFramebufferPtr& framebuffer) noexcept
 {
-	_framebuffer = texture;
+	_pipelineFramebuffer = framebuffer;
 }
 
-const GraphicsFramebufferPtr&
-Camera::getFramebuffer() const noexcept
+const RenderPipelineFramebufferPtr&
+Camera::getRenderPipelineFramebuffer() const noexcept
 {
-	return _framebuffer;
-}
-
-void
-Camera::setDepthLinearFramebuffer(GraphicsFramebufferPtr texture) noexcept
-{
-	_depthLinearFramebuffer = texture;
-}
-
-const GraphicsFramebufferPtr&
-Camera::getDepthLinearFramebuffer() const noexcept
-{
-	return _depthLinearFramebuffer;
+	return _pipelineFramebuffer;
 }
 
 void
-Camera::setRenderDataManager(RenderDataManagerPtr manager) noexcept
+Camera::setRenderDataManager(const RenderDataManagerPtr& manager) noexcept
 {
 	assert(manager);
 	_dataManager = manager;

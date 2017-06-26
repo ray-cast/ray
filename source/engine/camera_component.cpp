@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/camera_component.h>
 #include <ray/render_feature.h>
+#include <ray/render_pipeline_framebuffer.h>
 #include <ray/game_server.h>
 
 _NAME_BEGIN
@@ -47,6 +48,7 @@ CameraComponent::CameraComponent() noexcept
 	_camera = std::make_shared<Camera>();
 	_camera->setOwnerListener(this);
 	_camera->setCameraOrder(CameraOrder::CameraOrder3D);
+	_camera->setRenderPipelineFramebuffer(std::make_shared<RenderPipelineFramebuffer>());
 }
 
 CameraComponent::CameraComponent(const archivebuf& reader) noexcept
@@ -255,13 +257,13 @@ CameraComponent::getCameraRenderFlags() const noexcept
 void
 CameraComponent::setFramebuffer(const GraphicsFramebufferPtr& texture) noexcept
 {
-	_camera->setFramebuffer(texture);
+	_camera->getRenderPipelineFramebuffer()->setFramebuffer(texture);
 }
 
 const GraphicsFramebufferPtr&
 CameraComponent::getFramebuffer() const noexcept
 {
-	return _camera->getFramebuffer();
+	return _camera->getRenderPipelineFramebuffer()->getFramebuffer();
 }
 
 void

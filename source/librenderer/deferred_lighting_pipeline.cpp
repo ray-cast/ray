@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,6 +37,7 @@
 #include "deferred_lighting_pipeline.h"
 #include <ray/render_pipeline.h>
 #include <ray/render_pipeline_manager.h>
+#include <ray/render_pipeline_framebuffer.h>
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/render_scene.h>
@@ -1614,7 +1615,7 @@ DeferredLightingPipeline::onRenderPost() noexcept
 	auto flags = camera->getCameraRenderFlags();
 	if (flags & CameraRenderFlagBits::CameraRenderTextureBit)
 	{
-		auto framebuffer = camera->getFramebuffer();
+		auto framebuffer = camera->getRenderPipelineFramebuffer()->getFramebuffer();
 		if (framebuffer)
 		{
 			float4 viewport = camera->getPixelViewport();

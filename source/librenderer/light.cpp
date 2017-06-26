@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -40,6 +40,7 @@
 #include <ray/graphics_texture.h>
 #include <ray/render_system.h>
 #include <ray/render_object_manager.h>
+#include <ray/render_pipeline_framebuffer.h>
 
 _NAME_BEGIN
 
@@ -384,7 +385,7 @@ Light::setupShadowMap() noexcept
 	_shadowCameras[0]->setAperture(90.0f);
 	_shadowCameras[0]->setNear(0.1f);
 	_shadowCameras[0]->setRatio(1.0f);
-	_shadowCameras[0]->setDepthLinearFramebuffer(_shadowDepthLinearView);
+	_shadowCameras[0]->setRenderPipelineFramebuffer(std::make_shared<ray::RenderPipelineFramebuffer>(nullptr, _shadowDepthLinearView));
 	return true;
 }
 
@@ -475,7 +476,7 @@ Light::setupReflectiveShadowMap() noexcept
 	if (!_shadowRSMView)
 		return false;
 
-	_shadowCameras[0]->setFramebuffer(_shadowRSMView);
+	_shadowCameras[0]->getRenderPipelineFramebuffer()->setFramebuffer(_shadowRSMView);
 	return true;
 }
 
@@ -483,7 +484,7 @@ void
 Light::destroyShadowMap() noexcept
 {
 	for (auto& camera : _shadowCameras)
-		camera->setDepthLinearFramebuffer(nullptr);
+		camera->getRenderPipelineFramebuffer()->setDepthLinearFramebuffer(nullptr);
 
 	_shadowCameras.clear();
 	_shadowDepthLinearMap.reset();
@@ -499,7 +500,7 @@ void
 Light::destroyReflectiveShadowMap() noexcept
 {
 	for (auto& camera : _shadowCameras)
-		camera->setFramebuffer(nullptr);
+		camera->getRenderPipelineFramebuffer()->setFramebuffer(nullptr);
 
 	_shadowDepthMap.reset();
 	_shadowColorMap.reset();

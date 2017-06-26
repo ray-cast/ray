@@ -34,48 +34,85 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "fog.h"
-#include <ray/material.h>
-#include <ray/render_pipeline.h>
+#include <ray/render_pipeline_framebuffer.h>
 
 _NAME_BEGIN
 
-Fog::Fog() noexcept
+__ImplementSubInterface(RenderPipelineFramebuffer, rtti::Interface, "RenderPipelineFramebuffer")
+
+RenderPipelineFramebuffer::RenderPipelineFramebuffer() noexcept
 {
 }
 
-Fog::~Fog() noexcept
+RenderPipelineFramebuffer::~RenderPipelineFramebuffer() noexcept
+{
+}
+
+RenderPipelineFramebuffer::RenderPipelineFramebuffer(const GraphicsFramebufferPtr& framebuffer, const GraphicsFramebufferPtr& linearDepth) noexcept
+	: _framebuffer(framebuffer)
+	, _depthLinearFramebuffer(linearDepth)
+{
+}
+
+void
+RenderPipelineFramebuffer::setFramebuffer(GraphicsFramebufferPtr&& texture) noexcept
+{
+	_framebuffer = std::move(texture);
+}
+
+void
+RenderPipelineFramebuffer::setFramebuffer(const GraphicsFramebufferPtr& texture) noexcept
+{
+	_framebuffer = texture;
+}
+
+const GraphicsFramebufferPtr&
+RenderPipelineFramebuffer::getFramebuffer() const noexcept
+{
+	return _framebuffer;
+}
+
+void
+RenderPipelineFramebuffer::setDepthLinearFramebuffer(GraphicsFramebufferPtr&& texture) noexcept
+{
+	_depthLinearFramebuffer = std::move(texture);
+}
+
+void
+RenderPipelineFramebuffer::setDepthLinearFramebuffer(const GraphicsFramebufferPtr& texture) noexcept
+{
+	_depthLinearFramebuffer = texture;
+}
+
+const GraphicsFramebufferPtr&
+RenderPipelineFramebuffer::getDepthLinearFramebuffer() const noexcept
+{
+	return _depthLinearFramebuffer;
+}
+
+void
+RenderPipelineFramebuffer::onRenderPre() noexcept
 {
 }
 
 void
-Fog::onActivate(RenderPipeline& pipeline) noexcept
+RenderPipelineFramebuffer::onRenderPipeline(const CameraPtr& camera) noexcept
 {
-	_material = pipeline.createMaterial("sys:fx/fog.glsl");
-	_fog = _material->getTech("fog");
-	_fogFalloff = _material->getParameter("fogFalloff");
-	_fogDensity = _material->getParameter("fogDensity");
-	_fogColor = _material->getParameter("fogColor");
-	_texSource = _material->getParameter("texSource");
-
-	_fogFalloff->uniform1f(10.0f);
-	_fogDensity->uniform1f(0.0001f);
-	_fogColor->uniform3f(Vector3(0.0f, 0.3f, 0.99f));
 }
 
 void
-Fog::onDeactivate(RenderPipeline& pipeline) noexcept
+RenderPipelineFramebuffer::onRenderPost() noexcept
 {
 }
 
-bool
-Fog::onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept
+void
+RenderPipelineFramebuffer::onResolutionChange() noexcept
 {
-	pipeline.setFramebuffer(source);
-	pipeline.discardFramebuffer(0);
-	pipeline.drawScreenQuad(*_fog);
+}
 
-	return false;
+void
+RenderPipelineFramebuffer::onResolutionChangeDPI() noexcept
+{
 }
 
 _NAME_END

@@ -34,48 +34,46 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "fog.h"
-#include <ray/material.h>
-#include <ray/render_pipeline.h>
+#ifndef _H_RENDER_PIPELINE_FRAMEBUFFER_H_
+#define _H_RENDER_PIPELINE_FRAMEBUFFER_H_
+
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
-Fog::Fog() noexcept
+class EXPORT RenderPipelineFramebuffer : public rtti::Interface
 {
-}
+	__DeclareSubInterface(RenderPipelineController, rtti::Interface)
+public:
+	RenderPipelineFramebuffer() noexcept;
+	RenderPipelineFramebuffer(const GraphicsFramebufferPtr& framebuffer, const GraphicsFramebufferPtr& linearDepth) noexcept;
+	virtual ~RenderPipelineFramebuffer() noexcept;
 
-Fog::~Fog() noexcept
-{
-}
+	virtual void setFramebuffer(GraphicsFramebufferPtr&& texture) noexcept;
+	virtual void setFramebuffer(const GraphicsFramebufferPtr& texture) noexcept;
+	virtual const GraphicsFramebufferPtr& getFramebuffer() const noexcept;
 
-void
-Fog::onActivate(RenderPipeline& pipeline) noexcept
-{
-	_material = pipeline.createMaterial("sys:fx/fog.glsl");
-	_fog = _material->getTech("fog");
-	_fogFalloff = _material->getParameter("fogFalloff");
-	_fogDensity = _material->getParameter("fogDensity");
-	_fogColor = _material->getParameter("fogColor");
-	_texSource = _material->getParameter("texSource");
+	virtual void setDepthLinearFramebuffer(GraphicsFramebufferPtr&& texture) noexcept;
+	virtual void setDepthLinearFramebuffer(const GraphicsFramebufferPtr& texture) noexcept;
+	virtual const GraphicsFramebufferPtr& getDepthLinearFramebuffer() const noexcept;
 
-	_fogFalloff->uniform1f(10.0f);
-	_fogDensity->uniform1f(0.0001f);
-	_fogColor->uniform3f(Vector3(0.0f, 0.3f, 0.99f));
-}
+protected:
+	virtual void onResolutionChange() noexcept;
+	virtual void onResolutionChangeDPI() noexcept;
 
-void
-Fog::onDeactivate(RenderPipeline& pipeline) noexcept
-{
-}
+	virtual void onRenderPre() noexcept;
+	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
+	virtual void onRenderPost() noexcept;
 
-bool
-Fog::onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFramebufferPtr& source, const GraphicsFramebufferPtr& swap) noexcept
-{
-	pipeline.setFramebuffer(source);
-	pipeline.discardFramebuffer(0);
-	pipeline.drawScreenQuad(*_fog);
+private:
+	RenderPipelineFramebuffer(const RenderPipelineFramebuffer&) noexcept = delete;
+	RenderPipelineFramebuffer& operator=(const RenderPipelineFramebuffer&) noexcept = delete;
 
-	return false;
-}
+private:
+	GraphicsFramebufferPtr _framebuffer;
+	GraphicsFramebufferPtr _depthLinearFramebuffer;
+};
 
 _NAME_END
+
+#endif

@@ -121,6 +121,8 @@ SOURCE_GROUP("renderer\\terrain" FILES ${RENDERER_TERRAIN})
 SET(RENDER_PIPELINE
     ${SOURCE_PATH}/deferred_lighting_pipeline.h
     ${SOURCE_PATH}/deferred_lighting_pipeline.cpp
+    ${HEADER_PATH}/deferred_lighting_framebuffers.h
+    ${SOURCE_PATH}/deferred_lighting_framebuffers.cpp
     ${SOURCE_PATH}/forward_render_pipeline.h
     ${SOURCE_PATH}/forward_render_pipeline.cpp
     ${SOURCE_PATH}/shadow_render_pipeline.h
@@ -131,6 +133,8 @@ SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
 SET(RENDERER_SYSTEM
     ${HEADER_PATH}/render_pipeline.h
     ${SOURCE_PATH}/render_pipeline.cpp
+    ${HEADER_PATH}/render_pipeline_framebuffer.h
+    ${SOURCE_PATH}/render_pipeline_framebuffer.cpp
     ${HEADER_PATH}/render_pipeline_device.h
     ${SOURCE_PATH}/render_pipeline_device.cpp
     ${HEADER_PATH}/render_pipeline_controller.h

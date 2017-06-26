@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,6 +37,7 @@
 #include "shadow_render_pipeline.h"
 
 #include <ray/render_pipeline.h>
+#include <ray/render_pipeline_framebuffer.h>
 #include <ray/render_object_manager.h>
 
 #include <ray/camera.h>
@@ -146,8 +147,8 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 	auto& cameras = light.getCameras();
 	for (auto& camera : cameras)
 	{
-		auto& depthFrambuffer = camera->getFramebuffer();
-		auto& depthLienarFrambuffer = camera->getDepthLinearFramebuffer();
+		auto& depthFrambuffer = camera->getRenderPipelineFramebuffer()->getFramebuffer();
+		auto& depthLienarFrambuffer = camera->getRenderPipelineFramebuffer()->getDepthLinearFramebuffer();
 
 		auto shadowFrambuffer = depthFrambuffer ? depthFrambuffer : _shadowShadowDepthViewTemp;
 		auto shadowTexture = shadowFrambuffer->getGraphicsFramebufferDesc().getDepthStencilAttachment().getBindingTexture();

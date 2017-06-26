@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -82,30 +82,26 @@ public:
 	float3 screenToView(const float2& pos) const noexcept;
 
 	void setClearColor(const float4& color) noexcept;
-	const float4& getClearColor() const noexcept;
-
 	void setClearFlags(CameraClearFlags flags) noexcept;
-	CameraClearFlags getClearFlags() const noexcept;
 
 	void setCameraType(CameraType type) noexcept;
-	CameraType getCameraType() const noexcept;
-
 	void setCameraOrder(CameraOrder order) noexcept;
-	CameraOrder getCameraOrder() const noexcept;
-
 	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
+
+	const float4& getClearColor() const noexcept;
+
+	CameraClearFlags getClearFlags() const noexcept;
+	CameraType getCameraType() const noexcept;
+	CameraOrder getCameraOrder() const noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
 
 	void setSwapchain(GraphicsSwapchainPtr swapchin) noexcept;
 	const GraphicsSwapchainPtr& getSwapchain() const noexcept;
 
-	void setFramebuffer(GraphicsFramebufferPtr texture) noexcept;
-	const GraphicsFramebufferPtr& getFramebuffer() const noexcept;
+	void setRenderPipelineFramebuffer(const RenderPipelineFramebufferPtr& texture) noexcept;
+	const RenderPipelineFramebufferPtr& getRenderPipelineFramebuffer() const noexcept;
 
-	void setDepthLinearFramebuffer(GraphicsFramebufferPtr texture) noexcept;
-	const GraphicsFramebufferPtr& getDepthLinearFramebuffer() const noexcept;
-
-	void setRenderDataManager(RenderDataManagerPtr manager) noexcept;
+	void setRenderDataManager(const RenderDataManagerPtr& manager) noexcept;
 	const RenderDataManagerPtr& getRenderDataManager() const noexcept;
 
 private:
@@ -138,10 +134,9 @@ private:
 	CameraRenderFlags _cameraRenderFlags;
 
 	GraphicsSwapchainPtr _swapchain;
-	GraphicsFramebufferPtr _framebuffer;
-	GraphicsFramebufferPtr _depthLinearFramebuffer;
 
 	RenderDataManagerPtr _dataManager;
+	RenderPipelineFramebufferPtr _pipelineFramebuffer;
 
 	mutable bool _needUpdateViewProject;
 

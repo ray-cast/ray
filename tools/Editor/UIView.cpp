@@ -1551,7 +1551,7 @@ GuiViewComponent::showEditTransformWindow(ray::GameObject* object) noexcept
 		auto scaling = object->getScale();
 
 		ray::Gui::textUnformatted(_langs[UILang::Position].c_str(), _langs[UILang::Position].c_str() + _langs[UILang::Position].size());
-		ray::Gui::sameLine(80.0f);
+		ray::Gui::sameLine(75.0f);
 		ray::Gui::pushItemWidth(-1);
 		if (ray::Gui::dragFloat3("##Position", translate.ptr(), 0.1f, -FLT_MAX, FLT_MAX))
 		{
@@ -1562,7 +1562,7 @@ GuiViewComponent::showEditTransformWindow(ray::GameObject* object) noexcept
 		ray::Gui::popItemWidth();
 
 		ray::Gui::textUnformatted(_langs[UILang::Rotation].c_str(), _langs[UILang::Rotation].c_str() + _langs[UILang::Rotation].size());
-		ray::Gui::sameLine(80.0f);
+		ray::Gui::sameLine(75.0f);
 		ray::Gui::pushItemWidth(-1);
 		if (ray::Gui::dragFloat3("##Rotation", rotation.ptr(), 0.1f, -360, 360))
 		{
@@ -1582,7 +1582,7 @@ GuiViewComponent::showEditTransformWindow(ray::GameObject* object) noexcept
 		ray::Gui::popItemWidth();
 
 		ray::Gui::textUnformatted(_langs[UILang::Scaling].c_str(), _langs[UILang::Scaling].c_str() + _langs[UILang::Scaling].size());
-		ray::Gui::sameLine(80.0f);
+		ray::Gui::sameLine(75.0f);
 		ray::Gui::pushItemWidth(-1);
 		if (ray::Gui::dragFloat3("##Scale", scaling.ptr(), 0.1f, 1e-3f, FLT_MAX))
 		{

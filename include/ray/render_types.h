@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -70,6 +70,7 @@ typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
 typedef std::shared_ptr<class RenderPipelineDevice> RenderPipelineDevicePtr;
 typedef std::shared_ptr<class RenderPipelineController> RenderPipelineControllerPtr;
 typedef std::shared_ptr<class RenderPipelineManager> RenderPipelineManagerPtr;
+typedef std::shared_ptr<class RenderPipelineFramebuffer> RenderPipelineFramebufferPtr;
 
 typedef std::weak_ptr<class Material> MaterialWeakPtr;
 typedef std::weak_ptr<class MaterialPass> MaterialPassWeakPtr;
@@ -90,6 +91,7 @@ typedef std::weak_ptr<class RenderPostProcess> RenderPostProcessWeakPtr;
 typedef std::weak_ptr<class RenderPipelineController> RenderPipelineControllerWeakPtr;
 typedef std::weak_ptr<class RenderPipelineDevice> RenderPipelineWeakPtr;
 typedef std::weak_ptr<class RenderPipelineManager> RenderPipelineManagerWeakPtr;
+typedef std::weak_ptr<class RenderPipelineFramebuffer> RenderPipelineFramebufferWeakPtr;
 typedef std::weak_ptr<class RenderDataManager> RenderDataManagerWeakPtr;
 
 typedef std::vector<RenderPipelineStagePtr> RenderPipelineStages;

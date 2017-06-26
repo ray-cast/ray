@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2016.
+// | Copyright (c) 2013-2017.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -438,7 +438,6 @@ MaterialParamBinding::uniformBuffer(GraphicsDataPtr ubo) noexcept
 {
 	_uniformSet->uniformBuffer(ubo);
 }
-
 
 MaterialSemanticBinding::MaterialSemanticBinding() noexcept
 	: _semanticType(GlobalSemanticType::GlobalSemanticTypeNone)

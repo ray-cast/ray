@@ -309,9 +309,10 @@
 				float4 lighting = texLight.SampleLevel(PointClamp, coord, 0);
 
 				float3 shading = 0.0;
-				shading += prefilteredDiffuse * material.albedo * envFactor.g * material.occlusion;
+				shading += prefilteredDiffuse * material.albedo * envFactor.g;
 				shading += prefilteredTransmittance * material.customB * envFactor.g;
 				shading += prefilteredSpeculr * fresnel * envFactor.b;
+				shading *= material.occlusion;
 
 				return float4(shading, 0.0);
 			}
@@ -326,6 +327,10 @@
 				DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
 				float4 lighting = texLight.SampleLevel(PointClamp, coord, 0);
+				if (material.lightModel == SHADINGMODELID_EMISSIVE)
+				{
+					lighting.rgb += material.customB;
+				}
 
 				return float4(lighting.rgb + lighting.a, 1.0);
 			}
@@ -341,6 +346,11 @@
 
 				float4 source = texOpaque.SampleLevel(PointClamp, coord, 0);
 				float4 lighting = texLight.SampleLevel(PointClamp, coord, 0);
+
+				if (material.lightModel == SHADINGMODELID_EMISSIVE)
+				{
+					lighting.rgb += material.customB;
+				}
 
 				return float4(lerp(source.xyz, source.xyz + lighting.rgb + lighting.a, material.occlusion), source.w);
 			}

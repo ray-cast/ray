@@ -218,7 +218,7 @@
                 color = min(color, texSource.SampleLevel(PointClamp, coord.xy - float2(0, texSourceSizeInv.y), 0).rgb);
                 color = clamp(color * coord.z, 0.0f, 65535.0f);
 
-                color *= saturate((luminance(color) - coord.w) * 0.5f); // Bug issue : don't change coord.w to bloomThreshold
+                color *= saturate((luminance(color) - coord.w) * 0.5f);
 
                 return float4(color * bloomIntensity, 0);
             }

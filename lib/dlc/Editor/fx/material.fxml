@@ -326,7 +326,7 @@
 					else if (emissiveMapFlip == 3)
 						coord = 1 - coord;
 
-					return emissiveMap.Sample(PointClamp, coord * emissiveMapLoopNum).rgb * emissive;
+					return srgb2linear_fast(emissiveMap.Sample(PointClamp, coord * emissiveMapLoopNum).rgb) * emissive;
 				}
 				else
 				{
@@ -364,7 +364,7 @@
 					else if (customBMapFlip == 3)
 						coord = 1 - coord;
 
-					return customBMap.Sample(PointClamp, coord * customBMapLoopNum).rgb * customB;
+					return srgb2linear_fast(customBMap.Sample(PointClamp, coord * customBMapLoopNum).rgb) * customB;
 				}
 				else
 				{

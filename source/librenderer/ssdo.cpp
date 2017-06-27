@@ -40,6 +40,7 @@
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 #include <ray/render_pipeline.h>
+#include <ray/deferred_lighting_framebuffers.h>
 
 _NAME_BEGIN
 
@@ -176,6 +177,7 @@ SSDO::onActivate(RenderPipeline& pipeline) except
 	_occlusionParams1 = _ambientOcclusion->getParameter("SSDOParams1");
 	_occlusionParams2 = _ambientOcclusion->getParameter("SSDOParams2");
 	_occlusionProjectConstant = _ambientOcclusion->getParameter("SSDOProjConstant");
+	_occlusionTexNormal = _ambientOcclusion->getParameter("texNormal");
 
 	_blurSource = _ambientOcclusion->getParameter("texSource");
 	_blurFactor = _ambientOcclusion->getParameter("blurFactor");
@@ -222,6 +224,9 @@ SSDO::onRender(RenderPipeline& pipeline, RenderQueue queue, const GraphicsFrameb
 {
 	if (queue != RenderQueue::RenderQueueOpaqueLighting)
 		return false;
+
+	auto framebuffers = pipeline.getCamera()->getRenderPipelineFramebuffer()->downcast<DeferredLightingFramebuffers>();
+	_occlusionTexNormal->uniformTexture(framebuffers->getDeferredGbuffer2Map());
 
 	auto texture = source->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture();
 

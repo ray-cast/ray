@@ -718,9 +718,6 @@ DeferredLightingPipeline::setupSemantic(RenderPipeline& pipeline) noexcept
 {
 	_materialDeferredDepthMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthMap);
 	_materialDeferredDepthLinearMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDepthLinearMap);
-	_materialDeferredGbuffer1Map = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeDiffuseMap);
-	_materialDeferredGbuffer2Map = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeNormalMap);
-	_materialDeferredGbuffer3Map = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeGbuffer3Map);
 	_materialDeferredLightMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeLightingMap);
 	_materialDeferredOpaqueShadingMap = pipeline.getSemanticParam(GlobalSemanticType::GlobalSemanticTypeOpaqueShadingMap);
 	return true;
@@ -748,6 +745,7 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_texMRT0 = _deferredLighting->getParameter("texMRT0"); if (!_texMRT0) return false;
 	_texMRT1 = _deferredLighting->getParameter("texMRT1"); if (!_texMRT1) return false;
 	_texMRT2 = _deferredLighting->getParameter("texMRT2"); if (!_texMRT2) return false;
+	_texMRT3 = _deferredLighting->getParameter("texMRT3"); if (!_texMRT3) return false;
 	_texDepth = _deferredLighting->getParameter("texDepth"); if (!_texDepth) return false;
 	_texLight = _deferredLighting->getParameter("texLight"); if (!_texLight) return false;
 	_texSource = _deferredLighting->getParameter("texSource"); if (!_texSource) return false;
@@ -1054,9 +1052,6 @@ DeferredLightingPipeline::destroySemantic() noexcept
 {
 	_materialDeferredDepthMap.reset();
 	_materialDeferredDepthLinearMap.reset();
-	_materialDeferredGbuffer1Map.reset();
-	_materialDeferredGbuffer2Map.reset();
-	_materialDeferredGbuffer3Map.reset();
 	_materialDeferredLightMap.reset();
 	_materialDeferredOpaqueShadingMap.reset();
 }
@@ -1083,6 +1078,7 @@ DeferredLightingPipeline::destroyDeferredMaterials() noexcept
 	_texMRT0.reset();
 	_texMRT1.reset();
 	_texMRT2.reset();
+	_texMRT3.reset();
 	_texDepth.reset();
 	_texLight.reset();
 	_texSource.reset();
@@ -1192,14 +1188,12 @@ DeferredLightingPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 	auto framebuffers = camera->getRenderPipelineFramebuffer()->downcast<DeferredLightingFramebuffers>();
 	_materialDeferredDepthMap->uniformTexture(framebuffers->getDeferredDepthMap());
 	_materialDeferredDepthLinearMap->uniformTexture(framebuffers->getDeferredDepthLinearMap());
-	_materialDeferredGbuffer1Map->uniformTexture(framebuffers->getDeferredGbuffer1Map());
-	_materialDeferredGbuffer2Map->uniformTexture(framebuffers->getDeferredGbuffer2Map());
-	_materialDeferredGbuffer3Map->uniformTexture(framebuffers->getDeferredGbuffer3Map());
 	_materialDeferredLightMap->uniformTexture(framebuffers->getDeferredLightingMap());
 
 	_texMRT0->uniformTexture(framebuffers->getDeferredGbuffer1Map());
 	_texMRT1->uniformTexture(framebuffers->getDeferredGbuffer2Map());
 	_texMRT2->uniformTexture(framebuffers->getDeferredGbuffer3Map());
+	_texMRT3->uniformTexture(framebuffers->getDeferredGbuffer4Map());
 
 	std::uint32_t width, height;
 	_pipeline->getWindowResolution(width, height);

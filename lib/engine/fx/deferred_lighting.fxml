@@ -10,6 +10,7 @@
 	<parameter name="texMRT0" type="texture2D"/>
 	<parameter name="texMRT1" type="texture2D"/>
 	<parameter name="texMRT2" type="texture2D"/>
+	<parameter name="texMRT3" type="texture2D"/>
 	<parameter name="texDepth" type="texture2D" semantic="DepthMap" />
 	<parameter name="texDepthLinear" type="texture2D" semantic="DepthLinearMap" />
 	<parameter name="texLight" type="texture2D" semantic="LightingMap" />
@@ -94,9 +95,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 				float3 N = material.normal;
@@ -106,6 +108,7 @@
 				float4 lighting = 0;
 				lighting.rgb = material.albedo * max(0, dot(N, L) * 0.5 + 0.5) * lightColor;
 				lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
+
 				return lighting;
 			}
 
@@ -114,9 +117,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
@@ -137,9 +141,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
@@ -161,9 +166,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
@@ -184,9 +190,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, coord, 0).r;
@@ -210,9 +217,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, texcoord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, texcoord, 0).r;
@@ -237,9 +245,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, texcoord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, texcoord, 0).r;
@@ -264,9 +273,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, texcoord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, texcoord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, texcoord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 				float3 P = V / V.z * texDepthLinear.SampleLevel(PointClamp, texcoord, 0).r;
@@ -288,9 +298,10 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float3 V = normalize(viewdir);
 
@@ -322,15 +333,13 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float4 lighting = texLight.SampleLevel(PointClamp, coord, 0);
-				if (material.lightModel == SHADINGMODELID_EMISSIVE)
-				{
-					lighting.rgb += material.customB;
-				}
+				lighting.rgb += material.customB * material.customA * any(material.lightModel == SHADINGMODELID_EMISSIVE);
 
 				return float4(lighting.rgb + lighting.a, 1.0);
 			}
@@ -340,17 +349,14 @@
 				float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord, 0);
 				float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord, 0);
 				float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord, 0);
+				float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord, 0);
 
 				MaterialParam material;
-				DecodeGbuffer(MRT0, MRT1, MRT2, material);
+				DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 				float4 source = texOpaque.SampleLevel(PointClamp, coord, 0);
 				float4 lighting = texLight.SampleLevel(PointClamp, coord, 0);
-
-				if (material.lightModel == SHADINGMODELID_EMISSIVE)
-				{
-					lighting.rgb += material.customB;
-				}
+				lighting.rgb += material.customB * material.customA * any(material.lightModel == SHADINGMODELID_EMISSIVE);
 
 				return float4(lerp(source.xyz, source.xyz + lighting.rgb + lighting.a, material.occlusion), source.w);
 			}

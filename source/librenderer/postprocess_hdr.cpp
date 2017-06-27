@@ -138,7 +138,6 @@ PostProcessHDR::doBloom(RenderPipeline& pipeline, const GraphicsTexturePtr& sour
 	pipeline.setFramebuffer(dest);
 	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_bloom);
-	pipeline.generateMipmap(dest->getGraphicsFramebufferDesc().getColorAttachment(0).getBindingTexture());
 }
 
 void

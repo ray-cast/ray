@@ -1352,9 +1352,6 @@ MaterialMaker::GetSemanticType(const std::string& string, GlobalSemanticType& ty
 	if (string == "CameraDirection") { type = GlobalSemanticType::GlobalSemanticTypeCameraDirection; return true; }
 	if (string == "DepthMap") { type = GlobalSemanticType::GlobalSemanticTypeDepthMap; return true; }
 	if (string == "DepthLinearMap") { type = GlobalSemanticType::GlobalSemanticTypeDepthLinearMap; return true; }
-	if (string == "DiffuseMap") { type = GlobalSemanticType::GlobalSemanticTypeDiffuseMap; return true; }
-	if (string == "NormalMap") { type = GlobalSemanticType::GlobalSemanticTypeNormalMap; return true; }
-	if (string == "Gbuffer3Map") { type = GlobalSemanticType::GlobalSemanticTypeGbuffer3Map; return true; }
 	if (string == "LightingMap") { type = GlobalSemanticType::GlobalSemanticTypeLightingMap; return true; }
 
 	assert(false);

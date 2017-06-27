@@ -684,9 +684,6 @@ MaterialSemanticManager::setup() noexcept
 
 	_parametes[GlobalSemanticType::GlobalSemanticTypeDepthMap] = std::make_shared<MaterialSemantic>("DepthMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeDepthLinearMap] = std::make_shared<MaterialSemantic>("DepthLinearMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
-	_parametes[GlobalSemanticType::GlobalSemanticTypeDiffuseMap] = std::make_shared<MaterialSemantic>("DiffuseMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
-	_parametes[GlobalSemanticType::GlobalSemanticTypeNormalMap] = std::make_shared<MaterialSemantic>("NormalMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
-	_parametes[GlobalSemanticType::GlobalSemanticTypeGbuffer3Map] = std::make_shared<MaterialSemantic>("Gbuffer3Map", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeLightingMap] = std::make_shared<MaterialSemantic>("LightingMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	_parametes[GlobalSemanticType::GlobalSemanticTypeOpaqueShadingMap] = std::make_shared<MaterialSemantic>("OpaqueShadingMap", GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 

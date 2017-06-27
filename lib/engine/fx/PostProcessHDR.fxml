@@ -228,14 +228,17 @@
                 float4 MRT0 = texMRT0.SampleLevel(PointClamp, coord.xy, 0);
                 float4 MRT1 = texMRT1.SampleLevel(PointClamp, coord.xy, 0);
                 float4 MRT2 = texMRT2.SampleLevel(PointClamp, coord.xy, 0);
+                float4 MRT3 = texMRT3.SampleLevel(PointClamp, coord.xy, 0);
 
                 MaterialParam material;
-                DecodeGbuffer(MRT0, MRT1, MRT2, material);
+                DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
                 if (material.lightModel == SHADINGMODELID_EMISSIVE)
+                {
                     color += material.customB * material.customA * coord.z;
+                }
 
-                return float4(color * bloomIntensity, 0);
+                return float4(color, 0);
             }
 
             void BloomBlurVS(

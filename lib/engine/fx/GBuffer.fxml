@@ -36,6 +36,7 @@
                 float4 buffer1 : SV_Target0;
                 float4 buffer2 : SV_Target1;
                 float4 buffer3 : SV_Target2;
+                float4 buffer4 : SV_Target3;
             };
 
             float3 EncodeFloatRGB(float v)
@@ -129,11 +130,11 @@
                     }
 
                     material.customB = EncodeYcbcr(min(0.998, material.customB));
-                    gbuffer.buffer3.yz = material.customB.gb;
-                    gbuffer.buffer3.w = material.customB.r * MAX_FRACTIONAL_8_BIT;
+                    gbuffer.buffer3.yzw = material.customB;
                 }
 
-                gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
+                gbuffer.buffer4 = float4(material.customA / 10.0f, float(material.lightModel) / SHADINGMODELID_MASK, 0, 0);
+
                 return gbuffer;
             }
 
@@ -147,22 +148,21 @@
                 return gbuffer;
             }
 
-            void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialParam material)
+            void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer4, out MaterialParam material)
             {
-                material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
-
                 material.albedo = buffer1.xyz;
                 material.occlusion = buffer1.w;
 
                 material.normal = DecodeNormal(buffer2.xyz);
                 material.smoothness = buffer2.w;
                 material.metalness = 0;
-                material.customA = 1;
+                material.lightModel = (int)floor(buffer4.g * SHADINGMODELID_MASK);
+                material.customA = buffer4.r * 10.0f;
 
                 if (material.lightModel > SHADINGMODELID_DEFAULT)
                 {
                     material.specular = buffer3.xxx;
-                    material.customB = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+                    material.customB = DecodeYcbcr(buffer3.yzw);
                 }
                 else
                 {

@@ -9,7 +9,7 @@
 	<parameter name="blurSharpness" type="float" />
 	<parameter name="blurDirection" type="float2"/>
 	<parameter name="texDepth" type="texture2D" semantic="DepthLinearMap" />
-	<parameter name="texNormal" type="texture2D" semantic="NormalMap" />
+	<parameter name="texNormal" type="texture2D"/>
 	<parameter name="texSource" type="texture2D"/>
 	<parameter name="texSourceInv" type="float2"/>
 	<parameter name="SSDOParams1" type="float4"/>

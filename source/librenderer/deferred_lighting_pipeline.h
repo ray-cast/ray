@@ -196,6 +196,7 @@ private:
 	MaterialParamPtr _texMRT0;
 	MaterialParamPtr _texMRT1;
 	MaterialParamPtr _texMRT2;
+	MaterialParamPtr _texMRT3;
 	MaterialParamPtr _texDepth;
 	MaterialParamPtr _texLight;
 	MaterialParamPtr _texSource;
@@ -226,9 +227,6 @@ private:
 
 	MaterialSemanticPtr _materialDeferredDepthMap;
 	MaterialSemanticPtr _materialDeferredDepthLinearMap;
-	MaterialSemanticPtr _materialDeferredGbuffer1Map;
-	MaterialSemanticPtr _materialDeferredGbuffer2Map;
-	MaterialSemanticPtr _materialDeferredGbuffer3Map;
 	MaterialSemanticPtr _materialDeferredLightMap;
 	MaterialSemanticPtr _materialDeferredOpaqueShadingMap;
 

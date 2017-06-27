@@ -2239,7 +2239,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 			}
 
 			ray::Gui::textUnformatted(_langs[UILang::Emissive].c_str(), _langs[UILang::Emissive].c_str() + _langs[UILang::Emissive].size());
-			if (ray::Gui::sliderFloat("##emissiveIntensity", &emissiveIntensity, 0.0f, 4.0f))
+			if (ray::Gui::sliderFloat("##emissiveIntensity", &emissiveIntensity, 0.0f, 10.0f))
 				material["emissiveIntensity"]->uniform1f(emissiveIntensity);
 
 			ray::Gui::textUnformatted(_langs[UILang::Color_sRGB].c_str(), _langs[UILang::Color_sRGB].c_str() + _langs[UILang::Color_sRGB].size());

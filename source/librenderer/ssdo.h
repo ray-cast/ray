@@ -92,6 +92,7 @@ private:
 	MaterialMacroPtr _occlusionSampleNumber;
 	MaterialParamPtr _occlusionParams1;
 	MaterialParamPtr _occlusionParams2;
+	MaterialParamPtr _occlusionTexNormal;
 
 	MaterialParamPtr _blurSource;
 	MaterialParamPtr _blurFactor;

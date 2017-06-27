@@ -1706,12 +1706,14 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float parallaxMapScale = " << material["parallaxMapScale"]->value().getFloat() << ";\r\n";
 	(*stream) << "const float2 parallaxMapLoopNum = float2(" << material["parallaxMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
+	auto& emissive = material["emissive"]->value().getFloat3();
+	(*stream) << "#define EMISSIVE_ENABLE " << (ray::math::dot(emissive, ray::float3::One) > 1e-5 ? 1 : 0) << "\r\n";
 	(*stream) << "#define EMISSIVE_MAP_FROM " << material["emissiveMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define EMISSIVE_MAP_UV_FLIP " << material["emissiveMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define EMISSIVE_MAP_APPLY_SCALE 1\r\n";
 	(*stream) << "#define EMISSIVE_MAP_APPLY_MORPH_COLOR " << "0\r\n";
 	(*stream) << "#define EMISSIVE_MAP_APPLY_MORPH_INTENSITY " << "0\r\n";
-	(*stream) << "#define EMISSIVE_MAP_APPLY_BLINK 1\r\n";
+	(*stream) << "#define EMISSIVE_MAP_APPLY_BLINK 0\r\n";
 
 	auto emissiveMap = material["emissiveMap"]->value().getTexture();
 	auto emissiveMapIter = std::find_if(_itemTextures.begin(), _itemTextures.end(), [&](const EditorAssetItemPtr& item) { return std::get<EditorAssetItem::texture>(item->value) == emissiveMap; });
@@ -1721,6 +1723,8 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 		(*stream) << R"(#define EMISSIVE_MAP_FILE "emissive.png")" << "\r\n\r\n";
 
 	(*stream) << "const float3 emissive = float3(" << material["emissive"]->value().getFloat3() << ");\r\n";
+	(*stream) << "const float3 emissiveBlink = 0.0;\r\n";
+	(*stream) << "const float  emissiveIntensity = " << material["emissiveIntensity"]->value().getFloat() << ";\r\n";
 	(*stream) << "const float2 emissiveMapLoopNum = float2(" << material["emissiveMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
 	(*stream) << "#define CUSTOM_A_MAP_FROM " << material["customAMapFrom"]->value().getInt() << "\r\n";

@@ -56,18 +56,16 @@ DeferredLightingFramebuffers::~DeferredLightingFramebuffers() noexcept
 bool
 DeferredLightingFramebuffers::setup(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height)
 {
-	this->initTextureFormat(pipeline);
-
 	if (!this->initTextureFormat(pipeline))
 		return false;
 
-	if (!this->setupDeferredTextures(pipeline))
+	if (!this->setupDeferredTextures(pipeline, width, height))
 		return false;
 
-	if (!this->setupDeferredRenderTextureLayouts(pipeline))
+	if (!this->setupDeferredRenderTextureLayouts(pipeline, width, height))
 		return false;
 
-	if (!this->setupDeferredRenderTextures(pipeline))
+	if (!this->setupDeferredRenderTextures(pipeline, width, height))
 		return false;
 
 	return true;
@@ -106,7 +104,7 @@ DeferredLightingFramebuffers::initTextureFormat(RenderSystem& pipeline) noexcept
 		return false;
 
 	if (pipeline.isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
-		_deferredGbuffer1Format = _deferredGbuffer2Format = _deferredGbuffer3Format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+		_deferredGbuffer1Format = _deferredGbuffer2Format = _deferredGbuffer3Format = _deferredGbuffer4Format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
 	else
 		return false;
 
@@ -132,11 +130,8 @@ DeferredLightingFramebuffers::initTextureFormat(RenderSystem& pipeline) noexcept
 }
 
 bool
-DeferredLightingFramebuffers::setupDeferredTextures(RenderSystem& pipeline) noexcept
+DeferredLightingFramebuffers::setupDeferredTextures(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height) noexcept
 {
-	std::uint32_t width, height;
-	pipeline.getWindowResolution(width, height);
-
 	GraphicsTextureDesc _deferredDepthDesc;
 	_deferredDepthDesc.setWidth(width);
 	_deferredDepthDesc.setHeight(height);
@@ -192,6 +187,17 @@ DeferredLightingFramebuffers::setupDeferredTextures(RenderSystem& pipeline) noex
 	if (!_deferredGbuffer3Map)
 		return false;
 
+	GraphicsTextureDesc _deferredGbuffer4Desc;
+	_deferredGbuffer4Desc.setWidth(width);
+	_deferredGbuffer4Desc.setHeight(height);
+	_deferredGbuffer4Desc.setTexFormat(_deferredGbuffer4Format);
+	_deferredGbuffer4Desc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	_deferredGbuffer4Desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+	_deferredGbuffer4Desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear, GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	_deferredGbuffer4Map = pipeline.createTexture(_deferredGbuffer4Desc);
+	if (!_deferredGbuffer4Map)
+		return false;
+
 	GraphicsTextureDesc _deferredLightDesc;
 	_deferredLightDesc.setWidth(width);
 	_deferredLightDesc.setHeight(height);
@@ -237,7 +243,7 @@ DeferredLightingFramebuffers::setupDeferredTextures(RenderSystem& pipeline) noex
 }
 
 bool
-DeferredLightingFramebuffers::setupDeferredRenderTextureLayouts(RenderSystem& pipeline) noexcept
+DeferredLightingFramebuffers::setupDeferredRenderTextureLayouts(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height) noexcept
 {
 	GraphicsFramebufferLayoutDesc deferredDepthLayoutDesc;
 	deferredDepthLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
@@ -269,11 +275,18 @@ DeferredLightingFramebuffers::setupDeferredRenderTextureLayouts(RenderSystem& pi
 	if (!_deferredGbuffer3ImageLayout)
 		return false;
 
+	GraphicsFramebufferLayoutDesc deferredGbuffer4LayoutDesc;
+	deferredGbuffer4LayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer4Format));
+	_deferredGbuffer4ImageLayout = pipeline.createFramebufferLayout(deferredGbuffer4LayoutDesc);
+	if (!_deferredGbuffer4ImageLayout)
+		return false;
+
 	GraphicsFramebufferLayoutDesc deferredGbuffersImageLayoutDesc;
 	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer1Format));
 	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer2Format));
 	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer3Format));
-	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(3, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
+	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(3, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, _deferredGbuffer4Format));
+	deferredGbuffersImageLayoutDesc.addComponent(GraphicsAttachmentLayout(4, GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal, _deferredDepthFormat));
 	_deferredGbuffersImageLayout = pipeline.createFramebufferLayout(deferredGbuffersImageLayoutDesc);
 	if (!_deferredGbuffersImageLayout)
 		return false;
@@ -303,11 +316,8 @@ DeferredLightingFramebuffers::setupDeferredRenderTextureLayouts(RenderSystem& pi
 }
 
 bool
-DeferredLightingFramebuffers::setupDeferredRenderTextures(RenderSystem& pipeline) noexcept
+DeferredLightingFramebuffers::setupDeferredRenderTextures(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height) noexcept
 {
-	std::uint32_t width, height;
-	pipeline.getWindowResolution(width, height);
-
 	GraphicsFramebufferDesc deferredDepthDesc;
 	deferredDepthDesc.setWidth(width);
 	deferredDepthDesc.setHeight(height);
@@ -353,6 +363,15 @@ DeferredLightingFramebuffers::setupDeferredRenderTextures(RenderSystem& pipeline
 	if (!_deferredGbuffer3View)
 		return false;
 
+	GraphicsFramebufferDesc deferredGbuffer4Desc;
+	deferredGbuffer4Desc.setWidth(width);
+	deferredGbuffer4Desc.setHeight(height);
+	deferredGbuffer4Desc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer4Map, 0, 0));
+	deferredGbuffer4Desc.setGraphicsFramebufferLayout(_deferredGbuffer4ImageLayout);
+	_deferredGbuffer4View = pipeline.createFramebuffer(deferredGbuffer4Desc);
+	if (!_deferredGbuffer4View)
+		return false;
+
 	GraphicsFramebufferDesc deferredGbuffersDesc;
 	deferredGbuffersDesc.setWidth(width);
 	deferredGbuffersDesc.setHeight(height);
@@ -360,6 +379,7 @@ DeferredLightingFramebuffers::setupDeferredRenderTextures(RenderSystem& pipeline
 	deferredGbuffersDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer1Map, 0, 0));
 	deferredGbuffersDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer2Map, 0, 0));
 	deferredGbuffersDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer3Map, 0, 0));
+	deferredGbuffersDesc.addColorAttachment(GraphicsAttachmentBinding(_deferredGbuffer4Map, 0, 0));
 	deferredGbuffersDesc.setGraphicsFramebufferLayout(_deferredGbuffersImageLayout);
 	_deferredGbuffersView = pipeline.createFramebuffer(deferredGbuffersDesc);
 	if (!_deferredGbuffersView)
@@ -426,6 +446,7 @@ DeferredLightingFramebuffers::destroyDeferredRenderTextureLayouts() noexcept
 	_deferredGbuffer1ImageLayout.reset();
 	_deferredGbuffer2ImageLayout.reset();
 	_deferredGbuffer3ImageLayout.reset();
+	_deferredGbuffer4ImageLayout.reset();
 	_deferredLightingImageLayout.reset();
 	_deferredShadingImageLayout.reset();
 	_deferredGbuffersImageLayout.reset();
@@ -440,6 +461,7 @@ DeferredLightingFramebuffers::destroyDeferredTextures() noexcept
 	_deferredGbuffer1Map.reset();
 	_deferredGbuffer2Map.reset();
 	_deferredGbuffer3Map.reset();
+	_deferredGbuffer4Map.reset();
 	_deferredTransparentShadingMap.reset();
 	_deferredLightingMap.reset();
 	_deferredOpaqueShadingMap.reset();
@@ -455,6 +477,7 @@ DeferredLightingFramebuffers::destroyDeferredRenderTextures() noexcept
 	_deferredGbuffer1View.reset();
 	_deferredGbuffer2View.reset();
 	_deferredGbuffer3View.reset();
+	_deferredGbuffer4View.reset();
 	_deferredGbuffersView.reset();
 	_deferredLightingView.reset();
 	_deferredOpaqueShadingView.reset();

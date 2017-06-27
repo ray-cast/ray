@@ -147,7 +147,8 @@ DeferredLightingPipeline::renderOpaques(RenderPipeline& pipeline, const Graphics
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(4, GraphicsClearFlagBits::GraphicsClearFlagDepthStencilBit, float4::Zero, 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueBatch);
@@ -194,7 +195,8 @@ DeferredLightingPipeline::renderTransparentBack(RenderPipeline& pipeline, const 
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(4, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBack);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatchBack);
@@ -234,7 +236,8 @@ DeferredLightingPipeline::renderTransparentFront(RenderPipeline& pipeline, const
 	pipeline.clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(3, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(4, GraphicsClearFlagBits::GraphicsClearFlagStencilBit, float4::Zero, 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentFront);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentBatchFront);

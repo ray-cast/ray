@@ -83,9 +83,9 @@ private:
 private:
 	bool initTextureFormat(RenderSystem& pipeline) noexcept;
 
-	bool setupDeferredTextures(RenderSystem& pipeline) noexcept;
-	bool setupDeferredRenderTextures(RenderSystem& pipeline) noexcept;
-	bool setupDeferredRenderTextureLayouts(RenderSystem& pipeline) noexcept;
+	bool setupDeferredTextures(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height) noexcept;
+	bool setupDeferredRenderTextures(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height) noexcept;
+	bool setupDeferredRenderTextureLayouts(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height) noexcept;
 
 	void destroyDeferredTextures() noexcept;
 	void destroyDeferredRenderTextures() noexcept;

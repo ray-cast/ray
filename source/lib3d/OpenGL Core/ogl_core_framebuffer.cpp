@@ -37,6 +37,7 @@
 #include "ogl_core_framebuffer.h"
 #include "ogl_core_texture.h"
 #include "ogl_framebuffer.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -63,7 +64,7 @@ OGLCoreFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexce
 	glCreateFramebuffers(1, &_fbo);
 	if (_fbo == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateFramebuffers() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("glCreateFramebuffers() fail");
 		return false;
 	}
 
@@ -74,7 +75,7 @@ OGLCoreFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexce
 	const auto& colorAttachments = framebufferDesc.getColorAttachments();
 	if (colorAttachments.size() > (sizeof(drawBuffers) / sizeof(drawBuffers[0])))
 	{
-		GL_PLATFORM_LOG("The color attachment in framebuffer is out of range.");
+		this->getDevice()->downcast<OGLDevice>()->message("The color attachment in framebuffer is out of range.");
 		return false;
 	}
 
@@ -96,14 +97,14 @@ OGLCoreFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexce
 
 			drawBuffers[drawCount++] = slot;
 		}
-			break;
+		break;
 		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilAttachmentOptimal:
 		case GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal:
 		{
 			const auto& depthStencilAttachment = framebufferDesc.getDepthStencilAttachment();
 			if (!depthStencilAttachment.getBindingTexture())
 			{
-				GL_PLATFORM_LOG("Need depth or stencil texture.");
+				this->getDevice()->downcast<OGLDevice>()->message("Need depth or stencil texture.");
 				return false;
 			}
 
@@ -129,7 +130,7 @@ OGLCoreFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexce
 			}
 			else
 			{
-				GL_PLATFORM_LOG("Invalid texture format");
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
 				return false;
 			}
 		}
@@ -185,10 +186,10 @@ OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum a
 			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
 			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
 		{
-			GL_PLATFORM_LOG("Invalid texture target");
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid texture target");
 			return false;
 		}
-		
+
 		glNamedFramebufferTextureLayer(_fbo, attachment, textureID, level, layer);
 	}
 	else

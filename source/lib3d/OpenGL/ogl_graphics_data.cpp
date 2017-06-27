@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_graphics_data.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -77,7 +78,7 @@ OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 		_target = GL_TRANSFORM_FEEDBACK_BUFFER;
 	else
 	{
-		GL_PLATFORM_LOG("Unkown data type.");
+		this->getDevice()->downcast<OGLDevice>()->message("Unkown data type.");
 		return false;
 	}
 

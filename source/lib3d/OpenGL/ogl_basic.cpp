@@ -408,10 +408,7 @@ bool initGLExtenstion() noexcept
 		return true;
 
 	if (::glewInit() != GLEW_OK)
-	{
-		GL_PLATFORM_LOG("glewInit() failed.");
 		return false;
-	}
 
 #if defined(GLEW_MX)
 #	if	defined(_BUILD_PLATFORM_WINDOWS)
@@ -427,23 +424,23 @@ bool initGLExtenstion() noexcept
 	HMODULE opengl32 = ::LoadLibrary("OpenGL32");
 	if (!opengl32)
 	{
-		GL_PLATFORM_LOG("OpenGL dynamic library is not found.");
+		this->getDevice()->downcast<OGLDevice>()->message("OpenGL dynamic library is not found.");
 		return false;
 	}
 #elif defined(_BUILD_PLATFORM_LINUX) && defined(_BUILD_OPENGL_ES)
 	void* opengl32 = ::dlopen("/usr/lib/x86_64-linux-gnu/libGL.so.1", RTLD_NOW);
 	if (!opengl32)
 	{
-		GL_PLATFORM_LOG("OpenGL dynamic library is not found.");
+		this->getDevice()->downcast<OGLDevice>()->message("OpenGL dynamic library is not found.");
 		return false;
 	}
 #elif defined(_BUILD_PLATFORM_APPLE) && defined(_BUILD_OPENGL_ES)
 	void* opengl32 = ::dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_NOW);
 	if (!opengl32)
 	{
-		GL_PLATFORM_LOG("OpenGL dynamic library is not found.");
+		this->getDevice()->downcast<OGLDevice>()->message("OpenGL dynamic library is not found.");
 		return false;
-}
+	}
 #endif
 
 #if defined(_BUILD_OPENGL_ES)

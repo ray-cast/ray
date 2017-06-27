@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_sampler.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -58,7 +59,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 	glGenSamplers(1, &_sampler);
 	if (_sampler == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glGenSamplers() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("glGenSamplers() fail");
 		return false;
 	}
 
@@ -83,7 +84,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Invalid SamplerWrap");
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid SamplerWrap");
 		return false;
 	}
 
@@ -120,7 +121,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Invalid SamplerFilter");
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid SamplerFilter");
 		return false;
 	}
 
@@ -140,7 +141,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 		else if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
 		{
-			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid SamplerAnis");
 			return false;
 		}
 	}

@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_core_texture.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -60,16 +61,22 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 	GLenum target = OGLTypes::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
 	if (target == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture target.");
 		return false;
+	}
 
 	GLenum internalFormat = OGLTypes::asTextureInternalFormat(textureDesc.getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture internal format.");
 		return false;
+	}
 
 	glCreateTextures(target, 1, &_texture);
 	if (_texture == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateTextures fail");
+		this->getDevice()->downcast<OGLDevice>()->message("glCreateTextures fail");
 		return false;
 	}
 
@@ -135,7 +142,18 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		else
 		{
 			GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
+			if (format == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
+				return false;
+			}
+
 			GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
+			if (type == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid texture type");
+				return false;
+			}
 
 			GLsizei offset = 0;
 			GLsizei pixelSize = OGLTypes::getFormatNum(format, type);
@@ -224,11 +242,17 @@ OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint
 
 	GLenum format = OGLTypes::asTextureFormat(_textureDesc.getTexFormat());
 	if (format == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
 		return false;
+	}
 
 	GLenum type = OGLTypes::asTextureType(_textureDesc.getTexFormat());
 	if (type == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture type");
 		return false;
+	}
 
 	if (type == GL_HALF_FLOAT)
 		type = GL_FLOAT;
@@ -285,16 +309,17 @@ bool
 OGLCoreTexture::applySamplerWrap(GraphicsSamplerWrap wrap) noexcept
 {
 	GLenum glwrap = OGLTypes::asSamplerWrap(wrap);
-	if (glwrap != GL_INVALID_ENUM)
+	if (glwrap == GL_INVALID_ENUM)
 	{
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, glwrap);
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, glwrap);
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, glwrap);
-
-		return true;
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid sampler wrap");
+		return false;
 	}
 
-	return false;
+	glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, glwrap);
+	glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, glwrap);
+	glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, glwrap);
+
+	return true;
 }
 
 bool
@@ -302,14 +327,15 @@ OGLCoreTexture::applySamplerFilter(GraphicsSamplerFilter minFilter, GraphicsSamp
 {
 	GLenum min = OGLTypes::asSamplerMinFilter(minFilter);
 	GLenum mag = OGLTypes::asSamplerMagFilter(magFilter);
-	if (min != GL_INVALID_ENUM && mag != GL_INVALID_ENUM)
+	if (min == GL_INVALID_ENUM || mag == GL_INVALID_ENUM)
 	{
-		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, min);
-		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, mag);
-		return true;
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid sampler filter");
+		return false;
 	}
 
-	return false;
+	glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, min);
+	glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, mag);
+	return true;
 }
 
 bool
@@ -329,9 +355,9 @@ OGLCoreTexture::applySamplerAnis(GraphicsSamplerAnis anis) noexcept
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 32);
 	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis64)
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 64);
-	else
+	else if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
 	{
-		GL_PLATFORM_LOG("Can't support anisotropy format");
+		this->getDevice()->downcast<OGLDevice>()->message("Can't support format with anisotropy.");
 		return false;
 	}
 

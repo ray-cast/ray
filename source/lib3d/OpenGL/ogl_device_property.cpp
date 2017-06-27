@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_device_property.h"
+#include "ogl_device.h"
 
 #if defined(_BUILD_PLATFORM_WINDOWS)
 #include "wgl_swapchain.h"
@@ -75,7 +76,7 @@ OGLDeviceProperty::setup() noexcept
 
 	if (!swapchain.setup(swapchainDesc))
 	{
-		GL_PLATFORM_LOG("init WGLSwapchain fail");
+		this->getDevice()->downcast<OGLDevice>()->message("init WGLSwapchain fail");
 		return false;
 	}
 
@@ -84,13 +85,13 @@ OGLDeviceProperty::setup() noexcept
 
 	if (!initGLExtenstion())
 	{
-		GL_PLATFORM_LOG("initGLExtenstion fail");
+		this->getDevice()->downcast<OGLDevice>()->message("initGLExtenstion fail");
 		return false;
 	}
 
 	if (!initDeviceProperties())
 	{
-		GL_PLATFORM_LOG("initDeviceProperties fail");
+		this->getDevice()->downcast<OGLDevice>()->message("initDeviceProperties fail");
 		return false;
 	}
 
@@ -130,14 +131,14 @@ OGLDeviceProperty::setupGLEnvironment(CreateParam& param) noexcept
 	param.hwnd = CreateWindowEx(WS_EX_APPWINDOW, "OGL", "OGL", 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, wc.hInstance, NULL);
 	if (!param.hwnd)
 	{
-		GL_PLATFORM_LOG("CreateWindowEx() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("CreateWindowEx() fail");
 		return false;
 	}
 
 	param.hdc = ::GetDC(param.hwnd);
 	if (!param.hdc)
 	{
-		GL_PLATFORM_LOG("GetDC() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("GetDC() fail");
 		return false;
 	}
 
@@ -150,32 +151,32 @@ OGLDeviceProperty::setupGLEnvironment(CreateParam& param) noexcept
 	int pixelFormat = ::ChoosePixelFormat(param.hdc, &pfd);
 	if (!pixelFormat)
 	{
-		GL_PLATFORM_LOG("ChoosePixelFormat() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("ChoosePixelFormat() fail");
 		return false;
 	}
 
 	if (!::DescribePixelFormat(param.hdc, pixelFormat, sizeof(pfd), &pfd))
 	{
-		GL_PLATFORM_LOG("DescribePixelFormat() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("DescribePixelFormat() fail");
 		return false;
 	}
 
 	if (!::SetPixelFormat(param.hdc, pixelFormat, &pfd))
 	{
-		GL_PLATFORM_LOG("SetPixelFormat() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("SetPixelFormat() fail");
 		return false;
 	}
 
 	param.context = ::wglCreateContext(param.hdc);
 	if (!param.context)
 	{
-		GL_PLATFORM_LOG("wglCreateContext fail");
+		this->getDevice()->downcast<OGLDevice>()->message("wglCreateContext fail");
 		return false;
 	}
 
 	if (!::wglMakeCurrent(param.hdc, param.context))
 	{
-		GL_PLATFORM_LOG("wglMakeCurrent fail");
+		this->getDevice()->downcast<OGLDevice>()->message("wglMakeCurrent fail");
 		return false;
 	}
 
@@ -287,14 +288,14 @@ OGLDeviceProperty::setupCGLEnvironment(CreateParam& param) noexcept
 		CGLError error = CGLChoosePixelFormat(contextAttrs, &pf, &npix);
 		if (error)
 		{
-			GL_PLATFORM_LOG("CGLChoosePixelFormat() fail");
+			this->getDevice()->downcast<OGLDevice>()->message("CGLChoosePixelFormat() fail");
 			return false;
 		}
 
 		error = CGLCreateContext(pf, NULL, &param.ctx);
 		if (error)
 		{
-			GL_PLATFORM_LOG("CGLCreateContext() fail");
+			this->getDevice()->downcast<OGLDevice>()->message("CGLCreateContext() fail");
 			return false;
 		}
 
@@ -302,7 +303,7 @@ OGLDeviceProperty::setupCGLEnvironment(CreateParam& param) noexcept
 		error = CGLSetCurrentContext(param.ctx);
 		if (error)
 		{
-			GL_PLATFORM_LOG("CGLSetCurrentContext() fail");
+			this->getDevice()->downcast<OGLDevice>()->message("CGLSetCurrentContext() fail");
 			return false;
 		}
 	}

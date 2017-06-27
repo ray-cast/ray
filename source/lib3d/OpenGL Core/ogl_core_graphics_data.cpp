@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_core_graphics_data.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -76,14 +77,14 @@ OGLCoreGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 		target = GL_TRANSFORM_FEEDBACK_BUFFER;
 	else
 	{
-		GL_PLATFORM_LOG("Unknown data type.");
+		this->getDevice()->downcast<OGLDevice>()->message("Unknown data type.");
 		return false;
 	}
 
 	glCreateBuffers(1, &_buffer);
 	if (_buffer == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateBuffers() fail.");
+		this->getDevice()->downcast<OGLDevice>()->message("glCreateBuffers() fail.");
 		return false;
 	}
 

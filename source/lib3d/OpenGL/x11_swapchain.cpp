@@ -65,7 +65,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 
 	if (swapchainDesc.getImageNums() != 2)
 	{
-		GL_PLATFORM_LOG("Invalid image number");
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid image number");
 		return false;
 	}
 
@@ -101,7 +101,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Can't support color format");
+		this->getDevice()->downcast<OGLDevice>()->message("Can't support color format");
 		return false;
 	}
 
@@ -150,7 +150,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Cannot support depth stencil format");
+		this->getDevice()->downcast<OGLDevice>()->message("Cannot support depth stencil format");
 		return false;
 	}
 
@@ -160,20 +160,20 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	_display = ::XOpenDisplay(NULL);
 	if (_display == nullptr)
 	{
-		GL_PLATFORM_LOG("Cannot connect to X server");
+		this->getDevice()->downcast<OGLDevice>()->message("Cannot connect to X server");
 		return false;
 	}
 
 	int glx_major, glx_minor;
 	if (!glXQueryVersion(_display, &glx_major, &glx_minor))
 	{
-		GL_PLATFORM_LOG("Cannot query GLX version");
+		this->getDevice()->downcast<OGLDevice>()->message("Cannot query GLX version");
 		return false;
 	}
 
 	if ((glx_major == 1) && (glx_minor < 3) || (glx_major < 1))
 	{
-		GL_PLATFORM_LOG("GLX version 1.3 is required");
+		this->getDevice()->downcast<OGLDevice>()->message("GLX version 1.3 is required");
 		return false;
 	}
 
@@ -182,7 +182,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 		glXChooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)glXGetProcAddress((const GLubyte *)"glXChooseFBConfig");
 		if (!glXChooseFBConfig)
 		{
-			GL_PLATFORM_LOG("Failed to get glXChooseFBConfig.");
+			this->getDevice()->downcast<OGLDevice>()->message("Failed to get glXChooseFBConfig.");
 			return false;
 		}
 	}
@@ -191,7 +191,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	_cfg = glXChooseFBConfig(_display, 0, att, &fbcount);
 	if (!_cfg)
 	{
-		GL_PLATFORM_LOG("Failed to retrieve a framebuffer config.");
+		this->getDevice()->downcast<OGLDevice>()->message("Failed to retrieve a framebuffer config.");
 		return false;
 	}
 
@@ -230,7 +230,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 		glXCreateContextAttribsARB = (PFNGLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
 		if (!glXCreateContextAttribsARB)
 		{
-			GL_PLATFORM_LOG("Failed to get glXCreateContextAttribsARB.");
+			this->getDevice()->downcast<OGLDevice>()->message("Failed to get glXCreateContextAttribsARB.");
 			return false;
 		}
 	}
@@ -238,7 +238,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	_glc = glXCreateContextAttribsARB(_display, *_cfg, 0, true, attribs);
 	if (!_glc)
 	{
-		GL_PLATFORM_LOG("Failed to create context");
+		this->getDevice()->downcast<OGLDevice>()->message("Failed to create context");
 		return false;
 	}
 
@@ -249,7 +249,7 @@ XGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 		glXMakeContextCurrent = (PFNGLXMAKECONTEXTCURRENTPROC)glXGetProcAddress((const GLubyte *)"glXMakeContextCurrent");
 		if (!glXMakeContextCurrent)
 		{
-			GL_PLATFORM_LOG("Failed to get glXMakeContextCurrent.");
+			this->getDevice()->downcast<OGLDevice>()->message("Failed to get glXMakeContextCurrent.");
 			return false;
 		}
 	}
@@ -295,7 +295,7 @@ XGLSwapchain::setActive(bool active) noexcept
 				_swapchain->setActive(false);
 
 			if (!glXMakeContextCurrent(_display, _window, _window, _glc))
-				GL_PLATFORM_LOG("Failed to make context");
+				this->getDevice()->downcast<OGLDevice>()->message("Failed to make context");
 
 			_swapchain = this;
 		}

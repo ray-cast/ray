@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_PLATFORM_WINDOWS)
 #include "wgl_swapchain.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -127,14 +128,14 @@ WGLSwapchain::setActive(bool active) noexcept
 				_swapchain->setActive(false);
 
 			if (!::wglMakeCurrent(_hdc, _context))
-				GL_PLATFORM_LOG("wglMakeCurrent() fail");
+				this->getDevice()->downcast<OGLDevice>()->message("wglMakeCurrent() fail");
 
 			_swapchain = this;
 		}
 		else
 		{
 			if (!::wglMakeCurrent(0, 0))
-				GL_PLATFORM_LOG("wglMakeCurrent() fail");
+				this->getDevice()->downcast<OGLDevice>()->message("wglMakeCurrent() fail");
 
 			if (_swapchain == this)
 				_swapchain = nullptr;
@@ -171,22 +172,22 @@ WGLSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 	{
 	case GraphicsSwapInterval::GraphicsSwapIntervalFree:
 		if (!__wglSwapIntervalEXT(0))
-			GL_PLATFORM_LOG("wglSwapInterval(SwapInterval::Free) fail");
+			this->getDevice()->downcast<OGLDevice>()->message("wglSwapInterval(SwapInterval::Free) fail");
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalVsync:
 		if (!__wglSwapIntervalEXT(1))
-			GL_PLATFORM_LOG("wglSwapInterval(SwapInterval::Vsync) fail");
+			this->getDevice()->downcast<OGLDevice>()->message("wglSwapInterval(SwapInterval::Vsync) fail");
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalFps30:
 		if (!__wglSwapIntervalEXT(2))
-			GL_PLATFORM_LOG("wglSwapInterval(SwapInterval::Fps30) fail");
+			this->getDevice()->downcast<OGLDevice>()->message("wglSwapInterval(SwapInterval::Fps30) fail");
 		break;
 	case GraphicsSwapInterval::GraphicsSwapIntervalFps15:
 		if (!__wglSwapIntervalEXT(3))
-			GL_PLATFORM_LOG("wglSwapInterval(SwapInterval::Fps15) fail");
+			this->getDevice()->downcast<OGLDevice>()->message("wglSwapInterval(SwapInterval::Fps15) fail");
 		break;
 	default:
-		GL_PLATFORM_LOG("Invalid swap interval");
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid swap interval");
 	}
 
 	_swapchainDesc.setSwapInterval(interval);
@@ -223,7 +224,7 @@ WGLSwapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
 	{
 		if (!IsWindow((HWND)swapchainDesc.getWindHandle()))
 		{
-			GL_PLATFORM_LOG("Invlid HWND");
+			this->getDevice()->downcast<OGLDevice>()->message("Invlid HWND");
 			return false;
 		}
 
@@ -231,7 +232,7 @@ WGLSwapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
 		_hdc = ::GetDC(hwnd);
 		if (!_hdc)
 		{
-			GL_PLATFORM_LOG("GetDC() fail");
+			this->getDevice()->downcast<OGLDevice>()->message("GetDC() fail");
 			return false;
 		}
 	}
@@ -249,14 +250,14 @@ WGLSwapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
 		_hwnd = CreateWindowEx(WS_EX_APPWINDOW, "OGL", "OGL", 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, wc.hInstance, NULL);
 		if (!_hwnd)
 		{
-			GL_PLATFORM_LOG("CreateWindowEx() fail");
+			this->getDevice()->downcast<OGLDevice>()->message("CreateWindowEx() fail");
 			return false;
 		}
 
 		_hdc = ::GetDC(_hwnd);
 		if (!_hdc)
 		{
-			GL_PLATFORM_LOG("GetDC() fail");
+			this->getDevice()->downcast<OGLDevice>()->message("GetDC() fail");
 			return false;
 		}
 	}
@@ -289,7 +290,7 @@ WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexce
 		pfd.dwFlags |= PFD_DOUBLEBUFFER;
 	else if (swapchainDesc.getImageNums() != 1)
 	{
-		GL_PLATFORM_LOG("Invalid image number");
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid image number");
 		return false;
 	}
 
@@ -308,7 +309,7 @@ WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexce
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Can't support color format");
+		this->getDevice()->downcast<OGLDevice>()->message("Can't support color format");
 		return false;
 	}
 
@@ -345,21 +346,21 @@ WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexce
 	}
 	else
 	{
-		GL_PLATFORM_LOG("Can't support depth stencil format");
+		this->getDevice()->downcast<OGLDevice>()->message("Can't support depth stencil format");
 		return false;
 	}
 
 	int pixelFormat = ::ChoosePixelFormat(_hdc, &pfd);
 	if (!pixelFormat)
 	{
-		GL_PLATFORM_LOG("ChoosePixelFormat() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("ChoosePixelFormat() fail");
 		return false;
 	}
 
 	PIXELFORMATDESCRIPTOR pfd2;
 	if (!::DescribePixelFormat(_hdc, pixelFormat, sizeof(pfd2), &pfd2))
 	{
-		GL_PLATFORM_LOG("DescribePixelFormat() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("DescribePixelFormat() fail");
 		return false;
 	}
 
@@ -370,20 +371,20 @@ WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexce
 		pfd2.cBlueBits != pfd.cBlueBits ||
 		pfd2.cBlueShift != pfd.cBlueShift)
 	{
-		GL_PLATFORM_LOG("Can't support color format");
+		this->getDevice()->downcast<OGLDevice>()->message("Can't support color format");
 		return false;
 	}
 
 	if (pfd2.cDepthBits != pfd.cDepthBits ||
 		pfd2.cStencilBits != pfd.cStencilBits)
 	{
-		GL_PLATFORM_LOG("Can't support depth stencil format");
+		this->getDevice()->downcast<OGLDevice>()->message("Can't support depth stencil format");
 		return false;
 	}
 
 	if (!::SetPixelFormat(_hdc, pixelFormat, &pfd2))
 	{
-		GL_PLATFORM_LOG("SetPixelFormat() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("SetPixelFormat() fail");
 		return false;
 	}
 
@@ -441,7 +442,7 @@ WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 
 	if (!_context)
 	{
-		GL_PLATFORM_LOG("wglCreateContextAttribs fail");
+		this->getDevice()->downcast<OGLDevice>()->message("wglCreateContextAttribs fail");
 		return false;
 	}
 

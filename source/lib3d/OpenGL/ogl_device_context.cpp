@@ -45,6 +45,7 @@
 #include "ogl_pipeline.h"
 #include "ogl_swapchain.h"
 #include "ogl_graphics_data.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -194,6 +195,12 @@ OGLDeviceContext::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint
 		if (_stateCaptured.getStencilFrontReadMask() != mask)
 		{
 			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
+			if (frontfunc == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid compare function");
+				return;
+			}
+
 			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask);
 			_stateCaptured.setStencilFrontReadMask(mask);
 		}
@@ -203,6 +210,12 @@ OGLDeviceContext::setStencilCompareMask(GraphicsStencilFaceFlags face, std::uint
 		if (_stateCaptured.getStencilBackReadMask() != mask)
 		{
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
+			if (backfunc == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid compare function");
+				return;
+			}
+
 			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask);
 			_stateCaptured.setStencilBackReadMask(mask);
 		}
@@ -228,6 +241,12 @@ OGLDeviceContext::setStencilReference(GraphicsStencilFaceFlags face, std::uint32
 		if (_stateCaptured.getStencilFrontRef() != reference)
 		{
 			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
+			if (frontfunc == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid compare function");
+				return;
+			}
+
 			glStencilFuncSeparate(GL_FRONT, frontfunc, reference, _stateCaptured.getStencilFrontReadMask());
 			_stateCaptured.setStencilFrontRef(reference);
 		}
@@ -237,6 +256,12 @@ OGLDeviceContext::setStencilReference(GraphicsStencilFaceFlags face, std::uint32
 		if (_stateCaptured.getStencilBackRef() != reference)
 		{
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
+			if (backfunc == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid compare function");
+				return;
+			}
+
 			glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilBackReadMask());
 			_stateCaptured.setStencilBackRef(reference);
 		}
@@ -410,6 +435,8 @@ OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset,
 
 	_indexType = OGLTypes::asIndexType(indexType);
 	_indexOffset = offset;
+
+	if (_indexType == GL_INVALID_ENUM) this->getDevice()->downcast<OGLDevice>()->message("Invalid index type");
 }
 
 GraphicsDataPtr
@@ -653,7 +680,10 @@ OGLDeviceContext::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32
 {
 	GLenum internalFormat = OGLTypes::asTextureFormat(texture->getGraphicsTextureDesc().getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
 		return;
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->downcast<OGLTexture>()->getTarget(), texture->downcast<OGLTexture>()->getInstanceID());
@@ -683,7 +713,10 @@ OGLDeviceContext::draw(std::uint32_t numVertices, std::uint32_t numInstances, st
 	if (numVertices > 0)
 	{
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawArraysInstanced(drawType, startVertice, numVertices, numInstances);
+		if (drawType != GL_INVALID_ENUM)
+			glDrawArraysInstanced(drawType, startVertice, numVertices, numInstances);
+		else
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid vertex type");
 	}
 }
 
@@ -718,7 +751,10 @@ OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstanc
 			offsetIndices += _indexOffset + sizeof(std::uint16_t) * startIndice;
 
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glDrawElementsInstancedBaseVertex(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice);
+		if (drawType != GL_INVALID_ENUM)
+			glDrawElementsInstancedBaseVertex(drawType, numIndices, _indexType, offsetIndices, numInstances, startVertice);
+		else
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid vertex type");
 	}
 }
 
@@ -734,7 +770,10 @@ OGLDeviceContext::drawIndirect(GraphicsDataPtr data, std::size_t offset, std::ui
 	if (drawCount > 0)
 	{
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glMultiDrawArraysIndirect(drawType, (char*)nullptr + offset, drawCount, stride);
+		if (drawType != GL_INVALID_ENUM)
+			glMultiDrawArraysIndirect(drawType, (char*)nullptr + offset, drawCount, stride);
+		else
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid vertex type");
 	}
 }
 
@@ -750,7 +789,10 @@ OGLDeviceContext::drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, 
 	if (drawCount > 0)
 	{
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		glMultiDrawElementsIndirect(drawType, _indexType, (char*)nullptr + offset, drawCount, stride);
+		if (drawType != GL_INVALID_ENUM)
+			glMultiDrawElementsIndirect(drawType, _indexType, (char*)nullptr + offset, drawCount, stride);
+		else
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid vertex type");
 	}
 }
 
@@ -766,31 +808,31 @@ OGLDeviceContext::checkSupport() noexcept
 {
 	if (!GLEW_ARB_draw_elements_base_vertex)
 	{
-		GL_PLATFORM_LOG("Can't support GL_ARB_draw_elements_base_vertex.");
+		this->getDevice()->downcast<OGLDevice>()->message("Cannot support GL_ARB_draw_elements_base_vertex.");
 		return false;
 	}
 
 	if (!GLEW_ARB_uniform_buffer_object)
 	{
-		GL_PLATFORM_LOG("Can't support GL_ARB_uniform_buffer_object.");
+		this->getDevice()->downcast<OGLDevice>()->message("Cannot support GL_ARB_uniform_buffer_object.");
 		return false;
 	}
 
 	if (!GLEW_ARB_sampler_objects)
 	{
-		GL_PLATFORM_LOG("Can't support GL_ARB_sampler_objects.");
+		this->getDevice()->downcast<OGLDevice>()->message("Cannot support GL_ARB_sampler_objects.");
 		return false;
 	}
 
 	if (!GLEW_ARB_framebuffer_object)
 	{
-		GL_PLATFORM_LOG("Can't support GL_ARB_framebuffer_object.");
+		this->getDevice()->downcast<OGLDevice>()->message("Cannot support GL_ARB_framebuffer_object.");
 		return false;
 	}
 
 	if (!GLEW_ARB_separate_shader_objects)
 	{
-		GL_PLATFORM_LOG("Can't support GL_ARB_separate_shader_objects.");
+		this->getDevice()->downcast<OGLDevice>()->message("Cannot support GL_ARB_separate_shader_objects.");
 		return false;
 	}
 

@@ -56,8 +56,8 @@ OGLTypes::asVertexType(GraphicsVertexType type) noexcept
 	case GraphicsVertexType::GraphicsVertexTypeTriangleStrip: return GL_TRIANGLE_STRIP;
 	case GraphicsVertexType::GraphicsVertexTypeTriangleFan:   return GL_TRIANGLE_FAN;
 	default:
-		GL_PLATFORM_LOG("Invalid vertex type");
-		return false;
+		assert(false);
+		return GL_INVALID_ENUM;
 	}
 }
 
@@ -178,6 +178,7 @@ OGLTypes::asVertexFormat(GraphicsFormat format) noexcept
 	case GraphicsFormat::GraphicsFormatR64G64B64A64SFloat:
 		return GL_DOUBLE;
 	default:
+		assert(false);
 		return GL_INVALID_ENUM;
 		break;
 	}
@@ -191,7 +192,7 @@ OGLTypes::asIndexType(GraphicsIndexType type) noexcept
 	case GraphicsIndexType::GraphicsIndexTypeUInt16: return GL_UNSIGNED_SHORT;
 	case GraphicsIndexType::GraphicsIndexTypeUInt32: return GL_UNSIGNED_INT;
 	default:
-		GL_PLATFORM_LOG("Invalid index type");
+		assert(false);
 		return GL_INVALID_ENUM;
 	}
 }
@@ -208,7 +209,7 @@ OGLTypes::asShaderStage(GraphicsShaderStageFlagBits stage) noexcept
 	case GraphicsShaderStageFlagBits::GraphicsShaderStageTessControlBit:    return GL_TESS_CONTROL_SHADER;
 	case GraphicsShaderStageFlagBits::GraphicsShaderStageTessEvaluationBit: return GL_TESS_EVALUATION_SHADER;
 	default:
-		GL_PLATFORM_LOG("Invalid shader type");
+		assert(false);
 		return GL_INVALID_ENUM;
 	}
 }
@@ -228,10 +229,7 @@ OGLTypes::asTextureTarget(GraphicsTextureDim target, bool multisampler) noexcept
 		if (!multisampler)
 			return GL_TEXTURE_3D;
 		else
-		{
-			GL_PLATFORM_LOG("Can't support 3d texture multisampler");
 			return GL_INVALID_ENUM;
-		}
 	}
 	else if (target == GraphicsTextureDim::GraphicsTextureDim2DArray)
 	{
@@ -245,23 +243,16 @@ OGLTypes::asTextureTarget(GraphicsTextureDim target, bool multisampler) noexcept
 		if (!multisampler)
 			return GL_TEXTURE_CUBE_MAP;
 		else
-		{
-			GL_PLATFORM_LOG("Can't support cube multisampler");
 			return GL_INVALID_ENUM;
-		}
 	}
 	else if (target == GraphicsTextureDim::GraphicsTextureDimCubeArray)
 	{
 		if (!multisampler)
 			return GL_TEXTURE_CUBE_MAP_ARRAY;
 		else
-		{
-			GL_PLATFORM_LOG("Can't support cube array multisampler");
 			return GL_INVALID_ENUM;
-		}
 	}
 
-	GL_PLATFORM_LOG("Invalid texture target");
 	return GL_INVALID_ENUM;
 }
 
@@ -409,8 +400,6 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormat::GraphicsFormatD24UNorm_S8UInt:
 	case GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt:
 		return GL_DEPTH_STENCIL;
-	default:
-		GL_PLATFORM_ASSERT(false, "Invalid texture format");
 	}
 
 	return GL_INVALID_ENUM;
@@ -551,8 +540,6 @@ OGLTypes::asTextureType(GraphicsFormat format) noexcept
 	case GraphicsFormat::GraphicsFormatR64G64UInt:               return GL_UNSIGNED_INT64_ARB;
 	case GraphicsFormat::GraphicsFormatR64G64B64UInt:            return GL_UNSIGNED_INT64_ARB;
 	case GraphicsFormat::GraphicsFormatR64G64B64A64UInt:         return GL_UNSIGNED_INT64_ARB;
-	default:
-		GL_PLATFORM_ASSERT(false, "Invlida texture data type.");
 	}
 
 	return GL_INVALID_ENUM;
@@ -753,8 +740,7 @@ OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 		return GL_INVALID_ENUM;
 	}
 
-	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.")
-		return internalFormat;
+	return internalFormat;
 }
 
 GLenum
@@ -772,7 +758,6 @@ OGLTypes::asCompareFunction(GraphicsCompareFunc func) noexcept
 	case GraphicsCompareFunc::GraphicsCompareFuncAlways:   return GL_ALWAYS;
 	case GraphicsCompareFunc::GraphicsCompareFuncNever:    return GL_NEVER;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid compare function");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -798,7 +783,6 @@ OGLTypes::asBlendFactor(GraphicsBlendFactor func) noexcept
 	case GraphicsBlendFactor::GraphicsBlendFactorOneMinusConstantAlpha: return GL_CONSTANT_ALPHA;
 	case GraphicsBlendFactor::GraphicsBlendFactorSrcAlphaSaturate:      return GL_SRC_ALPHA_SATURATE;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid blend factor");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -812,7 +796,6 @@ OGLTypes::asBlendOperation(GraphicsBlendOp blendop) noexcept
 	case GraphicsBlendOp::GraphicsBlendOpSubtract:   return GL_FUNC_SUBTRACT;
 	case GraphicsBlendOp::GraphicsBlendOpRevSubtract:return GL_FUNC_REVERSE_SUBTRACT;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid blend operation");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -827,7 +810,6 @@ OGLTypes::asCullMode(GraphicsCullMode mode) noexcept
 	case GraphicsCullMode::GraphicsCullModeBack:      return GL_BACK;
 	case GraphicsCullMode::GraphicsCullModeFrontBack: return GL_FRONT_AND_BACK;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid cull mode");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -842,7 +824,6 @@ OGLTypes::asFrontFace(GraphicsFrontFace face) noexcept
 	case GraphicsFrontFace::GraphicsFrontFaceCCW:
 		return GL_CCW;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid front face");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -856,7 +837,6 @@ OGLTypes::asFillMode(GraphicsPolygonMode mode) noexcept
 	case GraphicsPolygonMode::GraphicsPolygonModeWireframe: return GL_LINE;
 	case GraphicsPolygonMode::GraphicsPolygonModeSolid:     return GL_FILL;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid fill mode");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -874,7 +854,6 @@ OGLTypes::asStencilOperation(GraphicsStencilOp stencilop) noexcept
 	case GraphicsStencilOp::GraphicsStencilOpIncrWrap: return GL_INCR_WRAP;
 	case GraphicsStencilOp::GraphicsStencilOpDecrWrap: return GL_DECR_WRAP;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid stencil operation");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -888,7 +867,6 @@ OGLTypes::asSamplerWrap(GraphicsSamplerWrap wrap) noexcept
 	case GraphicsSamplerWrap::GraphicsSamplerWrapMirror:      return GL_MIRRORED_REPEAT;
 	case GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge: return GL_CLAMP_TO_EDGE;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid sampler wrap");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -905,7 +883,6 @@ OGLTypes::asSamplerMinFilter(GraphicsSamplerFilter filter) noexcept
 	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest:  return GL_LINEAR_MIPMAP_NEAREST;
 	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear:   return GL_LINEAR_MIPMAP_LINEAR;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -922,7 +899,6 @@ OGLTypes::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
 	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest:  return GL_LINEAR;
 	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear:   return GL_LINEAR;
 	default:
-		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -985,10 +961,7 @@ OGLTypes::getCompressedTextureSize(GLsizei width, GLsizei height, GLsizei depth,
 		height = (height + 3) & ~3;
 		return std::max(16, width * height);
 	default:
-	{
-		GL_PLATFORM_ASSERT(false, "bad texformat in compressed_texture_size");
 		return 0;
-	}
 	}
 }
 
@@ -1141,28 +1114,28 @@ OGLCheck::checkError() noexcept
 		switch (result)
 		{
 		case GL_INVALID_ENUM:
-			GL_PLATFORM_LOG("glGetError() fail : GL_INVALID_ENUM");
+			std::cout << "glGetError() fail : GL_INVALID_ENUM" << std::endl;
 			break;
 		case GL_INVALID_VALUE:
-			GL_PLATFORM_LOG("glGetError() fail : GL_INVALID_VALUE");
+			std::cout << "glGetError() fail : GL_INVALID_VALUE" << std::endl;
 			break;
 		case GL_INVALID_OPERATION:
-			GL_PLATFORM_LOG("glGetError() fail : GL_INVALID_OPERATION");
+			std::cout << "glGetError() fail : GL_INVALID_OPERATION" << std::endl;
 			break;
 		case GL_STACK_OVERFLOW:
-			GL_PLATFORM_LOG("glGetError() fail : GL_STACK_OVERFLOW");
+			std::cout << "glGetError() fail : GL_STACK_OVERFLOW" << std::endl;
 			break;
 		case GL_STACK_UNDERFLOW:
-			GL_PLATFORM_LOG("glGetError() fail : GL_STACK_UNDERFLOW");
+			std::cout << "glGetError() fail : GL_STACK_UNDERFLOW" << std::endl;
 			break;
 		case GL_OUT_OF_MEMORY:
-			GL_PLATFORM_LOG("glGetError() fail : GL_OUT_OF_MEMORY");
+			std::cout << "glGetError() fail : GL_OUT_OF_MEMORY" << std::endl;
 			break;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			GL_PLATFORM_LOG("glGetError() fail : GL_INVALID_FRAMEBUFFER_OPERATION");
+			std::cout << "glGetError() fail : GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
 			break;
 		default:
-			GL_PLATFORM_LOG("glGetError() fail : Unknown");
+			std::cout << "glGetError() fail : Unknown" << std::endl;
 		};
 	}
 
@@ -1174,22 +1147,22 @@ OGLCheck::checkError() noexcept
 		switch (result)
 		{
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			GL_PLATFORM_LOG("FBO:Incompleteattachment");
+			std::cout << "FBO:Incompleteattachment" << std::endl;
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			GL_PLATFORM_LOG("FBO:Incomplete missingattachment");
+			std::cout << "FBO:Incomplete missingattachment" << std::endl;
 			break;
 		case GL_FRAMEBUFFER_UNSUPPORTED:
-			GL_PLATFORM_LOG("FBO:Unsupported");
+			std::cout << "FBO:Unsupported" << std::endl;
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			GL_PLATFORM_LOG("FBO:Incomplete drawbuffer");
+			std::cout << "FBO:Incomplete drawbuffer" << std::endl;
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			GL_PLATFORM_LOG("FBO:Incomplete readbuffer");
+			std::cout << "FBO:Incomplete readbuffer" << std::endl;
 			break;
 		default:
-			GL_PLATFORM_LOG("FBO:Unknown");
+			std::cout << "FBO:Unknown" << std::endl;
 		}
 	}
 
@@ -1198,16 +1171,6 @@ OGLCheck::checkError() noexcept
 #else
 	return success;
 #endif
-}
-
-void
-OGLCheck::debugOutput(const char* message, ...) noexcept
-{
-	va_list va;
-	va_start(va, message);
-	vprintf(message, va);
-	printf("\n");
-	va_end(va);
 }
 
 _NAME_END

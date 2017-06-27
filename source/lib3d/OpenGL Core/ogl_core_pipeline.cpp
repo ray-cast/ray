@@ -41,6 +41,7 @@
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_descriptor_set.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -90,7 +91,7 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
 			if (type == GL_INVALID_ENUM)
 			{
-				GL_PLATFORM_LOG("Undefined vertex format.");
+				this->getDevice()->downcast<OGLDevice>()->message("Undefined vertex format.");
 				return false;
 			}
 

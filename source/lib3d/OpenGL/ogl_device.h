@@ -74,6 +74,8 @@ public:
 	const GraphicsDeviceProperty& getGraphicsDeviceProperty() const noexcept;
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
+	void message(const char* message, ...) noexcept;
+
 private:
 	OGLDevice(const OGLDevice&) noexcept = delete;
 	OGLDevice& operator=(const OGLDevice&) noexcept = delete;

@@ -81,16 +81,7 @@ extern GLEWContext _glewctx;
 #	define GL_CHECK(x) x
 #endif
 
-#if defined(__DEBUG__) 
-#	if defined(_VISUAL_STUDIO_)
-#		pragma warning(disable : 4127)
-#	endif
-#	define GL_PLATFORM_LOG(format) { OGLCheck::debugOutput(format); }
-#else
-#	define GL_PLATFORM_LOG(format) { }
-#endif
-
-#if defined(__DEBUG__) 
+#if defined(__DEBUG__)
 #	if defined(_VISUAL_STUDIO_)
 #		pragma warning(disable : 4127)
 #	endif
@@ -205,8 +196,6 @@ class OGLCheck
 {
 public:
 	static bool checkError() noexcept;
-
-	static void debugOutput(const char* message, ...) noexcept;
 };
 
 _NAME_END

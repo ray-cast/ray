@@ -32,6 +32,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_state.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -104,7 +105,14 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 				GLenum dfactorRGB = OGLTypes::asBlendFactor(srcBlend.getBlendDest());
 				GLenum sfactorAlpha = OGLTypes::asBlendFactor(srcBlend.getBlendAlphaSrc());
 				GLenum dfactorAlpha = OGLTypes::asBlendFactor(srcBlend.getBlendAlphaDest());
-				
+#if _DEBUG
+				if (sfactorRGB == GL_INVALID_ENUM || dfactorRGB == GL_INVALID_ENUM || sfactorAlpha == GL_INVALID_ENUM || dfactorAlpha == GL_INVALID_ENUM)
+				{
+					this->getDevice()->downcast<OGLDevice>()->message("Invalid blend factor");
+					return;
+				}
+#endif
+
 				glBlendFuncSeparatei(i, sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 
 				destBlend.setBlendSrc(srcBlend.getBlendSrc());
@@ -118,6 +126,13 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 			{
 				GLenum modeRGB = OGLTypes::asBlendOperation(srcBlend.getBlendOp());
 				GLenum modeAlpha = OGLTypes::asBlendOperation(srcBlend.getBlendAlphaOp());
+#if _DEBUG
+				if (modeRGB == GL_INVALID_ENUM || modeAlpha == GL_INVALID_ENUM)
+				{
+					this->getDevice()->downcast<OGLDevice>()->message("Invalid blend operation");
+					return;
+				}
+#endif
 
 				glBlendEquationSeparatei(i, modeRGB, modeAlpha);
 
@@ -138,10 +153,10 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		{
 			auto flags = srcBlend.getColorWriteMask();
 
-			GLboolean r = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit ? GL_TRUE: GL_FALSE;
-			GLboolean g = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit ? GL_TRUE: GL_FALSE;
-			GLboolean b = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE: GL_FALSE;
-			GLboolean a = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE: GL_FALSE;
+			GLboolean r = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagRedBit ? GL_TRUE : GL_FALSE;
+			GLboolean g = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagGreendBit ? GL_TRUE : GL_FALSE;
+			GLboolean b = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagBlurBit ? GL_TRUE : GL_FALSE;
+			GLboolean a = flags & GraphicsColorMaskFlagBits::GraphicsColorMaskFlagAlphaBit ? GL_TRUE : GL_FALSE;
 
 			glColorMaski(i, r, g, b, a);
 
@@ -154,6 +169,14 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		if (_stateDesc.getCullMode() != GraphicsCullMode::GraphicsCullModeNone)
 		{
 			GLenum mode = OGLTypes::asCullMode(_stateDesc.getCullMode());
+#if _DEBUG
+			if (mode == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid cull mode");
+				return;
+			}
+#endif
+
 			glEnable(GL_CULL_FACE);
 			glCullFace(mode);
 
@@ -169,12 +192,27 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 	if (lastStateDesc.getFrontFace() != _stateDesc.getFrontFace())
 	{
 		GLenum face = OGLTypes::asFrontFace(_stateDesc.getFrontFace());
+#if _DEBUG
+		if (face == GL_INVALID_ENUM)
+		{
+			this->getDevice()->downcast<OGLDevice>()->message("invalid front face");
+			return;
+		}
+#endif
 		glFrontFace(face);
 	}
 
 	if (lastStateDesc.getPolygonMode() != _stateDesc.getPolygonMode())
 	{
 		GLenum mode = OGLTypes::asFillMode(_stateDesc.getPolygonMode());
+#if _DEBUG
+		if (mode == GL_INVALID_ENUM)
+		{
+			this->getDevice()->downcast<OGLDevice>()->message("invalid FillMode");
+			return;
+		}
+#endif
+
 		glPolygonMode(GL_FRONT_AND_BACK, mode);
 		lastStateDesc.setPolygonMode(_stateDesc.getPolygonMode());
 	}
@@ -208,6 +246,12 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		if (lastStateDesc.getDepthFunc() != _stateDesc.getDepthFunc())
 		{
 			GLenum func = OGLTypes::asCompareFunction(_stateDesc.getDepthFunc());
+			if (func == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid compare function");
+				return;
+			}
+
 			glDepthFunc(func);
 			lastStateDesc.setDepthFunc(_stateDesc.getDepthFunc());
 		}
@@ -267,6 +311,12 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 			lastStateDesc.getStencilFrontReadMask() != _stateDesc.getStencilFrontReadMask())
 		{
 			GLenum frontfunc = OGLTypes::asCompareFunction(_stateDesc.getStencilFrontFunc());
+			if (frontfunc == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid compare function");
+				return;
+			}
+
 			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateDesc.getStencilFrontRef(), _stateDesc.getStencilFrontReadMask());
 
 			lastStateDesc.setStencilFrontFunc(_stateDesc.getStencilFrontFunc());
@@ -279,6 +329,12 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 			lastStateDesc.getStencilBackReadMask() != _stateDesc.getStencilBackReadMask())
 		{
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateDesc.getStencilBackFunc());
+			if (backfunc == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid compare function");
+				return;
+			}
+
 			glStencilFuncSeparate(GL_BACK, backfunc, _stateDesc.getStencilBackRef(), _stateDesc.getStencilBackReadMask());
 
 			lastStateDesc.setStencilBackFunc(_stateDesc.getStencilBackFunc());
@@ -293,6 +349,13 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 			GLenum frontfail = OGLTypes::asStencilOperation(_stateDesc.getStencilFrontFail());
 			GLenum frontzfail = OGLTypes::asStencilOperation(_stateDesc.getStencilFrontZFail());
 			GLenum frontpass = OGLTypes::asStencilOperation(_stateDesc.getStencilFrontPass());
+#if _DEBUG
+			if (frontfail == GL_INVALID_ENUM || frontzfail == GL_INVALID_ENUM || frontpass == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("invalid StencilOperation");
+				return;
+			}
+#endif
 
 			glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
 
@@ -308,6 +371,14 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 			GLenum backfail = OGLTypes::asStencilOperation(_stateDesc.getStencilBackFail());
 			GLenum backzfail = OGLTypes::asStencilOperation(_stateDesc.getStencilBackZFail());
 			GLenum backpass = OGLTypes::asStencilOperation(_stateDesc.getStencilBackPass());
+#if _DEBUG
+			if (backfail == GL_INVALID_ENUM || backzfail == GL_INVALID_ENUM || backpass == GL_INVALID_ENUM)
+			{
+				this->getDevice()->downcast<OGLDevice>()->message("invalid StencilOperation");
+				return;
+			}
+#endif
+
 			glStencilOpSeparate(GL_BACK, backfail, backzfail, backpass);
 
 			lastStateDesc.setStencilBackFail(_stateDesc.getStencilBackFail());

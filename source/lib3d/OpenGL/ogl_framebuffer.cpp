@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "ogl_framebuffer.h"
 #include "ogl_texture.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -102,7 +103,7 @@ OGLFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 	glGenFramebuffers(1, &_fbo);
 	if (_fbo == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateFramebuffers() fail.");
+		this->getDevice()->downcast<OGLDevice>()->message("glCreateFramebuffers() fail.");
 		return false;
 	}
 
@@ -115,7 +116,7 @@ OGLFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 	const auto& colorAttachments = framebufferDesc.getColorAttachments();
 	if (colorAttachments.size() > (sizeof(drawBuffers) / sizeof(drawBuffers[0])))
 	{
-		GL_PLATFORM_LOG("The color attachment in framebuffer is out of range.");
+		this->getDevice()->downcast<OGLDevice>()->message("The color attachment in framebuffer is out of range.");
 		return false;
 	}
 
@@ -144,7 +145,7 @@ OGLFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 			const auto& depthStencilAttachment = framebufferDesc.getDepthStencilAttachment();
 			if (!depthStencilAttachment.getBindingTexture())
 			{
-				GL_PLATFORM_LOG("Need depth or stencil texture.");
+				this->getDevice()->downcast<OGLDevice>()->message("Need depth or stencil texture.");
 				return false;
 			}
 
@@ -170,7 +171,7 @@ OGLFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 			}
 			else
 			{
-				GL_PLATFORM_LOG("Invalid texture format");
+				this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
 				return false;
 			}
 		}
@@ -228,7 +229,7 @@ OGLFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attac
 			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
 			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
 		{
-			GL_PLATFORM_LOG("Invalid texture target");
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid texture target");
 			return false;
 		}
 

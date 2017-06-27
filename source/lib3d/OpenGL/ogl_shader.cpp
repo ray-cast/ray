@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_shader.h"
+#include "ogl_device.h"
 
 #define EXCLUDE_PSTDINT
 #include <hlslcc.hpp>
@@ -303,10 +304,17 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	assert(!_instance);
 	assert(!shaderDesc.getByteCodes().empty());
 
-	_instance = glCreateShader(OGLTypes::asShaderStage(shaderDesc.getStage()));
+	auto type = OGLTypes::asShaderStage(shaderDesc.getStage());
+	if (type == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid shader type");
+		return false;
+	}
+
+	_instance = glCreateShader(type);
 	if (_instance == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateShader() fail.");
+		this->getDevice()->downcast<OGLDevice>()->message("glCreateShader() fail.");
 		return false;
 	}
 
@@ -315,7 +323,7 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	{
 		if (!HlslCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), shaderDesc.getEntryPoint().data(), codes))
 		{
-			GL_PLATFORM_LOG("Can't conv hlsl to glsl.");
+			this->getDevice()->downcast<OGLDevice>()->message("Can't conv hlsl to glsl.");
 			return false;
 		}
 	}
@@ -323,7 +331,7 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	{
 		if (!HlslByteCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), codes))
 		{
-			GL_PLATFORM_LOG("Can't conv hlslbytecodes to glsl.");
+			this->getDevice()->downcast<OGLDevice>()->message("Can't conv hlslbytecodes to glsl.");
 			return false;
 		}
 	}
@@ -342,7 +350,7 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 		std::string log((std::size_t)length, 0);
 		glGetShaderInfoLog(_instance, length, &length, (char*)log.data());
 
-		GL_PLATFORM_LOG(log.c_str());
+		this->getDevice()->downcast<OGLDevice>()->message(log.c_str());
 		return false;
 	}
 
@@ -403,7 +411,7 @@ OGLShader::HlslCodes2GLSL(GraphicsShaderStageFlags stage, const std::string& cod
 				index++;
 			}
 
-			GL_PLATFORM_LOG(ostream.str().c_str());
+			this->getDevice()->downcast<OGLDevice>()->message(ostream.str().c_str());
 		}
 		else
 		{
@@ -506,7 +514,7 @@ OGLProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 	_program = glCreateProgram();
 	if (_program == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateProgram() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("glCreateProgram() fail");
 		return false;
 	}
 
@@ -529,7 +537,7 @@ OGLProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 		std::string log((std::size_t)length, 0);
 		glGetProgramInfoLog(_program, length, &length, (GLchar*)log.data());
 
-		GL_PLATFORM_LOG(log.c_str());
+		this->getDevice()->downcast<OGLDevice>()->message(log.c_str());
 		return false;
 	}
 
@@ -792,7 +800,6 @@ OGLProgram::toGraphicsFormat(GLenum type) noexcept
 		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
 	else
 	{
-		GL_PLATFORM_ASSERT(false, "Invlid uniform type");
 		return GraphicsFormat::GraphicsFormatUndefined;
 	}
 }
@@ -922,7 +929,7 @@ OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 		}
 		else
 		{
-			GL_PLATFORM_ASSERT(false, "Invlid uniform type");
+			assert(false);
 			return GraphicsUniformType::GraphicsUniformTypeNone;
 		}
 	}

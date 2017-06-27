@@ -351,4 +351,14 @@ OGLDevice::getGraphicsDeviceDesc() const noexcept
 	return _deviceDesc;
 }
 
+void
+OGLDevice::message(const char* message, ...) noexcept
+{
+	va_list va;
+	va_start(va, message);
+	vprintf(message, va);
+	printf("\n");
+	va_end(va);
+}
+
 _NAME_END

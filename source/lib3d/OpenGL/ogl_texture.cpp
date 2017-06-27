@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_texture.h"
+#include "ogl_device.h"
 
 _NAME_BEGIN
 
@@ -62,16 +63,22 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 	GLenum target = OGLTypes::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
 	if (target == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture target");
 		return false;
+	}
 
 	GLenum internalFormat = OGLTypes::asTextureInternalFormat(textureDesc.getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture internal format.");
 		return false;
+	}
 
 	glGenTextures(1, &_texture);
 	if (_texture == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glGenTextures() fail");
+		this->getDevice()->downcast<OGLDevice>()->message("glGenTextures() fail");
 		return false;
 	}
 
@@ -110,8 +117,10 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			GLsizei w = std::max(width / (1 << mip), 1);
 			GLsizei h = std::max(height / (1 << mip), 1);
 			GLsizei mipSize = OGLTypes::getCompressedTextureSize(w, h, 1, internalFormat);
-
-			glCompressedTexImage2D(GL_TEXTURE_2D, mip, internalFormat, w, h, 0, mipSize, (char*)stream + offset);
+			if (mipSize > 0)
+				glCompressedTexImage2D(GL_TEXTURE_2D, mip, internalFormat, w, h, 0, mipSize, (char*)stream + offset);
+			else
+				this->getDevice()->downcast<OGLDevice>()->message("bad texformat in compressed_texture_size");
 
 			offset += stream ? mipSize : 0;
 		}
@@ -121,7 +130,18 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	else
 	{
 		GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
+		if (format == GL_INVALID_ENUM)
+		{
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
+			return false;
+		}
+
 		GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
+		if (type == GL_INVALID_ENUM)
+		{
+			this->getDevice()->downcast<OGLDevice>()->message("Invalid texture type");
+			return false;
+		}
 
 		GLsizei offset = 0;
 		GLsizei pixelSize = stream ? OGLTypes::getFormatNum(format, type) : 1;
@@ -226,11 +246,17 @@ OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t
 
 	GLenum format = OGLTypes::asTextureFormat(_textureDesc.getTexFormat());
 	if (format == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
 		return false;
+	}
 
 	GLenum type = OGLTypes::asTextureType(_textureDesc.getTexFormat());
 	if (type == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture type");
 		return false;
+	}
 
 	if (type == GL_HALF_FLOAT)
 		type = GL_FLOAT;
@@ -290,16 +316,17 @@ bool
 OGLTexture::applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept
 {
 	GLenum glwrap = OGLTypes::asSamplerWrap(wrap);
-	if (glwrap != GL_INVALID_ENUM)
+	if (glwrap == GL_INVALID_ENUM)
 	{
-		glTexParameteri(target, GL_TEXTURE_WRAP_S, glwrap);
-		glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap);
-		glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap);
-
-		return true;
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid sampler wrap");
+		return false;
 	}
 
-	return false;
+	glTexParameteri(target, GL_TEXTURE_WRAP_S, glwrap);
+	glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap);
+	glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap);
+
+	return true;
 }
 
 bool
@@ -307,14 +334,15 @@ OGLTexture::applySamplerFilter(GLenum target, GraphicsSamplerFilter minFilter, G
 {
 	GLenum min = OGLTypes::asSamplerMinFilter(minFilter);
 	GLenum mag = OGLTypes::asSamplerMagFilter(magFilter);
-	if (min != GL_INVALID_ENUM && mag != GL_INVALID_ENUM)
+	if (min == GL_INVALID_ENUM || mag == GL_INVALID_ENUM)
 	{
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
-		return true;
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid sampler filter");
+		return false;
 	}
 
-	return false;
+	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);
+	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
+	return true;
 }
 
 bool

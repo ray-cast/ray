@@ -78,6 +78,8 @@ GuiViewComponent::GuiViewComponent() noexcept
 	, _selectedObjectLast(nullptr)
 	, _selectedItem(nullptr)
 	, _selectedShift(std::numeric_limits<std::size_t>::max())
+	, _selectedMaterial(nullptr)
+	, _selectedMaterialLast(nullptr)
 	, _lightMassType(LightMassType::UVMapper)
 	, _viewport(0.0f, 0.0f, 0.0f, 0.0f)
 	, _assetImageSize(ray::float2(76.0f, 76.0f))
@@ -1470,6 +1472,13 @@ GuiViewComponent::showInspectorWindow() noexcept
 								if (it != _materials->end())
 								{
 									_selectedMaterial = *it;
+
+									if (_selectedMaterial != _selectedMaterialLast)
+									{
+										_event.onUpdateMaterial(*_selectedMaterial);
+										_selectedMaterialLast = _selectedMaterial;
+									}
+
 									if (_selectedMaterial)
 										this->showEditMaterialWindow(*_selectedMaterial);
 								}

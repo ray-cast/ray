@@ -130,7 +130,7 @@
 				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
-				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
+				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel == SHADINGMODELID_SKIN) * lightColor;
 				lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 
 				return lighting;
@@ -154,7 +154,7 @@
 				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
-				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
+				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel == SHADINGMODELID_SKIN) * lightColor;
 				lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 				lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 
@@ -179,7 +179,7 @@
 				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
-				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
+				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel == SHADINGMODELID_SKIN) * lightColor;
 				lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 
 				return lighting;
@@ -203,7 +203,7 @@
 				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
-				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
+				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel == SHADINGMODELID_SKIN) * lightColor;
 				lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 				lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 
@@ -230,7 +230,7 @@
 				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
-				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
+				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel == SHADINGMODELID_SKIN) * lightColor;
 				lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 				lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
 				lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, lightAttenuation, P);
@@ -258,7 +258,7 @@
 				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
-				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
+				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel == SHADINGMODELID_SKIN) * lightColor;
 				lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 				lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
 				lighting *= spotLighting(lightEyePosition, lightEyeDirection, lightOuterInner, lightAttenuation, P);
@@ -286,7 +286,7 @@
 				float3 transmittance = TranslucencyBRDF(material.normal, L, material.customB);
 
 				float4 lighting;
-				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel) * lightColor;
+				lighting.rgb = material.albedo * lerp(diffuse, transmittance, material.lightModel == SHADINGMODELID_SKIN) * lightColor;
 				lighting.a = luminance(SpecularBRDF(material.normal, L, V, material.smoothness, material.specular));
 				lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
 

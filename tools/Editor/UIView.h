@@ -130,6 +130,7 @@ private:
 	bool _forceUpdateMaterial;
 	EditorAssetItemPtr _selectedItem;
 	EditorAssetItemPtr _selectedMaterial;
+	EditorAssetItemPtr _selectedMaterialLast;
 
 	std::vector<std::uint8_t> _selectedTextures;
 	std::vector<std::uint8_t> _selectedMaterials;

@@ -1727,6 +1727,8 @@ GuiControllerComponent::onExportMaterial(ray::util::string::const_pointer path, 
 	(*stream) << "const float  emissiveIntensity = " << material["emissiveIntensity"]->value().getFloat() << ";\r\n";
 	(*stream) << "const float2 emissiveMapLoopNum = float2(" << material["emissiveMapLoopNum"]->value().getFloat2() << ");\r\n\r\n";
 
+	(*stream) << "#define CUSTOM_ENABLE" << material["customType"]->value().getInt() << "\r\n";
+
 	(*stream) << "#define CUSTOM_A_MAP_FROM " << material["customAMapFrom"]->value().getInt() << "\r\n";
 	(*stream) << "#define CUSTOM_A_MAP_UV_FLIP " << material["customAMapFlip"]->value().getInt() << "\r\n";
 	(*stream) << "#define CUSTOM_A_MAP_COLOR_FLIP 0\r\n";

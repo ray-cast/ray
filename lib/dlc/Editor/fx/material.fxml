@@ -417,7 +417,7 @@
 				material.lightModel = SHADINGMODELID_DEFAULT;
 
 				float3 emissive = GetEmissive(coord);
-				if (any(emissive))
+				if (step(1e-3f, dot(emissive, 1)))
 				{
 					material.customB = emissive;
 					material.lightModel = SHADINGMODELID_EMISSIVE;					

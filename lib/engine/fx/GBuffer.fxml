@@ -124,7 +124,7 @@
 
                 if (material.lightModel > SHADINGMODELID_DEFAULT && material.lightModel < SHADINGMODELID_MASK)
                 {
-                    if (material.lightModel != SHADINGMODELID_GLASS)
+                    if (material.lightModel != SHADINGMODELID_GLASS && material.lightModel != SHADINGMODELID_EMISSIVE)
                     {
                         material.customB *= (1 - material.metalness);
                     }

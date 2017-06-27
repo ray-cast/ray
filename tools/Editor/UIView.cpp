@@ -84,7 +84,6 @@ GuiViewComponent::GuiViewComponent() noexcept
 	, _viewport(0.0f, 0.0f, 0.0f, 0.0f)
 	, _assetImageSize(ray::float2(76.0f, 76.0f))
 	, _materialImageSize(ray::float2(128.0f, 128.0f))
-	, _forceUpdateMaterial(false)
 {
 	_progress = 0.0f;
 	_isShowWindowAll = true;
@@ -1457,7 +1456,7 @@ GuiViewComponent::showInspectorWindow() noexcept
 					const auto& materials = it->downcast<ray::MeshRenderComponent>()->getMaterials();
 					if (!materials.empty())
 					{
-						if (_selectedObject != _selectedObjectLast || _selectedSubset != _selectedSubsetLast || _forceUpdateMaterial)
+						if (_selectedObject != _selectedObjectLast || _selectedSubset != _selectedSubsetLast)
 						{
 							auto material = (materials.size() > _selectedSubset) ? materials[_selectedSubset] : materials.front();
 
@@ -1486,7 +1485,6 @@ GuiViewComponent::showInspectorWindow() noexcept
 
 							_selectedObjectLast = _selectedObject;
 							_selectedSubsetLast = _selectedSubset;
-							_forceUpdateMaterial = false;
 						}
 						else
 						{
@@ -1716,8 +1714,6 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 					auto materials = meshComponent->getMaterials();
 					if (!materials.empty())
 					{
-						_forceUpdateMaterial = true;
-
 						if (materials.size() > _selectedSubset)
 							meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value), _selectedSubset);
 						else

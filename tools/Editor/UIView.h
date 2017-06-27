@@ -127,7 +127,6 @@ private:
 	ray::GameObject* _selectedObjectLast;
 	ray::GameObjectPtr _cube;
 
-	bool _forceUpdateMaterial;
 	EditorAssetItemPtr _selectedItem;
 	EditorAssetItemPtr _selectedMaterial;
 	EditorAssetItemPtr _selectedMaterialLast;

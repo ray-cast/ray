@@ -332,20 +332,28 @@ GameApplication::setFileServicePath(const util::string& filepath) noexcept
 	assert(_ioServer);
 
 	wchar_t wpath[PATHLIMIT];
+	if (!ray::acp_to_utf16(filepath.c_str(), wpath))
+		return false;
+
+	return this->setFileServicePath(wpath);
+}
+
+bool
+GameApplication::setFileServicePath(const std::wstring& filepath) noexcept
+{
+	assert(_ioServer);
+
+	char path[PATHLIMIT];
 	if (!ray::util::isSeparator(*filepath.rbegin()))
 	{
-		if (!ray::acp_to_utf16((filepath + SEPARATOR).c_str(), wpath))
+		if (!ray::utf16_to_utf8((filepath + L'/').c_str(), path))
 			return false;
 	}
 	else
 	{
-		if (!ray::acp_to_utf16(filepath.c_str(), wpath))
+		if (!ray::utf16_to_utf8(filepath.c_str(), path))
 			return false;
 	}
-
-	char path[PATHLIMIT];
-	if (!ray::utf16_to_utf8(wpath, path))
-		return false;
 
 	util::toUnixPath(path, path, PATHLIMIT);
 

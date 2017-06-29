@@ -259,7 +259,7 @@ public:
 			}
 			else
 			{
-				throw failure(std::string("array length mismatch with 2"));
+				throw failure("array length mismatch with 2");
 			}
 		}
 
@@ -278,7 +278,7 @@ public:
 			}
 			else
 			{
-				throw failure(std::string("array length mismatch with 3"));
+				throw failure("array length mismatch with 3");
 			}
 		}
 
@@ -297,7 +297,7 @@ public:
 			}
 			else
 			{
-				throw failure(std::string("array length mismatch with 4"));
+				throw failure("array length mismatch with 4");
 			}
 		}
 
@@ -316,7 +316,7 @@ public:
 			}
 			else
 			{
-				throw failure(std::string("array length mismatch with 4"));
+				throw failure("array length mismatch with 4");
 			}
 		}
 

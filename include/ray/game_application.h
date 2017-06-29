@@ -70,6 +70,7 @@ public:
 	void setFileService(bool enable) noexcept;
 	void setFileServiceListener(bool enable) noexcept;
 	bool setFileServicePath(const util::string& path) noexcept;
+	bool setFileServicePath(const std::wstring& path) noexcept;
 	bool setResDownloadURL(const util::string& path) noexcept;
 
 	bool sendMessage(const MessagePtr& message) noexcept;

@@ -938,6 +938,7 @@ GuiViewComponent::showAboutWindow() noexcept
 	{
 		ray::Gui::textUnformatted("Ray Studio Ver.0.1 beta");
 		ray::Gui::textUnformatted("Developer by : Rui (https://twitter.com/Rui_cg)");
+		ray::Gui::textUnformatted("Licensed under the BSD 3-clause.");
 		ray::Gui::textUnformatted("Copyright (c) 2017-2018. All rights reserved.");
 
 		ray::Gui::pushStyleColor(ray::GuiCol::GuiColBorder, ray::float4::Zero);
@@ -1700,7 +1701,7 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 
 		if (ray::Gui::imageButtonEx(item.preview.get(), _materialImageSize, "Click here update material", isMaterialDraing, true))
 		{
-			if (_selectedItem)
+			if (_selectedItem && isMaterialDraing)
 			{
 				if (ray::Gui::isKeyPressed(ray::InputKey::Code::LeftControl))
 				{

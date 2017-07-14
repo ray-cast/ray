@@ -1703,31 +1703,12 @@ GuiViewComponent::showEditMaterialWindow(const EditorAssetItem& item) noexcept
 		{
 			if (_selectedItem && isMaterialDraing)
 			{
-				if (ray::Gui::isKeyPressed(ray::InputKey::Code::LeftControl))
-				{
-					auto& params = std::get<EditorAssetItem::material>(_selectedItem->value)->getParameters();
-					for (auto& it : params)
-						material[it.first]->uniformParam(*it.second);
-				}
-				else
-				{
-					auto& meshComponent = _selectedObject->getComponent<ray::MeshRenderComponent>();
-
-					auto materials = meshComponent->getMaterials();
-					if (!materials.empty())
-					{
-						if (materials.size() > _selectedSubset)
-							meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value), _selectedSubset);
-						else
-							meshComponent->setMaterial(std::get<EditorAssetItem::material>(_selectedItem->value));
-					}
-				}
-			}
-			else
-			{
-				_event.onUpdateMaterial(item);
+				auto& params = std::get<EditorAssetItem::material>(_selectedItem->value)->getParameters();
+				for (auto& it : params)
+					material[it.first]->uniformParam(*it.second);
 			}
 
+			_event.onUpdateMaterial(item);
 			_selectedItem = nullptr;
 		}
 

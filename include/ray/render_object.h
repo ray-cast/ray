@@ -64,6 +64,9 @@ public:
 	void setOwnerListener(RenderListener* listener) noexcept;
 	RenderListener* getOwnerListener() noexcept;
 
+	void setVisible(bool enable) noexcept;
+	bool getVisible() const noexcept;
+
 	void setBoundingBox(const BoundingBox& bound) noexcept;
 	const BoundingBox& getBoundingBox() const noexcept;
 	const BoundingBox& getBoundingBoxInWorld() const noexcept;
@@ -95,6 +98,8 @@ public:
 	virtual void onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTech* tech) noexcept;
 
 protected:
+	bool _visible;
+
 	std::uint8_t _layer;
 
 	BoundingBox _boundingBox;

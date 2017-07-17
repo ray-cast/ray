@@ -56,7 +56,6 @@ Light::Light() noexcept
 	, _lightAttenuation(float3::UnitZ)
 	, _spotInnerCone(5.0f, math::cos(math::deg2rad(5.0f)))
 	, _spotOuterCone(40.0f, math::cos(math::deg2rad(40.0f)))
-	, _enableLighting(false)
 	, _enableSoftShadow(false)
 	, _enableGlobalIllumination(false)
 	, _shadowMode(ShadowMode::ShadowModeNone)
@@ -204,18 +203,6 @@ bool
 Light::getGlobalIllumination() const noexcept
 {
 	return _enableGlobalIllumination;
-}
-
-void
-Light::setLightVisible(bool enable) noexcept
-{
-	_enableLighting = enable;
-}
-
-bool
-Light::getLightVisible() const noexcept
-{
-	return _enableLighting;
 }
 
 const Cameras&

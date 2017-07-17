@@ -61,6 +61,18 @@ LightProbeComponent::~LightProbeComponent() noexcept
 }
 
 void
+LightProbeComponent::setVisible(bool visible) noexcept
+{
+	_lightProbe->setVisible(visible);
+}
+
+bool
+LightProbeComponent::getVisible() const noexcept
+{
+	return _lightProbe->getVisible();
+}
+
+void
 LightProbeComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);

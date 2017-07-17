@@ -221,6 +221,9 @@ RenderScene::computVisiable(const float3& eye, const float4x4& viewProject, Occl
 
 	for (auto& it : _renderObjectList)
 	{
+		if (!it->getVisible())
+			continue;
+
 		if (it->onVisiableTest(fru))
 			list.insert(it, math::sqrDistance(eye, it->getBoundingBoxInWorld().center()));
 	}
@@ -237,6 +240,9 @@ RenderScene::computVisiableLight(const float4x4& viewProject, OcclusionCullList&
 	for (auto& it : _renderObjectList)
 	{
 		if (!it->isInstanceOf<Light>())
+			continue;
+
+		if (!it->getVisible())
 			continue;
 
 		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))

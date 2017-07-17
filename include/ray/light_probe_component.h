@@ -50,6 +50,9 @@ public:
 	LightProbeComponent(const archivebuf& reader) noexcept;
 	~LightProbeComponent() noexcept;
 
+	void setVisible(bool enable) noexcept;
+	bool getVisible() const noexcept;
+
 	void load(const archivebuf& reader) noexcept;
 	void save(archivebuf& write) noexcept;
 

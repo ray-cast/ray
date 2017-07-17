@@ -77,6 +77,18 @@ RenderObject::getLayer() const noexcept
 }
 
 void
+RenderObject::setVisible(bool enable) noexcept
+{
+	_visible = enable;
+}
+
+bool
+RenderObject::getVisible() const noexcept
+{
+	return _visible;
+}
+
+void
 RenderObject::setBoundingBox(const BoundingBox& bound) noexcept
 {
 	_worldBoundingxBox = _boundingBox = bound;

@@ -50,6 +50,9 @@ public:
 	LightComponent(const archivebuf& reader) noexcept;
 	~LightComponent() noexcept;
 
+	void setVisible(bool enable) noexcept;
+	bool getVisible() const noexcept;
+
 	void setLightType(LightType type) noexcept;
 	LightType getLightType() const noexcept;
 

@@ -64,9 +64,6 @@ public:
 	void setGlobalIllumination(bool enable) noexcept;
 	bool getGlobalIllumination() const noexcept;
 
-	void setLightVisible(bool enable) noexcept;
-	bool getLightVisible() const noexcept;
-
 	float getLightRange() const noexcept;
 	float getLightIntensity() const noexcept;
 	LightType getLightType() const noexcept;
@@ -132,7 +129,6 @@ private:
 	float2 _spotInnerCone;
 	float2 _spotOuterCone;
 
-	bool _enableLighting;
 	bool _enableSoftShadow;
 	bool _enableGlobalIllumination;
 

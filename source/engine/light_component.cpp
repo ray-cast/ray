@@ -67,6 +67,18 @@ LightComponent::~LightComponent() noexcept
 }
 
 void
+LightComponent::setVisible(bool visible) noexcept
+{
+	_light->setVisible(visible);
+}
+
+bool
+LightComponent::getVisible() const noexcept
+{
+	return _light->getVisible();
+}
+
+void
 LightComponent::setLightRange(float range) noexcept
 {
 	_light->setLightRange(range);
@@ -321,7 +333,7 @@ LightComponent::onAttachComponent(const GameComponentPtr& component) noexcept
 
 		if (skyboxComponent->getSkyboxEnable())
 		{
-			_light->setLightVisible(skyboxComponent->getSkyLightingEnable());
+			_light->setVisible(skyboxComponent->getSkyLightingEnable());
 			_light->setSkyBox(skyboxComponent->getSkyBox());
 			_light->setSkyLightingDiffuse(skyboxComponent->getSkyLightDiffuse());
 			_light->setSkyLightingSpecular(skyboxComponent->getSkyLightSpecular());
@@ -345,7 +357,7 @@ LightComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 		skyboxComponent->removeEnableSkyBoxListener(&_onEnableSkyBox);
 		skyboxComponent->removeEnableSkyLightingListener(&_onEnableSkyLighting);
 
-		_light->setLightVisible(false);
+		_light->setVisible(false);
 		_light->setSkyBox(nullptr);
 		_light->setSkyLightingDiffuse(nullptr);
 		_light->setSkyLightingSpecular(nullptr);
@@ -369,13 +381,13 @@ LightComponent::onEnableSkyLighting(bool enable) noexcept
 	auto component = this->getGameObject()->getComponent<SkyboxComponent>();
 	if (component)
 	{
-		_light->setLightVisible(enable);
+		_light->setVisible(enable);
 		_light->setSkyLightingDiffuse(component->getSkyLightDiffuse());
 		_light->setSkyLightingSpecular(component->getSkyLightSpecular());
 	}
 	else
 	{
-		_light->setLightVisible(false);
+		_light->setVisible(false);
 		_light->setSkyLightingDiffuse(nullptr);
 		_light->setSkyLightingSpecular(nullptr);
 	}

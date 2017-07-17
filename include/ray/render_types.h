@@ -127,6 +127,7 @@ enum class CameraOrder : std::uint8_t
 {
 	CameraOrderCustom,
 	CameraOrderShadow,
+	CameraOrderLightProbe,
 	CameraOrder3D,
 	CameraOrder2D,
 	CameraOrderBeginRange = CameraOrderCustom,

@@ -688,30 +688,34 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 
 		camera->onRenderPre(*camera);
 
-		if (camera->getCameraOrder() != CameraOrder::CameraOrder3D &&
-			camera->getCameraOrder() != CameraOrder::CameraOrder2D)
-			continue;
-
-		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
+		switch (camera->getCameraOrder())
 		{
-			if (_shadowMapGen)
-			{
-				_shadowMapGen->onRenderPre();
-				_shadowMapGen->onRenderPipeline(camera);
-				_shadowMapGen->onRenderPost();
-			}
-		}
-
-		auto renderPipeline = _forward;
-		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
+		case CameraOrder::CameraOrderShadow:
 		{
-			if (_setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
-				renderPipeline = _deferredLighting;
+			_shadowMapGen->onRenderPre();
+			_shadowMapGen->onRenderPipeline(camera);
+			_shadowMapGen->onRenderPost();
 		}
-
-		renderPipeline->onRenderPre();
-		renderPipeline->onRenderPipeline(camera);
-		renderPipeline->onRenderPost();
+		break;
+		case CameraOrder::CameraOrder2D:
+		{
+			_forward->onRenderPre();
+			_forward->onRenderPipeline(camera);
+			_forward->onRenderPost();
+		}
+		break;
+		case CameraOrder::CameraOrder3D:
+		{
+			auto renderPipeline = (_setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting) ? _deferredLighting : _forward;
+			renderPipeline->onRenderPre();
+			renderPipeline->onRenderPipeline(camera);
+			renderPipeline->onRenderPost();
+		}
+		break;
+		default:
+			assert(false);
+			break;
+		}
 
 		camera->onRenderPost(*camera);
 	}

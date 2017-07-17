@@ -134,7 +134,15 @@ public:
 	typedef typename trait::_typeaddition<T>::reference reference;
 	typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
-	Vector3t<T> min, max;
+	union
+	{
+		T values[6];
+
+		struct
+		{
+			Vector3t<T> min, max;
+		};
+	};
 
 	AABBt<T>() noexcept { this->reset(); }
 	AABBt<T>(const AABBt& copy) noexcept { min = copy.min; max = copy.max; }
@@ -201,19 +209,18 @@ public:
 	float getSurfaceArea() const noexcept
 	{
 		Vector3t<T> ext = max - min;
-
 		return 2.0f * (ext.x * ext.y + ext.x * ext.z + ext.y * ext.z);
 	}
 
 	Vector3t<T> closestPoint(const Vector3t<T>& pt) const noexcept
 	{
-		float x = pt.x;
+		T x = pt.x;
 		if (x < min.x) x = min.x;
 		if (x > max.x) x = max.y;
-		float y = pt.y;
+		T y = pt.y;
 		if (y < min.x) y = min.x;
 		if (y > max.x) y = max.y;
-		float z = pt.z;
+		T z = pt.z;
 		if (z < min.x) z = min.x;
 		if (z > max.x) z = max.y;
 		return Vector3t<T>(x, y, z);
@@ -263,11 +270,8 @@ public:
 	{
 		assert(pt && n);
 
-		for (size_t i = 0; i < n; i++)
-		{
-			encapsulate(*pt);
-			pt++;
-		}
+		for (std::size_t i = 0; i < n; i++, pt++)
+			this->encapsulate(*pt);
 
 		return *this;
 	}
@@ -277,7 +281,7 @@ public:
 		assert(pt);
 		assert(indices && indicesCount > 0);
 
-		for (size_t i = 0; i < indicesCount; i++)
+		for (std::size_t i = 0; i < indicesCount; i++)
 			this->encapsulate(pt[indices[i]]);
 
 		return *this;
@@ -288,7 +292,7 @@ public:
 		assert(pt);
 		assert(indices && indicesCount > 0);
 
-		for (size_t i = 0; i < indicesCount; i++)
+		for (std::size_t i = 0; i < indicesCount; i++)
 			this->encapsulate(pt[indices[i]]);
 
 		return *this;
@@ -299,7 +303,7 @@ public:
 		assert(pt);
 		assert(indices && indicesCount > 0);
 
-		for (size_t i = 0; i < indicesCount; i++)
+		for (std::size_t i = 0; i < indicesCount; i++)
 			this->encapsulate(pt[indices[i]]);
 
 		return *this;
@@ -377,81 +381,13 @@ public:
 
 	bool contains(const Vector3t<T>& pt) const noexcept
 	{
-		if (pt > min && pt < max)
-			return true;
-		return false;
+		return (pt > min && pt < max) ? true : false;
 	}
 
-	bool contains(const Raycast3t<T>& ray, Vector3t<T>* result = nullptr) noexcept
+	bool contains(const Raycast3t<T>& ray) const noexcept
 	{
-		T tmin = 0;
-		T tmax = std::numeric_limits<T>::max();
-
-		T txmin, txmax;
-		T tymin, tymax;
-		T tzmin, tzmax;
-
-		T invX = 1 / ray.dir.x;
-		if (invX >= 0)
-		{
-			txmin = (min.x - ray.origin.x) * invX;
-			txmax = (max.x - ray.origin.x) * invX;
-		}
-		else
-		{
-			txmax = (min.x - ray.origin.x) * invX;
-			txmin = (max.x - ray.origin.x) * invX;
-		}
-		if (txmin > tmin) tmin = txmin;
-		if (txmax > tmax) tmax = txmax;
-		if (tmin > tmax) return false;
-
-		T invY = 1 / ray.dir.y;
-		if (invY >= 0)
-		{
-			tymin = (min.y - ray.origin.y) * invY;
-			tymax = (max.y - ray.origin.y) * invY;
-		}
-		else
-		{
-			tymax = (min.y - ray.origin.y) * invY;
-			tymin = (max.y - ray.origin.y) * invY;
-		}
-		if (tymin > tmin) tmin = tymin;
-		if (tymax > tmax) tmax = tymax;
-		if (tmin > tmax) return false;
-
-		if ((txmin > tymax) || (tymin > txmax))
-			return false;
-
-		T invZ = 1 / ray.dir.z;
-		if (invZ >= 0)
-		{
-			tzmin = (min.z - ray.orig.z) * invZ;
-			tzmax = (max.z - ray.orig.z) * invZ;
-		}
-		else
-		{
-			tzmax = (min.z - ray.origin.z) * invZ;
-			tzmin = (max.z - ray.origin.z) * invZ;
-		}
-		if (tzmin > tmin) tmin = tzmin;
-		if (tzmax > tmax) tmax = tzmax;
-		if (tmin > tmax) return false;
-
-		if (tzmin > txmin) txmin = tzmin;
-		if (tzmax < txmax) txmax = tzmax;
-
-		if ((tmin > ray.max) || (txmax < ray.txmin))
-			return false;
-
-		if (ray.min < tmin) ray.min = tmin;
-		if (ray.max > tmax) ray.max = tmax;
-
-		if (result)
-			result = Vector3t<T>(ray.origin + ray.normal * tmin);
-
-		return true;
+		Vector2t<T> intersections;
+		return this->intersects(ray, intersections);
 	}
 
 	bool contains(const Vector3t<T>& pt1, const Vector3t<T>& pt2) const noexcept
@@ -459,155 +395,40 @@ public:
 		return contains(Raycast3(pt1, pt2));
 	}
 
-	T intersects(const Raycast3t<T>& ray, Vector3t<T>* returnNormal = nullptr) const noexcept
+	bool intersects(const Raycast3t<T>& ray, Vector2t<T>& intersections) const noexcept
 	{
-		const T kNointersection = 1e30f;
+		std::uint8_t symbol[3];
+		symbol.x = ray.x > 0 ? 1 : 0;
+		symbol.y = ray.y > 0 ? 1 : 0;
+		symbol.z = ray.z > 0 ? 1 : 0;
 
-		bool inside = true;
+		Vector3t<T> tmin, tmax;
+		tmin.x = (1 - symbol.x) == 0 ? min.x : max.x;
+		tmin.y = (1 - symbol.y) == 0 ? min.y : max.y;
+		tmin.z = (1 - symbol.z) == 0 ? min.z : max.z;
 
-		Vector3t<T> rayOrg = ray.origin;
-		Vector3t<T> rayDelta = ray.normal;
+		tmax.x = symbol.x == 0 ? min.x : max.x;
+		tmax.y = symbol.y == 0 ? min.y : max.y;
+		tmax.z = symbol.z == 0 ? min.z : max.z;
 
-		T xt = -1.0, xn = 0;
-		T yt = -1.0, yn = 0;
-		T zt = -1.0, zn = 0;
+		float3 inv = 1.0f / (ray.normal + 1e-16);
 
-		if (rayOrg.x < min.x)
-		{
-			xt = min.x - rayOrg.x;
-			if (xt > rayDelta.x) return kNointersection;
-			xt /= rayDelta.x;
-			inside = false;
-			xn = -1.0f;
-		}
-		else if (rayOrg.x > max.x)
-		{
-			xt = max.x - rayOrg.x;
-			if (xt < rayDelta.x) return kNointersection;
-			xt /= rayDelta.x;
-			inside = false;
-			xn = 1.0f;
-		}
+		tmin = (tmin - p) * inv;
+		tmax = (tmax - p) * inv;
 
-		if (rayOrg.y < min.y)
-		{
-			yt = min.y - rayOrg.y;
-			if (yt > rayDelta.y) return kNointersection;
-			yt /= rayDelta.y;
-			inside = false;
-			yn = -1.0f;
-		}
-		else if (rayOrg.y > max.y)
-		{
-			yt = max.y - rayOrg.y;
-			if (yt < rayDelta.y) return kNointersection;
-			yt /= rayDelta.y;
-			inside = false;
-			yn = 1.0f;
-		}
+		tmin.x = max(max(tmin.x, tmin.y), tmin.z);
+		tmax.x = min(min(tmax.x, tmax.y), tmax.z);
 
-		if (rayOrg.z < min.z)
-		{
-			zt = min.z - rayOrg.z;
-			if (zt > rayDelta.z) return kNointersection;
-			zt /= rayDelta.z;
-			inside = false;
-			zn = -1.0f;
-		}
-		else if (rayOrg.z > max.z)
-		{
-			zt = max.z - rayOrg.z;
-			if (zt < rayDelta.z) return kNointersection;
-			zt /= rayDelta.z;
-			inside = false;
-			zn = 1.0f;
-		}
+		if (tmin.x > tmax.x)
+			return false;
 
-		if (inside)
-		{
-			if (returnNormal)
-			{
-				*returnNormal = -rayDelta;
-				*returnNormal = math::normalize(*returnNormal);
-			}
-
-			return 0.0f;
-		}
-
-		int which = 0;
-		T t = xt;
-		if (yt > t)
-		{
-			which = 1;
-			t = yt;
-		}
-
-		if (zt > t)
-		{
-			which = 2;
-			t = zt;
-		}
-
-		switch (which)
-		{
-		case 0:
-		{
-			T y = rayOrg.y + rayDelta.y * t;
-			if (y < min.y || y > max.y) return kNointersection;
-			T z = rayOrg.z + rayDelta.z * t;
-			if (z < min.z || z > max.z) return kNointersection;
-			if (returnNormal)
-			{
-				returnNormal->x = xn;
-				returnNormal->y = 0.0f;
-				returnNormal->z = 0.0f;
-			}
-
-			break;
-		}
-		case 1:
-		{
-			T x = rayOrg.x + rayDelta.x * t;
-			if (x <min.x || x > max.x) return kNointersection;
-			T z = rayOrg.z + rayDelta.z * t;
-			if (z <min.z || z > max.z) return kNointersection;
-			if (returnNormal)
-			{
-				returnNormal->x = 0.0f;
-				returnNormal->y = yn;
-				returnNormal->z = 0.0f;
-			}
-
-			break;
-		}
-
-		case 2:
-		{
-			T x = rayOrg.x + rayDelta.x * t;
-			if (x <min.x || x > max.x) return kNointersection;
-			T y = rayOrg.y + rayDelta.y * t;
-			if (y <min.y || y > max.y) return kNointersection;
-			if (returnNormal)
-			{
-				returnNormal->x = 0.0f;
-				returnNormal->y = 0.0f;
-				returnNormal->z = zn;
-			}
-
-			break;
-		}
-		default:
-
-			assert(false);
-			break;
-		}
-
-		return t;
+		intersections = Vector2t<T>(tmin.x, tmax.x);
+		return true;
 	}
 
-	bool intersects(const Vector3t<T>& pt1, const Vector3t<T>& pt2) const noexcept
+	bool intersects(const Vector3t<T>& pt1, const Vector3t<T>& pt2, Vector2t<T>& intersections) const noexcept
 	{
-		return intersects(Raycast3(pt1, pt2)) != 1e30f;
+		return this->intersects(Raycast3(pt1, pt2), intersections);
 	}
 
 	bool intersects(const Plane3t<T>& plane) const noexcept
@@ -671,9 +492,27 @@ public:
 };
 
 template<typename T>
-AABBt<T> operator+(const AABBt<T>& aabb, const Vector3t<T>& other) noexcept
+inline AABBt<T> operator+(const AABBt<T>& aabb, const Vector3t<T>& other) noexcept
 {
 	return AABBt<T>(aabb.min + other, aabb.max + other);
+}
+
+template<typename T>
+inline AABBt<T> operator-(const AABBt<T>& aabb, const Vector3t<T>& other) noexcept
+{
+	return AABBt<T>(aabb.min - other, aabb.max - other);
+}
+
+template<typename T>
+inline AABBt<T> operator*(const AABBt<T>& aabb, const Vector3t<T>& other) noexcept
+{
+	return AABBt<T>(aabb.min * other, aabb.max * other);
+}
+
+template<typename T>
+inline AABBt<T> operator/(const AABBt<T>& aabb, const Vector3t<T>& other) noexcept
+{
+	return AABBt<T>(aabb.min / other, aabb.max / other);
 }
 
 _NAME_END

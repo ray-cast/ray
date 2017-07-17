@@ -50,7 +50,8 @@ RenderListener::~RenderListener() noexcept
 }
 
 RenderObject::RenderObject() noexcept
-	: _layer(0)
+	: _visible(true)
+	, _layer(0)
 	, _boundingBox(Vector3::Zero, Vector3::Zero)
 	, _worldBoundingxBox(Vector3::Zero, Vector3::Zero)
 	, _transform(float4x4::One)
@@ -147,10 +148,16 @@ RenderObject::getRenderScene() const noexcept
 void
 RenderObject::setTransform(const float4x4& transform) noexcept
 {
+	this->setTransform(transform, math::transformInverse(transform));
+}
+
+void
+RenderObject::setTransform(const float4x4& transform, const float4x4& transformInverse) noexcept
+{
 	this->onMoveBefor();
 
 	_transform = transform;
-	_transformInverse = math::transformInverse(transform);
+	_transformInverse = transformInverse;
 
 	_worldBoundingxBox = _boundingBox;
 	_worldBoundingxBox.transform(_transform);

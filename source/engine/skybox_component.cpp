@@ -511,7 +511,7 @@ SkyboxComponent::_buildSphereRenderObject(const MeshProperty& mesh, MaterialPtr 
 	_sphereObject->setCastShadow(this->getCastShadow());
 	_sphereObject->setReceiveShadow(this->getReceiveShadow());
 	_sphereObject->setLayer(this->getGameObject()->getLayer());
-	_sphereObject->setTransform(this->getGameObject()->getWorldTransform());
+	_sphereObject->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 	_sphereObject->setGraphicsIndirect(std::make_shared<GraphicsIndirect>(mesh.getNumVertices(), mesh.getNumIndices()));
 
 	return true;

@@ -415,7 +415,7 @@ CameraComponent::onActivate() noexcept
 	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
 
 	_camera->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
-	_camera->setTransform(this->getGameObject()->getWorldTransform());
+	_camera->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 }
 
 void
@@ -429,7 +429,7 @@ CameraComponent::onDeactivate() noexcept
 void
 CameraComponent::onMoveAfter() noexcept
 {
-	_camera->setTransform(this->getGameObject()->getWorldTransform());
+	_camera->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 }
 
 GameComponentPtr

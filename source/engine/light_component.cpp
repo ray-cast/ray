@@ -308,7 +308,7 @@ LightComponent::onActivate() noexcept
 	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
 
 	_light->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
-	_light->setTransform(this->getGameObject()->getWorldTransform());
+	_light->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 }
 
 void
@@ -367,7 +367,7 @@ LightComponent::onDetachComponent(const GameComponentPtr& component) noexcept
 void
 LightComponent::onMoveAfter() noexcept
 {
-	_light->setTransform(this->getGameObject()->getWorldTransform());
+	_light->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 }
 
 void

@@ -99,7 +99,7 @@ LightProbeComponent::onActivate() noexcept
 	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
 
 	_lightProbe->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
-	_lightProbe->setTransform(this->getGameObject()->getWorldTransform());
+	_lightProbe->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 }
 
 void
@@ -113,7 +113,7 @@ LightProbeComponent::onDeactivate() noexcept
 void
 LightProbeComponent::onMoveAfter() noexcept
 {
-	_lightProbe->setTransform(this->getGameObject()->getWorldTransform());
+	_lightProbe->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 }
 
 _NAME_END

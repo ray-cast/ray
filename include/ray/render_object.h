@@ -75,6 +75,7 @@ public:
 	const RenderScenePtr& getRenderScene() const noexcept;
 
 	void setTransform(const float4x4& transform) noexcept;
+	void setTransform(const float4x4& transform, const float4x4& transformInverse) noexcept;
 	const float4x4& getTransform() const noexcept;
 	const float4x4& getTransformInverse() const noexcept;
 
@@ -97,7 +98,7 @@ public:
 	virtual void onRenderAfter(const Camera& camera) noexcept;
 	virtual void onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTech* tech) noexcept;
 
-protected:
+private:
 	bool _visible;
 
 	std::uint8_t _layer;

@@ -358,7 +358,7 @@ void
 MeshRenderComponent::onMoveAfter() noexcept
 {
 	for (auto& it : _renderObjects)
-		it->setTransform(this->getGameObject()->getWorldTransform());
+		it->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 }
 
 void
@@ -497,7 +497,7 @@ MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFla
 		renderObject->setCastShadow(this->getCastShadow());
 		renderObject->setReceiveShadow(this->getReceiveShadow());
 		renderObject->setLayer(this->getGameObject()->getLayer());
-		renderObject->setTransform(this->getGameObject()->getWorldTransform());
+		renderObject->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 		renderObject->setGraphicsIndirect(std::make_shared<GraphicsIndirect>(it.indicesCount * 3, it.indicesCount, 1, it.startVertices, it.startIndices));
 
 		_renderObjects.push_back(renderObject);

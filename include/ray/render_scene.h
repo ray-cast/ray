@@ -104,7 +104,7 @@ public:
 
 	static const RenderScenes& getSceneAll() noexcept;
 
-protected:
+private:
 	void addRenderScene(RenderScene* _this);
 	void removeRenderScene(RenderScene* _this) noexcept;
 

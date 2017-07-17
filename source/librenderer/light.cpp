@@ -41,6 +41,8 @@
 #include <ray/render_system.h>
 #include <ray/render_object_manager.h>
 #include <ray/render_pipeline_framebuffer.h>
+#include "shadow_render_framebuffer.h"
+#include "reflective_shadow_render_framebuffer.h"
 
 _NAME_BEGIN
 
@@ -254,7 +256,7 @@ Light::getShadowFactor() const noexcept
 }
 
 void
-Light::setSkyBox(GraphicsTexturePtr texture) noexcept
+Light::setSkyBox(const GraphicsTexturePtr& texture) noexcept
 {
 	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDim2D);
 	_skybox = texture;
@@ -267,7 +269,7 @@ Light::getSkyBox() const noexcept
 }
 
 void
-Light::setSkyLightingDiffuse(GraphicsTexturePtr texture) noexcept
+Light::setSkyLightingDiffuse(const GraphicsTexturePtr& texture) noexcept
 {
 	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
 	_skyDiffuseIBL = texture;
@@ -280,7 +282,7 @@ Light::getSkyLightingDiffuse() const noexcept
 }
 
 void
-Light::setSkyLightingSpecular(GraphicsTexturePtr texture) noexcept
+Light::setSkyLightingSpecular(const GraphicsTexturePtr& texture) noexcept
 {
 	assert(!texture || texture->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
 	_skySpecularIBL = texture;
@@ -292,90 +294,11 @@ Light::getSkyLightingSpecular() const noexcept
 	return _skySpecularIBL;
 }
 
-void
-Light::setColorTexture(GraphicsTexturePtr texture) noexcept
-{
-	_shadowColorMap = texture;
-}
-
-const GraphicsTexturePtr&
-Light::getColorTexture() const noexcept
-{
-	return _shadowColorMap;
-}
-
-void
-Light::setNormalTexture(GraphicsTexturePtr texture) noexcept
-{
-	_shadowNormalMap = texture;
-}
-
-const GraphicsTexturePtr&
-Light::getNormalTexture() const noexcept
-{
-	return _shadowNormalMap;
-}
-
-void
-Light::setDepthLinearTexture(GraphicsTexturePtr texture) noexcept
-{
-	_shadowDepthLinearMap = texture;
-}
-
-const GraphicsTexturePtr&
-Light::getDepthLinearTexture() const noexcept
-{
-	return _shadowDepthLinearMap;
-}
-
 bool
 Light::setupShadowMap() noexcept
 {
-	std::uint32_t shadowMapSize = 0;
-
-	ShadowQuality shadowQuality = RenderSystem::instance()->getRenderSetting().shadowQuality;
-	if (shadowQuality == ShadowQuality::ShadowQualityLow)
-		shadowMapSize = LightShadowSize::LightShadowSizeLow;
-	else if (shadowQuality == ShadowQuality::ShadowQualityMedium)
-		shadowMapSize = LightShadowSize::LightShadowSizeMedium;
-	else if (shadowQuality == ShadowQuality::ShadowQualityHigh)
-		shadowMapSize = LightShadowSize::LightShadowSizeHigh;
-	else if (shadowQuality == ShadowQuality::ShadowQualityVeryHigh)
-		shadowMapSize = LightShadowSize::LightShadowSizeVeryHigh;
-	else
-		return false;
-
-	GraphicsFormat depthLinearFormat;
-	if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatR32SFloat))
-		depthLinearFormat = GraphicsFormat::GraphicsFormatR32SFloat;
-	else if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
-		depthLinearFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
-	else
-		return false;
-
-	GraphicsTextureDesc depthLinearDesc;
-	depthLinearDesc.setWidth(shadowMapSize);
-	depthLinearDesc.setHeight(shadowMapSize);
-	depthLinearDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	depthLinearDesc.setTexFormat(depthLinearFormat);
-	depthLinearDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-	_shadowDepthLinearMap = RenderSystem::instance()->createTexture(depthLinearDesc);
-	if (!_shadowDepthLinearMap)
-		return false;
-
-	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
-	shaodwMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, depthLinearFormat));
-	_shadowDepthLinearViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwMapLayoutDesc);
-	if (!_shadowDepthLinearViewLayout)
-		return false;
-
-	GraphicsFramebufferDesc shadowViewDesc;
-	shadowViewDesc.setWidth(shadowMapSize);
-	shadowViewDesc.setHeight(shadowMapSize);
-	shadowViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowDepthLinearMap, 0, 0));
-	shadowViewDesc.setGraphicsFramebufferLayout(_shadowDepthLinearViewLayout);
-	_shadowDepthLinearView = RenderSystem::instance()->createFramebuffer(shadowViewDesc);
-	if (!_shadowDepthLinearView)
+	auto framebuffer = std::make_shared<ray::ShadowRenderFramebuffer>();
+	if (!framebuffer->setup())
 		return false;
 
 	_shadowCameras.push_back(std::make_shared<Camera>());
@@ -385,98 +308,27 @@ Light::setupShadowMap() noexcept
 	_shadowCameras[0]->setAperture(90.0f);
 	_shadowCameras[0]->setNear(0.1f);
 	_shadowCameras[0]->setRatio(1.0f);
-	_shadowCameras[0]->setRenderPipelineFramebuffer(std::make_shared<ray::RenderPipelineFramebuffer>(nullptr, _shadowDepthLinearView));
+	_shadowCameras[0]->setRenderPipelineFramebuffer(framebuffer);
+
 	return true;
 }
 
 bool
 Light::setupReflectiveShadowMap() noexcept
 {
-	std::uint32_t shadowMapSize = 0;
-
-	ShadowQuality shadowQuality = RenderSystem::instance()->getRenderSetting().shadowQuality;
-	if (shadowQuality == ShadowQuality::ShadowQualityLow)
-		shadowMapSize = LightShadowSize::LightShadowSizeLow;
-	else if (shadowQuality == ShadowQuality::ShadowQualityMedium)
-		shadowMapSize = LightShadowSize::LightShadowSizeMedium;
-	else if (shadowQuality == ShadowQuality::ShadowQualityHigh)
-		shadowMapSize = LightShadowSize::LightShadowSizeHigh;
-	else if (shadowQuality == ShadowQuality::ShadowQualityVeryHigh)
-		shadowMapSize = LightShadowSize::LightShadowSizeVeryHigh;
-	else
+	auto framebuffer = std::make_shared<ray::ReflectiveShadowRenderFramebuffer>();
+	if (!framebuffer->setup())
 		return false;
 
-	GraphicsFormat shadowDepthFormat;
-	if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatD32_SFLOAT))
-		shadowDepthFormat = GraphicsFormat::GraphicsFormatD32_SFLOAT;
-	else if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatX8_D24UNormPack32))
-		shadowDepthFormat = GraphicsFormat::GraphicsFormatX8_D24UNormPack32;
-	else if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatD16UNorm))
-		shadowDepthFormat = GraphicsFormat::GraphicsFormatD16UNorm;
-	else
-		return false;
+	_shadowCameras.push_back(std::make_shared<Camera>());
+	_shadowCameras[0]->setOwnerListener(this);
+	_shadowCameras[0]->setCameraOrder(CameraOrder::CameraOrderShadow);
+	_shadowCameras[0]->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
+	_shadowCameras[0]->setAperture(90.0f);
+	_shadowCameras[0]->setNear(0.1f);
+	_shadowCameras[0]->setRatio(1.0f);
+	_shadowCameras[0]->setRenderPipelineFramebuffer(framebuffer);
 
-	GraphicsFormat shadowColorFormat;
-	GraphicsFormat shadowNormalFormat;
-
-	if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
-		shadowColorFormat = shadowNormalFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
-	else
-		return false;
-
-	GraphicsTextureDesc shadowDepthDesc;
-	shadowDepthDesc.setWidth(shadowMapSize);
-	shadowDepthDesc.setHeight(shadowMapSize);
-	shadowDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	shadowDepthDesc.setTexFormat(shadowDepthFormat);
-	shadowDepthDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	shadowDepthDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_shadowDepthMap = RenderSystem::instance()->createTexture(shadowDepthDesc);
-	if (!_shadowDepthMap)
-		return false;
-
-	GraphicsTextureDesc shadowColorDesc;
-	shadowColorDesc.setWidth(shadowMapSize);
-	shadowColorDesc.setHeight(shadowMapSize);
-	shadowColorDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	shadowColorDesc.setTexFormat(shadowColorFormat);
-	shadowColorDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	shadowColorDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_shadowColorMap = RenderSystem::instance()->createTexture(shadowColorDesc);
-	if (!_shadowColorMap)
-		return false;
-
-	GraphicsTextureDesc shadowNormalDesc;
-	shadowNormalDesc.setWidth(shadowMapSize);
-	shadowNormalDesc.setHeight(shadowMapSize);
-	shadowNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	shadowNormalDesc.setTexFormat(shadowNormalFormat);
-	shadowNormalDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	shadowNormalDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_shadowNormalMap = RenderSystem::instance()->createTexture(shadowNormalDesc);
-	if (!_shadowNormalMap)
-		return false;
-
-	GraphicsFramebufferLayoutDesc shaodwRSMMapLayoutDesc;
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, shadowColorFormat));
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, shadowNormalFormat));
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, shadowDepthFormat));
-	_shadowRSMViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwRSMMapLayoutDesc);
-	if (!_shadowRSMViewLayout)
-		return false;
-
-	GraphicsFramebufferDesc shadowRSMViewDesc;
-	shadowRSMViewDesc.setWidth(shadowMapSize);
-	shadowRSMViewDesc.setHeight(shadowMapSize);
-	shadowRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowColorMap, 0, 0));
-	shadowRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowNormalMap, 0, 0));
-	shadowRSMViewDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_shadowDepthMap, 0, 0));
-	shadowRSMViewDesc.setGraphicsFramebufferLayout(_shadowRSMViewLayout);
-	_shadowRSMView = RenderSystem::instance()->createFramebuffer(shadowRSMViewDesc);
-	if (!_shadowRSMView)
-		return false;
-
-	_shadowCameras[0]->getRenderPipelineFramebuffer()->setFramebuffer(_shadowRSMView);
 	return true;
 }
 
@@ -484,16 +336,9 @@ void
 Light::destroyShadowMap() noexcept
 {
 	for (auto& camera : _shadowCameras)
-		camera->getRenderPipelineFramebuffer()->setDepthLinearFramebuffer(nullptr);
+		camera->getRenderPipelineFramebuffer()->setFramebuffer(nullptr);
 
 	_shadowCameras.clear();
-	_shadowDepthLinearMap.reset();
-
-	_shadowRSMView.reset();
-	_shadowRSMViewLayout.reset();
-
-	_shadowDepthLinearView.reset();
-	_shadowDepthLinearViewLayout.reset();
 }
 
 void
@@ -501,13 +346,6 @@ Light::destroyReflectiveShadowMap() noexcept
 {
 	for (auto& camera : _shadowCameras)
 		camera->getRenderPipelineFramebuffer()->setFramebuffer(nullptr);
-
-	_shadowDepthMap.reset();
-	_shadowColorMap.reset();
-	_shadowNormalMap.reset();
-
-	_shadowRSMView.reset();
-	_shadowRSMViewLayout.reset();
 }
 
 void

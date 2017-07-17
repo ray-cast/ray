@@ -123,10 +123,16 @@ SET(RENDER_PIPELINE
     ${SOURCE_PATH}/deferred_lighting_pipeline.cpp
     ${HEADER_PATH}/deferred_lighting_framebuffers.h
     ${SOURCE_PATH}/deferred_lighting_framebuffers.cpp
+    ${SOURCE_PATH}/lightprobe_render_pipeline.h
+    ${SOURCE_PATH}/lightprobe_render_pipeline.cpp
     ${SOURCE_PATH}/forward_render_pipeline.h
     ${SOURCE_PATH}/forward_render_pipeline.cpp
     ${SOURCE_PATH}/shadow_render_pipeline.h
     ${SOURCE_PATH}/shadow_render_pipeline.cpp
+    ${SOURCE_PATH}/shadow_render_framebuffer.h
+    ${SOURCE_PATH}/shadow_render_framebuffer.cpp
+    ${SOURCE_PATH}/reflective_shadow_render_framebuffer.h
+    ${SOURCE_PATH}/reflective_shadow_render_framebuffer.cpp
 )
 SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
 

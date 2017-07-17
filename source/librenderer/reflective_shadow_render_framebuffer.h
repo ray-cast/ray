@@ -34,38 +34,47 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FORWARD_RENDER_PIPELINE_H_
-#define _H_FORWARD_RENDER_PIPELINE_H_
+#ifndef _H_REFLECTIVE_SHADOW_RENDER_FRAMEBUFFER_H_
+#define _H_REFLECTIVE_SHADOW_RENDER_FRAMEBUFFER_H_
 
-#include <ray/render_pipeline_controller.h>
+#include <ray/render_pipeline_framebuffer.h>
 
 _NAME_BEGIN
 
-class ForwardRenderPipeline final : public RenderPipelineController
+class EXPORT ReflectiveShadowRenderFramebuffer : public RenderPipelineFramebuffer
 {
-	__DeclareSubClass(ForwardRenderPipeline, RenderPipelineController)
+	__DeclareSubInterface(ShadowRenderFramebuffer, RenderPipelineFramebuffer)
 public:
-	ForwardRenderPipeline() noexcept;
-	virtual ~ForwardRenderPipeline() noexcept;
+	ReflectiveShadowRenderFramebuffer() noexcept;
+	virtual ~ReflectiveShadowRenderFramebuffer() noexcept;
 
-	bool setup(RenderPipelinePtr pipeline) noexcept;
-	void close() noexcept;
+	bool setup();
 
-	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
+	const GraphicsTexturePtr& getDepthMap() const noexcept { return _shadowDepthMap; }
+	const GraphicsTexturePtr& getColorMap() const noexcept { return _shadowColorMap; }
+	const GraphicsTexturePtr& getNormalMap() const noexcept { return _shadowNormalMap; }
 
-private:
+	const GraphicsFramebufferPtr& getRSMView() const noexcept { return _shadowRSMView; }
+
+protected:
+	virtual void onResolutionChange() noexcept;
+	virtual void onResolutionChangeDPI() noexcept;
+
 	virtual void onRenderPre() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
 	virtual void onRenderPost() noexcept;
 
-	virtual void onResolutionChange() noexcept;
+private:
+	ReflectiveShadowRenderFramebuffer(const ReflectiveShadowRenderFramebuffer&) noexcept = delete;
+	ReflectiveShadowRenderFramebuffer& operator=(const ReflectiveShadowRenderFramebuffer&) noexcept = delete;
 
 private:
-	ForwardRenderPipeline(const ForwardRenderPipeline&) = delete;
-	ForwardRenderPipeline& operator=(const ForwardRenderPipeline&) = delete;
+	GraphicsTexturePtr _shadowDepthMap;
+	GraphicsTexturePtr _shadowColorMap;
+	GraphicsTexturePtr _shadowNormalMap;
 
-private:
-	RenderPipelinePtr _pipeline;
+	GraphicsFramebufferPtr _shadowRSMView;
+	GraphicsFramebufferLayoutPtr _shadowRSMViewLayout;
 };
 
 _NAME_END

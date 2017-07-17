@@ -147,10 +147,8 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 	auto& cameras = light.getCameras();
 	for (auto& camera : cameras)
 	{
-		auto& depthFrambuffer = camera->getRenderPipelineFramebuffer()->getFramebuffer();
-		auto& depthLienarFrambuffer = camera->getRenderPipelineFramebuffer()->getDepthLinearFramebuffer();
-
-		auto shadowFrambuffer = depthFrambuffer ? depthFrambuffer : _shadowShadowDepthViewTemp;
+		auto shadowFrambuffer = _shadowShadowDepthViewTemp;
+		auto shadowLienarFrambuffer = camera->getRenderPipelineFramebuffer()->getFramebuffer();
 		auto shadowTexture = shadowFrambuffer->getGraphicsFramebufferDesc().getDepthStencilAttachment().getBindingTexture();
 
 		_pipeline->setCamera(camera);
@@ -180,7 +178,7 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 
 			_shadowShadowSource->uniformTexture(_shadowShadowDepthLinearMapTemp);
 
-			_pipeline->setFramebuffer(depthLienarFrambuffer);
+			_pipeline->setFramebuffer(shadowLienarFrambuffer);
 			_pipeline->discardFramebuffer(0);
 			_pipeline->drawScreenQuad(*_shadowBlurShadowY);
 		}
@@ -189,7 +187,7 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 			_shadowShadowSource->uniformTexture(shadowTexture);
 			_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0f, 1.0f));
 
-			_pipeline->setFramebuffer(depthLienarFrambuffer);
+			_pipeline->setFramebuffer(shadowLienarFrambuffer);
 			_pipeline->discardFramebuffer(0);
 			_pipeline->drawScreenQuad(*_shadowBlurShadowX[(std::uint8_t)light.getLightType()]);
 		}

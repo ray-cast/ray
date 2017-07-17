@@ -52,10 +52,34 @@ LightProbe::setSH9(const SH9& sh) noexcept
 	_sh = sh;
 }
 
-const SH9& 
+const SH9&
 LightProbe::getSH9() const noexcept
 {
 	return _sh;
+}
+
+void
+LightProbe::setColorTexture(const GraphicsTexturePtr& texture) noexcept
+{
+	_bakeColorMap = texture;
+}
+
+const GraphicsTexturePtr&
+LightProbe::getColorTexture() const noexcept
+{
+	return _bakeColorMap;
+}
+
+void
+LightProbe::setNormalTexture(const GraphicsTexturePtr& texture) noexcept
+{
+	_bakeNormalMap = texture;
+}
+
+const GraphicsTexturePtr&
+LightProbe::getNormalTexture() const noexcept
+{
+	return _bakeNormalMap;
 }
 
 _NAME_END

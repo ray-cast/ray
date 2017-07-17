@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class LightProbe final : public RenderObject
+class EXPORT LightProbe final : public RenderObject
 {
 public:
 	LightProbe() noexcept;
@@ -51,8 +51,17 @@ public:
 	void setSH9(const SH9& sh) noexcept;
 	const SH9& getSH9() const noexcept;
 
+	void setColorTexture(const GraphicsTexturePtr& texture) noexcept;
+	const GraphicsTexturePtr& getColorTexture() const noexcept;
+
+	void setNormalTexture(const GraphicsTexturePtr& texture) noexcept;
+	const GraphicsTexturePtr& getNormalTexture() const noexcept;
+
 private:
 	SH9 _sh;
+
+	GraphicsTexturePtr _bakeColorMap;
+	GraphicsTexturePtr _bakeNormalMap;
 };
 
 _NAME_END

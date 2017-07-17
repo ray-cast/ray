@@ -46,16 +46,12 @@ class EXPORT RenderPipelineFramebuffer : public rtti::Interface
 	__DeclareSubInterface(RenderPipelineController, rtti::Interface)
 public:
 	RenderPipelineFramebuffer() noexcept;
-	RenderPipelineFramebuffer(const GraphicsFramebufferPtr& framebuffer, const GraphicsFramebufferPtr& linearDepth) noexcept;
+	RenderPipelineFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexcept;
 	virtual ~RenderPipelineFramebuffer() noexcept;
 
 	virtual void setFramebuffer(GraphicsFramebufferPtr&& texture) noexcept;
 	virtual void setFramebuffer(const GraphicsFramebufferPtr& texture) noexcept;
 	virtual const GraphicsFramebufferPtr& getFramebuffer() const noexcept;
-
-	virtual void setDepthLinearFramebuffer(GraphicsFramebufferPtr&& texture) noexcept;
-	virtual void setDepthLinearFramebuffer(const GraphicsFramebufferPtr& texture) noexcept;
-	virtual const GraphicsFramebufferPtr& getDepthLinearFramebuffer() const noexcept;
 
 protected:
 	virtual void onResolutionChange() noexcept;
@@ -71,7 +67,6 @@ private:
 
 private:
 	GraphicsFramebufferPtr _framebuffer;
-	GraphicsFramebufferPtr _depthLinearFramebuffer;
 };
 
 _NAME_END

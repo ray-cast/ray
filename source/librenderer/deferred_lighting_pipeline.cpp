@@ -47,6 +47,8 @@
 #include <ray/graphics_texture.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/material.h>
+#include "shadow_render_framebuffer.h"
+#include "reflective_shadow_render_framebuffer.h"
 
 _NAME_BEGIN
 
@@ -341,7 +343,7 @@ DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& 
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
-	auto& shadowMap = light.getDepthLinearTexture();
+	auto& shadowMap = light.getCamera()->getRenderPipelineFramebuffer()->downcast<ShadowRenderFramebuffer>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 	if (shadowMap)
 	{
 		float shadowFactor = light.getShadowFactor() / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
@@ -367,7 +369,7 @@ DeferredLightingPipeline::renderDirectionalLight(RenderPipeline& pipeline, const
 	_lightEyeDirection->uniform3f(math::invRotateVector3(pipeline.getCamera()->getTransform(), light.getForward()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 
-	auto& shadowMap = light.getDepthLinearTexture();
+	auto& shadowMap = light.getCamera()->getRenderPipelineFramebuffer()->downcast<ShadowRenderFramebuffer>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 	if (shadowMap)
 	{
 		float shadowFactor = light.getShadowFactor() / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
@@ -415,7 +417,7 @@ DeferredLightingPipeline::renderSpotLight(RenderPipeline& pipeline, const Light&
 
 	pipeline.setTransform(transform);
 
-	auto& shadowMap = light.getDepthLinearTexture();
+	auto& shadowMap = light.getCamera()->getRenderPipelineFramebuffer()->downcast<ShadowRenderFramebuffer>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 	if (shadowMap)
 	{
 		float shadowFactor = light.getShadowFactor() / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
@@ -573,10 +575,12 @@ DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const 
 	float gridOffset = 1.0f / gridSize;
 	float gridDelta = ((gridSize - 1) / gridSize) / gridSize;
 
+	auto framebuffer = light.getCamera()->getRenderPipelineFramebuffer()->downcast<ReflectiveShadowRenderFramebuffer>();
+
 	_mrsiiCountGridOffsetDelta->uniform4f(gridCount, gridSize, gridOffset, gridDelta);
-	_mrsiiColorMap->uniformTexture(light.getColorTexture());
-	_mrsiiNormalMap->uniformTexture(light.getNormalTexture());
-	_mrsiiDepthLinearMap->uniformTexture(light.getDepthLinearTexture());
+	_mrsiiColorMap->uniformTexture(framebuffer->getColorMap());
+	_mrsiiNormalMap->uniformTexture(framebuffer->getNormalMap());
+	_mrsiiDepthLinearMap->uniformTexture(framebuffer->getDepthMap());
 	_mrsiiLightAttenuation->uniform3f(light.getLightAttenuation());
 	_mrsiiLightOuterInner->uniform2f(light.getSpotOuterCone().y, light.getSpotInnerCone().y);
 	_mrsiiLightView2EyeView->uniform4fmat(pipeline.getCamera()->getView() * light.getCamera(0)->getViewInverse());

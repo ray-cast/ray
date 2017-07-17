@@ -34,38 +34,39 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FORWARD_RENDER_PIPELINE_H_
-#define _H_FORWARD_RENDER_PIPELINE_H_
+#ifndef _H_LIGHT_PROBE_COMPONENT_H_
+#define _H_LIGHT_PROBE_COMPONENT_H_
 
-#include <ray/render_pipeline_controller.h>
+#include <ray/render_component.h>
+#include <ray/light_probe.h>
 
 _NAME_BEGIN
 
-class ForwardRenderPipeline final : public RenderPipelineController
+class EXPORT LightProbeComponent final : public RenderComponent
 {
-	__DeclareSubClass(ForwardRenderPipeline, RenderPipelineController)
+	__DeclareSubClass(LightProbeComponent, RenderComponent)
 public:
-	ForwardRenderPipeline() noexcept;
-	virtual ~ForwardRenderPipeline() noexcept;
+	LightProbeComponent() noexcept;
+	LightProbeComponent(const archivebuf& reader) noexcept;
+	~LightProbeComponent() noexcept;
 
-	bool setup(RenderPipelinePtr pipeline) noexcept;
-	void close() noexcept;
+	void load(const archivebuf& reader) noexcept;
+	void save(archivebuf& write) noexcept;
 
-	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
-
-private:
-	virtual void onRenderPre() noexcept;
-	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
-	virtual void onRenderPost() noexcept;
-
-	virtual void onResolutionChange() noexcept;
+	GameComponentPtr clone() const noexcept;
 
 private:
-	ForwardRenderPipeline(const ForwardRenderPipeline&) = delete;
-	ForwardRenderPipeline& operator=(const ForwardRenderPipeline&) = delete;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
+
+	virtual void onMoveAfter() noexcept;
 
 private:
-	RenderPipelinePtr _pipeline;
+	LightProbeComponent(const LightProbeComponent&) = delete;
+	LightProbeComponent& operator=(const LightProbeComponent&) = delete;
+
+private:
+	LightProbePtr _lightProbe;
 };
 
 _NAME_END

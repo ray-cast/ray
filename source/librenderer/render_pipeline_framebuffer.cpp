@@ -48,9 +48,8 @@ RenderPipelineFramebuffer::~RenderPipelineFramebuffer() noexcept
 {
 }
 
-RenderPipelineFramebuffer::RenderPipelineFramebuffer(const GraphicsFramebufferPtr& framebuffer, const GraphicsFramebufferPtr& linearDepth) noexcept
+RenderPipelineFramebuffer::RenderPipelineFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexcept
 	: _framebuffer(framebuffer)
-	, _depthLinearFramebuffer(linearDepth)
 {
 }
 
@@ -70,24 +69,6 @@ const GraphicsFramebufferPtr&
 RenderPipelineFramebuffer::getFramebuffer() const noexcept
 {
 	return _framebuffer;
-}
-
-void
-RenderPipelineFramebuffer::setDepthLinearFramebuffer(GraphicsFramebufferPtr&& texture) noexcept
-{
-	_depthLinearFramebuffer = std::move(texture);
-}
-
-void
-RenderPipelineFramebuffer::setDepthLinearFramebuffer(const GraphicsFramebufferPtr& texture) noexcept
-{
-	_depthLinearFramebuffer = texture;
-}
-
-const GraphicsFramebufferPtr&
-RenderPipelineFramebuffer::getDepthLinearFramebuffer() const noexcept
-{
-	return _depthLinearFramebuffer;
 }
 
 void

@@ -46,7 +46,7 @@ class EXPORT Light final : public RenderObject, public RenderListener
 	__DeclareSubClass(Light, RenderObject)
 public:
 	Light() noexcept;
-	~Light() noexcept;
+	virtual ~Light() noexcept;
 
 	void setLightRange(float range) noexcept;
 	void setLightType(LightType type) noexcept;
@@ -81,26 +81,17 @@ public:
 	const float3& getLightColor() const noexcept;
 	const float3& getLightAttenuation() const noexcept;
 
-	void setSkyBox(GraphicsTexturePtr texture) noexcept;
+	void setSkyBox(const GraphicsTexturePtr& texture) noexcept;
 	const GraphicsTexturePtr& getSkyBox() const noexcept;
 
-	void setSkyLightingDiffuse(GraphicsTexturePtr texture) noexcept;
+	void setSkyLightingDiffuse(const GraphicsTexturePtr& texture) noexcept;
 	const GraphicsTexturePtr& getSkyLightingDiffuse() const noexcept;
 
-	void setSkyLightingSpecular(GraphicsTexturePtr texture) noexcept;
+	void setSkyLightingSpecular(const GraphicsTexturePtr& texture) noexcept;
 	const GraphicsTexturePtr& getSkyLightingSpecular() const noexcept;
 
-	void setColorTexture(GraphicsTexturePtr texture) noexcept;
-	const GraphicsTexturePtr& getColorTexture() const noexcept;
-
-	void setNormalTexture(GraphicsTexturePtr texture) noexcept;
-	const GraphicsTexturePtr& getNormalTexture() const noexcept;
-
-	void setDepthLinearTexture(GraphicsTexturePtr texture) noexcept;
-	const GraphicsTexturePtr& getDepthLinearTexture() const noexcept;
-
 	const Cameras& getCameras() const noexcept;
-	const CameraPtr& getCamera(std::size_t i) const noexcept;
+	const CameraPtr& getCamera(std::size_t i = 0) const noexcept;
 
 	RenderObjectPtr clone() const noexcept;
 
@@ -153,17 +144,6 @@ private:
 	GraphicsTexturePtr _skybox;
 	GraphicsTexturePtr _skyDiffuseIBL;
 	GraphicsTexturePtr _skySpecularIBL;
-
-	GraphicsTexturePtr _shadowDepthMap;
-	GraphicsTexturePtr _shadowColorMap;
-	GraphicsTexturePtr _shadowNormalMap;
-	GraphicsTexturePtr _shadowDepthLinearMap;
-
-	GraphicsFramebufferPtr _shadowRSMView;
-	GraphicsFramebufferPtr _shadowDepthLinearView;
-
-	GraphicsFramebufferLayoutPtr _shadowRSMViewLayout;
-	GraphicsFramebufferLayoutPtr _shadowDepthLinearViewLayout;
 
 	RenderSceneWeakPtr _renderScene;
 };

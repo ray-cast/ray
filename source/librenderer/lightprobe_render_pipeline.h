@@ -34,80 +34,38 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SHADOW_RENDER_PIPELINE_H_
-#define _H_SHADOW_RENDER_PIPELINE_H_
+#ifndef _H_LIGHTPROBE_RENDER_PIPELINE_H_
+#define _H_LIGHTPROBE_RENDER_PIPELINE_H_
 
 #include <ray/render_pipeline_controller.h>
 
 _NAME_BEGIN
 
-class ShadowRenderPipeline final : public RenderPipelineController
+class LightProbeRenderPipeline final : public RenderPipelineController
 {
-	__DeclareSubClass(ShadowRenderPipeline, RenderPipelineController)
+	__DeclareSubClass(LightProbeRenderPipeline, RenderPipelineController)
 public:
-	ShadowRenderPipeline() noexcept;
-	virtual ~ShadowRenderPipeline() noexcept;
+	LightProbeRenderPipeline() noexcept;
+	virtual ~LightProbeRenderPipeline() noexcept;
 
 	bool setup(RenderPipelinePtr pipeline) noexcept;
 	void close() noexcept;
 
-	void setShadowMode(ShadowMode mode) noexcept;
-	ShadowMode getShadowMode() const noexcept;
-
-	void setShadowQuality(ShadowQuality quality) noexcept;
-	ShadowQuality getShadowQuality() const noexcept;
-
-private:
-	void renderShadowMaps(const CameraPtr& camera) noexcept;
-	void renderShadowMap(const Light& light, RenderQueue queue) noexcept;
-
-private:
-	bool setupShadowMaterial(RenderPipeline& pipeline) noexcept;
-	bool setupShadowMaps(RenderPipeline& pipeline) noexcept;
-	bool setupShadowSoftMaps(RenderPipeline& pipeline) noexcept;
-
-	void destroyShadowMaterial() noexcept;
-	void destroyShadowMaps() noexcept;
+	void renderLightProbes(RenderPipeline& pipeline) noexcept;
 
 private:
 	virtual void onRenderPre() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
 	virtual void onRenderPost() noexcept;
 
-private:
-	ShadowRenderPipeline(const ShadowRenderPipeline&) = delete;
-	ShadowRenderPipeline& operator=(const ShadowRenderPipeline&) = delete;
+	virtual void onResolutionChange() noexcept;
 
 private:
-	ShadowMode _shadowMode;
-	ShadowQuality _shadowQuality;
+	LightProbeRenderPipeline(const LightProbeRenderPipeline&) = delete;
+	LightProbeRenderPipeline& operator=(const LightProbeRenderPipeline&) = delete;
 
-	MaterialPtr _shadowRender;
-	MaterialTechPtr _shadowBlurOrthoShadowX;
-	MaterialTechPtr _shadowBlurPerspectiveFovShadowX;
-	MaterialTechPtr _shadowBlurShadowX[(std::uint8_t)LightType::LightTypeRangeSize];
-	MaterialTechPtr _shadowBlurShadowY;
-	MaterialTechPtr _shadowLogBlurShadowX;
-	MaterialTechPtr _shadowLogBlurShadowY;
-	MaterialTechPtr _shadowConvOrthoLinearDepth;
-	MaterialTechPtr _shadowConvPerspectiveFovLinearDepth;
-	MaterialParamPtr _shadowShadowSource;
-	MaterialParamPtr _shadowShadowSourceInv;
-	MaterialParamPtr _shadowClipConstant;
-	MaterialParamPtr _shadowOffset;
-	MaterialParamPtr _shadowWeight;
-
-	GraphicsTexturePtr _shadowShadowDepthMapTemp;
-	GraphicsTexturePtr _shadowShadowDepthLinearMapTemp;
-
-	GraphicsFramebufferPtr _shadowShadowDepthViewTemp;
-	GraphicsFramebufferPtr _shadowShadowDepthLinearViewTemp;
-
-	GraphicsFramebufferLayoutPtr _shadowShadowDepthImageLayout;
-	GraphicsFramebufferLayoutPtr _shadowShadowDepthLinearImageLayout;
-
-	GraphicsFormat _shadowDepthFormat;
-	GraphicsFormat _shadowDepthLinearFormat;
+private:
+	MaterialTechPtr _depthOnly;
 
 	RenderPipelinePtr _pipeline;
 };

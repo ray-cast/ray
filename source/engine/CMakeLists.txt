@@ -84,6 +84,8 @@ SET(RENDER_FEATURES_LIST
     ${SOURCE_PATH}/lensflare_component.cpp
     ${HEADER_PATH}/light_component.h
     ${SOURCE_PATH}/light_component.cpp
+    ${HEADER_PATH}/light_probe_component.h
+    ${SOURCE_PATH}/light_probe_component.cpp
     ${HEADER_PATH}/mesh_render_component.h
     ${SOURCE_PATH}/mesh_render_component.cpp
     ${HEADER_PATH}/render_component.h

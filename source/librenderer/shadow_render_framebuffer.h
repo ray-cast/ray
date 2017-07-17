@@ -34,38 +34,40 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FORWARD_RENDER_PIPELINE_H_
-#define _H_FORWARD_RENDER_PIPELINE_H_
+#ifndef _H_SHADOW_RENDER_FRAMEBUFFER_H_
+#define _H_SHADOW_RENDER_FRAMEBUFFER_H_
 
-#include <ray/render_pipeline_controller.h>
+#include <ray/render_pipeline_framebuffer.h>
 
 _NAME_BEGIN
 
-class ForwardRenderPipeline final : public RenderPipelineController
+class EXPORT ShadowRenderFramebuffer : public RenderPipelineFramebuffer
 {
-	__DeclareSubClass(ForwardRenderPipeline, RenderPipelineController)
+	__DeclareSubInterface(ShadowRenderFramebuffer, RenderPipelineFramebuffer)
 public:
-	ForwardRenderPipeline() noexcept;
-	virtual ~ForwardRenderPipeline() noexcept;
+	ShadowRenderFramebuffer() noexcept;
+	virtual ~ShadowRenderFramebuffer() noexcept;
 
-	bool setup(RenderPipelinePtr pipeline) noexcept;
-	void close() noexcept;
+	bool setup();
 
-	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
+protected:
+	virtual void onResolutionChange() noexcept;
+	virtual void onResolutionChangeDPI() noexcept;
 
-private:
 	virtual void onRenderPre() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
 	virtual void onRenderPost() noexcept;
 
-	virtual void onResolutionChange() noexcept;
+private:
+	ShadowRenderFramebuffer(const ShadowRenderFramebuffer&) noexcept = delete;
+	ShadowRenderFramebuffer& operator=(const ShadowRenderFramebuffer&) noexcept = delete;
 
 private:
-	ForwardRenderPipeline(const ForwardRenderPipeline&) = delete;
-	ForwardRenderPipeline& operator=(const ForwardRenderPipeline&) = delete;
+	GraphicsTexturePtr _shadowDepthMap;
+	GraphicsTexturePtr _shadowDepthLinearMap;
 
-private:
-	RenderPipelinePtr _pipeline;
+	GraphicsFramebufferPtr _shadowDepthLinearView;
+	GraphicsFramebufferLayoutPtr _shadowDepthLinearViewLayout;
 };
 
 _NAME_END

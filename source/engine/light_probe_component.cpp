@@ -34,39 +34,75 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FORWARD_RENDER_PIPELINE_H_
-#define _H_FORWARD_RENDER_PIPELINE_H_
-
-#include <ray/render_pipeline_controller.h>
+#if defined(_BUILD_RENDERER)
+#include <ray/light_probe_component.h>
+#include <ray/game_server.h>
+#include <ray/render_feature.h>
 
 _NAME_BEGIN
 
-class ForwardRenderPipeline final : public RenderPipelineController
+__ImplementSubClass(LightProbeComponent, RenderComponent, "LightProbe")
+
+LightProbeComponent::LightProbeComponent() noexcept
 {
-	__DeclareSubClass(ForwardRenderPipeline, RenderPipelineController)
-public:
-	ForwardRenderPipeline() noexcept;
-	virtual ~ForwardRenderPipeline() noexcept;
+	_lightProbe = std::make_shared<LightProbe>();
+	_lightProbe->setOwnerListener(this);
+}
 
-	bool setup(RenderPipelinePtr pipeline) noexcept;
-	void close() noexcept;
+LightProbeComponent::LightProbeComponent(const archivebuf& reader) noexcept
+	: LightProbeComponent()
+{
+	this->load(reader);
+}
 
-	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
+LightProbeComponent::~LightProbeComponent() noexcept
+{
+	_lightProbe->setRenderScene(nullptr);
+}
 
-private:
-	virtual void onRenderPre() noexcept;
-	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
-	virtual void onRenderPost() noexcept;
+void
+LightProbeComponent::load(const archivebuf& reader) noexcept
+{
+	GameComponent::load(reader);
+}
 
-	virtual void onResolutionChange() noexcept;
+void
+LightProbeComponent::save(archivebuf& write) noexcept
+{
+	RenderComponent::save(write);
+}
 
-private:
-	ForwardRenderPipeline(const ForwardRenderPipeline&) = delete;
-	ForwardRenderPipeline& operator=(const ForwardRenderPipeline&) = delete;
+GameComponentPtr
+LightProbeComponent::clone() const noexcept
+{
+	auto result = std::make_shared<LightProbeComponent>();
+	result->setName(this->getName());
+	result->setActive(this->getActive());
+	return result;
+}
 
-private:
-	RenderPipelinePtr _pipeline;
-};
+void
+LightProbeComponent::onActivate() noexcept
+{
+	this->addComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
+	_lightProbe->setRenderScene(GameServer::instance()->getFeature<RenderFeature>()->getRenderScene());
+	_lightProbe->setTransform(this->getGameObject()->getWorldTransform());
+}
+
+void
+LightProbeComponent::onDeactivate() noexcept
+{
+	this->removeComponentDispatch(GameDispatchType::GameDispatchTypeMoveAfter, this);
+
+	_lightProbe->setRenderScene(nullptr);
+}
+
+void
+LightProbeComponent::onMoveAfter() noexcept
+{
+	_lightProbe->setTransform(this->getGameObject()->getWorldTransform());
+}
 
 _NAME_END
 

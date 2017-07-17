@@ -63,9 +63,7 @@ private:
 	ShadowRenderFramebuffer& operator=(const ShadowRenderFramebuffer&) noexcept = delete;
 
 private:
-	GraphicsTexturePtr _shadowDepthMap;
 	GraphicsTexturePtr _shadowDepthLinearMap;
-
 	GraphicsFramebufferPtr _shadowDepthLinearView;
 	GraphicsFramebufferLayoutPtr _shadowDepthLinearViewLayout;
 };

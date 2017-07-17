@@ -108,12 +108,12 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 }
 
 void
-LightProbeRenderPipeline::onRenderPre() noexcept
+LightProbeRenderPipeline::onRenderBefore() noexcept
 {
 }
 
 void
-LightProbeRenderPipeline::onRenderPost() noexcept
+LightProbeRenderPipeline::onRenderAfter() noexcept
 {
 }
 

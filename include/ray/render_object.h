@@ -84,14 +84,14 @@ public:
 	virtual void onMoveBefor() noexcept;
 	virtual void onMoveAfter() noexcept;
 
-	virtual void onSceneChangeBefor() noexcept;
+	virtual void onSceneChangeBefore() noexcept;
 	virtual void onSceneChangeAfter() noexcept;
 
 	virtual bool onVisiableTest(const Frustum& fru) noexcept;
 	virtual void onAddRenderData(RenderDataManager& manager) noexcept;
 
-	virtual void onRenderPre(const Camera& camera) noexcept;
-	virtual void onRenderPost(const Camera& camera) noexcept;
+	virtual void onRenderBefore(const Camera& camera) noexcept;
+	virtual void onRenderAfter(const Camera& camera) noexcept;
 	virtual void onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTech* tech) noexcept;
 
 protected:

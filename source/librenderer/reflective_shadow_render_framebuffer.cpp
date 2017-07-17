@@ -143,7 +143,7 @@ ReflectiveShadowRenderFramebuffer::setup()
 }
 
 void
-ReflectiveShadowRenderFramebuffer::onRenderPre() noexcept
+ReflectiveShadowRenderFramebuffer::onRenderBefore() noexcept
 {
 }
 
@@ -153,7 +153,7 @@ ReflectiveShadowRenderFramebuffer::onRenderPipeline(const CameraPtr& camera) noe
 }
 
 void
-ReflectiveShadowRenderFramebuffer::onRenderPost() noexcept
+ReflectiveShadowRenderFramebuffer::onRenderAfter() noexcept
 {
 }
 

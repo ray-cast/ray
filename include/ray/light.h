@@ -106,7 +106,7 @@ private:
 	void _updateBoundingBox() noexcept;
 
 private:
-	void onSceneChangeBefor() noexcept;
+	void onSceneChangeBefore() noexcept;
 	void onSceneChangeAfter() noexcept;
 
 	void onAddRenderData(RenderDataManager& manager) noexcept;

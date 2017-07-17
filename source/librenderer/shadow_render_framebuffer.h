@@ -54,9 +54,9 @@ protected:
 	virtual void onResolutionChange() noexcept;
 	virtual void onResolutionChangeDPI() noexcept;
 
-	virtual void onRenderPre() noexcept;
+	virtual void onRenderBefore() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
-	virtual void onRenderPost() noexcept;
+	virtual void onRenderAfter() noexcept;
 
 private:
 	ShadowRenderFramebuffer(const ShadowRenderFramebuffer&) noexcept = delete;

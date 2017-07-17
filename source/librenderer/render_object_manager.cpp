@@ -105,7 +105,7 @@ DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 		{
 			auto object = it.getOcclusionCullNode();
 
-			object->onRenderPre(camera);
+			object->onRenderBefore(camera);
 			object->onAddRenderData(*this);
 		}
 	}

@@ -72,7 +72,7 @@ RenderPipelineFramebuffer::getFramebuffer() const noexcept
 }
 
 void
-RenderPipelineFramebuffer::onRenderPre() noexcept
+RenderPipelineFramebuffer::onRenderBefore() noexcept
 {
 }
 
@@ -82,7 +82,7 @@ RenderPipelineFramebuffer::onRenderPipeline(const CameraPtr& camera) noexcept
 }
 
 void
-RenderPipelineFramebuffer::onRenderPost() noexcept
+RenderPipelineFramebuffer::onRenderAfter() noexcept
 {
 }
 

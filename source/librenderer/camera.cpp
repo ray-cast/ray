@@ -496,9 +496,9 @@ Camera::onMoveAfter() noexcept
 }
 
 void
-Camera::onRenderPre(const Camera& camera) noexcept
+Camera::onRenderBefore(const Camera& camera) noexcept
 {
-	RenderObject::onRenderPre(camera);
+	RenderObject::onRenderBefore(camera);
 
 	if (_dataManager)
 		_dataManager->needUpdateVisiable(true);

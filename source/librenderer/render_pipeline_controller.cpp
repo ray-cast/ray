@@ -49,7 +49,7 @@ RenderPipelineController::~RenderPipelineController() noexcept
 }
 
 void
-RenderPipelineController::onRenderPre() noexcept
+RenderPipelineController::onRenderBefore() noexcept
 {
 }
 
@@ -59,7 +59,7 @@ RenderPipelineController::onRenderPipeline(const CameraPtr& camera) noexcept
 }
 
 void
-RenderPipelineController::onRenderPost() noexcept
+RenderPipelineController::onRenderAfter() noexcept
 {
 }
 

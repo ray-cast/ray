@@ -108,12 +108,12 @@ ForwardRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 }
 
 void
-ForwardRenderPipeline::onRenderPre() noexcept
+ForwardRenderPipeline::onRenderBefore() noexcept
 {
 }
 
 void
-ForwardRenderPipeline::onRenderPost() noexcept
+ForwardRenderPipeline::onRenderAfter() noexcept
 {
 }
 

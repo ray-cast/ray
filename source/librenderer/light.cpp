@@ -435,7 +435,7 @@ Light::_updateBoundingBox() noexcept
 }
 
 void
-Light::onSceneChangeBefor() noexcept
+Light::onSceneChangeBefore() noexcept
 {
 	auto renderScene = this->getRenderScene();
 	if (renderScene)

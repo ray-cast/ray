@@ -70,9 +70,9 @@ private:
 	void destroyShadowMaps() noexcept;
 
 private:
-	virtual void onRenderPre() noexcept;
+	virtual void onRenderBefore() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
-	virtual void onRenderPost() noexcept;
+	virtual void onRenderAfter() noexcept;
 
 private:
 	ShadowRenderPipeline(const ShadowRenderPipeline&) = delete;

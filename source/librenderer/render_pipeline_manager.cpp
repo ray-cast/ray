@@ -40,10 +40,12 @@
 #include <ray/render_object_manager.h>
 #include <ray/render_scene.h>
 #include <ray/camera.h>
+#include <ray/deferred_lighting_framebuffers.h>
 
 #include "deferred_lighting_pipeline.h"
 #include "forward_render_pipeline.h"
 #include "shadow_render_pipeline.h"
+#include "lightprobe_render_pipeline.h"
 
 #include "atmospheric.h"
 #include "ssdo.h"
@@ -96,6 +98,12 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 		return false;
 
 	_forward = forwardShading;
+
+	auto lightProbeGen = std::make_shared<LightProbeRenderPipeline>();
+	if (!lightProbeGen->setup(_pipeline))
+		return false;
+
+	_lightProbeGen = lightProbeGen;
 
 	this->setRenderSetting(setting);
 	return true;
@@ -328,8 +336,8 @@ RenderPipelineManager::setWindowResolution(std::uint32_t width, std::uint32_t he
 
 		_forward->onResolutionChange();
 
-		if (_forwardPlus)
-			_forwardPlus->onResolutionChange();
+		if (_lightProbeGen)
+			_lightProbeGen->onResolutionChange();
 
 		if (_deferredLighting)
 			_deferredLighting->onResolutionChange();
@@ -355,8 +363,8 @@ RenderPipelineManager::setFramebufferSize(std::uint32_t w, std::uint32_t h) noex
 
 		_forward->onResolutionChangeDPI();
 
-		if (_forwardPlus)
-			_forwardPlus->onResolutionChangeDPI();
+		if (_lightProbeGen)
+			_lightProbeGen->onResolutionChangeDPI();
 
 		if (_deferredLighting)
 			_deferredLighting->onResolutionChangeDPI();
@@ -686,30 +694,48 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 		if (!camera->getRenderDataManager())
 			continue;
 
-		camera->onRenderPre(*camera);
+		camera->onRenderBefore(*camera);
 
 		switch (camera->getCameraOrder())
 		{
 		case CameraOrder::CameraOrderShadow:
 		{
-			_shadowMapGen->onRenderPre();
+			_shadowMapGen->onRenderBefore();
 			_shadowMapGen->onRenderPipeline(camera);
-			_shadowMapGen->onRenderPost();
+			_shadowMapGen->onRenderAfter();
+		}
+		break;
+		case CameraOrder::CameraOrderLightProbe:
+		{
+			_lightProbeGen->onRenderBefore();
+			_lightProbeGen->onRenderPipeline(camera);
+			_lightProbeGen->onRenderAfter();
 		}
 		break;
 		case CameraOrder::CameraOrder2D:
 		{
-			_forward->onRenderPre();
+			_forward->onRenderBefore();
 			_forward->onRenderPipeline(camera);
-			_forward->onRenderPost();
+			_forward->onRenderAfter();
 		}
 		break;
 		case CameraOrder::CameraOrder3D:
 		{
-			auto renderPipeline = (_setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting) ? _deferredLighting : _forward;
-			renderPipeline->onRenderPre();
-			renderPipeline->onRenderPipeline(camera);
-			renderPipeline->onRenderPost();
+			if (camera->getRenderPipelineFramebuffer()->isInstanceOf<DeferredLightingFramebuffers>())
+			{
+				if (_setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
+				{
+					_deferredLighting->onRenderBefore();
+					_deferredLighting->onRenderPipeline(camera);
+					_deferredLighting->onRenderAfter();
+				}
+			}
+			else
+			{
+				_forward->onRenderBefore();
+				_forward->onRenderPipeline(camera);
+				_forward->onRenderAfter();
+			}
 		}
 		break;
 		default:
@@ -717,7 +743,7 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 			break;
 		}
 
-		camera->onRenderPost(*camera);
+		camera->onRenderAfter(*camera);
 	}
 }
 

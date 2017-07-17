@@ -112,7 +112,7 @@ RenderObject::setRenderScene(RenderScenePtr scene) noexcept
 {
 	if (_renderScene != scene)
 	{
-		this->onSceneChangeBefor();
+		this->onSceneChangeBefore();
 
 		if (_renderScene)
 			_renderScene->removeRenderObject(this);
@@ -183,7 +183,7 @@ RenderObject::getTransformInverse() const noexcept
 }
 
 void
-RenderObject::onRenderPre(const Camera& camera) noexcept
+RenderObject::onRenderBefore(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
@@ -191,7 +191,7 @@ RenderObject::onRenderPre(const Camera& camera) noexcept
 }
 
 void
-RenderObject::onRenderPost(const Camera& camera) noexcept
+RenderObject::onRenderAfter(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
@@ -209,7 +209,7 @@ RenderObject::onMoveAfter() noexcept
 }
 
 void
-RenderObject::onSceneChangeBefor() noexcept
+RenderObject::onSceneChangeBefore() noexcept
 {
 }
 

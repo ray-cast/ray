@@ -106,7 +106,7 @@ ShadowRenderFramebuffer::setup()
 }
 
 void
-ShadowRenderFramebuffer::onRenderPre() noexcept
+ShadowRenderFramebuffer::onRenderBefore() noexcept
 {
 }
 
@@ -116,7 +116,7 @@ ShadowRenderFramebuffer::onRenderPipeline(const CameraPtr& camera) noexcept
 }
 
 void
-ShadowRenderFramebuffer::onRenderPost() noexcept
+ShadowRenderFramebuffer::onRenderAfter() noexcept
 {
 }
 

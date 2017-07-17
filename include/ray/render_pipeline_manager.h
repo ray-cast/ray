@@ -146,7 +146,7 @@ private:
 	RenderPipelinePtr _pipeline;
 	RenderPipelineDevicePtr _pipelineDevice;
 	RenderPipelineControllerPtr _forward;
-	RenderPipelineControllerPtr _forwardPlus;
+	RenderPipelineControllerPtr _lightProbeGen;
 	RenderPipelineControllerPtr _deferredLighting;
 	RenderPipelineControllerPtr _shadowMapGen;
 };

@@ -1179,7 +1179,7 @@ DeferredLightingPipeline::onResolutionChange() noexcept
 }
 
 void
-DeferredLightingPipeline::onRenderPre() noexcept
+DeferredLightingPipeline::onRenderBefore() noexcept
 {
 }
 
@@ -1212,7 +1212,7 @@ DeferredLightingPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 }
 
 void
-DeferredLightingPipeline::onRenderPost() noexcept
+DeferredLightingPipeline::onRenderAfter() noexcept
 {
 	auto camera = _pipeline->getCamera();
 	if (!camera)

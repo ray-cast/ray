@@ -366,12 +366,12 @@ ShadowRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 }
 
 void
-ShadowRenderPipeline::onRenderPre() noexcept
+ShadowRenderPipeline::onRenderBefore() noexcept
 {
 }
 
 void
-ShadowRenderPipeline::onRenderPost() noexcept
+ShadowRenderPipeline::onRenderAfter() noexcept
 {
 }
 

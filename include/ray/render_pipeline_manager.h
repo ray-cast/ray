@@ -46,13 +46,17 @@ class RenderPipelineManager final : public rtti::Interface
 	__DeclareSubClass(RenderPipelineManager, rtti::Interface)
 public:
 	RenderPipelineManager() noexcept;
+	RenderPipelineManager(const RenderSetting& setting) except;
 	~RenderPipelineManager() noexcept;
 
-	bool setup(const RenderSetting& setting) noexcept;
+	void setup(const RenderSetting& setting) except;
 	void close() noexcept;
 
-	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
-	RenderPipelinePtr getRenderPipeline() const noexcept;
+	void setRenderPipeline(const RenderPipelinePtr& pipeline) noexcept;
+	const RenderPipelinePtr& getRenderPipeline() const noexcept;
+
+	void setRenderPipelineDevice(const RenderPipelineDevicePtr& device) noexcept;
+	const RenderPipelineDevicePtr& getRenderPipelineDevice() const noexcept;
 
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
@@ -60,66 +64,16 @@ public:
 	void setFramebufferSize(std::uint32_t w, std::uint32_t h) noexcept;
 	void getFramebufferSize(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	void renderBegin() noexcept;
-	void renderEnd() noexcept;
-
 	bool setRenderSetting(const RenderSetting& setting) noexcept;
 	const RenderSetting& getRenderSetting() const noexcept;
-
-	void setCamera(CameraPtr renderer) noexcept;
-	CameraPtr getCamera() const noexcept;
-
-	void setViewport(std::uint32_t i, const Viewport& view) noexcept;
-	const Viewport& getViewport(std::uint32_t i) const noexcept;
-
-	void setScissor(std::uint32_t i, const Scissor& scissor) noexcept;
-	const Scissor& getScissor(std::uint32_t i) const noexcept;
-
-	void setTransform(const float4x4& transform) noexcept;
-	void setTransformInverse(const float4x4& transform) noexcept;
-
-	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
-	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept;
-
-	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
-
-	void setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept;
-	void setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
-
-	void drawCone(const MaterialTech& tech) noexcept;
-	void drawSphere(const MaterialTech& tech) noexcept;
-	void drawScreenQuad(const MaterialTech& tech) noexcept;
-
-	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
-	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
-
-	void drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept;
-	void drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void destroyPostProcess() noexcept;
 
-	bool isTextureSupport(GraphicsFormat format) noexcept;
-	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
-	bool isVertexSupport(GraphicsFormat format) noexcept;
-	bool isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept;
-
-	MaterialPtr createMaterial(const std::string& name) noexcept;
-	void destroyMaterial(MaterialPtr material) noexcept;
-
-	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	GraphicsPipelinePtr createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept;
-	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
-	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
-	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
-	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
-	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap = GraphicsSamplerWrap::GraphicsSamplerWrapRepeat) noexcept;
-
+	void renderBegin() noexcept;
 	void render(const RenderScene& scene) noexcept;
+	void renderEnd() noexcept;
 
 private:
 	bool setupShadowRenderer(RenderPipelinePtr pipeline, const RenderSetting& setting) noexcept;

@@ -47,7 +47,7 @@ public:
 	DeferredLightingPipeline() noexcept;
 	~DeferredLightingPipeline() noexcept;
 
-	bool setup(RenderPipelineManagerPtr pipelineManager) noexcept;
+	bool setup(const RenderPipelinePtr& pipeline, bool enableMRSII = false) noexcept;
 	void close() noexcept;
 
 	void render3DEnvMap(const CameraPtr& camera) noexcept;
@@ -231,7 +231,6 @@ private:
 	MaterialSemanticPtr _materialDeferredOpaqueShadingMap;
 
 	RenderPipelinePtr _pipeline;
-	RenderPipelineManagerPtr _pipelineManager;
 };
 
 _NAME_END

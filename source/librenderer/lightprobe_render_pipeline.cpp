@@ -54,7 +54,7 @@ LightProbeRenderPipeline::~LightProbeRenderPipeline() noexcept
 }
 
 bool
-LightProbeRenderPipeline::setup(RenderPipelinePtr pipeline) noexcept
+LightProbeRenderPipeline::setup(const RenderPipelinePtr& pipeline) noexcept
 {
 	assert(pipeline);
 	_pipeline = pipeline;
@@ -64,6 +64,7 @@ LightProbeRenderPipeline::setup(RenderPipelinePtr pipeline) noexcept
 void
 LightProbeRenderPipeline::close() noexcept
 {
+	_pipeline = nullptr;
 }
 
 void
@@ -91,11 +92,6 @@ LightProbeRenderPipeline::renderLightProbes(RenderPipeline& pipeline) noexcept
 	}
 
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
-}
-
-void
-LightProbeRenderPipeline::onResolutionChange() noexcept
-{
 }
 
 void

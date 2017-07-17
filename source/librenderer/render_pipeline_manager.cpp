@@ -41,6 +41,7 @@
 #include <ray/render_scene.h>
 #include <ray/camera.h>
 #include <ray/deferred_lighting_framebuffers.h>
+#include <ray/except.h>
 
 #include "deferred_lighting_pipeline.h"
 #include "forward_render_pipeline.h"
@@ -67,13 +68,19 @@ RenderPipelineManager::RenderPipelineManager() noexcept
 	std::memset(&_setting, 0, sizeof(_setting));
 }
 
+RenderPipelineManager::RenderPipelineManager(const RenderSetting& setting) except
+	: RenderPipelineManager()
+{
+	this->setup(setting);
+}
+
 RenderPipelineManager::~RenderPipelineManager() noexcept
 {
 	this->close();
 }
 
-bool
-RenderPipelineManager::setup(const RenderSetting& setting) noexcept
+void
+RenderPipelineManager::setup(const RenderSetting& setting) except
 {
 	assert(setting.window);
 	assert(setting.width > 0 && setting.height > 0);
@@ -82,38 +89,35 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 	if (setting.deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2)
 	{
 		if (setting.pipelineType != RenderPipelineType::RenderPipelineTypeForward)
-			return false;
+			throw failure("Unsupported pipeline type");
 	}
 
 	_pipelineDevice = std::make_shared<RenderPipelineDevice>();
 	if (!_pipelineDevice->open(setting.deviceType))
-		return false;
+		throw failure("Failed to open the pipeline device");
 
 	_pipeline = _pipelineDevice->createRenderPipeline(setting.window, setting.width, setting.height, setting.dpi_w, setting.dpi_h, setting.swapInterval);
 	if (!_pipeline)
-		return false;
+		throw failure("Failed to create the pipeline");
 
 	auto forwardShading = std::make_shared<ForwardRenderPipeline>();
 	if (!forwardShading->setup(_pipeline))
-		return false;
+		throw failure("Failed to create the ForwardRenderPipeline");
 
 	_forward = forwardShading;
 
 	auto lightProbeGen = std::make_shared<LightProbeRenderPipeline>();
 	if (!lightProbeGen->setup(_pipeline))
-		return false;
+		throw failure("Failed to create the LightProbeRenderPipeline");
 
 	_lightProbeGen = lightProbeGen;
 
 	this->setRenderSetting(setting);
-	return true;
 }
 
 void
 RenderPipelineManager::close() noexcept
 {
-	this->destroyShadowRenderer();
-
 	_atmospheric.reset();
 	_SSDO.reset();
 	_SSGI.reset();
@@ -124,21 +128,38 @@ RenderPipelineManager::close() noexcept
 	_PostProcessHDR.reset();
 	_FXAA.reset();
 	_colorGrading.reset();
-	_deferredLighting.reset();
+
 	_forward.reset();
+	_lightProbeGen.reset();
+	_shadowMapGen.reset();
+	_deferredLighting.reset();
+
 	_pipeline.reset();
+	_pipelineDevice.reset();
 }
 
 void
-RenderPipelineManager::setRenderPipeline(RenderPipelinePtr pipeline) noexcept
+RenderPipelineManager::setRenderPipeline(const RenderPipelinePtr& pipeline) noexcept
 {
 	_pipeline = pipeline;
 }
 
-RenderPipelinePtr
+const RenderPipelinePtr&
 RenderPipelineManager::getRenderPipeline() const noexcept
 {
 	return _pipeline;
+}
+
+void
+RenderPipelineManager::setRenderPipelineDevice(const RenderPipelineDevicePtr& device) noexcept
+{
+	_pipelineDevice = device;
+}
+
+const RenderPipelineDevicePtr&
+RenderPipelineManager::getRenderPipelineDevice() const noexcept
+{
+	return _pipelineDevice;
 }
 
 bool
@@ -306,7 +327,7 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 	if (setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
 	{
 		auto deferredLighting = std::make_shared<DeferredLightingPipeline>();
-		if (!deferredLighting->setup(this->downcast_pointer<RenderPipelineManager>()))
+		if (!deferredLighting->setup(_pipeline, _setting.enableGlobalIllumination))
 			return false;
 
 		_deferredLighting = deferredLighting;
@@ -379,155 +400,10 @@ RenderPipelineManager::getFramebufferSize(std::uint32_t& w, std::uint32_t& h) co
 }
 
 void
-RenderPipelineManager::setCamera(CameraPtr camera) noexcept
-{
-	_pipeline->setCamera(camera);
-}
-
-CameraPtr
-RenderPipelineManager::getCamera() const noexcept
-{
-	return _pipeline->getCamera();
-}
-
-void
-RenderPipelineManager::setViewport(std::uint32_t i, const Viewport& view) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setViewport(i, view);
-}
-
-const Viewport&
-RenderPipelineManager::getViewport(std::uint32_t i) const noexcept
-{
-	assert(_pipeline);
-	return _pipeline->getViewport(i);
-}
-
-void
-RenderPipelineManager::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setScissor(i, scissor);
-}
-
-const Scissor&
-RenderPipelineManager::getScissor(std::uint32_t i) const noexcept
-{
-	assert(_pipeline);
-	return _pipeline->getScissor(i);
-}
-
-void
-RenderPipelineManager::setTransform(const float4x4& transform) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setTransform(transform);
-}
-
-void
-RenderPipelineManager::setTransformInverse(const float4x4& transform) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setTransformInverse(transform);
-}
-
-void
-RenderPipelineManager::setFramebuffer(GraphicsFramebufferPtr target) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setFramebuffer(target);
-}
-
-void
-RenderPipelineManager::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
-{
-	assert(_pipeline);
-	_pipeline->clearFramebuffer(i, flags, color, depth, stencil);
-}
-
-void
-RenderPipelineManager::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
-{
-	assert(_pipeline);
-	_pipeline->readFramebuffer(texture, x, y, width, height);
-}
-
-void
-RenderPipelineManager::setMaterialPass(const MaterialPassPtr& pass) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setMaterialPass(pass);
-}
-
-void
-RenderPipelineManager::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setVertexBuffer(i, vbo, offset);
-}
-
-void
-RenderPipelineManager::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setIndexBuffer(ibo, offset, indexType);
-}
-
-void
-RenderPipelineManager::drawCone(const MaterialTech& tech) noexcept
-{
-	assert(_pipeline);
-	_pipeline->drawCone(tech);
-}
-
-void
-RenderPipelineManager::drawSphere(const MaterialTech& tech) noexcept
-{
-	assert(_pipeline);
-	_pipeline->drawSphere(tech);
-}
-
-void
-RenderPipelineManager::drawScreenQuad(const MaterialTech& tech) noexcept
-{
-	assert(_pipeline);
-	_pipeline->drawScreenQuad(tech);
-}
-
-void
-RenderPipelineManager::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
-{
-	assert(_pipeline);
-	_pipeline->draw(numVertices, numInstances, startVertice, startInstances);
-}
-
-void
-RenderPipelineManager::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
-{
-	assert(_pipeline);
-	_pipeline->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
-}
-
-void
-RenderPipelineManager::drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
-{
-	assert(_pipeline);
-	_pipeline->drawLayer(numVertices, numInstances, startVertice, startInstances, layer);
-}
-
-void
-RenderPipelineManager::drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
-{
-	assert(_pipeline);
-	_pipeline->drawIndexedLayer(numIndices, numInstances, startIndice, startVertice, startInstances, layer);
-}
-
-void
 RenderPipelineManager::addPostProcess(RenderPostProcessPtr postprocess) noexcept
 {
 	assert(_pipeline);
-	postprocess->_setPipelineManager(this);
+	postprocess->_setRenderPipeline(_pipeline.get());
 	_pipeline->addPostProcess(postprocess);
 }
 
@@ -543,111 +419,6 @@ RenderPipelineManager::destroyPostProcess() noexcept
 {
 	assert(_pipeline);
 	_pipeline->destroyPostProcess();
-}
-
-bool
-RenderPipelineManager::isTextureSupport(GraphicsFormat format) noexcept
-{
-	assert(_pipeline);
-	return _pipeline->isTextureSupport(format);
-}
-
-bool
-RenderPipelineManager::isTextureDimSupport(GraphicsTextureDim format) noexcept
-{
-	assert(_pipeline);
-	return _pipeline->isTextureDimSupport(format);
-}
-
-bool
-RenderPipelineManager::isVertexSupport(GraphicsFormat format) noexcept
-{
-	assert(_pipeline);
-	return _pipeline->isTextureSupport(format);
-}
-
-bool
-RenderPipelineManager::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
-{
-	assert(_pipeline);
-	return _pipeline->isShaderSupport(stage);
-}
-
-GraphicsSwapchainPtr
-RenderPipelineManager::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createSwapchain(desc);
-}
-
-GraphicsContextPtr
-RenderPipelineManager::createDeviceContext(const GraphicsContextDesc& desc) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createDeviceContext(desc);
-}
-
-GraphicsFramebufferPtr
-RenderPipelineManager::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createFramebuffer(desc);
-}
-
-GraphicsFramebufferLayoutPtr
-RenderPipelineManager::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createFramebufferLayout(desc);
-}
-
-GraphicsTexturePtr
-RenderPipelineManager::createTexture(const GraphicsTextureDesc& desc) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(desc);
-}
-
-GraphicsTexturePtr
-RenderPipelineManager::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(w, h, dim, format, filter, wrap);
-}
-
-MaterialPtr
-RenderPipelineManager::createMaterial(const std::string& name) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createMaterial(name);
-}
-
-void
-RenderPipelineManager::destroyMaterial(MaterialPtr material) noexcept
-{
-	assert(_pipelineDevice);
-	_pipelineDevice->destroyMaterial(material);
-}
-
-GraphicsInputLayoutPtr
-RenderPipelineManager::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createInputLayout(desc);
-}
-
-GraphicsPipelinePtr
-RenderPipelineManager::createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createGraphicsPipeline(desc);
-}
-
-GraphicsDataPtr
-RenderPipelineManager::createGraphicsData(const GraphicsDataDesc& desc) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createGraphicsData(desc);
 }
 
 bool

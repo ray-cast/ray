@@ -48,17 +48,13 @@ public:
 	ForwardRenderPipeline() noexcept;
 	virtual ~ForwardRenderPipeline() noexcept;
 
-	bool setup(RenderPipelinePtr pipeline) noexcept;
+	bool setup(const RenderPipelinePtr& pipeline) noexcept;
 	void close() noexcept;
-
-	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
 
 private:
 	virtual void onRenderBefore() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
 	virtual void onRenderAfter() noexcept;
-
-	virtual void onResolutionChange() noexcept;
 
 private:
 	ForwardRenderPipeline(const ForwardRenderPipeline&) = delete;

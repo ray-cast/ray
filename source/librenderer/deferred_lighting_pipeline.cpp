@@ -65,12 +65,12 @@ DeferredLightingPipeline::~DeferredLightingPipeline() noexcept
 }
 
 bool
-DeferredLightingPipeline::setup(RenderPipelineManagerPtr pipelineManager) noexcept
+DeferredLightingPipeline::setup(const RenderPipelinePtr& pipeline, bool enableMRSII) noexcept
 {
-	assert(pipelineManager);
+	assert(pipeline);
 
-	_pipeline = pipelineManager->getRenderPipeline();
-	_pipelineManager = pipelineManager;
+	_pipeline = pipeline;
+	_enabledMRSSI = enableMRSII;
 
 	if (!this->initTextureFormat(*_pipeline))
 		return false;
@@ -80,6 +80,9 @@ DeferredLightingPipeline::setup(RenderPipelineManagerPtr pipelineManager) noexce
 
 	if (!this->setupDeferredMaterials(*_pipeline))
 		return false;
+
+	if (_enabledMRSSI)
+		return this->setupMRSII(*pipeline);
 
 	return true;
 }
@@ -484,7 +487,7 @@ DeferredLightingPipeline::renderIndirectSpotLight(RenderPipeline& pipeline, cons
 void
 DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, const GraphicsFramebufferPtr& target) noexcept
 {
-	if (!_pipelineManager->getRenderSetting().enableGlobalIllumination)
+	if (!_enabledMRSSI)
 		return;
 
 	bool hasIndirectLight = false;
@@ -505,13 +508,6 @@ DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, const G
 
 	if (!hasIndirectLight)
 		return;
-
-	if (!_enabledMRSSI)
-	{
-		_enabledMRSSI = this->setupMRSII(pipeline);
-		if (!_enabledMRSSI)
-			return;
-	}
 
 	for (auto& it : lights)
 	{
@@ -863,7 +859,6 @@ DeferredLightingPipeline::setupMRSIIMaterials(RenderPipeline& pipeline) noexcept
 	_mrsiiOffset = _mrsii->getParameter("offset");
 	_mrsiiOffsetUpsampling = _mrsii->getParameter("offsetUpsampling");
 	_mrsiiMipmapLevel = _mrsii->getParameter("mipmapLevel");
-	_mrsiiMipmapPass = _mrsii->getParameter("mipmapPass");
 	_mrsiiThreshold = _mrsii->getParameter("threshold");
 
 	return true;
@@ -1169,7 +1164,7 @@ DeferredLightingPipeline::destroyMRSIIRenderTextureLayouts() noexcept
 void
 DeferredLightingPipeline::onResolutionChange() noexcept
 {
-	if (_enabledMRSSI && _pipelineManager->getRenderSetting().enableGlobalIllumination)
+	if (_enabledMRSSI)
 	{
 		destroyMRSIIRenderTextures();
 		destroyMRSIITextures();

@@ -492,6 +492,8 @@ Camera::_updateViewProject() const noexcept
 void
 Camera::onMoveAfter() noexcept
 {
+	RenderObject::onMoveAfter();
+
 	_needUpdateViewProject = true;
 }
 
@@ -501,7 +503,19 @@ Camera::onRenderBefore(const Camera& camera) noexcept
 	RenderObject::onRenderBefore(camera);
 
 	if (_dataManager)
-		_dataManager->needUpdateVisiable(true);
+	{
+		_dataManager->assginVisiable(*this);
+		_dataManager->noticeObjectsRenderBefore(*this);
+	}
+}
+
+void
+Camera::onRenderAfter(const Camera& camera) noexcept
+{
+	RenderObject::onRenderAfter(camera);
+
+	if (_dataManager)
+		_dataManager->noticeObjectsRenderAfter(*this);
 }
 
 _NAME_END

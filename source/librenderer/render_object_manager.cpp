@@ -43,7 +43,6 @@
 _NAME_BEGIN
 
 DefaultRenderDataManager::DefaultRenderDataManager() noexcept
-	: _needUpdateVisiable(false)
 {
 }
 
@@ -67,25 +66,8 @@ DefaultRenderDataManager::getRenderData(RenderQueue queue) const noexcept
 }
 
 void
-DefaultRenderDataManager::needUpdateVisiable(bool update) noexcept
-{
-	_needUpdateVisiable = update;
-}
-
-bool
-DefaultRenderDataManager::needUpdateVisiable() const noexcept
-{
-	return _needUpdateVisiable;
-}
-
-void
 DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 {
-	if (!_needUpdateVisiable)
-		return;
-
-	_needUpdateVisiable = false;
-
 	_visiable.clear();
 
 	for (std::size_t i = RenderQueue::RenderQueueBeginRange; i < RenderQueue::RenderQueueEndRange; i++)
@@ -93,7 +75,8 @@ DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 
 	auto cameraOrder = camera.getCameraOrder();
 	if (cameraOrder == CameraOrder::CameraOrder3D ||
-		cameraOrder == CameraOrder::CameraOrderShadow)
+		cameraOrder == CameraOrder::CameraOrderShadow ||
+		cameraOrder == CameraOrder::CameraOrderLightProbe)
 	{
 		auto scene = camera.getRenderScene();
 		assert(scene);
@@ -104,8 +87,6 @@ DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 		for (auto& it : _visiable.iter())
 		{
 			auto object = it.getOcclusionCullNode();
-
-			object->onRenderBefore(camera);
 			object->onAddRenderData(*this);
 		}
 	}
@@ -171,6 +152,26 @@ DefaultRenderDataManager::sortDistance(OcclusionCullList& objects) noexcept
 	{
 		return lh.getDistanceSqrt() < rh.getDistanceSqrt();
 	});
+}
+
+void
+DefaultRenderDataManager::noticeObjectsRenderBefore(const Camera& camera) noexcept
+{
+	for (auto& it : _visiable.iter())
+	{
+		auto object = it.getOcclusionCullNode();
+		object->onRenderBefore(camera);
+	}
+}
+
+void
+DefaultRenderDataManager::noticeObjectsRenderAfter(const Camera& camera) noexcept
+{
+	for (auto& it : _visiable.iter())
+	{
+		auto object = it.getOcclusionCullNode();
+		object->onRenderAfter(camera);
+	}
 }
 
 _NAME_END

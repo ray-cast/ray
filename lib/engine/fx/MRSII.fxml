@@ -47,7 +47,7 @@
 
                 float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
-                float3 P = restorePosition(texDepthLinear, RSMcoord, V);
+                float3 P = V * texDepthLinear.Sample(PointClamp, RSMcoord).r / V.z;
                 float3 albedo = DecodeDiffuse(MRT0);
 
                 if (coord.y < 1 / 3.0f)
@@ -84,7 +84,7 @@
 
                 float3 N = DecodeGBufferNormal(MRT1);
                 float3 V = mul(matProjectInverse, float4(RSMcoord * 2.0 - 1.0, 0, 1)).xyz;
-                float3 P = restorePosition(texDepthLinear, RSMcoord, V);
+                float3 P = V * texDepthLinear.Sample(PointClamp, RSMcoord).r / V.z;
                 float3 albedo = DecodeDiffuse(MRT0);
 
                 if (coord.y < 1 / 3.0f)
@@ -132,7 +132,7 @@
 
                 float3 V = normalize(viewdir);
                 float3 viewNormal = DecodeGBufferNormal(MRT1);
-                float3 viewPosition = restorePosition(texDepthLinear, coord.xy, V);
+                float3 viewPosition = V * texDepthLinear.Sample(PointClamp, coord.xy).r / V.z;
 
                 float3 shading = 0;
 

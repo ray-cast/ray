@@ -54,7 +54,7 @@ ForwardRenderPipeline::~ForwardRenderPipeline() noexcept
 }
 
 bool
-ForwardRenderPipeline::setup(RenderPipelinePtr pipeline) noexcept
+ForwardRenderPipeline::setup(const RenderPipelinePtr& pipeline) noexcept
 {
 	assert(pipeline);
 	_pipeline = pipeline;
@@ -64,38 +64,7 @@ ForwardRenderPipeline::setup(RenderPipelinePtr pipeline) noexcept
 void
 ForwardRenderPipeline::close() noexcept
 {
-}
-
-void
-ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
-{
-	assert(pipeline.getCamera());
-
-	auto& v = pipeline.getCamera()->getPixelViewportDPI();
-
-	pipeline.setFramebuffer(pipeline.getCamera()->getRenderPipelineFramebuffer()->getFramebuffer());
-	pipeline.setViewport(0, Viewport(v.x, v.y, v.z, v.w));
-
-	if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
-		pipeline.clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-
-	if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
-		pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
-	{
-		if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
-			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-		else if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
-			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-		else if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
-			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-	}
-
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
-}
-
-void
-ForwardRenderPipeline::onResolutionChange() noexcept
-{
+	_pipeline = nullptr;
 }
 
 void
@@ -103,8 +72,30 @@ ForwardRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 {
 	assert(camera);
 	assert(camera->getCameraOrder() == CameraOrder::CameraOrder2D);
+
+	auto& v = camera->getPixelViewportDPI();
+
 	_pipeline->setCamera(camera);
-	this->render2DEnvMap(*_pipeline);
+	_pipeline->setFramebuffer(_pipeline->getCamera()->getRenderPipelineFramebuffer()->getFramebuffer());
+	_pipeline->setViewport(0, Viewport(v.x, v.y, v.z, v.w));
+
+	if (_pipeline->getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
+		_pipeline->clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, _pipeline->getCamera()->getClearColor(), 1.0, 0);
+
+	if (_pipeline->getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
+		_pipeline->getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+	{
+		if (_pipeline->getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
+			_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthStencilBit, _pipeline->getCamera()->getClearColor(), 1.0, 0);
+		else if (_pipeline->getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
+			_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthBit, _pipeline->getCamera()->getClearColor(), 1.0, 0);
+		else if (_pipeline->getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+			_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, _pipeline->getCamera()->getClearColor(), 1.0, 0);
+	}
+
+	_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque);
+	_pipeline->drawRenderQueue(RenderQueue::RenderQueueTransparentBack);
+	_pipeline->drawRenderQueue(RenderQueue::RenderQueueTransparentFront);
 }
 
 void

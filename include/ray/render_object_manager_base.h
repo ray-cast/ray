@@ -50,10 +50,10 @@ public:
 	virtual void addRenderData(RenderQueue queue, RenderObject* object) noexcept = 0;
 	virtual const RenderObjectRaws& getRenderData(RenderQueue queue) const noexcept = 0;
 
-	virtual void needUpdateVisiable(bool update) noexcept = 0;
-	virtual bool needUpdateVisiable() const noexcept = 0;
-
 	virtual void assginVisiable(const Camera& camera) noexcept = 0;
+
+	virtual void noticeObjectsRenderBefore(const Camera& camera) noexcept = 0;
+	virtual void noticeObjectsRenderAfter(const Camera& camera) noexcept = 0;
 };
 
 _NAME_END

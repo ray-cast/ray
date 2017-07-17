@@ -62,15 +62,14 @@ public:
 
 private:
 	friend class RenderPipelineManager;
-	void _setPipelineManager(RenderPipelineManager* pipelineManager) noexcept;
+	void _setRenderPipeline(RenderPipeline* pipeline) noexcept;
 
 protected:
-	RenderPipeline* getPipeline() const noexcept;
-	RenderPipelineManager* getPipelineManager() const noexcept;
+	RenderPipeline* getRenderPipeline() const noexcept;
 
 private:
 	bool _active;
-	RenderPipelineManager* _pipelineManager;
+	RenderPipeline* _pipeline;
 };
 
 _NAME_END

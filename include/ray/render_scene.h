@@ -100,7 +100,7 @@ public:
 	void removeRenderObject(RenderObject* object) noexcept;
 
 	void computVisiable(const float3& eye, const float4x4& viewProject, OcclusionCullList& list) noexcept;
-	void computVisiableLight(const float4x4& viewProject, OcclusionCullList& list) noexcept;
+	void computVisiableLight(const float3& eye, const float4x4& viewProject, OcclusionCullList& list) noexcept;
 
 	static const RenderScenes& getSceneAll() noexcept;
 

@@ -225,12 +225,12 @@ RenderScene::computVisiable(const float3& eye, const float4x4& viewProject, Occl
 			continue;
 
 		if (it->onVisiableTest(fru))
-			list.insert(it, math::sqrDistance(eye, it->getBoundingBoxInWorld().center()));
+			list.insert(it, math::sqrDistance(eye, it->getTransform().getTranslate()));
 	}
 }
 
 void
-RenderScene::computVisiableLight(const float4x4& viewProject, OcclusionCullList& list) noexcept
+RenderScene::computVisiableLight(const float3& eye, const float4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
 	fru.extract(viewProject);
@@ -245,10 +245,8 @@ RenderScene::computVisiableLight(const float4x4& viewProject, OcclusionCullList&
 		if (!it->getVisible())
 			continue;
 
-		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
-			continue;
-
-		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
+		if (it->onVisiableTest(fru))
+			list.insert(it, math::sqrDistance(eye, it->getTransform().getTranslate()));
 	}
 }
 

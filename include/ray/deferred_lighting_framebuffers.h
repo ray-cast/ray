@@ -50,6 +50,7 @@ public:
 	virtual ~DeferredLightingFramebuffers() noexcept;
 
 	bool setup(RenderSystem& pipeline, std::uint32_t width, std::uint32_t height);
+	void close() noexcept;
 
 	const GraphicsTexturePtr& getDeferredDepthMap() const noexcept { return _deferredDepthMap; }
 	const GraphicsTexturePtr& getDeferredDepthLinearMap() const noexcept { return _deferredDepthLinearMap; }

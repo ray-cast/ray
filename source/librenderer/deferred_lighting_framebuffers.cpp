@@ -49,8 +49,7 @@ DeferredLightingFramebuffers::DeferredLightingFramebuffers() noexcept
 
 DeferredLightingFramebuffers::~DeferredLightingFramebuffers() noexcept
 {
-	this->destroyDeferredTextures();
-	this->destroyDeferredRenderTextures();
+	this->close();
 }
 
 bool
@@ -69,6 +68,14 @@ DeferredLightingFramebuffers::setup(RenderSystem& pipeline, std::uint32_t width,
 		return false;
 
 	return true;
+}
+
+void
+DeferredLightingFramebuffers::close() noexcept
+{
+	this->destroyDeferredTextures();
+	this->destroyDeferredRenderTextures();
+	this->destroyDeferredRenderTextureLayouts();
 }
 
 bool

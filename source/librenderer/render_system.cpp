@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/render_system.h>
 #include <ray/render_scene.h>
+#include <ray/render_pipeline.h>
+#include <ray/render_pipeline_device.h>
 #include <ray/render_pipeline_manager.h>
 
 _NAME_BEGIN
@@ -56,14 +58,17 @@ RenderSystem::setup(const RenderSetting& setting) noexcept
 {
 	assert(!_pipelineManager);
 
-	_pipelineManager = std::make_shared<RenderPipelineManager>();
-	if (!_pipelineManager->setup(setting))
+	try
 	{
-		this->close();
+		_pipelineManager = std::make_shared<RenderPipelineManager>();
+		_pipelineManager->setup(setting);
+
+		return true;
+	}
+	catch (const std::exception& e)
+	{
 		return false;
 	}
-
-	return true;
 }
 
 void
@@ -120,203 +125,203 @@ void
 RenderSystem::setViewport(std::uint32_t i, const Viewport& view) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setViewport(i, view);
+	_pipelineManager->getRenderPipeline()->setViewport(i, view);
 }
 
 const Viewport&
 RenderSystem::getViewport(std::uint32_t i) const noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->getViewport(i);
+	return _pipelineManager->getRenderPipeline()->getViewport(i);
 }
 
 void
 RenderSystem::setScissor(std::uint32_t i, const Scissor& scissor) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setScissor(i, scissor);
+	_pipelineManager->getRenderPipeline()->setScissor(i, scissor);
 }
 
 const Scissor&
 RenderSystem::getScissor(std::uint32_t i) const noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->getScissor(i);
+	return _pipelineManager->getRenderPipeline()->getScissor(i);
 }
 
 void
 RenderSystem::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setFramebuffer(target);
+	_pipelineManager->getRenderPipeline()->setFramebuffer(target);
 }
 
 void
 RenderSystem::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->clearFramebuffer(i, flags, color, depth, stencil);
+	_pipelineManager->getRenderPipeline()->clearFramebuffer(i, flags, color, depth, stencil);
 }
 
 void
 RenderSystem::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->readFramebuffer(texture, x, y, width, height);
+	_pipelineManager->getRenderPipeline()->readFramebuffer(texture, x, y, width, height);
 }
 
 void
 RenderSystem::setMaterialPass(const MaterialPassPtr& pass) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setMaterialPass(pass);
+	_pipelineManager->getRenderPipeline()->setMaterialPass(pass);
 }
 
 void
 RenderSystem::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setVertexBuffer(i, vbo, offset);
+	_pipelineManager->getRenderPipeline()->setVertexBuffer(i, vbo, offset);
 }
 
 void
 RenderSystem::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setIndexBuffer(ibo, offset, indexType);
+	_pipelineManager->getRenderPipeline()->setIndexBuffer(ibo, offset, indexType);
 }
 
 void
 RenderSystem::drawCone(const MaterialTech& tech) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawCone(tech);
+	_pipelineManager->getRenderPipeline()->drawCone(tech);
 }
 
 void
 RenderSystem::drawSphere(const MaterialTech& tech) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawSphere(tech);
+	_pipelineManager->getRenderPipeline()->drawSphere(tech);
 }
 
 void
 RenderSystem::drawScreenQuad(const MaterialTech& tech) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawScreenQuad(tech);
+	_pipelineManager->getRenderPipeline()->drawScreenQuad(tech);
 }
 
 void
 RenderSystem::draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->draw(numVertices, numInstances, startVertice, startInstances);
+	_pipelineManager->getRenderPipeline()->draw(numVertices, numInstances, startVertice, startInstances);
 }
 
 void
 RenderSystem::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
+	_pipelineManager->getRenderPipeline()->drawIndexed(numIndices, numInstances, startIndice, startVertice, startInstances);
 }
 
 void
 RenderSystem::drawLayer(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawLayer(numVertices, numInstances, startVertice, startInstances, layer);
+	_pipelineManager->getRenderPipeline()->drawLayer(numVertices, numInstances, startVertice, startInstances, layer);
 }
 
 void
 RenderSystem::drawIndexedLayer(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances, std::uint32_t layer) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawIndexedLayer(numIndices, numInstances, startIndice, startVertice, startInstances, layer);
+	_pipelineManager->getRenderPipeline()->drawIndexedLayer(numIndices, numInstances, startIndice, startVertice, startInstances, layer);
 }
 
 bool
 RenderSystem::isTextureSupport(GraphicsFormat format) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->isTextureSupport(format);
+	return _pipelineManager->getRenderPipeline()->isTextureSupport(format);
 }
 
 bool
 RenderSystem::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->isTextureDimSupport(dimension);
+	return _pipelineManager->getRenderPipeline()->isTextureDimSupport(dimension);
 }
 
 bool
 RenderSystem::isVertexSupport(GraphicsFormat format) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->isVertexSupport(format);
+	return _pipelineManager->getRenderPipeline()->isVertexSupport(format);
 }
 
 bool
 RenderSystem::isShaderSupport(GraphicsShaderStageFlagBits stage) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->isShaderSupport(stage);
+	return _pipelineManager->getRenderPipeline()->isShaderSupport(stage);
 }
 
 GraphicsTexturePtr
 RenderSystem::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createTexture(desc);
+	return _pipelineManager->getRenderPipelineDevice()->createTexture(desc);
 }
 
 GraphicsTexturePtr
 RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format, GraphicsSamplerFilter filter, GraphicsSamplerWrap wrap) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createTexture(w, h, dim, format, filter, wrap);
+	return _pipelineManager->getRenderPipelineDevice()->createTexture(w, h, dim, format, filter, wrap);
 }
 
 MaterialPtr
 RenderSystem::createMaterial(const std::string& name) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createMaterial(name);
+	return _pipelineManager->getRenderPipelineDevice()->createMaterial(name);
 }
 
 GraphicsFramebufferPtr
 RenderSystem::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createFramebuffer(desc);
+	return _pipelineManager->getRenderPipelineDevice()->createFramebuffer(desc);
 }
 
 GraphicsFramebufferLayoutPtr
 RenderSystem::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createFramebufferLayout(desc);
+	return _pipelineManager->getRenderPipelineDevice()->createFramebufferLayout(desc);
 }
 
 GraphicsPipelinePtr
 RenderSystem::createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createGraphicsPipeline(desc);
+	return _pipelineManager->getRenderPipelineDevice()->createGraphicsPipeline(desc);
 }
 
 GraphicsDataPtr
 RenderSystem::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createGraphicsData(desc);
+	return _pipelineManager->getRenderPipelineDevice()->createGraphicsData(desc);
 }
 
 GraphicsInputLayoutPtr
 RenderSystem::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createInputLayout(desc);
+	return _pipelineManager->getRenderPipelineDevice()->createInputLayout(desc);
 }
 
 void

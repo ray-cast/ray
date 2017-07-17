@@ -113,6 +113,7 @@ public:
 	virtual void onMoveAfter() noexcept;
 
 	virtual void onRenderBefore(const Camera& camera) noexcept;
+	virtual void onRenderAfter(const Camera& camera) noexcept;
 
 private:
 	Camera(const Camera&) noexcept = delete;

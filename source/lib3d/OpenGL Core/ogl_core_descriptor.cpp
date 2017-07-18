@@ -376,7 +376,7 @@ OGLCoreDescriptorSet::getGraphicsDescriptorSetDesc() const noexcept
 }
 
 void
-OGLCoreDescriptorSet::setDevice(GraphicsDevicePtr device) noexcept
+OGLCoreDescriptorSet::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

@@ -442,7 +442,7 @@ VulkanCommandList::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noex
 }
 
 void
-VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first, std::uint32_t count) noexcept
+VulkanCommandList::setVertexBuffers(const GraphicsDataPtr data[], std::uint32_t first, std::uint32_t count) noexcept
 {
 	assert(data);
 
@@ -456,7 +456,7 @@ VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first,
 }
 
 void
-VulkanCommandList::setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+VulkanCommandList::setIndexBuffer(const GraphicsDataPtr& data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);
 

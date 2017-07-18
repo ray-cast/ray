@@ -58,7 +58,7 @@ public:
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	void setDevice(GraphicsDevicePtr device) noexcept;
+	void setDevice(const GraphicsDevicePtr& device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
 
 	void setSwapInterval(GraphicsSwapInterval interval) noexcept;

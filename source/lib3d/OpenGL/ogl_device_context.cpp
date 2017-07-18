@@ -1030,7 +1030,7 @@ OGLDeviceContext::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum se
 }
 
 void
-OGLDeviceContext::setDevice(GraphicsDevicePtr device) noexcept
+OGLDeviceContext::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

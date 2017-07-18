@@ -169,12 +169,12 @@ VulkanDeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexc
 }
 
 void
-VulkanDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
+VulkanDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
 {
 }
 
 void
-VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
+VulkanDeviceContext::setFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexcept
 {
 	if (_framebuffer != framebuffer)
 	{
@@ -203,6 +203,11 @@ VulkanDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags,
 }
 
 void
+VulkanDeviceContext::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+{
+}
+
+void
 VulkanDeviceContext::discardFramebuffer(std::uint32_t i) noexcept
 {
 }
@@ -214,7 +219,7 @@ VulkanDeviceContext::getFramebuffer() const noexcept
 }
 
 void
-VulkanDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
+VulkanDeviceContext::setRenderPipeline(const GraphicsPipelinePtr& pipeline) noexcept
 {
 	assert(pipeline);
 	assert(pipeline->isInstanceOf<VulkanPipeline>());
@@ -229,7 +234,7 @@ VulkanDeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-VulkanDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
+VulkanDeviceContext::setDescriptorSet(const GraphicsDescriptorSetPtr& descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<VulkanDescriptorSet>());
@@ -245,7 +250,7 @@ VulkanDeviceContext::getDescriptorSet() const noexcept
 }
 
 void
-VulkanDeviceContext::setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept
+VulkanDeviceContext::setVertexBufferData(std::uint32_t i, const GraphicsDataPtr& data, std::intptr_t offset) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<VulkanGraphicsData>());
@@ -262,7 +267,7 @@ VulkanDeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 }
 
 void
-VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+VulkanDeviceContext::setIndexBufferData(const GraphicsDataPtr& data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<VulkanGraphicsData>());
@@ -292,13 +297,13 @@ VulkanDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInst
 }
 
 void
-VulkanDeviceContext::drawIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+VulkanDeviceContext::drawIndirect(const GraphicsDataPtr& data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
 {
 	_commandList->drawIndirect(data, offset, drawCount, stride);
 }
 
 void
-VulkanDeviceContext::drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+VulkanDeviceContext::drawIndexedIndirect(const GraphicsDataPtr& data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
 {
 	_commandList->drawIndexedIndirect(data, offset, drawCount, stride);
 }

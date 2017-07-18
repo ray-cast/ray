@@ -68,7 +68,7 @@ OGLInputLayout::getGraphicsInputLayoutDesc() const noexcept
 }
 
 void
-OGLInputLayout::setDevice(GraphicsDevicePtr device) noexcept
+OGLInputLayout::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

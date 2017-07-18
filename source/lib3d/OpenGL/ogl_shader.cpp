@@ -482,7 +482,7 @@ OGLShader::getGraphicsShaderDesc() const noexcept
 }
 
 void
-OGLShader::setDevice(GraphicsDevicePtr device) noexcept
+OGLShader::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }
@@ -942,7 +942,7 @@ OGLProgram::getGraphicsProgramDesc() const noexcept
 }
 
 void
-OGLProgram::setDevice(GraphicsDevicePtr device) noexcept
+OGLProgram::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

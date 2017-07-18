@@ -69,30 +69,31 @@ public:
 	void setStencilWriteMask(GraphicsStencilFaceFlags face, std::uint32_t mask) noexcept;
 	std::uint32_t getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept;
 
-	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
+	void setRenderPipeline(const GraphicsPipelinePtr& pipeline) noexcept;
 	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 
-	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
+	void setDescriptorSet(const GraphicsDescriptorSetPtr& descriptorSet) noexcept;
 	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
 
-	void setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept;
+	void setVertexBufferData(std::uint32_t i, const GraphicsDataPtr& data, std::intptr_t offset) noexcept;
 	GraphicsDataPtr getVertexBufferData(std::uint32_t i) const noexcept;
 
-	void setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
+	void setIndexBufferData(const GraphicsDataPtr& data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
-	void generateMipmap(GraphicsTexturePtr texture) noexcept;
+	void generateMipmap(const GraphicsTexturePtr& texture) noexcept;
 
-	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void setFramebuffer(const GraphicsFramebufferPtr& target) noexcept;
 	void setFramebufferClear(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
+	void readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept;
 	void discardFramebuffer(std::uint32_t i) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
 	void drawIndexed(std::uint32_t numIndices, std::uint32_t numInstances, std::uint32_t startIndice, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;
-	void drawIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept;
-	void drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept;
+	void drawIndirect(const GraphicsDataPtr& data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept;
+	void drawIndexedIndirect(const GraphicsDataPtr& data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept;
 
 	void present() noexcept;
 

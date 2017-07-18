@@ -104,7 +104,7 @@ OGLDeviceProperty::close() noexcept
 }
 
 void
-OGLDeviceProperty::setDevice(GraphicsDevicePtr device) noexcept
+OGLDeviceProperty::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

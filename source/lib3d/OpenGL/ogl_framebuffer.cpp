@@ -71,7 +71,7 @@ OGLFramebufferLayout::getGraphicsFramebufferLayoutDesc() const noexcept
 }
 
 void
-OGLFramebufferLayout::setDevice(GraphicsDevicePtr device) noexcept
+OGLFramebufferLayout::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }
@@ -250,7 +250,7 @@ OGLFramebuffer::getGraphicsFramebufferDesc() const noexcept
 }
 
 void
-OGLFramebuffer::setDevice(GraphicsDevicePtr device) noexcept
+OGLFramebuffer::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

@@ -200,7 +200,7 @@ WGLSwapchain::getSwapInterval() const noexcept
 }
 
 void
-WGLSwapchain::setDevice(GraphicsDevicePtr device) noexcept
+WGLSwapchain::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

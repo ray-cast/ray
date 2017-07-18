@@ -85,7 +85,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 	VkFormatProperties props;
 	vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), format, &props);
-	
+
 	if (!_swapchainImage)
 	{
 		VkImageCreateInfo image;
@@ -96,7 +96,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.extent.width = textureDesc.getWidth();
 		image.extent.height = textureDesc.getHeight();
 		image.extent.depth = textureDesc.getDepth();
-		image.mipLevels = textureDesc.getMipLevel();
+		image.mipLevels = textureDesc.getMipNums();
 		image.arrayLayers = textureDesc.getLayerNums();
 		image.samples = VulkanTypes::asTextureSample(textureDesc.getSamplerAnis());
 		image.tiling = VulkanTypes::asTextureTiling(textureDesc.getTexTiling());
@@ -172,7 +172,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	view.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 	view.subresourceRange.aspectMask = aspectMask;
 	view.subresourceRange.baseMipLevel = textureDesc.getMipBase();
-	view.subresourceRange.levelCount = textureDesc.getMipLevel();
+	view.subresourceRange.levelCount = textureDesc.getMipNums();
 	view.subresourceRange.baseArrayLayer = textureDesc.getLayerBase();
 	view.subresourceRange.layerCount = textureDesc.getLayerNums();
 	view.viewType = viewType;

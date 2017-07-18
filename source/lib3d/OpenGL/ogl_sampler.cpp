@@ -173,7 +173,7 @@ OGLSampler::getGraphicsSamplerDesc() const noexcept
 }
 
 void
-OGLSampler::setDevice(GraphicsDevicePtr device) noexcept
+OGLSampler::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

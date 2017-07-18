@@ -187,7 +187,7 @@ OGLPipeline::bindVertexBuffers(OGLVertexBuffers& vbos, bool forceUpdate) noexcep
 }
 
 void
-OGLPipeline::setDevice(GraphicsDevicePtr device) noexcept
+OGLPipeline::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

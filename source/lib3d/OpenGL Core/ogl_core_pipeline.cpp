@@ -208,7 +208,7 @@ OGLCorePipeline::bindVertexBuffers(OGLCoreVertexBuffers& vbos, bool forceUpdate)
 }
 
 void
-OGLCorePipeline::setDevice(GraphicsDevicePtr device) noexcept
+OGLCorePipeline::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

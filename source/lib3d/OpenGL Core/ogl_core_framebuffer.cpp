@@ -207,7 +207,7 @@ OGLCoreFramebuffer::getGraphicsFramebufferDesc() const noexcept
 }
 
 void
-OGLCoreFramebuffer::setDevice(GraphicsDevicePtr device) noexcept
+OGLCoreFramebuffer::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

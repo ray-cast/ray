@@ -168,7 +168,7 @@ private:
 
 private:
 	friend class OGLDevice;
-	void setDevice(GraphicsDevicePtr device) noexcept;
+	void setDevice(const GraphicsDevicePtr& device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
@@ -212,7 +212,7 @@ private:
 
 private:
 	friend class OGLDevice;
-	void setDevice(GraphicsDevicePtr device) noexcept;
+	void setDevice(const GraphicsDevicePtr& device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:

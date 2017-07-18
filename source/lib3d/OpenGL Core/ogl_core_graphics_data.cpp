@@ -204,7 +204,7 @@ OGLCoreGraphicsData::getGraphicsDataDesc() const noexcept
 }
 
 void
-OGLCoreGraphicsData::setDevice(GraphicsDevicePtr device) noexcept
+OGLCoreGraphicsData::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

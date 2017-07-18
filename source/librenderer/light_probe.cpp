@@ -39,6 +39,7 @@
 _NAME_BEGIN
 
 LightProbe::LightProbe() noexcept
+	: _sh(0.0f)
 {
 }
 

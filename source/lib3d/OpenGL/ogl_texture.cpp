@@ -376,7 +376,7 @@ OGLTexture::getGraphicsTextureDesc() const noexcept
 }
 
 void
-OGLTexture::setDevice(GraphicsDevicePtr device) noexcept
+OGLTexture::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

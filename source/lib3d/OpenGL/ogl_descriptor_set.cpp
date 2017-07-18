@@ -660,7 +660,7 @@ OGLDescriptorPool::getGraphicsDescriptorPoolDesc() const noexcept
 }
 
 void
-OGLDescriptorPool::setDevice(GraphicsDevicePtr device) noexcept
+OGLDescriptorPool::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }
@@ -699,7 +699,7 @@ OGLDescriptorSetLayout::getGraphicsDescriptorSetLayoutDesc() const noexcept
 }
 
 void
-OGLDescriptorSetLayout::setDevice(GraphicsDevicePtr device) noexcept
+OGLDescriptorSetLayout::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }
@@ -1069,7 +1069,7 @@ OGLDescriptorSet::getGraphicsDescriptorSetDesc() const noexcept
 }
 
 void
-OGLDescriptorSet::setDevice(GraphicsDevicePtr device) noexcept
+OGLDescriptorSet::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

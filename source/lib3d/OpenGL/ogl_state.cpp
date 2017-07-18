@@ -423,7 +423,7 @@ OGLGraphicsState::getGraphicsStateDesc() const noexcept
 }
 
 void
-OGLGraphicsState::setDevice(GraphicsDevicePtr device) noexcept
+OGLGraphicsState::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

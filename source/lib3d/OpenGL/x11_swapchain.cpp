@@ -357,7 +357,7 @@ XGLSwapchain::getGraphicsSwapchainDesc() const noexcept
 }
 
 void
-XGLSwapchain::setDevice(GraphicsDevicePtr device) noexcept
+XGLSwapchain::setDevice(const GraphicsDevicePtr& device) noexcept
 {
 	_device = device;
 }

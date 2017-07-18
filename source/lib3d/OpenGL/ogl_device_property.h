@@ -50,7 +50,7 @@ public:
 	bool setup() noexcept;
 	void close() noexcept;
 
-	void setDevice(GraphicsDevicePtr device) noexcept;
+	void setDevice(const GraphicsDevicePtr& device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
 
 	const GraphicsDeviceProperties& getGraphicsDeviceProperties() const noexcept;

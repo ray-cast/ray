@@ -48,6 +48,9 @@ public:
 	LightProbe() noexcept;
 	~LightProbe() noexcept;
 
+	void setLightRange(float range) noexcept;
+	float getLightRange() const noexcept;
+
 	void setSH9(const SH9& sh) noexcept;
 	const SH9& getSH9() const noexcept;
 
@@ -77,6 +80,8 @@ private:
 	virtual void onRenderObjectPost(const Camera& camera) noexcept;
 
 private:
+	float _lightRange;
+
 	SH9 _sh;
 
 	CameraPtr _camera;

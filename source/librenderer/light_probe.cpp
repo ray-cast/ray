@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/light_probe.h>
-#include <ray/lightprobe_render_framebuffer.h>
+#include <ray/light_probe_render_framebuffer.h>
 #include <ray/render_object_manager.h>
 #include <ray/camera.h>
 
@@ -43,11 +43,25 @@ _NAME_BEGIN
 
 LightProbe::LightProbe() noexcept
 	: _sh(0.0f)
+	, _lightRange(5.0f)
 {
 }
 
 LightProbe::~LightProbe() noexcept
 {
+}
+
+void
+LightProbe::setLightRange(float range) noexcept
+{
+	_lightRange = range;
+	this->_updateBoundingBox();
+}
+
+float
+LightProbe::getLightRange() const noexcept
+{
+	return _lightRange;
 }
 
 void
@@ -99,8 +113,8 @@ LightProbe::_updateBoundingBox() noexcept
 
 	if (!_camera)
 	{
-		Vector3 min(-5, -5, -5);
-		Vector3 max(5, 5, 5);
+		Vector3 min(-_lightRange);
+		Vector3 max(_lightRange);
 
 		BoundingBox bound;
 		bound.encapsulate(min);

@@ -45,14 +45,13 @@
 #include "deferred_lighting_pipeline.h"
 #include "forward_render_pipeline.h"
 #include "shadow_render_pipeline.h"
-#include "lightprobe_render_pipeline.h"
+#include "light_probe_render_pipeline.h"
 
 #include "atmospheric.h"
 #include "ssdo.h"
 #include "ssss.h"
 #include "ssr.h"
 #include "dof.h"
-#include "fog.h"
 #include "postprocess_hdr.h"
 #include "fxaa.h"
 #include "light_shaft.h"
@@ -202,20 +201,6 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		{
 			this->removePostProcess(_SSDO);
 			_SSDO.reset();
-		}
-	}
-
-	if (_setting.enableFog != setting.enableFog)
-	{
-		if (setting.enableFog)
-		{
-			_fog = std::make_shared<Fog>();
-			this->addPostProcess(_fog);
-		}
-		else if (_fog)
-		{
-			this->removePostProcess(_fog);
-			_fog.reset();
 		}
 	}
 

@@ -74,7 +74,6 @@ RenderSetting::RenderSetting() noexcept
 	, enableAtmospheric(false)
 	, enableSSR(false)
 	, enableSSSS(false)
-	, enableFog(false)
 	, enableLightShaft(false)
 	, enableDOF(false)
 	, enableMotionBlur(false)

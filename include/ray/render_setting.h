@@ -62,7 +62,6 @@ struct EXPORT RenderSetting
 	bool enableAtmospheric;
 	bool enableSSR;
 	bool enableSSSS;
-	bool enableFog;
 	bool enableDOF;
 	bool enableMotionBlur;
 	bool enableHDR;

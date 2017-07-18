@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/lightprobe_render_framebuffer.h>
+#include <ray/light_probe_render_framebuffer.h>
 #include <ray/render_system.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_framebuffer.h>

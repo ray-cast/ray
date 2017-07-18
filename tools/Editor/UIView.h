@@ -110,6 +110,8 @@ private:
 	void startLightMass() noexcept;
 	void startModelPicker(float x, float y) noexcept;
 
+	void createLightProbe() noexcept;
+
 	void saveLightMass() noexcept;
 
 	void switchLangPackage(UILang::Lang type) noexcept;

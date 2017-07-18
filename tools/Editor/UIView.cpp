@@ -363,17 +363,7 @@ GuiViewComponent::showMainMenu() noexcept
 			ray::Gui::endMenu();
 		}
 
-		if (ray::Gui::beginMenu(_langs[UILang::Window].c_str()))
-		{
-			ray::Gui::menuItem(_langs[UILang::Assert].c_str(), 0, &_isShowAssertWindow);
-			ray::Gui::menuItem(_langs[UILang::Camera].c_str(), 0, &_isShowCameraWindow);
-			ray::Gui::menuItem(_langs[UILang::Inspector].c_str(), 0, &_isShowInspectorWindow);
-			ray::Gui::menuItem(_langs[UILang::LightMass].c_str(), 0, &_isShowLightMassWindow);
-			ray::Gui::menuItem(_langs[UILang::StyleEditor].c_str(), 0, &_isShowStyleEditor);
-			ray::Gui::endMenu();
-		}
-
-		if (ray::Gui::beginMenu(_langs[UILang::Setting].c_str()))
+		if (ray::Gui::beginMenu(_langs[UILang::Edit].c_str()))
 		{
 			if (ray::Gui::beginMenu(_langs[UILang::Language].c_str()))
 			{
@@ -383,6 +373,24 @@ GuiViewComponent::showMainMenu() noexcept
 				ray::Gui::endMenu();
 			}
 
+			ray::Gui::separator();
+			ray::Gui::menuItem(_langs[UILang::StyleEditor].c_str(), 0, &_isShowStyleEditor);
+
+			ray::Gui::endMenu();
+		}
+
+		if (ray::Gui::beginMenu(_langs[UILang::GameObject].c_str()))
+		{
+			if (ray::Gui::menuItem(_langs[UILang::CreateProbe].c_str())) { this->createLightProbe(); }
+			ray::Gui::endMenu();
+		}
+
+		if (ray::Gui::beginMenu(_langs[UILang::Window].c_str()))
+		{
+			ray::Gui::menuItem(_langs[UILang::Assert].c_str(), 0, &_isShowAssertWindow);
+			ray::Gui::menuItem(_langs[UILang::Camera].c_str(), 0, &_isShowCameraWindow);
+			ray::Gui::menuItem(_langs[UILang::Inspector].c_str(), 0, &_isShowInspectorWindow);
+			ray::Gui::menuItem(_langs[UILang::LightMass].c_str(), 0, &_isShowLightMassWindow);
 			ray::Gui::endMenu();
 		}
 
@@ -2527,6 +2535,11 @@ GuiViewComponent::startModelPicker(float x, float y) noexcept
 			_selectedSubset = std::numeric_limits<std::size_t>::max();
 		}
 	}
+}
+
+void
+GuiViewComponent::createLightProbe() noexcept
+{
 }
 
 void

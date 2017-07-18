@@ -54,91 +54,81 @@ LightProbeRenderFramebuffer::~LightProbeRenderFramebuffer() noexcept
 bool
 LightProbeRenderFramebuffer::setup()
 {
-	std::uint32_t shadowMapSize = 0;
+	std::uint32_t probeMapSize = 32;
 
-	ShadowQuality shadowQuality = RenderSystem::instance()->getRenderSetting().shadowQuality;
-	if (shadowQuality == ShadowQuality::ShadowQualityLow)
-		shadowMapSize = LightShadowSize::LightShadowSizeLow;
-	else if (shadowQuality == ShadowQuality::ShadowQualityMedium)
-		shadowMapSize = LightShadowSize::LightShadowSizeMedium;
-	else if (shadowQuality == ShadowQuality::ShadowQualityHigh)
-		shadowMapSize = LightShadowSize::LightShadowSizeHigh;
-	else if (shadowQuality == ShadowQuality::ShadowQualityVeryHigh)
-		shadowMapSize = LightShadowSize::LightShadowSizeVeryHigh;
-	else
-		return false;
-
-	GraphicsFormat shadowDepthFormat;
+	GraphicsFormat probeDepthFormat;
 	if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatD32_SFLOAT))
-		shadowDepthFormat = GraphicsFormat::GraphicsFormatD32_SFLOAT;
+		probeDepthFormat = GraphicsFormat::GraphicsFormatD32_SFLOAT;
 	else if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatX8_D24UNormPack32))
-		shadowDepthFormat = GraphicsFormat::GraphicsFormatX8_D24UNormPack32;
+		probeDepthFormat = GraphicsFormat::GraphicsFormatX8_D24UNormPack32;
 	else if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatD16UNorm))
-		shadowDepthFormat = GraphicsFormat::GraphicsFormatD16UNorm;
+		probeDepthFormat = GraphicsFormat::GraphicsFormatD16UNorm;
 	else
 		return false;
 
-	GraphicsFormat shadowColorFormat;
-	GraphicsFormat shadowNormalFormat;
+	GraphicsFormat probeColorFormat;
+	GraphicsFormat probeNormalFormat;
 
-	if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm))
-		shadowColorFormat = shadowNormalFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+	if (RenderSystem::instance()->isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8UNorm))
+		probeColorFormat = probeNormalFormat = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
 	else
 		return false;
 
-	GraphicsTextureDesc shadowDepthDesc;
-	shadowDepthDesc.setWidth(shadowMapSize);
-	shadowDepthDesc.setHeight(shadowMapSize);
-	shadowDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	shadowDepthDesc.setTexFormat(shadowDepthFormat);
-	shadowDepthDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	shadowDepthDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_shadowDepthMap = RenderSystem::instance()->createTexture(shadowDepthDesc);
-	if (!_shadowDepthMap)
+	GraphicsTextureDesc probeDepthDesc;
+	probeDepthDesc.setWidth(probeMapSize);
+	probeDepthDesc.setHeight(probeMapSize);
+	probeDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	probeDepthDesc.setTexFormat(probeDepthFormat);
+	probeDepthDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	probeDepthDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_probeDepthMap = RenderSystem::instance()->createTexture(probeDepthDesc);
+	if (!_probeDepthMap)
 		return false;
 
-	GraphicsTextureDesc shadowColorDesc;
-	shadowColorDesc.setWidth(shadowMapSize);
-	shadowColorDesc.setHeight(shadowMapSize);
-	shadowColorDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	shadowColorDesc.setTexFormat(shadowColorFormat);
-	shadowColorDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	shadowColorDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_shadowColorMap = RenderSystem::instance()->createTexture(shadowColorDesc);
-	if (!_shadowColorMap)
+	GraphicsTextureDesc probeColorDesc;
+	probeColorDesc.setWidth(probeMapSize);
+	probeColorDesc.setHeight(probeMapSize);
+	probeColorDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	probeColorDesc.setTexFormat(probeColorFormat);
+	probeColorDesc.setLayerNums(6);
+	probeColorDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	probeColorDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_probeColorMap = RenderSystem::instance()->createTexture(probeColorDesc);
+	if (!_probeColorMap)
 		return false;
 
-	GraphicsTextureDesc shadowNormalDesc;
-	shadowNormalDesc.setWidth(shadowMapSize);
-	shadowNormalDesc.setHeight(shadowMapSize);
-	shadowNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-	shadowNormalDesc.setTexFormat(shadowNormalFormat);
-	shadowNormalDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	shadowNormalDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-	_shadowNormalMap = RenderSystem::instance()->createTexture(shadowNormalDesc);
-	if (!_shadowNormalMap)
+	GraphicsTextureDesc probeNormalDesc;
+	probeNormalDesc.setWidth(probeMapSize);
+	probeNormalDesc.setHeight(probeMapSize);
+	probeNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	probeNormalDesc.setTexFormat(probeNormalFormat);
+	probeNormalDesc.setLayerNums(6);
+	probeNormalDesc.setSamplerMinFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	probeNormalDesc.setSamplerMagFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_probeNormalMap = RenderSystem::instance()->createTexture(probeNormalDesc);
+	if (!_probeNormalMap)
 		return false;
 
 	GraphicsFramebufferLayoutDesc shaodwRSMMapLayoutDesc;
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, shadowColorFormat));
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, shadowNormalFormat));
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, shadowDepthFormat));
-	_shadowRSMViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwRSMMapLayoutDesc);
-	if (!_shadowRSMViewLayout)
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, probeColorFormat));
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, probeNormalFormat));
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, probeDepthFormat));
+	_probeRSMViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwRSMMapLayoutDesc);
+	if (!_probeRSMViewLayout)
 		return false;
 
-	GraphicsFramebufferDesc shadowRSMViewDesc;
-	shadowRSMViewDesc.setWidth(shadowMapSize);
-	shadowRSMViewDesc.setHeight(shadowMapSize);
-	shadowRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowColorMap, 0, 0));
-	shadowRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_shadowNormalMap, 0, 0));
-	shadowRSMViewDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_shadowDepthMap, 0, 0));
-	shadowRSMViewDesc.setGraphicsFramebufferLayout(_shadowRSMViewLayout);
-	_shadowRSMView = RenderSystem::instance()->createFramebuffer(shadowRSMViewDesc);
-	if (!_shadowRSMView)
+	GraphicsFramebufferDesc probeRSMViewDesc;
+	probeRSMViewDesc.setWidth(probeMapSize);
+	probeRSMViewDesc.setHeight(probeMapSize);
+	probeRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_probeColorMap, 0, 0));
+	probeRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_probeNormalMap, 0, 0));
+	probeRSMViewDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_probeDepthMap, 0, 0));
+	probeRSMViewDesc.setGraphicsFramebufferLayout(_probeRSMViewLayout);
+	_probeRSMView = RenderSystem::instance()->createFramebuffer(probeRSMViewDesc);
+	if (!_probeRSMView)
 		return false;
 
-	this->setFramebuffer(_shadowRSMView);
+	this->setFramebuffer(_probeRSMView);
 	return true;
 }
 

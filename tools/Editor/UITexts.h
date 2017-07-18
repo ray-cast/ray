@@ -45,6 +45,7 @@ public:
 	enum
 	{
 		File,
+		Edit,
 		Open,
 		Save,
 		SaveAs,
@@ -52,6 +53,7 @@ public:
 		ImportModel,
 		ExportModel,
 		Exit,
+		GameObject,
 		Window,
 		Setting,
 		Language,
@@ -125,7 +127,8 @@ public:
 		Transform,
 		Position,
 		Rotation,
-		Scaling
+		Scaling,
+		CreateProbe
 	};
 
 	enum class Lang

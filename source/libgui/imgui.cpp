@@ -1513,7 +1513,12 @@ IMGUI::beginPopup(const char* str_id) noexcept
 bool
 IMGUI::beginPopupModal(const char* name, bool* isOpened, GuiWindowFlags extraFlags) noexcept
 {
-	return ImGui::BeginPopupModal(name, isOpened, extraFlags);
+	if (!ImGui::BeginPopupModal(name, isOpened, extraFlags))
+	{
+		return *isOpened = false;
+	}
+
+	return true;
 }
 
 bool

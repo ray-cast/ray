@@ -50,23 +50,23 @@ public:
 
 	bool setup();
 
-	const GraphicsTexturePtr& getDepthMap() const noexcept { return _shadowDepthMap; }
-	const GraphicsTexturePtr& getColorMap() const noexcept { return _shadowColorMap; }
-	const GraphicsTexturePtr& getNormalMap() const noexcept { return _shadowNormalMap; }
+	const GraphicsTexturePtr& getDepthMap() const noexcept { return _probeDepthMap; }
+	const GraphicsTexturePtr& getColorMap() const noexcept { return _probeColorMap; }
+	const GraphicsTexturePtr& getNormalMap() const noexcept { return _probeNormalMap; }
 
-	const GraphicsFramebufferPtr& getRSMView() const noexcept { return _shadowRSMView; }
+	const GraphicsFramebufferPtr& getRSMView() const noexcept { return _probeRSMView; }
 
 private:
 	LightProbeRenderFramebuffer(const LightProbeRenderFramebuffer&) noexcept = delete;
 	LightProbeRenderFramebuffer& operator=(const LightProbeRenderFramebuffer&) noexcept = delete;
 
 private:
-	GraphicsTexturePtr _shadowDepthMap;
-	GraphicsTexturePtr _shadowColorMap;
-	GraphicsTexturePtr _shadowNormalMap;
+	GraphicsTexturePtr _probeDepthMap;
+	GraphicsTexturePtr _probeColorMap;
+	GraphicsTexturePtr _probeNormalMap;
 
-	GraphicsFramebufferPtr _shadowRSMView;
-	GraphicsFramebufferLayoutPtr _shadowRSMViewLayout;
+	GraphicsFramebufferPtr _probeRSMView;
+	GraphicsFramebufferLayoutPtr _probeRSMViewLayout;
 };
 
 _NAME_END

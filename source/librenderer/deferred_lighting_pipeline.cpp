@@ -102,7 +102,7 @@ void
 DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
 {
 	auto framebuffers = camera->getRenderPipelineFramebuffer()->downcast<DeferredLightingFramebuffers>();
-	auto& dataManager = _pipeline->getCamera()->getRenderDataManager();
+	auto& dataManager = camera->getRenderDataManager();
 	if (!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBack).empty() ||
 		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentBatchBack).empty() ||
 		!dataManager->getRenderData(RenderQueue::RenderQueueTransparentSpecificBack).empty() ||
@@ -1194,14 +1194,7 @@ DeferredLightingPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 	_texMRT2->uniformTexture(framebuffers->getDeferredGbuffer3Map());
 	_texMRT3->uniformTexture(framebuffers->getDeferredGbuffer4Map());
 
-	std::uint32_t width, height;
-	_pipeline->getWindowResolution(width, height);
-
 	_pipeline->setCamera(camera);
-	_pipeline->setViewport(0, Viewport(0, 0, width, height));
-	_pipeline->setViewport(1, Viewport(0, 0, width, height));
-	_pipeline->setScissor(0, Scissor(0, 0, width, height));
-	_pipeline->setScissor(1, Scissor(0, 0, width, height));
 
 	this->render3DEnvMap(camera);
 }

@@ -72,7 +72,7 @@ LightProbeRenderPipeline::renderLightProbes(RenderPipeline& pipeline) noexcept
 {
 	assert(pipeline.getCamera());
 
-	auto& v = pipeline.getCamera()->getPixelViewportDPI();
+	auto v = pipeline.getCamera()->getPixelViewport();
 
 	pipeline.setFramebuffer(pipeline.getCamera()->getRenderPipelineFramebuffer()->getFramebuffer());
 	pipeline.setViewport(0, Viewport(v.x, v.y, v.z, v.w));

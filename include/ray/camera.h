@@ -61,7 +61,6 @@ public:
 	void setViewport(const float4& viewport) noexcept;
 	const float4& getViewport() const noexcept;
 	float4 getPixelViewport() const noexcept;
-	float4 getPixelViewportDPI() const noexcept;
 
 	void setOrtho(const float4& ortho) noexcept;
 	const float4& getOrtho() const noexcept;

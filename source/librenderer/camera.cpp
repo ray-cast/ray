@@ -37,8 +37,10 @@
 #include <ray/camera.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_texture.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/render_system.h>
 #include <ray/render_object_manager.h>
+#include <ray/render_pipeline_framebuffer.h>
 
 _NAME_BEGIN
 
@@ -342,29 +344,16 @@ float4
 Camera::getPixelViewport() const noexcept
 {
 	std::uint32_t width, height;
-	if (_swapchain)
+
+	if (_pipelineFramebuffer->getFramebuffer())
 	{
-		width = _swapchain->getGraphicsSwapchainDesc().getWidth();
-		height = _swapchain->getGraphicsSwapchainDesc().getHeight();
+		width = _pipelineFramebuffer->getFramebuffer()->getGraphicsFramebufferDesc().getWidth();
+		height = _pipelineFramebuffer->getFramebuffer()->getGraphicsFramebufferDesc().getHeight();
 	}
 	else
 	{
 		RenderSystem::instance()->getFramebufferSize(width, height);
 	}
-
-	float4 result;
-	result.x = _viewport.x * width;
-	result.y = _viewport.y * height;
-	result.z = _viewport.z * width;
-	result.w = _viewport.w * height;
-	return result;
-}
-
-float4
-Camera::getPixelViewportDPI() const noexcept
-{
-	std::uint32_t width, height;
-	RenderSystem::instance()->getFramebufferSize(width, height);
 
 	float4 result;
 	result.x = _viewport.x * width;
@@ -463,7 +452,16 @@ Camera::_updatePerspective() const noexcept
 	if (_cameraOrder != CameraOrder::CameraOrderShadow)
 	{
 		std::uint32_t width, height;
-		RenderSystem::instance()->getFramebufferSize(width, height);
+
+		if (_pipelineFramebuffer->getFramebuffer())
+		{
+			width = _pipelineFramebuffer->getFramebuffer()->getGraphicsFramebufferDesc().getWidth();
+			height = _pipelineFramebuffer->getFramebuffer()->getGraphicsFramebufferDesc().getHeight();
+		}
+		else
+		{
+			RenderSystem::instance()->getFramebufferSize(width, height);
+		}
 
 		ratio = (float)width / height;
 	}

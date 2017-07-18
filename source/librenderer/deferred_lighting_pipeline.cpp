@@ -1206,25 +1206,21 @@ DeferredLightingPipeline::onRenderAfter() noexcept
 	if (!camera)
 		return;
 
+	float4 viewport = camera->getPixelViewport();
+
 	auto flags = camera->getCameraRenderFlags();
 	if (flags & CameraRenderFlagBits::CameraRenderTextureBit)
 	{
 		auto framebuffers = camera->getRenderPipelineFramebuffer()->downcast<DeferredLightingFramebuffers>();
 		if (framebuffers)
-		{
-			float4 viewport = camera->getPixelViewport();
 			this->copyRenderTexture(*_pipeline, framebuffers->getDeferredFinalShadingMap(), framebuffers->getFramebuffer());
-		}
 	}
 
 	if (flags & CameraRenderFlagBits::CameraRenderScreenBit)
 	{
 		auto framebuffers = camera->getRenderPipelineFramebuffer()->downcast<DeferredLightingFramebuffers>();
 		if (framebuffers)
-		{
-			float4 viewport = camera->getPixelViewportDPI();
 			this->copyRenderTexture(*_pipeline, framebuffers->getDeferredFinalShadingMap(), nullptr, viewport);
-		}
 	}
 }
 

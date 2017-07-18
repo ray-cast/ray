@@ -73,7 +73,7 @@ ForwardRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 	assert(camera);
 	assert(camera->getCameraOrder() == CameraOrder::CameraOrder2D);
 
-	auto& v = camera->getPixelViewportDPI();
+	auto v = camera->getPixelViewport();
 
 	_pipeline->setCamera(camera);
 	_pipeline->setFramebuffer(_pipeline->getCamera()->getRenderPipelineFramebuffer()->getFramebuffer());

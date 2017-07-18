@@ -79,9 +79,7 @@ LightProbe::setupProbeCamera() noexcept
 	_camera->setOwnerListener(this);
 	_camera->setCameraOrder(CameraOrder::CameraOrderShadow);
 	_camera->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
-	_camera->setAperture(90.0f);
-	_camera->setNear(0.1f);
-	_camera->setRatio(1.0f);
+	_camera->setCameraType(CameraType::CameraTypeCube);
 	_camera->setRenderPipelineFramebuffer(framebuffer);
 
 	return true;

@@ -118,8 +118,9 @@ enum class CameraType : std::uint8_t
 {
 	CameraTypeOrtho,
 	CameraTypePerspective,
+	CameraTypeCube,
 	CameraTypeBeginRange = CameraTypeOrtho,
-	CameraTypeEndRange = CameraTypePerspective,
+	CameraTypeEndRange = CameraTypeCube,
 	CameraTypeRangeSize = (CameraTypeEndRange - CameraTypeBeginRange + 1),
 };
 

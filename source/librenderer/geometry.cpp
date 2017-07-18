@@ -191,7 +191,10 @@ Geometry::onVisiableTest(const Camera& camera, const Frustum& fru) noexcept
 			return false;
 	}
 
-	return fru.contains(this->getBoundingBoxInWorld().aabb());
+	if (camera.getCameraType() == CameraType::CameraTypeCube)
+		return math::sqrDistance(camera.getTranslate(), this->getTranslate()) < (camera.getFar() * camera.getFar());
+	else
+		return fru.contains(this->getBoundingBoxInWorld().aabb());
 }
 
 void

@@ -91,6 +91,10 @@ public:
 
 	RenderObjectPtr clone() const noexcept;
 
+public:
+	void onGenShadowBefore(const Camera& camera) noexcept;
+	void onGenShadowAfter(const Camera& camera) noexcept;
+
 private:
 	bool setupShadowMap() noexcept;
 	bool setupReflectiveShadowMap() noexcept;

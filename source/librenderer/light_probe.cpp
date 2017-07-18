@@ -35,8 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/light_probe.h>
-#include <ray/render_object_manager.h>
 #include <ray/lightprobe_render_framebuffer.h>
+#include <ray/render_object_manager.h>
 #include <ray/camera.h>
 
 _NAME_BEGIN
@@ -158,6 +158,17 @@ void
 LightProbe::onAddRenderData(RenderDataManager& manager) noexcept
 {
 	manager.addRenderData(RenderQueue::RenderQueueLightProbes, this);
+}
+
+void
+LightProbe::onGenProbeBefore(const Camera& camera) noexcept
+{
+	if (_camera) this->setupProbeCamera();
+}
+
+void
+LightProbe::onGenProbeAfter(const Camera& camera) noexcept
+{
 }
 
 void

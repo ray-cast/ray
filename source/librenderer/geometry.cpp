@@ -39,6 +39,7 @@
 #include <ray/render_object_manager.h>
 #include <ray/material.h>
 #include <ray/graphics_data.h>
+#include <ray/camera.h>
 
 _NAME_BEGIN
 
@@ -179,6 +180,18 @@ GraphicsIndirectPtr
 Geometry::getGraphicsIndirect() noexcept
 {
 	return _renderable;
+}
+
+bool
+Geometry::onVisiableTest(const Camera& camera, const Frustum& fru) noexcept
+{
+	if (camera.getCameraOrder() == CameraOrder::CameraOrderShadow)
+	{
+		if (!this->getCastShadow())
+			return false;
+	}
+
+	return fru.contains(this->getBoundingBoxInWorld().aabb());
 }
 
 void

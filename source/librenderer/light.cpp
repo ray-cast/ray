@@ -444,6 +444,16 @@ Light::onAddRenderData(RenderDataManager& manager) noexcept
 }
 
 void
+Light::onGenShadowBefore(const Camera& camera) noexcept
+{
+}
+
+void
+Light::onGenShadowAfter(const Camera& camera) noexcept
+{
+}
+
+void
 Light::onRenderObjectPre(const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();

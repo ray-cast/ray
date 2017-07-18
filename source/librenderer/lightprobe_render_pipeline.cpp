@@ -81,33 +81,39 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 	for (auto& it : lightProbes)
 	{
 		auto lightProbe = it->downcast<LightProbe>();
+		lightProbe->onGenProbeBefore(*mainCamera);
 
 		auto& camera = lightProbe->getCamera();
-		camera->onRenderBefore(*camera);
-
-		for (std::uint8_t i = 0; i < 6; i++)
+		if (camera)
 		{
-			_pipeline->setCamera(camera);
-			_pipeline->setFramebuffer(camera->getRenderPipelineFramebuffer()->getFramebuffer());
+			camera->onRenderBefore(*camera);
 
-			if (camera->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
-				_pipeline->clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, camera->getClearColor());
-
-			if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
-				camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+			for (std::uint8_t i = 0; i < 6; i++)
 			{
-				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
-					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthStencilBit, camera->getClearColor());
-				else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
-					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthBit, camera->getClearColor());
-				else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
-					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, camera->getClearColor());
+				_pipeline->setCamera(camera);
+				_pipeline->setFramebuffer(camera->getRenderPipelineFramebuffer()->getFramebuffer());
+
+				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
+					_pipeline->clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, camera->getClearColor());
+
+				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
+					camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+				{
+					if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
+						_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthStencilBit, camera->getClearColor());
+					else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
+						_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthBit, camera->getClearColor());
+					else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+						_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, camera->getClearColor());
+				}
+
+				_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque);
 			}
 
-			_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque);
+			camera->onRenderAfter(*camera);
 		}
 
-		camera->onRenderAfter(*camera);
+		lightProbe->onGenProbeAfter(*camera);
 	}
 }
 

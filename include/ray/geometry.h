@@ -82,6 +82,8 @@ public:
 	GraphicsIndirectPtr getGraphicsIndirect() noexcept;
 
 private:
+	bool onVisiableTest(const Camera& camera, const Frustum& fru) noexcept;
+
 	void onAddRenderData(RenderDataManager& manager) noexcept;
 	void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTech* tech) noexcept;
 

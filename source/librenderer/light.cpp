@@ -431,6 +431,9 @@ Light::onSceneChangeAfter() noexcept
 bool
 Light::onVisiableTest(const Camera& camera, const Frustum& fru) noexcept
 {
+	if (camera.getCameraOrder() == CameraOrder::CameraOrderShadow)
+		return false;
+
 	return fru.contains(this->getBoundingBoxInWorld().aabb());
 }
 

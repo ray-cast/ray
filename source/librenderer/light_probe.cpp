@@ -145,6 +145,12 @@ LightProbe::onSceneChangeAfter() noexcept
 bool
 LightProbe::onVisiableTest(const Camera& camera, const Frustum& fru) noexcept
 {
+	if (camera.getCameraOrder() == CameraOrder::CameraOrderShadow)
+		return false;
+
+	if (camera.getCameraOrder() == CameraOrder::CameraOrderLightProbe)
+		return false;
+
 	return fru.contains(this->getBoundingBoxInWorld().aabb());
 }
 

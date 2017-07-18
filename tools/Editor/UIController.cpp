@@ -555,6 +555,7 @@ GuiControllerComponent::makeSkyLighting() noexcept
 	auto gameObject = std::make_shared<ray::GameObject>();
 	gameObject->setName("sky");
 	gameObject->setActive(true);
+	gameObject->setScale(ray::float3(10000.0f));
 
 	gameObject->addComponent(std::move(light));
 	gameObject->addComponent(std::move(sky));

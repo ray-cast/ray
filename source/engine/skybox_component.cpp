@@ -50,7 +50,6 @@ __ImplementSubClass(SkyboxComponent, MeshRenderComponent, "Skybox")
 SkyboxComponent::SkyboxComponent() noexcept
 	: _enableSkyBox(true)
 	, _enableSkyLighting(true)
-	, _skyboxSize(10000.0f)
 	, _skyDiffuseIntensity(1.0f)
 	, _skySpecularIntensity(1.0f)
 {
@@ -66,19 +65,6 @@ SkyboxComponent::SkyboxComponent(const archivebuf& reader) noexcept
 
 SkyboxComponent::~SkyboxComponent() noexcept
 {
-}
-
-void
-SkyboxComponent::setSkyboxSize(float size) noexcept
-{
-	_skyboxSize = size;
-	_updateTransform();
-}
-
-float
-SkyboxComponent::getSkyboxSize() const noexcept
-{
-	return _skyboxSize;
 }
 
 void
@@ -304,7 +290,6 @@ SkyboxComponent::load(const archivebuf& reader) noexcept
 	reader["skyspecular"] >> _skySpecular;
 	reader["skyDiffuse"] >> _skyDiffuseIntensity;
 	reader["skySpeculars"] >> _skySpecularIntensity;
-	reader["skysize"] >> _skyboxSize;
 
 	const auto& flags = reader["flags"];
 	if (flags.is_string())
@@ -334,7 +319,6 @@ SkyboxComponent::save(archivebuf& write) noexcept
 	write["skyspecular"] << _skySpecular;
 	write["skyDiffuse"] << _skyDiffuseIntensity;
 	write["skySpeculars"] << _skySpecularIntensity;
-	write["skysize"] << _skyboxSize;
 }
 
 GameComponentPtr
@@ -377,7 +361,6 @@ SkyboxComponent::onDeactivate() noexcept
 
 	this->_destroyMaterial();
 	this->_destroySkybox();
-	this->_destroySkyLighting();
 }
 
 void
@@ -440,47 +423,6 @@ bool
 SkyboxComponent::_buildSphereMesh(MeshProperty& mesh) noexcept
 {
 	mesh.makeSphere(1, 16, 12);
-	return true;
-}
-
-bool
-SkyboxComponent::_buildQuadMesh(MeshProperty& mesh) noexcept
-{
-	mesh.makePlane(2, 2, 1, 1);
-	return true;
-}
-
-bool
-SkyboxComponent::_buildQuadRenderMesh(const MeshProperty& mesh) noexcept
-{
-	_renderScreenQuadVbo = ResManager::instance()->createVertexBuffer(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
-	if (!_renderScreenQuadVbo)
-		return true;
-
-	_renderScreenQuadIbo = ResManager::instance()->createIndexBuffer(mesh);
-	if (!_renderScreenQuadIbo)
-		return true;
-
-	return false;
-}
-
-bool
-SkyboxComponent::_buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept
-{
-	_quadObject = std::make_shared<Geometry>();
-	_quadObject->setMaterial(technique);
-	_quadObject->setCastShadow(false);
-	_quadObject->setReceiveShadow(false);
-	_quadObject->setVertexBuffer(_renderScreenQuadVbo, 0);
-	_quadObject->setIndexBuffer(_renderScreenQuadIbo, 0, GraphicsIndexType::GraphicsIndexTypeUInt32);
-	_quadObject->setBoundingBox(mesh.getBoundingBox());
-	_quadObject->setOwnerListener(this);
-	_quadObject->setCastShadow(this->getCastShadow());
-	_quadObject->setReceiveShadow(this->getReceiveShadow());
-	_quadObject->setLayer(this->getGameObject()->getLayer());
-	_quadObject->setTransform(this->getGameObject()->getWorldTransform());
-	_quadObject->setGraphicsIndirect(std::make_shared<GraphicsIndirect>(mesh.getNumVertices(), mesh.getNumIndices()));
-
 	return true;
 }
 
@@ -554,10 +496,6 @@ SkyboxComponent::_setupSkyLighting() noexcept
 	{
 		if (_loadSkyDiffuse(_skyDiffuse) && _loadSkySpecular(_skySpecular))
 		{
-			MeshProperty quadMesh;
-			_buildQuadMesh(quadMesh);
-			_buildQuadRenderMesh(quadMesh);
-
 			return true;
 		}
 	}
@@ -576,19 +514,6 @@ SkyboxComponent::_destroySkybox() noexcept
 
 	_renderSphereVbo.reset();
 	_renderSphereIbo.reset();
-}
-
-void
-SkyboxComponent::_destroySkyLighting() noexcept
-{
-	if (_quadObject)
-	{
-		this->_destroyRenderhObject(_quadObject);
-		_quadObject.reset();
-	}
-
-	_renderScreenQuadVbo.reset();
-	_renderScreenQuadIbo.reset();
 }
 
 void
@@ -621,15 +546,8 @@ SkyboxComponent::_reloadSkySpecular(const util::string& texture) noexcept
 void
 SkyboxComponent::_updateTransform() noexcept
 {
-	float4x4 transforam;
-	transforam.makeScale(_skyboxSize, _skyboxSize, _skyboxSize);
-	//transforam.setTranslate(this->getGameObject()->getWorldTranslate());
-
 	if (_sphereObject)
-		_sphereObject->setTransform(transforam);
-
-	if (_quadObject)
-		_quadObject->setTransform(transforam);
+		_sphereObject->setTransform(this->getGameObject()->getWorldTransform(), this->getGameObject()->getWorldTransformInverse());
 }
 
 void

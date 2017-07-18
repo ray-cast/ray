@@ -68,13 +68,13 @@ public:
 	void setReceiveShadow(bool enable) noexcept;
 	bool getReceiveShadow() const noexcept;
 
-	void setMaterial(MaterialPtr material) noexcept;
-	MaterialPtr getMaterial() noexcept;
+	void setMaterial(const MaterialPtr& material) noexcept;
+	const MaterialPtr& getMaterial() noexcept;
 
-	void setVertexBuffer(GraphicsDataPtr data, std::intptr_t offset) noexcept;
+	void setVertexBuffer(const GraphicsDataPtr& data, std::intptr_t offset) noexcept;
 	const GraphicsDataPtr& getVertexBuffer() const noexcept;
 
-	void setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
+	void setIndexBuffer(const GraphicsDataPtr& data, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 	const GraphicsDataPtr& getIndexBuffer() const noexcept;
 
 	void setGraphicsIndirect(GraphicsIndirectPtr&& renderable) noexcept;

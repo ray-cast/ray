@@ -49,9 +49,6 @@ public:
 	SkyboxComponent(const archivebuf& reader) noexcept;
 	~SkyboxComponent() noexcept;
 
-	void setSkyboxSize(float size) noexcept;
-	float getSkyboxSize() const noexcept;
-
 	void setSkyBox(GraphicsTexturePtr texture) noexcept;
 	GraphicsTexturePtr getSkyBox() const noexcept;
 
@@ -99,10 +96,6 @@ private:
 	bool _loadSkyDiffuse(const util::string& texture) noexcept;
 	bool _loadSkySpecular(const util::string& texture) noexcept;
 
-	bool _buildQuadMesh(MeshProperty& mesh) noexcept;
-	bool _buildQuadRenderMesh(const MeshProperty& mesh) noexcept;
-	bool _buildQuadRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept;
-
 	bool _buildSphereMesh(MeshProperty& mesh) noexcept;
 	bool _buildSphereRenderMesh(const MeshProperty& mesh) noexcept;
 	bool _buildSphereRenderObject(const MeshProperty& mesh, MaterialPtr technique) noexcept;
@@ -112,7 +105,6 @@ private:
 	bool _setupMaterial() noexcept;
 
 	void _destroySkybox() noexcept;
-	void _destroySkyLighting() noexcept;
 	void _destroyMaterial() noexcept;
 
 	void _reloadSkybox(const util::string& texture) noexcept;
@@ -136,7 +128,6 @@ private:
 	bool _enableSkyBox;
 	bool _enableSkyLighting;
 
-	float _skyboxSize;
 	float _skyDiffuseIntensity;
 	float _skySpecularIntensity;
 
@@ -150,13 +141,9 @@ private:
 	GraphicsTexturePtr _skyDiffTexture;
 	GraphicsTexturePtr _skySpecTexture;
 
-	GraphicsDataPtr _renderScreenQuadVbo;
-	GraphicsDataPtr _renderScreenQuadIbo;
-
 	GraphicsDataPtr _renderSphereVbo;
 	GraphicsDataPtr _renderSphereIbo;
 
-	GeometryPtr _quadObject;
 	GeometryPtr _sphereObject;
 
 	delegate<void()> _onSkyBoxChange;

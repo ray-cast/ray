@@ -102,7 +102,7 @@ Geometry::getCastShadow()  const noexcept
 }
 
 void
-Geometry::setMaterial(MaterialPtr material) noexcept
+Geometry::setMaterial(const MaterialPtr& material) noexcept
 {
 	if (_material != material)
 	{
@@ -128,14 +128,14 @@ Geometry::setMaterial(MaterialPtr material) noexcept
 	}
 }
 
-MaterialPtr
+const MaterialPtr&
 Geometry::getMaterial() noexcept
 {
 	return _material;
 }
 
 void
-Geometry::setVertexBuffer(GraphicsDataPtr data, std::intptr_t offset) noexcept
+Geometry::setVertexBuffer(const GraphicsDataPtr& data, std::intptr_t offset) noexcept
 {
 	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer));
 	_vbo = data;
@@ -149,7 +149,7 @@ Geometry::getVertexBuffer() const noexcept
 }
 
 void
-Geometry::setIndexBuffer(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+Geometry::setIndexBuffer(const GraphicsDataPtr& data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(!data || (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer));
 	assert(indexType == GraphicsIndexType::GraphicsIndexTypeUInt16 || indexType == GraphicsIndexType::GraphicsIndexTypeUInt32);

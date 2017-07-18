@@ -36,11 +36,9 @@
 // +----------------------------------------------------------------------
 #include <ray/light.h>
 #include <ray/camera.h>
-#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
-#include <ray/render_system.h>
 #include <ray/render_object_manager.h>
-#include <ray/render_pipeline_framebuffer.h>
+
 #include "shadow_render_framebuffer.h"
 #include "reflective_shadow_render_framebuffer.h"
 
@@ -479,11 +477,12 @@ Light::clone() const noexcept
 	light->setLightColor(this->getLightColor());
 	light->setLightIntensity(this->getLightIntensity());
 	light->setLightRange(this->getLightRange());
-	light->setTransform(this->getTransform());
+	light->setTransform(this->getTransform(), this->getTransformInverse());
 	light->setBoundingBox(this->getBoundingBox());
 
 	light->_spotInnerCone = _spotInnerCone;
 	light->_spotOuterCone = _spotOuterCone;
+
 	return light;
 }
 

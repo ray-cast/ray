@@ -134,7 +134,8 @@ OcclusionCullList::sort(iterator begin, iterator end) noexcept
 	);
 }
 
-RenderScene::RenderScene()
+RenderScene::RenderScene() except
+	: _visible(true)
 {
 	this->addRenderScene(this);
 }
@@ -142,6 +143,18 @@ RenderScene::RenderScene()
 RenderScene::~RenderScene() noexcept
 {
 	this->removeRenderScene(this);
+}
+
+void
+RenderScene::setVisible(bool visible) noexcept
+{
+	_visible = visible;
+}
+
+bool
+RenderScene::getVisible() const noexcept
+{
+	return _visible;
 }
 
 void
@@ -257,7 +270,7 @@ RenderScene::getSceneAll() noexcept
 }
 
 void
-RenderScene::addRenderScene(RenderScene* _this)
+RenderScene::addRenderScene(RenderScene* _this) except
 {
 	_sceneList.push_back(_this);
 }

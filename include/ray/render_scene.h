@@ -88,8 +88,11 @@ class EXPORT RenderScene final : public rtti::Interface
 {
 	__DeclareSubClass(RenderScene, rtti::Interface)
 public:
-	RenderScene();
+	RenderScene() except;
 	~RenderScene() noexcept;
+
+	void setVisible(bool visible) noexcept;
+	bool getVisible() const noexcept;
 
 	void addCamera(const CameraPtr& camera) noexcept;
 	void removeCamera(const CameraPtr& camera) noexcept;
@@ -105,10 +108,12 @@ public:
 	static const RenderScenes& getSceneAll() noexcept;
 
 private:
-	void addRenderScene(RenderScene* _this);
+	void addRenderScene(RenderScene* _this) except;
 	void removeRenderScene(RenderScene* _this) noexcept;
 
 private:
+	bool _visible;
+
 	Cameras _cameraList;
 	RenderObjectRaws _renderObjectList;
 

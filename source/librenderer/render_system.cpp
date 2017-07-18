@@ -65,7 +65,7 @@ RenderSystem::setup(const RenderSetting& setting) noexcept
 
 		return true;
 	}
-	catch (const std::exception& e)
+	catch (const std::exception&)
 	{
 		return false;
 	}
@@ -77,11 +77,20 @@ RenderSystem::close() noexcept
 	_pipelineManager.reset();
 }
 
-void
-RenderSystem::setRenderSetting(const RenderSetting& setting) except
+bool
+RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->setRenderSetting(setting);
+
+	try
+	{
+		return _pipelineManager->setRenderSetting(setting);
+	}
+	catch (const std::exception&)
+	{
+		assert(false);
+		return false;
+	}
 }
 
 const RenderSetting&
@@ -91,12 +100,22 @@ RenderSystem::getRenderSetting() const noexcept
 	return _pipelineManager->getRenderSetting();
 }
 
-void
-RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) except
+bool
+RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
 {
 	assert(w > 0 && h > 0);
 	assert(_pipelineManager);
-	_pipelineManager->setWindowResolution(w, h);
+
+	try
+	{
+		_pipelineManager->setWindowResolution(w, h);
+		return true;
+	}
+	catch (const std::exception&)
+	{
+		assert(false);
+		return false;
+	}
 }
 
 void
@@ -106,12 +125,22 @@ RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noex
 	_pipelineManager->getWindowResolution(w, h);
 }
 
-void
-RenderSystem::setFramebufferSize(std::uint32_t w, std::uint32_t h) except
+bool
+RenderSystem::setFramebufferSize(std::uint32_t w, std::uint32_t h) noexcept
 {
 	assert(w > 0 && h > 0);
 	assert(_pipelineManager);
-	_pipelineManager->setFramebufferSize(w, h);
+
+	try
+	{
+		_pipelineManager->setFramebufferSize(w, h);
+		return true;
+	}
+	catch (const std::exception&)
+	{
+		assert(false);
+		return false;
+	}
 }
 
 void
@@ -344,7 +373,11 @@ RenderSystem::render() noexcept
 	assert(_pipelineManager);
 
 	for (auto& scene : RenderScene::getSceneAll())
+	{
+		if (!scene->getVisible())
+			continue;
 		_pipelineManager->render(*scene);
+	}
 }
 
 _NAME_END

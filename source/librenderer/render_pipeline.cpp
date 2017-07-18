@@ -287,7 +287,7 @@ RenderPipeline::getScissor(std::uint32_t i) const noexcept
 }
 
 void
-RenderPipeline::setFramebuffer(GraphicsFramebufferPtr target) noexcept
+RenderPipeline::setFramebuffer(const GraphicsFramebufferPtr& target) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setFramebuffer(target);
@@ -323,21 +323,21 @@ RenderPipeline::setMaterialPass(const MaterialPassPtr& pass) noexcept
 }
 
 void
-RenderPipeline::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
+RenderPipeline::setVertexBuffer(std::uint32_t i, const GraphicsDataPtr& vbo, std::intptr_t offset) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setVertexBufferData(i, vbo, offset);
 }
 
 void
-RenderPipeline::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+RenderPipeline::setIndexBuffer(const GraphicsDataPtr& ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setIndexBufferData(ibo, offset, indexType);
 }
 
 void
-RenderPipeline::generateMipmap(GraphicsTexturePtr texture)
+RenderPipeline::generateMipmap(const GraphicsTexturePtr& texture)
 {
 	assert(_graphicsContext);
 	_graphicsContext->generateMipmap(texture);

@@ -179,7 +179,7 @@ RenderSystem::getScissor(std::uint32_t i) const noexcept
 }
 
 void
-RenderSystem::setFramebuffer(GraphicsFramebufferPtr target) noexcept
+RenderSystem::setFramebuffer(const GraphicsFramebufferPtr& target) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->getRenderPipeline()->setFramebuffer(target);
@@ -207,14 +207,14 @@ RenderSystem::setMaterialPass(const MaterialPassPtr& pass) noexcept
 }
 
 void
-RenderSystem::setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept
+RenderSystem::setVertexBuffer(std::uint32_t i, const GraphicsDataPtr& vbo, std::intptr_t offset) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->getRenderPipeline()->setVertexBuffer(i, vbo, offset);
 }
 
 void
-RenderSystem::setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+RenderSystem::setIndexBuffer(const GraphicsDataPtr& ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->getRenderPipeline()->setIndexBuffer(ibo, offset, indexType);

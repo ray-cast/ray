@@ -312,7 +312,7 @@ OGLDeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noexcept
 }
 
 void
-OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
+OGLDeviceContext::setRenderPipeline(const GraphicsPipelinePtr& pipeline) noexcept
 {
 	assert(!pipeline || pipeline && pipeline->isInstanceOf<OGLPipeline>());
 	assert(_glcontext->getActive());
@@ -375,7 +375,7 @@ OGLDeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
+OGLDeviceContext::setDescriptorSet(const GraphicsDescriptorSetPtr& descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<OGLDescriptorSet>());
@@ -392,7 +392,7 @@ OGLDeviceContext::getDescriptorSet() const noexcept
 }
 
 void
-OGLDeviceContext::setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept
+OGLDeviceContext::setVertexBufferData(std::uint32_t i, const GraphicsDataPtr& data, std::intptr_t offset) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLGraphicsData>());
@@ -418,7 +418,7 @@ OGLDeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 }
 
 void
-OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+OGLDeviceContext::setIndexBufferData(const GraphicsDataPtr& data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLGraphicsData>());
@@ -446,7 +446,7 @@ OGLDeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-OGLDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
+OGLDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
 {
 	assert(texture);
 	assert(texture->isInstanceOf<OGLTexture>());
@@ -461,7 +461,7 @@ OGLDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
 }
 
 void
-OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
+OGLDeviceContext::setFramebuffer(const GraphicsFramebufferPtr& target) noexcept
 {
 	assert(_glcontext->getActive());
 
@@ -594,11 +594,10 @@ OGLDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, co
 	{
 		if (_framebuffer)
 		{
-			std::size_t viewportCount = std::max<std::size_t>(1, _framebuffer->getGraphicsFramebufferDesc().getColorAttachments().size());
-			for (std::size_t j = 0; j < viewportCount; j++)
-			{
+			GLuint viewportCount = std::max<GLuint>(1, _framebuffer->getGraphicsFramebufferDesc().getColorAttachments().size());
+
+			for (GLuint j = 0; j < viewportCount; j++)
 				glScissorIndexed(j, _scissors[j].left, _scissors[j].top, _scissors[j].width, _scissors[j].height);
-			}
 		}
 		else
 		{
@@ -608,7 +607,7 @@ OGLDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, co
 }
 
 void
-OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+OGLDeviceContext::blitFramebuffer(const GraphicsFramebufferPtr& src, const Viewport& v1, const GraphicsFramebufferPtr& dest, const Viewport& v2) noexcept
 {
 	assert(src);
 	assert(src->isInstanceOf<OGLFramebuffer>());
@@ -759,7 +758,7 @@ OGLDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numInstanc
 }
 
 void
-OGLDeviceContext::drawIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+OGLDeviceContext::drawIndirect(const GraphicsDataPtr& data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
 {
 	assert(_pipeline);
 	assert(_glcontext->getActive());
@@ -778,7 +777,7 @@ OGLDeviceContext::drawIndirect(GraphicsDataPtr data, std::size_t offset, std::ui
 }
 
 void
-OGLDeviceContext::drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+OGLDeviceContext::drawIndexedIndirect(const GraphicsDataPtr& data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
 {
 	assert(_pipeline);
 	assert(_glcontext->getActive());

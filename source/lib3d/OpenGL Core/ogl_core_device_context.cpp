@@ -304,7 +304,7 @@ OGLCoreDeviceContext::getStencilWriteMask(GraphicsStencilFaceFlagBits face) noex
 }
 
 void
-OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
+OGLCoreDeviceContext::setRenderPipeline(const GraphicsPipelinePtr& pipeline) noexcept
 {
 	assert(pipeline);
 	assert(pipeline->isInstanceOf<OGLCorePipeline>());
@@ -345,7 +345,7 @@ OGLCoreDeviceContext::getRenderPipeline() const noexcept
 }
 
 void
-OGLCoreDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
+OGLCoreDeviceContext::setDescriptorSet(const GraphicsDescriptorSetPtr& descriptorSet) noexcept
 {
 	assert(descriptorSet);
 	assert(descriptorSet->isInstanceOf<OGLCoreDescriptorSet>());
@@ -362,7 +362,7 @@ OGLCoreDeviceContext::getDescriptorSet() const noexcept
 }
 
 void
-OGLCoreDeviceContext::setVertexBufferData(std::uint32_t i, GraphicsDataPtr data, std::intptr_t offset) noexcept
+OGLCoreDeviceContext::setVertexBufferData(std::uint32_t i, const GraphicsDataPtr& data, std::intptr_t offset) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLCoreGraphicsData>());
@@ -388,7 +388,7 @@ OGLCoreDeviceContext::getVertexBufferData(std::uint32_t i) const noexcept
 }
 
 void
-OGLCoreDeviceContext::setIndexBufferData(GraphicsDataPtr data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
+OGLCoreDeviceContext::setIndexBufferData(const GraphicsDataPtr& data, std::intptr_t offset, GraphicsIndexType indexType) noexcept
 {
 	assert(data);
 	assert(data->isInstanceOf<OGLCoreGraphicsData>());
@@ -416,7 +416,7 @@ OGLCoreDeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-OGLCoreDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
+OGLCoreDeviceContext::generateMipmap(const GraphicsTexturePtr& texture) noexcept
 {
 	assert(texture);
 	assert(texture->isInstanceOf<OGLCoreTexture>());
@@ -427,7 +427,7 @@ OGLCoreDeviceContext::generateMipmap(GraphicsTexturePtr texture) noexcept
 }
 
 void
-OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
+OGLCoreDeviceContext::setFramebuffer(const GraphicsFramebufferPtr& target) noexcept
 {
 	assert(_glcontext->getActive());
 
@@ -578,7 +578,7 @@ OGLCoreDeviceContext::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags
 }
 
 void
-OGLCoreDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+OGLCoreDeviceContext::blitFramebuffer(const GraphicsFramebufferPtr& src, const Viewport& v1, const GraphicsFramebufferPtr& dest, const Viewport& v2) noexcept
 {
 	assert(src);
 	assert(src->isInstanceOf<OGLCoreFramebuffer>());
@@ -724,7 +724,7 @@ OGLCoreDeviceContext::drawIndexed(std::uint32_t numIndices, std::uint32_t numIns
 }
 
 void
-OGLCoreDeviceContext::drawIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+OGLCoreDeviceContext::drawIndirect(const GraphicsDataPtr& data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
 {
 	assert(_pipeline);
 	assert(_glcontext->getActive());
@@ -743,7 +743,7 @@ OGLCoreDeviceContext::drawIndirect(GraphicsDataPtr data, std::size_t offset, std
 }
 
 void
-OGLCoreDeviceContext::drawIndexedIndirect(GraphicsDataPtr data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
+OGLCoreDeviceContext::drawIndexedIndirect(const GraphicsDataPtr& data, std::size_t offset, std::uint32_t drawCount, std::uint32_t stride) noexcept
 {
 	assert(_pipeline);
 	assert(_glcontext->getActive());

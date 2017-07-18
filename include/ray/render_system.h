@@ -66,13 +66,13 @@ public:
 	void setScissor(std::uint32_t i, const Scissor& scissor) noexcept;
 	const Scissor& getScissor(std::uint32_t i) const noexcept;
 
-	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void setFramebuffer(const GraphicsFramebufferPtr& target) noexcept;
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept;
 
 	void setMaterialPass(const MaterialPassPtr& pass) noexcept;
-	void setVertexBuffer(std::uint32_t i, GraphicsDataPtr vbo, std::intptr_t offset) noexcept;
-	void setIndexBuffer(GraphicsDataPtr ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
+	void setVertexBuffer(std::uint32_t i, const GraphicsDataPtr& vbo, std::intptr_t offset) noexcept;
+	void setIndexBuffer(const GraphicsDataPtr& ibo, std::intptr_t offset, GraphicsIndexType indexType) noexcept;
 
 	void drawCone(const MaterialTech& tech) noexcept;
 	void drawSphere(const MaterialTech& tech) noexcept;

@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "shadow_render_framebuffer.h"
+#include <ray/shadow_render_framebuffer.h>
 #include <ray/render_system.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_framebuffer.h>

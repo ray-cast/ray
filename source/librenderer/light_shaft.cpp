@@ -114,7 +114,7 @@ LightShaft::onRender(RenderPipeline& pipeline, RenderQueue queue, const Graphics
 
 	_illuminationRadio->uniform1f((float)width / height);
 
-	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
+	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLights);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();

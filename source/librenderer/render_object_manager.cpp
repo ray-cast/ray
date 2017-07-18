@@ -80,7 +80,7 @@ DefaultRenderDataManager::assginVisiable(const Camera& camera) noexcept
 	{
 		auto scene = camera.getRenderScene();
 		assert(scene);
-		scene->computVisiable(camera.getTranslate(), camera.getViewProject(), _visiable);
+		scene->computVisiable(camera, _visiable);
 
 		this->sortDistance(_visiable);
 

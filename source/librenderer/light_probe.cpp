@@ -35,6 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/light_probe.h>
+#include <ray/render_object_manager.h>
+#include <ray/lightprobe_render_framebuffer.h>
+#include <ray/camera.h>
 
 _NAME_BEGIN
 
@@ -59,28 +62,106 @@ LightProbe::getSH9() const noexcept
 	return _sh;
 }
 
+const CameraPtr&
+LightProbe::getCamera() const noexcept
+{
+	return _camera;
+}
+
+bool
+LightProbe::setupProbeCamera() noexcept
+{
+	auto framebuffer = std::make_shared<ray::LightProbeRenderFramebuffer>();
+	if (!framebuffer->setup())
+		return false;
+
+	_camera = std::make_shared<Camera>();
+	_camera->setOwnerListener(this);
+	_camera->setCameraOrder(CameraOrder::CameraOrderShadow);
+	_camera->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
+	_camera->setAperture(90.0f);
+	_camera->setNear(0.1f);
+	_camera->setRatio(1.0f);
+	_camera->setRenderPipelineFramebuffer(framebuffer);
+
+	return true;
+}
+
 void
-LightProbe::setColorTexture(const GraphicsTexturePtr& texture) noexcept
+LightProbe::_updateTransform() noexcept
 {
-	_bakeColorMap = texture;
-}
-
-const GraphicsTexturePtr&
-LightProbe::getColorTexture() const noexcept
-{
-	return _bakeColorMap;
+	if (_camera)
+		_camera->setTransform(this->getTransform(), this->getTransformInverse());
 }
 
 void
-LightProbe::setNormalTexture(const GraphicsTexturePtr& texture) noexcept
+LightProbe::_updateBoundingBox() noexcept
 {
-	_bakeNormalMap = texture;
+	BoundingBox boundingBox;
+
+	if (!_camera)
+	{
+		Vector3 min(-5, -5, -5);
+		Vector3 max(5, 5, 5);
+
+		BoundingBox bound;
+		bound.encapsulate(min);
+		bound.encapsulate(max);
+
+		boundingBox.encapsulate(bound);
+	}
+
+	this->setBoundingBox(boundingBox);
 }
 
-const GraphicsTexturePtr&
-LightProbe::getNormalTexture() const noexcept
+void
+LightProbe::onMoveAfter() noexcept
 {
-	return _bakeNormalMap;
+	this->_updateTransform();
+}
+
+void
+LightProbe::onSceneChangeBefore() noexcept
+{
+	auto renderScene = this->getRenderScene();
+	if (renderScene)
+	{
+		if (_camera)
+			_camera->setRenderScene(nullptr);
+	}
+}
+
+void
+LightProbe::onSceneChangeAfter() noexcept
+{
+	auto renderScene = this->getRenderScene();
+	if (renderScene)
+	{
+		if (_camera)
+			_camera->setRenderScene(renderScene);
+	}
+}
+
+bool
+LightProbe::onVisiableTest(const Camera& camera, const Frustum& fru) noexcept
+{
+	return fru.contains(this->getBoundingBoxInWorld().aabb());
+}
+
+void
+LightProbe::onAddRenderData(RenderDataManager& manager) noexcept
+{
+	manager.addRenderData(RenderQueue::RenderQueueLightProbes, this);
+}
+
+void
+LightProbe::onRenderObjectPre(const Camera& camera) noexcept
+{
+}
+
+void
+LightProbe::onRenderObjectPost(const Camera& camera) noexcept
+{
 }
 
 _NAME_END

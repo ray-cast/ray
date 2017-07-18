@@ -468,20 +468,6 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 
 		switch (camera->getCameraOrder())
 		{
-		case CameraOrder::CameraOrderShadow:
-		{
-			_shadowMapGen->onRenderBefore();
-			_shadowMapGen->onRenderPipeline(camera);
-			_shadowMapGen->onRenderAfter();
-		}
-		break;
-		case CameraOrder::CameraOrderLightProbe:
-		{
-			_lightProbeGen->onRenderBefore();
-			_lightProbeGen->onRenderPipeline(camera);
-			_lightProbeGen->onRenderAfter();
-		}
-		break;
 		case CameraOrder::CameraOrder2D:
 		{
 			_forward->onRenderBefore();
@@ -491,6 +477,20 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 		break;
 		case CameraOrder::CameraOrder3D:
 		{
+			if (_shadowMapGen)
+			{
+				_shadowMapGen->onRenderBefore();
+				_shadowMapGen->onRenderPipeline(camera);
+				_shadowMapGen->onRenderAfter();
+			}
+
+			if (_lightProbeGen)
+			{
+				_lightProbeGen->onRenderBefore();
+				_lightProbeGen->onRenderPipeline(camera);
+				_lightProbeGen->onRenderAfter();
+			}
+
 			if (camera->getRenderPipelineFramebuffer()->isInstanceOf<DeferredLightingFramebuffers>())
 			{
 				if (_setting.pipelineType == RenderPipelineType::RenderPipelineTypeDeferredLighting)
@@ -508,9 +508,6 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 			}
 		}
 		break;
-		default:
-			assert(false);
-			break;
 		}
 
 		camera->onRenderAfter(*camera);

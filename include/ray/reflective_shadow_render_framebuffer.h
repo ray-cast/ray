@@ -56,14 +56,6 @@ public:
 
 	const GraphicsFramebufferPtr& getRSMView() const noexcept { return _shadowRSMView; }
 
-protected:
-	virtual void onResolutionChange() noexcept;
-	virtual void onResolutionChangeDPI() noexcept;
-
-	virtual void onRenderBefore() noexcept;
-	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
-	virtual void onRenderAfter() noexcept;
-
 private:
 	ReflectiveShadowRenderFramebuffer(const ReflectiveShadowRenderFramebuffer&) noexcept = delete;
 	ReflectiveShadowRenderFramebuffer& operator=(const ReflectiveShadowRenderFramebuffer&) noexcept = delete;

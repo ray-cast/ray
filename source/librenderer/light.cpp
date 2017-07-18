@@ -38,9 +38,8 @@
 #include <ray/camera.h>
 #include <ray/graphics_texture.h>
 #include <ray/render_object_manager.h>
-
-#include "shadow_render_framebuffer.h"
-#include "reflective_shadow_render_framebuffer.h"
+#include <ray/shadow_render_framebuffer.h>
+#include <ray/reflective_shadow_render_framebuffer.h>
 
 _NAME_BEGIN
 
@@ -203,17 +202,10 @@ Light::getGlobalIllumination() const noexcept
 	return _enableGlobalIllumination;
 }
 
-const Cameras&
-Light::getCameras() const noexcept
-{
-	return _shadowCameras;
-}
-
 const CameraPtr&
-Light::getCamera(std::size_t i) const noexcept
+Light::getCamera() const noexcept
 {
-	assert(i < _shadowCameras.size());
-	return _shadowCameras[i];
+	return _shadowCamera;
 }
 
 void
@@ -286,14 +278,14 @@ Light::setupShadowMap() noexcept
 	if (!framebuffer->setup())
 		return false;
 
-	_shadowCameras.push_back(std::make_shared<Camera>());
-	_shadowCameras[0]->setOwnerListener(this);
-	_shadowCameras[0]->setCameraOrder(CameraOrder::CameraOrderShadow);
-	_shadowCameras[0]->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
-	_shadowCameras[0]->setAperture(90.0f);
-	_shadowCameras[0]->setNear(0.1f);
-	_shadowCameras[0]->setRatio(1.0f);
-	_shadowCameras[0]->setRenderPipelineFramebuffer(framebuffer);
+	_shadowCamera = std::make_shared<Camera>();
+	_shadowCamera->setOwnerListener(this);
+	_shadowCamera->setCameraOrder(CameraOrder::CameraOrderShadow);
+	_shadowCamera->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
+	_shadowCamera->setAperture(90.0f);
+	_shadowCamera->setNear(0.1f);
+	_shadowCamera->setRatio(1.0f);
+	_shadowCamera->setRenderPipelineFramebuffer(framebuffer);
 
 	return true;
 }
@@ -305,14 +297,14 @@ Light::setupReflectiveShadowMap() noexcept
 	if (!framebuffer->setup())
 		return false;
 
-	_shadowCameras.push_back(std::make_shared<Camera>());
-	_shadowCameras[0]->setOwnerListener(this);
-	_shadowCameras[0]->setCameraOrder(CameraOrder::CameraOrderShadow);
-	_shadowCameras[0]->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
-	_shadowCameras[0]->setAperture(90.0f);
-	_shadowCameras[0]->setNear(0.1f);
-	_shadowCameras[0]->setRatio(1.0f);
-	_shadowCameras[0]->setRenderPipelineFramebuffer(framebuffer);
+	_shadowCamera = std::make_shared<Camera>();
+	_shadowCamera->setOwnerListener(this);
+	_shadowCamera->setCameraOrder(CameraOrder::CameraOrderShadow);
+	_shadowCamera->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
+	_shadowCamera->setAperture(90.0f);
+	_shadowCamera->setNear(0.1f);
+	_shadowCamera->setRatio(1.0f);
+	_shadowCamera->setRenderPipelineFramebuffer(framebuffer);
 
 	return true;
 }
@@ -320,24 +312,22 @@ Light::setupReflectiveShadowMap() noexcept
 void
 Light::destroyShadowMap() noexcept
 {
-	for (auto& camera : _shadowCameras)
-		camera->getRenderPipelineFramebuffer()->setFramebuffer(nullptr);
-
-	_shadowCameras.clear();
+	if (_shadowCamera)
+		_shadowCamera->getRenderPipelineFramebuffer()->setFramebuffer(nullptr);
 }
 
 void
 Light::destroyReflectiveShadowMap() noexcept
 {
-	for (auto& camera : _shadowCameras)
-		camera->getRenderPipelineFramebuffer()->setFramebuffer(nullptr);
+	if (_shadowCamera)
+		_shadowCamera->getRenderPipelineFramebuffer()->setFramebuffer(nullptr);
 }
 
 void
 Light::_updateTransform() noexcept
 {
-	for (auto& camera : _shadowCameras)
-		camera->setTransform(this->getTransform());
+	if (_shadowCamera)
+		_shadowCamera->setTransform(this->getTransform(), this->getTransformInverse());
 }
 
 void
@@ -345,7 +335,7 @@ Light::_updateBoundingBox() noexcept
 {
 	BoundingBox boundingBox;
 
-	if (_shadowCameras.empty())
+	if (!_shadowCamera)
 	{
 		Vector3 min(-_lightRange, -_lightRange, -_lightRange);
 		Vector3 max(_lightRange, _lightRange, _lightRange);
@@ -358,60 +348,57 @@ Light::_updateBoundingBox() noexcept
 	}
 	else
 	{
-		for (auto& camera : _shadowCameras)
+		if (_lightType == LightType::LightTypeAmbient || _lightType == LightType::LightTypeEnvironment)
 		{
-			if (_lightType == LightType::LightTypeAmbient || _lightType == LightType::LightTypeEnvironment)
+			Vector3 min(-_lightRange, -_lightRange, -_lightRange);
+			Vector3 max(_lightRange, _lightRange, _lightRange);
+
+			BoundingBox bound;
+			bound.encapsulate(min);
+			bound.encapsulate(max);
+
+			boundingBox.encapsulate(bound);
+		}
+		else
+		{
+			float znear = _shadowCamera->getNear();
+			float zfar = _lightRange;
+
+			float3 corners[8];
+			corners[0].set(-znear, +znear, znear);
+			corners[1].set(+znear, +znear, znear);
+			corners[2].set(-znear, -znear, znear);
+			corners[3].set(+znear, -znear, znear);
+			corners[4].set(-zfar, +zfar, zfar);
+			corners[5].set(+zfar, +zfar, zfar);
+			corners[6].set(-zfar, -zfar, zfar);
+			corners[7].set(+zfar, -zfar, zfar);
+
+			BoundingBox bound;
+			bound.encapsulate(corners, 8);
+			bound.transform((float3x3)_shadowCamera->getTransform());
+
+			boundingBox.encapsulate(bound);
+
+			if (_lightType == LightType::LightTypeSun || _lightType == LightType::LightTypeDirectional)
 			{
-				Vector3 min(-_lightRange, -_lightRange, -_lightRange);
-				Vector3 max(_lightRange, _lightRange, _lightRange);
+				float w = bound.size().x * 0.5f;
+				float h = bound.size().y * 0.5f;
 
-				BoundingBox bound;
-				bound.encapsulate(min);
-				bound.encapsulate(max);
-
-				boundingBox.encapsulate(bound);
+				_shadowCamera->setOrtho(float4(-w, w, -h, h));
+				_shadowCamera->setFar(zfar);
+				_shadowCamera->setCameraType(CameraType::CameraTypeOrtho);
 			}
-			else
+			else if (_lightType == LightType::LightTypeSpot)
 			{
-				float znear = camera->getNear();
-				float zfar = _lightRange;
-
-				float3 corners[8];
-				corners[0].set(-znear, +znear, znear);
-				corners[1].set(+znear, +znear, znear);
-				corners[2].set(-znear, -znear, znear);
-				corners[3].set(+znear, -znear, znear);
-				corners[4].set(-zfar, +zfar, zfar);
-				corners[5].set(+zfar, +zfar, zfar);
-				corners[6].set(-zfar, -zfar, zfar);
-				corners[7].set(+zfar, -zfar, zfar);
-
-				BoundingBox bound;
-				bound.encapsulate(corners, 8);
-				bound.transform((float3x3)camera->getTransform());
-
-				boundingBox.encapsulate(bound);
-
-				if (_lightType == LightType::LightTypeSun || _lightType == LightType::LightTypeDirectional)
-				{
-					float w = bound.size().x * 0.5f;
-					float h = bound.size().y * 0.5f;
-
-					camera->setOrtho(float4(-w, w, -h, h));
-					camera->setFar(zfar);
-					camera->setCameraType(CameraType::CameraTypeOrtho);
-				}
-				else if (_lightType == LightType::LightTypeSpot)
-				{
-					camera->setAperture(this->getSpotOuterCone().x * 2);
-					camera->setFar(zfar);
-					camera->setCameraType(CameraType::CameraTypePerspective);
-				}
-				else if (_lightType == LightType::LightTypePoint)
-				{
-					camera->setAperture(90.0f);
-					camera->setCameraType(CameraType::CameraTypePerspective);
-				}
+				_shadowCamera->setAperture(this->getSpotOuterCone().x * 2);
+				_shadowCamera->setFar(zfar);
+				_shadowCamera->setCameraType(CameraType::CameraTypePerspective);
+			}
+			else if (_lightType == LightType::LightTypePoint)
+			{
+				_shadowCamera->setAperture(90.0f);
+				_shadowCamera->setCameraType(CameraType::CameraTypePerspective);
 			}
 		}
 	}
@@ -425,8 +412,8 @@ Light::onSceneChangeBefore() noexcept
 	auto renderScene = this->getRenderScene();
 	if (renderScene)
 	{
-		for (auto& camera : _shadowCameras)
-			camera->setRenderScene(nullptr);
+		if (_shadowCamera)
+			_shadowCamera->setRenderScene(nullptr);
 	}
 }
 
@@ -436,15 +423,21 @@ Light::onSceneChangeAfter() noexcept
 	auto renderScene = this->getRenderScene();
 	if (renderScene)
 	{
-		for (auto& camera : _shadowCameras)
-			camera->setRenderScene(renderScene);
+		if (_shadowCamera)
+			_shadowCamera->setRenderScene(renderScene);
 	}
+}
+
+bool
+Light::onVisiableTest(const Camera& camera, const Frustum& fru) noexcept
+{
+	return fru.contains(this->getBoundingBoxInWorld().aabb());
 }
 
 void
 Light::onAddRenderData(RenderDataManager& manager) noexcept
 {
-	manager.addRenderData(RenderQueue::RenderQueueLighting, this);
+	manager.addRenderData(RenderQueue::RenderQueueLights, this);
 }
 
 void

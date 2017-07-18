@@ -38,7 +38,10 @@
 
 #include <ray/render_pipeline.h>
 #include <ray/render_pipeline_framebuffer.h>
+#include <ray/render_object_manager.h>
+
 #include <ray/camera.h>
+#include <ray/light_probe.h>
 
 _NAME_BEGIN
 
@@ -68,39 +71,44 @@ LightProbeRenderPipeline::close() noexcept
 }
 
 void
-LightProbeRenderPipeline::renderLightProbes(RenderPipeline& pipeline) noexcept
+LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 {
-	assert(pipeline.getCamera());
+	assert(mainCamera);
 
-	auto v = pipeline.getCamera()->getPixelViewport();
+	_pipeline->setCamera(mainCamera);
 
-	pipeline.setFramebuffer(pipeline.getCamera()->getRenderPipelineFramebuffer()->getFramebuffer());
-	pipeline.setViewport(0, Viewport(v.x, v.y, v.z, v.w));
-
-	if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
-		pipeline.clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-
-	if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
-		pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+	const auto& lightProbes = mainCamera->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLightProbes);
+	for (auto& it : lightProbes)
 	{
-		if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
-			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-		else if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
-			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
-		else if (pipeline.getCamera()->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
-			pipeline.clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
+		auto lightProbe = it->downcast<LightProbe>();
+
+		auto& camera = lightProbe->getCamera();
+		camera->onRenderBefore(*camera);
+
+		for (std::uint8_t i = 0; i < 6; i++)
+		{
+			_pipeline->setCamera(camera);
+			_pipeline->setFramebuffer(camera->getRenderPipelineFramebuffer()->getFramebuffer());
+
+			if (camera->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
+				_pipeline->clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, camera->getClearColor());
+
+			if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
+				camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+			{
+				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
+					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthStencilBit, camera->getClearColor());
+				else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
+					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthBit, camera->getClearColor());
+				else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, camera->getClearColor());
+			}
+
+			_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque);
+		}
+
+		camera->onRenderAfter(*camera);
 	}
-
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
-}
-
-void
-LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
-{
-	assert(camera);
-	assert(camera->getCameraOrder() == CameraOrder::CameraOrder2D);
-	_pipeline->setCamera(camera);
-	this->renderLightProbes(*_pipeline);
 }
 
 void

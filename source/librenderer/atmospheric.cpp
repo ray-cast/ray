@@ -259,7 +259,7 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderQueue queue, const Graphic
 		_needUpdateOpticalDepthAtmTop = false;
 	}
 
-	const auto& lighting = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
+	const auto& lighting = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLights);
 	for (auto& it : lighting)
 	{
 		auto light = it->downcast<Light>();

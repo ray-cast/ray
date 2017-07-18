@@ -34,25 +34,25 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/reflective_shadow_render_framebuffer.h>
+#include <ray/lightprobe_render_framebuffer.h>
 #include <ray/render_system.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_framebuffer.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(ReflectiveShadowRenderFramebuffer, RenderPipelineFramebuffer, "ReflectiveShadowRenderFramebuffer")
+__ImplementSubInterface(LightProbeRenderFramebuffer, RenderPipelineFramebuffer, "LightProbeRenderFramebuffer")
 
-ReflectiveShadowRenderFramebuffer::ReflectiveShadowRenderFramebuffer() noexcept
+LightProbeRenderFramebuffer::LightProbeRenderFramebuffer() noexcept
 {
 }
 
-ReflectiveShadowRenderFramebuffer::~ReflectiveShadowRenderFramebuffer() noexcept
+LightProbeRenderFramebuffer::~LightProbeRenderFramebuffer() noexcept
 {
 }
 
 bool
-ReflectiveShadowRenderFramebuffer::setup()
+LightProbeRenderFramebuffer::setup()
 {
 	std::uint32_t shadowMapSize = 0;
 

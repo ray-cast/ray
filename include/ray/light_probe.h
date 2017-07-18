@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class EXPORT LightProbe final : public RenderObject
+class EXPORT LightProbe final : public RenderObject, public RenderListener
 {
 public:
 	LightProbe() noexcept;
@@ -51,17 +51,31 @@ public:
 	void setSH9(const SH9& sh) noexcept;
 	const SH9& getSH9() const noexcept;
 
-	void setColorTexture(const GraphicsTexturePtr& texture) noexcept;
-	const GraphicsTexturePtr& getColorTexture() const noexcept;
+	const CameraPtr& getCamera() const noexcept;
 
-	void setNormalTexture(const GraphicsTexturePtr& texture) noexcept;
-	const GraphicsTexturePtr& getNormalTexture() const noexcept;
+private:
+	bool setupProbeCamera() noexcept;
+
+	void _updateTransform() noexcept;
+	void _updateBoundingBox() noexcept;
+
+private:
+	virtual void onMoveAfter() noexcept;
+
+	virtual void onSceneChangeBefore() noexcept;
+	virtual void onSceneChangeAfter() noexcept;
+
+	virtual bool onVisiableTest(const Camera& camera, const Frustum& fru) noexcept;
+
+	virtual void onAddRenderData(RenderDataManager& manager) noexcept;
+
+	virtual void onRenderObjectPre(const Camera& camera) noexcept;
+	virtual void onRenderObjectPost(const Camera& camera) noexcept;
 
 private:
 	SH9 _sh;
 
-	GraphicsTexturePtr _bakeColorMap;
-	GraphicsTexturePtr _bakeNormalMap;
+	CameraPtr _camera;
 };
 
 _NAME_END

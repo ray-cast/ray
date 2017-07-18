@@ -51,8 +51,6 @@ public:
 	bool setup(const RenderPipelinePtr& pipeline) noexcept;
 	void close() noexcept;
 
-	void renderLightProbes(RenderPipeline& pipeline) noexcept;
-
 private:
 	virtual void onRenderBefore() noexcept;
 	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;

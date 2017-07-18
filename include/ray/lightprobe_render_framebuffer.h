@@ -34,47 +34,39 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_PROBE_COMPONENT_H_
-#define _H_LIGHT_PROBE_COMPONENT_H_
+#ifndef _H_LIGHTPROBE_RENDER_FRAMEBUFFER_H_
+#define _H_LIGHTPROBE_RENDER_FRAMEBUFFER_H_
 
-#include <ray/render_component.h>
-#include <ray/light_probe.h>
+#include <ray/render_pipeline_framebuffer.h>
 
 _NAME_BEGIN
 
-class EXPORT LightProbeComponent final : public RenderComponent
+class EXPORT LightProbeRenderFramebuffer : public RenderPipelineFramebuffer
 {
-	__DeclareSubClass(LightProbeComponent, RenderComponent)
+	__DeclareSubInterface(ShadowRenderFramebuffer, RenderPipelineFramebuffer)
 public:
-	LightProbeComponent() noexcept;
-	LightProbeComponent(const archivebuf& reader) noexcept;
-	~LightProbeComponent() noexcept;
+	LightProbeRenderFramebuffer() noexcept;
+	virtual ~LightProbeRenderFramebuffer() noexcept;
 
-	void setVisible(bool enable) noexcept;
-	bool getVisible() const noexcept;
+	bool setup();
 
-	void setSH9(const SH9& sh) noexcept;
-	const SH9& getSH9() const noexcept;
+	const GraphicsTexturePtr& getDepthMap() const noexcept { return _shadowDepthMap; }
+	const GraphicsTexturePtr& getColorMap() const noexcept { return _shadowColorMap; }
+	const GraphicsTexturePtr& getNormalMap() const noexcept { return _shadowNormalMap; }
 
-	const CameraPtr& getCamera() const noexcept;
-
-	void load(const archivebuf& reader) noexcept;
-	void save(archivebuf& write) noexcept;
-
-	GameComponentPtr clone() const noexcept;
+	const GraphicsFramebufferPtr& getRSMView() const noexcept { return _shadowRSMView; }
 
 private:
-	virtual void onActivate() noexcept;
-	virtual void onDeactivate() noexcept;
-
-	virtual void onMoveAfter() noexcept;
+	LightProbeRenderFramebuffer(const LightProbeRenderFramebuffer&) noexcept = delete;
+	LightProbeRenderFramebuffer& operator=(const LightProbeRenderFramebuffer&) noexcept = delete;
 
 private:
-	LightProbeComponent(const LightProbeComponent&) = delete;
-	LightProbeComponent& operator=(const LightProbeComponent&) = delete;
+	GraphicsTexturePtr _shadowDepthMap;
+	GraphicsTexturePtr _shadowColorMap;
+	GraphicsTexturePtr _shadowNormalMap;
 
-private:
-	LightProbePtr _lightProbe;
+	GraphicsFramebufferPtr _shadowRSMView;
+	GraphicsFramebufferLayoutPtr _shadowRSMViewLayout;
 };
 
 _NAME_END

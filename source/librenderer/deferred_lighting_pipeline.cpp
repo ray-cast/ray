@@ -47,8 +47,8 @@
 #include <ray/graphics_texture.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/material.h>
-#include "shadow_render_framebuffer.h"
-#include "reflective_shadow_render_framebuffer.h"
+#include <ray/shadow_render_framebuffer.h>
+#include <ray/reflective_shadow_render_framebuffer.h>
 
 _NAME_BEGIN
 
@@ -290,7 +290,7 @@ DeferredLightingPipeline::renderAmbientLights(RenderPipeline& pipeline, const Gr
 {
 	pipeline.setFramebuffer(target);
 
-	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
+	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLights);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
@@ -315,7 +315,7 @@ DeferredLightingPipeline::renderDirectLights(RenderPipeline& pipeline, const Gra
 {
 	pipeline.setFramebuffer(target);
 
-	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
+	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLights);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
@@ -349,13 +349,13 @@ DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& 
 	auto& shadowMap = light.getCamera()->getRenderPipelineFramebuffer()->downcast<ShadowRenderFramebuffer>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 	if (shadowMap)
 	{
-		float shadowFactor = light.getShadowFactor() / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
+		float shadowFactor = light.getShadowFactor() / (light.getCamera()->getFar() - light.getCamera()->getNear());
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f(light.getCamera(0)->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
-		_shadowView2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightView->uniform4f(light.getCamera()->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawScreenQuadLayer(*_deferredSunLightShadow, light.getLayer());
 	}
@@ -375,13 +375,13 @@ DeferredLightingPipeline::renderDirectionalLight(RenderPipeline& pipeline, const
 	auto& shadowMap = light.getCamera()->getRenderPipelineFramebuffer()->downcast<ShadowRenderFramebuffer>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 	if (shadowMap)
 	{
-		float shadowFactor = light.getShadowFactor() / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
+		float shadowFactor = light.getShadowFactor() / (light.getCamera()->getFar() - light.getCamera()->getNear());
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f(light.getCamera(0)->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
-		_shadowView2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightView->uniform4f(light.getCamera()->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawScreenQuadLayer(*_deferredDirectionalLightShadow, light.getLayer());
 	}
@@ -423,13 +423,13 @@ DeferredLightingPipeline::renderSpotLight(RenderPipeline& pipeline, const Light&
 	auto& shadowMap = light.getCamera()->getRenderPipelineFramebuffer()->downcast<ShadowRenderFramebuffer>()->getFramebuffer()->getGraphicsFramebufferDesc().getColorAttachment().getBindingTexture();
 	if (shadowMap)
 	{
-		float shadowFactor = light.getShadowFactor() / (light.getCamera(0)->getFar() - light.getCamera(0)->getNear());
+		float shadowFactor = light.getShadowFactor() / (light.getCamera()->getFar() - light.getCamera()->getNear());
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
 		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
-		_shadowView2LightView->uniform4f(light.getCamera(0)->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
-		_shadowView2LightViewProject->uniform4fmat(light.getCamera(0)->getViewProject() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightView->uniform4f(light.getCamera()->getView().getAxisZ() * pipeline.getCamera()->getViewInverse());
+		_shadowView2LightViewProject->uniform4fmat(light.getCamera()->getViewProject() * pipeline.getCamera()->getViewInverse());
 
 		pipeline.drawCone(*_deferredSpotLightShadow, light.getLayer());
 	}
@@ -493,7 +493,7 @@ DeferredLightingPipeline::renderIndirectLights(RenderPipeline& pipeline, const G
 	bool hasIndirectLight = false;
 
 	auto framebuffers = pipeline.getCamera()->getRenderPipelineFramebuffer()->downcast<DeferredLightingFramebuffers>();
-	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
+	auto& lights = pipeline.getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLights);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
@@ -579,11 +579,11 @@ DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const 
 	_mrsiiDepthLinearMap->uniformTexture(framebuffer->getDepthMap());
 	_mrsiiLightAttenuation->uniform3f(light.getLightAttenuation());
 	_mrsiiLightOuterInner->uniform2f(light.getSpotOuterCone().y, light.getSpotInnerCone().y);
-	_mrsiiLightView2EyeView->uniform4fmat(pipeline.getCamera()->getView() * light.getCamera(0)->getViewInverse());
+	_mrsiiLightView2EyeView->uniform4fmat(pipeline.getCamera()->getView() * light.getCamera()->getViewInverse());
 	_mrsiiLightColor->uniform3f(light.getLightColor() * light.getLightIntensity());
 
 	auto camera = pipeline.getCamera();
-	pipeline.setCamera(light.getCamera(0));
+	pipeline.setCamera(light.getCamera());
 	pipeline.setFramebuffer(_mrsiiVPLsView);
 	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_mrsiiRsm2VPLsSpot);

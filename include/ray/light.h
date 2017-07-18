@@ -87,8 +87,7 @@ public:
 	void setSkyLightingSpecular(const GraphicsTexturePtr& texture) noexcept;
 	const GraphicsTexturePtr& getSkyLightingSpecular() const noexcept;
 
-	const Cameras& getCameras() const noexcept;
-	const CameraPtr& getCamera(std::size_t i = 0) const noexcept;
+	const CameraPtr& getCamera() const noexcept;
 
 	RenderObjectPtr clone() const noexcept;
 
@@ -105,6 +104,8 @@ private:
 private:
 	void onSceneChangeBefore() noexcept;
 	void onSceneChangeAfter() noexcept;
+
+	bool onVisiableTest(const Camera& camera, const Frustum& fru) noexcept;
 
 	void onAddRenderData(RenderDataManager& manager) noexcept;
 
@@ -134,7 +135,7 @@ private:
 
 	float _shadowBias;
 	float _shadowFactor;
-	Cameras _shadowCameras;
+	CameraPtr _shadowCamera;
 	ShadowMode _shadowMode;
 
 	GraphicsTexturePtr _skybox;

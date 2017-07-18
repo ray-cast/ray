@@ -121,9 +121,11 @@ ShadowRenderPipeline::getShadowQuality() const noexcept
 void
 ShadowRenderPipeline::renderShadowMaps(const CameraPtr& mainCamera) noexcept
 {
+	assert(mainCamera);
+
 	_pipeline->setCamera(mainCamera);
 
-	const auto& lights = _pipeline->getCamera()->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLighting);
+	const auto& lights = mainCamera->getRenderDataManager()->getRenderData(RenderQueue::RenderQueueLights);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
@@ -144,54 +146,56 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& mainCamera) noexcept
 void
 ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noexcept
 {
-	auto& cameras = light.getCameras();
-	for (auto& camera : cameras)
+	auto& camera = light.getCamera();
+
+	auto shadowFrambuffer = _shadowShadowDepthViewTemp;
+	auto shadowLienarFrambuffer = camera->getRenderPipelineFramebuffer()->getFramebuffer();
+	auto shadowTexture = shadowFrambuffer->getGraphicsFramebufferDesc().getDepthStencilAttachment().getBindingTexture();
+
+	camera->onRenderBefore(*camera);
+
+	_pipeline->setCamera(camera);
+	_pipeline->setFramebuffer(shadowFrambuffer);
+
+	if (queue == RenderQueue::RenderQueueReflectiveShadow)
 	{
-		auto shadowFrambuffer = _shadowShadowDepthViewTemp;
-		auto shadowLienarFrambuffer = camera->getRenderPipelineFramebuffer()->getFramebuffer();
-		auto shadowTexture = shadowFrambuffer->getGraphicsFramebufferDesc().getDepthStencilAttachment().getBindingTexture();
-
-		_pipeline->setCamera(camera);
-		_pipeline->setFramebuffer(shadowFrambuffer);
-
-		if (queue == RenderQueue::RenderQueueReflectiveShadow)
-		{
-			_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-			_pipeline->clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
-			_pipeline->clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
-		}
-		else
-		{
-			_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
-		}
-
-		_pipeline->drawRenderQueue(queue, nullptr);
-
-		if (_shadowMode == ShadowMode::ShadowModeSoft && light.getShadowMode() == ShadowMode::ShadowModeSoft)
-		{
-			_shadowShadowSource->uniformTexture(shadowTexture);
-			_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0, 1.0));
-
-			_pipeline->setFramebuffer(_shadowShadowDepthLinearViewTemp);
-			_pipeline->discardFramebuffer(0);
-			_pipeline->drawScreenQuad(*_shadowBlurShadowX[(std::uint8_t)light.getLightType()]);
-
-			_shadowShadowSource->uniformTexture(_shadowShadowDepthLinearMapTemp);
-
-			_pipeline->setFramebuffer(shadowLienarFrambuffer);
-			_pipeline->discardFramebuffer(0);
-			_pipeline->drawScreenQuad(*_shadowBlurShadowY);
-		}
-		else
-		{
-			_shadowShadowSource->uniformTexture(shadowTexture);
-			_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0f, 1.0f));
-
-			_pipeline->setFramebuffer(shadowLienarFrambuffer);
-			_pipeline->discardFramebuffer(0);
-			_pipeline->drawScreenQuad(*_shadowBlurShadowX[(std::uint8_t)light.getLightType()]);
-		}
+		_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+		_pipeline->clearFramebuffer(1, GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
+		_pipeline->clearFramebuffer(2, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
 	}
+	else
+	{
+		_pipeline->clearFramebuffer(0, GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
+	}
+
+	_pipeline->drawRenderQueue(queue, nullptr);
+
+	if (_shadowMode == ShadowMode::ShadowModeSoft && light.getShadowMode() == ShadowMode::ShadowModeSoft)
+	{
+		_shadowShadowSource->uniformTexture(shadowTexture);
+		_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0, 1.0));
+
+		_pipeline->setFramebuffer(_shadowShadowDepthLinearViewTemp);
+		_pipeline->discardFramebuffer(0);
+		_pipeline->drawScreenQuad(*_shadowBlurShadowX[(std::uint8_t)light.getLightType()]);
+
+		_shadowShadowSource->uniformTexture(_shadowShadowDepthLinearMapTemp);
+
+		_pipeline->setFramebuffer(shadowLienarFrambuffer);
+		_pipeline->discardFramebuffer(0);
+		_pipeline->drawScreenQuad(*_shadowBlurShadowY);
+	}
+	else
+	{
+		_shadowShadowSource->uniformTexture(shadowTexture);
+		_shadowClipConstant->uniform4f(float4(camera->getClipConstant().xy(), 1.0f, 1.0f));
+
+		_pipeline->setFramebuffer(shadowLienarFrambuffer);
+		_pipeline->discardFramebuffer(0);
+		_pipeline->drawScreenQuad(*_shadowBlurShadowX[(std::uint8_t)light.getLightType()]);
+	}
+
+	camera->onRenderAfter(*camera);
 }
 
 bool
@@ -361,8 +365,10 @@ ShadowRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 	assert(camera);
 	assert(camera->getCameraOrder() == CameraOrder::CameraOrder3D);
 
-	if (_shadowQuality != ShadowQuality::ShadowQualityNone)
-		this->renderShadowMaps(camera);
+	if (_shadowQuality == ShadowQuality::ShadowQualityNone)
+		return;
+
+	this->renderShadowMaps(camera);
 }
 
 void

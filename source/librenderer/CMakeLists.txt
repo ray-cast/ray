@@ -129,10 +129,12 @@ SET(RENDER_PIPELINE
     ${SOURCE_PATH}/forward_render_pipeline.cpp
     ${SOURCE_PATH}/shadow_render_pipeline.h
     ${SOURCE_PATH}/shadow_render_pipeline.cpp
-    ${SOURCE_PATH}/shadow_render_framebuffer.h
+    ${HEADER_PATH}/shadow_render_framebuffer.h
     ${SOURCE_PATH}/shadow_render_framebuffer.cpp
-    ${SOURCE_PATH}/reflective_shadow_render_framebuffer.h
+    ${HEADER_PATH}/reflective_shadow_render_framebuffer.h
     ${SOURCE_PATH}/reflective_shadow_render_framebuffer.cpp
+    ${HEADER_PATH}/lightprobe_render_framebuffer.h
+    ${SOURCE_PATH}/lightprobe_render_framebuffer.cpp
 )
 SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
 

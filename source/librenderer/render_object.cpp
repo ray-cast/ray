@@ -154,7 +154,7 @@ RenderObject::setTransform(const float4x4& transform) noexcept
 void
 RenderObject::setTransform(const float4x4& transform, const float4x4& transformInverse) noexcept
 {
-	this->onMoveBefor();
+	this->onMoveBefore();
 
 	_transform = transform;
 	_transformInverse = transformInverse;
@@ -218,7 +218,7 @@ RenderObject::onRenderAfter(const Camera& camera) noexcept
 }
 
 void
-RenderObject::onMoveBefor() noexcept
+RenderObject::onMoveBefore() noexcept
 {
 }
 
@@ -238,7 +238,7 @@ RenderObject::onSceneChangeAfter() noexcept
 }
 
 bool
-RenderObject::onVisiableTest(const Frustum& fru) noexcept
+RenderObject::onVisiableTest(const Camera& camera, const Frustum& fru) noexcept
 {
 	return fru.contains(this->getBoundingBoxInWorld().aabb());
 }

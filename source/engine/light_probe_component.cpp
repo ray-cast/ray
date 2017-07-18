@@ -73,6 +73,24 @@ LightProbeComponent::getVisible() const noexcept
 }
 
 void
+LightProbeComponent::setSH9(const SH9& sh) noexcept
+{
+	_lightProbe->setSH9(sh);
+}
+
+const SH9&
+LightProbeComponent::getSH9() const noexcept
+{
+	return _lightProbe->getSH9();
+}
+
+const CameraPtr&
+LightProbeComponent::getCamera() const noexcept
+{
+	return _lightProbe->getCamera();
+}
+
+void
 LightProbeComponent::load(const archivebuf& reader) noexcept
 {
 	GameComponent::load(reader);

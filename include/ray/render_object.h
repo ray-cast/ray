@@ -85,13 +85,13 @@ public:
 	const Vector3& getTranslate() const noexcept;
 
 public:
-	virtual void onMoveBefor() noexcept;
+	virtual void onMoveBefore() noexcept;
 	virtual void onMoveAfter() noexcept;
 
 	virtual void onSceneChangeBefore() noexcept;
 	virtual void onSceneChangeAfter() noexcept;
 
-	virtual bool onVisiableTest(const Frustum& fru) noexcept;
+	virtual bool onVisiableTest(const Camera& camera, const Frustum& fru) noexcept;
 	virtual void onAddRenderData(RenderDataManager& manager) noexcept;
 
 	virtual void onRenderBefore(const Camera& camera) noexcept;

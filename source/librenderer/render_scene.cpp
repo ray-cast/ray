@@ -227,28 +227,24 @@ RenderScene::removeRenderObject(RenderObject* object) noexcept
 }
 
 void
-RenderScene::computVisiable(const float3& eye, const float4x4& viewProject, OcclusionCullList& list) noexcept
+RenderScene::computVisiable(const Camera& camera, OcclusionCullList& list) noexcept
 {
-	Frustum fru;
-	fru.extract(viewProject);
+	Frustum fru(camera.getViewProject());
 
 	for (auto& it : _renderObjectList)
 	{
 		if (!it->getVisible())
 			continue;
 
-		if (it->onVisiableTest(fru))
-			list.insert(it, math::sqrDistance(eye, it->getTransform().getTranslate()));
+		if (it->onVisiableTest(camera, fru))
+			list.insert(it, math::sqrDistance(camera.getTranslate(), it->getTransform().getTranslate()));
 	}
 }
 
 void
-RenderScene::computVisiableLight(const float3& eye, const float4x4& viewProject, OcclusionCullList& list) noexcept
+RenderScene::computVisiableLight(const Camera& camera, OcclusionCullList& list) noexcept
 {
-	Frustum fru;
-	fru.extract(viewProject);
-
-	const auto& eyePosition = viewProject.getTranslate();
+	Frustum fru(camera.getViewProject());
 
 	for (auto& it : _renderObjectList)
 	{
@@ -258,8 +254,8 @@ RenderScene::computVisiableLight(const float3& eye, const float4x4& viewProject,
 		if (!it->getVisible())
 			continue;
 
-		if (it->onVisiableTest(fru))
-			list.insert(it, math::sqrDistance(eye, it->getTransform().getTranslate()));
+		if (it->onVisiableTest(camera, fru))
+			list.insert(it, math::sqrDistance(camera.getTranslate(), it->getTransform().getTranslate()));
 	}
 }
 

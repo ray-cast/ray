@@ -366,8 +366,11 @@ Camera::getPixelViewport() const noexcept
 void
 Camera::setCameraType(CameraType type) noexcept
 {
-	_cameraType = type;
-	_needUpdateViewProject = true;
+	if (_cameraType != type)
+	{
+		_needUpdateViewProject = true;
+		_cameraType = type;
+	}
 }
 
 void

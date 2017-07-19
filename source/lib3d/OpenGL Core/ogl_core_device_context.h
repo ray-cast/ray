@@ -88,7 +88,7 @@ public:
 	void clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discardFramebuffer(std::uint32_t i) noexcept;
 	void blitFramebuffer(const GraphicsFramebufferPtr& src, const Viewport& v1, const GraphicsFramebufferPtr& dest, const Viewport& v2) noexcept;
-	void readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept;
+	void readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void draw(std::uint32_t numVertices, std::uint32_t numInstances, std::uint32_t startVertice, std::uint32_t startInstances) noexcept;

@@ -180,16 +180,10 @@ OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum a
 	auto textureID = texture->getInstanceID();
 	auto& textureDesc = renderTexture->getGraphicsTextureDesc();
 
-	if (layer > 0)
+	if (textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDim2DArray ||
+		textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube ||
+		textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDimCubeArray)
 	{
-		if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
-			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
-			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
-		{
-			this->getDevice()->downcast<OGLDevice>()->message("Invalid texture target");
-			return false;
-		}
-
 		glNamedFramebufferTextureLayer(_fbo, attachment, textureID, level, layer);
 	}
 	else

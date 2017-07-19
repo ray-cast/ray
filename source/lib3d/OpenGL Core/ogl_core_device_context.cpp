@@ -637,7 +637,7 @@ OGLCoreDeviceContext::discardFramebuffer(std::uint32_t i) noexcept
 }
 
 void
-OGLCoreDeviceContext::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+OGLCoreDeviceContext::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
 {
 	GLenum internalFormat = OGLTypes::asTextureInternalFormat(texture->getGraphicsTextureDesc().getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
@@ -646,6 +646,7 @@ OGLCoreDeviceContext::readFramebuffer(const GraphicsTexturePtr& texture, std::ui
 		return;
 	}
 
+	glNamedFramebufferReadBuffer(_framebuffer->getInstanceID(), GL_COLOR_ATTACHMENT0 + i);
 	glCopyTextureSubImage2D(texture->downcast<OGLCoreTexture>()->getInstanceID(), 0, 0, 0, x, y, width, height);
 }
 

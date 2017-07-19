@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "light_probe_render_pipeline.h"
+#include <ray/light_probe_render_framebuffer.h>
 
 #include <ray/render_pipeline.h>
 #include <ray/render_pipeline_framebuffer.h>
@@ -164,7 +165,10 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 		auto& camera = lightProbe->getCamera();
 		if (camera)
 		{
-			camera->onRenderBefore(*camera);
+			if (!camera->getRenderPipelineFramebuffer())
+				continue;
+
+			camera->onRenderBefore(*mainCamera);
 
 			for (std::uint8_t i = 0; i < 6; i++)
 			{
@@ -186,9 +190,18 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 				}
 
 				_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque);
+
+				auto framebuffers = camera->getRenderPipelineFramebuffer()->downcast<LightProbeRenderFramebuffer>();
+
+				_pipeline->readFramebuffer(0, framebuffers->getColorMap(), 0, 0, framebuffers->getColorMap()->getGraphicsTextureDesc().getWidth(), framebuffers->getColorMap()->getGraphicsTextureDesc().getHeight());
+				_pipeline->readFramebuffer(1, framebuffers->getNormalMap(), 0, 0, framebuffers->getNormalMap()->getGraphicsTextureDesc().getWidth(), framebuffers->getNormalMap()->getGraphicsTextureDesc().getHeight());
+
+				_pipeline->discardFramebuffer(0);
+				_pipeline->discardFramebuffer(1);
+				_pipeline->discardFramebuffer(2);
 			}
 
-			camera->onRenderAfter(*camera);
+			camera->onRenderAfter(*mainCamera);
 		}
 	}
 }

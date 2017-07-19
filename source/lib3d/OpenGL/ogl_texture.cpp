@@ -192,14 +192,18 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 							if (target == GL_TEXTURE_CUBE_MAP)
 								glTexImage2D(cubeFace[face], mip, internalFormat, w, h, 0, format, type, stream ? (char*)stream + offset : nullptr);
 							else
-								glTexImage3D(cubeFace[face], mip, internalFormat, w, h, layer, 0, format, type, stream ? (char*)stream + offset : nullptr);
+								glTexImage3D(cubeFace[face], mip, internalFormat, w, h, layer + 1, 0, format, type, stream ? (char*)stream + offset : nullptr);
 
 							offset += mipSize;
 						}
 					}
 					else
 					{
-						glTexImage3D(target, mip, internalFormat, w, h, depth * layer, 0, format, type, stream ? (char*)stream + offset : nullptr);
+						if (target == GL_TEXTURE_2D_ARRAY)
+							glTexImage3D(target, mip, internalFormat, w, h, layer + 1, 0, format, type, stream ? (char*)stream + offset : nullptr);
+						else
+							glTexImage3D(target, mip, internalFormat, w, h, depth, 0, format, type, stream ? (char*)stream + offset : nullptr);
+
 						offset += mipSize;
 					}
 				}

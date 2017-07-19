@@ -2136,7 +2136,8 @@ GuiControllerComponent::onUpdateMaterial(const EditorAssetItem& item) noexcept
 	ray::RenderSystem::instance()->setIndexBuffer(_ibo, 0, ray::GraphicsIndexType::GraphicsIndexTypeUInt32);
 	ray::RenderSystem::instance()->setMaterialPass(material->getTech("Preview")->getPass(0));
 	ray::RenderSystem::instance()->drawIndexed(4416, 1, 0, 0, 0);
-	ray::RenderSystem::instance()->readFramebuffer(item.preview, 0, 0, item.preview->getGraphicsTextureDesc().getWidth(), item.preview->getGraphicsTextureDesc().getHeight());
+	ray::RenderSystem::instance()->readFramebuffer(0, item.preview, 0, 0, item.preview->getGraphicsTextureDesc().getWidth(), item.preview->getGraphicsTextureDesc().getHeight());
+	ray::RenderSystem::instance()->discardFramebuffer(0);
 
 	return true;
 }

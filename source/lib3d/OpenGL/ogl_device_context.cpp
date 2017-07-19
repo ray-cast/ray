@@ -675,7 +675,7 @@ OGLDeviceContext::getFramebuffer() const noexcept
 }
 
 void
-OGLDeviceContext::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+OGLDeviceContext::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
 {
 	GLenum internalFormat = OGLTypes::asTextureFormat(texture->getGraphicsTextureDesc().getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
@@ -683,6 +683,8 @@ OGLDeviceContext::readFramebuffer(const GraphicsTexturePtr& texture, std::uint32
 		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
 		return;
 	}
+
+	glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->downcast<OGLTexture>()->getTarget(), texture->downcast<OGLTexture>()->getInstanceID());

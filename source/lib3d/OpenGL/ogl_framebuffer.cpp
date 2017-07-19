@@ -225,7 +225,9 @@ OGLFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attac
 
 	if (textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDim2DArray)
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, level, layer);
-	else if (textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube || textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDimCubeArray)
+	else if (textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube)
+		glFramebufferTexture(GL_FRAMEBUFFER, attachment, textureID, level);
+	else if (textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDimCubeArray)
 		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, textureTarget, textureID, level, layer);
 	else
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textureTarget, textureID, level);

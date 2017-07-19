@@ -173,19 +173,9 @@ LightProbe::onAddRenderData(RenderDataManager& manager) noexcept
 }
 
 void
-LightProbe::onGenProbeBefore(const Camera& camera) noexcept
-{
-	if (_camera) this->setupProbeCamera();
-}
-
-void
-LightProbe::onGenProbeAfter(const Camera& camera) noexcept
-{
-}
-
-void
 LightProbe::onRenderObjectPre(const Camera& camera) noexcept
 {
+	if (_camera) this->setupProbeCamera();
 }
 
 void

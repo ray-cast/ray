@@ -223,22 +223,12 @@ OGLFramebuffer::bindRenderTexture(GraphicsTexturePtr renderTexture, GLenum attac
 	auto textureTarget = texture->getTarget();
 	auto& textureDesc = renderTexture->getGraphicsTextureDesc();
 
-	if (layer > 0)
-	{
-		if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
-			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
-			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
-		{
-			this->getDevice()->downcast<OGLDevice>()->message("Invalid texture target");
-			return false;
-		}
-
+	if (textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDim2DArray)
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, level, layer);
-	}
+	else if (textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube || textureDesc.getTexDim() == GraphicsTextureDim::GraphicsTextureDimCubeArray)
+		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, textureTarget, textureID, level, layer);
 	else
-	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textureTarget, textureID, level);
-	}
 
 	return OGLCheck::checkError();
 }

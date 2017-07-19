@@ -40,6 +40,9 @@
 #include <ray/render_pipeline_framebuffer.h>
 #include <ray/render_object_manager.h>
 
+#include <ray/graphics_texture.h>
+#include <ray/graphics_framebuffer.h>
+
 #include <ray/camera.h>
 #include <ray/light_probe.h>
 
@@ -57,10 +60,86 @@ LightProbeRenderPipeline::~LightProbeRenderPipeline() noexcept
 }
 
 bool
-LightProbeRenderPipeline::setup(const RenderPipelinePtr& pipeline) noexcept
+LightProbeRenderPipeline::setup(const RenderPipelinePtr& pipeline, std::uint32_t probeMapSize) noexcept
 {
 	assert(pipeline);
+	assert(probeMapSize > 0);
+
+	GraphicsFormat probeDepthFormat;
+	if (pipeline->isTextureSupport(GraphicsFormat::GraphicsFormatD32_SFLOAT))
+		probeDepthFormat = GraphicsFormat::GraphicsFormatD32_SFLOAT;
+	else if (pipeline->isTextureSupport(GraphicsFormat::GraphicsFormatX8_D24UNormPack32))
+		probeDepthFormat = GraphicsFormat::GraphicsFormatX8_D24UNormPack32;
+	else if (pipeline->isTextureSupport(GraphicsFormat::GraphicsFormatD16UNorm))
+		probeDepthFormat = GraphicsFormat::GraphicsFormatD16UNorm;
+	else
+		return false;
+
+	GraphicsFormat probeColorFormat;
+	GraphicsFormat probeNormalFormat;
+
+	if (pipeline->isTextureSupport(GraphicsFormat::GraphicsFormatR8G8B8UNorm))
+		probeColorFormat = probeNormalFormat = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+	else
+		return false;
+
+	GraphicsTextureDesc probeDepthDesc;
+	probeDepthDesc.setWidth(probeMapSize);
+	probeDepthDesc.setHeight(probeMapSize);
+	probeDepthDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2DArray);
+	probeDepthDesc.setTexFormat(probeDepthFormat);
+	probeDepthDesc.setLayerNums(6);
+	probeDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_probeDepthMap = pipeline->createTexture(probeDepthDesc);
+	if (!_probeDepthMap)
+		return false;
+
+	GraphicsTextureDesc probeColorDesc;
+	probeColorDesc.setWidth(probeMapSize);
+	probeColorDesc.setHeight(probeMapSize);
+	probeColorDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2DArray);
+	probeColorDesc.setTexFormat(probeColorFormat);
+	probeColorDesc.setLayerNums(6);
+	probeDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_probeColorMap = pipeline->createTexture(probeColorDesc);
+	if (!_probeColorMap)
+		return false;
+
+	GraphicsTextureDesc probeNormalDesc;
+	probeNormalDesc.setWidth(probeMapSize);
+	probeNormalDesc.setHeight(probeMapSize);
+	probeNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2DArray);
+	probeNormalDesc.setTexFormat(probeNormalFormat);
+	probeNormalDesc.setLayerNums(6);
+	probeDepthDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+	_probeNormalMap = pipeline->createTexture(probeNormalDesc);
+	if (!_probeNormalMap)
+		return false;
+
+	GraphicsFramebufferLayoutDesc shaodwRSMMapLayoutDesc;
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, probeColorFormat));
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, probeNormalFormat));
+	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, probeDepthFormat));
+	_probeRSMViewLayout = pipeline->createFramebufferLayout(shaodwRSMMapLayoutDesc);
+	if (!_probeRSMViewLayout)
+		return false;
+
+	for (std::uint8_t i = 0; i < 6; i++)
+	{
+		GraphicsFramebufferDesc probeRSMViewDesc;
+		probeRSMViewDesc.setWidth(probeMapSize);
+		probeRSMViewDesc.setHeight(probeMapSize);
+		probeRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_probeColorMap, 0, i));
+		probeRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_probeNormalMap, 0, i));
+		probeRSMViewDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_probeDepthMap, 0, i));
+		probeRSMViewDesc.setGraphicsFramebufferLayout(_probeRSMViewLayout);
+		_probeRSMViews[i] = pipeline->createFramebuffer(probeRSMViewDesc);
+		if (!_probeRSMViews[i])
+			return false;
+	}
+
 	_pipeline = pipeline;
+
 	return true;
 }
 
@@ -81,7 +160,6 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 	for (auto& it : lightProbes)
 	{
 		auto lightProbe = it->downcast<LightProbe>();
-		lightProbe->onGenProbeBefore(*mainCamera);
 
 		auto& camera = lightProbe->getCamera();
 		if (camera)
@@ -90,8 +168,8 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 
 			for (std::uint8_t i = 0; i < 6; i++)
 			{
-				_pipeline->setCamera(camera);
-				_pipeline->setFramebuffer(camera->getRenderPipelineFramebuffer()->getFramebuffer());
+				_pipeline->setCamera(_cameras[i]);
+				_pipeline->setFramebuffer(_probeRSMViews[i]);
 
 				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
 					_pipeline->clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, camera->getClearColor());
@@ -112,8 +190,6 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 
 			camera->onRenderAfter(*camera);
 		}
-
-		lightProbe->onGenProbeAfter(*camera);
 	}
 }
 

@@ -272,7 +272,7 @@
 		
 		float GetJitterOffset(float2 uv)
 		{
-			return dot(frac(uv * 0.25), float2(0.25, 0.25));
+			return dot(frac(uv * 0.25), float2(1.0, 0.25));
 		}
 		
 		float3 DecodeRGBT(float4 rgbt, float range = 1024)

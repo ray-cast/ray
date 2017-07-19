@@ -109,26 +109,6 @@ LightProbeRenderFramebuffer::setup()
 	if (!_probeNormalMap)
 		return false;
 
-	GraphicsFramebufferLayoutDesc shaodwRSMMapLayoutDesc;
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(0, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, probeColorFormat));
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(1, GraphicsImageLayout::GraphicsImageLayoutColorAttachmentOptimal, probeNormalFormat));
-	shaodwRSMMapLayoutDesc.addComponent(GraphicsAttachmentLayout(2, GraphicsImageLayout::GraphicsImageLayoutDepthStencilReadOnlyOptimal, probeDepthFormat));
-	_probeRSMViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwRSMMapLayoutDesc);
-	if (!_probeRSMViewLayout)
-		return false;
-
-	GraphicsFramebufferDesc probeRSMViewDesc;
-	probeRSMViewDesc.setWidth(probeMapSize);
-	probeRSMViewDesc.setHeight(probeMapSize);
-	probeRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_probeColorMap, 0, 0));
-	probeRSMViewDesc.addColorAttachment(GraphicsAttachmentBinding(_probeNormalMap, 0, 0));
-	probeRSMViewDesc.setDepthStencilAttachment(GraphicsAttachmentBinding(_probeDepthMap, 0, 0));
-	probeRSMViewDesc.setGraphicsFramebufferLayout(_probeRSMViewLayout);
-	_probeRSMView = RenderSystem::instance()->createFramebuffer(probeRSMViewDesc);
-	if (!_probeRSMView)
-		return false;
-
-	this->setFramebuffer(_probeRSMView);
 	return true;
 }
 

@@ -48,7 +48,7 @@ public:
 	LightProbeRenderPipeline() noexcept;
 	virtual ~LightProbeRenderPipeline() noexcept;
 
-	bool setup(const RenderPipelinePtr& pipeline) noexcept;
+	bool setup(const RenderPipelinePtr& pipeline, std::uint32_t probeMapSize = 32) noexcept;
 	void close() noexcept;
 
 private:
@@ -64,6 +64,15 @@ private:
 	MaterialTechPtr _depthOnly;
 
 	RenderPipelinePtr _pipeline;
+
+	CameraPtr _cameras[6];
+
+	GraphicsTexturePtr _probeDepthMap;
+	GraphicsTexturePtr _probeColorMap;
+	GraphicsTexturePtr _probeNormalMap;
+
+	GraphicsFramebufferPtr _probeRSMViews[6];
+	GraphicsFramebufferLayoutPtr _probeRSMViewLayout;
 };
 
 _NAME_END

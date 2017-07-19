@@ -136,14 +136,10 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& mainCamera) noexcept
 			light->getLightType() == LightType::LightTypeEnvironment)
 			continue;
 
-		light->onGenShadowBefore(*mainCamera);
-
 		if (!light->getGlobalIllumination())
 			this->renderShadowMap(*light, RenderQueue::RenderQueueShadow);
 		else
 			this->renderShadowMap(*light, RenderQueue::RenderQueueReflectiveShadow);
-
-		light->onGenShadowAfter(*mainCamera);
 	}
 }
 

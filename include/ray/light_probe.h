@@ -62,10 +62,6 @@ private:
 	void _updateTransform() noexcept;
 	void _updateBoundingBox() noexcept;
 
-public:
-	void onGenProbeBefore(const Camera& camera) noexcept;
-	void onGenProbeAfter(const Camera& camera) noexcept;
-
 private:
 	virtual void onMoveAfter() noexcept;
 

@@ -54,8 +54,6 @@ public:
 	const GraphicsTexturePtr& getColorMap() const noexcept { return _probeColorMap; }
 	const GraphicsTexturePtr& getNormalMap() const noexcept { return _probeNormalMap; }
 
-	const GraphicsFramebufferPtr& getRSMView() const noexcept { return _probeRSMView; }
-
 private:
 	LightProbeRenderFramebuffer(const LightProbeRenderFramebuffer&) noexcept = delete;
 	LightProbeRenderFramebuffer& operator=(const LightProbeRenderFramebuffer&) noexcept = delete;
@@ -64,9 +62,6 @@ private:
 	GraphicsTexturePtr _probeDepthMap;
 	GraphicsTexturePtr _probeColorMap;
 	GraphicsTexturePtr _probeNormalMap;
-
-	GraphicsFramebufferPtr _probeRSMView;
-	GraphicsFramebufferLayoutPtr _probeRSMViewLayout;
 };
 
 _NAME_END

@@ -71,6 +71,7 @@ RenderPipeline::RenderPipeline() noexcept
 	, _planeIndices(0)
 	, _sphereIndices(0)
 	, _coneIndices(0)
+	, _camera(0)
 	, _planeIndexType(GraphicsIndexType::GraphicsIndexTypeUInt16)
 	, _coneIndexType(GraphicsIndexType::GraphicsIndexTypeUInt16)
 	, _sphereIndexType(GraphicsIndexType::GraphicsIndexTypeUInt16)
@@ -230,7 +231,7 @@ RenderPipeline::renderEnd() noexcept
 }
 
 void
-RenderPipeline::setCamera(const CameraPtr& camera) noexcept
+RenderPipeline::setCamera(const Camera* camera) noexcept
 {
 	assert(camera);
 
@@ -252,7 +253,7 @@ RenderPipeline::setCamera(const CameraPtr& camera) noexcept
 	}
 }
 
-const CameraPtr&
+const Camera*
 RenderPipeline::getCamera() const noexcept
 {
 	return _camera;

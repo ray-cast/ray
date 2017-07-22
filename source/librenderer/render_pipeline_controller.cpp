@@ -54,7 +54,7 @@ RenderPipelineController::onRenderBefore() noexcept
 }
 
 void
-RenderPipelineController::onRenderPipeline(const CameraPtr& camera) noexcept
+RenderPipelineController::onRenderPipeline(const Camera* camera) noexcept
 {
 }
 

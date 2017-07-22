@@ -54,10 +54,13 @@ public:
 	void setSH9(const SH9& sh) noexcept;
 	const SH9& getSH9() const noexcept;
 
+	bool needUpdateProbeMap() const noexcept;
+	void needUpdateProbeMap(bool update) noexcept;
+
 	const CameraPtr& getCamera() const noexcept;
 
 private:
-	bool setupProbeCamera() noexcept;
+	bool _setupProbeCamera() noexcept;
 
 	void _updateTransform() noexcept;
 	void _updateBoundingBox() noexcept;
@@ -72,10 +75,15 @@ private:
 
 	virtual void onAddRenderData(RenderDataManager& manager) noexcept;
 
+	virtual void onRenderBefore(const Camera& camera) noexcept;
+	virtual void onRenderAfter(const Camera& camera) noexcept;
+
 	virtual void onRenderObjectPre(const Camera& camera) noexcept;
 	virtual void onRenderObjectPost(const Camera& camera) noexcept;
 
 private:
+	bool _needUpdateProbeMap;
+
 	float _lightRange;
 
 	SH9 _sh;

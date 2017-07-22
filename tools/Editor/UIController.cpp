@@ -52,6 +52,7 @@
 #include <ray/utf8.h>
 #include <ray/camera_component.h>
 #include <ray/light_component.h>
+#include <ray/light_probe_component.h>
 #include <ray/skybox_component.h>
 #include <ray/mesh_component.h>
 #include <ray/mesh_render_component.h>
@@ -645,6 +646,8 @@ GuiControllerComponent::onAttachComponent(const ray::GameComponentPtr& component
 		delegate.onExportTexture = std::bind(&GuiControllerComponent::onExportTexture, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 		delegate.onExportMaterial = std::bind(&GuiControllerComponent::onExportMaterial, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 		delegate.onExportModel = std::bind(&GuiControllerComponent::onExportModel, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+
+		delegate.onCreateLightProbe = std::bind(&GuiControllerComponent::onCreateLightProbe, this, std::placeholders::_1);
 
 		delegate.onUpdateMaterial = std::bind(&GuiControllerComponent::onUpdateMaterial, this, std::placeholders::_1);
 
@@ -2104,15 +2107,77 @@ GuiControllerComponent::onSeletedLight(const ray::GameObject* object) noexcept
 bool
 GuiControllerComponent::onSeletedLightProbe(const ray::GameObject* object) noexcept
 {
-	if (_cube)
-		_cube->setScaleAll(0.0f);
-	return true;
+	return this->onTransformObject(object, 0);
 }
 
 bool
 GuiControllerComponent::onSeletedMesh(const ray::GameObject* object, std::size_t subset) noexcept
 {
 	return this->onTransformObject(object, subset);
+}
+
+bool
+GuiControllerComponent::onCreateLightProbe(ray::util::string::pointer& error) noexcept
+{
+	ray::MaterialPtr material;
+	if (!ray::ResManager::instance()->createMaterial("dlc:editor/fx/material.fxml", material))
+		return false;
+
+	auto sphereMesh = std::make_shared<ray::MeshProperty>();
+	sphereMesh->makeSphere(1.0, 24, 16);
+
+	auto gameObject = std::make_shared<ray::GameObject>();
+	gameObject->setActive(true);
+	gameObject->setName("lightprobe");
+	gameObject->setScaleAll(1.0f);
+	gameObject->setTranslate(ray::float3::Zero);
+
+	gameObject->addComponent(std::make_shared<ray::MeshComponent>(std::move(sphereMesh)));
+	gameObject->addComponent(std::make_shared<ray::MeshRenderComponent>(std::move(material)));
+	gameObject->addComponent(std::make_shared<ray::LightProbeComponent>());
+
+	(*material).setName("lightprobe");
+	(*material)["albedo"]->uniform3f(0.5, 0.5, 0.5);
+	(*material)["albedoMap"]->uniformTexture(0);
+	(*material)["albedoMapFrom"]->uniform1i(0);
+	(*material)["albedoMapLoopNum"]->uniform2f(1.0f, 1.0f);
+
+	(*material)["normalMap"]->uniformTexture(0);
+	(*material)["normalMapFrom"]->uniform1i(0);
+	(*material)["normalMapLoopNum"]->uniform2f(1.0f, 1.0f);
+	(*material)["normalMapScale"]->uniform1f(1.0f);
+
+	(*material)["normalSubMap"]->uniformTexture(0);
+	(*material)["normalSubMapFrom"]->uniform1i(0);
+	(*material)["normalSubMapLoopNum"]->uniform2f(1.0f, 1.0f);
+	(*material)["normalSubMapScale"]->uniform1f(1.0f);
+
+	(*material)["smoothness"]->uniform1f(0);
+	(*material)["smoothnessMapFrom"]->uniform1i(0);
+	(*material)["smoothnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
+	(*material)["smoothnessMapSwizzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
+
+	(*material)["metalness"]->uniform1f(0);
+	(*material)["metalnessMapFrom"]->uniform1i(0);
+	(*material)["metalnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
+	(*material)["metalnessMapSwizzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
+
+	(*material)["specular"]->uniform3f(0.5, 0.5, 0.5);
+	(*material)["specularMapFrom"]->uniform1i(0);
+	(*material)["specularMapLoopNum"]->uniform2f(1.0f, 1.0f);
+
+	(*material)["occlusion"]->uniform1f(1.0);
+	(*material)["occlusionMapFrom"]->uniform1i(0);
+	(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
+
+	(*material)["emissive"]->uniform3f(0.0, 0.0, 0.0);
+	(*material)["emissiveMapFrom"]->uniform1i(0);
+	(*material)["emissiveMapLoopNum"]->uniform2f(1.0f, 1.0f);
+	(*material)["emissiveIntensity"]->uniform1f(1.0f);
+
+	_lightProbes.push_back(std::move(gameObject));
+
+	return true;
 }
 
 bool

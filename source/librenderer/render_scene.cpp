@@ -158,53 +158,57 @@ RenderScene::getVisible() const noexcept
 }
 
 void
-RenderScene::addCamera(const CameraPtr& camera) noexcept
+RenderScene::addCamera(Camera* camera) except
 {
+	assert(camera);
 	assert(!camera->getRenderScene());
 
-	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
-	if (it == _cameraList.end())
-	{
-		_cameraList.push_back(camera);
-
-		std::sort(_cameraList.begin(), _cameraList.end(),
-			[](const CameraPtr& lhs, const CameraPtr& rhs)
-		{
-			return lhs->getCameraOrder() < rhs->getCameraOrder();
-		}
-		);
-	}
+	auto it = std::find(_cameraWillAddList.begin(), _cameraWillAddList.end(), camera);
+	if (it == _cameraWillAddList.end())
+		_cameraWillAddList.push_back(camera);
 }
 
 void
-RenderScene::removeCamera(const CameraPtr& camera) noexcept
+RenderScene::removeCamera(Camera* camera) noexcept
 {
+	assert(camera);
 	assert(camera->getRenderScene() == this->cast_pointer<RenderScene>());
 
-	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
+	auto it = std::find(_cameraWillAddList.begin(), _cameraWillAddList.end(), camera);
+	if (it != _cameraWillAddList.end())
+	{
+		_cameraWillAddList.erase(it);
+		return;
+	}
+
+	it = std::find(_cameraList.begin(), _cameraList.end(), camera);
 	if (it != _cameraList.end())
+	{
 		_cameraList.erase(it);
+		return;
+	}
 }
 
-Cameras&
+CameraRaws&
 RenderScene::getCameraList() noexcept
 {
 	return _cameraList;
 }
 
-const Cameras&
+const CameraRaws&
 RenderScene::getCameraList() const noexcept
 {
 	return _cameraList;
 }
 
 void
-RenderScene::addRenderObject(RenderObject* object) noexcept
+RenderScene::addRenderObject(RenderObject* object) except
 {
+	assert(object);
 	assert(!object->getRenderScene());
 
 	if (object->isInstanceOf<Camera>())
-		this->addCamera(object->downcast_pointer<Camera>());
+		this->addCamera(object->downcast<Camera>());
 	else
 		_renderObjectList.push_back(object);
 }
@@ -212,9 +216,12 @@ RenderScene::addRenderObject(RenderObject* object) noexcept
 void
 RenderScene::removeRenderObject(RenderObject* object) noexcept
 {
+	assert(object);
+	assert(object->getRenderScene() == this->cast_pointer<RenderScene>());
+
 	if (object->isInstanceOf<Camera>())
 	{
-		auto it = std::find(_cameraList.begin(), _cameraList.end(), object->downcast_pointer<Camera>());
+		auto it = std::find(_cameraList.begin(), _cameraList.end(), object->downcast<Camera>());
 		if (it != _cameraList.end())
 			_cameraList.erase(it);
 	}
@@ -227,7 +234,7 @@ RenderScene::removeRenderObject(RenderObject* object) noexcept
 }
 
 void
-RenderScene::computVisiable(const Camera& camera, OcclusionCullList& list) noexcept
+RenderScene::computVisiable(const Camera& camera, OcclusionCullList& list) except
 {
 	Frustum fru(camera.getViewProject());
 
@@ -242,7 +249,7 @@ RenderScene::computVisiable(const Camera& camera, OcclusionCullList& list) noexc
 }
 
 void
-RenderScene::computVisiableLight(const Camera& camera, OcclusionCullList& list) noexcept
+RenderScene::computVisiableLight(const Camera& camera, OcclusionCullList& list) except
 {
 	Frustum fru(camera.getViewProject());
 
@@ -277,6 +284,42 @@ RenderScene::removeRenderScene(RenderScene* _this) noexcept
 	auto it = std::find(_sceneList.begin(), _sceneList.end(), _this);
 	if (it != _sceneList.end())
 		_sceneList.erase(it);
+}
+
+void
+RenderScene::onRenderBefore() except
+{
+	if (!_cameraWillAddList.empty())
+	{
+		_cameraList.insert(_cameraList.begin(), _cameraWillAddList.begin(), _cameraWillAddList.end());
+
+		std::sort(_cameraList.begin(), _cameraList.end(),
+			[](const Camera* lhs, const Camera* rhs)
+		{
+			return lhs->getCameraOrder() < rhs->getCameraOrder();
+		}
+		);
+
+		_cameraWillAddList.clear();
+	}
+}
+
+void
+RenderScene::onRenderAfter() except
+{
+	if (!_cameraWillAddList.empty())
+	{
+		_cameraList.insert(_cameraList.begin(), _cameraWillAddList.begin(), _cameraWillAddList.end());
+
+		std::sort(_cameraList.begin(), _cameraList.end(),
+			[](const Camera* lhs, const Camera* rhs)
+		{
+			return lhs->getCameraOrder() < rhs->getCameraOrder();
+		}
+		);
+
+		_cameraWillAddList.clear();
+	}
 }
 
 _NAME_END

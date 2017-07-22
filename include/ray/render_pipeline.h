@@ -65,8 +65,8 @@ public:
 	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
 	GraphicsSwapInterval getSwapInterval() const noexcept;
 
-	void setCamera(const CameraPtr& camera) noexcept;
-	const CameraPtr& getCamera() const noexcept;
+	void setCamera(const Camera* camera) noexcept;
+	const Camera* getCamera() const noexcept;
 
 	void setViewport(std::uint32_t i, const Viewport& view) noexcept;
 	const Viewport& getViewport(std::uint32_t i) const noexcept;
@@ -157,7 +157,7 @@ private:
 	GraphicsSwapchainPtr _graphicsSwapchain;
 	GraphicsContextPtr _graphicsContext;
 
-	CameraPtr _camera;
+	const Camera* _camera;
 
 	GraphicsDataPtr _planeVbo;
 	GraphicsDataPtr _planeIbo;

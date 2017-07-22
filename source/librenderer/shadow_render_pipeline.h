@@ -58,7 +58,7 @@ public:
 	ShadowQuality getShadowQuality() const noexcept;
 
 private:
-	void renderShadowMaps(const CameraPtr& camera) noexcept;
+	void renderShadowMaps(const Camera* camera) noexcept;
 	void renderShadowMap(const Light& light, RenderQueue queue) noexcept;
 
 private:
@@ -71,7 +71,7 @@ private:
 
 private:
 	virtual void onRenderBefore() noexcept;
-	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
+	virtual void onRenderPipeline(const Camera* camera) noexcept;
 	virtual void onRenderAfter() noexcept;
 
 private:

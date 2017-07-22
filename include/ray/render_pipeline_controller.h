@@ -52,7 +52,7 @@ public:
 	virtual void onResolutionChangeDPI() noexcept;
 
 	virtual void onRenderBefore() noexcept;
-	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
+	virtual void onRenderPipeline(const Camera* camera) noexcept;
 	virtual void onRenderAfter() noexcept;
 
 private:

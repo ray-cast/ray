@@ -50,7 +50,7 @@ public:
 	bool setup(const RenderPipelinePtr& pipeline, bool enableMRSII = false) noexcept;
 	void close() noexcept;
 
-	void render3DEnvMap(const CameraPtr& camera) noexcept;
+	void render3DEnvMap(const Camera* camera) noexcept;
 
 	void renderOpaques(RenderPipeline& pipeline, const GraphicsFramebufferPtr& target) noexcept;
 	void renderOpaquesDepthLinear(RenderPipeline& pipeline, const GraphicsFramebufferPtr& target) noexcept;
@@ -112,7 +112,7 @@ private:
 
 private:
 	virtual void onRenderBefore() noexcept;
-	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
+	virtual void onRenderPipeline(const Camera* camera) noexcept;
 	virtual void onRenderAfter() noexcept;
 
 	virtual void onResolutionChange() noexcept;

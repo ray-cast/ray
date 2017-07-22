@@ -281,7 +281,7 @@ GuiViewComponent::onMessage(const ray::MessagePtr& message) except
 						if (_selectedObject)
 						{
 							auto meshComponent = _selectedObject->getComponent<ray::MeshComponent>();
-							if (meshComponent)
+							if (meshComponent && meshComponent->getNumSubsets() > _selectedSubset)
 							{
 								auto boundingBox = meshComponent->getMesh()->getMeshSubsets()[_selectedSubset].boundingBox;
 								boundingBox.transform(_selectedObject->getTransform());
@@ -1114,7 +1114,7 @@ GuiViewComponent::showHierarchyWindow() noexcept
 
 					if (ray::Gui::selectable(buffer, _selectedObject == (*objects)[i].get() ? true : false))
 					{
-						_event.onSeletedCamera((*objects)[i].get());
+						_event.onSeletedLight((*objects)[i].get());
 						_selectedObject = (*objects)[i].get();
 					}
 				}
@@ -1125,6 +1125,25 @@ GuiViewComponent::showHierarchyWindow() noexcept
 
 		if (ray::Gui::treeNode(_langs[UILang::LightProbes].c_str()))
 		{
+			const ray::GameObjects* objects = nullptr;
+			_event.onFetchLightProbes(objects);
+
+			if (objects)
+			{
+				for (std::size_t i = 0; i < objects->size(); i++)
+				{
+					auto& name = (*objects)[i]->getName();
+					char buffer[MAX_PATH];
+					sprintf_s(buffer, MAX_PATH, "|-%s", name.empty() ? "empty" : name.c_str());
+
+					if (ray::Gui::selectable(buffer, _selectedObject == (*objects)[i].get() ? true : false))
+					{
+						_event.onSeletedLightProbe((*objects)[i].get());
+						_selectedObject = (*objects)[i].get();
+					}
+				}
+			}
+
 			ray::Gui::treePop();
 		}
 
@@ -2540,6 +2559,15 @@ GuiViewComponent::startModelPicker(float x, float y) noexcept
 void
 GuiViewComponent::createLightProbe() noexcept
 {
+	if (_event.onCreateLightProbe)
+	{
+		ray::util::string::pointer error = nullptr;
+		if (!this->_event.onCreateLightProbe(error))
+		{
+			this->showPopupMessage(_langs[UILang::Error].c_str(), error, std::hash<const char*>{}("CreateLightProbe"));
+			return;
+		}
+	}
 }
 
 void

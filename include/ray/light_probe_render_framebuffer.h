@@ -46,11 +46,11 @@ class EXPORT LightProbeRenderFramebuffer : public RenderPipelineFramebuffer
 	__DeclareSubInterface(ShadowRenderFramebuffer, RenderPipelineFramebuffer)
 public:
 	LightProbeRenderFramebuffer() noexcept;
+	LightProbeRenderFramebuffer(std::uint32_t probeMapSize);
 	virtual ~LightProbeRenderFramebuffer() noexcept;
 
-	bool setup();
+	bool setup(std::uint32_t probeMapSize = 32);
 
-	const GraphicsTexturePtr& getDepthMap() const noexcept { return _probeDepthMap; }
 	const GraphicsTexturePtr& getColorMap() const noexcept { return _probeColorMap; }
 	const GraphicsTexturePtr& getNormalMap() const noexcept { return _probeNormalMap; }
 
@@ -59,7 +59,6 @@ private:
 	LightProbeRenderFramebuffer& operator=(const LightProbeRenderFramebuffer&) noexcept = delete;
 
 private:
-	GraphicsTexturePtr _probeDepthMap;
 	GraphicsTexturePtr _probeColorMap;
 	GraphicsTexturePtr _probeNormalMap;
 };

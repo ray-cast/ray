@@ -364,14 +364,30 @@ void
 RenderSystem::renderBegin() noexcept
 {
 	assert(_pipelineManager);
+
 	_pipelineManager->renderBegin();
+
+	for (auto& scene : RenderScene::getSceneAll())
+	{
+		if (!scene->getVisible())
+			continue;
+		scene->onRenderBefore();
+	}
 }
 
 void
 RenderSystem::renderEnd() noexcept
 {
 	assert(_pipelineManager);
+
 	_pipelineManager->renderEnd();
+
+	for (auto& scene : RenderScene::getSceneAll())
+	{
+		if (!scene->getVisible())
+			continue;
+		scene->onRenderAfter();
+	}
 }
 
 void

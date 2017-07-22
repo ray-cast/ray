@@ -68,7 +68,7 @@ ForwardRenderPipeline::close() noexcept
 }
 
 void
-ForwardRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
+ForwardRenderPipeline::onRenderPipeline(const Camera* camera) noexcept
 {
 	assert(camera);
 	assert(camera->getCameraOrder() == CameraOrder::CameraOrder2D);

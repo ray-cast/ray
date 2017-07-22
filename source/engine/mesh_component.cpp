@@ -134,6 +134,12 @@ MeshComponent::getNumIndices() const noexcept
 	return _mesh->getNumIndices();
 }
 
+std::size_t
+MeshComponent::getNumSubsets() const noexcept
+{
+	return this->getMesh()->getMeshSubsets().size();
+}
+
 const BoundingBox&
 MeshComponent::getBoundingBox() const noexcept
 {

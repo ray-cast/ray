@@ -99,7 +99,7 @@ DeferredLightingPipeline::close() noexcept
 }
 
 void
-DeferredLightingPipeline::render3DEnvMap(const CameraPtr& camera) noexcept
+DeferredLightingPipeline::render3DEnvMap(const Camera* camera) noexcept
 {
 	auto framebuffers = camera->getRenderPipelineFramebuffer()->downcast<DeferredLightingFramebuffers>();
 	auto& dataManager = camera->getRenderDataManager();
@@ -583,7 +583,7 @@ DeferredLightingPipeline::computeSpotVPLBuffers(RenderPipeline& pipeline, const 
 	_mrsiiLightColor->uniform3f(light.getLightColor() * light.getLightIntensity());
 
 	auto camera = pipeline.getCamera();
-	pipeline.setCamera(light.getCamera());
+	pipeline.setCamera(light.getCamera().get());
 	pipeline.setFramebuffer(_mrsiiVPLsView);
 	pipeline.discardFramebuffer(0);
 	pipeline.drawScreenQuad(*_mrsiiRsm2VPLsSpot);
@@ -1179,7 +1179,7 @@ DeferredLightingPipeline::onRenderBefore() noexcept
 }
 
 void
-DeferredLightingPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
+DeferredLightingPipeline::onRenderPipeline(const Camera* camera) noexcept
 {
 	assert(camera);
 	assert(camera->getCameraOrder() == CameraOrder::CameraOrder3D);

@@ -86,6 +86,8 @@ struct EditorEvents
 	std::function<bool(ray::util::string::const_pointer, std::size_t, ray::util::string::pointer&)> onExportTexture;
 	std::function<bool(ray::util::string::const_pointer, std::size_t, ray::util::string::pointer&)> onExportMaterial;
 
+	std::function<bool(ray::util::string::pointer&)> onCreateLightProbe;
+
 	std::function<void(ray::util::string::pointer&, va_list)> onErrorMessage;
 
 	std::function<bool(const EditorAssetItem&)> onUpdateMaterial;

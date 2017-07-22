@@ -119,7 +119,7 @@ ShadowRenderPipeline::getShadowQuality() const noexcept
 }
 
 void
-ShadowRenderPipeline::renderShadowMaps(const CameraPtr& mainCamera) noexcept
+ShadowRenderPipeline::renderShadowMaps(const Camera* mainCamera) noexcept
 {
 	assert(mainCamera);
 
@@ -155,7 +155,7 @@ ShadowRenderPipeline::renderShadowMap(const Light& light, RenderQueue queue) noe
 		auto shadowLienarFrambuffer = camera->getRenderPipelineFramebuffer()->getFramebuffer();
 		auto shadowTexture = shadowFrambuffer->getGraphicsFramebufferDesc().getDepthStencilAttachment().getBindingTexture();
 
-		_pipeline->setCamera(camera);
+		_pipeline->setCamera(camera.get());
 		_pipeline->setFramebuffer(shadowFrambuffer);
 
 		if (queue == RenderQueue::RenderQueueReflectiveShadow)
@@ -362,7 +362,7 @@ ShadowRenderPipeline::destroyShadowMaps() noexcept
 }
 
 void
-ShadowRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
+ShadowRenderPipeline::onRenderPipeline(const Camera* camera) noexcept
 {
 	assert(camera);
 	assert(camera->getCameraOrder() == CameraOrder::CameraOrder3D);

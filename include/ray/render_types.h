@@ -112,6 +112,7 @@ typedef std::vector<MaterialTechDescPtr> MaterialTechniqueDescList;
 typedef std::vector<MaterialVariantPtr> MaterialVariants;
 typedef std::map<std::string, MaterialParamPtr> MaterialParams;
 
+typedef std::vector<Camera*> CameraRaws;
 typedef std::vector<RenderObject*> RenderObjectRaws;
 
 enum class CameraType : std::uint8_t

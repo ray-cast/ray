@@ -65,6 +65,7 @@ public:
 
 	std::size_t getNumVertices() const noexcept;
 	std::size_t getNumIndices() const noexcept;
+	std::size_t getNumSubsets() const noexcept;
 
 	const BoundingBox& getBoundingBox() const noexcept;
 

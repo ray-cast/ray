@@ -151,7 +151,7 @@ LightProbeRenderPipeline::close() noexcept
 }
 
 void
-LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
+LightProbeRenderPipeline::onRenderPipeline(const Camera* mainCamera) noexcept
 {
 	assert(mainCamera);
 
@@ -161,6 +161,8 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 	for (auto& it : lightProbes)
 	{
 		auto lightProbe = it->downcast<LightProbe>();
+		if (!lightProbe->needUpdateProbeMap())
+			continue;
 
 		auto& camera = lightProbe->getCamera();
 		if (camera)
@@ -168,25 +170,31 @@ LightProbeRenderPipeline::onRenderPipeline(const CameraPtr& mainCamera) noexcept
 			if (!camera->getRenderPipelineFramebuffer())
 				continue;
 
+			if (!camera->getRenderScene())
+				continue;
+
 			camera->onRenderBefore(*mainCamera);
 
 			for (std::uint8_t i = 0; i < 6; i++)
 			{
-				_pipeline->setCamera(_cameras[i]);
+				_pipeline->setCamera(_cameras[i].get());
 				_pipeline->setFramebuffer(_probeRSMViews[i]);
 
 				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
+				{
 					_pipeline->clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, camera->getClearColor());
+					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearColorBit, camera->getClearColor());
+				}
 
 				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
 					camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
 				{
 					if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
-						_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthStencilBit, camera->getClearColor());
+						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearDepthStencilBit, camera->getClearColor());
 					else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
-						_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearDepthBit, camera->getClearColor());
+						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearDepthBit, camera->getClearColor());
 					else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
-						_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearStencilBit, camera->getClearColor());
+						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearStencilBit, camera->getClearColor());
 				}
 
 				_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque);

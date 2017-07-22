@@ -94,16 +94,19 @@ public:
 	void setVisible(bool visible) noexcept;
 	bool getVisible() const noexcept;
 
-	void addCamera(const CameraPtr& camera) noexcept;
-	void removeCamera(const CameraPtr& camera) noexcept;
-	Cameras& getCameraList() noexcept;
-	const Cameras& getCameraList() const noexcept;
+	void addCamera(Camera* camera) except;
+	void removeCamera(Camera* camera) noexcept;
+	CameraRaws& getCameraList() noexcept;
+	const CameraRaws& getCameraList() const noexcept;
 
-	void addRenderObject(RenderObject* object) noexcept;
+	void addRenderObject(RenderObject* object) except;
 	void removeRenderObject(RenderObject* object) noexcept;
 
-	void computVisiable(const Camera& camera, OcclusionCullList& list) noexcept;
-	void computVisiableLight(const Camera& camera, OcclusionCullList& list) noexcept;
+	void computVisiable(const Camera& camera, OcclusionCullList& list) except;
+	void computVisiableLight(const Camera& camera, OcclusionCullList& list) except;
+
+	void onRenderBefore() except;
+	void onRenderAfter() except;
 
 	static const RenderScenes& getSceneAll() noexcept;
 
@@ -114,7 +117,9 @@ private:
 private:
 	bool _visible;
 
-	Cameras _cameraList;
+	CameraRaws _cameraList;
+	CameraRaws _cameraWillAddList;
+
 	RenderObjectRaws _renderObjectList;
 
 	static RenderScenes _sceneList;

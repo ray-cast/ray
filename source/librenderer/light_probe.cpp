@@ -44,6 +44,7 @@ _NAME_BEGIN
 LightProbe::LightProbe() noexcept
 	: _sh(0.0f)
 	, _lightRange(5.0f)
+	, _needUpdateProbeMap(true)
 {
 }
 
@@ -76,6 +77,18 @@ LightProbe::getSH9() const noexcept
 	return _sh;
 }
 
+bool
+LightProbe::needUpdateProbeMap() const noexcept
+{
+	return _needUpdateProbeMap;
+}
+
+void
+LightProbe::needUpdateProbeMap(bool update) noexcept
+{
+	_needUpdateProbeMap = update;
+}
+
 const CameraPtr&
 LightProbe::getCamera() const noexcept
 {
@@ -83,7 +96,7 @@ LightProbe::getCamera() const noexcept
 }
 
 bool
-LightProbe::setupProbeCamera() noexcept
+LightProbe::_setupProbeCamera() noexcept
 {
 	auto framebuffer = std::make_shared<ray::LightProbeRenderFramebuffer>();
 	if (!framebuffer->setup())
@@ -91,10 +104,11 @@ LightProbe::setupProbeCamera() noexcept
 
 	_camera = std::make_shared<Camera>();
 	_camera->setOwnerListener(this);
-	_camera->setCameraOrder(CameraOrder::CameraOrderShadow);
+	_camera->setCameraOrder(CameraOrder::CameraOrderLightProbe);
 	_camera->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
 	_camera->setCameraType(CameraType::CameraTypeCube);
 	_camera->setRenderPipelineFramebuffer(framebuffer);
+	_camera->setRenderScene(this->getRenderScene());
 
 	return true;
 }
@@ -173,14 +187,25 @@ LightProbe::onAddRenderData(RenderDataManager& manager) noexcept
 }
 
 void
+LightProbe::onRenderBefore(const Camera& camera) noexcept
+{
+	if (!_camera) this->_setupProbeCamera();
+}
+
+void
+LightProbe::onRenderAfter(const Camera& camera) noexcept
+{
+}
+
+void
 LightProbe::onRenderObjectPre(const Camera& camera) noexcept
 {
-	if (_camera) this->setupProbeCamera();
 }
 
 void
 LightProbe::onRenderObjectPost(const Camera& camera) noexcept
 {
+	this->needUpdateProbeMap(false);
 }
 
 _NAME_END

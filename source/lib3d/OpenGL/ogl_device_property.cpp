@@ -372,7 +372,7 @@ OGLDeviceProperty::initDeviceProperties() noexcept
 	glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, (GLint*)&_deviceProperties.maxDescriptorSetStorageBuffersDynamic);
 	glGetIntegerv(GL_MAX_IMAGE_UNITS, (GLint*)&_deviceProperties.maxDescriptorSetSampledImages);
 	_deviceProperties.maxDescriptorSetStorageImages;
-	_deviceProperties.maxDescriptorSetInputAttachments;
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, (GLint*)&_deviceProperties.maxDescriptorSetInputAttachments);
 
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, (GLint*)&_deviceProperties.maxVertexInputAttributes);
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS, (GLint*)&_deviceProperties.maxVertexInputBindings);

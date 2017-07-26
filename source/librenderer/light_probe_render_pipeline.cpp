@@ -139,6 +139,14 @@ LightProbeRenderPipeline::setup(const RenderPipelinePtr& pipeline, std::uint32_t
 			return false;
 	}
 
+	_camera = std::make_shared<Camera>();
+	_camera->setCameraType(ray::CameraType::CameraTypePerspective);
+	_camera->setNear(0.125);
+	_camera->setRatio(1.0);
+	_camera->setFar(10.0f);
+	_camera->setAperture(90.0f);
+	_camera->setClearFlags(CameraClearFlagBits::CameraClearColorBit | CameraClearFlagBits::CameraClearDepthBit);
+
 	_pipeline = pipeline;
 
 	return true;
@@ -175,34 +183,44 @@ LightProbeRenderPipeline::onRenderPipeline(const Camera* mainCamera) noexcept
 
 			camera->onRenderBefore(*mainCamera);
 
+			static float3 lookat[] = { float3::UnitX, -float3::UnitX, float3::UnitY, -float3::UnitY, float3::UnitZ, -float3::UnitZ };
+			static float3 up[] = { -float3::UnitY, -float3::UnitY, float3::UnitZ, -float3::UnitZ, -float3::UnitY, -float3::UnitY };
+
 			for (std::uint8_t i = 0; i < 6; i++)
 			{
-				_pipeline->setCamera(_cameras[i].get());
+				ray::float4x4 transform;
+				transform.makeLookAt_lh(it->getTranslate(), it->getTranslate() + lookat[i], up[i]);
+
+				_camera->setTransform(math::transformInverse(transform), transform);
+				_camera->setRenderDataManager(camera->getRenderDataManager());
+				_camera->setRenderPipelineFramebuffer(camera->getRenderPipelineFramebuffer());
+
+				_pipeline->setCamera(_camera.get(), true);
 				_pipeline->setFramebuffer(_probeRSMViews[i]);
 
-				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
+				if (_camera->getClearFlags() & CameraClearFlagBits::CameraClearColorBit)
 				{
-					_pipeline->clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, camera->getClearColor());
-					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearColorBit, camera->getClearColor());
+					_pipeline->clearFramebuffer(0, CameraClearFlagBits::CameraClearColorBit, _camera->getClearColor());
+					_pipeline->clearFramebuffer(1, CameraClearFlagBits::CameraClearColorBit, _camera->getClearColor());
 				}
 
-				if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
-					camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+				if (_camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit ||
+					_camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
 				{
-					if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
-						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearDepthStencilBit, camera->getClearColor());
-					else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
-						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearDepthBit, camera->getClearColor());
-					else if (camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
-						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearStencilBit, camera->getClearColor());
+					if (_camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthStencilBit)
+						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearDepthStencilBit, _camera->getClearColor());
+					else if (_camera->getClearFlags() & CameraClearFlagBits::CameraClearDepthBit)
+						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearDepthBit, _camera->getClearColor());
+					else if (_camera->getClearFlags() & CameraClearFlagBits::CameraClearStencilBit)
+						_pipeline->clearFramebuffer(2, CameraClearFlagBits::CameraClearStencilBit, _camera->getClearColor());
 				}
 
 				_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque);
 
 				auto framebuffers = camera->getRenderPipelineFramebuffer()->downcast<LightProbeRenderFramebuffer>();
 
-				_pipeline->readFramebuffer(0, framebuffers->getColorMap(), 0, 0, framebuffers->getColorMap()->getGraphicsTextureDesc().getWidth(), framebuffers->getColorMap()->getGraphicsTextureDesc().getHeight());
-				_pipeline->readFramebuffer(1, framebuffers->getNormalMap(), 0, 0, framebuffers->getNormalMap()->getGraphicsTextureDesc().getWidth(), framebuffers->getNormalMap()->getGraphicsTextureDesc().getHeight());
+				_pipeline->readFramebufferToCube(0, i, framebuffers->getColorMap(), 0, 0, 0, framebuffers->getColorMap()->getGraphicsTextureDesc().getWidth(), framebuffers->getColorMap()->getGraphicsTextureDesc().getHeight());
+				_pipeline->readFramebufferToCube(1, i, framebuffers->getNormalMap(), 0, 0, 0, framebuffers->getNormalMap()->getGraphicsTextureDesc().getWidth(), framebuffers->getNormalMap()->getGraphicsTextureDesc().getHeight());
 
 				_pipeline->discardFramebuffer(0);
 				_pipeline->discardFramebuffer(1);

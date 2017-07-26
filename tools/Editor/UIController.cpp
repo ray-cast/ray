@@ -53,6 +53,7 @@
 #include <ray/camera_component.h>
 #include <ray/light_component.h>
 #include <ray/light_probe_component.h>
+#include <ray/light_probe_render_framebuffer.h>
 #include <ray/skybox_component.h>
 #include <ray/mesh_component.h>
 #include <ray/mesh_render_component.h>
@@ -1792,6 +1793,16 @@ GuiControllerComponent::onExportModel(ray::util::string::const_pointer path, std
 }
 
 bool
+GuiControllerComponent::onExportLightProbe(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept
+{
+	if (_lightProbes.size() > index)
+	{
+	}
+
+	return true;
+}
+
+bool
 GuiControllerComponent::onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept
 {
 	if (_models.empty())
@@ -2120,7 +2131,7 @@ bool
 GuiControllerComponent::onCreateLightProbe(ray::util::string::pointer& error) noexcept
 {
 	ray::MaterialPtr material;
-	if (!ray::ResManager::instance()->createMaterial("dlc:editor/fx/material.fxml", material))
+	if (!ray::ResManager::instance()->createMaterial("dlc:editor/fx/lightprobe.fxml", material))
 		return false;
 
 	auto sphereMesh = std::make_shared<ray::MeshProperty>();
@@ -2137,43 +2148,10 @@ GuiControllerComponent::onCreateLightProbe(ray::util::string::pointer& error) no
 	gameObject->addComponent(std::make_shared<ray::LightProbeComponent>());
 
 	(*material).setName("lightprobe");
-	(*material)["albedo"]->uniform3f(0.5, 0.5, 0.5);
-	(*material)["albedoMap"]->uniformTexture(0);
-	(*material)["albedoMapFrom"]->uniform1i(0);
+	(*material)["albedo"]->uniform3f(1, 1, 1);
+	(*material)["albedoMapFrom"]->uniform1i(1);
+	(*material)["albedoMap"]->uniformTexture(gameObject->getComponent<ray::LightProbeComponent>()->getCamera()->getRenderPipelineFramebuffer()->downcast<ray::LightProbeRenderFramebuffer>()->getNormalMap());
 	(*material)["albedoMapLoopNum"]->uniform2f(1.0f, 1.0f);
-
-	(*material)["normalMap"]->uniformTexture(0);
-	(*material)["normalMapFrom"]->uniform1i(0);
-	(*material)["normalMapLoopNum"]->uniform2f(1.0f, 1.0f);
-	(*material)["normalMapScale"]->uniform1f(1.0f);
-
-	(*material)["normalSubMap"]->uniformTexture(0);
-	(*material)["normalSubMapFrom"]->uniform1i(0);
-	(*material)["normalSubMapLoopNum"]->uniform2f(1.0f, 1.0f);
-	(*material)["normalSubMapScale"]->uniform1f(1.0f);
-
-	(*material)["smoothness"]->uniform1f(0);
-	(*material)["smoothnessMapFrom"]->uniform1i(0);
-	(*material)["smoothnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
-	(*material)["smoothnessMapSwizzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
-
-	(*material)["metalness"]->uniform1f(0);
-	(*material)["metalnessMapFrom"]->uniform1i(0);
-	(*material)["metalnessMapLoopNum"]->uniform2f(1.0f, 1.0f);
-	(*material)["metalnessMapSwizzle"]->uniform4f(1.0f, 0.0f, 0.0f, 0.0f);
-
-	(*material)["specular"]->uniform3f(0.5, 0.5, 0.5);
-	(*material)["specularMapFrom"]->uniform1i(0);
-	(*material)["specularMapLoopNum"]->uniform2f(1.0f, 1.0f);
-
-	(*material)["occlusion"]->uniform1f(1.0);
-	(*material)["occlusionMapFrom"]->uniform1i(0);
-	(*material)["occlusionMapLoopNum"]->uniform2f(1.0f, 1.0f);
-
-	(*material)["emissive"]->uniform3f(0.0, 0.0, 0.0);
-	(*material)["emissiveMapFrom"]->uniform1i(0);
-	(*material)["emissiveMapLoopNum"]->uniform2f(1.0f, 1.0f);
-	(*material)["emissiveIntensity"]->uniform1f(1.0f);
 
 	_lightProbes.push_back(std::move(gameObject));
 
@@ -2201,7 +2179,7 @@ GuiControllerComponent::onUpdateMaterial(const EditorAssetItem& item) noexcept
 	ray::RenderSystem::instance()->setIndexBuffer(_ibo, 0, ray::GraphicsIndexType::GraphicsIndexTypeUInt32);
 	ray::RenderSystem::instance()->setMaterialPass(material->getTech("Preview")->getPass(0));
 	ray::RenderSystem::instance()->drawIndexed(4416, 1, 0, 0, 0);
-	ray::RenderSystem::instance()->readFramebuffer(0, item.preview, 0, 0, item.preview->getGraphicsTextureDesc().getWidth(), item.preview->getGraphicsTextureDesc().getHeight());
+	ray::RenderSystem::instance()->readFramebuffer(0, item.preview, 0, 0, 0, item.preview->getGraphicsTextureDesc().getWidth(), item.preview->getGraphicsTextureDesc().getHeight());
 	ray::RenderSystem::instance()->discardFramebuffer(0);
 
 	return true;

@@ -82,6 +82,7 @@ private:
 	bool onExportTexture(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept;
 	bool onExportMaterial(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept;
 	bool onExportModel(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept;
+	bool onExportLightProbe(ray::util::string::const_pointer path, std::size_t index, ray::util::string::pointer& error) noexcept;
 
 	bool onUVMapperCancel() noexcept;
 	bool onUVMapperWillStart(const GuiParams& params, ray::util::string::pointer& error) noexcept;

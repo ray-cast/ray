@@ -668,14 +668,8 @@ OGLDeviceContext::discardFramebuffer(std::uint32_t i) noexcept
 	}
 }
 
-GraphicsFramebufferPtr
-OGLDeviceContext::getFramebuffer() const noexcept
-{
-	return _framebuffer;
-}
-
 void
-OGLDeviceContext::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+OGLDeviceContext::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t miplevel, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
 {
 	GLenum internalFormat = OGLTypes::asTextureFormat(texture->getGraphicsTextureDesc().getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
@@ -688,7 +682,30 @@ OGLDeviceContext::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& tex
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->downcast<OGLTexture>()->getTarget(), texture->downcast<OGLTexture>()->getInstanceID());
-	glCopyTexImage2D(texture->downcast<OGLTexture>()->getTarget(), 0, internalFormat, x, y, width, height, 0);
+	glCopyTexImage2D(texture->downcast<OGLTexture>()->getTarget(), miplevel, internalFormat, x, y, width, height, 0);
+}
+
+void
+OGLDeviceContext::readFramebufferToCube(std::uint32_t i, std::uint32_t face, const GraphicsTexturePtr& texture, std::uint32_t miplevel, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+{
+	GLenum internalFormat = OGLTypes::asTextureFormat(texture->getGraphicsTextureDesc().getTexFormat());
+	if (internalFormat == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
+		return;
+	}
+
+	glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->downcast<OGLTexture>()->getTarget(), texture->downcast<OGLTexture>()->getInstanceID());
+	glCopyTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, miplevel, internalFormat, x, y, width, height, 0);
+}
+
+GraphicsFramebufferPtr
+OGLDeviceContext::getFramebuffer() const noexcept
+{
+	return _framebuffer;
 }
 
 void

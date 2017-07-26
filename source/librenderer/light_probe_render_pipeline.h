@@ -48,7 +48,7 @@ public:
 	LightProbeRenderPipeline() noexcept;
 	virtual ~LightProbeRenderPipeline() noexcept;
 
-	bool setup(const RenderPipelinePtr& pipeline, std::uint32_t probeMapSize = 32) noexcept;
+	bool setup(const RenderPipelinePtr& pipeline, std::uint32_t probeMapSize = 64) noexcept;
 	void close() noexcept;
 
 private:
@@ -65,7 +65,7 @@ private:
 
 	RenderPipelinePtr _pipeline;
 
-	CameraPtr _cameras[6];
+	CameraPtr _camera;
 
 	GraphicsTexturePtr _probeDepthMap;
 	GraphicsTexturePtr _probeColorMap;

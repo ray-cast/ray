@@ -231,11 +231,11 @@ RenderPipeline::renderEnd() noexcept
 }
 
 void
-RenderPipeline::setCamera(const Camera* camera) noexcept
+RenderPipeline::setCamera(const Camera* camera, bool forceUpdate) noexcept
 {
 	assert(camera);
 
-	if (_camera != camera)
+	if (_camera != camera || forceUpdate)
 	{
 		_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraNear)->uniform1f(camera->getNear());
 		_semanticsManager->getSemantic(GlobalSemanticType::GlobalSemanticTypeCameraFar)->uniform1f(camera->getFar());
@@ -302,10 +302,17 @@ RenderPipeline::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, cons
 }
 
 void
-RenderPipeline::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+RenderPipeline::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t miplevel, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->readFramebuffer(i, texture, x, y, width, height);
+	_graphicsContext->readFramebuffer(i, texture, miplevel, x, y, width, height);
+}
+
+void
+RenderPipeline::readFramebufferToCube(std::uint32_t i, std::uint32_t face, const GraphicsTexturePtr& texture, std::uint32_t miplevel, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->readFramebufferToCube(i, face, texture, miplevel, x, y, width, height);
 }
 
 void

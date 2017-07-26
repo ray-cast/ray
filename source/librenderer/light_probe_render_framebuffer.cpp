@@ -70,9 +70,8 @@ LightProbeRenderFramebuffer::setup(std::uint32_t probeMapSize)
 	GraphicsTextureDesc probeColorDesc;
 	probeColorDesc.setWidth(probeMapSize);
 	probeColorDesc.setHeight(probeMapSize);
-	probeColorDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	probeColorDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDimCube);
 	probeColorDesc.setTexFormat(probeColorFormat);
-	probeColorDesc.setLayerNums(6);
 	probeColorDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_probeColorMap = RenderSystem::instance()->createTexture(probeColorDesc);
 	if (!_probeColorMap)
@@ -81,9 +80,8 @@ LightProbeRenderFramebuffer::setup(std::uint32_t probeMapSize)
 	GraphicsTextureDesc probeNormalDesc;
 	probeNormalDesc.setWidth(probeMapSize);
 	probeNormalDesc.setHeight(probeMapSize);
-	probeNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	probeNormalDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDimCube);
 	probeNormalDesc.setTexFormat(probeNormalFormat);
-	probeNormalDesc.setLayerNums(6);
 	probeNormalDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest, GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 	_probeNormalMap = RenderSystem::instance()->createTexture(probeNormalDesc);
 	if (!_probeNormalMap)

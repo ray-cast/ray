@@ -46,6 +46,14 @@ LightProbe::LightProbe() noexcept
 	, _lightRange(5.0f)
 	, _needUpdateProbeMap(true)
 {
+	_camera = std::make_shared<Camera>();
+	_camera->setOwnerListener(this);
+	_camera->setCameraOrder(CameraOrder::CameraOrderLightProbe);
+	_camera->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
+	_camera->setCameraType(CameraType::CameraTypeCube);
+	_camera->setRenderPipelineFramebuffer(std::make_shared<ray::LightProbeRenderFramebuffer>(64));
+	_camera->setRenderScene(this->getRenderScene());
+	_camera->setClearColor(ray::float4(1, 0, 1, 1));
 }
 
 LightProbe::~LightProbe() noexcept
@@ -98,18 +106,6 @@ LightProbe::getCamera() const noexcept
 bool
 LightProbe::_setupProbeCamera() noexcept
 {
-	auto framebuffer = std::make_shared<ray::LightProbeRenderFramebuffer>();
-	if (!framebuffer->setup())
-		return false;
-
-	_camera = std::make_shared<Camera>();
-	_camera->setOwnerListener(this);
-	_camera->setCameraOrder(CameraOrder::CameraOrderLightProbe);
-	_camera->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
-	_camera->setCameraType(CameraType::CameraTypeCube);
-	_camera->setRenderPipelineFramebuffer(framebuffer);
-	_camera->setRenderScene(this->getRenderScene());
-
 	return true;
 }
 
@@ -144,6 +140,7 @@ void
 LightProbe::onMoveAfter() noexcept
 {
 	this->_updateTransform();
+	this->needUpdateProbeMap(true);
 }
 
 void

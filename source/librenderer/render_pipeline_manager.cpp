@@ -446,19 +446,23 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 		if (!camera->getRenderDataManager())
 			continue;
 
-		camera->onRenderBefore(*camera);
-
 		switch (camera->getCameraOrder())
 		{
 		case CameraOrder::CameraOrder2D:
 		{
+			camera->onRenderBefore(*camera);
+
 			_forward->onRenderBefore();
 			_forward->onRenderPipeline(camera);
 			_forward->onRenderAfter();
+
+			camera->onRenderAfter(*camera);
 		}
 		break;
 		case CameraOrder::CameraOrder3D:
 		{
+			camera->onRenderBefore(*camera);
+
 			if (_shadowMapGen)
 			{
 				_shadowMapGen->onRenderBefore();
@@ -488,11 +492,11 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 				_forward->onRenderPipeline(camera);
 				_forward->onRenderAfter();
 			}
+
+			camera->onRenderAfter(*camera);
 		}
 		break;
 		}
-
-		camera->onRenderAfter(*camera);
 	}
 }
 

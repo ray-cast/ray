@@ -1,0 +1,86 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+	<include name="sys:fx/Gbuffer.fxml"/>
+	<include name="sys:fx/lighting.fxml"/>
+	<include name="sys:fx/inputlayout.fxml" />
+	<parameter name="matNormal" type="float4x4"/>
+	<parameter name="matTransform" type="float4x4"/>
+	<parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
+	<parameter name="matModelViewInverse" type="float4x4" semantic="matModelViewInverse" />
+	<parameter name="albedo" type="float3" />
+	<parameter name="albedoMap" type="textureCUBE" />
+	<parameter name="albedoMapFrom" type="int" />
+	<parameter name="albedoMapFlip" type="int" />
+	<parameter name="albedoMapLoopNum" type="float2" />
+  	<shader>
+    <![CDATA[
+			float3 GetAlbedo(float2 coord, float3 normal)
+			{
+				if (albedoMapFrom > 0 && albedoMapFrom < 6)
+				{
+					if (albedoMapFlip == 1)
+						coord.x = 1 - coord.x;
+					else if (albedoMapFlip == 2)
+						coord.y = 1 - coord.y;
+					else if (albedoMapFlip == 3)
+						coord = 1 - coord;
+
+					return saturate(albedoMap.SampleLevel(PointClamp, normal, 0).rgb * albedo);
+				}
+				else
+				{
+					return saturate(albedo);
+				}
+			}
+
+			void OpaqueVS(
+				in float4 Position : POSITION,
+				in float4 TangentQuat : TANGENT,
+				in float2 Texcoord : TEXCOORD,
+				out float3 oNormal : TEXCOORD0,
+				out float3 oTangent : TEXCOORD1,
+				out float2 oTexcoord : TEXCOORD2,
+				out float4 oPosition : SV_Position)
+			{
+				TangentQuat = TangentQuat * 2 - 1;
+
+				float3 Normal = QuaternionToNormal(TangentQuat);
+				float3 Tangent = QuaternionToTangent(TangentQuat);
+
+				oNormal = Normal;
+				oTangent = mul(Tangent, (float3x3)matModelViewInverse);
+				oTexcoord = Texcoord;
+				oPosition = mul(matModelViewProject, Position);
+			}
+
+			GbufferParam OpaquePS(in float3 iNormal : TEXCOORD0, in float3 iTangent : TEXCOORD1, in float2 coord : TEXCOORD2)
+			{
+				MaterialParam material;
+				material.albedo = GetAlbedo(coord, normalize(iNormal));
+				material.normal = normalize(iNormal);
+				material.specular = 0.0;
+				material.smoothness = 0.0;
+				material.metalness = 0.0;
+				material.occlusion = 1.0;
+				material.customA = 0;
+				material.customB = 0;
+				material.lightModel = SHADINGMODELID_DEFAULT;
+
+				return EncodeGbuffer(material);
+			}
+		]]>
+  </shader>
+  <technique name="Opaque">
+    <pass name="p0">
+      <state name="inputlayout" value="POS3F_T4F_UV2F" />
+      <state name="vertex" value="OpaqueVS" />
+      <state name="fragment" value="OpaquePS" />
+      <state name="primitive" value="triangle" />
+      <state name="colormask0" value="rgba" />
+      <state name="colormask1" value="rgba" />
+      <state name="stencilTest" value="true" />
+      <state name="stencilPass" value="replace" />
+      <state name="stencilTwoPass" value="replace" />
+    </pass>
+  </technique>
+</effect>

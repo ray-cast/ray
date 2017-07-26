@@ -193,10 +193,10 @@ RenderSystem::clearFramebuffer(std::uint32_t i, GraphicsClearFlags flags, const 
 }
 
 void
-RenderSystem::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+RenderSystem::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t miplevel, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->getRenderPipeline()->readFramebuffer(i, texture, x, y, width, height);
+	_pipelineManager->getRenderPipeline()->readFramebuffer(i, texture, miplevel, x, y, width, height);
 }
 
 void

@@ -637,7 +637,7 @@ OGLCoreDeviceContext::discardFramebuffer(std::uint32_t i) noexcept
 }
 
 void
-OGLCoreDeviceContext::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+OGLCoreDeviceContext::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr& texture, std::uint32_t miplevel, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
 {
 	GLenum internalFormat = OGLTypes::asTextureInternalFormat(texture->getGraphicsTextureDesc().getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
@@ -647,7 +647,21 @@ OGLCoreDeviceContext::readFramebuffer(std::uint32_t i, const GraphicsTexturePtr&
 	}
 
 	glNamedFramebufferReadBuffer(_framebuffer->getInstanceID(), GL_COLOR_ATTACHMENT0 + i);
-	glCopyTextureSubImage2D(texture->downcast<OGLCoreTexture>()->getInstanceID(), 0, 0, 0, x, y, width, height);
+	glCopyTextureSubImage2D(texture->downcast<OGLCoreTexture>()->getInstanceID(), miplevel, 0, 0, x, y, width, height);
+}
+
+void
+OGLCoreDeviceContext::readFramebufferToCube(std::uint32_t i, std::uint32_t face, const GraphicsTexturePtr& texture, std::uint32_t miplevel, std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) noexcept
+{
+	GLenum internalFormat = OGLTypes::asTextureFormat(texture->getGraphicsTextureDesc().getTexFormat());
+	if (internalFormat == GL_INVALID_ENUM)
+	{
+		this->getDevice()->downcast<OGLDevice>()->message("Invalid texture format");
+		return;
+	}
+
+	glNamedFramebufferReadBuffer(_framebuffer->getInstanceID(), GL_COLOR_ATTACHMENT0 + i);
+	glCopyTextureSubImage2DEXT(texture->downcast<OGLCoreTexture>()->getInstanceID(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, miplevel, 0, 0, x, y, width, height);
 }
 
 GraphicsFramebufferPtr

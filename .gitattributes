@@ -20,3 +20,9 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# git files
+.gitattributes export-ignore
+.gitignore export-ignore
+# Folders/Files
+screenshots/ export-ignore

@@ -51,6 +51,15 @@ _NAME_BEGIN
 
 __ImplementSubClass(LightProbeRenderPipeline, RenderPipelineController, "LightProbeRenderPipeline")
 
+const float4x4 viewMatrixs[] = {
+	float4x4(0, 0,-1, 0, 0,-1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1),
+	float4x4(0, 0, 1, 0, 0,-1, 0, 0,  1, 0, 0, 0, 0, 0, 0, 1),
+	float4x4(1, 0, 0, 0, 0, 0, 1, 0, 0,-1, 0, 0, 0, 0, 0, 1),
+	float4x4(1, 0, 0, 0, 0, 0,-1, 0, 0, 1, 0, 0, 0, 0, 0, 1),
+	float4x4(1, 0, 0, 0, 0,-1, 0, 0, 0, 0,-1, 0, 0, 0, 0, 1),
+	float4x4(-1, 0, 0, 0,  0,-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+};
+
 LightProbeRenderPipeline::LightProbeRenderPipeline() noexcept
 {
 }

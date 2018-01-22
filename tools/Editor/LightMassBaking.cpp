@@ -924,6 +924,7 @@ LightMassBaking::updateSampleCamera(float3 pos, float3 dir, const float3& up, fl
 {
 	// view matrix: lookAt(pos, pos + dir, up)
 	float3 side = math::cross(dir, up);
+
 	//up = cross(side, dir);
 	dir = -dir; pos = -pos;
 

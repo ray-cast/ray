@@ -75,7 +75,7 @@ LightMapPack::getLightMapListener() const noexcept
 }
 
 bool
-LightMapPack::atlasUV(PMX& model, std::uint32_t w, std::uint32_t h, std::uint32_t chart, float stretch, float margin, std::function<HRESULT(float)> progress) noexcept
+LightMapPack::atlasUV(PMX& model, std::uint32_t w, std::uint32_t h, float margin) noexcept
 {
 	if (_lightMapListener)
 		_lightMapListener->onUvmapperStart();

@@ -1858,7 +1858,7 @@ GuiControllerComponent::onUVMapperProcessing(const GuiParams& params, float& pro
 				size = 8192;
 
 			ray::LightMapPack lightPack(_lightMapListener);
-			if (!lightPack.atlasUV(*_models[0], size, size, params.uvmapper.chart, params.uvmapper.stretch, params.uvmapper.margin, progress))
+			if (!lightPack.atlasUV(*_models[0], size, size, params.uvmapper.margin))
 				return false;
 
 			return true;

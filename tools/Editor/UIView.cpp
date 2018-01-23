@@ -2437,12 +2437,6 @@ GuiViewComponent::showLightMass() noexcept
 			ray::Gui::textUnformatted(_langs[UILang::UVMargin].c_str(), _langs[UILang::UVMargin].c_str() + _langs[UILang::UVMargin].size());
 			ray::Gui::sliderFloatWithRevert("##margin", _langs[UILang::Revert].c_str(), &_setting.uvmapper.margin, _default.uvmapper.margin, 0.0f, 10.0f);
 
-			ray::Gui::textUnformatted(_langs[UILang::UVStretch].c_str(), _langs[UILang::UVStretch].c_str() + _langs[UILang::UVStretch].size());
-			ray::Gui::sliderFloatWithRevert("##stretch", _langs[UILang::Revert].c_str(), &_setting.uvmapper.stretch, _default.uvmapper.stretch, 0.0, 1.0, "%.5f", 2.2);
-
-			ray::Gui::textUnformatted(_langs[UILang::UVChart].c_str(), _langs[UILang::UVChart].c_str() + _langs[UILang::UVChart].size());
-			ray::Gui::sliderIntWithRevert("##chart", _langs[UILang::Revert].c_str(), &_setting.uvmapper.chart, _default.uvmapper.chart, 0, 65535);
-
 			if (ray::Gui::button(_langs[UILang::StartUVMapper].c_str()))
 				this->startUVMapper();
 

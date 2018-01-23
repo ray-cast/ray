@@ -38,8 +38,6 @@
 
 GUIUvmapper::GUIUvmapper() noexcept
 	: margin(2)
-	, stretch(1e-3)
-	, chart(0)
 	, slot(1)
 {
 }

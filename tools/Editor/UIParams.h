@@ -43,10 +43,8 @@ struct GUIUvmapper
 {
 	GUIUvmapper() noexcept;
 
-	int chart;
 	int slot;
 	float margin;
-	float stretch;
 };
 
 struct GUILightMass
